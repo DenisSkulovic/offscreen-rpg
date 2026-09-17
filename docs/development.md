@@ -1,6 +1,6 @@
 # Local development
 
-The first foundation contains a pnpm/Turborepo workspace, strict TypeScript configuration, a Next.js page and a NestJS HTTP process. There is no authentication, database access, workflow worker or playable story yet. Packages are created when their first implementation needs them; the architecture diagram is not a directory checklist.
+The foundation contains a pnpm/Turborepo workspace, strict TypeScript configuration, a Next.js page, a NestJS HTTP process and an independently tested PostgreSQL package. The API does not use that package yet. There is no authentication, workflow worker or playable story. Packages are created when their first implementation needs them; the architecture diagram is not a directory checklist.
 
 ## Requirements and startup
 
@@ -47,6 +47,35 @@ The API test compiles with TypeScript's decorator metadata, boots Nest against a
 
 The health route indicates process liveness only. Database readiness, auth, SSE delivery and durable recovery are not implemented or tested by this route. Build success is not a gameplay test.
 
-`packages/config` currently exports only shared compiler settings. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add runtime contracts, database and deterministic workflow packages as the corresponding component is implemented and tested.
+`packages/config` currently exports only shared compiler settings. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add runtime contracts and deterministic workflow packages as the corresponding component is implemented and tested.
 
-Next: establish database migrations and the identity/session integration, then build the smallest persisted story flow. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.
+## PostgreSQL component
+
+`@offscreen/db` owns a process-local `pg` pool and exposes Drizzle as `database.db`. It has no dependency on Nest, Next, Temporal or game policy. Consumers create one instance per process, supply a synchronous background-error handler and call `close()` during shutdown. Importing the package opens no connections. `checkConnection()` performs a real query; it does not check schema compatibility.
+
+`readDatabaseConfig(process.env)` requires an explicit `DATABASE_URL` pointing to a named PostgreSQL database. It does not load `.env` or fall back to a developer's database. Configuration errors report field names rather than supplied values. Optional positive integer settings are `DB_POOL_MAX` (default 5, maximum 100), `DB_CONNECT_TIMEOUT_MS` (5000, maximum 60000), `DB_STATEMENT_TIMEOUT_MS` and `DB_IDLE_TRANSACTION_TIMEOUT_MS` (both 10000, maximum 300000). Idle pool connections expire after 30 seconds. These are per-process limits; replicas multiply the total. Deployment TLS/CA settings must match the chosen database service; the package does not disable certificate verification.
+
+Use `database.db.transaction(async (tx) => { ... })` for atomic operations and issue every participating query through `tx`. Do not make network/LLM calls while holding a transaction. There is no automatic transaction retry: the application operation must decide whether retry is safe. Close drains checked-out connections; callers must finish their operations, and process-level shutdown deadlines remain a deployment responsibility. Background error handlers must avoid logging credentials, raw SQL or sensitive error details.
+
+`@offscreen/db/migrate` exports `applyMigrations(config, folder)` for a Drizzle migration directory. It opens its own connection, takes a database-scoped advisory lock and invokes Drizzle's migrator. A competing runner fails promptly with a retry message. Closing the connection releases the lock even after SQL failure. Run migrations as a separate deployment operation, never implicitly on API startup. The runtime database account should eventually have narrower permissions than the migration account.
+
+No application tables or production migration files are defined yet. Generate the auth library's actual schema during identity integration, review its SQL, and add its migration directory and CLI then. SQL under `packages/db/test/fixtures` is a disposable test fixture, not a proposed product model. Applied migration files must remain immutable; add a new migration instead of editing an applied one. The wrapper does not add checksum-drift detection beyond Drizzle's migration bookkeeping.
+
+Run database tests against a dedicated database named **offscreen_db_test**, separate from `offscreen`. With Compose running, create it once:
+
+```sh
+docker compose exec postgres createdb -U offscreen offscreen_db_test
+```
+
+In PowerShell:
+
+```powershell
+$env:DATABASE_TEST_URL = 'postgresql://offscreen:local-development-only@127.0.0.1:5432/offscreen_db_test'
+pnpm test:db
+```
+
+On macOS/Linux, prefix `pnpm test:db` with `DATABASE_TEST_URL='postgresql://offscreen:local-development-only@127.0.0.1:5432/offscreen_db_test'`. The command refuses a missing URL or a different database name. It creates/removes fixture tables and the Drizzle migration journal, so this database must be disposable and runs must not share it concurrently. CI provisions a fresh PostgreSQL service for this job. Integration tests run without Turbo caching; ordinary `pnpm test` remains usable without PostgreSQL.
+
+The suite checks migration reruns and contention, failed-DDL rollback, transaction rollback on a constraint error, statement cancellation, pool exhaustion/recovery, idle-connection failure/reconnection and repeatable shutdown. It does not yet prove OAuth persistence, story isolation or workflow recovery.
+
+Next: integrate identity/sessions and their reviewed schema, then build the smallest persisted story flow. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.
