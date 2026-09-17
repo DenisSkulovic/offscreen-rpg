@@ -11,7 +11,9 @@ export function StoryHistoryView({ storyId }: { storyId: string }) {
   const [error, setError] = useState('');
   const inFlight = useRef(false);
   async function load(before?: number) {
-    if (inFlight.current) return;
+    if (inFlight.current) {
+      return;
+    }
     inFlight.current = true;
     setPending(true);
     setError('');
@@ -21,7 +23,9 @@ export function StoryHistoryView({ storyId }: { storyId: string }) {
         cache: 'no-store',
         signal: AbortSignal.timeout(10000),
       });
-      if (!response.ok) throw new Error('Unavailable');
+      if (!response.ok) {
+        throw new Error('Unavailable');
+      }
       setPage(storyHistorySchema.parse(await response.json()));
     } catch {
       setError(
@@ -58,7 +62,13 @@ export function StoryHistoryView({ storyId }: { storyId: string }) {
           {page.nextBefore !== null && (
             <button
               disabled={pending}
-              onClick={() => void load(page.nextBefore!)}
+              onClick={() => {
+                const olderThan = page.nextBefore;
+                if (olderThan === null) {
+                  return;
+                }
+                void load(olderThan);
+              }}
             >
               Read older passages
             </button>

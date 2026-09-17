@@ -4,6 +4,7 @@ import {
   interactionSubmissionSchema,
 } from '@offscreen/contracts/interactions';
 import {
+  controlIntervalSchema,
   itemTransferSchema,
   passageContentSchema,
   storyItemsSchema,
@@ -32,6 +33,7 @@ export const continuationSchema = z.strictObject({
 
 export type InitialStory = z.infer<typeof initialStorySchema>;
 export type StoryContinuation = z.infer<typeof continuationSchema>;
+export type IntervalControl = z.infer<typeof controlIntervalSchema>;
 
 function passageContentMatches(
   passage: typeof storyPassage.$inferSelect,
@@ -88,13 +90,94 @@ export function continuationRetryMatches(
 }
 
 export function hasValidDecisionDefault(input: StoryContinuation) {
-  if (!input.decision) {
+  const decision = input.decision;
+  if (!decision) {
     return true;
   }
   if (!input.interaction || input.wait) {
     return false;
   }
   return input.interaction.options.some(
-    (option) => option.id === input.decision?.defaultOptionId,
+    (option) => option.id === decision.defaultOptionId,
   );
+}
+
+export function continuationIncludesWaitWithOffer(input: StoryContinuation) {
+  return Boolean(input.wait && input.interaction !== null);
+}
+
+export function continuationResponseProvenance(args: {
+  response: StoryContinuation['response'];
+  completingDecisionPassageId: string | undefined;
+}): 'player' | 'default' | null {
+  if (args.response === null) {
+    return null;
+  }
+  if (args.completingDecisionPassageId) {
+    return 'default';
+  }
+  return 'player';
+}
+
+export function activeWaitBlocksContinuation(args: {
+  waitPlan: unknown;
+  currentPassageId: string;
+  completingIntervalPassageId: string | undefined;
+}) {
+  return (
+    args.waitPlan !== null &&
+    args.completingIntervalPassageId !== args.currentPassageId
+  );
+}
+
+export function continuationMissesResponseDeadline(args: {
+  currentPassageId: string;
+  expired: boolean;
+  completingDecisionPassageId: string | undefined;
+}) {
+  const applyingSavedDefault =
+    args.completingDecisionPassageId === args.currentPassageId;
+  if (applyingSavedDefault) {
+    return !args.expired;
+  }
+  return args.expired;
+}
+
+export function intervalControlReceiptMatches(
+  storedRequest: unknown,
+  input: IntervalControl,
+) {
+  return isDeepStrictEqual(controlIntervalSchema.parse(storedRequest), input);
+}
+
+export function isControllableInterval<
+  Interval extends {
+    intervalVersion: number;
+    waitPlan: unknown;
+    controlRevision: number;
+  },
+>(
+  interval: Interval | undefined,
+  expectedControlRevision: number,
+): interval is Interval {
+  return (
+    interval !== undefined &&
+    interval.intervalVersion === 1 &&
+    interval.waitPlan !== null &&
+    interval.controlRevision === expectedControlRevision
+  );
+}
+
+export function heldRemainderMs(
+  remainingMs: number | null,
+): remainingMs is number {
+  return remainingMs !== null;
+}
+
+export function pauseIsRejectedAfterCutoff(args: {
+  remainingMs: number | null;
+  dueAtMs: number;
+  nowMs: number;
+}) {
+  return args.remainingMs !== null || args.dueAtMs <= args.nowMs;
 }

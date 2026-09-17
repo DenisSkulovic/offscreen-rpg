@@ -16,8 +16,9 @@ import { authOptions, createAuth } from '../src/auth/auth.js';
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
 const smoke = process.argv.includes('--smoke');
-if (process.argv.slice(2).some((arg) => arg !== '--smoke'))
+if (process.argv.slice(2).some((arg) => arg !== '--smoke')) {
   throw new Error('Only --smoke is supported.');
+}
 const origin = 'http://127.0.0.1:3100';
 const databaseURL =
   process.env['CHAMBER_DATABASE_URL'] ??
@@ -33,19 +34,35 @@ if (
     'Chamber requires the local offscreen_chamber database, without connection query overrides.',
   );
 }
+function sessionCookiesFromLogin(
+  cookieHeader: string | null,
+  cookieOrigin: string,
+) {
+  if (!cookieHeader) {
+    throw new Error('Provisioning did not return a session cookie');
+  }
+  return cookieHeader.split(';').map((part) => {
+    const at = part.indexOf('=');
+    return {
+      name: part.slice(0, at).trim(),
+      value: part.slice(at + 1).trim(),
+      url: cookieOrigin,
+    };
+  });
+}
 async function requireFreePort(port: number) {
   const probe = createServer();
   await new Promise<void>((resolve, reject) => {
-    probe.once('error', () =>
+    probe.once('error', () => {
       reject(
         new Error(
           `Port ${port} is occupied. Stop that development process first.`,
         ),
-      ),
-    );
-    probe.listen(port, '127.0.0.1', () =>
-      probe.close((error) => (error ? reject(error) : resolve())),
-    );
+      );
+    });
+    probe.listen(port, '127.0.0.1', () => {
+      probe.close((error) => (error ? reject(error) : resolve()));
+    });
   });
 }
 await requireFreePort(3001);
@@ -60,8 +77,9 @@ try {
   const exists = await admin.db.$client.query(
     "SELECT 1 FROM pg_database WHERE datname = 'offscreen_chamber'",
   );
-  if (!exists.rowCount)
+  if (!exists.rowCount) {
     await admin.db.$client.query('CREATE DATABASE offscreen_chamber');
+  }
 } finally {
   await admin.close();
 }
@@ -101,7 +119,9 @@ const stop = () =>
   (stopping ??= (async () => {
     await browser?.close();
     await runtime?.stop();
-    if (web && web.exitCode === null) web.kill();
+    if (web && web.exitCode === null) {
+      web.kill();
+    }
     await webExit;
     await app.close();
     await database.close();
@@ -166,8 +186,9 @@ try {
   webExit = once(web, 'exit');
   let ready = false;
   for (let attempt = 0; attempt < 100; attempt++) {
-    if (web.exitCode !== null)
+    if (web.exitCode !== null) {
       throw new Error('Web server stopped during startup.');
+    }
     try {
       if ((await fetch(`${origin}/sign-in`)).ok) {
         ready = true;
@@ -178,21 +199,14 @@ try {
     }
     await delay(200);
   }
-  if (!ready) throw new Error('Web server did not become ready.');
+  if (!ready) {
+    throw new Error('Web server did not become ready.');
+  }
   browser = await chromium.launch({ headless: smoke });
-  const context = await browser.newContext();
+  const launchedBrowser = browser;
+  const context = await launchedBrowser.newContext();
   await context.addCookies(
-    login.headers
-      .get('cookie')!
-      .split(';')
-      .map((part) => {
-        const at = part.indexOf('=');
-        return {
-          name: part.slice(0, at).trim(),
-          value: part.slice(at + 1).trim(),
-          url: origin,
-        };
-      }),
+    sessionCookiesFromLogin(login.headers.get('cookie'), origin),
   );
   const page = await context.newPage();
   await page.goto(`${origin}/chamber`);
@@ -209,8 +223,9 @@ try {
       .getByText('Sealed letter — held by caretaker', { exact: true })
       .waitFor();
     const unauthenticated = await fetch(`${origin}/api/me`);
-    if (unauthenticated.status !== 401)
+    if (unauthenticated.status !== 401) {
       throw new Error('Anonymous access was not rejected.');
+    }
     console.log(
       'Local launcher smoke passed: authenticated play, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
     );
@@ -219,14 +234,18 @@ try {
       'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
     );
     await Promise.race([
-      new Promise<void>((resolve) =>
-        browser!.once('disconnected', () => resolve()),
-      ),
+      new Promise<void>((resolve) => {
+        launchedBrowser.once('disconnected', () => resolve());
+      }),
       runtime.done.then(() => {
-        if (!stopping) throw new Error('Worker stopped.');
+        if (!stopping) {
+          throw new Error('Worker stopped.');
+        }
       }),
       webExit.then(() => {
-        if (!stopping) throw new Error('Web server stopped.');
+        if (!stopping) {
+          throw new Error('Web server stopped.');
+        }
       }),
     ]);
   }

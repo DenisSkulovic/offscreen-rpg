@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import { draftListSchema, draftSchema } from '@offscreen/contracts/drafts';
+import { requireDefined } from './helpers/require.js';
 
 export async function checkDrafts(
   t: TestContext,
@@ -50,9 +51,11 @@ export async function checkDrafts(
         save(id, { ...base, title: 'Second edit', expectedRevision: 1 }),
       ]);
       assert.deepEqual(outcomes.map((r) => r.status).sort(), [200, 409]);
-      const winning = draftSchema.parse(
-        await outcomes.find((r) => r.status === 200)!.json(),
+      const winningResponse = requireDefined(
+        outcomes.find((r) => r.status === 200),
+        'Expected one successful simultaneous draft edit',
       );
+      const winning = draftSchema.parse(await winningResponse.json());
       assert.equal(winning.revision, 2);
       const retry = await save(id, {
         title: winning.title,

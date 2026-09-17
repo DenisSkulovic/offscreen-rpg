@@ -16,6 +16,7 @@ import { checkGenerations } from './generations.integration.js';
 import { checkOpeningHTTP } from './openings.integration.js';
 import { checkStories } from './stories.integration.js';
 import { startRuntime } from '@offscreen/worker/runtime';
+import { requireCookie } from './helpers/require.js';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
 if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
@@ -94,24 +95,19 @@ test(
         } catch {
           /* server starting */
         }
-        if (web.exitCode !== null)
+        if (web.exitCode !== null) {
           throw new Error('Web server exited during startup');
+        }
         await delay(200);
       }
       assert.ok(ready, 'Web server started');
       const login = await helpers.login({ userId: user.id });
-      const cookie = login.headers.get('cookie')!;
+      const cookie = requireCookie(login.headers);
       const otherLogin = await helpers.login({ userId: otherUser.id });
-      await checkDrafts(t, origin, cookie, otherLogin.headers.get('cookie')!);
+      const otherCookie = requireCookie(otherLogin.headers);
+      await checkDrafts(t, origin, cookie, otherCookie);
       await checkGenerations(t, database, user.id, otherUser.id);
-      await checkOpeningHTTP(
-        t,
-        database,
-        user.id,
-        origin,
-        cookie,
-        otherLogin.headers.get('cookie')!,
-      );
+      await checkOpeningHTTP(t, database, user.id, origin, cookie, otherCookie);
       const restartWorker = async () => {
         await runtime?.stop();
         runtime = await startRuntime(
@@ -132,7 +128,7 @@ test(
         user.id,
         origin,
         cookie,
-        otherLogin.headers.get('cookie')!,
+        otherCookie,
         restartWorker,
       );
 

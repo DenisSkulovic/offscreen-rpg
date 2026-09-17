@@ -13,6 +13,7 @@ import {
   latestOpeningSchema,
   openingPreviewSchema,
 } from '@offscreen/contracts/openings';
+import { requireDefined } from './helpers/require.js';
 
 export async function checkOpeningHTTP(
   t: TestContext,
@@ -85,12 +86,18 @@ export async function checkOpeningHTTP(
         1,
         'concurrent relays do not share an active lease',
       );
-      const abandoned = claims.find(Boolean)!;
+      const abandoned = requireDefined(
+        claims.find(Boolean),
+        'Expected one leased outbox notice',
+      );
       await database.db.$client.query(
         "UPDATE outbox SET available_at = now() - interval '1 second' WHERE id = $1",
         [id],
       );
-      const reclaimed = (await outbox.claim([scriptedOpeningTopic]))!;
+      const reclaimed = requireDefined(
+        await outbox.claim([scriptedOpeningTopic]),
+        'Expected reclaim after lease expiry',
+      );
       assert.notEqual(reclaimed.leaseId, abandoned.leaseId);
       await outbox.acknowledge(abandoned);
       assert.equal(
@@ -115,12 +122,18 @@ export async function checkOpeningHTTP(
       let runtime = await startRuntime(database, config, () => {});
       try {
         for (let n = 0; n < 100; n++) {
-          preview = latestOpeningSchema.parse(
-            await (
-              await fetch(`${url}/latest`, { headers: { cookie } })
-            ).json(),
-          ).preview!;
-          if (preview.state === 'succeeded') break;
+          const latest = requireDefined(
+            latestOpeningSchema.parse(
+              await (
+                await fetch(`${url}/latest`, { headers: { cookie } })
+              ).json(),
+            ).preview,
+            'Expected opening preview while waiting for completion',
+          );
+          preview = latest;
+          if (latest.state === 'succeeded') {
+            break;
+          }
           await delay(100);
         }
         assert.equal(
@@ -167,7 +180,9 @@ export async function checkOpeningHTTP(
               )
             ).rows[0].delivered_at,
           );
-          if (delivered) break;
+          if (delivered) {
+            break;
+          }
           await delay(100);
         }
         assert.ok(delivered, 'restarted relay acknowledges duplicate start');

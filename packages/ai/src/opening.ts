@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { draftSchema } from '@offscreen/contracts/drafts';
+import { premiseContentSchema } from './premise';
 
 // Only narrative content comes from the model. Source identity stays outside it.
 export const openingOutputSchema = z.strictObject({
@@ -29,9 +30,13 @@ export class OpeningInputError extends Error {
 /** Called with an owned, saved draft; this function does not authorize access. */
 export function prepareOpening(draft: unknown) {
   const parsed = draftSchema.safeParse(draft);
-  if (!parsed.success) throw new OpeningInputError('invalid_draft');
+  if (!parsed.success) {
+    throw new OpeningInputError('invalid_draft');
+  }
   const { id, revision, title, premise, storytellingDirection } = parsed.data;
-  if (!premise.trim()) throw new OpeningInputError('premise_required');
+  if (!premise.trim()) {
+    throw new OpeningInputError('premise_required');
+  }
 
   // Strings are copied from the validated snapshot; later edits cannot alter it.
   return Object.freeze({
@@ -53,11 +58,7 @@ export const openingArtifactSchema = z.strictObject({
     draftId: z.uuid(),
     draftRevision: z.number().int().positive(),
   }),
-  content: z.strictObject({
-    title: z.string().max(160),
-    premise: z.string().max(6000).regex(/\S/),
-    storytellingDirection: z.string().max(2000),
-  }),
+  content: premiseContentSchema,
   request: z.strictObject({
     messages: z.tuple([
       z.strictObject({ role: z.literal('system'), content: z.string() }),

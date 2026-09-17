@@ -1,43 +1,23 @@
-import {
-  Client,
-  Connection,
-  WorkflowExecutionAlreadyStartedError,
-} from '@temporalio/client';
-import { Worker, NativeConnection } from '@temporalio/worker';
+import { Client, Connection } from '@temporalio/client';
+import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
 import { createOutbox } from '@offscreen/server/outbox';
-import {
-  createScriptedOpenings,
-  scriptedOpeningTopic,
-} from '@offscreen/server/scripted-openings';
-import { GenerationError } from '@offscreen/server/generations';
-import {
-  createStories,
-  StoryError,
-  storyIntervalTopic,
-  controlledIntervalTopic,
-  intervalWakeTopic,
-  decisionDeadlineTopic,
-} from '@offscreen/server/stories';
-import { ApplicationFailure } from '@temporalio/client';
-import {
-  openingWorkflowId,
-  openingWorkflowType,
-  intervalWorkflowType,
-  intervalWorkflowId,
-  controlledIntervalWorkflowType,
-  controlledIntervalWorkflowId,
-  intervalChangedSignal,
-  decisionWorkflowType,
-  decisionWorkflowId,
-} from '@offscreen/workflows/contracts';
-import type {
-  OpeningActivities,
-  IntervalActivities,
-  DecisionActivities,
-} from '@offscreen/workflows/contracts';
+import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
+import { createStories } from '@offscreen/server/stories';
+import { createWorkerActivities } from './activities';
 import type { WorkerConfig } from './config';
+import { deliverOutboxNotice, dispatchedNoticeTopics } from './dispatch';
 import { relayOne, runRelay } from './relay';
+
+async function closeWorkerConnections(args: {
+  native: NativeConnection | undefined;
+  connection: Connection;
+}) {
+  if (args.native) {
+    await args.native.close();
+  }
+  await args.connection.close();
+}
 
 /** Explicit lifecycle: importing this module never connects or starts processing. */
 export async function startRuntime(
@@ -50,73 +30,11 @@ export async function startRuntime(
   try {
     native = await NativeConnection.connect({ address: config.address });
     const client = new Client({ connection, namespace: config.namespace });
-    const openings = createScriptedOpenings(database);
     const stories = createStories(database);
-    const activities: OpeningActivities &
-      IntervalActivities &
-      DecisionActivities = {
-      async resolveStoryDecision(id) {
-        try {
-          return await stories.resolveDecision(id);
-        } catch (error) {
-          if (error instanceof StoryError)
-            throw ApplicationFailure.nonRetryable(
-              error.code,
-              'DecisionStateError',
-            );
-          throw ApplicationFailure.retryable(
-            'Story storage unavailable',
-            'StorageUnavailable',
-          );
-        }
-      },
-      async advanceControlledInterval(id) {
-        try {
-          return await stories.advanceInterval(id);
-        } catch (error) {
-          if (error instanceof StoryError)
-            throw ApplicationFailure.nonRetryable(
-              error.code,
-              'IntervalStateError',
-            );
-          throw ApplicationFailure.retryable(
-            'Story storage unavailable',
-            'StorageUnavailable',
-          );
-        }
-      },
-      async advanceStoryInterval(id) {
-        try {
-          return await stories.advanceInterval(id);
-        } catch (error) {
-          if (error instanceof StoryError)
-            throw ApplicationFailure.nonRetryable(
-              error.code,
-              'IntervalStateError',
-            );
-          throw ApplicationFailure.retryable(
-            'Story storage unavailable',
-            'StorageUnavailable',
-          );
-        }
-      },
-      async completeScriptedOpening(id) {
-        try {
-          await openings.complete(id);
-        } catch (error) {
-          if (error instanceof GenerationError)
-            throw ApplicationFailure.nonRetryable(
-              error.code,
-              'OpeningStateError',
-            );
-          // Avoid putting driver errors, SQL or request content in workflow history.
-          throw ApplicationFailure.retryable(
-            'Opening storage unavailable',
-            'StorageUnavailable',
-          );
-        }
-      },
-    };
+    const activities = createWorkerActivities({
+      stories,
+      openings: createScriptedOpenings(database),
+    });
     const worker = await Worker.create({
       connection: native,
       namespace: config.namespace,
@@ -131,57 +49,15 @@ export async function startRuntime(
     const work = worker.run();
     const relay = runRelay(
       () =>
-        relayOne(
-          outbox,
-          [
-            scriptedOpeningTopic,
-            storyIntervalTopic,
-            controlledIntervalTopic,
-            intervalWakeTopic,
-            decisionDeadlineTopic,
-          ],
-          async (notice) => {
-            if (notice.topic === intervalWakeTopic) {
-              if (await stories.intervalNeedsWake(notice.operationId)) {
-                await connection.withDeadline(Date.now() + 10000, () =>
-                  client.workflow
-                    .getHandle(controlledIntervalWorkflowId(notice.operationId))
-                    .signal(intervalChangedSignal),
-                );
-              }
-              return;
-            }
-            try {
-              await connection.withDeadline(Date.now() + 10000, () =>
-                client.workflow.start(
-                  notice.topic === decisionDeadlineTopic
-                    ? decisionWorkflowType
-                    : notice.topic === controlledIntervalTopic
-                      ? controlledIntervalWorkflowType
-                      : notice.topic === storyIntervalTopic
-                        ? intervalWorkflowType
-                        : openingWorkflowType,
-                  {
-                    workflowId:
-                      notice.topic === decisionDeadlineTopic
-                        ? decisionWorkflowId(notice.operationId)
-                        : notice.topic === controlledIntervalTopic
-                          ? controlledIntervalWorkflowId(notice.operationId)
-                          : notice.topic === storyIntervalTopic
-                            ? intervalWorkflowId(notice.operationId)
-                            : openingWorkflowId(notice.operationId),
-                    taskQueue: config.taskQueue,
-                    workflowIdReusePolicy: 'REJECT_DUPLICATE',
-                    args: [notice.operationId],
-                  },
-                ),
-              );
-            } catch (error) {
-              if (!(error instanceof WorkflowExecutionAlreadyStartedError))
-                throw error;
-            }
-          },
-        ),
+        relayOne(outbox, dispatchedNoticeTopics, async (notice) => {
+          await deliverOutboxNotice(notice, {
+            connection,
+            client,
+            taskQueue: config.taskQueue,
+            intervalNeedsWake: (intervalId) =>
+              stories.intervalNeedsWake(intervalId),
+          });
+        }),
       controller.signal,
       report,
     );
@@ -195,17 +71,17 @@ export async function startRuntime(
         return (stopping ??= (async () => {
           controller.abort();
           await relay;
-          if (worker.getState() === 'RUNNING') worker.shutdown();
+          if (worker.getState() === 'RUNNING') {
+            worker.shutdown();
+          }
           await work.finally(async () => {
-            await native!.close();
-            await connection.close();
+            await closeWorkerConnections({ native, connection });
           });
         })());
       },
     };
   } catch (error) {
-    await native?.close();
-    await connection.close();
+    await closeWorkerConnections({ native, connection });
     throw error;
   }
 }

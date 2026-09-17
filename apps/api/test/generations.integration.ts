@@ -9,6 +9,7 @@ import {
   GenerationError,
 } from '@offscreen/server/generations';
 import { z } from 'zod';
+import { requireDefined } from './helpers/require.js';
 
 export async function checkGenerations(
   t: TestContext,
@@ -73,17 +74,25 @@ export async function checkGenerations(
         attempts.map((attempt) => openings.claim(owner, id, attempt)),
       );
       assert.equal(claims.filter((claim) => claim.claimed).length, 1);
-      const attempt = attempts[claims.findIndex((claim) => claim.claimed)]!;
+      const attempt = requireDefined(
+        attempts[claims.findIndex((claim) => claim.claimed)],
+        'Expected one successful claim attempt',
+      );
       let calls = 0;
       const fake = () => {
         calls++;
         return { opening: 'The bird wakes beneath a flickering star chart.' };
       };
       const results = claims.filter((claim) => claim.claimed).map(() => fake());
-      const result = results[0]!;
+      const result = requireDefined(
+        results[0],
+        'Expected fake generation output',
+      );
       const restarted = createOpenings(database);
       const retryClaim = await restarted.claim(owner, id, attempt);
-      if (retryClaim.claimed) fake();
+      if (retryClaim.claimed) {
+        fake();
+      }
       assert.equal(retryClaim.claimed, false);
       assert.equal((await restarted.read(owner, id)).attemptId, attempt);
       const saved = await restarted.settle(owner, id, attempt, {

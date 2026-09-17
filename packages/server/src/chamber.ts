@@ -1,315 +1,93 @@
-import type { Database } from '@offscreen/db';
-import { createStories, StoryError } from './stories';
-import { and, eq } from 'drizzle-orm';
-import { story } from '@offscreen/db/story-schema';
 import { respondToStorySchema } from '@offscreen/contracts/stories';
+import type { Database } from '@offscreen/db';
+import { story } from '@offscreen/db/story-schema';
+import { and, eq } from 'drizzle-orm';
+import {
+  chamberAllowsResponse,
+  chamberOpeningFor,
+  selectChamberFixture,
+  type ChamberScenario,
+} from './chamber-fixtures';
+import { createStories, StoryError } from './stories';
 
-// Preserve this version: a new fixture meaning gets a new source key.
-const opening = {
-  source: 'chamber.v1',
-  content: {
-    version: 1,
-    title: 'A gate and a small decision.',
-    paragraphs: [
-      'You stand in a quiet chamber. A closed gate faces you. Beside it, a shallow slot bears the outline of a token.',
-      'This saved scene is the first piece of the testing chamber. Choices and timed progression are not connected yet.',
-    ],
-  },
-  interaction: {
-    kind: 'choice.v1',
-    prompt: 'How would you proceed?',
-    options: [
-      {
-        id: 'offer-token',
-        label: 'Offer a token',
-        description:
-          'The next implementation slice will validate possessions and apply this consequence.',
-      },
-      { id: 'remain', label: 'Remain in the chamber' },
-    ],
-  },
-};
 export function createChamber(database: Database) {
   const stories = createStories(database);
-  async function source(owner: string, id: string) {
+
+  async function ownedSource(identity: { ownerId: string; storyId: string }) {
     const [row] = await database.db
       .select({ source: story.source })
       .from(story)
-      .where(and(eq(story.id, id), eq(story.ownerId, owner)));
-    if (!row) throw new StoryError('not_found');
+      .where(
+        and(
+          eq(story.id, identity.storyId),
+          eq(story.ownerId, identity.ownerId),
+        ),
+      );
+    if (!row) {
+      throw new StoryError('not_found');
+    }
     return row.source;
   }
-  async function read(owner: string, id: string) {
-    const snapshot = await stories.read(owner, id);
+
+  async function read(ownerId: string, storyId: string) {
+    const snapshot = await stories.read(ownerId, storyId);
+    const source = await ownedSource({ ownerId, storyId });
     return {
       ...snapshot,
       canRespond:
-        ['chamber.v2', 'chamber.v3', 'chamber.v4', 'chamber.v5'].includes(
-          await source(owner, id),
-        ) && snapshot.current.interaction !== null,
+        chamberAllowsResponse(source) && snapshot.current.interaction !== null,
     };
   }
+
   return {
     async start(
-      owner: string,
-      id: string,
-      scenario:
-        | 'chamber.v1'
-        | 'chamber.v2'
-        | 'chamber.v3'
-        | 'chamber.v4'
-        | 'chamber.v5' = 'chamber.v1',
+      ownerId: string,
+      storyId: string,
+      scenario: ChamberScenario = 'chamber.v1',
     ) {
-      await stories.initialize(
-        owner,
-        id,
-        scenario === 'chamber.v1'
-          ? opening
-          : scenario === 'chamber.v2'
-            ? playableOpening
-            : scenario === 'chamber.v5'
-              ? itemOpening
-              : scenario === 'chamber.v4'
-                ? { ...playableOpening, source: 'chamber.v4' }
-                : timedOpening,
-      );
-      return read(owner, id);
+      await stories.initialize(ownerId, storyId, chamberOpeningFor(scenario));
+      return read(ownerId, storyId);
     },
     async respond(
-      owner: string,
-      id: string,
+      ownerId: string,
+      storyId: string,
       operationId: string,
       body: unknown,
     ) {
       const parsed = respondToStorySchema.safeParse(body);
-      if (!parsed.success) throw new StoryError('invalid');
-      await stories.read(owner, id);
-      const scenario = await source(owner, id);
-      if (
-        !['chamber.v2', 'chamber.v3', 'chamber.v4', 'chamber.v5'].includes(
-          scenario,
-        )
-      )
+      if (!parsed.success) {
+        throw new StoryError('invalid');
+      }
+      await stories.read(ownerId, storyId);
+      const source = await ownedSource({ ownerId, storyId });
+      const fixture = selectChamberFixture(source);
+      if (!fixture?.respond) {
         throw new StoryError('conflict');
+      }
       const { expectedRevision, submission } = parsed.data;
       // Pure, versioned fixture policy. Resolve from the submitted base revision
       // so an acknowledged-late retry proposes the same outcome after progression.
-      const outcome =
-        scenario === 'chamber.v5'
-          ? itemContinuation(expectedRevision, submission.answer.optionId)
-          : scenario === 'chamber.v4'
-            ? deadlineContinuation(expectedRevision, submission.answer.optionId)
-            : scenario === 'chamber.v3'
-              ? timedContinuation(expectedRevision, submission.answer.optionId)
-              : continuation(expectedRevision, submission.answer.optionId);
-      await stories.append(owner, id, operationId, {
+      const outcome = fixture.respond(
+        expectedRevision,
+        submission.answer.optionId,
+      );
+      await stories.append(ownerId, storyId, operationId, {
         expectedRevision,
         response: submission,
         ...outcome,
       });
-      return read(owner, id);
+      return read(ownerId, storyId);
     },
     read,
     async control(
-      owner: string,
-      id: string,
+      ownerId: string,
+      storyId: string,
       operationId: string,
       body: unknown,
     ) {
-      await stories.controlInterval(owner, id, operationId, body);
-      return read(owner, id);
+      await stories.controlInterval(ownerId, storyId, operationId, body);
+      return read(ownerId, storyId);
     },
     history: stories.history,
-  };
-}
-
-const playableOpening = {
-  source: 'chamber.v2',
-  content: {
-    version: 1,
-    title: 'A gate and a small decision.',
-    paragraphs: [
-      'You stand in a quiet chamber. Beyond a wooden gate, someone is humming.',
-    ],
-  },
-  interaction: {
-    kind: 'choice.v1',
-    prompt: 'What do you do?',
-    options: [
-      { id: 'approach', label: 'Approach the gate' },
-      { id: 'leave', label: 'Leave the chamber' },
-    ],
-  },
-};
-function continuation(revision: number, option: string) {
-  if (revision === 1 && option === 'approach')
-    return {
-      content: {
-        version: 1,
-        title: 'At the gate.',
-        paragraphs: [
-          'You approach. The humming stops. A voice asks who is there.',
-        ],
-      },
-      interaction: {
-        kind: 'choice.v1',
-        prompt: 'How do you reply?',
-        options: [
-          { id: 'joke', label: 'Tell a joke' },
-          { id: 'leave', label: 'Say goodbye and leave' },
-        ],
-      },
-    };
-  if ((revision === 1 || revision === 2) && option === 'leave')
-    return {
-      content: {
-        version: 1,
-        title: 'A quiet departure.',
-        paragraphs: ['You leave the chamber. This little visit is over.'],
-      },
-      interaction: null,
-    };
-  if (revision === 2 && option === 'joke')
-    return {
-      content: {
-        version: 1,
-        title: 'Someone laughs.',
-        paragraphs: [
-          '“I was going to tell a joke about a gate, but I could not find an opening.”',
-          'A laugh comes from the other side. You exchange goodbyes, and your visit ends.',
-        ],
-      },
-      interaction: null,
-    };
-  throw new StoryError('conflict');
-}
-
-const timedOpening = {
-  source: 'chamber.v3',
-  content: {
-    version: 1,
-    title: 'A visit across the courtyard.',
-    paragraphs: ['You are at home. A friend is waiting in the courtyard cafe.'],
-  },
-  interaction: {
-    kind: 'choice.v1',
-    prompt: 'What would you like to do?',
-    options: [
-      { id: 'visit', label: 'Walk to the cafe (20 seconds)' },
-      { id: 'leave', label: 'Stay home and end this visit' },
-    ],
-  },
-};
-function timedContinuation(revision: number, option: string) {
-  if (revision === 1 && option === 'visit')
-    return {
-      content: {
-        version: 1,
-        title: 'Crossing the courtyard.',
-        paragraphs: [
-          'You set out toward the cafe. You may close this page; the visit will continue.',
-        ],
-      },
-      interaction: null,
-      wait: {
-        version: 1,
-        realDurationMs: 20000,
-        gameDurationMs: 600000,
-        arrival: {
-          content: {
-            version: 1,
-            title: 'At the cafe.',
-            paragraphs: [
-              'You arrive after ten minutes in the story. Your friend waves you over.',
-            ],
-          },
-          interaction: {
-            kind: 'choice.v1',
-            prompt: 'How do you greet your friend?',
-            options: [
-              { id: 'joke', label: 'Tell a joke' },
-              { id: 'leave', label: 'Say goodbye and leave' },
-            ],
-          },
-        },
-      },
-    };
-  if (revision === 1 && option === 'leave') return continuation(1, 'leave');
-  if (revision === 3 && option === 'leave') return continuation(2, 'leave');
-  if (revision === 3 && option === 'joke')
-    return {
-      content: {
-        version: 1,
-        title: 'Coffee and a laugh.',
-        paragraphs: [
-          '“I tried to catch the fog on my way here. Mist.” Your friend groans, then laughs. You enjoy your coffee and head home.',
-        ],
-      },
-      interaction: null,
-    };
-  throw new StoryError('conflict');
-}
-
-function deadlineContinuation(revision: number, option: string) {
-  const outcome = continuation(revision, option);
-  if (revision === 1 && option === 'approach')
-    return {
-      ...outcome,
-      decision: {
-        version: 1,
-        responseDurationMs: 15000,
-        defaultOptionId: 'leave',
-        outcome: continuation(2, 'leave'),
-      },
-    };
-  return outcome;
-}
-
-const itemOpening = {
-  source: 'chamber.v5',
-  content: {
-    version: 1,
-    title: 'A letter to deliver.',
-    paragraphs: [
-      'You carry a sealed letter. The caretaker is waiting by the gate.',
-    ],
-  },
-  items: [
-    { key: 'sealed-letter', label: 'Sealed letter', holderKey: 'courier' },
-  ],
-  interaction: {
-    kind: 'choice.v1',
-    prompt: 'What do you do?',
-    options: [
-      { id: 'deliver', label: 'Give the letter to the caretaker' },
-      { id: 'keep', label: 'Keep the letter and leave' },
-    ],
-  },
-};
-function itemContinuation(revision: number, option: string) {
-  if (revision !== 1 || !['deliver', 'keep'].includes(option))
-    throw new StoryError('conflict');
-  return {
-    content: {
-      version: 1,
-      title: option === 'deliver' ? 'Letter delivered.' : 'Letter kept.',
-      paragraphs: [
-        option === 'deliver'
-          ? 'The caretaker accepts the sealed letter. Your delivery is complete.'
-          : 'You leave with the sealed letter still in your possession.',
-      ],
-    },
-    interaction: null,
-    effects:
-      option === 'deliver'
-        ? [
-            {
-              kind: 'item.transfer.v1',
-              itemKey: 'sealed-letter',
-              fromHolder: 'courier',
-              toHolder: 'caretaker',
-            },
-          ]
-        : [],
   };
 }
