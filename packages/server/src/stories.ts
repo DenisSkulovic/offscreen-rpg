@@ -1,8 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { and, eq, sql } from 'drizzle-orm';
-import { z } from 'zod';
 import { enqueue, type Transaction } from './outbox';
+import {
+  continuationRetryMatches,
+  continuationSchema,
+  hasValidDecisionDefault,
+  initializationMatches,
+  initialStorySchema,
+  type StoryContinuation,
+} from './story-command-policy';
 import { StoryError, parseStoryIdentifier } from './story-errors';
 import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 import { createStoryReads } from './story-reads';
@@ -17,49 +24,13 @@ import {
   storyControl,
   storyItem,
 } from '@offscreen/db/story-schema';
+import { controlIntervalSchema } from '@offscreen/contracts/stories';
 import {
-  passageContentSchema,
-  controlIntervalSchema,
-  storyItemsSchema,
-  itemTransferSchema,
-} from '@offscreen/contracts/stories';
-import {
-  interactionSpecificationSchema,
   interactionSchema,
-  interactionSubmissionSchema,
   validateInteractionSubmission,
   InteractionInputError,
 } from '@offscreen/contracts/interactions';
 
-const initialSchema = z.strictObject({
-  source: z.string().min(1).max(100),
-  items: storyItemsSchema.default([]),
-  content: passageContentSchema,
-  interaction: interactionSpecificationSchema.nullable(),
-});
-const continuationSchema = z.strictObject({
-  expectedRevision: z.number().int().positive().max(2147483646),
-  effects: z.array(itemTransferSchema).max(20).default([]),
-  content: passageContentSchema,
-  interaction: interactionSpecificationSchema.nullable(),
-  response: interactionSubmissionSchema.nullable().default(null),
-  wait: waitPlanSchema.nullable().default(null),
-  decision: decisionPlanSchema.nullable().default(null),
-});
-function matchesPassage(
-  passage: typeof storyPassage.$inferSelect,
-  input: z.infer<typeof continuationSchema> | z.infer<typeof initialSchema>,
-) {
-  return (
-    isDeepStrictEqual(passage.content, input.content) &&
-    isDeepStrictEqual(
-      passage.interaction
-        ? interactionSchema.parse(passage.interaction).specification
-        : null,
-      input.interaction,
-    )
-  );
-}
 function identifier(value: unknown) {
   return parseStoryIdentifier(value);
 }
@@ -74,7 +45,7 @@ export function createStories(database: Database) {
     owner: string,
     id: string,
     transitionId: string,
-    input: z.infer<typeof continuationSchema>,
+    input: StoryContinuation,
     completingInterval?: string,
     completingDecision?: string,
   ) {
@@ -95,27 +66,7 @@ export function createStories(database: Database) {
       );
     // Check retries before the current revision: the story may have moved on.
     if (prior) {
-      if (
-        prior.sequence !== input.expectedRevision + 1 ||
-        !matchesPassage(prior, input) ||
-        !isDeepStrictEqual(prior.effects ?? [], input.effects) ||
-        !isDeepStrictEqual(
-          prior.decisionPlan === null
-            ? null
-            : decisionPlanSchema.parse(prior.decisionPlan),
-          input.decision,
-        ) ||
-        !isDeepStrictEqual(
-          prior.waitPlan === null ? null : waitPlanSchema.parse(prior.waitPlan),
-          input.wait,
-        ) ||
-        !isDeepStrictEqual(
-          prior.response === null
-            ? null
-            : interactionSubmissionSchema.parse(prior.response),
-          input.response,
-        )
-      )
+      if (!continuationRetryMatches(prior, input))
         throw new StoryError('conflict');
       return;
     }
@@ -143,15 +94,7 @@ export function createStories(database: Database) {
       if (completingDecision === active.id ? !expired : expired)
         throw new StoryError('conflict');
     }
-    if (
-      input.decision &&
-      (!input.interaction ||
-        input.wait ||
-        !input.interaction.options.some(
-          (option) => option.id === input.decision!.defaultOptionId,
-        ))
-    )
-      throw new StoryError('invalid');
+    if (!hasValidDecisionDefault(input)) throw new StoryError('invalid');
     if (active.interaction !== null) {
       if (input.response === null) throw new StoryError('conflict');
       try {
@@ -462,7 +405,7 @@ export function createStories(database: Database) {
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(owner: string, id: string, initial: unknown) {
       identifier(id);
-      const input = initialSchema.parse(initial);
+      const input = initialStorySchema.parse(initial);
       await database.db.transaction(async (tx) => {
         const inserted = await tx
           .insert(story)
@@ -480,11 +423,7 @@ export function createStories(database: Database) {
             .where(
               and(eq(storyPassage.storyId, id), eq(storyPassage.sequence, 1)),
             );
-          if (
-            !first ||
-            !matchesPassage(first, input) ||
-            !isDeepStrictEqual(first.initialItems ?? [], input.items)
-          )
+          if (!first || !initializationMatches(first, input))
             throw new StoryError('conflict');
           return;
         }

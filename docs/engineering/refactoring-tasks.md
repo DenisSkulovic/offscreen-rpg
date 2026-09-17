@@ -29,7 +29,7 @@ Scope: `packages/server/src/stories.ts`, its package exports and existing story 
 
 Done: an engineer can find the snapshot/history query without reading all commands; existing read/reopen/history and isolation tests pass; no outward DTO or query behavior changes.
 
-### 2. Separate story commands, policy and persistence — pending
+### 2. Separate story commands, policy and persistence — in progress
 
 Depends on task 1. Scope: story initialization, continuation commit, item effects, control receipts and timing operations currently in `packages/server/src/stories.ts`; internal consumers.
 
