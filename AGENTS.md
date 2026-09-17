@@ -18,4 +18,10 @@ Progress in balanced passes: establish the main component boundaries and represe
 - Add documents or infrastructure only when current work needs them. Do not initiate paid calls or deployment merely to flesh out an idea.
 - Git is authoritative. Keep private context, credentials and player data out of the repository.
 
+## Live-model spending constraint
+
+The user supplied OpenRouter credit on 2026-09-17: **USD 10 total, intended to last at least a month**, not per run, per agent or per test. This is an upper ceiling, not a spending target or authorization to replenish/reset it. Prefer zero-LLM scripted tests. When live evaluation is deliberately enabled, prefer dirt-cheap models and tightly bounded calls. Never run paid calls in ordinary tests, CI, startup, background demos or unattended agent loops. Do not silently fall back to an expensive model or retry an ambiguous billed request.
+
+The credential is stored locally in ignored `.env.openrouter`; never print it, commit it, place it in browser code or copy it into documentation. Its presence does not enable inference. Before the first paid evaluation, implement explicit opt-in, a conservative per-run allowance, bounded input/output and attempts, and persistent cumulative usage/reservations shared by all runs. Verify current model pricing at selection time; stop when usage is uncertain or the allowance is unavailable. No automatic top-ups or monthly resets. Track actual consumption separately from the initial deposited amount; do not assume the account balance remains $10.
+
 Run `python scripts/check_docs.py` after editing docs. Report actual changes briefly.

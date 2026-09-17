@@ -2,7 +2,7 @@
 
 This is the current project snapshot. Replace statuses and next steps in place; keep history in Git. Product documents define the experience, technical documents define the intended behavior, and tests establish what the implementation actually proves. A component passing tests does not make its whole user flow complete.
 
-**Current phase:** build and connect the application using scripted generation and local/test substitutes. Paid models, paid media and paid hosted integrations remain deferred until the broader application is implemented and exercised, and the user explicitly chooses to enable them. Credentials or an adapter being available is not authorization to spend.
+**Current phase:** build and connect the application using scripted generation and local/test substitutes. Paid models, paid media and paid hosted integrations remain deferred until the broader application is implemented and exercised, and the user explicitly chooses to enable them. OpenRouter credentials are now stored locally, with $10 intended to last at least a month and a strong preference for no-LLM tests or dirt-cheap models. No live adapter or budget enforcement is enabled. Before deliberate live evaluation, implement the safeguards in [spending](technical/context-and-cost.md#current-development-allowance); ordinary tests remain entirely scripted.
 
 ## Coverage
 

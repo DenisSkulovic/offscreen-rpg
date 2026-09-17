@@ -2,6 +2,12 @@
 
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.
 
+## Current development allowance
+
+The user allocated $10 of OpenRouter credit on 2026-09-17 to last at least one month. This is a shared total across development and live evaluation, not a per-session allowance. Prefer no-LLM tests; deliberate live checks should use dirt-cheap models with bounded context, output and attempts. The deposit is not a verified current balance. Do not automatically replenish it or reset the allowance after a calendar boundary.
+
+The key is local and ignored, and no provider adapter is enabled. Before spending, add explicit live-run opt-in, a small declared run budget, conservative reservations and a durable cumulative usage record; enforce these across concurrent runs. Unknown billing holds the reservation rather than authorizing a retry. Ordinary tests, CI, startup and unattended demos must remain free of paid calls. These constraints are instructions today, not implemented budget enforcement. This allowance is separate from any future sponsored visitor trial.
+
 ## Build context for a specific decision
 
 Assemble context in a deterministic order and record a compact manifest of source IDs, revisions and prompt versions:
