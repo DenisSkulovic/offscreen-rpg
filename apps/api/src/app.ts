@@ -16,6 +16,8 @@ import type { Auth } from './auth/auth.js';
 import { AUTH, IdentityController, IdentityService } from './auth/identity.js';
 import { createDrafts } from '@offscreen/server/drafts';
 import { DRAFTS, DraftsController } from './drafts/controller.js';
+import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
+import { OPENINGS, OpeningsController } from './drafts/openings-controller.js';
 
 const DATABASE = Symbol('DATABASE');
 
@@ -56,13 +58,19 @@ export async function createApp(
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
-      controllers: [HealthController, IdentityController, DraftsController],
+      controllers: [
+        HealthController,
+        IdentityController,
+        DraftsController,
+        OpeningsController,
+      ],
       providers: [
         IdentityService,
         DatabaseLifecycle,
         { provide: DATABASE, useValue: database },
         { provide: AUTH, useValue: auth },
         { provide: DRAFTS, useValue: createDrafts(database) },
+        { provide: OPENINGS, useValue: createScriptedOpenings(database) },
       ],
     },
     {

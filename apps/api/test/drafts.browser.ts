@@ -68,6 +68,41 @@ export async function checkDraftBrowser(
           await page.getByLabel('Title').inputValue(),
           'First-tab saved idea',
         );
+        await page
+          .getByRole('link', { name: 'Review a scripted opening' })
+          .click();
+        await page
+          .getByRole('button', {
+            name: 'Generate scripted preview',
+            exact: true,
+          })
+          .click();
+        await page.getByRole('region', { name: 'Saved opening' }).waitFor();
+        const opening = await page
+          .getByRole('region', { name: 'Saved opening' })
+          .innerText();
+        await page.reload();
+        assert.equal(
+          await page.getByRole('region', { name: 'Saved opening' }).innerText(),
+          opening,
+        );
+        await page.getByRole('link', { name: 'Back to draft' }).click();
+        await page.getByLabel('Who are you').fill('A new premise.');
+        assert.equal(
+          await page
+            .getByRole('link', { name: 'Review a scripted opening' })
+            .count(),
+          0,
+        );
+        await page.getByRole('button', { name: 'Save draft' }).click();
+        await page.getByText('Saved.', { exact: true }).waitFor();
+        await page
+          .getByRole('link', { name: 'Review a scripted opening' })
+          .click();
+        await page
+          .getByRole('alert')
+          .filter({ hasText: 'This preview is from an earlier draft' })
+          .waitFor();
       } finally {
         await browser.close();
       }

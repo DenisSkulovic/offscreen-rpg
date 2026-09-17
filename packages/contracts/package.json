@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./openings": {
+      "types": "./dist/openings.d.ts",
+      "default": "./dist/openings.js"
+    },
     "./drafts": {
       "types": "./dist/drafts.d.ts",
       "default": "./dist/drafts.js"

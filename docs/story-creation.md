@@ -4,7 +4,7 @@ Creation turns a premise into a small, playable beginning. It should invite imag
 
 ## Premise and characters
 
-The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. Generation, presets and shared setup are subsequent components.
+The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. A saved, unchanged draft links to a preview page where an explicit request saves a fixed scripted sample. The page explains that this sample is not adapted to the premise. Returning reopens the saved result; editing the draft marks it stale. Real generation, presets and shared setup are subsequent components.
 
 If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story will support several players.
 

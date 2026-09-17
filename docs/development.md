@@ -1,6 +1,6 @@
 # Local development
 
-The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts. Opening preparation and generation-record operations are tested backend components; generation UI, shared setup, workflow workers and playable stories are not implemented yet. See [implementation overview](progress.md) for coverage and current priorities. Paid services remain disconnected during broader application development.
+The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts, then request and reopen a fixed scripted opening preview. Shared setup, workflow workers and persistent playable stories are not implemented yet. See [implementation overview](progress.md) for coverage and current priorities. Paid services remain disconnected during broader application development.
 
 ## Requirements and startup
 
@@ -40,7 +40,7 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
-`@offscreen/ai/opening` is an offline component for preparing a saved premise and validating opening prose. Its tests run under `pnpm test` without credentials: they check snapshot isolation, separation of user input from application instructions, source metadata exclusion, and rejection of malformed or authority-bearing model output. The exported JSON Schema is not yet verified against a hosted provider. No Generate button or provider adapter is wired into the application.
+`@offscreen/ai/opening` is an offline component for preparing a saved premise and validating opening prose. Its tests run under `pnpm test` without credentials: they check snapshot isolation, separation of user input from application instructions, source metadata exclusion, and rejection of malformed or authority-bearing model output. The exported JSON Schema is not yet verified against a hosted provider. The preview screen uses `@offscreen/server/scripted-openings`, a fixed local fixture, with no provider adapter.
 
 ```sh
 pnpm format:check
@@ -88,7 +88,7 @@ The suite checks migration reruns and contention, failed-DDL rollback, transacti
 
 ## Identity checks
 
-The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. These operations have no public endpoint or background dispatcher yet; no paid calls occur.
+The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. The scripted HTTP path is tested for ownership, CSRF, recovery after admission, private-data exclusion and stale results. Chromium generates, reloads and checks a preview after editing the draft. Background dispatch remains absent; no paid calls occur.
 
 Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table. Generation tests use a fake callback and make no provider calls.
 

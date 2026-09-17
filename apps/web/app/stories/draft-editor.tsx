@@ -189,6 +189,11 @@ export function DraftEditor({
           </button>
         </div>
       )}
+      {saved && !dirty && !pending && (
+        <p>
+          <a href={`/stories/${id}/preview`}>Review a scripted opening</a>
+        </p>
+      )}
       <p className="field-help">
         <a href="/sign-in" target="_blank" rel="noopener noreferrer">
           Sign in in another tab

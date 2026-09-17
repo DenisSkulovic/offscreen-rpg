@@ -10,9 +10,9 @@ import {
 } from '@offscreen/ai/opening';
 import { createGenerations, GenerationError, validId } from './generations';
 
-export function createOpenings(database: Database) {
+export function createOpenings(database: Database, kind = 'opening.v1') {
   const operations = createGenerations(database, {
-    kind: 'opening.v1',
+    kind,
     input: openingArtifactSchema,
     output: openingOutputSchema,
   });
@@ -72,7 +72,7 @@ export function createOpenings(database: Database) {
           .from(generation)
           .where(eq(generation.id, id));
         if (prior) {
-          if (prior.ownerId !== owner || prior.kind !== 'opening.v1')
+          if (prior.ownerId !== owner || prior.kind !== kind)
             throw new GenerationError('not_found');
           const source = openingArtifactSchema.parse(prior.input).source;
           if (

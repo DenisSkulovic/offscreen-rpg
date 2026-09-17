@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./scripted-openings": {
+      "types": "./dist/scripted-openings.d.ts",
+      "default": "./dist/scripted-openings.js"
+    },
     "./generations": {
       "types": "./dist/generations.d.ts",
       "default": "./dist/generations.js"
