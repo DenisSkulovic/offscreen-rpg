@@ -9,8 +9,13 @@ import {
   prepareOpening,
 } from '@offscreen/ai/opening';
 import { createGenerations, GenerationError, validId } from './generations';
+import type { Transaction } from './outbox';
 
-export function createOpenings(database: Database, kind = 'opening.v1') {
+export function createOpenings(
+  database: Database,
+  kind = 'opening.v1',
+  dispatch?: (tx: Transaction, id: string) => Promise<void>,
+) {
   const operations = createGenerations(database, {
     kind,
     input: openingArtifactSchema,
@@ -108,6 +113,7 @@ export function createOpenings(database: Database, kind = 'opening.v1') {
           request: openingRequest(prepared),
         });
         await operations.insert(tx, owner, id, artifact);
+        await dispatch?.(tx, id);
         await tx
           .insert(draftOpening)
           .values({ draftId, generationId: id })

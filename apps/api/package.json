@@ -32,6 +32,7 @@
     "auth": "1.7.5",
     "playwright": "1.63.0",
     "tsc-watch": "7.2.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "@offscreen/worker": "workspace:*"
   }
 }

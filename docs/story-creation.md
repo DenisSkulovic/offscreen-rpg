@@ -12,6 +12,10 @@ Let the player describe who they want to be and the starting circumstances, or a
 
 The generated beginning establishes the character, immediate surroundings, a few relevant connections and a reason for something to happen next. Develop distant places and incidental people when the story needs them. Richness should come from specificity and continuity rather than the volume of material generated before play.
 
+World setup is broader than terrain generation. An apartment, an underwater town, a star system and an abstract shadow realm all need meaningful places and ways to reach them, but need not share geography or physical scale. Start by establishing the immediate places, contents, connections and relevant constraints; choose an optional map representation that fits them. Do not ask the player to select a terrain generator before describing their story.
+
+A familiar setting generated from model memory is an interpretation, not a promise of geographical or canonical accuracy. Faithful reconstruction of an existing place would require suitable reference material and separate verification. The first version should not imply that a recognizable name guarantees an accurate world.
+
 For a shared story, invited players need a way to establish characters that fit the common premise before the story starts. The creator can see who has joined and whether the group is ready. Invitations, readiness and starting authority need simple explicit rules; there is no requirement for public matchmaking.
 
 ## Storytelling direction

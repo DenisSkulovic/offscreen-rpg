@@ -50,7 +50,7 @@ export class OpeningsController {
     );
   }
   @Put(':id')
-  @HttpCode(200)
+  @HttpCode(202)
   generate(
     @Req() request: Request,
     @Param('draftId') draftId: string,

@@ -78,6 +78,9 @@ export async function checkDraftBrowser(
           })
           .click();
         await page.getByRole('region', { name: 'Saved opening' }).waitFor();
+        await page
+          .getByText('A bell rings beyond the trees.', { exact: false })
+          .waitFor();
         const opening = await page
           .getByRole('region', { name: 'Saved opening' })
           .innerText();

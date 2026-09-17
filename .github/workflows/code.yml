@@ -87,6 +87,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @offscreen/api exec playwright install --with-deps chromium
+      - run: docker compose up temporal -d --wait --wait-timeout 120
       - run: pnpm test:auth
         env:
           DATABASE_TEST_URL: postgresql://offscreen:local-test-only@127.0.0.1:5432/offscreen_auth_test
+      - if: failure()
+        run: docker compose logs temporal
+      - if: always()
+        run: docker compose down

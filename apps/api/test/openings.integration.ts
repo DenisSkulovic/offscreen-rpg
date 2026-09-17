@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
-import { createOpenings } from '@offscreen/server/openings';
+import { createOutbox } from '@offscreen/server/outbox';
+import {
+  scriptedOpeningTopic,
+  createScriptedOpenings,
+} from '@offscreen/server/scripted-openings';
+import { startRuntime } from '@offscreen/worker/runtime';
+import { setTimeout as delay } from 'node:timers/promises';
 import {
   latestOpeningSchema,
   openingPreviewSchema,
@@ -48,28 +54,175 @@ export async function checkOpeningHTTP(
           headers: { ...headers, cookie: actor, origin: source },
           body: JSON.stringify(body),
         });
-      // Simulate loss of execution after admission; the endpoint resumes this fixture.
-      await createOpenings(database, 'opening.scripted.v1').request(
-        owner,
-        draftId,
-        id,
-        1,
-      );
       const first = await submit();
-      assert.equal(first.status, 200);
+      assert.equal(first.status, 202);
       const raw = await first.json();
       assert.ok(typeof raw === 'object' && raw !== null);
-      const preview = openingPreviewSchema.parse(raw);
-      assert.equal(preview.state, 'succeeded');
+      let preview = openingPreviewSchema.parse(raw);
+      assert.equal(
+        preview.state,
+        'pending',
+        'API accepts while worker is offline',
+      );
       assert.equal(preview.mode, 'scripted');
       assert.equal(preview.isCurrent, true);
       assert.equal(Object.hasOwn(raw, 'input'), false);
       assert.equal(Object.hasOwn(raw, 'attemptId'), false);
       assert.deepEqual(await (await submit()).json(), preview);
+      const notices = await database.db.$client.query(
+        'SELECT * FROM outbox WHERE id = $1',
+        [id],
+      );
+      assert.equal(notices.rowCount, 1);
+      assert.equal(notices.rows[0].operation_id, id);
+      const outbox = createOutbox(database);
+      const claims = await Promise.all([
+        outbox.claim([scriptedOpeningTopic]),
+        outbox.claim([scriptedOpeningTopic]),
+      ]);
+      assert.equal(
+        claims.filter(Boolean).length,
+        1,
+        'concurrent relays do not share an active lease',
+      );
+      const abandoned = claims.find(Boolean)!;
+      await database.db.$client.query(
+        "UPDATE outbox SET available_at = now() - interval '1 second' WHERE id = $1",
+        [id],
+      );
+      const reclaimed = (await outbox.claim([scriptedOpeningTopic]))!;
+      assert.notEqual(reclaimed.leaseId, abandoned.leaseId);
+      await outbox.acknowledge(abandoned);
+      assert.equal(
+        (
+          await database.db.$client.query(
+            'SELECT delivered_at FROM outbox WHERE id = $1',
+            [id],
+          )
+        ).rows[0].delivered_at,
+        null,
+        'old lease cannot acknowledge a new delivery',
+      );
+      await database.db.$client.query(
+        'UPDATE outbox SET available_at = now() WHERE id = $1',
+        [id],
+      );
+      const config = {
+        address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
+        namespace: 'default',
+        taskQueue: `integration-${randomUUID()}`,
+      };
+      let runtime = await startRuntime(database, config, () => {});
+      try {
+        for (let n = 0; n < 100; n++) {
+          preview = latestOpeningSchema.parse(
+            await (
+              await fetch(`${url}/latest`, { headers: { cookie } })
+            ).json(),
+          ).preview!;
+          if (preview.state === 'succeeded') break;
+          await delay(100);
+        }
+        assert.equal(
+          preview.state,
+          'succeeded',
+          'saved request completes without another PUT',
+        );
+      } finally {
+        await runtime.stop();
+      }
+      const saved = await database.db.$client.query(
+        'SELECT updated_at FROM generation WHERE id = $1 AND owner_id = $2',
+        [id, owner],
+      );
+      await Promise.all([
+        createScriptedOpenings(database).complete(id),
+        createScriptedOpenings(database).complete(id),
+      ]);
+      assert.deepEqual(
+        (
+          await database.db.$client.query(
+            'SELECT updated_at FROM generation WHERE id = $1',
+            [id],
+          )
+        ).rows,
+        saved.rows,
+        'repeated Activity completion preserves the committed result',
+      );
+      // Simulate lost relay acknowledgement after execution. A fresh worker and
+      // relay must observe the existing workflow/result rather than generate again.
+      await database.db.$client.query(
+        'UPDATE outbox SET delivered_at = NULL, lease_id = NULL, available_at = now() WHERE id = $1',
+        [id],
+      );
+      runtime = await startRuntime(database, config, () => {});
+      try {
+        let delivered = false;
+        for (let n = 0; n < 100; n++) {
+          delivered = Boolean(
+            (
+              await database.db.$client.query(
+                'SELECT delivered_at FROM outbox WHERE id = $1',
+                [id],
+              )
+            ).rows[0].delivered_at,
+          );
+          if (delivered) break;
+          await delay(100);
+        }
+        assert.ok(delivered, 'restarted relay acknowledges duplicate start');
+        assert.deepEqual(
+          (
+            await database.db.$client.query(
+              'SELECT updated_at FROM generation WHERE id = $1',
+              [id],
+            )
+          ).rows,
+          saved.rows,
+        );
+      } finally {
+        await runtime.stop();
+      }
+      assert.deepEqual(await (await submit()).json(), preview);
       const latest = latestOpeningSchema.parse(
         await (await fetch(`${url}/latest`, { headers: { cookie } })).json(),
       );
       assert.deepEqual(latest.preview, preview);
+      const conflictingId = randomUUID();
+      await database.db.$client.query(
+        'INSERT INTO outbox (id, topic, operation_id) VALUES ($1, $2, $3)',
+        [conflictingId, 'different.v1', randomUUID()],
+      );
+      try {
+        const rejected = await fetch(`${url}/${conflictingId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ expectedRevision: 1 }),
+        });
+        assert.equal(rejected.status, 503);
+        assert.equal(
+          (
+            await database.db.$client.query(
+              'SELECT id FROM generation WHERE id = $1',
+              [conflictingId],
+            )
+          ).rowCount,
+          0,
+          'notice conflict rolls back generation admission',
+        );
+        assert.equal(
+          latestOpeningSchema.parse(
+            await (
+              await fetch(`${url}/latest`, { headers: { cookie } })
+            ).json(),
+          ).preview?.id,
+          id,
+        );
+      } finally {
+        await database.db.$client.query('DELETE FROM outbox WHERE id = $1', [
+          conflictingId,
+        ]);
+      }
       assert.equal((await submit(otherCookie)).status, 404);
       assert.equal(
         (await fetch(`${url}/latest`, { headers: { cookie: otherCookie } }))

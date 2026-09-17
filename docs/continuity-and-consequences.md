@@ -20,6 +20,8 @@ The storyteller may propose places, connections and changes consistent with the 
 
 An interactive map is deferred. Before implementing authoritative movement, choose the smallest representation that can demonstrate an interrupted journey and two characters' relative whereabouts. Rendering rotating cubes is a separate question from enforcing that consistency.
 
+Flexibility does not mean every imagined rule is automatically executable. A locked entrance can use an implemented possession check; an entrance that opens when someone forgets their name requires a defined way to assess that condition. The storyteller may judge narrative circumstances, but prose alone does not establish a deterministic check. Distinguish facts the system enforces from judgments the storyteller makes, and preserve accepted outcomes consistently. Add reusable mechanisms when a concrete playthrough needs them, rather than building a universal physics or rules engine.
+
 ## People, objects and capabilities
 
 Give consequential people and objects consistent identity. A golden spear sold to someone remains that spear if it returns later. A passing crowd does not need a record for every member. Detail can become worth recording when a player engages with it.

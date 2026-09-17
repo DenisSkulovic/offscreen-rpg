@@ -1,0 +1,26 @@
+{
+  "name": "@offscreen/workflows",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "default": "./dist/contracts.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@temporalio/workflow": "1.24.0"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

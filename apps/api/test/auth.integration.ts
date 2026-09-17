@@ -14,6 +14,7 @@ import { checkDrafts } from './drafts.integration.js';
 import { checkDraftBrowser } from './drafts.browser.js';
 import { checkGenerations } from './generations.integration.js';
 import { checkOpeningHTTP } from './openings.integration.js';
+import { startRuntime } from '@offscreen/worker/runtime';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
 if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
@@ -24,7 +25,7 @@ if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
 
 test(
   'identity integration through HTTP and the web application',
-  { timeout: 60000 },
+  { timeout: 120000 },
   async (t) => {
     const config = readDatabaseConfig({ DATABASE_URL: databaseURL });
     await applyMigrations(
@@ -61,6 +62,7 @@ test(
     const otherUser = await helpers.saveUser(helpers.createUser());
     let web: ReturnType<typeof spawn> | undefined;
     let exited: Promise<unknown> | undefined;
+    let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
     try {
       await app.listen(3001, '127.0.0.1');
       web = spawn(
@@ -100,7 +102,6 @@ test(
       const cookie = login.headers.get('cookie')!;
       const otherLogin = await helpers.login({ userId: otherUser.id });
       await checkDrafts(t, origin, cookie, otherLogin.headers.get('cookie')!);
-      await checkDraftBrowser(t, origin, cookie);
       await checkGenerations(t, database, user.id, otherUser.id);
       await checkOpeningHTTP(
         t,
@@ -110,6 +111,16 @@ test(
         cookie,
         otherLogin.headers.get('cookie')!,
       );
+      runtime = await startRuntime(
+        database,
+        {
+          address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
+          namespace: 'default',
+          taskQueue: 'browser-integration',
+        },
+        () => {},
+      );
+      await checkDraftBrowser(t, origin, cookie);
 
       await t.test(
         'anonymous API requests fail and the page redirects to sign-in',
@@ -267,12 +278,17 @@ test(
         },
       );
     } finally {
+      await runtime?.stop();
       if (web) {
         web.kill();
         await exited;
       }
       await database.db.$client.query(
         'DELETE FROM draft_opening WHERE draft_id IN (SELECT id FROM story_draft WHERE owner_id = $1)',
+        [user.id],
+      );
+      await database.db.$client.query(
+        'DELETE FROM outbox WHERE operation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
         [user.id],
       );
       await database.db.$client.query(

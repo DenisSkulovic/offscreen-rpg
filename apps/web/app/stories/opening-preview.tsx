@@ -1,8 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Draft } from '@offscreen/contracts/drafts';
-import { openingPreviewSchema } from '@offscreen/contracts/openings';
+import {
+  openingPreviewSchema,
+  latestOpeningSchema,
+} from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import { SessionRefresh } from './session-refresh';
 
@@ -17,6 +20,56 @@ export function OpeningPreviewPanel({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const attempt = useRef<{ id: string; revision: number } | null>(null);
+  useEffect(() => {
+    if (!preview || !['pending', 'running'].includes(preview.state)) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    let reads = 0;
+    async function poll() {
+      if (controller.signal.aborted) return;
+      if (!document.hidden) {
+        try {
+          const response = await fetch(
+            `/api/drafts/${draft.id}/openings/latest`,
+            {
+              cache: 'no-store',
+              signal: AbortSignal.any([
+                controller.signal,
+                AbortSignal.timeout(10000),
+              ]),
+            },
+          );
+          if (!response.ok) throw new Error('Status unavailable');
+          const result = latestOpeningSchema.parse(await response.json());
+          if (controller.signal.aborted) return;
+          setPreview(result.preview);
+          if (
+            !result.preview ||
+            !['pending', 'running'].includes(result.preview.state)
+          )
+            return;
+        } catch {
+          if (controller.signal.aborted) return;
+          setMessage(
+            'Unable to refresh the saved request. It can continue in the background; reload to check.',
+          );
+          return;
+        }
+        if (++reads >= 30) {
+          setMessage(
+            'Still awaiting completion. You can leave this page and return later, or reload to check.',
+          );
+          return;
+        }
+      }
+      timer = setTimeout(() => void poll(), 2000);
+    }
+    timer = setTimeout(() => void poll(), 2000);
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [draft.id, preview?.id, preview?.state]);
   async function generate() {
     if (pending) return;
     attempt.current ??=
@@ -57,7 +110,7 @@ export function OpeningPreviewPanel({
     }
   }
   const unresolved =
-    preview && ['running', 'uncertain'].includes(preview.state);
+    preview && ['pending', 'running', 'uncertain'].includes(preview.state);
   return (
     <main className="editor">
       <SessionRefresh />
@@ -84,10 +137,13 @@ export function OpeningPreviewPanel({
           {preview.opening && (
             <p style={{ whiteSpace: 'pre-wrap' }}>{preview.opening}</p>
           )}
-          {preview.state === 'pending' && (
-            <p>Saved request awaiting completion. Resume it below.</p>
+          {['pending', 'running'].includes(preview.state) && (
+            <p>
+              Request saved. You can leave this page while the preview is
+              prepared.
+            </p>
           )}
-          {unresolved && (
+          {preview.state === 'uncertain' && (
             <p>This request needs reconciliation before another can begin.</p>
           )}
           {preview.state === 'failed' && <p>The previous request failed.</p>}
@@ -101,8 +157,8 @@ export function OpeningPreviewPanel({
           ? 'Preparing sample…'
           : message
             ? 'Retry scripted preview'
-            : preview?.state === 'pending'
-              ? 'Resume scripted preview'
+            : unresolved
+              ? 'Awaiting scripted preview'
               : preview
                 ? 'Generate another scripted preview'
                 : 'Generate scripted preview'}

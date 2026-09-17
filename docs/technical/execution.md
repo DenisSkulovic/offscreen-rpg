@@ -2,6 +2,16 @@
 
 Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. There is no global simulation tick and no independent database scheduler driving the same story.
 
+## Implemented opening flow
+
+The first connected workflow handles only scripted opening previews. `packages/workflows` contains deterministic control flow and a compact Activity contract; `apps/worker` binds it to server operations and runs the outbox relay. The API has no Temporal connection. A saved request can remain pending while Temporal or the worker is unavailable and complete when processing resumes.
+
+The relay claims one eligible notice at a time with `FOR UPDATE SKIP LOCKED`, a fresh lease token and a 30-second expiry. It releases the transaction before a start RPC, whose deadline is 10 seconds. Failure leaves the notice available after lease expiry; acknowledgement checks the lease token so an older attempt cannot acknowledge a newer claim. Polling is every second when idle or after failure. Unknown topics remain untouched for a compatible dispatcher rather than being silently discarded.
+
+A scripted notice starts `scriptedOpeningV1` with Workflow ID `scripted-opening/<operation-id>` and rejects reuse of an existing execution. Already-started acknowledgements count as delivery, not successful generation. Only the operation UUID enters workflow history. The Activity commits a fixed, validated result in PostgreSQL; repeated execution cannot overwrite success. Database failures retry with bounded intervals; invalid operation identity/state fails without retry. An unexpected workflow failure remains an operational problem to inspect in Temporal, not a reason to create another paid request automatically.
+
+The application worker and relay share a process for this slice, but their code and responsibilities are separate. Shutdown stops relay polling and drains worker execution before closing connections. The current connection settings target local development; hosted authentication, deployment/versioning policy, production monitoring and recovery administration remain future work. This flow does not implement story timers, decisions or provider calls.
+
 ## One workflow per story
 
 Use a stable Workflow ID derived from the story ID. Its execution chain coordinates that story's current interval, open decision, pause state and generation operation. It holds compact control state and references, not the entire narrative or model context. [Story lifecycle](story-lifecycle.md) defines the separate draft-generation operations and frozen start command; a generic wake-up message cannot initialize a live story.

@@ -1,6 +1,6 @@
 # Local development
 
-The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts, then request and reopen a fixed scripted opening preview. Shared setup, workflow workers and persistent playable stories are not implemented yet. See [implementation overview](progress.md) for coverage and current priorities. Paid services remain disconnected during broader application development.
+The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts, then request and reopen a fixed scripted opening preview. A Temporal worker completes the scripted previews in the background. Shared setup and persistent playable stories are not implemented yet. See [implementation overview](progress.md) for coverage and current priorities. Paid services remain disconnected during broader application development.
 
 ## Requirements and startup
 
@@ -19,9 +19,11 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to their saved drafts. Both applications watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
+Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to their saved drafts. The web, API and worker watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
 
-API and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
+API, worker and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
+
+The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPACE` (`default`) and `TEMPORAL_TASK_QUEUE` (`offscreen-local`). Run it separately with `pnpm --filter @offscreen/worker start` after building if not using `pnpm dev`. Requests remain saved while it is stopped. The preview page checks status briefly, then offers reloading; closing it does not cancel work. These plaintext local connection settings are not a hosted deployment configuration.
 
 ## Local dependencies
 
@@ -32,7 +34,7 @@ pnpm infra:up
 pnpm infra:down
 ```
 
-Compose defines application PostgreSQL on localhost:5432 and Temporal on localhost:7233, with its UI on localhost:8233. Named volumes preserve their data when stopped. `infra:down` retains those volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API uses PostgreSQL; Temporal has no application worker yet.
+Compose defines application PostgreSQL on localhost:5432 and Temporal on localhost:7233, with its UI on localhost:8233. Named volumes preserve their data when stopped. `infra:down` retains those volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal.
 
 Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. CI starts both containers and waits for their health checks; persisted workflow recovery must be tested with the first actual workflow. Docker is not installed on the current Windows development machine, so local container execution has not been verified there.
 
@@ -88,11 +90,11 @@ The suite checks migration reruns and contention, failed-DDL rollback, transacti
 
 ## Identity checks
 
-The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. The scripted HTTP path is tested for ownership, CSRF, recovery after admission, private-data exclusion and stale results. Chromium generates, reloads and checks a preview after editing the draft. Background dispatch remains absent; no paid calls occur.
+The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. The scripted HTTP path is tested for ownership, CSRF, recovery after admission, private-data exclusion and stale results. Chromium generates, reloads and checks a preview after editing the draft. Temporal integration checks admission while the worker is offline, exclusive/expired outbox leases, stale acknowledgements and delivery after restarting the worker. No paid calls occur.
 
 Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table. Generation tests use a fake callback and make no provider calls.
 
-`pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
+`pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Keep the Compose Temporal service running. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
 
 Test-only library helpers seed sessions; no test login routes, passwords or identity bypasses exist in the application. Tests exercise migrations, proxy/cookie forwarding, anonymous redirects, private rendering, OAuth initiation, external redirect rejection, invalid callback state, logout/revocation and expiry. They do not complete a real GitHub token exchange. A live OAuth app and a manual browser sign-in are still required to verify that external integration.
 

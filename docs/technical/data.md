@@ -20,6 +20,12 @@ Opening-specific behavior lives in `@offscreen/server/openings`. Its input conta
 
 The generic record contains no draft, character, scene or timing fields. The opening module owns draft authorization, revision checking and the one-unresolved-request-per-draft rule. The test suite also uses the common lifecycle with a different input/result schema. There is no universal job dispatcher, subscription mechanism or database scheduler in this component.
 
+### Implemented execution notices
+
+`outbox` stores a unique notice ID, versioned topic, operation UUID, next delivery eligibility, lease token and delivery timestamp. It contains no prompt or player content. Opening admission inserts its notice in the same transaction as the generation record and latest-opening link. The notice ID currently equals the opening operation ID; typed topics select dispatch behavior, not arbitrary workflow names supplied by clients. A partial index serves undelivered notices. Migration `0003_execution_outbox` also admits previously pending scripted requests for delivery.
+
+The reusable relay store leases and acknowledges delivery; it does not own the referenced operation's outcome. No foreign key binds this cross-operation notice table exclusively to generations. The admitting module is responsible for creating a valid reference transactionally; future deletion must account for outstanding notices. Keep receipt retention separate from Temporal history retention and from game chronology.
+
 ### Planned story records
 
 | Record family | What it owns |
@@ -70,6 +76,10 @@ The candidate grid uses equal-sized cubic cells within a map. Optional regional/
 Before movement is implemented, define how a journey identifies its source, destination, permitted route and progress at an interruption. That record must distinguish being at a place from travelling between places and support consistent cross-character interaction. Define the applicable progress rule instead of assuming elapsed-time fraction equals distance fraction. Changes to route conditions or an exceptional transition must invalidate incompatible planned arrivals. These are behavioral requirements, not a settled journey schema.
 
 Map generation may combine procedural structure with model-authored meaning. Accepted geography must be validated for the selected world's connection and movement rules, then supplied as context for later generation. A visually plausible map is not evidence of reachability or coherent travel time. Shared spatial references must obey the same story isolation constraints as other domain data.
+
+The common setup boundary concerns places, containment, connections and relevant conditions; a grid is one possible projection. Model-generated symbol layers could be an input for small maps, provided dimensions, symbol meanings, references and required reachability are validated. Code can fill repeated geometry while the model supplies meaningful content. Do not allocate or describe every empty cube, or assume a terrain-generation dependency can create coherent lore and movement rules for arbitrary settings.
+
+A generated condition is enforceable only when it maps to a supported application operation or predicate. Unknown conditions must not become executable code, silently pass validation, or masquerade as implemented mechanics. Narrative judgments can remain model responsibilities with recorded outcomes. Select the first supported mechanisms from playthroughs before introducing a condition schema or interpreter; no universal rule language is part of this design.
 
 ## Quantities and ownership
 

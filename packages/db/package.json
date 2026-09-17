@@ -22,6 +22,10 @@
     "./migrate": {
       "types": "./dist/src/migrate.d.ts",
       "default": "./dist/src/migrate.js"
+    },
+    "./outbox-schema": {
+      "types": "./dist/src/schema/outbox.d.ts",
+      "default": "./dist/src/schema/outbox.js"
     }
   },
   "scripts": {

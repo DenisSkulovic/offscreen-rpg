@@ -18,6 +18,10 @@
     "./drafts": {
       "types": "./dist/drafts.d.ts",
       "default": "./dist/drafts.js"
+    },
+    "./outbox": {
+      "types": "./dist/outbox.d.ts",
+      "default": "./dist/outbox.js"
     }
   },
   "scripts": {

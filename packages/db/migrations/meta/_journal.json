@@ -22,6 +22,13 @@
       "when": 1789650037543,
       "tag": "0002_generation_records",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789654422182,
+      "tag": "0003_execution_outbox",
+      "breakpoints": true
     }
   ]
 }
