@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { mock, test } from 'node:test';
 import { createApp } from '../src/app.js';
 import { readConfig } from '../src/config.js';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
@@ -26,6 +26,18 @@ test('API binds a real HTTP listener and closes cleanly', async () => {
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { status: 'ok' });
     assert.equal((await fetch(`${origin}/health/live`)).status, 404);
+    const failure = mock.method(auth.api, 'getSession', async () => {
+      throw new Error('sensitive-query-parameter');
+    });
+    try {
+      const unavailable = await fetch(`${origin}/api/me`);
+      assert.equal(unavailable.status, 503);
+      assert.ok(
+        !(await unavailable.text()).includes('sensitive-query-parameter'),
+      );
+    } finally {
+      failure.mock.restore();
+    }
   } finally {
     await app.close();
   }

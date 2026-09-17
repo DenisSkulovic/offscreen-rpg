@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Req,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
@@ -17,10 +18,15 @@ export class IdentityService {
   constructor(@Inject(AUTH) private readonly auth: Auth) {}
 
   async requireUser(headers: Request['headers']) {
-    const session = await this.auth.api.getSession({
-      headers: fromNodeHeaders(headers),
-      query: { disableRefresh: true },
-    });
+    const session = await this.auth.api
+      .getSession({
+        headers: fromNodeHeaders(headers),
+        query: { disableRefresh: true },
+      })
+      .catch(() => {
+        // Driver errors can contain query parameters, including session tokens.
+        throw new ServiceUnavailableException('Identity service unavailable');
+      });
     if (!session) throw new UnauthorizedException();
     return {
       id: session.user.id,
