@@ -25,6 +25,10 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 | AI context, usage limits and quality | Offline components: opening prose plus a playable scene/choice proposal, captured intentions and bounded immediate context; 10 AI-package checks pass without inference. | Context assembly, simulated usage accounting and narrative evaluation fixtures still absent. Real model routing, cache effectiveness and billed costs remain unverified. [Context and cost](technical/context-and-cost.md). |
 | Operations and showcase | Partial: automated code, database, browser and documentation checks; basic health checks. | Complete scripted demo, recovery evidence, operational visibility and setup polish. A hosted playable portfolio link is the delivery target; visitor onboarding, sponsored-trial admission and deployment are unimplemented. Kubernetes and paid media deferred. [Delivery](technical/delivery-and-validation.md). |
 
+## Code quality prerequisite
+
+Apply [the engineering standard](engineering/code-quality.md) before further implementation. Existing test evidence does not establish maintainability. A separate `lint:quality` audit exposes mechanical violations; existing code has not been refactored or certified. Keep any cleanup narrowly scoped and separate from feature expansion. The current standards task does not authorize implementation refactoring.
+
 ## Current assessment
 
 The chamber is useful integration equipment, not an investor-facing POC or the next product milestone. It proves real persistence and execution with authored inputs. The application is still disconnected at an important boundary: a saved premise produces a fixed opening preview, while the chamber initializes an unrelated authored scenario. More fixtures or a longer timer would not connect those flows.

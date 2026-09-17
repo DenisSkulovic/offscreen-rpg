@@ -18,7 +18,8 @@
     "format:check": "prettier --check .",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
-    "chamber": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api chamber"
+    "chamber": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api chamber",
+    "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

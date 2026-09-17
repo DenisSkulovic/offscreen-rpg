@@ -2,6 +2,15 @@
 
 Read README.md and the relevant file in docs/. We are shaping a raw proof of concept.
 
+## Required code quality gate
+
+Before implementation or code review, read [the code quality standard](docs/engineering/code-quality.md). It is a required repository convention, not optional background. Existing code does not override it. Passing tests is not evidence that code is readable or maintainable.
+
+Use explicit, domain-named boundaries; no nested ternaries, unexplained non-null assertions or ambiguous positional ID lists. Keep application orchestration, persistence details, pure policy and fixture content distinguishable. Review the final diff as a maintainer before declaring completion. Use `pnpm lint:quality` for the additional mechanical audit; known baseline failures must be reported honestly, not hidden with suppressions.
+
+The current quality task is standards and checks only. Do not refactor the implementation, delegate cleanup or purchase cheaper model calls without a separately scoped task. Preserve unrelated edits. See the standard for detailed rules and the staged enforcement boundary.
+
+
 For implementation work, read docs/technical/architecture.md and the technical document for the affected behavior. The design is proposed until implemented and verified; preserve explicit product questions rather than treating technical examples as settled requirements.
 
 Read docs/progress.md before selecting the next implementation slice. Build and test the broader application with scripted generation and local/test substitutes; do not connect paid models, media or hosted integrations until the user explicitly chooses to enable them. Do not let an isolated subsystem's polish displace the next missing user flow.
