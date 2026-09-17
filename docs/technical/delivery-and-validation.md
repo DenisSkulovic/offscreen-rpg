@@ -10,6 +10,28 @@ Provide a deterministic fake storyteller/provider for tests and a no-paid-key de
 
 Pin supported runtime/dependency versions, the package manager and container image versions when scaffolding. Keep a single lockfile. Application code is TypeScript; SQL migrations, Compose YAML and a small documentation checker do not violate that preference.
 
+## Scripted testing chamber
+
+The next runnable target is a short, persistent solo scenario with authored content and real application behavior. This is a development fixture, not a new game mode or a commitment to the final mechanics. It must use the application's story storage, command admission, transition validation, Temporal execution and browser reads. The existing in-memory `/demo` can remain a presentation example; it is not the chamber's source of authoritative state.
+
+A suitable fixture has only a few passages:
+
+1. Start in a chamber holding a named token. Persist the opening and the token's identity/possession.
+2. Offer a choice to spend the token to open a gate or keep it and take another outcome. The accepted choice changes real state; retrying cannot spend it twice. Later options reflect that state.
+3. On the gate branch, wait briefly for it to open. Show both fictional duration and real due time. Pause, close the browser, resume or restart the worker during this interval to inspect the timing behavior.
+4. Present a short response window to step through or remain. A declared safe default selects remaining when no response arrives. The resulting passage records whether the player or the fallback chose.
+5. Finish on either branch. Reopening shows the saved ending and chronology; an old button cannot advance it again.
+
+The exact text and example objects are replaceable. Start with seconds-long waits for convenient observation, explicitly separate from fictional duration. For this fixture, quiet waits advance fictional time, response windows hold the fictional situation, and manual pause freezes both progression and the remaining response opportunity. Use fixed durations per passage; mid-interval speed changes, continuous travel progress and arbitrary interruption are outside this first experiment. These declared fixture rules do not settle the general pacing or autonomy controls.
+
+Review the minimal versioned passage/option/effect contract before creating tables. Include only what these transitions actually need: stable references, authorized choice identity, explicit supported effects, timing and terminal behavior. The scripted source supplies proposed content and effects; the server validates and commits them. Do not let arbitrary script callbacks mutate database state or let the browser supply the next passage, item ownership or deadline. The current prose-only opening schema is insufficient for this flow and must not be treated as an executable story.
+
+Keep inspection modest and separate from the story presentation. Expose the committed revision, current passage/decision, relevant possessions/facts, fictional time, deadline or pause remainder, and accepted/applied command status. Keep secrets and hidden generation context out of browser DTOs. Starting a fresh fixture creates a new story rather than resetting existing history in place. Add failure injection or time-skipping controls only when a particular test requires them; normal UI waits must use the real scheduler. Automated time-skipping tests do not replace a real-service restart check.
+
+Local access is part of the delivery task. Use configured GitHub sign-in for the normal application, or a development-only launcher that seeds a disposable test user/story and authenticated browser session through existing test utilities. Never add a public login bypass or weaken owner checks to make the chamber easier to open. The user should eventually have one documented launch path that does not require LLM credentials.
+
+Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See the [remaining implementation slices](../progress.md#remaining-work-to-reach-it) for current status.
+
 ## First hosted deployment
 
 Use one region with containerized web, API and Temporal workers plus managed application PostgreSQL. Prefer Temporal Cloud for the first hosted release if its measured cost fits the project budget; we still run our own application workers. Confirm current pricing, retention and connectivity before provisioning. Self-hosting Temporal is an alternative only with an explicit plan for its persistence, upgrades, security and recovery. A development server or casual Compose setup is not the production service. [Temporal deployment](https://docs.temporal.io/self-hosted-guide/deployment).

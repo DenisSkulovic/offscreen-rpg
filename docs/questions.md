@@ -4,6 +4,8 @@ The product is concrete enough to begin technical design. These choices remain o
 
 The [technical design](technical/architecture.md) now supplies implementation recommendations. In particular, [shared decisions](technical/client-and-identity.md), [timing](technical/execution.md) and [notifications](technical/notifications.md) contain concrete proposals for discussion, not assumed answers to the product choices below.
 
+The first [scripted testing chamber](technical/delivery-and-validation.md#scripted-testing-chamber) uses explicit solo fixture rules to test persistence, choices and timing. That experiment does not require resolving every general product question below. Its policies remain visible and provisional rather than silently becoming defaults for all stories.
+
 ## Settle before implementing the affected behavior
 
 1. **Shared decisions and membership:** how are individual intentions collected and conflicting actions resolved? Who can start, pause and resume the group story? Begin with one shared situation and an invited pair; choose the supported group limit. The technical proposal starts with joining during setup; decide what happens to a character/group when a participant leaves or the owner deletes their account.
