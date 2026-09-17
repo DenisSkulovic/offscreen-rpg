@@ -8,7 +8,7 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 Significant changes follow the [feature workflow](../.agents/skills/feature-workflow/SKILL.md), with active work in [Features](features/README.md). Codex primarily designs/reviews; Cursor handles bulk implementation.
 
-Story responsibility splits are present. Cleanup remains incomplete: the launcher stops releasing resources after the first close failure, and worker connection cleanup can skip the client connection if native close fails. Repair these failure paths with focused fault-injection checks before calling lifecycle cleanup reliable. Story integration helpers are separated by concern but still run through one shared parent lifecycle; they are not independently selectable suites. The optional full-repository quality audit still has existing debt.
+Story responsibility splits are present. Launcher and worker connection cleanup now continue after an individual close failure, with focused fault-injection checks covering those paths. Story integration helpers are separated by concern but still run through one shared parent lifecycle; they are not independently selectable suites. The optional full-repository quality audit still has existing debt. The stories application facade still uses positional IDs at its public surface.
 
 ## Coverage
 

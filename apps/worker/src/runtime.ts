@@ -5,19 +5,10 @@ import { createOutbox } from '@offscreen/server/outbox';
 import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
 import { createStories } from '@offscreen/server/stories';
 import { createWorkerActivities } from './activities';
+import { closeWorkerConnections } from './close-worker-connections';
 import type { WorkerConfig } from './config';
 import { deliverOutboxNotice, dispatchedNoticeTopics } from './dispatch';
 import { relayOne, runRelay } from './relay';
-
-async function closeWorkerConnections(args: {
-  native: NativeConnection | undefined;
-  connection: Connection;
-}) {
-  if (args.native) {
-    await args.native.close();
-  }
-  await args.connection.close();
-}
 
 /** Explicit lifecycle: importing this module never connects or starts processing. */
 export async function startRuntime(

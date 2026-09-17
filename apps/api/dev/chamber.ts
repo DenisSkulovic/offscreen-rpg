@@ -12,6 +12,7 @@ import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '../src/app.js';
 import { authOptions, createAuth } from '../src/auth/auth.js';
+import { stopChamberResources } from './chamber-stop.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
@@ -116,16 +117,14 @@ let web: ReturnType<typeof spawn> | undefined;
 let webExit: Promise<unknown> | undefined;
 let stopping: Promise<void> | undefined;
 const stop = () =>
-  (stopping ??= (async () => {
-    await browser?.close();
-    await runtime?.stop();
-    if (web && web.exitCode === null) {
-      web.kill();
-    }
-    await webExit;
-    await app.close();
-    await database.close();
-  })());
+  (stopping ??= stopChamberResources({
+    browser,
+    runtime,
+    web,
+    webExit,
+    app,
+    database,
+  }));
 process.once('SIGINT', () => {
   void stop();
 });
