@@ -1,6 +1,34 @@
 import { z } from 'zod';
 import { interactionSchema, interactionSubmissionSchema } from './interactions';
 
+const itemReference = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-zA-Z0-9_-]+$/);
+export const storyItemSchema = z.strictObject({
+  key: itemReference,
+  label: z.string().min(1).max(160),
+  holderKey: itemReference,
+});
+export const storyItemsSchema = z
+  .array(storyItemSchema)
+  .max(50)
+  .refine(
+    (items) => new Set(items.map((item) => item.key)).size === items.length,
+    'Item identities must be unique',
+  );
+export const itemTransferSchema = z
+  .strictObject({
+    kind: z.literal('item.transfer.v1'),
+    itemKey: itemReference,
+    fromHolder: itemReference,
+    toHolder: itemReference,
+  })
+  .refine(
+    (effect) => effect.fromHolder !== effect.toHolder,
+    'Transfer must change holder',
+  );
 export const passageContentSchema = z.strictObject({
   version: z.literal(1),
   title: z.string().min(1).max(160),
@@ -11,6 +39,7 @@ export const storySnapshotSchema = z.strictObject({
   revision: z.number().int().positive(),
   viewVersion: z.number().int().positive(),
   canRespond: z.boolean().default(false),
+  items: storyItemsSchema.default([]),
   decision: z
     .strictObject({
       dueAt: z.iso.datetime(),
@@ -50,7 +79,13 @@ export const storyHistorySchema = z.strictObject({
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
 export const startChamberSchema = z.strictObject({
-  scenario: z.enum(['chamber.v1', 'chamber.v2', 'chamber.v3', 'chamber.v4']),
+  scenario: z.enum([
+    'chamber.v1',
+    'chamber.v2',
+    'chamber.v3',
+    'chamber.v4',
+    'chamber.v5',
+  ]),
 });
 export const respondToStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),

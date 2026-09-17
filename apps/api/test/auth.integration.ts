@@ -325,6 +325,10 @@ test(
         'DELETE FROM story_control WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
         [user.id],
       );
+      await database.db.$client.query(
+        'DELETE FROM story_item WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+        [user.id],
+      );
       await database.db.$client.query('DELETE FROM story WHERE owner_id = $1', [
         user.id,
       ]);

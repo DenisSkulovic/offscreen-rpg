@@ -277,6 +277,18 @@ export function Chamber({
               )}
             </section>
           )}
+          {story.items.length > 0 && (
+            <section aria-label="Known items">
+              <h2>Known items</h2>
+              <ul>
+                {story.items.map((item) => (
+                  <li key={item.key}>
+                    {item.label} — held by {item.holderKey}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <details>
             <summary>Inspect saved state</summary>
             <dl>
@@ -309,6 +321,7 @@ export function Chamber({
             >
               <option value="chamber.v3">Timed cafe visit (20 seconds)</option>
               <option value="chamber.v4">Timed gate reply (15 seconds)</option>
+              <option value="chamber.v5">Deliver or keep a letter</option>
               <option value="chamber.v2">Immediate gate conversation</option>
             </select>
           </label>

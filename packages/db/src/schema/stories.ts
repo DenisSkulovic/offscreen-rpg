@@ -40,6 +40,8 @@ export const storyPassage = pgTable(
     sequence: integer('sequence').notNull(),
     transitionId: uuid('transition_id'),
     response: jsonb('response').$type<unknown>(),
+    initialItems: jsonb('initial_items').$type<unknown>(),
+    effects: jsonb('effects').$type<unknown>(),
     responseSource: text('response_source'),
     decisionPlan: jsonb('decision_plan').$type<unknown>(),
     responseDueAt: timestamp('response_due_at', {
@@ -90,4 +92,17 @@ export const storyControl = pgTable(
     request: jsonb('request').notNull().$type<unknown>(),
   },
   (t) => [unique('story_control_identity').on(t.storyId, t.operationId)],
+);
+
+export const storyItem = pgTable(
+  'story_item',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'restrict' }),
+    key: text('key').notNull(),
+    label: text('label').notNull(),
+    holderKey: text('holder_key').notNull(),
+  },
+  (t) => [unique('story_item_identity').on(t.storyId, t.key)],
 );

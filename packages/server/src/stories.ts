@@ -8,12 +8,19 @@ export const storyIntervalTopic = 'story.interval.v1';
 export const controlledIntervalTopic = 'story.interval.v2';
 export const intervalWakeTopic = 'story.interval.wake.v2';
 import type { Database } from '@offscreen/db';
-import { story, storyPassage, storyControl } from '@offscreen/db/story-schema';
+import {
+  story,
+  storyPassage,
+  storyControl,
+  storyItem,
+} from '@offscreen/db/story-schema';
 import {
   passageContentSchema,
   storySnapshotSchema,
   storyHistorySchema,
   controlIntervalSchema,
+  storyItemsSchema,
+  itemTransferSchema,
 } from '@offscreen/contracts/stories';
 import {
   interactionSpecificationSchema,
@@ -25,6 +32,7 @@ import {
 
 const initialSchema = z.strictObject({
   source: z.string().min(1).max(100),
+  items: storyItemsSchema.default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
 });
@@ -48,6 +56,7 @@ const decisionPlanSchema = z.strictObject({
 });
 const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
+  effects: z.array(itemTransferSchema).max(20).default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
   response: interactionSubmissionSchema.nullable().default(null),
@@ -86,6 +95,7 @@ export function createStories(database: Database) {
         id: story.id,
         revision: story.revision,
         viewVersion: story.viewVersion,
+        items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
         passageId: storyPassage.id,
         content: storyPassage.content,
         interaction: storyPassage.interaction,
@@ -111,6 +121,7 @@ export function createStories(database: Database) {
       id: row.id,
       revision: row.revision,
       viewVersion: row.viewVersion,
+      items: row.items,
       decision:
         row.decisionPlan === null
           ? null
@@ -165,6 +176,7 @@ export function createStories(database: Database) {
       if (
         prior.sequence !== input.expectedRevision + 1 ||
         !matchesPassage(prior, input) ||
+        !isDeepStrictEqual(prior.effects ?? [], input.effects) ||
         !isDeepStrictEqual(
           prior.decisionPlan === null
             ? null
@@ -232,6 +244,22 @@ export function createStories(database: Database) {
     } else if (input.response !== null) {
       throw new StoryError('conflict');
     }
+    // The story lock serializes this bounded effect list with its narrative commit.
+    // A failed precondition rolls back every preceding transfer in the transaction.
+    for (const effect of input.effects) {
+      const updated = await tx
+        .update(storyItem)
+        .set({ holderKey: effect.toHolder })
+        .where(
+          and(
+            eq(storyItem.storyId, id),
+            eq(storyItem.key, effect.itemKey),
+            eq(storyItem.holderKey, effect.fromHolder),
+          ),
+        )
+        .returning({ key: storyItem.key });
+      if (!updated.length) throw new StoryError('conflict');
+    }
     const next = current.revision + 1;
     const passageId = randomUUID();
     await tx.insert(storyPassage).values({
@@ -239,6 +267,7 @@ export function createStories(database: Database) {
       storyId: id,
       sequence: next,
       transitionId,
+      effects: input.effects,
       response: input.response,
       responseSource:
         input.response === null
@@ -565,14 +594,23 @@ export function createStories(database: Database) {
             .where(
               and(eq(storyPassage.storyId, id), eq(storyPassage.sequence, 1)),
             );
-          if (!first || !matchesPassage(first, input))
+          if (
+            !first ||
+            !matchesPassage(first, input) ||
+            !isDeepStrictEqual(first.initialItems ?? [], input.items)
+          )
             throw new StoryError('conflict');
           return;
         }
+        if (input.items.length)
+          await tx
+            .insert(storyItem)
+            .values(input.items.map((item) => ({ storyId: id, ...item })));
         await tx.insert(storyPassage).values({
           id: randomUUID(),
           storyId: id,
           sequence: 1,
+          initialItems: input.items,
           content: input.content,
           interaction: input.interaction
             ? interactionSchema.parse({

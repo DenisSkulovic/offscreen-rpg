@@ -44,7 +44,7 @@ export function createChamber(database: Database) {
     return {
       ...snapshot,
       canRespond:
-        ['chamber.v2', 'chamber.v3', 'chamber.v4'].includes(
+        ['chamber.v2', 'chamber.v3', 'chamber.v4', 'chamber.v5'].includes(
           await source(owner, id),
         ) && snapshot.current.interaction !== null,
     };
@@ -57,7 +57,8 @@ export function createChamber(database: Database) {
         | 'chamber.v1'
         | 'chamber.v2'
         | 'chamber.v3'
-        | 'chamber.v4' = 'chamber.v1',
+        | 'chamber.v4'
+        | 'chamber.v5' = 'chamber.v1',
     ) {
       await stories.initialize(
         owner,
@@ -66,9 +67,11 @@ export function createChamber(database: Database) {
           ? opening
           : scenario === 'chamber.v2'
             ? playableOpening
-            : scenario === 'chamber.v4'
-              ? { ...playableOpening, source: 'chamber.v4' }
-              : timedOpening,
+            : scenario === 'chamber.v5'
+              ? itemOpening
+              : scenario === 'chamber.v4'
+                ? { ...playableOpening, source: 'chamber.v4' }
+                : timedOpening,
       );
       return read(owner, id);
     },
@@ -82,17 +85,23 @@ export function createChamber(database: Database) {
       if (!parsed.success) throw new StoryError('invalid');
       await stories.read(owner, id);
       const scenario = await source(owner, id);
-      if (!['chamber.v2', 'chamber.v3', 'chamber.v4'].includes(scenario))
+      if (
+        !['chamber.v2', 'chamber.v3', 'chamber.v4', 'chamber.v5'].includes(
+          scenario,
+        )
+      )
         throw new StoryError('conflict');
       const { expectedRevision, submission } = parsed.data;
       // Pure, versioned fixture policy. Resolve from the submitted base revision
       // so an acknowledged-late retry proposes the same outcome after progression.
       const outcome =
-        scenario === 'chamber.v4'
-          ? deadlineContinuation(expectedRevision, submission.answer.optionId)
-          : scenario === 'chamber.v3'
-            ? timedContinuation(expectedRevision, submission.answer.optionId)
-            : continuation(expectedRevision, submission.answer.optionId);
+        scenario === 'chamber.v5'
+          ? itemContinuation(expectedRevision, submission.answer.optionId)
+          : scenario === 'chamber.v4'
+            ? deadlineContinuation(expectedRevision, submission.answer.optionId)
+            : scenario === 'chamber.v3'
+              ? timedContinuation(expectedRevision, submission.answer.optionId)
+              : continuation(expectedRevision, submission.answer.optionId);
       await stories.append(owner, id, operationId, {
         expectedRevision,
         response: submission,
@@ -254,4 +263,53 @@ function deadlineContinuation(revision: number, option: string) {
       },
     };
   return outcome;
+}
+
+const itemOpening = {
+  source: 'chamber.v5',
+  content: {
+    version: 1,
+    title: 'A letter to deliver.',
+    paragraphs: [
+      'You carry a sealed letter. The caretaker is waiting by the gate.',
+    ],
+  },
+  items: [
+    { key: 'sealed-letter', label: 'Sealed letter', holderKey: 'courier' },
+  ],
+  interaction: {
+    kind: 'choice.v1',
+    prompt: 'What do you do?',
+    options: [
+      { id: 'deliver', label: 'Give the letter to the caretaker' },
+      { id: 'keep', label: 'Keep the letter and leave' },
+    ],
+  },
+};
+function itemContinuation(revision: number, option: string) {
+  if (revision !== 1 || !['deliver', 'keep'].includes(option))
+    throw new StoryError('conflict');
+  return {
+    content: {
+      version: 1,
+      title: option === 'deliver' ? 'Letter delivered.' : 'Letter kept.',
+      paragraphs: [
+        option === 'deliver'
+          ? 'The caretaker accepts the sealed letter. Your delivery is complete.'
+          : 'You leave with the sealed letter still in your possession.',
+      ],
+    },
+    interaction: null,
+    effects:
+      option === 'deliver'
+        ? [
+            {
+              kind: 'item.transfer.v1',
+              itemKey: 'sealed-letter',
+              fromHolder: 'courier',
+              toHolder: 'caretaker',
+            },
+          ]
+        : [],
+  };
 }

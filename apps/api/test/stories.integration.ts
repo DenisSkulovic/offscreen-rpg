@@ -20,6 +20,146 @@ export async function checkStories(
   restartWorker: () => Promise<void>,
 ) {
   await t.test(
+    'item transfers commit with prose, retry safely and roll back failed effects',
+    async () => {
+      const stories = createStories(database);
+      const id = randomUUID();
+      const initial = {
+        source: 'items-test.v1',
+        content: {
+          version: 1,
+          title: 'Parcel',
+          paragraphs: ['A parcel waits.'],
+        },
+        interaction: null,
+        items: [{ key: 'parcel', label: 'Sealed parcel', holderKey: 'sender' }],
+      };
+      const first = await stories.initialize(owner, id, initial);
+      const content = {
+        version: 1,
+        title: 'Delivered',
+        paragraphs: ['The receiver has the parcel.'],
+      };
+      const transfer = {
+        kind: 'item.transfer.v1',
+        itemKey: 'parcel',
+        fromHolder: 'sender',
+        toHolder: 'receiver',
+      };
+      const proposal = {
+        expectedRevision: 1,
+        content,
+        interaction: null,
+        effects: [transfer],
+      };
+      const operation = randomUUID();
+      const results = await Promise.all([
+        stories.append(owner, id, operation, proposal),
+        stories.append(owner, id, operation, proposal),
+      ]);
+      assert.ok(
+        results.every((result) => result.items[0]!.holderKey === 'receiver'),
+      );
+      assert.equal((await stories.history(owner, id)).items.length, 2);
+      const current = await stories.read(owner, id);
+      assert.deepEqual(await stories.initialize(owner, id, initial), current);
+      await assert.rejects(
+        stories.append(owner, id, operation, {
+          ...proposal,
+          effects: [{ ...transfer, toHolder: 'other' }],
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      // The first effect succeeds but the second fails. Both state and prose must roll back.
+      await assert.rejects(
+        stories.append(owner, id, randomUUID(), {
+          expectedRevision: 2,
+          content,
+          interaction: null,
+          effects: [
+            { ...transfer, fromHolder: 'receiver', toHolder: 'sender' },
+            { ...transfer, itemKey: 'missing' },
+          ],
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      assert.deepEqual(await stories.read(owner, id), current);
+      assert.equal(first.items[0]!.holderKey, 'sender');
+      const other = await stories.initialize(owner, randomUUID(), initial);
+      assert.equal(other.items[0]!.holderKey, 'sender');
+      const forbidden = await fetch(`${origin}/api/stories/${id}`, {
+        headers: { cookie: otherCookie },
+      });
+      assert.equal(forbidden.status, 404);
+    },
+  );
+  await t.test(
+    'browser delivers a persistent item through an authored choice',
+    async () => {
+      const browser = await chromium.launch();
+      try {
+        const context = await browser.newContext();
+        await context.addCookies(
+          cookie.split(';').map((part) => {
+            const at = part.indexOf('=');
+            return {
+              name: part.slice(0, at).trim(),
+              value: part.slice(at + 1).trim(),
+              url: origin,
+            };
+          }),
+        );
+        const page = await context.newPage();
+        await page.goto(`${origin}/chamber`);
+        await page.getByLabel('Scenario').selectOption('chamber.v5');
+        await page
+          .getByRole('button', { name: 'Start scripted chamber' })
+          .click();
+        await page
+          .getByText('Sealed letter — held by courier', { exact: true })
+          .waitFor();
+        const id = new URL(page.url()).searchParams.get('id')!;
+        // The response endpoint must not accept arbitrary effects from a client.
+        const snapshot = await createStories(database).read(owner, id);
+        const submission = {
+          interactionId: snapshot.current.interaction!.id,
+          answer: { kind: 'choice.v1', optionId: 'deliver' },
+        };
+        const injection = await fetch(
+          `${origin}/api/stories/${id}/responses/${randomUUID()}`,
+          {
+            method: 'PUT',
+            headers: { cookie, origin, 'content-type': 'application/json' },
+            body: JSON.stringify({
+              expectedRevision: 1,
+              submission,
+              effects: [],
+            }),
+          },
+        );
+        assert.equal(injection.status, 400);
+        await page
+          .getByRole('button', { name: 'Give the letter to the caretaker' })
+          .click();
+        await page
+          .getByRole('heading', { name: 'Letter delivered.' })
+          .waitFor();
+        await page.reload();
+        await page
+          .getByText('Sealed letter — held by caretaker', { exact: true })
+          .waitFor();
+        assert.equal(
+          (await createStories(database).read(owner, id)).revision,
+          2,
+        );
+      } finally {
+        await browser.close();
+      }
+    },
+  );
+  await t.test(
     'timed replies enforce cutoff, retry identity and one default under contention',
     async () => {
       const stories = createStories(database);

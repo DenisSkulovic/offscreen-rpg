@@ -71,6 +71,13 @@
       "when": 1789661626493,
       "tag": "0009_decision_deadlines",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789662243288,
+      "tag": "0010_item_transfers",
+      "breakpoints": true
     }
   ]
 }
