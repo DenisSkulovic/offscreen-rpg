@@ -4,10 +4,10 @@ The storyteller is application code, versioned instructions, selected context, m
 
 ## Initial orchestration
 
-Start with an explicit bounded workflow in TypeScript:
+Use bounded TypeScript steps within Temporal orchestration. Database/context I/O, provider requests and commits execute as Activities, with compact artifact references returned to the workflow:
 
 ```text
-claim operation -> load snapshot -> assemble context -> reserve budget
+create operation -> load snapshot -> assemble context -> reserve budget
   -> generate proposal (optional bounded retrieval tools)
   -> validate structure and domain references
   -> bounded repair if eligible
@@ -16,17 +16,19 @@ claim operation -> load snapshot -> assemble context -> reserve budget
 
 An initial recommendation is at most one repair attempt after the primary proposal, with a total operation budget and wall-time limit. Exact limits are runtime configuration, not scattered constants. Any tool round or model fallback consumes that same operation allowance.
 
+Keep provider-call boundaries explicit so completing a later validation step does not require paying for an earlier successful call again. Store result artifacts before returning from the Activity and look up the operation/attempt on retry. A timeout with unknown provider outcome is a reconciliation case, not an automatic second request. Configure Temporal retry limits alongside SDK limits under the same budget. [Activity timeouts and retries](https://docs.temporal.io/develop/typescript/activities/timeouts).
+
 World creation can require a richer bounded sequence: interpret premise/preferences, draft the local starting cast and situation, validate references, produce a preview. Do not launch one agent per person, faction or location. A single coherent structured proposal may outperform an elaborate multi-agent generation tree in both cost and consistency.
 
 Some work needs no inference: waiting, displaying a stored passage, enforcing a deadline, validating quantities and applying an accepted transition. New narrative judgment, unusual intervention and a consequential continuation usually need generation. A cheaper model is not automatically suitable for validating another model's subtle mistakes.
 
 ## Where LangGraph fits
 
-LangGraph JS is a candidate for the bounded generation workflow when branching retrieval, repair or checkpointed intermediate work earns its complexity. It supports graph orchestration and persistence; checkpointing still requires disciplined side effects and correct integration. [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview), [persistence](https://docs.langchain.com/oss/javascript/langgraph/persistence).
+Begin without LangGraph. Temporal supplies durable orchestration; plain TypeScript defines the bounded model/tool steps. LangGraph may become useful for a sufficiently complex agent graph, but persistence alone is not a reason to add another execution engine. [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview).
 
-Implement the first pipeline behind one `StorytellerRunner` interface. Evaluate it with plain TypeScript first or a small LangGraph spike; select one implementation before expanding, not two permanent engines. If the flow is one structured call and validation, retain plain TypeScript. If resumable multi-step work materially saves completed calls or clarifies branches, use LangGraph inside the worker.
+Keep model/context logic behind narrow functions used by Activities, so a later graph abstraction does not replace domain contracts. If a graph is introduced, define its bounded invocation and map every billable internal call to the same operation/attempt records. Retrying an outer Activity must not replay already paid inner calls blindly. Do not run a separate graph checkpointer as a competing authority for story progression.
 
-If adopted, each graph thread corresponds to a generation run, not the entire lifetime of a story. PostgreSQL domain state and schedules remain authoritative. Checkpoint references point to immutable inputs/results; they do not become a second inventory or deadline system. Do not leave a graph invocation sleeping for five real hours waiting for a player: finish the operation and let the application schedule the next one. LangGraph platform hosting is not required merely to use the library.
+Any graph state would concern a bounded generation operation, not the lifetime of the story. Long waits and player input remain in Temporal, and committed inventory/facts remain in PostgreSQL. LangGraph platform hosting is not part of the design.
 
 ## OpenRouter and LiteLLM
 

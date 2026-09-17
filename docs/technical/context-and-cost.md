@@ -53,6 +53,8 @@ Reserve each attempt, or an operation envelope covering all permitted attempts, 
 
 An HTTP timeout can leave the provider request running and billable. Do not release its reservation immediately and send another call blindly. Mark usage uncertain, retain a conservative reservation, reconcile through provider identifiers where available and allow manual/operator resolution. Cancellation is best effort; it cannot promise zero charge.
 
+Temporal replay can reuse a recorded Activity result, but an unacknowledged Activity can retry. Its first step must inspect the persisted attempt and reservation. Bound total provider attempts across Temporal retries, SDK retries and model repair; no individual layer may create a fresh allowance. Returning artifact references rather than full prompts/results also limits workflow-history storage and exposure.
+
 Absolute provider spend caps cannot be guaranteed solely from token estimates if prices, upstream retries or reporting are uncertain. Combine conservative application admission control with gateway/account limits where available, bounded attempts, alerts and a global kill switch. Explain the uncertainty rather than advertising mathematically exact billing control we do not have.
 
 ## A concrete cost envelope

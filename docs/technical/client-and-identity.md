@@ -34,7 +34,7 @@ Apply account and IP rate limits to account entry, story creation and expensive 
 
 ## HTTP commands and SSE updates
 
-Use a small REST API with shared runtime schemas and generated/documented HTTP contracts. Illustrative operations are create story, accept invitation, start, submit intent, pause, resume, read snapshot and page chronology. No GraphQL requirement. A `202` can acknowledge an accepted asynchronous command; return an operation identifier the client can reconcile.
+Use a small REST API with shared runtime schemas and generated/documented HTTP contracts. Illustrative operations are create story, accept invitation, start, submit intent, pause, resume, read snapshot and page chronology. No GraphQL requirement. A `202` acknowledges a persisted command receipt, not completed execution. Return its identifier and pending status; the client reconciles through the receipt and current snapshot while Temporal processes it.
 
 For example, `POST /api/stories/:storyId/decisions/:decisionId/intents` carries `characterId`, `optionId` (or permitted text), `decisionVersion` and `submissionVersion`, with an idempotency header. The server returns an operation/submission reference and current decision version. Use explicit error codes for expired choice, stale version, forbidden actor and exhausted allowance so the UI can explain the actual problem. Transport errors alone do not tell a client whether its command committed; retry using the same key or read the operation status.
 
@@ -42,11 +42,13 @@ Updates use SSE because the server mainly tells browsers that a committed revisi
 
 Publish small authorized update envelopes with story ID, public revision/cursor and change kind. Do not send hidden plans, full model traces or raw database rows. On receipt, update or refetch the snapshot. Order by server revision, ignore duplicates and never replace a newer snapshot with an older HTTP response.
 
-A transport update such as `story.changed` or `decision.changed` is a notice about committed application data. It is different from a fictional event in the narration and from a worker job such as `resolve-decision`. Give each payload a schema version and stable identifier; do not expose an internal queue message as the public API merely because both are called events.
+A transport update such as `story.changed` or `decision.changed` is a notice about committed application data. It is different from a fictional event in the narration, a Temporal Signal or an Activity invocation. Give each payload a schema version and stable identifier; do not expose workflow internals as the public API merely because both are called events.
 
 On reconnect, either replay authorized retained updates from a cursor or return a fresh snapshot when history is unavailable. Subscribe before taking the snapshot and buffer subsequent updates, or use an equivalent watermark protocol to avoid missing a change between the read and subscription. Periodic lightweight revision checks repair missed live signals.
 
-Across API instances, Redis Pub/Sub can fan out invalidation hints, but it has at-most-once delivery. Retain the durable truth in PostgreSQL and recover through snapshots/cursors. A BullMQ job consumed by one worker is not a broadcast to every connected browser. [Redis Pub/Sub semantics](https://redis.io/docs/latest/develop/pubsub/).
+Initially use PostgreSQL LISTEN/NOTIFY for compact live-change hints between Activity workers and API instances. Issue the notification with the state transaction so it becomes visible after commit. Each API listener uses a dedicated connection and authorizes which connected clients may receive the resulting update. Send IDs/revisions, not private narrative content. Monitor listener health and notification backlog; long listener transactions must not obstruct delivery. [PostgreSQL NOTIFY](https://www.postgresql.org/docs/current/sql-notify.html).
+
+These hints are not durable replay. Reconnect and periodic revision checks repair missed messages using PostgreSQL snapshots; user browsers never connect to the database. If fan-out volume later warrants Redis Pub/Sub, it replaces this hint transport only. Temporal Task Queues distribute workflow/Activity work, not browser broadcasts, and a second background queue would not solve that distinction.
 
 Configure proxy buffering, heartbeat intervals and idle timeouts for SSE. Next.js supports self-hosted streaming, but the entire hosting path must preserve it. If a selected host cannot, change transport/hosting deliberately rather than assuming streaming works through every proxy. [Next.js self-hosting](https://nextjs.org/docs/app/guides/self-hosting).
 

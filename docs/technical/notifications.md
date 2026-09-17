@@ -27,9 +27,9 @@ WhatsApp is not part of the proposed first integration. Do not build several pro
 ## Delivery flow
 
 1. A committed story change writes a notification intent to the outbox in the same transaction.
-2. A worker resolves recipients, current membership, preferences and channel subscriptions. Check whether the request is still relevant before sending.
-3. Persist an application notification ID and per-recipient/channel delivery record. Submit a short payload containing type, safe preview, story reference, decision reference if applicable and deadline.
-4. Retry only eligible transport failures within the notification's useful lifetime. Retain provider acknowledgements when available. Disable expired subscriptions and support unlinking a channel.
+2. The outbox relay starts a bounded Temporal delivery workflow with a stable notification ID. A repeated start must locate the existing operation rather than send again. Delivery proceeds independently of the story workflow so a slow push provider does not block story progression.
+3. Activities resolve recipients, current membership, preferences and channel subscriptions, then persist per-recipient/channel delivery records. Check relevance immediately before sending a short payload with type, safe preview, story reference, decision reference if applicable and deadline.
+4. Configure Activity retries only for eligible transport failures within the notification's useful lifetime, checking recorded delivery state on each attempt. Retain provider acknowledgements when available. Disable expired subscriptions and support unlinking a channel.
 5. Opening the notification fetches current authorized state. If the decision ended, show the outcome; do not execute a stale command from the URL.
 
 Acceptance by a push service is not proof that a person saw the message. Even successful delivery cannot guarantee five minutes of human attention. Response windows begin from an authoritative story publication rule, not an unverifiable read receipt. Best-effort contact and permitted fallback behavior are both necessary.

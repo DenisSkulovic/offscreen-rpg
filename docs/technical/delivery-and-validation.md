@@ -4,7 +4,7 @@ The portfolio should demonstrate a coherent system operating under failure, not 
 
 ## Local development
 
-Use Docker Compose for PostgreSQL and Redis, with application processes running locally for fast TypeScript feedback. Also provide a full container profile for a reproducible demonstration. Add object storage locally only when media is implemented; use static sample artwork before then. Avoid a dozen mandatory monitoring containers just to open the homepage.
+Use Docker Compose for application PostgreSQL and a local Temporal development service, with application processes running locally for fast TypeScript feedback. Persist local Temporal state when demonstrating restart recovery; an ephemeral test service cannot prove persistence across service restarts. Also provide a full container profile for a reproducible demonstration. Add object storage locally only when media is implemented; use static sample artwork before then. Redis is not a required local dependency.
 
 Provide a deterministic fake storyteller/provider for tests and a no-paid-key demo. It should follow the same structured proposal contract as the live adapter and clearly identify itself as a scripted demonstration. Live calls require explicit configured credentials and a budget. Never run paid model tests automatically for arbitrary pull requests.
 
@@ -12,30 +12,31 @@ Pin supported runtime/dependency versions, the package manager and container ima
 
 ## First hosted deployment
 
-Use one region with containerized web, API and workers, a managed PostgreSQL database and a compatible Redis service. A small VM with Compose is also viable for a personal demo if its availability limitations are understood. Select the host after checking persistent worker execution, SSE timeouts, resource cost and backup support. Do not choose a host whose background tasks disappear when an HTTP request returns.
+Use one region with containerized web, API and Temporal workers plus managed application PostgreSQL. Prefer Temporal Cloud for the first hosted release if its measured cost fits the project budget; we still run our own application workers. Confirm current pricing, retention and connectivity before provisioning. Self-hosting Temporal is an alternative only with an explicit plan for its persistence, upgrades, security and recovery. A development server or casual Compose setup is not the production service. [Temporal deployment](https://docs.temporal.io/self-hosted-guide/deployment).
 
-Run schema migrations once as a controlled release step. Use expand/contract changes where old and new processes overlap. Version durable job payloads because queued work can outlive a deployment. A deployment must drain workers gracefully or let their leases expire safely; it must not erase schedules.
+Run application schema migrations once as a controlled release step. Use expand/contract changes where old and new processes overlap. Version Activity and message payloads because executions can outlive a deployment. Use compatible workflow changes or supported worker/workflow versioning, replay representative histories before rollout and drain workers gracefully. A new build must not strand running stories through nondeterministic replay. Temporal persistence upgrades are separate from application migrations. [Temporal workflow versioning](https://docs.temporal.io/develop/typescript/workflows/versioning).
 
-Set Redis memory policy for queues so keys are not silently evicted; BullMQ recommends `noeviction` and persistence. Keep optional evictable caches separate when introduced, because queue durability and cache eviction have different needs. Redis recovery still depends on PostgreSQL reconciliation. [BullMQ production guidance](https://docs.bullmq.io/guide/going-to-production).
+Separate short control Activities from long model/media work through Temporal Task Queues and concurrency limits. Begin with a small number of worker roles, not one queue per story. Reserve capacity for command processing and pause handling while generation is in flight. Monitor the outbox relay that connects database receipts to Temporal; its retry policy is independent of expensive model work.
 
-Back up PostgreSQL and demonstrate a restore. Define media retention and backup expectations. Postgres connection limits, model concurrency and provider rate limits are real capacity constraints; set bounded pools and backpressure before adding replicas. Track scheduling lag rather than claiming arbitrary scale.
+Back up application PostgreSQL and demonstrate a restore. Also establish Temporal history retention and recovery: restoring only application tables cannot recreate a lost execution history. Reconcile restored database revisions against workflow state before resuming affected stories. Define media retention and backup expectations. PostgreSQL connection limits, Temporal capacity, model concurrency and provider rate limits are real constraints; set bounded pools and backpressure before adding replicas. Track timer-to-effect lag rather than claiming arbitrary scale.
 
 ## Kubernetes as a deliberate extension
 
 Kubernetes is a worthwhile hands-on portfolio exercise after the containerized vertical slice works. It is not needed to make the application modular, nor does it make the database highly available automatically. Production clusters involve availability, access, networking and operational planning beyond writing deployment YAML. [Kubernetes production considerations](https://kubernetes.io/docs/setup/production-environment/).
 
-The learning/demo target is concrete: run the same web/API/worker images in a local cluster, expose them through ingress, configure environment/secrets, add readiness/liveness checks and resource requests/limits, perform a rolling update, kill a worker and verify recovery. Use managed/external stateful services for an initial hosted cluster rather than simultaneously learning to operate PostgreSQL inside Kubernetes.
+The learning/demo target is concrete: run the same web/API/worker images in a local cluster, expose the web/API through ingress, configure environment/secrets, add readiness/liveness checks and resource requests/limits, perform a rolling update, kill a worker and verify recovery. Workers poll Temporal over their service connection. Use managed/external PostgreSQL and Temporal for an initial hosted cluster rather than simultaneously learning to operate both stateful systems inside Kubernetes.
 
-Keep manifests small. Add autoscaling only after measuring a meaningful signal such as queue lag/concurrency; CPU alone may not describe model-waiting workers. Do not introduce service mesh, multi-region replication, operators or Helm abstractions simply to make the repository look advanced.
+Keep manifests small. Add autoscaling only after measuring a meaningful signal such as Task Queue schedule-to-start latency or available worker slots; CPU alone may not describe model-waiting workers. Do not introduce service mesh, multi-region replication, operators or Helm abstractions simply to make the repository look advanced.
 
 ## Observability
 
-Correlate request, story, command, decision, generation run, job and delivery identifiers. Structured logs report state transitions and failure categories without exposing secrets or raw private story content by default. Trace slow paths across HTTP, queue wait, context assembly, model attempts and commit.
+Correlate request, story, command, decision, generation operation, Temporal Workflow ID/Run ID, Activity and delivery identifiers. Structured logs report state transitions and failure categories without exposing secrets or raw private story content by default. Use replay-aware workflow logging to avoid misleading duplicate logs. Trace slow paths across command receipt, Temporal task wait, context assembly, model attempts and commit.
 
 Track at least:
 
 - Command acknowledgement and time to committed continuation.
-- Due-action lag, oldest unpublished outbox item and expired leases.
+- Timer-to-effect lag, unprocessed command age, oldest unpublished outbox notice and Task Queue latency.
+- Failed/stuck workflows, repeated Activity timeouts and workflow-history growth.
 - Generation validation/repair failures and stale results discarded.
 - Input/output/cache usage and cost per accepted continuation and unattended story-day.
 - Delivery acceptance/failure and expired notifications, without calling acceptance “read.”
@@ -45,7 +46,9 @@ Start with structured logs, basic metrics and a useful AI trace destination. Add
 
 ## Tests that demonstrate the architecture
 
-Use a test runner such as Vitest for pure policy/contract tests, real PostgreSQL/Redis integration tests for transactions and jobs, and Playwright for browser flows. Verify NestJS build/decorator compatibility when scaffolding rather than selecting test configuration by habit. Use controlled clocks in domain tests; real queue smoke tests should not pretend to control provider or OS time.
+Use a test runner such as Vitest for pure policy/contract tests, PostgreSQL plus Temporal integration tests for execution, and Playwright for browser flows. Verify the runner's compatibility with NestJS decorators and Temporal's Node worker/test environment when scaffolding. Temporal's test environment supports time skipping, allowing multi-hour waits to be exercised quickly. [Temporal testing](https://docs.temporal.io/develop/typescript/best-practices/testing-suite).
+
+Temporal test time does not advance PostgreSQL's wall clock. For workflow-only tests, mock timing/admission Activities consistently; for cross-system deadline tests, use short real durations or an explicit test clock adapter aligned on both sides. Include history replay and Continue-As-New tests. Keep real service restart tests separate from time-skipping tests so the demonstration actually proves recovery.
 
 | Scenario | Evidence required |
 | --- | --- |
@@ -53,8 +56,11 @@ Use a test runner such as Vitest for pure policy/contract tests, real PostgreSQL
 | Two players plus deadline | Deterministic sealing of valid submissions; one coherent outcome. |
 | Pause during inference | Result cannot advance a paused story; resume preserves remaining time. |
 | Companion changes apple location | Old prepared continuation is rejected; billed attempt remains accounted for. |
-| Worker dies after commit, before job acknowledgement | Retry returns existing outcome rather than applying it again. |
-| Redis loses queued work | Reconciler recovers pending database actions. |
+| Worker dies after database commit, before Activity completion is recorded | Retry returns existing outcome rather than applying it again. |
+| Command receipt commits while Temporal is unavailable | Outbox delivery eventually wakes the workflow; pre-deadline admission is preserved. |
+| Worker restarts during a long timer | Workflow replays and continues without recreating the wait or calling the model again. |
+| Continue-As-New with pending inputs | Commands remain ordered and deduplicated across runs. |
+| New workflow build meets an existing history | Replay is compatible or the prior worker version remains available. |
 | Model timeout with unknown billing | Reservation remains conservative; no uncontrolled retry cascade. |
 | Concurrent budget requests | Aggregate reservations never exceed the application's available allowance. |
 | Out-of-order browser responses/reconnect | UI converges on the latest authorized revision. |
@@ -68,8 +74,8 @@ CI should run formatting/linting, type checks, contract/policy tests, relevant i
 ## Implementation order
 
 1. **Prove integration seams:** scaffold the workspace, verify OAuth/session handling with Nest/Next, same-origin SSE and phone notification feasibility. Select shared decision/pause defaults and the first phone channel. These small checks can prevent expensive architectural rework.
-2. **Build a fake-provider vertical slice:** create/invite/start, show the scene, submit intentions, resolve a timed choice, pause/resume and reconnect. Persist it in PostgreSQL and execute jobs through the outbox/BullMQ path.
-3. **Add real bounded generation:** premise to preview, structured continuation, relevant context, cost reservation and traces. Use the apple scenario to select plain orchestration or LangGraph based on actual workflow needs.
+2. **Build a fake-provider vertical slice:** create/invite/start, show the scene, submit intentions, resolve a timed choice, pause/resume and reconnect. Use PostgreSQL receipts/outbox, one story workflow and idempotent Activities. Prove worker restart and duplicate-message handling before adding paid calls.
+3. **Add real bounded generation:** premise to preview, structured continuation, relevant context, cost reservation and traces. Keep model/tool steps in TypeScript Activities and verify ambiguous-call recovery; add no second agent orchestration engine without an actual need.
 4. **Make absence convincing:** phone updates, fallbacks, recap, restart recovery and measured quiet-versus-active costs. Demonstrate a remembered fact changing a later scene.
 5. **Polish and showcase:** atmosphere and optional images, clear setup instructions, a scripted demo, evaluation examples and failure-recovery evidence. Then add the Kubernetes deployment exercise without rewriting the application as microservices.
 

@@ -1,60 +1,78 @@
-# Story execution and scheduling
+# Story execution with Temporal
 
-There is no global simulation tick. The system records when something should next be reconsidered or published and wakes work at that boundary. UI countdowns are local displays of server timestamps; they do not advance the story or call a model.
+Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. There is no global simulation tick and no independent database scheduler driving the same story.
 
-## Commit first, dispatch reliably
+## One workflow per story
 
-When an operation changes a story, one PostgreSQL transaction writes the new state, chronology, pending schedule changes and outbox work. A dispatcher publishes outbox work to BullMQ and marks it dispatched after acknowledgement. A crash between publishing and marking can publish twice; consumers must tolerate this.
+Use a stable Workflow ID derived from the story ID. Its execution chain coordinates that story's current interval, open decision, pause state and generation operation. It holds compact control state and references, not the entire narrative or model context. Creation can use a separate bounded workflow to produce the preview; starting live progression is an explicit command.
 
-Dispatchers claim small batches with leases in short transactions, release database locks before network publication and mark completion conditionally on the claim token. Multiple dispatchers can share the work without holding a database transaction open while Redis is unavailable. Outbox backlog remains queryable even when dispatch stops.
+Workflow code uses deterministic TypeScript and Temporal primitives. Database reads/writes, model requests and notification sends execute as Activities. A recorded Activity result is reused on replay; an Activity whose completion was not recorded may run again. Consequently, database effects and external requests still need idempotency and explicit retry policies. [Temporal Activities](https://docs.temporal.io/develop/typescript/activities).
 
-Store delayed actions durably in PostgreSQL. BullMQ delayed jobs are wake-up hints, not the only copy of a deadline. A reconciler scans indexed overdue or insufficiently dispatched actions, reacquires expired leases and republishes missing work. Dispatch a bounded upcoming horizon rather than loading an indefinite future into Redis.
+Temporal timers persist across downtime without occupying a waiting worker. They express the journey delay and decision window; they do not guarantee execution or phone delivery at an exact wall-clock instant. Keep enough worker capacity to process wake-ups promptly. [Durable timers](https://docs.temporal.io/develop/typescript/workflows/timers).
 
-BullMQ explicitly does not guarantee execution at the exact requested delayed time. Queue load and worker availability matter. Its retry guidance also requires idempotent jobs. Our deadline validation therefore happens against database state, not whichever message happens to arrive first. [Delayed jobs](https://docs.bullmq.io/guide/jobs/delayed), [idempotent jobs](https://docs.bullmq.io/patterns/idempotent-jobs).
+## Responsibility at the database boundary
 
-## A choice from click to consequence
+The workflow decides what operation to attempt next. An Activity commits it under PostgreSQL constraints and returns the resulting revision, control epoch and timing projection. The workflow then creates or adjusts its durable timer. A crash after database commit but before Activity acknowledgement retries the same operation and returns its existing result, allowing the workflow to resume safely.
 
-1. The client submits a decision ID/version, character, option or permitted intent, and an idempotency key.
-2. The API starts a short transaction, locks the story/decision in a consistent order, checks membership, character control, lifecycle and deadline, then records the submission. Scope idempotency keys by actor and operation/story. An authorized duplicate with the same request hash returns its prior result; reusing a key for different content is rejected.
-3. When the chosen shared-decision policy says inputs are complete, freeze the submissions and permitted defaults. Move the decision to resolving, create a generation run if needed and write outbox work. Return an acknowledgement without waiting for the model.
-4. A worker claims the run with a lease and attempt token. It loads a consistent snapshot, reserves budget and performs bounded generation outside any database transaction.
-5. The worker validates the proposal, then starts another short transaction. Recheck the narrative revision, decision/run identity, scheduling generation, lifecycle, current permissions and attempt token. Apply the outcome, append chronology, close the decision, create the next work and publish outbox entries atomically.
-6. If those preconditions no longer hold, retain attempt usage but do not publish stale fiction. Reuse only after explicit revalidation; otherwise discard or request a bounded replacement.
+Deadline timestamps in PostgreSQL support the UI and command admission. They are the persisted contract of a published decision, not a queue that another scheduler scans to resolve stories. Arm timers from the returned absolute due time, using the remaining duration rather than starting the full interval again after recovery. Deadline-triggered sealing checks that database time has reached the cutoff; if a timer wakes early due to clock differences, it returns the remaining wait. Early sealing because all required players are ready follows the separate group policy. If the workflow's cached revision disagrees with PostgreSQL, reconcile through an Activity before advancing; never overwrite a newer committed state with stale workflow memory.
 
-PostgreSQL row locks coordinate conflicting writes; they are released at transaction end. We use that mechanism for short application commits, not for holding a story locked during network inference. [PostgreSQL locking](https://www.postgresql.org/docs/current/explicit-locking.html).
+## Commands and durable delivery
 
-## Deadlines and races
+1. The API validates session, membership, character control and request shape. Look up an authorized prior receipt before applying new-command version/deadline checks, so retrying an accepted command after expiry still returns its receipt. Under a short story/decision lock, check eligibility and persist a new command receipt with a per-story sequence plus an outbox notice. Scope idempotency keys by actor, story and operation; reject reuse with different content.
+2. Return `202` with a receipt ID and pending status. This means the request was durably received, not that its fictional consequence or pause has completed. Clients observe the receipt/current snapshot for the result.
+3. A small outbox relay starts the workflow with its stable ID or signals the running workflow that commands are available. Retry uncertain delivery with the same application message ID. Mark delivery only after Temporal acknowledges it. The relay moves messages across the PostgreSQL/Temporal boundary; it never executes game timers or story logic.
+4. A signal handler wakes the workflow's serialized command processor. An Activity reads pending commands in sequence and applies or rejects them against current permissions/state. Record each processed receipt and its result transactionally. Duplicate or out-of-order wake-up signals do not reorder the stored commands.
 
-Recommended admission rule: a submission is accepted only if the database wall clock is before the active deadline when checked under the decision lock. Sample the clock after obtaining the lock, not a client timestamp or a transaction-start timestamp captured before waiting. At the deadline, resolution seals the accepted set and fills permitted missing inputs. Client-visible latency near that boundary must produce an explicit expired response.
+Signals are asynchronous notices; Temporal Updates can provide a processed response, while Queries read workflow state. The first API uses persisted command receipts plus Signals so reception survives a Temporal outage. Do not equate a signal acknowledgement with successful command execution. Updates can be introduced for a specific interaction if they simplify its response contract. [Workflow messages](https://docs.temporal.io/develop/typescript/workflows/message-passing).
 
-If an API submission wins the lock before expiry, the deadline worker sees it. If resolution has already sealed the decision, the submission cannot change it. The winner commits once; the loser returns current state. Do not promise that a click made before a countdown reaches zero will arrive in time over an unreliable network.
+The relay claims bounded outbox batches with short leases and releases database locks before network I/O. Polling an unpublished-message index is sufficient; no queue product is needed for that bridge. Check workflow existence/health when delivery fails, and surface unexpectedly closed or failed executions instead of silently starting the same story from scratch. Define Workflow ID conflict/reuse policy explicitly at implementation.
 
-Story transitions are serialized per story, while unrelated stories run concurrently. Worker concurrency and Redis locks alone are insufficient: HTTP requests, retries and deadline workers can all race. Database constraints, version checks and unique causation keys are the final protection.
+## From decision to consequence
 
-An expired worker lease can cause another attempt to begin while the original network request is still running. A monotonically changing claim token prevents the old worker from committing after takeover. It cannot guarantee the upstream provider did not bill both requests; see [cost handling](context-and-cost.md).
+When enough participants are ready or the timer fires, a sealing Activity drains eligible admitted commands and freezes the accepted intentions/defaults in one transaction. Store a stable resolution ID. The workflow then invokes bounded context/generation Activities outside the transaction, followed by a commit Activity.
 
-## Pause, resume and changed plans
+Commit validates the expected narrative revision, resolution identity, lifecycle, permissions and control epoch. It applies the outcome, chronology and delivery intents atomically, returning references and the next interval/decision timing. A unique causation key prevents a retry from applying the same result twice. PostgreSQL row locks protect short conflicting commits, not the duration of inference. [PostgreSQL locking](https://www.postgresql.org/docs/current/explicit-locking.html).
 
-Pause is a story command, not `queue.pause()`. Under the story lock, mark it paused, increment its scheduling generation and store remaining durations for active waits and response windows. A worker already running may finish inference, but cannot advance a paused story. Its result can be retained privately for later validation.
+Async workflow handlers can interleave across awaits. They should enqueue/wake rather than independently launch competing story transitions. Keep one normal resolution path per story, with an explicit control path to process pause/invalidation during a long Activity. Cancellation is best effort; the database commit fence remains decisive if the provider or Activity finishes late.
 
-Resume establishes fresh due times from saved remaining durations, increments the generation and writes new dispatch work. Old queued jobs are harmless after their generation check. Attempting to remove them is an optimization, not the safety mechanism.
+## Deadline admission and competing players
 
-A change of direction similarly invalidates incompatible continuations. In the apple example, the companion picking up the fruit makes the old location-dependent development invalid. The simplest initial policy is to invalidate the story's prepared continuation whenever its narrative revision changes; finer dependency tracking can follow only if discarded-cost measurements justify it.
+Recommended admission rule: the API accepts a decision submission into the durable inbox only if the database wall clock, sampled after acquiring the decision lock, is before its published deadline and the decision is not sealed. This makes acceptance independent of relay latency. At sealing, process all eligible receipts admitted before the cutoff; a timer firing does not bypass already admitted inputs.
 
-Pace changes need a product rule before implementation. Proposed starting behavior: apply new pace to future intervals and require explicit rescheduling of the current interval; never silently shorten an active response window for other players.
+All receipt admission and sealing use the same story/decision lock order. Once sealed, new submissions are rejected. The configured group policy determines early sealing, editable intentions and permitted defaults; Temporal does not choose those game rules.
 
-## Outages and late work
+The sealing Activity must drain commands through a transactionally captured sequence boundary, including earlier control commands, rather than trust which Signal arrived first. If a pre-deadline input reached PostgreSQL during a worker outage, recovery still includes it. A click whose request arrives after the cutoff is expired even if the phone's countdown was delayed.
 
-Overdue work is not permission to simulate every missed minute or issue a burst of model calls. Reconcile a bounded number of transitions, then hold if the unattended budget or permissions do not allow more.
+## Pause, resume and changed intentions
 
-Recommended outage policy for discussion: honor player choices already published with their original deadlines and fallback rules; when a new decision is published late because of service downtime, begin its response window at actual publication, not at its intended historical publication time. A phone may still receive the notification late; delivery is not the same as publication.
+Admitting an authorized disruptive command such as pause or changing the active plan increments a control epoch in the same transaction as its receipt. An in-flight generation based on the old epoch cannot commit after that admission. Ordinary individual submissions do not unnecessarily invalidate one another. Rejected or duplicate commands do not repeatedly increment the epoch.
 
-After a long outage, expose recovery status and provide a recap. If no valid prepared outcome or permitted fallback exists, hold the story with a reason. Queue recovery cannot invent a safe narrative outcome.
+The workflow processes the command, persists its resulting control state through an Activity, cancels or replaces the affected timer, and acknowledges completion in the receipt. Pause stores remaining durations using its durable admission timestamp, clamped at zero; resume establishes fresh due times from those durations. The UI distinguishes pause requested from paused. The exact group authority and eligibility rules remain product choices.
 
-## Work classes and failure handling
+This provides a linearization point: if a story outcome committed before pause admission, that outcome happened; if pause was admitted first, the old commit is fenced out. If a queued control command becomes inapplicable, mark its receipt rejected and reconcile the control epoch before continuing.
 
-Separate short scheduling/delivery jobs from model calls through queues and concurrency settings. A slow image generation should not starve a decision deadline. Start with one worker deployment capable of those queues; split worker pools when load measurements warrant it.
+A changed route or the companion moving the apple invalidates the current prepared continuation. Begin with conservative revision-based invalidation; introduce finer dependencies only if discarded generation cost warrants it. Pace changes should initially affect future intervals unless the player explicitly reschedules the current one; do not silently shorten another player's active response window.
 
-Retry transient transport failures with bounded backoff and jitter. Distinguish malformed model output, authentication failure, quota exhaustion, stale state and provider downtime; retrying all of them identically burns money. Exhausted jobs retain a visible failure record and a deliberate retry path. A retry reuses the logical operation ID.
+## Retry boundaries and uncertain side effects
 
-Application state changes can be effectively once through idempotency and transactions. External model billing and notification delivery are not guaranteed exactly once. Record uncertain external outcomes and reconcile rather than claiming a queue library removes this uncertainty.
+Configure Activity start-to-close and total retry/time limits by operation. Use heartbeats/cancellation for long-running work where appropriate. Separate model-call retry policy from safe database/read retries. Never allow an SDK retry loop, an agent repair loop and a Temporal Activity policy to multiply attempts beyond one operation budget.
+
+Each billable attempt has a stable operation/attempt record. Before contacting a provider, reserve its cost and record dispatch. After an ambiguous timeout or crash, a retry inspects that record; it does not automatically issue a new paid request. Reconcile usage or hold for an explicit bounded recovery policy. A later attempt gets a distinct fencing token so an older Activity cannot replace its result.
+
+Notification Activities likewise check delivery records and expiry. A send may succeed before its acknowledgement is lost; tolerate a duplicate message while ensuring its button cannot duplicate a game action. Temporal guarantees durable orchestration, not exactly-once billing or human notification delivery.
+
+## Long-lived execution and deployment
+
+Use Continue-As-New at safe boundaries to keep history bounded, carrying compact control state, pending references and the processed command cursor into the new run. Finish message handlers and account for pending messages before rollover. Application receipt deduplication remains valid across runs. Keep large prompts, images and prose outside workflow history, referenced by artifact ID. [Continue-As-New](https://docs.temporal.io/develop/typescript/workflows/continue-as-new).
+
+Every new run drains unprocessed database receipts before waiting, including messages admitted during rollover. A wake-up Signal is a hint to read that durable inbox, not the sole copy of the player's command.
+
+Compatible workflow code matters because old executions replay after deployment. Use supported workflow/worker versioning, history replay tests and a rollout plan for active stories. Do not assume changing a TypeScript function is safe for every running workflow. [Workflow versioning](https://docs.temporal.io/develop/typescript/workflows/versioning).
+
+## Outages and recovery
+
+When Temporal or workers are unavailable, the API may still receive eligible commands, but exposes pending processing. PostgreSQL unavailability prevents safe admission and commits. On recovery, the workflow resumes and reconciles admitted commands before advancing.
+
+Overdue timers do not authorize a burst of unbounded inference. Honor already published deadlines and their permitted defaults. For a new decision published late after downtime, the proposed policy starts its response window at actual publication rather than retroactively expiring it. Bound catch-up transitions and hold with a reason if permissions, budget or valid content run out.
+
+Recover workflow state through Temporal history, not by guessing execution from a database snapshot. If Temporal persistence is actually lost, restored PostgreSQL alone is insufficient: quarantine affected stories and reconcile controlled restart from a known committed boundary. Test worker restart separately from disaster recovery of both systems.
