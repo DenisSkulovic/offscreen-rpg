@@ -18,6 +18,10 @@ Progress in balanced passes: establish the main component boundaries and represe
 - Add documents or infrastructure only when current work needs them. Do not initiate paid calls or deployment merely to flesh out an idea.
 - Git is authoritative. Keep private context, credentials and player data out of the repository.
 
+## Current development priority
+
+Live LLM calls are disabled for the current phase. The user explicitly wants broader application development and reassessment before any model spend; the saved key is not permission to experiment now. Keep the chamber as an honest test harness. Prioritize connecting premise/review/start, asynchronous intention resolution, continuity, player experience and simulated accounting over more authored scenarios or a rushed showcase. Explain the actual POC behavior and limits before revisiting live evaluation with the user. Never present a scripted branch or an opening-only model response as a playable AI storyteller.
+
 ## Live-model spending constraint
 
 The user supplied OpenRouter credit on 2026-09-17: **USD 10 total, intended to last at least a month**, not per run, per agent or per test. This is an upper ceiling, not a spending target or authorization to replenish/reset it. Prefer zero-LLM scripted tests. When live evaluation is deliberately enabled, prefer dirt-cheap models and tightly bounded calls. Never run paid calls in ordinary tests, CI, startup, background demos or unattended agent loops. Do not silently fall back to an expensive model or retry an ambiguous billed request.
