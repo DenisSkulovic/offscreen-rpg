@@ -8,6 +8,18 @@ The chronology records completed developments and choices. The current situation
 
 If a wizard is scheduled to arrive at a tower and instead becomes trapped inside an apple, the arrival did not happen. If a friend takes the apple away, its location and the trapped wizard's circumstances change together. A recap must not turn an abandoned plan into a remembered fact.
 
+## Space, movement and maps
+
+Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. Shared play makes this essential: proximity, rescue and encounters must fit both characters' circumstances at the same fictional time.
+
+A coarse, uniform 3D cube map is a candidate representation, not yet a required format for every world. Within one such map, the cube is the fixed cell unit: no differently sized cells or recursive subdivision. A mountain cell might contain a city, with a dungeon cell beneath it. A separate local map could provide a second level of detail, but two-level navigation is optional and remains undesigned. Locations inside a region do not automatically require their own map.
+
+The format must not force every story into terrestrial geography. Underwater regions can use vertical cells with different movement conditions; space may use sparse sectors and special travel links; an abstract world may have meaningful connections without meaningful metric distance. Scale and spatial meaning belong to the particular map/world. Equal-looking cells on different maps do not establish equal physical distances. A diagrammatic position must not silently become a distance used in travel calculations.
+
+The storyteller may propose places, connections and changes consistent with the setting. Once accepted, those facts constrain subsequent generation. Adjacent cells are not automatically traversable: walls, water, entrances, stairs, vehicles and portals can matter without requiring dedicated simulations for each. A teleport or other exceptional transition is an explicit change, not an unexplained correction of contradictory prose.
+
+An interactive map is deferred. Before implementing authoritative movement, choose the smallest representation that can demonstrate an interrupted journey and two characters' relative whereabouts. Rendering rotating cubes is a separate question from enforcing that consistency.
+
 ## People, objects and capabilities
 
 Give consequential people and objects consistent identity. A golden spear sold to someone remains that spear if it returns later. A passing crowd does not need a record for every member. Detail can become worth recording when a player engages with it.

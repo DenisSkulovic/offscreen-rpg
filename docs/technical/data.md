@@ -61,6 +61,16 @@ Do not store the entire evolving world in one JSON blob or implement a universal
 
 The model may introduce a temporary identifier for a new person or item. The application assigns the permanent identifier, validates references and maps temporary identifiers within the same accepted proposal. Model-supplied IDs must never gain access to another story.
 
+## Spatial model boundary
+
+Spatial data is not implemented yet. Keep location identity and accepted travel connections independent of a map renderer. Do not require every narrative location to have grid coordinates, derive traversability from neighbouring cells, or derive all travel times from Euclidean distance. For a metric grid, coordinates need a map reference and declared scale. For diagrammatic or abstract settings, display coordinates carry no implied physical distance.
+
+The candidate grid uses equal-sized cubic cells within a map. Optional regional/local maps would be separate maps with explicit relationships, not arbitrary recursive subdivision. Sparse storage is a candidate for largely empty worlds; a space setting must not require allocating all intervening empty cells. No map table, coordinate schema, pathfinding library or 3D rendering dependency is selected by these constraints.
+
+Before movement is implemented, define how a journey identifies its source, destination, permitted route and progress at an interruption. That record must distinguish being at a place from travelling between places and support consistent cross-character interaction. Define the applicable progress rule instead of assuming elapsed-time fraction equals distance fraction. Changes to route conditions or an exceptional transition must invalidate incompatible planned arrivals. These are behavioral requirements, not a settled journey schema.
+
+Map generation may combine procedural structure with model-authored meaning. Accepted geography must be validated for the selected world's connection and movement rules, then supplied as context for later generation. A visually plausible map is not evidence of reachability or coherent travel time. Shared spatial references must obey the same story isolation constraints as other domain data.
+
 ## Quantities and ownership
 
 Use typed changes for consequential state: transfer a particular item, adjust a counted resource, apply or remove a condition, establish a fact, move an entity's narrative location. Do not let the model submit arbitrary SQL or unrestricted JSON patches.

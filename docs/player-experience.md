@@ -18,6 +18,8 @@ The main view centers on the current scene: evocative presentation, concise narr
 
 An illustration can establish atmosphere. It need not be regenerated for every sentence or choice, and a delayed image must not block play. Possessions, character details and earlier passages should be accessible without competing with the current scene. A map is not required to understand every setting or journey.
 
+A later map experiment may offer a rotatable uniform cube grid, selection to inspect known places, and destination selection to request travel. A layer selector or cutaway could expose underground cells. Selecting a destination proposes movement through the applicable rules; it does not instantly relocate the character. The map should respect character knowledge rather than reveal hidden locations by default. A regional map plus one local level is a possibility, not a requirement, and worlds with abstract spatial rules may need another presentation. This experiment is deferred while the main application flow is connected.
+
 The chronology contains what happened, including autonomous choices. It helps someone understand how they reached the current situation. Returning after a long absence should offer a focused recap and then make any current decision clear; it should not require reading every quiet interval.
 
 ## Acting and waiting
