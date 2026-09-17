@@ -10,6 +10,8 @@ Time passes. A quiet interval can finish, or a development can interrupt it. The
 
 One passage might summarize a calm day, while a dangerous encounter unfolds through several moments. Neither narration nor notifications need to happen every tick.
 
+An extended ordinary life is a target playthrough, not filler between mandatory plot twists. The player may repeat a chosen intention, save for equipment, revisit familiar people and observe gradual changes over real days. Resource changes and any supported skill progression must be recorded consistently, but the exact progression rules remain open. Professions and activities are examples of content; they do not each require a dedicated simulation subsystem. The finite testing chamber does not decide the lifetime or dramatic density of the eventual character experience.
+
 Interaction presentation should be able to evolve without redefining story progression. A situation may offer a few choices today and a different form of input later. The first testing chamber uses single selection from a variable-length set; it does not establish a fixed number of options for the product. Text, multiple selection and image-based interaction remain possibilities, each requiring a clear meaning and validation before becoming supported behavior. Player input expresses an intention; it does not directly supply the resulting world changes.
 
 ## What the game remembers

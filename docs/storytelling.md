@@ -1,10 +1,12 @@
 # Storytelling
 
-The storyteller makes an ordinary continuing life become a story. It introduces developments, portrays people, offers possible responses and interprets consequences. It can introduce a raid without simulating a distant bandit leadership hierarchy. Once that raid matters to the story, its participants and consequences must remain coherent.
+The storyteller supports both ordinary continuing life and dramatic developments. Caring for a character over several real days can be the main experience: familiar places, earning and spending, practice, quiet observation and occasional conversations are worthwhile without an approaching twist. It portrays people, offers possible responses and interprets consequences. It can introduce a raid without simulating a distant bandit leadership hierarchy. Once that raid matters to the story, its participants and consequences must remain coherent.
 
 ## What guides it
 
 Its judgment draws on the premise, storytelling preferences, current situation, relevant history, character capabilities and player intentions. Tone, dramatic intensity and unpredictability are related but different: horror can unfold slowly, and a comic story can still have meaningful consequences.
+
+Frequency of unusual incidents and severity when an incident occurs are separate preferences. A mostly peaceful life with rare dangerous developments should be possible; low incident frequency must not mean that character progress stops. Conversely, routine repetition must not force escalating danger merely to keep the plot busy. Precise controls and unattended-risk permissions still need design; permission for a severe incident is not implied by permission to continue an ordinary routine.
 
 Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves. Paying for a stronger model should improve the quality of interpretation, not purchase a better chance of success.
 

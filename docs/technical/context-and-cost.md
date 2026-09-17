@@ -29,6 +29,22 @@ Keep canonical facts linked to the passage or accepted change that established t
 
 Long histories need bounded retention of raw generation traces, not deletion of the player's readable chronology. Track stored media and trace volume as costs alongside tokens. Repeated recap requests should reuse an artifact valid for the same viewer and chronology revision.
 
+## Long-running quiet play
+
+A low rate of dramatic incidents does not by itself reduce inference cost. Resolve an eligible ordinary interval without polling a model every tick to ask whether something happened. A reusable routine needs an explicit supported outcome policy, preconditions and a bounded interval; applying it is different from reusing the exact result of an earlier operation. Resource changes still occur once per completed operation, and an interruption cannot award the full planned interval as though it completed. Do not assume partial rewards are linear without a defined rule.
+
+Batch ordinary reporting and summarize repeated activity where useful. Keep consequential changes inspectable without producing one prose passage per mechanical update. Reassess when circumstances change, a player makes a new request, a relevant boundary is reached or an incident is due. Repeated checks must not redraw chance until an event appears. The first supported routine and incident policy remain to be designed; this is not authorization to implement a simulation for every profession.
+
+Fresh daily conversations can still require fresh inference even when no danger occurs. Measure routine resolution, conversation generation, memory extraction, summarization, retrieval/embeddings and recaps separately, including discarded work. Cached context does not make new dialogue free. A 30-day story is a useful evaluation scenario, not a promised price point.
+
+## Recall over many days
+
+Use current state, character-scoped learned claims and source-backed episode summaries for different purposes. Link mentions of a recurring person to a stable entity reference where identity is established. Retrieve that person's earlier episodes and unresolved commitments when they return, then expand into source passages if the summary is insufficient. Identity ambiguity must not be resolved by confidently merging strangers with similar descriptions. Semantic similarity can suggest related material; it cannot establish identity or truth.
+
+Recency alone is insufficient: an old promise may outrank yesterday's small talk. Select by current cues, explicit references, unresolved relevance and importance within a bounded context budget. Summaries can omit a detail that later matters, so retain searchable committed passages and source coverage; do not recursively summarize summaries as the only surviving record. Avoid storing every sentence as an independent fact or maintaining associations through continuous model calls. Simulated forgetting, probabilistic recall and a dedicated memory/graph service are not prerequisites for useful recall.
+
+After the first chamber works, add a scripted longevity fixture with many quiet intervals and conversations. Introduce an acquaintance early, include an unverified rumor and a lasting commitment, then revisit them on day 30 after irrelevant exchanges. Check identity, attribution, current possessions, supporting source references and bounded context size. Also check that an unrelated scene does not receive the whole history. Accelerated tests can exercise data growth and retrieval; actual wall-clock/provider cost and live narrative quality need separate measurement. This complements the short timing chamber rather than blocking its first run.
+
 ## Three different caches
 
 | Cache | What it saves | Correctness rule |

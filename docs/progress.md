@@ -48,7 +48,7 @@ Keep these slices small and connected. Do not implement a universal scene langua
 
 ### After the chamber
 
-The chamber is an integration milestone, not the full MVP. Next extend it in balanced passes with a second participant, broader continuity, absence policies, returning/recap, notification intents and simulated usage limits. Real notifications, map visualization, procedural world generation, rich inventory/economy, hosted deployment and Kubernetes are not prerequisites for the first run. Actual model quality and cost can only be evaluated later, when external services are explicitly enabled.
+The chamber is an integration milestone, not the full MVP. Next extend it in balanced passes with a second participant, broader continuity, absence policies, returning/recap, notification intents and simulated usage limits. Include a scripted 30-day quiet-life fixture: recurring routines, accumulated conversations and source-backed recognition of an early acquaintance after many irrelevant exchanges. This tests memory selection and data growth without waiting a real month or enabling models; it does not replace real-time scheduling tests. Real notifications, map visualization, procedural world generation, rich inventory/economy, hosted deployment and Kubernetes are not prerequisites for the first run. Actual model quality and cost can only be evaluated later, when external services are explicitly enabled.
 
 General agency, pacing, risk and multiplayer policies remain open in [questions](questions.md). We can use visibly declared fixture policies to exercise the plumbing without pretending they settle the product. Resolve the affected contracts before each implementation slice and update these statuses in place as evidence arrives.
 

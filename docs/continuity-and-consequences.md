@@ -48,6 +48,10 @@ Separate what is true in the fiction from what a character knows when that diffe
 
 The first shared experience can keep players on a common narrative view. Private character information and separate perspectives should not be promised until their presentation and interaction are designed. Even with a shared view, the storyteller should not casually make characters act on information they never acquired.
 
+Long-running play needs a distinction between established world state, character knowledge and current recall. A debt remains owed even when it is not in working context. A tavern visitor's story remains an attributed claim, not confirmed world truth. A character can recognize a returning acquaintance and retrieve a relevant earlier exchange without remembering every incidental remark from the past month.
+
+Keep modest identity and episode references for encountered people when later recognition could matter; no offscreen population simulation is necessary. Recent context, important relationships and unresolved commitments can stay readily available while older conversations are recalled through people, places, topics or objects. Being absent from current context is not deletion or proof that the character has forgotten. Deliberately vague or fallible recollection is a possible later gameplay feature, separate from accidentally losing data. Do not manufacture a memory when retrieval lacks supporting history.
+
 ## Context and cost
 
 As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request. Durable facts and quantities should not depend exclusively on a lossy summary. A small context can still preserve the spear's owner or the promise made at the mill.
