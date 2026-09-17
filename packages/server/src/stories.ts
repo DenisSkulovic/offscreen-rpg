@@ -12,6 +12,9 @@ import {
 import {
   interactionSpecificationSchema,
   interactionSchema,
+  interactionSubmissionSchema,
+  validateInteractionSubmission,
+  InteractionInputError,
 } from '@offscreen/contracts/interactions';
 
 const initialSchema = z.strictObject({
@@ -23,6 +26,7 @@ const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
+  response: interactionSubmissionSchema.nullable().default(null),
 });
 function matchesPassage(
   passage: typeof storyPassage.$inferSelect,
@@ -116,19 +120,50 @@ export function createStories(database: Database) {
         if (prior) {
           if (
             prior.sequence !== input.expectedRevision + 1 ||
-            !matchesPassage(prior, input)
+            !matchesPassage(prior, input) ||
+            !isDeepStrictEqual(
+              prior.response === null
+                ? null
+                : interactionSubmissionSchema.parse(prior.response),
+              input.response,
+            )
           )
             throw new StoryError('conflict');
           return;
         }
         if (current.revision !== input.expectedRevision)
           throw new StoryError('conflict');
+        const [active] = await tx
+          .select()
+          .from(storyPassage)
+          .where(
+            and(
+              eq(storyPassage.storyId, id),
+              eq(storyPassage.sequence, current.revision),
+            ),
+          );
+        if (!active) throw new Error('Current passage missing');
+        if (active.interaction !== null) {
+          if (input.response === null) throw new StoryError('conflict');
+          try {
+            validateInteractionSubmission(active.interaction, input.response);
+          } catch (error) {
+            if (error instanceof InteractionInputError)
+              throw new StoryError(
+                error.code === 'stale_interaction' ? 'conflict' : 'invalid',
+              );
+            throw error;
+          }
+        } else if (input.response !== null) {
+          throw new StoryError('conflict');
+        }
         const next = current.revision + 1;
         await tx.insert(storyPassage).values({
           id: randomUUID(),
           storyId: id,
           sequence: next,
           transitionId,
+          response: input.response,
           content: input.content,
           interaction: input.interaction
             ? interactionSchema.parse({

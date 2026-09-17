@@ -38,6 +38,7 @@ export const storyPassage = pgTable(
       .references(() => story.id, { onDelete: 'restrict' }),
     sequence: integer('sequence').notNull(),
     transitionId: uuid('transition_id'),
+    response: jsonb('response').$type<unknown>(),
     content: jsonb('content').notNull().$type<unknown>(),
     interaction: jsonb('interaction').$type<unknown>(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })

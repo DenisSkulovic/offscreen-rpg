@@ -22,6 +22,16 @@ Every due boundary needs a declared result path: a trusted routine outcome, a va
 
 This is the intended clock boundary, not an implemented timing schema. The first chamber still uses fixed interval durations and held response windows. General pace changes, recurring routines and condition thresholds follow after its wait/pause/recovery behavior works. A one-second tick remains a candidate where useful; measure its actual work before choosing. Repeated in-memory arithmetic need not imply per-tick persistence, narration or inference. A hybrid must use one authority for each effect so ticks and durable wake-ups cannot apply it twice.
 
+## Game-time targets and wake-up projections
+
+An event tied to the fiction is due at a position on the story's game clock, not an immutable civil-time appointment. A calendar such as “Month of Seeds, Fifth Era” is a presentation of that clock; define its calendar mapping separately from elapsed-time arithmetic. Use an ordered game-time representation with declared units before supporting custom calendar dates. Do not parse arbitrary lore strings as executable dates or compare them lexicographically.
+
+At a fixed positive pace, a scheduler can estimate the remaining real wait from remaining game duration divided by pace. That real-time wake-up is a replaceable projection. A pause removes advancement; resume or pace changes require recalculation under the accepted policy. A stale timer must recheck the game-time target, current clock/control version and event preconditions before committing. A tick implementation performs the same due checks. Neither approach may fire an event just because its old real-time projection elapsed.
+
+For example, with ten game hours remaining at two game hours per real hour, the projected wait is five real hours. After one real hour, eight game hours remain. Pausing does not consume them; resuming at four game hours per real hour gives a new two-hour estimate. This is clock arithmetic, not a selected player-facing pace control or an implemented rescheduling feature.
+
+Distinguish game-time targets from real-time response opportunities. “The eclipse begins at this fictional date” and “the player has five real minutes to reply” need different clock semantics. The chamber holds fiction during response windows and freezes the remaining response opportunity on manual pause. Event expiry, repeated occurrences, equal-time ordering and changed plans need explicit rules when implemented; occurrence identity prevents retries or repeated due checks from applying the same event twice.
+
 ## One workflow per story
 
 Use a stable Workflow ID derived from the story ID. Its execution chain coordinates that story's current interval, open decision, pause state and generation operation. It holds compact control state and references, not the entire narrative or model context. [Story lifecycle](story-lifecycle.md) defines the separate draft-generation operations and frozen start command; a generic wake-up message cannot initialize a live story.

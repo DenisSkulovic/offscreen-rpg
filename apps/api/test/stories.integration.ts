@@ -56,7 +56,15 @@ export async function checkStories(
       assert.deepEqual(a, b);
       assert.equal(a.revision, 2);
       assert.ok(a.current.interaction?.id);
-      const next = { ...proposal, expectedRevision: 2, interaction: null };
+      const next = {
+        ...proposal,
+        expectedRevision: 2,
+        interaction: null,
+        response: {
+          interactionId: a.current.interaction.id,
+          answer: { kind: 'choice.v1', optionId: 'answer' },
+        },
+      };
       const race = await Promise.allSettled([
         stories.append(owner, id, randomUUID(), next),
         stories.append(owner, id, randomUUID(), next),
@@ -126,6 +134,102 @@ export async function checkStories(
         [3, 2, 1],
       );
       assert.deepEqual(history.items[1]!.content, proposal.content);
+    },
+  );
+  await t.test(
+    'a consequence records only an answer to the current authoritative offer',
+    async () => {
+      const stories = createStories(database);
+      const id = randomUUID();
+      const initial = {
+        source: 'response-test.v1',
+        content: {
+          version: 1,
+          title: 'A visitor',
+          paragraphs: ['Someone knocks.'],
+        },
+        interaction: {
+          kind: 'choice.v1',
+          prompt: 'What now?',
+          options: [
+            { id: 'answer', label: 'Answer' },
+            { id: 'wait', label: 'Wait' },
+          ],
+        },
+      };
+      const start = await stories.initialize(owner, id, initial);
+      assert.ok(start.current.interaction);
+      const other = await stories.initialize(owner, randomUUID(), initial);
+      const proposal = {
+        expectedRevision: 1,
+        content: {
+          version: 1,
+          title: 'You answer',
+          paragraphs: ['The visitor introduces herself.'],
+        },
+        interaction: null,
+      };
+      const response = {
+        interactionId: start.current.interaction.id,
+        answer: { kind: 'choice.v1', optionId: 'answer' },
+      };
+      for (const [submitted, code] of [
+        [null, 'conflict'],
+        [
+          { ...response, interactionId: other.current.interaction!.id },
+          'conflict',
+        ],
+        [
+          { ...response, answer: { kind: 'choice.v1', optionId: 'invented' } },
+          'invalid',
+        ],
+        [{ ...response, effects: ['free gold'] }, 'invalid'],
+      ] as const) {
+        await assert.rejects(
+          stories.append(owner, id, randomUUID(), {
+            ...proposal,
+            response: submitted,
+          }),
+          (error: unknown) =>
+            error instanceof StoryError && error.code === code,
+        );
+        assert.deepEqual(await stories.read(owner, id), start);
+      }
+      const key = randomUUID();
+      const accepted = { ...proposal, response };
+      const saved = await stories.append(owner, id, key, accepted);
+      assert.equal(saved.revision, 2);
+      assert.deepEqual(
+        await createStories(database).append(owner, id, key, accepted),
+        saved,
+      );
+      const recorded = await database.db.$client.query(
+        'SELECT response FROM story_passage WHERE story_id = $1 AND transition_id = $2',
+        [id, key],
+      );
+      assert.deepEqual(recorded.rows[0].response, response);
+      await assert.rejects(
+        stories.append(owner, id, key, {
+          ...accepted,
+          response: {
+            ...response,
+            answer: { kind: 'choice.v1', optionId: 'wait' },
+          },
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      // A stale answer cannot be attached to a later passage, even at its revision.
+      await assert.rejects(
+        stories.append(owner, id, randomUUID(), {
+          ...accepted,
+          expectedRevision: 2,
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      assert.deepEqual(await stories.read(owner, id), saved);
+      assert.equal((await stories.history(owner, id)).items.length, 2);
     },
   );
   await t.test(

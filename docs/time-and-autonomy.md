@@ -14,6 +14,8 @@ Changing pace must explain what happens to an existing wait or deadline. The app
 
 ### Clock, consequences and narration
 
+A development scheduled for a fictional date follows the game clock. Its estimated real arrival can move when pace changes or the story pauses. A real-time reply allowance is a different promise to the player. Label those expectations distinctly; a fantasy calendar name does not determine how long the player waits.
+
 Separate the clock advancing, supported rules reaching a boundary, and the storyteller producing a development. During a permitted routine, code may apply a known outcome and schedule the next relevant boundary without calling a model. Reaching a condition that needs interpretation can request the storyteller. Neither a clock refresh nor each ordinary state update requires narration, a notification or a new choice screen.
 
 A once-per-second tick is a candidate cadence, not a settled requirement. It may serve display, lightweight simulation or both; those roles need not share the same implementation. Show progress from an authoritative timing anchor and pace, then reconcile with committed state. Scheduling the next meaningful boundary is another option that can preserve continuous elapsed time while doing no per-second database writes or model calls. A duration estimate does not itself prove movement, earned resources or completion.
