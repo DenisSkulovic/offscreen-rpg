@@ -8,7 +8,7 @@ Before implementation or code review, read [the code quality standard](docs/engi
 
 Use explicit, domain-named boundaries; no nested ternaries, unexplained non-null assertions or ambiguous positional ID lists. Keep application orchestration, persistence details, pure policy and fixture content distinguishable. Review the final diff as a maintainer before declaring completion. Use `pnpm lint:quality` for the additional mechanical audit; known baseline failures must be reported honestly, not hidden with suppressions.
 
-The current quality task is standards and checks only. Do not refactor the implementation, delegate cleanup or purchase cheaper model calls without a separately scoped task. Preserve unrelated edits. See the standard for detailed rules and the staged enforcement boundary.
+The [refactoring handoff](docs/engineering/refactoring-tasks.md) defines the scoped cleanup queue for a separately requested execution run. Follow it when the user asks to refactor; do not interpret standards work as permission to execute it. No mandatory OOP or generic repositories: separate transport, application, domain policy, persistence, external adapters and presentation where responsibilities differ. Preserve unrelated edits and do not purchase model calls for cleanup. See the standard for detailed rules and the staged enforcement boundary.
 
 
 For implementation work, read docs/technical/architecture.md and the technical document for the affected behavior. The design is proposed until implemented and verified; preserve explicit product questions rather than treating technical examples as settled requirements.

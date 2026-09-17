@@ -27,7 +27,7 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 ## Code quality prerequisite
 
-Apply [the engineering standard](engineering/code-quality.md) before further implementation. Existing test evidence does not establish maintainability. A separate `lint:quality` audit exposes mechanical violations; existing code has not been refactored or certified. Keep any cleanup narrowly scoped and separate from feature expansion. The current standards task does not authorize implementation refactoring.
+Apply [the engineering standard](engineering/code-quality.md) before further implementation. Existing test evidence does not establish maintainability. A separate `lint:quality` audit exposes mechanical violations; existing code has not been refactored or certified. Keep any cleanup narrowly scoped and separate from feature expansion. The [refactoring handoff](engineering/refactoring-tasks.md) provides ordered, behavior-preserving tasks for the next explicitly requested cleanup run. All tasks are pending; no implementation has been refactored by writing the standards.
 
 ## Current assessment
 

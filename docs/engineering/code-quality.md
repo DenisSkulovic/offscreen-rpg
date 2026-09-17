@@ -9,7 +9,7 @@ Read this before writing or reviewing implementation code. It defines how this r
 - Write one reviewable slice. Keep structural cleanup separate from behavior changes unless separation would be artificial or leave the new behavior unreadable.
 - Read the completed diff as a maintainer, not as its author. Trace the normal path, a rejection and a retry. Check names, dependencies and cleanup as well as assertions.
 - Do not treat green tests as approval of a confusing design. Report remaining design limitations separately from successful checks.
-- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. The current request establishes standards, not authorization for a cleanup campaign. A future cleanup needs a bounded scope and behavioral safeguards.
+- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. A cleanup needs an explicit task, bounded scope and behavioral safeguards. When asked to execute the [refactoring tasks](refactoring-tasks.md), use those bounds; do not expand into product work.
 - Preserve unrelated working-tree changes. Never run broad autofixes over another person's edits.
 
 ## Readability is the default
@@ -31,6 +31,28 @@ An operation should read as a sequence of meaningful steps at one level of detai
 As review triggers, examine handwritten modules approaching 300 lines and functions approaching 50 executable lines. These are not enforced caps or reasons to split coherent schemas, SQL, fixtures or a transaction into arbitrary files. A transaction may remain contiguous when that makes ordering and atomicity easier to audit. Explain why a large unit remains cohesive instead of gaming line counts.
 
 Do not create `utils`, `helpers`, `manager` or `common` buckets for unrelated behavior. Name modules after the responsibility. Do not add speculative interfaces, plugin registries, generic repositories, base classes or deep folder hierarchies for hypothetical reuse. Generality means stable boundaries and replaceable collaborators, not weakly typed bags of options.
+
+## Layers without mandatory OOP
+
+The aim is a codebase the owner can evolve daily for months: each behavior has an obvious home, and a local change does not require understanding the entire application. Controller/service/repository are useful responsibilities, not required classes or a mandatory chain for every operation. Use functions, modules and existing framework classes where they fit. Do not introduce five forwarding layers to satisfy a diagram.
+
+| Responsibility | Owns | Must not own |
+| --- | --- | --- |
+| Transport adapter | HTTP parsing, session extraction, status/DTO mapping | Story resolution, SQL, transaction policy |
+| Application operation | One use case, authorization decisions, transaction boundary and collaborator coordination | Framework request objects, UI state, embedded fixture stories |
+| Domain policy | Pure validation/decisions over explicit inputs, domain failures and supported effects | HTTP, database connections, Temporal APIs, model/provider calls |
+| Persistence module | Domain-named queries/writes, mappings, expected cardinality and lock operations | Choosing narrative outcomes, opening hidden nested transactions, public HTTP errors |
+| External adapter | Temporal/provider/notification protocol mapping and lifecycle | A second independent implementation of domain decisions |
+| Presentation | Rendering, accessibility and explicit client interaction state | Authority over committed time, ownership, spending or consequences |
+| Fixture source | Authored scenarios and fake outputs for known tests | Runtime branching spread across unrelated services |
+
+Organize by feature first, with a small number of internal modules separating these responsibilities. Avoid global `controllers/`, `services/` and `repositories/` trees that scatter one feature across the repo. Keep package exports as the supported boundary; consumers must not import internal file paths. Do not create a new workspace package for each layer.
+
+Queries can take a direct read path from an application operation into persistence; they need no artificial domain object. Mutations have an application-owned transaction passed into participating persistence operations. A repository may be a set of named functions such as loading an owned story or appending a passage. It must not become a generic CRUD abstraction that hides authorization scope, locking or transaction participation.
+
+Pure policy returns decisions or supported effect proposals; application code coordinates persistence. Domain failure types live where both callers and policies can use them without circular dependencies. HTTP and Temporal map those failures at their adapters. Do not move domain logic into a repository merely to shorten a service.
+
+Extraction is successful only if the operation reads more clearly and future changes have a better home. Splitting a large file into several tightly coupled files with shared mutable closure state is not an architectural improvement. Preserve cohesive transaction ordering rather than scattering its steps across callbacks with hidden effects.
 
 ## TypeScript contracts and API shape
 
@@ -90,7 +112,7 @@ Before calling an implementation slice complete, answer:
 
 `pnpm lint`, type checking, formatting and relevant tests remain required. `pnpm lint:quality` adds braces, nested-ternary and non-null-assertion checks. It is initially an opt-in full-repository audit and can fail on existing code; it is not yet a green CI gate. Do not disable rules or bulk-autofix the baseline to claim adoption. Check changed implementation files against the quality config and report existing violations separately. Most design rules still require reading the diff; no tool certifies maintainability.
 
-Current application code has known patterns these standards reject. Establishing this document does not certify or refactor it. Future cleanup should name one seam, preserve its external behavior, use relevant tests and stop before becoming an unrelated rewrite. The user has specifically asked the current assistant to establish standards rather than spend tokens performing that cleanup now.
+Current application code has known patterns these standards reject. Establishing this document does not certify or refactor it. Future cleanup should name one seam, preserve its external behavior, use relevant tests and stop before becoming an unrelated rewrite. The [refactoring tasks](refactoring-tasks.md) are the handoff for a separately requested cleanup run. Preparing that handoff does not itself execute or certify the refactor.
 
 ## Sources and adaptation
 
