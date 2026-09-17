@@ -8,7 +8,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def check():
-    files = list(ROOT.glob("*.md")) + list((ROOT / "docs").rglob("*.md"))
+    files = list(ROOT.glob("*.md"))
+    for folder in ("docs", ".agents", ".claude", ".cursor", ".github"):
+        files.extend((ROOT / folder).rglob("*.md"))
+        files.extend((ROOT / folder).rglob("*.mdc"))
     errors = []
     for path in files:
         for href in re.findall(r"\[[^\]]*\]\(([^)]+)\)", path.read_text(encoding="utf-8")):

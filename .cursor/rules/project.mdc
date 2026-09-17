@@ -1,0 +1,6 @@
+---
+description: Shared project rules and feature workflow
+alwaysApply: true
+---
+
+Read AGENTS.md at the repository root and its required shared rules before work. Use .agents/skills/feature-workflow/SKILL.md for significant features and reworks. This file is a routing adapter; canonical policies live in .agents/.

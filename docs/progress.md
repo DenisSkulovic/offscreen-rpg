@@ -4,6 +4,12 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 **Current phase:** build and connect the application using scripted generation and local/test substitutes. Paid models, paid media and paid hosted integrations remain deferred until the broader application is implemented and exercised, and the user explicitly chooses to enable them. OpenRouter credentials are now stored locally, with $10 intended to last at least a month and a strong preference for no-LLM tests or dirt-cheap models. No live adapter or budget enforcement is enabled. Before deliberate live evaluation, implement the safeguards in [spending](technical/context-and-cost.md#current-development-allowance); ordinary tests remain entirely scripted.
 
+## Engineering work
+
+Significant changes follow the [feature workflow](../.agents/skills/feature-workflow/SKILL.md), with active work in [Features](features/README.md). Codex primarily designs/reviews; Cursor handles bulk implementation.
+
+Story responsibility splits are present. Cleanup remains incomplete: the launcher stops releasing resources after the first close failure, and worker connection cleanup can skip the client connection if native close fails. Repair these failure paths with focused fault-injection checks before calling lifecycle cleanup reliable. Story integration helpers are separated by concern but still run through one shared parent lifecycle; they are not independently selectable suites. The optional full-repository quality audit still has existing debt.
+
 ## Coverage
 
 “Working” means usable within the stated boundary. “Component only” means tested code exists but its user flow is not connected. “Not started” means design exists without implementation. Deferred work is deliberately outside the current phase.
@@ -27,7 +33,7 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 ## Code quality prerequisite
 
-Apply [the engineering standard](engineering/code-quality.md) before further implementation. The [refactoring handoff](engineering/refactoring-tasks.md) is complete for tasks 1–8: story/chamber/worker/web/AI seams are extracted, story integration tests are split under one auth lifecycle, and refactor-touched files pass `lint:quality`. Full-repository `lint:quality` still fails on untouched modules (~107 findings) and is not a CI gate. Product status is unchanged: the offline storyteller is not connected to live gameplay.
+Apply [the engineering standard](engineering/code-quality.md) before further implementation. The offline storyteller is not connected to live gameplay; structural cleanup does not change product readiness.
 
 ## Current assessment
 

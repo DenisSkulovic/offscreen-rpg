@@ -9,7 +9,7 @@ Read this before writing or reviewing implementation code. It defines how this r
 - Write one reviewable slice. Keep structural cleanup separate from behavior changes unless separation would be artificial or leave the new behavior unreadable.
 - Read the completed diff as a maintainer, not as its author. Trace the normal path, a rejection and a retry. Check names, dependencies and cleanup as well as assertions.
 - Do not treat green tests as approval of a confusing design. Report remaining design limitations separately from successful checks.
-- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. A cleanup needs an explicit task, bounded scope and behavioral safeguards. When asked to execute the [refactoring tasks](refactoring-tasks.md), use those bounds; do not expand into product work.
+- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. A cleanup needs an explicit task, bounded scope and behavioral safeguards. For substantial work, follow the [feature workflow](../../.agents/skills/feature-workflow/SKILL.md).
 - Preserve unrelated working-tree changes. Never run broad autofixes over another person's edits.
 
 ## Readability is the default
@@ -112,7 +112,9 @@ Before calling an implementation slice complete, answer:
 
 `pnpm lint`, type checking, formatting and relevant tests remain required. `pnpm lint:quality` adds braces, nested-ternary and non-null-assertion checks. It is an opt-in full-repository audit and can fail on untouched existing code; it is not a CI gate. Refactor-touched handwritten files are expected to pass it. Do not disable rules or bulk-autofix the baseline to claim adoption. Check changed implementation files against the quality config and report existing violations separately. Most design rules still require reading the diff; no tool certifies maintainability.
 
-Current application code has known patterns these standards reject. Establishing this document does not certify or refactor it. Future cleanup should name one seam, preserve its external behavior, use relevant tests and stop before becoming an unrelated rewrite. The [refactoring tasks](refactoring-tasks.md) are the handoff for a separately requested cleanup run. Preparing that handoff does not itself execute or certify the refactor.
+Existing code may still violate these standards. Review each touched boundary; do not interpret extraction into files as proof of separation. Substantial redesign follows the feature workflow, with explicit intentional behavior changes.
+
+Choose verification using [the laptop-aware verification rule](../../.agents/rules/verification.md). Required relevant checks are batched at phase boundaries; the commands above are not a demand to run every repository-wide command after every edit.
 
 ## Sources and adaptation
 
