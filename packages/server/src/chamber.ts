@@ -44,7 +44,7 @@ export function createChamber(database: Database) {
     return {
       ...snapshot,
       canRespond:
-        (await source(owner, id)) === 'chamber.v2' &&
+        ['chamber.v2', 'chamber.v3'].includes(await source(owner, id)) &&
         snapshot.current.interaction !== null,
     };
   }
@@ -52,12 +52,16 @@ export function createChamber(database: Database) {
     async start(
       owner: string,
       id: string,
-      scenario: 'chamber.v1' | 'chamber.v2' = 'chamber.v1',
+      scenario: 'chamber.v1' | 'chamber.v2' | 'chamber.v3' = 'chamber.v1',
     ) {
       await stories.initialize(
         owner,
         id,
-        scenario === 'chamber.v1' ? opening : playableOpening,
+        scenario === 'chamber.v1'
+          ? opening
+          : scenario === 'chamber.v2'
+            ? playableOpening
+            : timedOpening,
       );
       return read(owner, id);
     },
@@ -70,15 +74,16 @@ export function createChamber(database: Database) {
       const parsed = respondToStorySchema.safeParse(body);
       if (!parsed.success) throw new StoryError('invalid');
       await stories.read(owner, id);
-      if ((await source(owner, id)) !== 'chamber.v2')
+      const scenario = await source(owner, id);
+      if (!['chamber.v2', 'chamber.v3'].includes(scenario))
         throw new StoryError('conflict');
       const { expectedRevision, submission } = parsed.data;
       // Pure, versioned fixture policy. Resolve from the submitted base revision
       // so an acknowledged-late retry proposes the same outcome after progression.
-      const outcome = continuation(
-        expectedRevision,
-        submission.answer.optionId,
-      );
+      const outcome =
+        scenario === 'chamber.v3'
+          ? timedContinuation(expectedRevision, submission.answer.optionId)
+          : continuation(expectedRevision, submission.answer.optionId);
       await stories.append(owner, id, operationId, {
         expectedRevision,
         response: submission,
@@ -145,6 +150,72 @@ function continuation(revision: number, option: string) {
         paragraphs: [
           '“I was going to tell a joke about a gate, but I could not find an opening.”',
           'A laugh comes from the other side. You exchange goodbyes, and your visit ends.',
+        ],
+      },
+      interaction: null,
+    };
+  throw new StoryError('conflict');
+}
+
+const timedOpening = {
+  source: 'chamber.v3',
+  content: {
+    version: 1,
+    title: 'A visit across the courtyard.',
+    paragraphs: ['You are at home. A friend is waiting in the courtyard cafe.'],
+  },
+  interaction: {
+    kind: 'choice.v1',
+    prompt: 'What would you like to do?',
+    options: [
+      { id: 'visit', label: 'Walk to the cafe (20 seconds)' },
+      { id: 'leave', label: 'Stay home and end this visit' },
+    ],
+  },
+};
+function timedContinuation(revision: number, option: string) {
+  if (revision === 1 && option === 'visit')
+    return {
+      content: {
+        version: 1,
+        title: 'Crossing the courtyard.',
+        paragraphs: [
+          'You set out toward the cafe. You may close this page; the visit will continue.',
+        ],
+      },
+      interaction: null,
+      wait: {
+        version: 1,
+        realDurationMs: 20000,
+        gameDurationMs: 600000,
+        arrival: {
+          content: {
+            version: 1,
+            title: 'At the cafe.',
+            paragraphs: [
+              'You arrive after ten minutes in the story. Your friend waves you over.',
+            ],
+          },
+          interaction: {
+            kind: 'choice.v1',
+            prompt: 'How do you greet your friend?',
+            options: [
+              { id: 'joke', label: 'Tell a joke' },
+              { id: 'leave', label: 'Say goodbye and leave' },
+            ],
+          },
+        },
+      },
+    };
+  if (revision === 1 && option === 'leave') return continuation(1, 'leave');
+  if (revision === 3 && option === 'leave') return continuation(2, 'leave');
+  if (revision === 3 && option === 'joke')
+    return {
+      content: {
+        version: 1,
+        title: 'Coffee and a laugh.',
+        paragraphs: [
+          '“I tried to catch the fog on my way here. Mist.” Your friend groans, then laughs. You enjoy your coffee and head home.',
         ],
       },
       interaction: null,

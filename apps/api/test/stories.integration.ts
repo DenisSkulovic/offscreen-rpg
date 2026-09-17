@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
@@ -16,6 +17,7 @@ export async function checkStories(
   origin: string,
   cookie: string,
   otherCookie: string,
+  restartWorker: () => Promise<void>,
 ) {
   await t.test(
     'scripted responses connect authenticated HTTP to saved branches and safe retries',
@@ -485,6 +487,7 @@ export async function checkStories(
         );
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
+        await page.getByLabel('Scenario').selectOption('chamber.v2');
         await page
           .getByRole('button', { name: 'Start scripted chamber' })
           .click();
@@ -533,6 +536,72 @@ export async function checkStories(
             .count(),
           0,
         );
+        await page.goto(`${origin}/chamber`);
+        await page
+          .getByRole('button', { name: 'Start scripted chamber' })
+          .click();
+        await page
+          .getByRole('button', { name: 'Walk to the cafe (20 seconds)' })
+          .click();
+        await page
+          .getByRole('heading', { name: 'Crossing the courtyard.' })
+          .waitFor();
+        const timedUrl = page.url();
+        const timedId = new URL(timedUrl).searchParams.get('id')!;
+        const waiting = await createStories(database).read(owner, timedId);
+        assert.ok(waiting.waiting);
+        assert.ok(
+          (await createStories(database).advanceInterval(waiting.current.id))! >
+            0,
+        );
+        await assert.rejects(
+          createStories(database).append(owner, timedId, randomUUID(), {
+            expectedRevision: waiting.revision,
+            content: waiting.current.content,
+            interaction: null,
+          }),
+          (error: unknown) =>
+            error instanceof StoryError && error.code === 'conflict',
+        );
+        await page.close();
+        // Wait until dispatch is acknowledged, then restart the worker while the
+        // persisted interval is still pending. No browser is driving progression.
+        const dispatchLimit = Date.now() + 10000;
+        let delivered = false;
+        while (!delivered && Date.now() < dispatchLimit) {
+          const result = await database.db.$client.query(
+            'SELECT delivered_at FROM outbox WHERE id = $1',
+            [waiting.current.id],
+          );
+          delivered = result.rows[0]?.delivered_at != null;
+          if (!delivered) await delay(100);
+        }
+        assert.ok(delivered);
+        await restartWorker();
+        const deadline = Date.now() + 30000;
+        let arrived = await createStories(database).read(owner, timedId);
+        while (arrived.waiting && Date.now() < deadline) {
+          await delay(250);
+          arrived = await createStories(database).read(owner, timedId);
+        }
+        assert.equal(arrived.current.content.title, 'At the cafe.');
+        assert.equal(arrived.revision, 3);
+        assert.equal(arrived.waiting, null);
+        assert.ok(Date.now() >= Date.parse(waiting.waiting.dueAt));
+        assert.equal(
+          await createStories(database).advanceInterval(waiting.current.id),
+          null,
+        );
+        assert.equal(
+          (await createStories(database).history(owner, timedId)).items.length,
+          3,
+        );
+        const reopened = await context.newPage();
+        await reopened.goto(timedUrl);
+        await reopened.getByRole('button', { name: 'Tell a joke' }).click();
+        await reopened
+          .getByRole('heading', { name: 'Coffee and a laugh.' })
+          .waitFor();
       } finally {
         await browser.close();
       }

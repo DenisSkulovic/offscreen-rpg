@@ -112,15 +112,19 @@ test(
         cookie,
         otherLogin.headers.get('cookie')!,
       );
-      runtime = await startRuntime(
-        database,
-        {
-          address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
-          namespace: 'default',
-          taskQueue: 'browser-integration',
-        },
-        () => {},
-      );
+      const restartWorker = async () => {
+        await runtime?.stop();
+        runtime = await startRuntime(
+          database,
+          {
+            address: process.env['TEMPORAL_ADDRESS'] ?? '127.0.0.1:7233',
+            namespace: 'default',
+            taskQueue: 'browser-integration',
+          },
+          () => {},
+        );
+      };
+      await restartWorker();
       await checkDraftBrowser(t, origin, cookie);
       await checkStories(
         t,
@@ -129,6 +133,7 @@ test(
         origin,
         cookie,
         otherLogin.headers.get('cookie')!,
+        restartWorker,
       );
 
       await t.test(
@@ -306,6 +311,10 @@ test(
       );
       await database.db.$client.query(
         'DELETE FROM story_draft WHERE owner_id = $1',
+        [user.id],
+      );
+      await database.db.$client.query(
+        'DELETE FROM outbox WHERE operation_id IN (SELECT p.id FROM story_passage p JOIN story s ON s.id = p.story_id WHERE s.owner_id = $1)',
         [user.id],
       );
       await database.db.$client.query(

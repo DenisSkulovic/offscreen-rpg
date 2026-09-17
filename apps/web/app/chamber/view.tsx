@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '../stories/session-refresh';
@@ -16,6 +16,40 @@ export function Chamber({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const operation = useRef(initialId);
+  const [scenario, setScenario] = useState('chamber.v3');
+  const waitingUntil = story?.waiting?.dueAt;
+  const storyId = story?.id;
+  useEffect(() => {
+    if (!waitingUntil || !storyId) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function refresh() {
+      try {
+        const response = await fetch(`/api/stories/${storyId}`, {
+          cache: 'no-store',
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(10000),
+          ]),
+        });
+        if (!response.ok) throw new Error('Unavailable');
+        const latest = storySnapshotSchema.parse(await response.json());
+        if (!controller.signal.aborted)
+          setStory((prior) =>
+            !prior || latest.revision >= prior.revision ? latest : prior,
+          );
+      } catch {
+        /* Failed reads never advance the story; reopening also recovers it. */
+      }
+      if (!controller.signal.aborted)
+        timer = setTimeout(() => void refresh(), 2000);
+    }
+    timer = setTimeout(() => void refresh(), 2000);
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [waitingUntil, storyId]);
   const responseOperation = useRef<{ id: string; body: unknown } | null>(null);
   async function respond(optionId?: string) {
     if (!story || pending || !story.canRespond || !story.current.interaction)
@@ -79,7 +113,7 @@ export function Chamber({
         {
           method: 'PUT',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ scenario: 'chamber.v2' }),
+          body: JSON.stringify({ scenario }),
           signal: AbortSignal.timeout(10000),
         },
       );
@@ -99,8 +133,8 @@ export function Chamber({
       <p className="eyebrow">Scripted testing chamber</p>
       <p>
         A short branching story with saved choices and consequences. No AI
-        calls. Travel time, possessions and background progression are not
-        connected yet.
+        calls. The timed visit advances while this page is closed. Pause, pace
+        controls and possessions are not connected yet.
       </p>
       {story ? (
         <>
@@ -108,6 +142,14 @@ export function Chamber({
           {story.current.content.paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
+          {story.waiting && (
+            <p role="status">
+              Waiting for the saved arrival. Expected at {story.waiting.dueAt};
+              fictional duration: {story.waiting.gameDurationMs / 60000}{' '}
+              minutes. Processing may be delayed if the worker is unavailable.
+              Reloading does not restart the wait.
+            </p>
+          )}
           {story.current.interaction && (
             <section aria-label="Offered interaction">
               <p>{story.current.interaction.specification.prompt}</p>
@@ -161,6 +203,17 @@ export function Chamber({
       ) : (
         <>
           <h1>A small persistent beginning.</h1>
+          <label>
+            Scenario{' '}
+            <select
+              value={scenario}
+              disabled={pending || operation.current !== null}
+              onChange={(event) => setScenario(event.target.value)}
+            >
+              <option value="chamber.v3">Timed cafe visit (20 seconds)</option>
+              <option value="chamber.v2">Immediate gate conversation</option>
+            </select>
+          </label>
           <button disabled={pending} onClick={() => void start()}>
             {pending ? 'Saving…' : 'Start scripted chamber'}
           </button>

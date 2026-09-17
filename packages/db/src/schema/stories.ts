@@ -39,6 +39,8 @@ export const storyPassage = pgTable(
     sequence: integer('sequence').notNull(),
     transitionId: uuid('transition_id'),
     response: jsonb('response').$type<unknown>(),
+    waitPlan: jsonb('wait_plan').$type<unknown>(),
+    dueAt: timestamp('due_at', { withTimezone: true, precision: 3 }),
     content: jsonb('content').notNull().$type<unknown>(),
     interaction: jsonb('interaction').$type<unknown>(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
@@ -49,5 +51,9 @@ export const storyPassage = pgTable(
     unique('story_passage_sequence').on(t.storyId, t.sequence),
     unique('story_passage_transition').on(t.storyId, t.transitionId),
     check('story_passage_sequence_positive', sql`${t.sequence} > 0`),
+    check(
+      'story_passage_wait_pair',
+      sql`(${t.waitPlan} IS NULL) = (${t.dueAt} IS NULL)`,
+    ),
   ],
 );

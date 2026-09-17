@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, desc, eq, lt, lte } from 'drizzle-orm';
+import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { enqueue, type Transaction } from './outbox';
+export const storyIntervalTopic = 'story.interval.v1';
 import type { Database } from '@offscreen/db';
 import { story, storyPassage } from '@offscreen/db/story-schema';
 import {
@@ -22,11 +24,21 @@ const initialSchema = z.strictObject({
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
 });
+const waitPlanSchema = z.strictObject({
+  version: z.literal(1),
+  realDurationMs: z.number().int().min(1000).max(86400000),
+  gameDurationMs: z.number().int().positive().max(2147483647),
+  arrival: z.strictObject({
+    content: passageContentSchema,
+    interaction: interactionSpecificationSchema.nullable(),
+  }),
+});
 const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
   response: interactionSubmissionSchema.nullable().default(null),
+  wait: waitPlanSchema.nullable().default(null),
 });
 function matchesPassage(
   passage: typeof storyPassage.$inferSelect,
@@ -62,6 +74,8 @@ export function createStories(database: Database) {
         passageId: storyPassage.id,
         content: storyPassage.content,
         interaction: storyPassage.interaction,
+        waitPlan: storyPassage.waitPlan,
+        dueAt: storyPassage.dueAt,
       })
       .from(story)
       .innerJoin(
@@ -76,6 +90,13 @@ export function createStories(database: Database) {
     return storySnapshotSchema.parse({
       id: row.id,
       revision: row.revision,
+      waiting:
+        row.waitPlan === null
+          ? null
+          : {
+              dueAt: row.dueAt!.toISOString(),
+              gameDurationMs: waitPlanSchema.parse(row.waitPlan).gameDurationMs,
+            },
       current: {
         id: row.passageId,
         content: row.content,
@@ -83,8 +104,145 @@ export function createStories(database: Database) {
       },
     });
   }
+  async function commit(
+    tx: Transaction,
+    owner: string,
+    id: string,
+    transitionId: string,
+    input: z.infer<typeof continuationSchema>,
+    completingInterval?: string,
+  ) {
+    const [current] = await tx
+      .select()
+      .from(story)
+      .where(and(eq(story.id, id), eq(story.ownerId, owner)))
+      .for('update');
+    if (!current) throw new StoryError('not_found');
+    const [prior] = await tx
+      .select()
+      .from(storyPassage)
+      .where(
+        and(
+          eq(storyPassage.storyId, id),
+          eq(storyPassage.transitionId, transitionId),
+        ),
+      );
+    // Check retries before the current revision: the story may have moved on.
+    if (prior) {
+      if (
+        prior.sequence !== input.expectedRevision + 1 ||
+        !matchesPassage(prior, input) ||
+        !isDeepStrictEqual(
+          prior.waitPlan === null ? null : waitPlanSchema.parse(prior.waitPlan),
+          input.wait,
+        ) ||
+        !isDeepStrictEqual(
+          prior.response === null
+            ? null
+            : interactionSubmissionSchema.parse(prior.response),
+          input.response,
+        )
+      )
+        throw new StoryError('conflict');
+      return;
+    }
+    if (current.revision !== input.expectedRevision)
+      throw new StoryError('conflict');
+    const [active] = await tx
+      .select()
+      .from(storyPassage)
+      .where(
+        and(
+          eq(storyPassage.storyId, id),
+          eq(storyPassage.sequence, current.revision),
+        ),
+      );
+    if (!active) throw new Error('Current passage missing');
+    if (active.waitPlan !== null && completingInterval !== active.id)
+      throw new StoryError('conflict');
+    if (active.interaction !== null) {
+      if (input.response === null) throw new StoryError('conflict');
+      try {
+        validateInteractionSubmission(active.interaction, input.response);
+      } catch (error) {
+        if (error instanceof InteractionInputError)
+          throw new StoryError(
+            error.code === 'stale_interaction' ? 'conflict' : 'invalid',
+          );
+        throw error;
+      }
+    } else if (input.response !== null) {
+      throw new StoryError('conflict');
+    }
+    const next = current.revision + 1;
+    const passageId = randomUUID();
+    await tx.insert(storyPassage).values({
+      id: passageId,
+      storyId: id,
+      sequence: next,
+      transitionId,
+      response: input.response,
+      waitPlan: input.wait,
+      dueAt: input.wait
+        ? sql`clock_timestamp() + ${input.wait.realDurationMs} * interval '1 millisecond'`
+        : null,
+      content: input.content,
+      interaction: input.interaction
+        ? interactionSchema.parse({
+            id: randomUUID(),
+            specification: input.interaction,
+          })
+        : null,
+    });
+    await tx.update(story).set({ revision: next }).where(eq(story.id, id));
+    if (input.wait)
+      await enqueue(tx, {
+        id: passageId,
+        operationId: passageId,
+        topic: storyIntervalTopic,
+      });
+  }
   return {
     read,
+    /** Worker-only operation. PostgreSQL rechecks eligibility before publication. */
+    async advanceInterval(intervalId: string): Promise<number | null> {
+      identifier(intervalId);
+      return database.db.transaction(async (tx) => {
+        const [interval] = await tx
+          .select()
+          .from(storyPassage)
+          .where(eq(storyPassage.id, intervalId));
+        if (!interval || interval.waitPlan === null)
+          throw new StoryError('not_found');
+        const plan = waitPlanSchema.parse(interval.waitPlan);
+        const [current] = await tx
+          .select()
+          .from(story)
+          .where(eq(story.id, interval.storyId))
+          .for('update');
+        if (!current) throw new StoryError('not_found');
+        if (current.revision !== interval.sequence) return null;
+        const [clock] = await tx
+          .select({ now: sql<Date>`clock_timestamp()` })
+          .from(story)
+          .where(eq(story.id, current.id));
+        const remaining =
+          interval.dueAt!.getTime() - new Date(clock!.now).getTime();
+        if (remaining > 0) return remaining;
+        await commit(
+          tx,
+          current.ownerId,
+          current.id,
+          intervalId,
+          continuationSchema.parse({
+            expectedRevision: interval.sequence,
+            ...plan.arrival,
+          }),
+          intervalId,
+        );
+        return null;
+      });
+    },
     /** Internal commit for an already resolved narrative continuation.
      * Not command admission, a rule resolver or an HTTP content-writing endpoint.
      * No inference or other external work belongs inside this transaction.
@@ -100,80 +258,11 @@ export function createStories(database: Database) {
       const parsed = continuationSchema.safeParse(proposed);
       if (!parsed.success) throw new StoryError('invalid');
       const input = parsed.data;
-      await database.db.transaction(async (tx) => {
-        const [current] = await tx
-          .select()
-          .from(story)
-          .where(and(eq(story.id, id), eq(story.ownerId, owner)))
-          .for('update');
-        if (!current) throw new StoryError('not_found');
-        const [prior] = await tx
-          .select()
-          .from(storyPassage)
-          .where(
-            and(
-              eq(storyPassage.storyId, id),
-              eq(storyPassage.transitionId, transitionId),
-            ),
-          );
-        // Check retries before the current revision: the story may have moved on.
-        if (prior) {
-          if (
-            prior.sequence !== input.expectedRevision + 1 ||
-            !matchesPassage(prior, input) ||
-            !isDeepStrictEqual(
-              prior.response === null
-                ? null
-                : interactionSubmissionSchema.parse(prior.response),
-              input.response,
-            )
-          )
-            throw new StoryError('conflict');
-          return;
-        }
-        if (current.revision !== input.expectedRevision)
-          throw new StoryError('conflict');
-        const [active] = await tx
-          .select()
-          .from(storyPassage)
-          .where(
-            and(
-              eq(storyPassage.storyId, id),
-              eq(storyPassage.sequence, current.revision),
-            ),
-          );
-        if (!active) throw new Error('Current passage missing');
-        if (active.interaction !== null) {
-          if (input.response === null) throw new StoryError('conflict');
-          try {
-            validateInteractionSubmission(active.interaction, input.response);
-          } catch (error) {
-            if (error instanceof InteractionInputError)
-              throw new StoryError(
-                error.code === 'stale_interaction' ? 'conflict' : 'invalid',
-              );
-            throw error;
-          }
-        } else if (input.response !== null) {
-          throw new StoryError('conflict');
-        }
-        const next = current.revision + 1;
-        await tx.insert(storyPassage).values({
-          id: randomUUID(),
-          storyId: id,
-          sequence: next,
-          transitionId,
-          response: input.response,
-          content: input.content,
-          interaction: input.interaction
-            ? interactionSchema.parse({
-                id: randomUUID(),
-                specification: input.interaction,
-              })
-            : null,
-        });
-        await tx.update(story).set({ revision: next }).where(eq(story.id, id));
-      });
+      if (input.wait && input.interaction !== null)
+        throw new StoryError('invalid');
+      await database.db.transaction((tx) =>
+        commit(tx, owner, id, transitionId, input),
+      );
       // A retry returns today's snapshot, never an old scene to roll the UI back.
       return read(owner, id);
     },

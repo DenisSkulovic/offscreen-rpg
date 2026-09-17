@@ -11,12 +11,22 @@ import {
   scriptedOpeningTopic,
 } from '@offscreen/server/scripted-openings';
 import { GenerationError } from '@offscreen/server/generations';
+import {
+  createStories,
+  StoryError,
+  storyIntervalTopic,
+} from '@offscreen/server/stories';
 import { ApplicationFailure } from '@temporalio/client';
 import {
   openingWorkflowId,
   openingWorkflowType,
+  intervalWorkflowType,
+  intervalWorkflowId,
 } from '@offscreen/workflows/contracts';
-import type { OpeningActivities } from '@offscreen/workflows/contracts';
+import type {
+  OpeningActivities,
+  IntervalActivities,
+} from '@offscreen/workflows/contracts';
 import type { WorkerConfig } from './config';
 import { relayOne, runRelay } from './relay';
 
@@ -32,7 +42,23 @@ export async function startRuntime(
     native = await NativeConnection.connect({ address: config.address });
     const client = new Client({ connection, namespace: config.namespace });
     const openings = createScriptedOpenings(database);
-    const activities: OpeningActivities = {
+    const stories = createStories(database);
+    const activities: OpeningActivities & IntervalActivities = {
+      async advanceStoryInterval(id) {
+        try {
+          return await stories.advanceInterval(id);
+        } catch (error) {
+          if (error instanceof StoryError)
+            throw ApplicationFailure.nonRetryable(
+              error.code,
+              'IntervalStateError',
+            );
+          throw ApplicationFailure.retryable(
+            'Story storage unavailable',
+            'StorageUnavailable',
+          );
+        }
+      },
       async completeScriptedOpening(id) {
         try {
           await openings.complete(id);
@@ -64,21 +90,33 @@ export async function startRuntime(
     const work = worker.run();
     const relay = runRelay(
       () =>
-        relayOne(outbox, [scriptedOpeningTopic], async (notice) => {
-          try {
-            await connection.withDeadline(Date.now() + 10000, () =>
-              client.workflow.start(openingWorkflowType, {
-                workflowId: openingWorkflowId(notice.operationId),
-                taskQueue: config.taskQueue,
-                workflowIdReusePolicy: 'REJECT_DUPLICATE',
-                args: [notice.operationId],
-              }),
-            );
-          } catch (error) {
-            if (!(error instanceof WorkflowExecutionAlreadyStartedError))
-              throw error;
-          }
-        }),
+        relayOne(
+          outbox,
+          [scriptedOpeningTopic, storyIntervalTopic],
+          async (notice) => {
+            try {
+              await connection.withDeadline(Date.now() + 10000, () =>
+                client.workflow.start(
+                  notice.topic === storyIntervalTopic
+                    ? intervalWorkflowType
+                    : openingWorkflowType,
+                  {
+                    workflowId:
+                      notice.topic === storyIntervalTopic
+                        ? intervalWorkflowId(notice.operationId)
+                        : openingWorkflowId(notice.operationId),
+                    taskQueue: config.taskQueue,
+                    workflowIdReusePolicy: 'REJECT_DUPLICATE',
+                    args: [notice.operationId],
+                  },
+                ),
+              );
+            } catch (error) {
+              if (!(error instanceof WorkflowExecutionAlreadyStartedError))
+                throw error;
+            }
+          },
+        ),
       controller.signal,
       report,
     );
