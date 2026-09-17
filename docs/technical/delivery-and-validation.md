@@ -14,17 +14,17 @@ Pin supported runtime/dependency versions, the package manager and container ima
 
 The next runnable target is a short, persistent solo scenario with authored content and real application behavior. This is a development fixture, not a new game mode or a commitment to the final mechanics. It must use the application's story storage, command admission, transition validation, Temporal execution and browser reads. The existing in-memory `/demo` can remain a presentation example; it is not the chamber's source of authoritative state.
 
-A suitable fixture has only a few passages:
+The first connected fixture has only a few passages:
 
-1. Start in a chamber holding a named token. Persist the opening and the token's identity/possession.
-2. Offer a choice to spend the token to open a gate or keep it and take another outcome. The accepted choice changes real state; retrying cannot spend it twice. Later options reflect that state.
-3. On the gate branch, wait briefly for it to open. Show both fictional duration and real due time. Pause, close the browser, resume or restart the worker during this interval to inspect the timing behavior.
-4. Present a short response window to step through or remain. A declared safe default selects remaining when no response arrives. The resulting passage records whether the player or the fallback chose.
-5. Finish on either branch. Reopening shows the saved ending and chronology; an old button cannot advance it again.
+1. Begin in a chamber and choose to approach a gate or leave.
+2. Approaching changes the situation and offers a reply. Tell a joke or say goodbye.
+3. Reach a saved conclusion. Reopen the page and inspect the ordered history; old choices cannot replay it.
+
+This establishes a playable narrative branch without making an invented token economy a prerequisite. Extend the connected flow with a short real wait, held response window, permitted timeout default and pause/resume. Add one identity-bearing item transfer or consumption as a separate concrete effect, committed with its narrative consequence and protected against retries. These extensions are not yet implemented; the immediate conversation does not demonstrate offscreen gameplay.
 
 The exact text and example objects are replaceable. Start with seconds-long waits for convenient observation, explicitly separate from fictional duration. For this fixture, quiet waits advance fictional time, response windows hold the fictional situation, and manual pause freezes both progression and the remaining response opportunity. Use fixed durations per passage; mid-interval speed changes, continuous travel progress and arbitrary interruption are outside this first experiment. These declared fixture rules do not settle the general pacing or autonomy controls.
 
-Review the minimal versioned passage/option/effect contract before creating tables. Include only what these transitions actually need: stable references, authorized choice identity, explicit supported effects, timing and terminal behavior. The scripted source supplies proposed content and effects; the server validates and commits them. Do not let arbitrary script callbacks mutate database state or let the browser supply the next passage, item ownership or deadline. The current prose-only opening schema is insufficient for this flow and must not be treated as an executable story.
+Review the minimal versioned passage/option/effect contract before creating tables. Include only what these transitions actually need: stable references, authorized choice identity, explicit supported effects, timing and terminal behavior. The scripted source supplies proposed content and effects; the server validates and commits them. Do not let arbitrary script callbacks mutate database state or let the browser supply the next passage, item ownership or deadline. Presentation content is not an executable story; only a registered authored fixture currently resolves choices, and time/effect policies must be implemented explicitly.
 
 Keep inspection modest and separate from the story presentation. Expose the committed revision, current passage/decision, relevant possessions/facts, fictional time, deadline or pause remainder, and accepted/applied command status. Keep secrets and hidden generation context out of browser DTOs. Starting a fresh fixture creates a new story rather than resetting existing history in place. Add failure injection or time-skipping controls only when a particular test requires them; normal UI waits must use the real scheduler. Automated time-skipping tests do not replace a real-service restart check.
 

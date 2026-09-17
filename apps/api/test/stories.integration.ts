@@ -18,6 +18,87 @@ export async function checkStories(
   otherCookie: string,
 ) {
   await t.test(
+    'scripted responses connect authenticated HTTP to saved branches and safe retries',
+    async () => {
+      const id = randomUUID();
+      const url = `${origin}/api/stories/${id}`;
+      const put = (
+        path: string,
+        body: unknown,
+        actor = cookie,
+        source = origin,
+      ) =>
+        fetch(url + path, {
+          method: 'PUT',
+          headers: {
+            cookie: actor,
+            origin: source,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+      const start = await put('/chamber', { scenario: 'chamber.v2' });
+      assert.equal(start.status, 200);
+      const first = storySnapshotSchema.parse(await start.json());
+      assert.equal(first.canRespond, true);
+      const body = {
+        expectedRevision: first.revision,
+        submission: {
+          interactionId: first.current.interaction!.id,
+          answer: { kind: 'choice.v1', optionId: 'approach' },
+        },
+      };
+      const path = `/responses/${randomUUID()}`;
+      assert.equal((await put(path, body, otherCookie)).status, 404);
+      assert.equal((await put(path, body, '')).status, 401);
+      assert.equal(
+        (await put(path, body, cookie, 'https://evil.example')).status,
+        403,
+      );
+      assert.equal(
+        (await put(path, { ...body, content: 'injected' })).status,
+        400,
+      );
+      const results = await Promise.all([put(path, body), put(path, body)]);
+      assert.ok(results.every((r) => r.status === 200));
+      const second = storySnapshotSchema.parse(await results[0]!.json());
+      assert.deepEqual(await results[1]!.json(), second);
+      assert.equal(second.revision, 2);
+      assert.equal(second.current.content.title, 'At the gate.');
+      assert.equal((await put(`/responses/${randomUUID()}`, body)).status, 409);
+      const finish = await put(`/responses/${randomUUID()}`, {
+        expectedRevision: 2,
+        submission: {
+          interactionId: second.current.interaction!.id,
+          answer: { kind: 'choice.v1', optionId: 'leave' },
+        },
+      });
+      assert.equal(finish.status, 200);
+      const ending = storySnapshotSchema.parse(await finish.json());
+      assert.equal(ending.canRespond, false);
+      assert.equal(ending.current.content.title, 'A quiet departure.');
+      assert.deepEqual(await (await put(path, body)).json(), ending);
+      assert.deepEqual(
+        await (await put('/chamber', { scenario: 'chamber.v2' })).json(),
+        ending,
+      );
+      assert.equal(
+        (
+          await put(path, {
+            ...body,
+            submission: {
+              ...body.submission,
+              answer: { kind: 'choice.v1', optionId: 'leave' },
+            },
+          })
+        ).status,
+        409,
+      );
+      const history = await createStories(database).history(owner, id);
+      assert.equal(history.items.length, 3);
+    },
+  );
+  await t.test(
     'continuations commit once, fence stale writers and retain original start identity',
     async () => {
       const stories = createStories(database);
@@ -414,19 +495,32 @@ export async function checkStories(
         const before = await page.locator('details').textContent();
         assert.equal(
           await page
-            .getByRole('button', { name: 'Offer a token' })
+            .getByRole('button', { name: 'Approach the gate' })
             .isDisabled(),
-          true,
+          false,
         );
         await page.reload();
         assert.equal(page.url(), url);
         assert.equal(await page.locator('details').textContent(), before);
+        await page.getByRole('button', { name: 'Approach the gate' }).click();
+        await page.getByRole('heading', { name: 'At the gate.' }).waitFor();
+        await page.reload();
+        await page.getByRole('button', { name: 'Tell a joke' }).click();
+        await page.getByRole('heading', { name: 'Someone laughs.' }).waitFor();
+        await page.reload();
+        await page.getByRole('heading', { name: 'Someone laughs.' }).waitFor();
+        assert.equal(
+          await page
+            .getByRole('region', { name: 'Offered interaction' })
+            .count(),
+          0,
+        );
         await page.getByRole('button', { name: 'Read saved passages' }).click();
         const history = page.getByRole('region', { name: 'Saved chronology' });
         await history
           .getByRole('heading', { name: '1. A gate and a small decision.' })
           .waitFor();
-        assert.equal(await history.getByRole('article').count(), 1);
+        assert.equal(await history.getByRole('article').count(), 3);
         assert.equal(
           await history
             .getByRole('button', { name: 'Read older passages' })

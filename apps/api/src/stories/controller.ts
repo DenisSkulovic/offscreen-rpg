@@ -59,9 +59,21 @@ export class StoriesController {
     @Body() body: unknown,
   ) {
     return this.run(request, (owner) => {
-      if (!startChamberSchema.safeParse(body).success)
-        throw new StoryError('invalid');
-      return this.stories.start(owner, id);
+      const parsed = startChamberSchema.safeParse(body);
+      if (!parsed.success) throw new StoryError('invalid');
+      return this.stories.start(owner, id, parsed.data.scenario);
     });
+  }
+  @Put(':id/responses/:operationId')
+  @HttpCode(200)
+  respond(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (owner) =>
+      this.stories.respond(owner, id, operationId, body),
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { interactionSchema } from './interactions';
+import { interactionSchema, interactionSubmissionSchema } from './interactions';
 
 export const passageContentSchema = z.strictObject({
   version: z.literal(1),
@@ -9,6 +9,7 @@ export const passageContentSchema = z.strictObject({
 export const storySnapshotSchema = z.strictObject({
   id: z.uuid(),
   revision: z.number().int().positive(),
+  canRespond: z.boolean().default(false),
   current: z.strictObject({
     id: z.uuid(),
     content: passageContentSchema,
@@ -31,5 +32,9 @@ export const storyHistorySchema = z.strictObject({
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
 export const startChamberSchema = z.strictObject({
-  scenario: z.literal('chamber.v1'),
+  scenario: z.enum(['chamber.v1', 'chamber.v2']),
+});
+export const respondToStorySchema = z.strictObject({
+  expectedRevision: z.number().int().positive().max(2147483646),
+  submission: interactionSubmissionSchema,
 });
