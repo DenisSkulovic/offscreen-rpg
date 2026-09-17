@@ -2,6 +2,8 @@
 
 The product is concrete enough to begin technical design. These choices remain open; do not silently settle them by choosing a database schema or a scheduling library.
 
+The [technical design](technical/architecture.md) now supplies implementation recommendations. In particular, [shared decisions](technical/client-and-identity.md), [timing](technical/execution.md) and [notifications](technical/notifications.md) contain concrete proposals for discussion, not assumed answers to the product choices below.
+
 ## Settle before implementing the affected behavior
 
 1. **Shared decisions:** how are individual intentions collected and conflicting actions resolved? Who can start, pause and resume the group story? Begin with one shared situation and an invited pair; choose the supported group limit.

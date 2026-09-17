@@ -2,6 +2,8 @@
 
 Read README.md and the relevant file in docs/. We are shaping a raw proof of concept.
 
+For implementation work, read docs/technical/architecture.md and the technical document for the affected behavior. The design is proposed until implemented and verified; preserve explicit product questions rather than treating technical examples as settled requirements.
+
 - Keep docs current, concrete and useful. Use enough depth to explain the product; brevity is not the goal. Rewrite or delete obsolete text directly.
 - Do not create decision ledgers, amendment histories, supersession notes, document IDs, review reports, archives or speculative feature catalogues.
 - Brainstorming examples illustrate intent; they are not automatic requirements. Discuss consequential choices without demanding approval of entire documents.
