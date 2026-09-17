@@ -14,6 +14,8 @@ import type { Database } from '@offscreen/db';
 import { toNodeHandler } from 'better-auth/node';
 import type { Auth } from './auth/auth.js';
 import { AUTH, IdentityController, IdentityService } from './auth/identity.js';
+import { createDrafts } from '@offscreen/server/drafts';
+import { DRAFTS, DraftsController } from './drafts/controller.js';
 
 const DATABASE = Symbol('DATABASE');
 
@@ -46,16 +48,21 @@ class HealthController {
 @Module({})
 class AppModule {}
 
-export async function createApp(database: Database, auth: Auth) {
+export async function createApp(
+  database: Database,
+  auth: Auth,
+  origin: string,
+) {
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
-      controllers: [HealthController, IdentityController],
+      controllers: [HealthController, IdentityController, DraftsController],
       providers: [
         IdentityService,
         DatabaseLifecycle,
         { provide: DATABASE, useValue: database },
         { provide: AUTH, useValue: auth },
+        { provide: DRAFTS, useValue: createDrafts(database) },
       ],
     },
     {
@@ -70,11 +77,19 @@ export async function createApp(database: Database, auth: Auth) {
       request.headers['x-offscreen-client-ip'] =
         request.socket.remoteAddress ?? '127.0.0.1';
       response.setHeader('Cache-Control', 'no-store');
+      if (
+        ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) &&
+        !request.path.startsWith('/auth/') &&
+        request.headers.origin !== origin
+      ) {
+        response.status(403).json({ code: 'invalid_origin' });
+        return;
+      }
       next();
     },
   );
   express.all('/api/auth/{*path}', toNodeHandler(auth));
-  app.useBodyParser('json', { limit: '16kb' });
+  app.useBodyParser('json', { limit: '64kb' });
   app.setGlobalPrefix('api');
   return app;
 }

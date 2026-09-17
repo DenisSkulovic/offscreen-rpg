@@ -18,7 +18,7 @@ test('API binds a real HTTP listener and closes cleanly', async () => {
     githubClientId: 'test',
     githubClientSecret: 'test',
   });
-  const app = await createApp(database, auth);
+  const app = await createApp(database, auth, 'http://localhost:3000');
   try {
     await app.listen(0, '127.0.0.1');
     const origin = await app.getUrl();

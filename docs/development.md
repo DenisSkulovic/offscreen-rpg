@@ -1,6 +1,6 @@
 # Local development
 
-The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. There is no story creation, workflow worker or playable story yet.
+The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts. Generation, shared setup, workflow workers and playable stories are not implemented yet.
 
 ## Requirements and startup
 
@@ -51,7 +51,7 @@ The API test compiles with TypeScript's decorator metadata, boots Nest against a
 
 `/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; the account page is rendered dynamically with an uncached API read.
 
-`packages/config` currently exports only shared compiler settings. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add runtime contracts and deterministic workflow packages as the corresponding component is implemented and tested.
+`packages/config` exports shared compiler settings. `packages/contracts` contains browser-safe draft validation and types; `packages/server` contains owned draft operations and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add deterministic workflow packages when the first workflow is implemented.
 
 ## PostgreSQL component
 
@@ -83,6 +83,8 @@ On macOS/Linux, prefix `pnpm test:db` with `DATABASE_TEST_URL='postgresql://offs
 The suite checks migration reruns and contention, failed-DDL rollback, transaction rollback on a constraint error, statement cancellation, pool exhaustion/recovery, idle-connection failure/reconnection and repeatable shutdown. It does not yet prove OAuth persistence, story isolation or workflow recovery.
 
 ## Identity checks
+
+Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table; generation makes no calls because it is not implemented.
 
 `pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
 

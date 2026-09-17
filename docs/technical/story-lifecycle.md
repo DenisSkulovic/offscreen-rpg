@@ -4,7 +4,9 @@ This document connects account entry, collaborative setup, the first live scene 
 
 ## Drafts and generated previews
 
-Create a durable draft with an idempotent request. Save premise, character input and shared preferences with an expected draft revision. Ordinary editing is a database write, not a model call. An invited participant may edit their own character input; shared premise and settings use the selected creator authority. Concurrent edits return a conflict rather than silently overwriting another person's work.
+The implemented private draft uses `PUT /api/drafts/:id` with three text fields and `expectedRevision`. The browser assigns a UUID retained in the new-draft URL before the first save; revision zero creates it. Ownership comes from the verified session. Updates lock the owned row and compare its revision. An identical retry at the same or immediately following revision returns the existing result; older or conflicting writes return 409. This protects draft text without introducing a gameplay command journal. `GET /api/drafts/:id` reopens an owned draft; `GET /api/drafts` pages through up to 20 drafts in creation order using an owned draft ID as cursor. Inaccessible drafts return 404.
+
+Ordinary editing is a database write, not a model call. Incomplete content is saveable; generation readiness is a separate validation boundary. Shared setup will introduce participant character inputs and creator-controlled preferences when invitation and authority policies are implemented. It must preserve revision checks rather than silently overwrite another participant's work.
 
 An explicit generate request freezes the draft revision, roster/character revisions, settings and funding policy into an immutable input artifact. It creates a generation operation and outbox start notice in one transaction. Use a distinct workflow ID for each deliberate preview-generation operation; retries reuse that ID. Limit outstanding preview generation per draft and account. An intentional regenerate request is new, budgeted work, not a retry disguised as a fresh idempotency key.
 

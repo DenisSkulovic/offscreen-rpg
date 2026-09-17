@@ -1,0 +1,24 @@
+{
+  "name": "@offscreen/server",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./drafts": {
+      "types": "./dist/drafts.d.ts",
+      "default": "./dist/drafts.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@offscreen/db": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

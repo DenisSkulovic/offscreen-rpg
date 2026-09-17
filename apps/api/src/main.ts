@@ -12,7 +12,11 @@ async function main() {
   );
   try {
     await database.checkConnection();
-    const app = await createApp(database, createAuth(database, authConfig));
+    const app = await createApp(
+      database,
+      createAuth(database, authConfig),
+      authConfig.origin,
+    );
     app.enableShutdownHooks();
     await app.listen(config.port, config.host);
   } catch (error) {

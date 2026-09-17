@@ -10,6 +10,8 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { createApp } from '../src/app.js';
 import { authOptions } from '../src/auth/auth.js';
+import { checkDrafts } from './drafts.integration.js';
+import { checkDraftBrowser } from './drafts.browser.js';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
 if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
@@ -49,11 +51,12 @@ test(
       }),
       plugins: [strictUtilities],
     });
-    const app = await createApp(database, auth);
+    const app = await createApp(database, auth, origin);
     const helpers = (await auth.$context).test;
     const user = await helpers.saveUser(
       helpers.createUser({ name: 'Integration Reader' }),
     );
+    const otherUser = await helpers.saveUser(helpers.createUser());
     let web: ReturnType<typeof spawn> | undefined;
     let exited: Promise<unknown> | undefined;
     try {
@@ -93,6 +96,9 @@ test(
       assert.ok(ready, 'Web server started');
       const login = await helpers.login({ userId: user.id });
       const cookie = login.headers.get('cookie')!;
+      const otherLogin = await helpers.login({ userId: otherUser.id });
+      await checkDrafts(t, origin, cookie, otherLogin.headers.get('cookie')!);
+      await checkDraftBrowser(t, origin, cookie);
 
       await t.test(
         'anonymous API requests fail and the page redirects to sign-in',
@@ -254,6 +260,11 @@ test(
         web.kill();
         await exited;
       }
+      await database.db.$client.query(
+        'DELETE FROM story_draft WHERE owner_id = $1',
+        [user.id],
+      );
+      await helpers.deleteUser(otherUser.id);
       await helpers.deleteUser(user.id);
       await app.close();
     }

@@ -4,6 +4,10 @@ Creation turns a premise into a small, playable beginning. It should invite imag
 
 ## Premise and characters
 
+The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. Generation, presets and shared setup are subsequent components.
+
+If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story will support several players.
+
 Let the player describe who they want to be and the starting circumstances, or adapt an example. Examples demonstrate variety rather than hard-code supported professions or worlds: a wizard on a journey, a creature in a tank, a crew member aboard a ship.
 
 The generated beginning establishes the character, immediate surroundings, a few relevant connections and a reason for something to happen next. Develop distant places and incidental people when the story needs them. Richness should come from specificity and continuity rather than the volume of material generated before play.

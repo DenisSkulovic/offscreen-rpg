@@ -4,6 +4,16 @@ Application PostgreSQL owns committed story state, chronology, command receipts,
 
 ## Durable records
 
+### Implemented private draft
+
+`story_draft` contains a UUID, an authenticated owner reference, three bounded text fields (`title`, `premise`, `storytelling_direction`), a positive revision and creation/update timestamps. Limits are 160, 6,000 and 2,000 UTF-16 code units respectively at the application boundary. PostgreSQL additionally bounds character lengths. Empty strings are permitted because saving an idea is different from approving it for generation. Text is preserved rather than silently trimmed or rewritten.
+
+The premise currently contains both character intent and starting circumstances. Direction is separate so the same premise can be told differently. There is no settings blob, invented character taxonomy, gameplay inventory or runtime status on this record. Generated candidates and shared character inputs will need their own reviewed contracts when those components are built.
+
+An owner/creation-time/ID index supports stable paginated reads. Timestamps use millisecond precision to preserve cursor comparisons through JavaScript dates. Owner deletion is restricted by the foreign key until account/story deletion policy is implemented. Public DTOs omit ownership; the server derives it from authentication. `@offscreen/contracts/drafts` owns runtime validation and transport types; `@offscreen/server/drafts` owns database operations independently of Nest and React. See [draft lifecycle](story-lifecycle.md) for concurrency and retry behavior.
+
+### Planned story records
+
 | Record family | What it owns |
 | --- | --- |
 | Users, sessions, linked identities | Authentication library-managed identity and session data. |

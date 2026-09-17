@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./draft-schema": {
+      "types": "./dist/src/schema/drafts.d.ts",
+      "default": "./dist/src/schema/drafts.js"
+    },
     "./schema": {
       "types": "./dist/src/schema/auth.d.ts",
       "default": "./dist/src/schema/auth.js"
