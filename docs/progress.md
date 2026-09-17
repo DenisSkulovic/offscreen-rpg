@@ -10,7 +10,7 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 | Area | Status and evidence | Remaining boundary / defining spec |
 | --- | --- | --- |
-| Workspace and local infrastructure | Working: TypeScript monorepo, web/API builds, Compose PostgreSQL/Temporal startup verified in CI. | Application worker handles scripted previews. Docker is unavailable on the current Windows machine. [Development](development.md). |
+| Workspace and local infrastructure | Working: TypeScript monorepo, web/API builds, Compose PostgreSQL/Temporal startup verified in CI and locally on Windows/WSL 2. | Application worker handles scripted previews. [Development](development.md). |
 | Identity | Working within tests: stored sessions, private pages, OAuth initiation, revocation and browser/proxy behavior. | Real GitHub sign-in still needs credentials and manual verification. Invitations and story membership absent. [Identity](technical/client-and-identity.md). |
 | Private drafts | Working: create, save, list and reopen; PostgreSQL ownership/revision checks and two-tab browser test. | Three text fields; saved drafts link to a scripted opening preview. Shared setup absent. [Creation](story-creation.md). |
 | Opening preparation and request/result storage | Connected scripted flow: request a fixed sample from a saved draft, save/reopen it and identify stale results. Protected endpoints omit internal prompts. Generic processing lifecycle remains independently tested. | The sample is explicitly not adapted to the premise. Background completion through Temporal; no provider adapter. [Lifecycle](technical/story-lifecycle.md), [AI runtime](technical/storyteller-runtime.md). |

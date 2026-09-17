@@ -20,6 +20,10 @@ The storyteller may propose places, connections and changes consistent with the 
 
 An interactive map is deferred. Before implementing authoritative movement, choose the smallest representation that can demonstrate an interrupted journey and two characters' relative whereabouts. Rendering rotating cubes is a separate question from enforcing that consistency.
 
+The storyteller could propose introducing, retaining or leaving a map when it helps the current situation. This is a presentation and scope choice, not permission to erase established geography. A transition to another realm can switch to a new map or no map while retaining the departure, relevant possessions, companions and any meaningful way back. In shared play, another character may still occupy the previous region. Changing the current view must not relocate them or delete their surroundings.
+
+Route or region descriptions can provide useful narrative context without a detailed terrain simulation: a longer safe road and a shorter route through cursed marshes already make a meaningful choice. Agreed durations and movement constraints can apply to those connections without rendering cubes. Atmospheric qualities can guide the storyteller's encounters without guaranteeing an event or requiring a population of simulated monsters. If a quality also changes a calculated duration or difficulty, that effect needs an explicit supported rule; descriptive labels alone must not silently alter calculations.
+
 Flexibility does not mean every imagined rule is automatically executable. A locked entrance can use an implemented possession check; an entrance that opens when someone forgets their name requires a defined way to assess that condition. The storyteller may judge narrative circumstances, but prose alone does not establish a deterministic check. Distinguish facts the system enforces from judgments the storyteller makes, and preserve accepted outcomes consistently. Add reusable mechanisms when a concrete playthrough needs them, rather than building a universal physics or rules engine.
 
 ## People, objects and capabilities

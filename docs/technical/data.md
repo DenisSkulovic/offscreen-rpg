@@ -79,6 +79,8 @@ Map generation may combine procedural structure with model-authored meaning. Acc
 
 The common setup boundary concerns places, containment, connections and relevant conditions; a grid is one possible projection. Model-generated symbol layers could be an input for small maps, provided dimensions, symbol meanings, references and required reachability are validated. Code can fill repeated geometry while the model supplies meaningful content. Do not allocate or describe every empty cube, or assume a terrain-generation dependency can create coherent lore and movement rules for arbitrary settings.
 
+Map visibility and retained spatial facts have different lifetimes. A storyteller proposal to leave or replace a map must not delete referenced locations, relocate other participants or reset an interrupted journey. Preserve established connections and consequential changes if a region may be revisited; unused visual detail need not remain in generation context. Route descriptions can inform encounter generation without tile-by-tile processing. The first movement contract should demonstrate that smaller representation before requiring a grid or introducing map lifecycle tables.
+
 A generated condition is enforceable only when it maps to a supported application operation or predicate. Unknown conditions must not become executable code, silently pass validation, or masquerade as implemented mechanics. Narrative judgments can remain model responsibilities with recorded outcomes. Select the first supported mechanisms from playthroughs before introducing a condition schema or interpreter; no universal rule language is part of this design.
 
 ## Quantities and ownership
