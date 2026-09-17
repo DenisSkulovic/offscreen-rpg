@@ -8,6 +8,7 @@ import {
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
 import { requireDefined } from './helpers/require.js';
+import { registerStoryConcern } from './helpers/story-suite.js';
 
 type StoryCoreArgs = {
   t: TestContext;
@@ -41,7 +42,11 @@ export async function checkStoryCore({
         interaction: null,
         items: [{ key: 'parcel', label: 'Sealed parcel', holderKey: 'sender' }],
       };
-      const first = await stories.initialize(owner, id, initial);
+      const first = await stories.initialize({
+        ownerId: owner,
+        storyId: id,
+        initial,
+      });
       const content = {
         version: 1,
         title: 'Delivered',
@@ -61,8 +66,18 @@ export async function checkStoryCore({
       };
       const operation = randomUUID();
       const results = await Promise.all([
-        stories.append(owner, id, operation, proposal),
-        stories.append(owner, id, operation, proposal),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: operation,
+          proposed: proposal,
+        }),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: operation,
+          proposed: proposal,
+        }),
       ]);
       const transferred = requireDefined(
         results[0]?.items[0],
@@ -74,38 +89,61 @@ export async function checkStoryCore({
         ),
       );
       assert.equal(transferred.holderKey, 'receiver');
-      assert.equal((await stories.history(owner, id)).items.length, 2);
-      const current = await stories.read(owner, id);
-      assert.deepEqual(await stories.initialize(owner, id, initial), current);
+      assert.equal(
+        (await stories.history({ ownerId: owner, storyId: id })).items.length,
+        2,
+      );
+      const current = await stories.read({ ownerId: owner, storyId: id });
+      assert.deepEqual(
+        await stories.initialize({ ownerId: owner, storyId: id, initial }),
+        current,
+      );
       await assert.rejects(
-        stories.append(owner, id, operation, {
-          ...proposal,
-          effects: [{ ...transfer, toHolder: 'other' }],
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: operation,
+          proposed: {
+            ...proposal,
+            effects: [{ ...transfer, toHolder: 'other' }],
+          },
         }),
         (error: unknown) =>
           error instanceof StoryError && error.code === 'conflict',
       );
       // The first effect succeeds but the second fails. Both state and prose must roll back.
       await assert.rejects(
-        stories.append(owner, id, randomUUID(), {
-          expectedRevision: 2,
-          content,
-          interaction: null,
-          effects: [
-            { ...transfer, fromHolder: 'receiver', toHolder: 'sender' },
-            { ...transfer, itemKey: 'missing' },
-          ],
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: randomUUID(),
+          proposed: {
+            expectedRevision: 2,
+            content,
+            interaction: null,
+            effects: [
+              { ...transfer, fromHolder: 'receiver', toHolder: 'sender' },
+              { ...transfer, itemKey: 'missing' },
+            ],
+          },
         }),
         (error: unknown) =>
           error instanceof StoryError && error.code === 'conflict',
       );
-      assert.deepEqual(await stories.read(owner, id), current);
+      assert.deepEqual(
+        await stories.read({ ownerId: owner, storyId: id }),
+        current,
+      );
       assert.equal(
         requireDefined(first.items[0], 'Expected seeded opening item')
           .holderKey,
         'sender',
       );
-      const other = await stories.initialize(owner, randomUUID(), initial);
+      const other = await stories.initialize({
+        ownerId: owner,
+        storyId: randomUUID(),
+        initial,
+      });
       assert.equal(
         requireDefined(other.items[0], 'Expected seeded item on other story')
           .holderKey,
@@ -158,7 +196,9 @@ export async function checkStoryCore({
         return saved;
       }
       const onTime = await openDecision();
-      const remaining = await stories.resolveDecision(onTime.current.id);
+      const remaining = await stories.resolveDecision({
+        passageId: onTime.current.id,
+      });
       assert.ok(remaining != null && remaining > 0);
       const onTimeOffer = requireDefined(
         onTime.current.interaction,
@@ -185,9 +225,13 @@ export async function checkStoryCore({
         (await put(onTime.id, `/responses/${operation}`, request)).status,
         200,
       );
-      assert.equal(await stories.resolveDecision(onTime.current.id), null);
       assert.equal(
-        (await stories.read(owner, onTime.id)).current.content.title,
+        await stories.resolveDecision({ passageId: onTime.current.id }),
+        null,
+      );
+      assert.equal(
+        (await stories.read({ ownerId: owner, storyId: onTime.id })).current
+          .content.title,
         'Someone laughs.',
       );
       const expired = await openDecision();
@@ -209,13 +253,16 @@ export async function checkStoryCore({
       // Competing timeout deliveries and a late player write all use the same story lock.
       const results = await Promise.all([
         put(expired.id, `/responses/${randomUUID()}`, late),
-        stories.resolveDecision(expired.current.id),
-        stories.resolveDecision(expired.current.id),
+        stories.resolveDecision({ passageId: expired.current.id }),
+        stories.resolveDecision({ passageId: expired.current.id }),
       ]);
       assert.equal(results[0].status, 409);
       assert.equal(results[1], null);
       assert.equal(results[2], null);
-      const final = await stories.read(owner, expired.id);
+      const final = await stories.read({
+        ownerId: owner,
+        storyId: expired.id,
+      });
       assert.equal(final.revision, 3);
       assert.equal(final.decision, null);
       assert.equal(final.current.content.title, 'A quiet departure.');
@@ -224,7 +271,11 @@ export async function checkStoryCore({
         [final.current.id],
       );
       assert.equal(provenance.rows[0].response_source, 'default');
-      assert.equal((await stories.history(owner, expired.id)).items.length, 3);
+      assert.equal(
+        (await stories.history({ ownerId: owner, storyId: expired.id })).items
+          .length,
+        3,
+      );
     },
   );
 
@@ -242,7 +293,11 @@ export async function checkStoryCore({
         },
         interaction: null,
       };
-      await stories.initialize(owner, id, opening);
+      await stories.initialize({
+        ownerId: owner,
+        storyId: id,
+        initial: opening,
+      });
       const transitionId = randomUUID();
       const proposal = {
         expectedRevision: 1,
@@ -261,8 +316,18 @@ export async function checkStoryCore({
         },
       };
       const [a, b] = await Promise.all([
-        stories.append(owner, id, transitionId, proposal),
-        stories.append(owner, id, transitionId, proposal),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId,
+          proposed: proposal,
+        }),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId,
+          proposed: proposal,
+        }),
       ]);
       assert.deepEqual(a, b);
       assert.equal(a.revision, 2);
@@ -280,8 +345,18 @@ export async function checkStoryCore({
         },
       };
       const race = await Promise.allSettled([
-        stories.append(owner, id, randomUUID(), next),
-        stories.append(owner, id, randomUUID(), next),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: randomUUID(),
+          proposed: next,
+        }),
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: randomUUID(),
+          proposed: next,
+        }),
       ]);
       assert.equal(race.filter((r) => r.status === 'fulfilled').length, 1);
       const loser = race.find((r) => r.status === 'rejected');
@@ -290,13 +365,25 @@ export async function checkStoryCore({
           loser.reason instanceof StoryError &&
           loser.reason.code === 'conflict',
       );
-      const current = await stories.read(owner, id);
+      const current = await stories.read({ ownerId: owner, storyId: id });
       assert.equal(current.revision, 3);
       assert.deepEqual(
-        await createStories(database).append(owner, id, transitionId, proposal),
+        await createStories(database).append({
+          ownerId: owner,
+          storyId: id,
+          transitionId,
+          proposed: proposal,
+        }),
         current,
       );
-      assert.deepEqual(await stories.initialize(owner, id, opening), current);
+      assert.deepEqual(
+        await stories.initialize({
+          ownerId: owner,
+          storyId: id,
+          initial: opening,
+        }),
+        current,
+      );
       const rejects = async (
         actor: string,
         key: string,
@@ -304,11 +391,19 @@ export async function checkStoryCore({
         code: string,
       ) => {
         await assert.rejects(
-          stories.append(actor, id, key, body),
+          stories.append({
+            ownerId: actor,
+            storyId: id,
+            transitionId: key,
+            proposed: body,
+          }),
           (error: unknown) =>
             error instanceof StoryError && error.code === code,
         );
-        assert.deepEqual(await stories.read(owner, id), current);
+        assert.deepEqual(
+          await stories.read({ ownerId: owner, storyId: id }),
+          current,
+        );
       };
       await rejects('another-owner', transitionId, proposal, 'not_found');
       await rejects(owner, randomUUID(), proposal, 'conflict');
@@ -342,7 +437,7 @@ export async function checkStoryCore({
         { ...proposal, expectedRevision: 2147483647 },
         'invalid',
       );
-      const history = await stories.history(owner, id);
+      const history = await stories.history({ ownerId: owner, storyId: id });
       assert.deepEqual(
         history.items.map((entry) => entry.sequence),
         [3, 2, 1],
@@ -376,12 +471,20 @@ export async function checkStoryCore({
           ],
         },
       };
-      const start = await stories.initialize(owner, id, initial);
+      const start = await stories.initialize({
+        ownerId: owner,
+        storyId: id,
+        initial,
+      });
       const startOffer = requireDefined(
         start.current.interaction,
         'Expected opening offer',
       );
-      const other = await stories.initialize(owner, randomUUID(), initial);
+      const other = await stories.initialize({
+        ownerId: owner,
+        storyId: randomUUID(),
+        initial,
+      });
       const otherOffer = requireDefined(
         other.current.interaction,
         'Expected other story offer',
@@ -409,21 +512,39 @@ export async function checkStoryCore({
         [{ ...response, effects: ['free gold'] }, 'invalid'],
       ] as const) {
         await assert.rejects(
-          stories.append(owner, id, randomUUID(), {
-            ...proposal,
-            response: submitted,
+          stories.append({
+            ownerId: owner,
+            storyId: id,
+            transitionId: randomUUID(),
+            proposed: {
+              ...proposal,
+              response: submitted,
+            },
           }),
           (error: unknown) =>
             error instanceof StoryError && error.code === code,
         );
-        assert.deepEqual(await stories.read(owner, id), start);
+        assert.deepEqual(
+          await stories.read({ ownerId: owner, storyId: id }),
+          start,
+        );
       }
       const key = randomUUID();
       const accepted = { ...proposal, response };
-      const saved = await stories.append(owner, id, key, accepted);
+      const saved = await stories.append({
+        ownerId: owner,
+        storyId: id,
+        transitionId: key,
+        proposed: accepted,
+      });
       assert.equal(saved.revision, 2);
       assert.deepEqual(
-        await createStories(database).append(owner, id, key, accepted),
+        await createStories(database).append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: key,
+          proposed: accepted,
+        }),
         saved,
       );
       const recorded = await database.db.$client.query(
@@ -432,11 +553,16 @@ export async function checkStoryCore({
       );
       assert.deepEqual(recorded.rows[0].response, response);
       await assert.rejects(
-        stories.append(owner, id, key, {
-          ...accepted,
-          response: {
-            ...response,
-            answer: { kind: 'choice.v1', optionId: 'wait' },
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: key,
+          proposed: {
+            ...accepted,
+            response: {
+              ...response,
+              answer: { kind: 'choice.v1', optionId: 'wait' },
+            },
           },
         }),
         (error: unknown) =>
@@ -444,15 +570,26 @@ export async function checkStoryCore({
       );
       // A stale answer cannot be attached to a later passage, even at its revision.
       await assert.rejects(
-        stories.append(owner, id, randomUUID(), {
-          ...accepted,
-          expectedRevision: 2,
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: randomUUID(),
+          proposed: {
+            ...accepted,
+            expectedRevision: 2,
+          },
         }),
         (error: unknown) =>
           error instanceof StoryError && error.code === 'conflict',
       );
-      assert.deepEqual(await stories.read(owner, id), saved);
-      assert.equal((await stories.history(owner, id)).items.length, 2);
+      assert.deepEqual(
+        await stories.read({ ownerId: owner, storyId: id }),
+        saved,
+      );
+      assert.equal(
+        (await stories.history({ ownerId: owner, storyId: id })).items.length,
+        2,
+      );
     },
   );
 
@@ -461,25 +598,34 @@ export async function checkStoryCore({
     async () => {
       const id = randomUUID();
       const stories = createStories(database);
-      await stories.initialize(owner, id, {
-        source: 'history-test.v1',
-        content: {
-          version: 1,
-          title: 'Beginning',
-          paragraphs: ['Quiet morning.'],
+      await stories.initialize({
+        ownerId: owner,
+        storyId: id,
+        initial: {
+          source: 'history-test.v1',
+          content: {
+            version: 1,
+            title: 'Beginning',
+            paragraphs: ['Quiet morning.'],
+          },
+          interaction: null,
         },
-        interaction: null,
       });
       async function append(from: number, to: number) {
         for (let sequence = from; sequence <= to; sequence++) {
-          await stories.append(owner, id, randomUUID(), {
-            expectedRevision: sequence - 1,
-            content: {
-              version: 1,
-              title: `Passage ${sequence}`,
-              paragraphs: ['An ordinary day.'],
+          await stories.append({
+            ownerId: owner,
+            storyId: id,
+            transitionId: randomUUID(),
+            proposed: {
+              expectedRevision: sequence - 1,
+              content: {
+                version: 1,
+                title: `Passage ${sequence}`,
+                paragraphs: ['An ordinary day.'],
+              },
+              interaction: null,
             },
-            interaction: null,
           });
         }
       }
@@ -550,3 +696,5 @@ export async function checkStoryCore({
     },
   );
 }
+
+registerStoryConcern(import.meta.url, 'story core integration', checkStoryCore);

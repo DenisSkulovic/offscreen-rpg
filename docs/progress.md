@@ -8,7 +8,7 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 
 Significant changes follow the [feature workflow](../.agents/skills/feature-workflow/SKILL.md), with active work in [Features](features/README.md). Codex primarily designs/reviews; Cursor handles bulk implementation.
 
-Story responsibility splits are present. Launcher and worker connection cleanup now continue after an individual close failure, with focused fault-injection checks covering those paths. Story integration helpers are separated by concern but still run through one shared parent lifecycle; they are not independently selectable suites. The optional full-repository quality audit still has existing debt. The stories application facade still uses positional IDs at its public surface.
+Story responsibility splits are present. Launcher and worker connection cleanup continue after an individual close failure, with focused fault-injection checks. Story concerns are independently selectable suites that share one harness helper rather than nesting under the identity suite. The stories and chamber application facades take named argument objects at their public surface. The optional full-repository quality audit still has existing debt.
 
 ## Coverage
 

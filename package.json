@@ -12,6 +12,7 @@
     "test": "turbo run test",
     "test:db": "pnpm --filter @offscreen/db build && pnpm --filter @offscreen/db test:integration",
     "test:auth": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api test:integration",
+    "test:stories": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api test:stories",
     "db:migrate": "pnpm --filter @offscreen/db build && pnpm --filter @offscreen/db migrate",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",

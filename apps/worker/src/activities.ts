@@ -41,21 +41,21 @@ export function createWorkerActivities(collaborators: {
   return {
     async resolveStoryDecision(id) {
       try {
-        return await stories.resolveDecision(id);
+        return await stories.resolveDecision({ passageId: id });
       } catch (error) {
         mapStoryActivityError(error, 'DecisionStateError');
       }
     },
     async advanceControlledInterval(id) {
       try {
-        return await stories.advanceInterval(id);
+        return await stories.advanceInterval({ intervalId: id });
       } catch (error) {
         mapStoryActivityError(error, 'IntervalStateError');
       }
     },
     async advanceStoryInterval(id) {
       try {
-        return await stories.advanceInterval(id);
+        return await stories.advanceInterval({ intervalId: id });
       } catch (error) {
         mapStoryActivityError(error, 'IntervalStateError');
       }

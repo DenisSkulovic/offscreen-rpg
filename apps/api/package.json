@@ -8,7 +8,12 @@
     "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/main.js\"",
     "start": "node --env-file-if-exists=../../.env dist/src/main.js",
     "schema:generate": "auth generate --config auth.generate.ts --output ../../packages/db/src/schema/auth.ts --yes",
-    "test:integration": "node --test dist/test/auth.integration.js",
+    "test:integration": "node --test dist/test/auth.integration.js dist/test/stories.integration.js",
+    "test:auth": "node --test dist/test/auth.integration.js",
+    "test:stories": "node --test dist/test/stories.integration.js",
+    "test:stories:core": "node --test dist/test/stories-core.integration.js",
+    "test:stories:http": "node --test dist/test/stories-http.integration.js",
+    "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
     "typecheck": "tsc --noEmit",
     "test": "node --test dist/test/*.test.js",
     "chamber": "node dist/dev/chamber.js"

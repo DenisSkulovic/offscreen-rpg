@@ -6,6 +6,7 @@ import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
+import { registerStoryConcern } from './helpers/story-suite.js';
 
 type StoryBrowserArgs = {
   t: TestContext;
@@ -44,7 +45,10 @@ export async function checkStoryBrowser({
           'Expected chamber story id in URL',
         );
         // The response endpoint must not accept arbitrary effects from a client.
-        const snapshot = await createStories(database).read(owner, id);
+        const snapshot = await createStories(database).read({
+          ownerId: owner,
+          storyId: id,
+        });
         const offer = requireDefined(
           snapshot.current.interaction,
           'Expected letter fixture offer',
@@ -77,7 +81,8 @@ export async function checkStoryBrowser({
           .getByText('Sealed letter — held by caretaker', { exact: true })
           .waitFor();
         assert.equal(
-          (await createStories(database).read(owner, id)).revision,
+          (await createStories(database).read({ ownerId: owner, storyId: id }))
+            .revision,
           2,
         );
       });
@@ -105,7 +110,10 @@ export async function checkStoryBrowser({
           new URL(url).searchParams.get('id'),
           'Expected timed chamber story id',
         );
-        const before = await createStories(database).read(owner, id);
+        const before = await createStories(database).read({
+          ownerId: owner,
+          storyId: id,
+        });
         const decision = requireDefined(
           before.decision,
           'Expected published decision deadline',
@@ -115,7 +123,10 @@ export async function checkStoryBrowser({
         let latest = before;
         while (latest.revision === before.revision && Date.now() < limit) {
           await delay(300);
-          latest = await createStories(database).read(owner, id);
+          latest = await createStories(database).read({
+            ownerId: owner,
+            storyId: id,
+          });
         }
         assert.equal(latest.revision, 3);
         assert.ok(Date.now() >= Date.parse(decision.dueAt));
@@ -202,27 +213,38 @@ export async function checkStoryBrowser({
           new URL(timedUrl).searchParams.get('id'),
           'Expected timed journey story id',
         );
-        const waiting = await createStories(database).read(owner, timedId);
+        const waiting = await createStories(database).read({
+          ownerId: owner,
+          storyId: timedId,
+        });
         const waitingState = requireDefined(
           waiting.waiting,
           'Expected waiting journey snapshot',
         );
         const remainingBeforeArrival = await createStories(
           database,
-        ).advanceInterval(waiting.current.id);
+        ).advanceInterval({ intervalId: waiting.current.id });
         assert.ok(remainingBeforeArrival != null && remainingBeforeArrival > 0);
         await assert.rejects(
-          createStories(database).append(owner, timedId, randomUUID(), {
-            expectedRevision: waiting.revision,
-            content: waiting.current.content,
-            interaction: null,
+          createStories(database).append({
+            ownerId: owner,
+            storyId: timedId,
+            transitionId: randomUUID(),
+            proposed: {
+              expectedRevision: waiting.revision,
+              content: waiting.current.content,
+              interaction: null,
+            },
           }),
           (error: unknown) =>
             error instanceof StoryError && error.code === 'conflict',
         );
         await page.getByRole('button', { name: 'Pause journey' }).click();
         await page.getByRole('button', { name: 'Resume journey' }).waitFor();
-        const paused = await createStories(database).read(owner, timedId);
+        const paused = await createStories(database).read({
+          ownerId: owner,
+          storyId: timedId,
+        });
         const pausedWaiting = requireDefined(
           paused.waiting,
           'Expected paused journey snapshot',
@@ -275,7 +297,10 @@ export async function checkStoryBrowser({
           409,
         );
         assert.deepEqual(
-          await createStories(database).read(owner, timedId),
+          await createStories(database).read({
+            ownerId: owner,
+            storyId: timedId,
+          }),
           paused,
         );
         await page.close();
@@ -301,11 +326,16 @@ export async function checkStoryBrowser({
         );
         await delay(Math.max(0, Date.parse(waitingDueAt) - Date.now()) + 250);
         assert.equal(
-          await createStories(database).advanceInterval(waiting.current.id),
+          await createStories(database).advanceInterval({
+            intervalId: waiting.current.id,
+          }),
           -1,
         );
         assert.deepEqual(
-          await createStories(database).read(owner, timedId),
+          await createStories(database).read({
+            ownerId: owner,
+            storyId: timedId,
+          }),
           paused,
         );
         const resumePage = await context.newPage();
@@ -316,7 +346,10 @@ export async function checkStoryBrowser({
         await resumePage
           .getByRole('button', { name: 'Pause journey' })
           .waitFor();
-        const resumed = await createStories(database).read(owner, timedId);
+        const resumed = await createStories(database).read({
+          ownerId: owner,
+          storyId: timedId,
+        });
         const resumedWaiting = requireDefined(
           resumed.waiting,
           'Expected resumed journey snapshot',
@@ -331,26 +364,42 @@ export async function checkStoryBrowser({
         // Retrying an old acknowledged pause cannot pause the resumed journey.
         assert.equal((await retryControl()).status, 200);
         assert.deepEqual(
-          await createStories(database).read(owner, timedId),
+          await createStories(database).read({
+            ownerId: owner,
+            storyId: timedId,
+          }),
           resumed,
         );
         await resumePage.close();
         const deadline = Date.now() + 30000;
-        let arrived = await createStories(database).read(owner, timedId);
+        let arrived = await createStories(database).read({
+          ownerId: owner,
+          storyId: timedId,
+        });
         while (arrived.waiting && Date.now() < deadline) {
           await delay(250);
-          arrived = await createStories(database).read(owner, timedId);
+          arrived = await createStories(database).read({
+            ownerId: owner,
+            storyId: timedId,
+          });
         }
         assert.equal(arrived.current.content.title, 'At the cafe.');
         assert.equal(arrived.revision, 3);
         assert.equal(arrived.waiting, null);
         assert.ok(Date.now() >= Date.parse(waitingDueAt));
         assert.equal(
-          await createStories(database).advanceInterval(waiting.current.id),
+          await createStories(database).advanceInterval({
+            intervalId: waiting.current.id,
+          }),
           null,
         );
         assert.equal(
-          (await createStories(database).history(owner, timedId)).items.length,
+          (
+            await createStories(database).history({
+              ownerId: owner,
+              storyId: timedId,
+            })
+          ).items.length,
           3,
         );
         const reopened = await context.newPage();
@@ -363,3 +412,9 @@ export async function checkStoryBrowser({
     },
   );
 }
+
+registerStoryConcern(
+  import.meta.url,
+  'story browser integration',
+  checkStoryBrowser,
+);

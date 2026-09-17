@@ -18,55 +18,63 @@ export function createStories(database: Database) {
   const continuation = createStoryContinuation(database);
   const timing = createStoryTiming(database);
   return {
-    read(ownerId: string, storyId: string) {
-      return reads.readSnapshot({ ownerId, storyId });
+    read(args: { ownerId: string; storyId: string }) {
+      return reads.readSnapshot(args);
     },
     /** Worker-only timeout. The lock and database clock arbitrate with player writes. */
-    resolveDecision(passageId: string) {
-      return timing.resolveDecision({ passageId });
+    resolveDecision(args: { passageId: string }) {
+      return timing.resolveDecision(args);
     },
-    intervalNeedsWake(intervalId: string) {
-      return timing.intervalNeedsWake(intervalId);
+    intervalNeedsWake(args: { intervalId: string }) {
+      return timing.intervalNeedsWake(args.intervalId);
     },
-    async controlInterval(
-      ownerId: string,
-      storyId: string,
-      operationId: string,
-      body: unknown,
-    ) {
-      await timing.controlInterval({ ownerId, storyId, operationId, body });
-      return reads.readSnapshot({ ownerId, storyId });
+    async controlInterval(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      await timing.controlInterval(args);
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
     },
     /** Worker-only operation. PostgreSQL rechecks eligibility before publication. */
-    advanceInterval(intervalId: string) {
-      return timing.advanceInterval({ intervalId });
+    advanceInterval(args: { intervalId: string }) {
+      return timing.advanceInterval(args);
     },
     /** Internal commit for an already resolved narrative continuation.
      * Not command admission, a rule resolver or an HTTP content-writing endpoint.
      * No inference or other external work belongs inside this transaction.
      */
-    async append(
-      ownerId: string,
-      storyId: string,
-      transitionId: string,
-      proposed: unknown,
-    ) {
-      await continuation.append({
-        ownerId,
-        storyId,
-        transitionId,
-        proposed,
-      });
+    async append(args: {
+      ownerId: string;
+      storyId: string;
+      transitionId: string;
+      proposed: unknown;
+    }) {
+      await continuation.append(args);
       // A retry returns today's snapshot, never an old scene to roll the UI back.
-      return reads.readSnapshot({ ownerId, storyId });
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
     },
-    history(ownerId: string, storyId: string, before?: unknown) {
-      return reads.readHistory({ ownerId, storyId, before });
+    history(args: { ownerId: string; storyId: string; before?: unknown }) {
+      return reads.readHistory(args);
     },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
-    async initialize(ownerId: string, storyId: string, initial: unknown) {
-      await initializeStory({ ownerId, storyId, initial });
-      return reads.readSnapshot({ ownerId, storyId });
+    async initialize(args: {
+      ownerId: string;
+      storyId: string;
+      initial: unknown;
+    }) {
+      await initializeStory(args);
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
     },
   };
 }

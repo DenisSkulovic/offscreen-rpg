@@ -29,17 +29,20 @@ export class StoriesController {
     try {
       return await work(user.id);
     } catch (error) {
-      if (error instanceof StoryError)
+      if (error instanceof StoryError) {
         throw new HttpException(
           { code: error.code },
           { invalid: 400, not_found: 404, conflict: 409 }[error.code],
         );
+      }
       throw new ServiceUnavailableException('Story unavailable');
     }
   }
   @Get(':id')
   read(@Req() request: Request, @Param('id') id: string) {
-    return this.run(request, (owner) => this.stories.read(owner, id));
+    return this.run(request, (ownerId) =>
+      this.stories.read({ ownerId, storyId: id }),
+    );
   }
   @Get(':id/history')
   history(
@@ -47,9 +50,13 @@ export class StoriesController {
     @Param('id') id: string,
     @Query('before') before: unknown,
   ) {
-    return this.run(request, (owner) =>
-      this.stories.history(owner, id, before),
-    );
+    return this.run(request, (ownerId) => {
+      const query =
+        before === undefined
+          ? { ownerId, storyId: id }
+          : { ownerId, storyId: id, before };
+      return this.stories.history(query);
+    });
   }
   @Put(':id/chamber')
   @HttpCode(200)
@@ -58,10 +65,16 @@ export class StoriesController {
     @Param('id') id: string,
     @Body() body: unknown,
   ) {
-    return this.run(request, (owner) => {
+    return this.run(request, (ownerId) => {
       const parsed = startChamberSchema.safeParse(body);
-      if (!parsed.success) throw new StoryError('invalid');
-      return this.stories.start(owner, id, parsed.data.scenario);
+      if (!parsed.success) {
+        throw new StoryError('invalid');
+      }
+      return this.stories.start({
+        ownerId,
+        storyId: id,
+        scenario: parsed.data.scenario,
+      });
     });
   }
   @Put(':id/responses/:operationId')
@@ -72,8 +85,8 @@ export class StoriesController {
     @Param('operationId') operationId: string,
     @Body() body: unknown,
   ) {
-    return this.run(request, (owner) =>
-      this.stories.respond(owner, id, operationId, body),
+    return this.run(request, (ownerId) =>
+      this.stories.respond({ ownerId, storyId: id, operationId, body }),
     );
   }
   @Put(':id/controls/:operationId')
@@ -84,8 +97,8 @@ export class StoriesController {
     @Param('operationId') operationId: string,
     @Body() body: unknown,
   ) {
-    return this.run(request, (owner) =>
-      this.stories.control(owner, id, operationId, body),
+    return this.run(request, (ownerId) =>
+      this.stories.control({ ownerId, storyId: id, operationId, body }),
     );
   }
 }

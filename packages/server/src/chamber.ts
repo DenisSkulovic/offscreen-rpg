@@ -29,9 +29,9 @@ export function createChamber(database: Database) {
     return row.source;
   }
 
-  async function read(ownerId: string, storyId: string) {
-    const snapshot = await stories.read(ownerId, storyId);
-    const source = await ownedSource({ ownerId, storyId });
+  async function read(args: { ownerId: string; storyId: string }) {
+    const snapshot = await stories.read(args);
+    const source = await ownedSource(args);
     return {
       ...snapshot,
       canRespond:
@@ -40,26 +40,34 @@ export function createChamber(database: Database) {
   }
 
   return {
-    async start(
-      ownerId: string,
-      storyId: string,
-      scenario: ChamberScenario = 'chamber.v1',
-    ) {
-      await stories.initialize(ownerId, storyId, chamberOpeningFor(scenario));
-      return read(ownerId, storyId);
+    async start(args: {
+      ownerId: string;
+      storyId: string;
+      scenario?: ChamberScenario;
+    }) {
+      const scenario = args.scenario ?? 'chamber.v1';
+      await stories.initialize({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+        initial: chamberOpeningFor(scenario),
+      });
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
-    async respond(
-      ownerId: string,
-      storyId: string,
-      operationId: string,
-      body: unknown,
-    ) {
-      const parsed = respondToStorySchema.safeParse(body);
+    async respond(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      const parsed = respondToStorySchema.safeParse(args.body);
       if (!parsed.success) {
         throw new StoryError('invalid');
       }
-      await stories.read(ownerId, storyId);
-      const source = await ownedSource({ ownerId, storyId });
+      await stories.read({ ownerId: args.ownerId, storyId: args.storyId });
+      const source = await ownedSource({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
       const fixture = selectChamberFixture(source);
       if (!fixture?.respond) {
         throw new StoryError('conflict');
@@ -71,23 +79,30 @@ export function createChamber(database: Database) {
         expectedRevision,
         submission.answer.optionId,
       );
-      await stories.append(ownerId, storyId, operationId, {
-        expectedRevision,
-        response: submission,
-        ...outcome,
+      await stories.append({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+        transitionId: args.operationId,
+        proposed: {
+          expectedRevision,
+          response: submission,
+          ...outcome,
+        },
       });
-      return read(ownerId, storyId);
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
     read,
-    async control(
-      ownerId: string,
-      storyId: string,
-      operationId: string,
-      body: unknown,
-    ) {
-      await stories.controlInterval(ownerId, storyId, operationId, body);
-      return read(ownerId, storyId);
+    async control(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      await stories.controlInterval(args);
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
-    history: stories.history,
+    history(args: { ownerId: string; storyId: string; before?: unknown }) {
+      return stories.history(args);
+    },
   };
 }

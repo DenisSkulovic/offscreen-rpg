@@ -46,7 +46,7 @@ export async function startRuntime(
             client,
             taskQueue: config.taskQueue,
             intervalNeedsWake: (intervalId) =>
-              stories.intervalNeedsWake(intervalId),
+              stories.intervalNeedsWake({ intervalId }),
           });
         }),
       controller.signal,

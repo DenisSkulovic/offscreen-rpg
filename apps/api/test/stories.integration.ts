@@ -1,41 +1,29 @@
-import type { TestContext } from 'node:test';
-import type { Database } from '@offscreen/db';
+import { test } from 'node:test';
+import { withAppIntegration } from './helpers/app-integration.js';
 import { checkStoryBrowser } from './stories-browser.integration.js';
 import { checkStoryCore } from './stories-core.integration.js';
 import { checkStoryHttp } from './stories-http.integration.js';
 
-export async function checkStories(
-  t: TestContext,
-  database: Database,
-  owner: string,
-  origin: string,
-  cookie: string,
-  otherCookie: string,
-  restartWorker: () => Promise<void>,
-) {
-  await checkStoryCore({
-    t,
-    database,
-    owner,
-    origin,
-    cookie,
-    otherCookie,
-  });
-  await checkStoryHttp({
-    t,
-    database,
-    owner,
-    origin,
-    cookie,
-    otherCookie,
-  });
-  await checkStoryBrowser({
-    t,
-    database,
-    owner,
-    origin,
-    cookie,
-    otherCookie,
-    restartWorker,
-  });
-}
+test(
+  'story integration through HTTP, database and browser',
+  { timeout: 180000 },
+  async (t) => {
+    await withAppIntegration(async (context) => {
+      await context.restartWorker();
+      const shared = {
+        t,
+        database: context.database,
+        owner: context.ownerId,
+        origin: context.origin,
+        cookie: context.cookie,
+        otherCookie: context.otherCookie,
+      };
+      await checkStoryCore(shared);
+      await checkStoryHttp(shared);
+      await checkStoryBrowser({
+        ...shared,
+        restartWorker: context.restartWorker,
+      });
+    });
+  },
+);

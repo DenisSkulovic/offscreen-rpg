@@ -5,6 +5,7 @@ import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
 import { requireDefined } from './helpers/require.js';
+import { registerStoryConcern } from './helpers/story-suite.js';
 
 type StoryHttpArgs = {
   t: TestContext;
@@ -116,7 +117,10 @@ export async function checkStoryHttp({
         ).status,
         409,
       );
-      const history = await createStories(database).history(owner, id);
+      const history = await createStories(database).history({
+        ownerId: owner,
+        storyId: id,
+      });
       assert.equal(history.items.length, 3);
     },
   );
@@ -152,7 +156,10 @@ export async function checkStoryHttp({
       );
       const first = storySnapshotSchema.parse(await firstResult.json());
       assert.deepEqual(await secondResult.json(), first);
-      assert.deepEqual(await createStories(database).read(owner, id), first);
+      assert.deepEqual(
+        await createStories(database).read({ ownerId: owner, storyId: id }),
+        first,
+      );
       assert.equal(
         (
           await database.db.$client.query(
@@ -179,19 +186,28 @@ export async function checkStoryHttp({
         403,
       );
       await assert.rejects(
-        createStories(database).initialize(owner, id, {
-          source: 'chamber.v1',
-          content: {
-            version: 1,
-            title: 'Replacement',
-            paragraphs: ['Do not overwrite'],
+        createStories(database).initialize({
+          ownerId: owner,
+          storyId: id,
+          initial: {
+            source: 'chamber.v1',
+            content: {
+              version: 1,
+              title: 'Replacement',
+              paragraphs: ['Do not overwrite'],
+            },
+            interaction: null,
           },
-          interaction: null,
         }),
         (error: unknown) =>
           error instanceof StoryError && error.code === 'conflict',
       );
-      assert.deepEqual(await createStories(database).read(owner, id), first);
+      assert.deepEqual(
+        await createStories(database).read({ ownerId: owner, storyId: id }),
+        first,
+      );
     },
   );
 }
+
+registerStoryConcern(import.meta.url, 'story http integration', checkStoryHttp);
