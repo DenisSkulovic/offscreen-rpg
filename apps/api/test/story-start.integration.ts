@@ -17,6 +17,7 @@ import {
   StoryError,
   playableOpeningStorySource,
 } from '@offscreen/server/stories';
+import { createChamber } from '@offscreen/server/chamber';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
@@ -179,6 +180,18 @@ export async function checkStoryStart({
       assert.deepEqual(
         stored.rows[0].output.next.options.map(
           (option: { intention: string }) => option.intention,
+        ),
+        scriptedPlayableOpening.next.options.map((option) => option.intention),
+      );
+      const inspection = await createChamber(database).inspect({
+        ownerId: owner,
+        storyId,
+      });
+      assert.equal(inspection.generation?.id, candidateId);
+      assert.equal(inspection.generation?.state, 'succeeded');
+      assert.deepEqual(
+        inspection.generation?.optionIntentions?.map(
+          (option) => option.intention,
         ),
         scriptedPlayableOpening.next.options.map((option) => option.intention),
       );

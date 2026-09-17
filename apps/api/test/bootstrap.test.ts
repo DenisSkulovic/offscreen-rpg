@@ -26,6 +26,14 @@ test('API binds a real HTTP listener and closes cleanly', async () => {
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { status: 'ok' });
     assert.equal((await fetch(`${origin}/health/live`)).status, 404);
+    assert.equal(
+      (
+        await fetch(
+          `${origin}/api/chamber-tools/stories/00000000-0000-4000-8000-000000000000`,
+        )
+      ).status,
+      404,
+    );
     const failure = mock.method(auth.api, 'getSession', async () => {
       throw new Error('sensitive-query-parameter');
     });

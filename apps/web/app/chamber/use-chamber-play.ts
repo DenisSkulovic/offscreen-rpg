@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import {
   preferNewerSnapshot,
+  readChamberInspector,
   readSnapshotFromResponse,
   readStorySnapshot,
   submitStoryJson,
 } from './transport';
+import type { ChamberInspector } from '@offscreen/contracts/chamber';
 
 type PendingCommand = { id: string; body: unknown };
 
@@ -18,16 +20,63 @@ export function useChamberPlay(args: {
   const [story, setStory] = useState(args.initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const [inspector, setInspector] = useState<ChamberInspector | null>(null);
+  const [inspectorError, setInspectorError] = useState('');
+  const [inspectorPending, setInspectorPending] = useState(false);
   const startOperationId = useRef(args.initialId);
   const [scenario, setScenario] = useState('chamber.v3');
   const responseOperation = useRef<PendingCommand | null>(null);
   const controlOperation = useRef<PendingCommand | null>(null);
   const hasWaiting = story?.waiting != null || story?.decision != null;
   const storyId = story?.id;
+  const storyRevision = story?.revision;
+  const storyViewVersion = story?.viewVersion;
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));
   }
+
+  const refreshInspector = useCallback(
+    async (targetStoryId: string, signal?: AbortSignal) => {
+      setInspectorPending(true);
+      try {
+        const next = await readChamberInspector(targetStoryId, signal);
+        if (signal?.aborted) {
+          return;
+        }
+        setInspector(next);
+        setInspectorError(
+          next
+            ? ''
+            : 'Inspector is unavailable. Use the local Chamber launcher for developer tools.',
+        );
+      } catch {
+        if (!signal?.aborted) {
+          setInspectorError(
+            'Inspector could not be loaded. Retry refresh or reload.',
+          );
+        }
+      } finally {
+        if (!signal?.aborted) {
+          setInspectorPending(false);
+        }
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!storyId) {
+      setInspector(null);
+      setInspectorError('');
+      return;
+    }
+    const controller = new AbortController();
+    void refreshInspector(storyId, controller.signal);
+    return () => {
+      controller.abort();
+    };
+  }, [refreshInspector, storyId, storyRevision, storyViewVersion]);
 
   useEffect(() => {
     if (!hasWaiting || !storyId) {
@@ -188,6 +237,14 @@ export function useChamberPlay(args: {
     story,
     pending,
     error,
+    inspector,
+    inspectorError,
+    inspectorPending,
+    refreshInspector: () => {
+      if (storyId) {
+        void refreshInspector(storyId);
+      }
+    },
     scenario,
     setScenario,
     startOperationId,

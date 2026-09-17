@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
 import { requireDefined } from './helpers/require.js';
@@ -122,6 +123,39 @@ export async function checkStoryHttp({
         storyId: id,
       });
       assert.equal(history.items.length, 3);
+    },
+  );
+
+  await t.test(
+    'chamber inspector is authenticated, owner-scoped and read-only',
+    async () => {
+      const id = randomUUID();
+      const started = await fetch(`${origin}/api/stories/${id}/chamber`, {
+        method: 'PUT',
+        headers: {
+          cookie,
+          origin,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ scenario: 'chamber.v5' }),
+      });
+      assert.equal(started.status, 200);
+      const url = `${origin}/api/chamber-tools/stories/${id}`;
+      assert.equal((await fetch(url)).status, 401);
+      assert.equal(
+        (await fetch(url, { headers: { cookie: otherCookie } })).status,
+        404,
+      );
+      const response = await fetch(url, { headers: { cookie } });
+      assert.equal(response.status, 200);
+      const inspection = chamberInspectorSchema.parse(await response.json());
+      assert.equal(inspection.story.source, 'chamber.v5');
+      assert.equal(inspection.items[0]?.holderKey, 'courier');
+      assert.equal(
+        (await fetch(url, { method: 'PUT', headers: { cookie, origin } }))
+          .status,
+        404,
+      );
     },
   );
 

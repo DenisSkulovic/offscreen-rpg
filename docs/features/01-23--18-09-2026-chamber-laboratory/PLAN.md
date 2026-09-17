@@ -10,7 +10,7 @@ Reviewer: ChatGPT/Codex after each completed phase is committed and pushed.
 
 ## Phase 1 — Scenario catalog and read-only inspector
 
-Status: Ready
+Status: Implemented; awaiting review
 
 ### Outcome
 
@@ -503,10 +503,10 @@ A second radically different setting should eventually prove the same engine ass
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 1 ready — add descriptive scenario catalog and isolated read-only inspector.
-- Base/reviewed Git revision: re-read current `main` before implementation. The playable-opening-candidate work may already have advanced `docs/progress.md`, contracts and generation state beyond the revision used when this feature was designed.
-- Relevant uncommitted changes: unknown; implementation owner must inspect Git status before editing.
-- Actual checks/results: no checks run by the planner for this feature.
-- Unresolved blockers for Phase 1: none. Generation-provenance display is optional/nullable if candidate-start provenance has not yet landed.
-- Provider spend and accounting certainty: Phase 1 requires zero provider/model spend.
-- Future phases: not authorized for the current implementation turn.
+- Current phase and exact next action: Phase 1 implemented on this working tree. Stop for review; do not start Phase 2. Commit/push when the owner asks (plan originally listed that as the phase exit).
+- Base/reviewed Git revision: implemented against current local `main` plus existing uncommitted vision/playthrough docs.
+- Relevant uncommitted changes: Phase 1 catalog + inspector (contracts, server inspect, launcher-only `developerTools`, Chamber UI, tests, development/delivery/progress docs). Unrelated prior edits to `docs/vision.md` / `docs/playthroughs.md` were left untouched.
+- Actual checks/results: `@offscreen/contracts` tests including catalog completeness; API bootstrap proves default `createApp` does not mount `/api/chamber-tools`; story core/http/start inspector tests in the full stories run; `stories-browser.integration.js` 4/4; `node dist/dev/chamber.js --smoke` passed; targeted Prettier/ESLint and `python scripts/check_docs.py`. Typecheck via package `tsc` for contracts/server/api/web. Did not rerun the entire combined `stories.integration.js` suite after the last browser locator fix (browser suite re-ran cleanly). `pnpm` was invoked as `corepack pnpm`.
+- Unresolved blockers for Phase 1: none. Generation provenance is shown when `sourceGenerationId` is present (playable start); authored chamber fixtures remain null there.
+- Provider spend and accounting certainty: $0 this turn; no provider calls; cumulative OpenRouter usage not verified.
+- Future phases: still blocked/planned as written; not authorized.

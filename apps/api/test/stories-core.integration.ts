@@ -5,8 +5,13 @@ import {
   storyHistorySchema,
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
+import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
+import {
+  createChamber,
+  listChamberScenarios as listServerScenarios,
+} from '@offscreen/server/chamber';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 
@@ -27,6 +32,110 @@ export async function checkStoryCore({
   cookie,
   otherCookie,
 }: StoryCoreArgs) {
+  await t.test(
+    'chamber catalog metadata maps to fixtures and inspector reads committed state',
+    async () => {
+      const catalog = listChamberScenarios();
+      assert.deepEqual(
+        listServerScenarios().map((entry) => entry.id),
+        catalog.map((entry) => entry.id),
+      );
+      const chamber = createChamber(database);
+      for (const entry of catalog) {
+        assert.ok(entry.name);
+        assert.ok(entry.description);
+        assert.ok(entry.exercises.length > 0);
+        const started = await chamber.start({
+          ownerId: owner,
+          storyId: randomUUID(),
+          scenario: entry.id,
+        });
+        const inspection = await chamber.inspect({
+          ownerId: owner,
+          storyId: started.id,
+        });
+        assert.equal(inspection.story.source, entry.id);
+        assert.equal(inspection.story.revision, started.revision);
+        assert.equal(inspection.story.viewVersion, started.viewVersion);
+        assert.ok(
+          inspection.recentHistory.length <= 20 &&
+            inspection.recentHistory.length >= 1,
+        );
+      }
+      const timedId = randomUUID();
+      await chamber.start({
+        ownerId: owner,
+        storyId: timedId,
+        scenario: 'chamber.v3',
+      });
+      const timedOpening = await chamber.read({
+        ownerId: owner,
+        storyId: timedId,
+      });
+      const visit = requireDefined(
+        timedOpening.current.interaction,
+        'Expected courtyard opening offer',
+      );
+      await chamber.respond({
+        ownerId: owner,
+        storyId: timedId,
+        operationId: randomUUID(),
+        body: {
+          expectedRevision: 1,
+          submission: {
+            interactionId: visit.id,
+            answer: { kind: 'choice.v1', optionId: 'visit' },
+          },
+        },
+      });
+      const waiting = await chamber.inspect({
+        ownerId: owner,
+        storyId: timedId,
+      });
+      assert.ok(waiting.timing.waitPlan);
+      assert.equal(waiting.timing.remainingMs, null);
+      assert.ok(waiting.timing.dueAt);
+      const letterId = randomUUID();
+      await chamber.start({
+        ownerId: owner,
+        storyId: letterId,
+        scenario: 'chamber.v5',
+      });
+      const letterOpening = await chamber.read({
+        ownerId: owner,
+        storyId: letterId,
+      });
+      const letterOffer = requireDefined(
+        letterOpening.current.interaction,
+        'Expected letter opening offer',
+      );
+      await chamber.respond({
+        ownerId: owner,
+        storyId: letterId,
+        operationId: randomUUID(),
+        body: {
+          expectedRevision: 1,
+          submission: {
+            interactionId: letterOffer.id,
+            answer: { kind: 'choice.v1', optionId: 'deliver' },
+          },
+        },
+      });
+      const delivered = await chamber.inspect({
+        ownerId: owner,
+        storyId: letterId,
+      });
+      assert.equal(delivered.items[0]?.holderKey, 'caretaker');
+      assert.equal(delivered.recentHistory.length, 2);
+      assert.equal(delivered.recentHistory[0]?.hasEffect, true);
+      await assert.rejects(
+        chamber.inspect({ ownerId: randomUUID(), storyId: letterId }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'not_found',
+      );
+    },
+  );
+
   await t.test(
     'item transfers commit with prose, retry safely and roll back failed effects',
     async () => {

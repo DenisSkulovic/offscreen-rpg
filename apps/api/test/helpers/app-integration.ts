@@ -100,7 +100,9 @@ export async function withAppIntegration(
     }),
     plugins: [strictUtilities],
   });
-  const app = await createApp(database, auth, origin);
+  const app = await createApp(database, auth, origin, {
+    developerTools: true,
+  });
   const helpers = (await auth.$context).test;
   const user = await helpers.saveUser(
     helpers.createUser({ name: 'Integration Reader' }),

@@ -15,11 +15,10 @@ export function Chamber({
   return (
     <main className="editor">
       <SessionRefresh />
-      <p className="eyebrow">Scripted testing chamber</p>
+      <p className="eyebrow">Chamber laboratory</p>
       <p>
-        A short branching story with saved choices and consequences. No AI
-        calls. A timed visit can be paused and resumed; pace controls and
-        possessions are not connected yet.
+        Local developer scenarios that exercise real persistence and execution.
+        No AI calls. The inspector is read-only.
       </p>
       {play.story ? (
         <ChamberScene
@@ -27,6 +26,10 @@ export function Chamber({
           pending={play.pending}
           controlPending={play.controlOperation.current !== null}
           responsePending={play.responseOperation.current !== null}
+          inspector={play.inspector}
+          inspectorError={play.inspectorError}
+          inspectorPending={play.inspectorPending}
+          onInspect={play.refreshInspector}
           onControl={(action) => void play.control(action)}
           onRespond={(optionId) => void play.respond(optionId)}
         />

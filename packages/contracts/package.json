@@ -18,6 +18,10 @@
     "./stories": {
       "types": "./dist/src/stories.d.ts",
       "default": "./dist/src/stories.js"
+    },
+    "./chamber": {
+      "types": "./dist/src/chamber.d.ts",
+      "default": "./dist/src/chamber.js"
     }
   },
   "scripts": {

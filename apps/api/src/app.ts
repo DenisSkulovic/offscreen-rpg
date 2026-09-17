@@ -20,6 +20,7 @@ import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
 import { OPENINGS, OpeningsController } from './drafts/openings-controller.js';
 import { createChamber } from '@offscreen/server/chamber';
 import { STORIES, StoriesController } from './stories/controller.js';
+import { ChamberToolsController } from './stories/chamber-tools-controller.js';
 
 const DATABASE = Symbol('DATABASE');
 
@@ -52,10 +53,15 @@ class HealthController {
 @Module({})
 class AppModule {}
 
+export type CreateAppOptions = Readonly<{
+  developerTools?: boolean;
+}>;
+
 export async function createApp(
   database: Database,
   auth: Auth,
   origin: string,
+  options: CreateAppOptions = {},
 ) {
   const app = await NestFactory.create<NestExpressApplication>(
     {
@@ -66,6 +72,7 @@ export async function createApp(
         DraftsController,
         OpeningsController,
         StoriesController,
+        ...(options.developerTools === true ? [ChamberToolsController] : []),
       ],
       providers: [
         IdentityService,

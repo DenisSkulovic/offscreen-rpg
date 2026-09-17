@@ -5,13 +5,18 @@ import { and, eq } from 'drizzle-orm';
 import {
   chamberAllowsResponse,
   chamberOpeningFor,
+  listChamberScenarios,
   selectChamberFixture,
   type ChamberScenario,
 } from './chamber-fixtures';
+import { createChamberInspector } from './chamber-inspector';
 import { createStories, StoryError } from './stories';
+
+export { listChamberScenarios };
 
 export function createChamber(database: Database) {
   const stories = createStories(database);
+  const inspector = createChamberInspector(database);
 
   async function ownedSource(identity: { ownerId: string; storyId: string }) {
     const [row] = await database.db
@@ -103,6 +108,9 @@ export function createChamber(database: Database) {
     },
     history(args: { ownerId: string; storyId: string; before?: unknown }) {
       return stories.history(args);
+    },
+    inspect(args: { ownerId: string; storyId: string }) {
+      return inspector.inspect(args);
     },
     startFromCandidate(args: {
       ownerId: string;

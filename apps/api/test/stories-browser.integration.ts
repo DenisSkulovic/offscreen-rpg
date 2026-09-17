@@ -33,13 +33,31 @@ export async function checkStoryBrowser({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
-        await page.getByLabel('Scenario').selectOption('chamber.v5');
+        await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+        assert.equal(
+          await page.getByRole('combobox', { name: 'Scenario' }).inputValue(),
+          'chamber.v3',
+        );
+        await page
+          .getByRole('region', { name: 'Selected scenario purpose' })
+          .getByText(
+            'Exercises a durable wait that continues while the browser is closed.',
+          )
+          .waitFor();
+        await page
+          .getByRole('combobox', { name: 'Scenario' })
+          .selectOption('chamber.v5');
+        await page
+          .getByRole('region', { name: 'Selected scenario purpose' })
+          .getByText('authoritative item transfer', { exact: false })
+          .waitFor();
         await page
           .getByRole('button', { name: 'Start scripted chamber' })
           .click();
         await page
           .getByText('Sealed letter — held by courier', { exact: true })
           .waitFor();
+        await page.getByRole('region', { name: 'Inspector' }).waitFor();
         const id = requireDefined(
           new URL(page.url()).searchParams.get('id'),
           'Expected chamber story id in URL',
@@ -76,6 +94,10 @@ export async function checkStoryBrowser({
         await page
           .getByRole('heading', { name: 'Letter delivered.' })
           .waitFor();
+        await page
+          .getByRole('region', { name: 'Inspector' })
+          .getByText('caretaker', { exact: false })
+          .waitFor();
         await page.reload();
         await page
           .getByText('Sealed letter — held by caretaker', { exact: true })
@@ -95,7 +117,9 @@ export async function checkStoryBrowser({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
-        await page.getByLabel('Scenario').selectOption('chamber.v4');
+        await page
+          .getByRole('combobox', { name: 'Scenario' })
+          .selectOption('chamber.v4');
         await page
           .getByRole('button', { name: 'Start scripted chamber' })
           .click();
@@ -149,7 +173,9 @@ export async function checkStoryBrowser({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
-        await page.getByLabel('Scenario').selectOption('chamber.v2');
+        await page
+          .getByRole('combobox', { name: 'Scenario' })
+          .selectOption('chamber.v2');
         await page
           .getByRole('button', { name: 'Start scripted chamber' })
           .click();
@@ -157,7 +183,10 @@ export async function checkStoryBrowser({
           .getByRole('heading', { name: 'A gate and a small decision.' })
           .waitFor();
         const url = page.url();
-        const before = await page.locator('details').textContent();
+        const inspect = page
+          .locator('details')
+          .filter({ hasText: 'Inspect saved state' });
+        const before = await inspect.textContent();
         assert.equal(
           await page
             .getByRole('button', { name: 'Approach the gate' })
@@ -166,7 +195,7 @@ export async function checkStoryBrowser({
         );
         await page.reload();
         assert.equal(page.url(), url);
-        assert.equal(await page.locator('details').textContent(), before);
+        assert.equal(await inspect.textContent(), before);
         await page.getByRole('button', { name: 'Approach the gate' }).click();
         await page.getByRole('heading', { name: 'At the gate.' }).waitFor();
         await page.reload();

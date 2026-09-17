@@ -1,8 +1,10 @@
-import type { startChamberSchema } from '@offscreen/contracts/stories';
-import type { z } from 'zod';
+import {
+  listChamberScenarios as listCatalogScenarios,
+  type ChamberScenario,
+} from '@offscreen/contracts/chamber';
 import { StoryError } from './story-errors';
 
-export type ChamberScenario = z.infer<typeof startChamberSchema>['scenario'];
+export type { ChamberScenario };
 
 type ChamberOpening = {
   source: ChamberScenario;
@@ -323,6 +325,15 @@ export const chamberFixtures = {
   'chamber.v4': { opening: deadlineOpening, respond: timedGateReply },
   'chamber.v5': { opening: itemOpening, respond: letterDelivery },
 } as const satisfies Record<ChamberScenario, ChamberFixture>;
+
+export function listChamberScenarios() {
+  return listCatalogScenarios().map((entry) => {
+    if (!Object.hasOwn(chamberFixtures, entry.id)) {
+      throw new Error(`Chamber catalog is missing fixture ${entry.id}`);
+    }
+    return entry;
+  });
+}
 
 export function selectChamberFixture(
   source: string,

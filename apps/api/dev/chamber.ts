@@ -110,7 +110,14 @@ const provisioner = betterAuth({
     },
   ],
 });
-const app = await createApp(database, createAuth(database, authConfig), origin);
+const app = await createApp(
+  database,
+  createAuth(database, authConfig),
+  origin,
+  {
+    developerTools: true,
+  },
+);
 let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 let web: ReturnType<typeof spawn> | undefined;
@@ -210,23 +217,39 @@ try {
   const page = await context.newPage();
   await page.goto(`${origin}/chamber`);
   await page.getByRole('button', { name: 'Start scripted chamber' }).waitFor();
+  await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
   if (smoke) {
-    await page.getByLabel('Scenario').selectOption('chamber.v5');
+    await page
+      .getByRole('combobox', { name: 'Scenario' })
+      .selectOption('chamber.v5');
+    await page
+      .getByRole('region', { name: 'Selected scenario purpose' })
+      .getByText('authoritative item transfer', { exact: false })
+      .waitFor();
     await page.getByRole('button', { name: 'Start scripted chamber' }).click();
+    await page.getByRole('region', { name: 'Inspector' }).waitFor();
     await page
       .getByRole('button', { name: 'Give the letter to the caretaker' })
       .click();
     await page.getByRole('heading', { name: 'Letter delivered.' }).waitFor();
+    await page
+      .getByRole('region', { name: 'Inspector' })
+      .getByText('held by caretaker', { exact: false })
+      .waitFor();
     await page.reload();
     await page
       .getByText('Sealed letter — held by caretaker', { exact: true })
+      .waitFor();
+    await page
+      .getByRole('region', { name: 'Inspector' })
+      .getByText('held by caretaker', { exact: false })
       .waitFor();
     const unauthenticated = await fetch(`${origin}/api/me`);
     if (unauthenticated.status !== 401) {
       throw new Error('Anonymous access was not rejected.');
     }
     console.log(
-      'Local launcher smoke passed: authenticated play, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
+      'Local launcher smoke passed: authenticated play, inspector, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
     );
   } else {
     console.log(

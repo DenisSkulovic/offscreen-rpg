@@ -1,7 +1,12 @@
 'use client';
 
+import {
+  listChamberScenarios,
+  type ChamberInspector,
+} from '@offscreen/contracts/chamber';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { StoryHistoryView } from './history';
+import { ChamberInspectorPanel } from './inspector';
 
 function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
   if (waiting.remainingMs === null) {
@@ -25,6 +30,10 @@ export function ChamberScene(args: {
   pending: boolean;
   controlPending: boolean;
   responsePending: boolean;
+  inspector: ChamberInspector | null;
+  inspectorError: string;
+  inspectorPending: boolean;
+  onInspect: () => void;
   onControl: (action?: 'pause' | 'resume') => void;
   onRespond: (optionId?: string) => void;
 }) {
@@ -129,6 +138,12 @@ export function ChamberScene(args: {
           <dd>{story.current.interaction?.id ?? 'None'}</dd>
         </dl>
       </details>
+      <ChamberInspectorPanel
+        inspector={args.inspector}
+        error={args.inspectorError}
+        pending={args.inspectorPending}
+        onRefresh={args.onInspect}
+      />
       <p>Bookmark this URL to reopen the same story.</p>
       <StoryHistoryView
         key={`${story.id}:${story.revision}`}
@@ -146,22 +161,31 @@ export function ChamberStart(args: {
   onScenario: (scenario: string) => void;
   onStart: () => void;
 }) {
+  const scenarios = listChamberScenarios();
+  const selected =
+    scenarios.find((entry) => entry.id === args.scenario) ?? scenarios[0];
   return (
     <>
       <h1>A small persistent beginning.</h1>
-      <label>
-        Scenario{' '}
-        <select
-          value={args.scenario}
-          disabled={args.pending || args.startLocked}
-          onChange={(event) => args.onScenario(event.target.value)}
-        >
-          <option value="chamber.v3">Timed cafe visit (20 seconds)</option>
-          <option value="chamber.v4">Timed gate reply (15 seconds)</option>
-          <option value="chamber.v5">Deliver or keep a letter</option>
-          <option value="chamber.v2">Immediate gate conversation</option>
-        </select>
-      </label>
+      <label htmlFor="chamber-scenario">Scenario</label>{' '}
+      <select
+        id="chamber-scenario"
+        value={args.scenario}
+        disabled={args.pending || args.startLocked}
+        onChange={(event) => args.onScenario(event.target.value)}
+      >
+        {scenarios.map((entry) => (
+          <option key={entry.id} value={entry.id}>
+            {entry.name}
+          </option>
+        ))}
+      </select>
+      {selected ? (
+        <section aria-label="Selected scenario purpose">
+          <p>{selected.description}</p>
+          <p>Exercises: {selected.exercises.join(', ')}</p>
+        </section>
+      ) : null}
       <button disabled={args.pending} onClick={() => void args.onStart()}>
         {args.pending ? 'Saving…' : 'Start scripted chamber'}
       </button>
