@@ -2,6 +2,16 @@
 
 The storyteller is application code, versioned instructions, selected context, model inference and validated tools working together. Database rows hold preferences, facts and run records; they are not by themselves an agent. Likewise, adding LangGraph does not define a coherent storyteller.
 
+## Offline playable proposal component
+
+`@offscreen/ai/playable` prepares opening and immediate-continuation requests without provider, database or workflow I/O. Its version-1 output contains bounded scene prose and either an explicit end or a choice offer. Each option has a local ID, visible label and a plain-language intention. Intention is creative input for a later resolution, not executable code, a guaranteed success or permission to change state. The current bound of 1–12 options limits output size; it does not establish a universal product choice count.
+
+`playablePresentation` adapts validated prose and labels to the existing presentation contract. The application must retain the full accepted proposal, including intentions, when this is connected. `preparePlayableContinuation` checks that the supplied proposal matches the current scene and published offer, validates the submitted option, and captures that option's intention with the current prose, items and premise. It carries story/revision/interaction references in its private artifact; those control references are not sent in model messages. Inputs are copied and the artifact is deeply frozen. The caller must load those inputs consistently from authorized storage and recheck state at commit; this pure component cannot establish either condition.
+
+Unknown fields, duplicate option IDs, empty offers and unoffered/stale submissions fail validation. Task validation requires a choice for an opening; only a continuation may propose an explicit ending. The current component rejects continuation preparation during a journey or timed decision. It has no proposed clock advancement, effects, map, recall retrieval, hidden futures or group policy. Prompts instruct the source to preserve known facts and avoid claiming unsupported changes; schema validation cannot prove that prose complies. Such contradictions are evaluation failures, not validated game state.
+
+Fake-output tests exercise these boundaries and non-human premises without inference. This remains a component, not a generated playable flow: draft-to-candidate persistence, proposal/offer persistence, Start, pending resolution and generation-to-commit integration are next. The existing chamber still uses its authored resolver. Existing opening-prose preview records keep their own contract; they are not silently reinterpreted as playable proposals.
+
 ## Initial orchestration
 
 The implemented `@offscreen/ai/opening` component prepares and validates an opening request without database, HTTP, provider or workflow dependencies. It accepts a saved draft with a nonblank premise and captures its exact content and source revision. A blank title or direction is allowed. Saving an incomplete draft remains valid; preparing it for inference has a stronger prerequisite.

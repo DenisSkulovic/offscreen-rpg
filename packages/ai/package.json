@@ -6,6 +6,10 @@
     "./opening": {
       "types": "./dist/src/opening.d.ts",
       "default": "./dist/src/opening.js"
+    },
+    "./playable": {
+      "types": "./dist/src/playable.d.ts",
+      "default": "./dist/src/playable.js"
     }
   },
   "scripts": {
