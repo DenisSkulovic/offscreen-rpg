@@ -3,6 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { enqueue, type Transaction } from './outbox';
+export const decisionDeadlineTopic = 'story.decision.v1';
 export const storyIntervalTopic = 'story.interval.v1';
 export const controlledIntervalTopic = 'story.interval.v2';
 export const intervalWakeTopic = 'story.interval.wake.v2';
@@ -36,12 +37,22 @@ const waitPlanSchema = z.strictObject({
     interaction: interactionSpecificationSchema.nullable(),
   }),
 });
+const decisionPlanSchema = z.strictObject({
+  version: z.literal(1),
+  responseDurationMs: z.number().int().min(1000).max(86400000),
+  defaultOptionId: z.string().min(1).max(100),
+  outcome: z.strictObject({
+    content: passageContentSchema,
+    interaction: interactionSpecificationSchema.nullable(),
+  }),
+});
 const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
   response: interactionSubmissionSchema.nullable().default(null),
   wait: waitPlanSchema.nullable().default(null),
+  decision: decisionPlanSchema.nullable().default(null),
 });
 function matchesPassage(
   passage: typeof storyPassage.$inferSelect,
@@ -79,6 +90,8 @@ export function createStories(database: Database) {
         content: storyPassage.content,
         interaction: storyPassage.interaction,
         waitPlan: storyPassage.waitPlan,
+        decisionPlan: storyPassage.decisionPlan,
+        responseDueAt: storyPassage.responseDueAt,
         dueAt: storyPassage.dueAt,
         intervalVersion: storyPassage.intervalVersion,
         controlRevision: storyPassage.controlRevision,
@@ -98,6 +111,14 @@ export function createStories(database: Database) {
       id: row.id,
       revision: row.revision,
       viewVersion: row.viewVersion,
+      decision:
+        row.decisionPlan === null
+          ? null
+          : {
+              dueAt: row.responseDueAt!.toISOString(),
+              defaultOptionId: decisionPlanSchema.parse(row.decisionPlan)
+                .defaultOptionId,
+            },
       waiting:
         row.waitPlan === null
           ? null
@@ -122,6 +143,7 @@ export function createStories(database: Database) {
     transitionId: string,
     input: z.infer<typeof continuationSchema>,
     completingInterval?: string,
+    completingDecision?: string,
   ) {
     const [current] = await tx
       .select()
@@ -143,6 +165,12 @@ export function createStories(database: Database) {
       if (
         prior.sequence !== input.expectedRevision + 1 ||
         !matchesPassage(prior, input) ||
+        !isDeepStrictEqual(
+          prior.decisionPlan === null
+            ? null
+            : decisionPlanSchema.parse(prior.decisionPlan),
+          input.decision,
+        ) ||
         !isDeepStrictEqual(
           prior.waitPlan === null ? null : waitPlanSchema.parse(prior.waitPlan),
           input.wait,
@@ -171,6 +199,25 @@ export function createStories(database: Database) {
     if (!active) throw new Error('Current passage missing');
     if (active.waitPlan !== null && completingInterval !== active.id)
       throw new StoryError('conflict');
+    if (active.responseDueAt !== null) {
+      const [clock] = await tx
+        .select({ now: sql<Date>`clock_timestamp()` })
+        .from(story)
+        .where(eq(story.id, id));
+      const expired =
+        new Date(clock!.now).getTime() >= active.responseDueAt.getTime();
+      if (completingDecision === active.id ? !expired : expired)
+        throw new StoryError('conflict');
+    }
+    if (
+      input.decision &&
+      (!input.interaction ||
+        input.wait ||
+        !input.interaction.options.some(
+          (option) => option.id === input.decision!.defaultOptionId,
+        ))
+    )
+      throw new StoryError('invalid');
     if (active.interaction !== null) {
       if (input.response === null) throw new StoryError('conflict');
       try {
@@ -193,6 +240,16 @@ export function createStories(database: Database) {
       sequence: next,
       transitionId,
       response: input.response,
+      responseSource:
+        input.response === null
+          ? null
+          : completingDecision
+            ? 'default'
+            : 'player',
+      decisionPlan: input.decision,
+      responseDueAt: input.decision
+        ? sql`clock_timestamp() + ${input.decision.responseDurationMs} * interval '1 millisecond'`
+        : null,
       waitPlan: input.wait,
       intervalVersion: input.wait ? 1 : 0,
       dueAt: input.wait
@@ -210,6 +267,12 @@ export function createStories(database: Database) {
       .update(story)
       .set({ revision: next, viewVersion: current.viewVersion + 1 })
       .where(eq(story.id, id));
+    if (input.decision)
+      await enqueue(tx, {
+        id: passageId,
+        operationId: passageId,
+        topic: decisionDeadlineTopic,
+      });
     if (input.wait)
       await enqueue(tx, {
         id: passageId,
@@ -219,6 +282,51 @@ export function createStories(database: Database) {
   }
   return {
     read,
+    /** Worker-only timeout. The lock and database clock arbitrate with player writes. */
+    async resolveDecision(passageId: string): Promise<number | null> {
+      identifier(passageId);
+      return database.db.transaction(async (tx) => {
+        const [reference] = await tx
+          .select()
+          .from(storyPassage)
+          .where(eq(storyPassage.id, passageId));
+        if (!reference) throw new StoryError('not_found');
+        const [current] = await tx
+          .select()
+          .from(story)
+          .where(eq(story.id, reference.storyId))
+          .for('update');
+        if (!current) throw new StoryError('not_found');
+        if (current.revision !== reference.sequence) return null;
+        if (reference.decisionPlan === null || !reference.responseDueAt)
+          throw new StoryError('invalid');
+        const plan = decisionPlanSchema.parse(reference.decisionPlan);
+        const [clock] = await tx
+          .select({ now: sql<Date>`clock_timestamp()` })
+          .from(story)
+          .where(eq(story.id, current.id));
+        const remaining =
+          reference.responseDueAt.getTime() - new Date(clock!.now).getTime();
+        if (remaining > 0) return remaining;
+        await commit(
+          tx,
+          current.ownerId,
+          current.id,
+          passageId,
+          continuationSchema.parse({
+            expectedRevision: reference.sequence,
+            ...plan.outcome,
+            response: {
+              interactionId: interactionSchema.parse(reference.interaction).id,
+              answer: { kind: 'choice.v1', optionId: plan.defaultOptionId },
+            },
+          }),
+          undefined,
+          passageId,
+        );
+        return null;
+      });
+    },
     async intervalNeedsWake(id: string) {
       const [row] = await database.db
         .select({ id: story.id })

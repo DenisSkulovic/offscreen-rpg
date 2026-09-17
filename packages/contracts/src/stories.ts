@@ -11,6 +11,13 @@ export const storySnapshotSchema = z.strictObject({
   revision: z.number().int().positive(),
   viewVersion: z.number().int().positive(),
   canRespond: z.boolean().default(false),
+  decision: z
+    .strictObject({
+      dueAt: z.iso.datetime(),
+      defaultOptionId: z.string(),
+    })
+    .nullable()
+    .default(null),
   waiting: z
     .strictObject({
       dueAt: z.iso.datetime().nullable(),
@@ -43,7 +50,7 @@ export const storyHistorySchema = z.strictObject({
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
 export const startChamberSchema = z.strictObject({
-  scenario: z.enum(['chamber.v1', 'chamber.v2', 'chamber.v3']),
+  scenario: z.enum(['chamber.v1', 'chamber.v2', 'chamber.v3', 'chamber.v4']),
 });
 export const respondToStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),

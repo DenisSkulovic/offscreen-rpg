@@ -17,6 +17,7 @@ import {
   storyIntervalTopic,
   controlledIntervalTopic,
   intervalWakeTopic,
+  decisionDeadlineTopic,
 } from '@offscreen/server/stories';
 import { ApplicationFailure } from '@temporalio/client';
 import {
@@ -27,10 +28,13 @@ import {
   controlledIntervalWorkflowType,
   controlledIntervalWorkflowId,
   intervalChangedSignal,
+  decisionWorkflowType,
+  decisionWorkflowId,
 } from '@offscreen/workflows/contracts';
 import type {
   OpeningActivities,
   IntervalActivities,
+  DecisionActivities,
 } from '@offscreen/workflows/contracts';
 import type { WorkerConfig } from './config';
 import { relayOne, runRelay } from './relay';
@@ -48,7 +52,24 @@ export async function startRuntime(
     const client = new Client({ connection, namespace: config.namespace });
     const openings = createScriptedOpenings(database);
     const stories = createStories(database);
-    const activities: OpeningActivities & IntervalActivities = {
+    const activities: OpeningActivities &
+      IntervalActivities &
+      DecisionActivities = {
+      async resolveStoryDecision(id) {
+        try {
+          return await stories.resolveDecision(id);
+        } catch (error) {
+          if (error instanceof StoryError)
+            throw ApplicationFailure.nonRetryable(
+              error.code,
+              'DecisionStateError',
+            );
+          throw ApplicationFailure.retryable(
+            'Story storage unavailable',
+            'StorageUnavailable',
+          );
+        }
+      },
       async advanceControlledInterval(id) {
         try {
           return await stories.advanceInterval(id);
@@ -117,6 +138,7 @@ export async function startRuntime(
             storyIntervalTopic,
             controlledIntervalTopic,
             intervalWakeTopic,
+            decisionDeadlineTopic,
           ],
           async (notice) => {
             if (notice.topic === intervalWakeTopic) {
@@ -132,18 +154,22 @@ export async function startRuntime(
             try {
               await connection.withDeadline(Date.now() + 10000, () =>
                 client.workflow.start(
-                  notice.topic === controlledIntervalTopic
-                    ? controlledIntervalWorkflowType
-                    : notice.topic === storyIntervalTopic
-                      ? intervalWorkflowType
-                      : openingWorkflowType,
+                  notice.topic === decisionDeadlineTopic
+                    ? decisionWorkflowType
+                    : notice.topic === controlledIntervalTopic
+                      ? controlledIntervalWorkflowType
+                      : notice.topic === storyIntervalTopic
+                        ? intervalWorkflowType
+                        : openingWorkflowType,
                   {
                     workflowId:
-                      notice.topic === controlledIntervalTopic
-                        ? controlledIntervalWorkflowId(notice.operationId)
-                        : notice.topic === storyIntervalTopic
-                          ? intervalWorkflowId(notice.operationId)
-                          : openingWorkflowId(notice.operationId),
+                      notice.topic === decisionDeadlineTopic
+                        ? decisionWorkflowId(notice.operationId)
+                        : notice.topic === controlledIntervalTopic
+                          ? controlledIntervalWorkflowId(notice.operationId)
+                          : notice.topic === storyIntervalTopic
+                            ? intervalWorkflowId(notice.operationId)
+                            : openingWorkflowId(notice.operationId),
                     taskQueue: config.taskQueue,
                     workflowIdReusePolicy: 'REJECT_DUPLICATE',
                     args: [notice.operationId],

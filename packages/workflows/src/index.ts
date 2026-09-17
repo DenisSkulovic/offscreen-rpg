@@ -6,7 +6,11 @@ import {
   setHandler,
 } from '@temporalio/workflow';
 import { intervalChangedSignal } from './contracts';
-import type { OpeningActivities, IntervalActivities } from './contracts';
+import type {
+  OpeningActivities,
+  IntervalActivities,
+  DecisionActivities,
+} from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
   startToCloseTimeout: '30 seconds',
@@ -46,6 +50,18 @@ const { advanceStoryInterval } = proxyActivities<IntervalActivities>({
 export async function storyIntervalV1(id: string): Promise<void> {
   while (true) {
     const remaining = await advanceStoryInterval(id);
+    if (remaining === null) return;
+    await sleep(remaining);
+  }
+}
+
+const { resolveStoryDecision } = proxyActivities<DecisionActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
+export async function storyDecisionV1(id: string): Promise<void> {
+  while (true) {
+    const remaining = await resolveStoryDecision(id);
     if (remaining === null) return;
     await sleep(remaining);
   }

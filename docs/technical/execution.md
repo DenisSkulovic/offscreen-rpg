@@ -22,7 +22,17 @@ Journey pause/resume is short synchronous database work. An authorized command i
 
 The same transaction enqueues a `story.interval.wake.v2` notice. The relay signals the existing workflow; the signal is only a hint to reread database state. The workflow waits for either its running timer or a signal, and while paused waits only for a signal. A signal counter prevents a wake received during an Activity from being lost. Delayed or duplicate notices cannot bypass the database pause check. Notices for intervals already completed are acknowledged without restarting them; a signal before workflow startup is retried by the relay.
 
-This executor closes after one arrival; a later interval has its own identity. It does not implement story-wide pause, pause during generation, decision timeouts, adjustable pace or a cumulative game calendar. The broader asynchronous command coordinator below remains a design target. Its 202/pending contract must not be applied to these controls: HTTP 200 confirms the database change has already committed, even if Temporal has not yet received its wake hint.
+This executor closes after one arrival; a later interval has its own identity. It does not implement story-wide pause, pause during generation, adjustable pace or a cumulative game calendar. The broader asynchronous command coordinator below remains a design target. Its 202/pending contract must not be applied to these controls: HTTP 200 confirms the database change has already committed, even if Temporal has not yet received its wake hint.
+
+## Implemented solo response deadline
+
+A server-selected continuation may publish an interaction and a version-1 decision plan: a bounded response duration, a default option from that offer and its prepared consequence. It cannot also start a journey wait. The current operation supports one player's answer, not a group ballot. The deadline is computed from PostgreSQL time at publication, never while preparing a future scene. No arbitrary deadline/default/outcome is accepted from the browser.
+
+The publishing transaction stores the plan and deadline and enqueues `story.decision.v1`. The relay starts `storyDecisionV1` with ID `story-decision/<passage-id>`. Its Activity returns remaining time for an early wake or commits the saved default when due. The default uses the common continuation transaction with the originating passage ID as its transition identity and records response provenance as `default`. An answered decision makes a later timeout a no-op. The workflow may retain its timer until that original deadline; early cancellation is not implemented.
+
+New player responses are eligible only when database time under the story lock is strictly before the cutoff; at equality the default is eligible. HTTP arrival or a browser clock is not admission. This synchronous fixture does not promise to accept a request queued behind a lock before the deadline. Identical accepted retries are checked before expiry/current-revision checks and still return current state. Default and player commits use the same lock, so they cannot both publish a consequence. No transaction waits for inference or external services.
+
+The `chamber.v4` gate fixture gives 15 real seconds to reply, holds fiction and defaults to leaving. Its deadline is not pausable; journey controls do not apply to it. The UI shows the deadline and default and polls for the saved result. Worker downtime can delay publication but cannot extend answer eligibility. Global pause, player-specific autonomy permissions, group readiness and asynchronous model resolution remain separate work.
 
 ## Elapsed time and execution cadence
 
@@ -42,7 +52,7 @@ At a fixed positive pace, a scheduler can estimate the remaining real wait from 
 
 For example, with ten game hours remaining at two game hours per real hour, the projected wait is five real hours. After one real hour, eight game hours remain. Pausing does not consume them; resuming at four game hours per real hour gives a new two-hour estimate. This is clock arithmetic, not a selected player-facing pace control or an implemented rescheduling feature.
 
-Distinguish game-time targets from real-time response opportunities. “The eclipse begins at this fictional date” and “the player has five real minutes to reply” need different clock semantics. The chamber holds fiction during response windows and freezes the remaining response opportunity on manual pause. Event expiry, repeated occurrences, equal-time ordering and changed plans need explicit rules when implemented; occurrence identity prevents retries or repeated due checks from applying the same event twice.
+Distinguish game-time targets from real-time response opportunities. “The eclipse begins at this fictional date” and “the player has five real minutes to reply” need different clock semantics. The implemented timed gate reply holds fiction during its fixed response window and does not support pause. A future pausable response policy must preserve remaining opportunity explicitly. Event expiry, repeated occurrences, equal-time ordering and changed plans need explicit rules when implemented; occurrence identity prevents retries or repeated due checks from applying the same event twice.
 
 ## Coordination scope
 

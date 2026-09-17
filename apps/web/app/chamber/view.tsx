@@ -17,7 +17,7 @@ export function Chamber({
   const [error, setError] = useState('');
   const operation = useRef(initialId);
   const [scenario, setScenario] = useState('chamber.v3');
-  const hasWaiting = story?.waiting != null;
+  const hasWaiting = story?.waiting != null || story?.decision != null;
   const storyId = story?.id;
   useEffect(() => {
     if (!hasWaiting || !storyId) return;
@@ -234,6 +234,19 @@ export function Chamber({
               Retry control
             </button>
           )}
+          {story.decision && (
+            <p>
+              Respond by {story.decision.dueAt}. If you do not respond, the
+              default is “
+              {
+                story.current.interaction?.specification.options.find(
+                  (option) => option.id === story.decision!.defaultOptionId,
+                )?.label
+              }
+              ”. This response window cannot be paused. Fiction holds while you
+              decide; processing may finish after the deadline.
+            </p>
+          )}
           {story.current.interaction && (
             <section aria-label="Offered interaction">
               <p>{story.current.interaction.specification.prompt}</p>
@@ -295,6 +308,7 @@ export function Chamber({
               onChange={(event) => setScenario(event.target.value)}
             >
               <option value="chamber.v3">Timed cafe visit (20 seconds)</option>
+              <option value="chamber.v4">Timed gate reply (15 seconds)</option>
               <option value="chamber.v2">Immediate gate conversation</option>
             </select>
           </label>

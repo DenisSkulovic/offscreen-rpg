@@ -44,15 +44,20 @@ export function createChamber(database: Database) {
     return {
       ...snapshot,
       canRespond:
-        ['chamber.v2', 'chamber.v3'].includes(await source(owner, id)) &&
-        snapshot.current.interaction !== null,
+        ['chamber.v2', 'chamber.v3', 'chamber.v4'].includes(
+          await source(owner, id),
+        ) && snapshot.current.interaction !== null,
     };
   }
   return {
     async start(
       owner: string,
       id: string,
-      scenario: 'chamber.v1' | 'chamber.v2' | 'chamber.v3' = 'chamber.v1',
+      scenario:
+        | 'chamber.v1'
+        | 'chamber.v2'
+        | 'chamber.v3'
+        | 'chamber.v4' = 'chamber.v1',
     ) {
       await stories.initialize(
         owner,
@@ -61,7 +66,9 @@ export function createChamber(database: Database) {
           ? opening
           : scenario === 'chamber.v2'
             ? playableOpening
-            : timedOpening,
+            : scenario === 'chamber.v4'
+              ? { ...playableOpening, source: 'chamber.v4' }
+              : timedOpening,
       );
       return read(owner, id);
     },
@@ -75,15 +82,17 @@ export function createChamber(database: Database) {
       if (!parsed.success) throw new StoryError('invalid');
       await stories.read(owner, id);
       const scenario = await source(owner, id);
-      if (!['chamber.v2', 'chamber.v3'].includes(scenario))
+      if (!['chamber.v2', 'chamber.v3', 'chamber.v4'].includes(scenario))
         throw new StoryError('conflict');
       const { expectedRevision, submission } = parsed.data;
       // Pure, versioned fixture policy. Resolve from the submitted base revision
       // so an acknowledged-late retry proposes the same outcome after progression.
       const outcome =
-        scenario === 'chamber.v3'
-          ? timedContinuation(expectedRevision, submission.answer.optionId)
-          : continuation(expectedRevision, submission.answer.optionId);
+        scenario === 'chamber.v4'
+          ? deadlineContinuation(expectedRevision, submission.answer.optionId)
+          : scenario === 'chamber.v3'
+            ? timedContinuation(expectedRevision, submission.answer.optionId)
+            : continuation(expectedRevision, submission.answer.optionId);
       await stories.append(owner, id, operationId, {
         expectedRevision,
         response: submission,
@@ -230,4 +239,19 @@ function timedContinuation(revision: number, option: string) {
       interaction: null,
     };
   throw new StoryError('conflict');
+}
+
+function deadlineContinuation(revision: number, option: string) {
+  const outcome = continuation(revision, option);
+  if (revision === 1 && option === 'approach')
+    return {
+      ...outcome,
+      decision: {
+        version: 1,
+        responseDurationMs: 15000,
+        defaultOptionId: 'leave',
+        outcome: continuation(2, 'leave'),
+      },
+    };
+  return outcome;
 }

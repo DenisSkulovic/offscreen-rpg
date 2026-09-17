@@ -20,6 +20,150 @@ export async function checkStories(
   restartWorker: () => Promise<void>,
 ) {
   await t.test(
+    'timed replies enforce cutoff, retry identity and one default under contention',
+    async () => {
+      const stories = createStories(database);
+      const put = (id: string, path: string, body: unknown) =>
+        fetch(`${origin}/api/stories/${id}${path}`, {
+          method: 'PUT',
+          headers: { cookie, origin, 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      async function openDecision() {
+        const id = randomUUID();
+        const firstResponse = await put(id, '/chamber', {
+          scenario: 'chamber.v4',
+        });
+        assert.equal(firstResponse.status, 200);
+        const first = storySnapshotSchema.parse(await firstResponse.json());
+        const response = await put(id, `/responses/${randomUUID()}`, {
+          expectedRevision: 1,
+          submission: {
+            interactionId: first.current.interaction!.id,
+            answer: { kind: 'choice.v1', optionId: 'approach' },
+          },
+        });
+        assert.equal(response.status, 200);
+        const saved = storySnapshotSchema.parse(await response.json());
+        assert.equal(saved.decision!.defaultOptionId, 'leave');
+        assert.equal(saved.waiting, null);
+        assert.ok(!JSON.stringify(saved).includes('outcome'));
+        return saved;
+      }
+      const onTime = await openDecision();
+      assert.ok((await stories.resolveDecision(onTime.current.id))! > 0);
+      const request = {
+        expectedRevision: 2,
+        submission: {
+          interactionId: onTime.current.interaction!.id,
+          answer: { kind: 'choice.v1', optionId: 'joke' },
+        },
+      };
+      const operation = randomUUID();
+      assert.equal(
+        (await put(onTime.id, `/responses/${operation}`, request)).status,
+        200,
+      );
+      // Test clock fixture: expire the already answered offer, then retry its receipt.
+      await database.db.$client.query(
+        'UPDATE story_passage SET response_due_at = clock_timestamp() WHERE id = $1',
+        [onTime.current.id],
+      );
+      assert.equal(
+        (await put(onTime.id, `/responses/${operation}`, request)).status,
+        200,
+      );
+      assert.equal(await stories.resolveDecision(onTime.current.id), null);
+      assert.equal(
+        (await stories.read(owner, onTime.id)).current.content.title,
+        'Someone laughs.',
+      );
+      const expired = await openDecision();
+      await database.db.$client.query(
+        'UPDATE story_passage SET response_due_at = clock_timestamp() WHERE id = $1',
+        [expired.current.id],
+      );
+      const late = {
+        ...request,
+        submission: {
+          ...request.submission,
+          interactionId: expired.current.interaction!.id,
+        },
+      };
+      // Competing timeout deliveries and a late player write all use the same story lock.
+      const results = await Promise.all([
+        put(expired.id, `/responses/${randomUUID()}`, late),
+        stories.resolveDecision(expired.current.id),
+        stories.resolveDecision(expired.current.id),
+      ]);
+      assert.equal(results[0].status, 409);
+      assert.equal(results[1], null);
+      assert.equal(results[2], null);
+      const final = await stories.read(owner, expired.id);
+      assert.equal(final.revision, 3);
+      assert.equal(final.decision, null);
+      assert.equal(final.current.content.title, 'A quiet departure.');
+      const provenance = await database.db.$client.query(
+        'SELECT response_source FROM story_passage WHERE id = $1',
+        [final.current.id],
+      );
+      assert.equal(provenance.rows[0].response_source, 'default');
+      assert.equal((await stories.history(owner, expired.id)).items.length, 3);
+    },
+  );
+  await t.test(
+    'browser publishes a timed offer and Temporal defaults after the browser leaves',
+    async () => {
+      const browser = await chromium.launch();
+      try {
+        const context = await browser.newContext();
+        await context.addCookies(
+          cookie.split(';').map((part) => {
+            const at = part.indexOf('=');
+            return {
+              name: part.slice(0, at).trim(),
+              value: part.slice(at + 1).trim(),
+              url: origin,
+            };
+          }),
+        );
+        const page = await context.newPage();
+        await page.goto(`${origin}/chamber`);
+        await page.getByLabel('Scenario').selectOption('chamber.v4');
+        await page
+          .getByRole('button', { name: 'Start scripted chamber' })
+          .click();
+        await page.getByRole('button', { name: 'Approach the gate' }).click();
+        await page
+          .getByText('This response window cannot be paused.', { exact: false })
+          .waitFor();
+        const url = page.url();
+        const id = new URL(url).searchParams.get('id')!;
+        const before = await createStories(database).read(owner, id);
+        await page.close();
+        const limit = Date.now() + 30000;
+        let latest = before;
+        while (latest.revision === before.revision && Date.now() < limit) {
+          await delay(300);
+          latest = await createStories(database).read(owner, id);
+        }
+        assert.equal(latest.revision, 3);
+        assert.ok(Date.now() >= Date.parse(before.decision!.dueAt));
+        const reopened = await context.newPage();
+        await reopened.goto(url);
+        await reopened
+          .getByRole('heading', { name: 'A quiet departure.' })
+          .waitFor();
+        assert.equal(
+          await reopened.getByRole('button', { name: 'Tell a joke' }).count(),
+          0,
+        );
+      } finally {
+        await browser.close();
+      }
+    },
+  );
+  await t.test(
     'scripted responses connect authenticated HTTP to saved branches and safe retries',
     async () => {
       const id = randomUUID();

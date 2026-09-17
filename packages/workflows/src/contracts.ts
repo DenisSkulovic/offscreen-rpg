@@ -13,3 +13,9 @@ export const controlledIntervalWorkflowType = 'storyIntervalV2';
 export const controlledIntervalWorkflowId = (id: string) =>
   `controlled-interval/${id}`;
 export const intervalChangedSignal = 'intervalChanged';
+
+export interface DecisionActivities {
+  resolveStoryDecision(id: string): Promise<number | null>;
+}
+export const decisionWorkflowType = 'storyDecisionV1';
+export const decisionWorkflowId = (id: string) => `story-decision/${id}`;

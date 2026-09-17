@@ -40,6 +40,12 @@ export const storyPassage = pgTable(
     sequence: integer('sequence').notNull(),
     transitionId: uuid('transition_id'),
     response: jsonb('response').$type<unknown>(),
+    responseSource: text('response_source'),
+    decisionPlan: jsonb('decision_plan').$type<unknown>(),
+    responseDueAt: timestamp('response_due_at', {
+      withTimezone: true,
+      precision: 3,
+    }),
     waitPlan: jsonb('wait_plan').$type<unknown>(),
     dueAt: timestamp('due_at', { withTimezone: true, precision: 3 }),
     intervalVersion: integer('interval_version').notNull().default(0),
@@ -54,6 +60,14 @@ export const storyPassage = pgTable(
   (t) => [
     unique('story_passage_sequence').on(t.storyId, t.sequence),
     unique('story_passage_transition').on(t.storyId, t.transitionId),
+    check(
+      'story_passage_decision_valid',
+      sql`(${t.decisionPlan} IS NULL) = (${t.responseDueAt} IS NULL) AND (${t.decisionPlan} IS NULL OR (${t.interaction} IS NOT NULL AND ${t.waitPlan} IS NULL))`,
+    ),
+    check(
+      'story_passage_response_source_valid',
+      sql`${t.responseSource} IS NULL OR (${t.response} IS NOT NULL AND ${t.responseSource} IN ('player', 'default'))`,
+    ),
     check('story_passage_sequence_positive', sql`${t.sequence} > 0`),
     check(
       'story_passage_control_valid',
