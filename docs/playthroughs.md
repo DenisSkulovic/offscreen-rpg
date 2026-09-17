@@ -53,3 +53,153 @@ An eventual conclusion could be escaping the goblin and reaching the house, aban
 Walk through creation, a shared scene, a quiet interval, an immediate consequence, a timed autonomous choice and a return after absence. Repeat the core flow alone. Verify that changes of intention invalidate incompatible prepared developments, notifications reflect the current story, and progression survives pause and restart.
 
 Measure inference during both waiting and active exchanges. Show that a remembered fact changes a later outcome. This makes orchestration, persistence and efficient AI visible through an engaging experience rather than requiring a large simulated world.
+
+
+# Long-life benchmark playthroughs
+
+The wizard-and-goblin walkthrough exercises orchestration and interruption. The following examples exercise a different requirement: whether a character becomes valuable through accumulated real time and persistent consequences.
+
+These are benchmark experiences, not requirements for setting-specific subsystems. Names, currencies, durations and mechanics are illustrative.
+
+## Vvardenfell benchmark: a life that takes time
+
+This is the clearest reference experience.
+
+Imagine beginning an Elder Scrolls-style campaign on Vvardenfell: a newly arrived prisoner with almost nothing, released into Seyda Neen. The application is not reproducing a particular commercial game's quests or mechanics; the setting is useful here as an illustrative benchmark for the desired feeling.
+
+The character owns poor clothes, a little money and whatever history creation established. There is no immediate montage in which the storyteller declares that three weeks passed, the character trained extensively and now owns fine armour unless the player deliberately selected a pace or abstraction that permits that.
+
+### Work
+
+The character finds temporary work standing guard at an Imperial outpost.
+
+The player accepts a one-hour real-time shift.
+
+The current state now says, in effect:
+
+- activity: standing guard;
+- location: the fort;
+- expected completion: about one real hour;
+- expected compensation: several septims if the shift completes normally.
+
+The coins are not granted at the beginning.
+
+The player closes the application.
+
+Nothing interesting needs to happen. The game does not call an LLM every minute to narrate looking at a wall.
+
+Fifty minutes later, however, the storyteller may determine that someone approaches the gate and requires judgment. The shift is interrupted by a meaningful situation. The player can return, respond, leave the character to a permitted autonomous reaction or miss the opportunity.
+
+If no interruption occurs, the shift completes. The committed result records the elapsed activity and earned compensation.
+
+Five such unremarkable shifts can be meaningful precisely because they consumed actual time. Twenty septims are no longer an arbitrary number emitted by prose; they represent part of the character's recent life.
+
+### Travel
+
+Later the character decides to walk from Seyda Neen toward Gnisis.
+
+Given the campaign pace, known route and character circumstances, the trip is expected to take roughly ten real hours.
+
+The character does not teleport because the player closed the browser.
+
+During the journey, relevant state records that they are travelling and how the unfinished journey is progressing. They cannot simultaneously spend those same hours guarding a fort in Seyda Neen.
+
+Most of the journey may be quiet.
+
+Several hours later something may happen: another traveller starts a conversation, poor weather changes progress, the character notices something worth investigating, or an attacker blocks the road.
+
+An interruption establishes a new current situation. The original arrival estimate is no longer blindly authoritative.
+
+If nothing interrupts the journey, the character eventually reaches the destination and the arrival becomes committed history.
+
+### Accumulation
+
+Over five real days the character might:
+
+- work several shifts;
+- spend some of the earnings on food and travel;
+- meet the same guard captain repeatedly;
+- acquire a cheap cuirass;
+- receive a small favour from someone they helped;
+- learn that one road is unsafe;
+- carry an object whose history now matters.
+
+None of these needs to be numerically spectacular.
+
+Together they create ownership.
+
+The cuirass matters because obtaining it took time. The captain matters because the relationship has history. The road matters because the player remembers what happened there.
+
+The storyteller should be able to call these things back later because they are established state and history, not merely details remembered opportunistically by a language model.
+
+### Risk
+
+The player later chooses something reckless.
+
+If the campaign allows lethal consequences and the fiction warrants it, the character can die.
+
+The engine must not silently protect them because they have five days of accumulated progress.
+
+The loss is painful precisely because the preceding life was real enough to value.
+
+That does not mean arbitrary punishment. Consequences must remain plausible, risk must be understandable enough for meaningful agency, and storyteller difficulty should follow the selected campaign style.
+
+But persistence without the possibility of meaningful loss produces collectibles rather than stakes.
+
+### Why ordinary ChatGPT cannot provide this experience by itself
+
+A plain conversational storyteller can say:
+
+“After ten hours you reach Gnisis.”
+
+It can say this immediately after the player chooses to leave.
+
+It can also forget how much money the character had, change the distance later, accidentally restore an item that was sold, grant contradictory skills or compress weeks of advancement into the next message.
+
+Offscreen RPG exists specifically to put authoritative application behavior between intention and narration:
+
+**intend → commit activity → real time passes → interruption or completion → validate consequence → commit state → narrate the result**
+
+The language model provides judgment and storytelling inside that loop. It does not get to erase the loop.
+
+## Space benchmark
+
+A pilot accepts a cargo contract whose journey takes sixteen real hours at the selected campaign pace.
+
+Cargo is actually assigned to the ship. Fuel or other supported costs are committed consistently. Payment is not received until delivery.
+
+The player goes to sleep.
+
+During the night the journey may remain uneventful, encounter a mechanical problem, receive a distress signal or be interrupted by something that requires judgment.
+
+Ignoring the distress call can preserve the original route. Investigating it consumes time and changes the situation.
+
+Several days later, the player's modest ship feels valuable not because its statistics are large, but because they remember the contracts, repairs and risks through which they obtained it.
+
+No dedicated galactic-economy simulator is required to create that attachment.
+
+## Small or abstract benchmark
+
+The same principle must survive settings where money, equipment and geography make no sense.
+
+A microorganism may spend real time reproducing, moving through an environment or surviving an adverse condition. Its meaningful persistent state might be position, colony relationships, available energy, mutations or environmental facts.
+
+An abstract entity might spend time forming connections, accumulating influence or completing some setting-specific process.
+
+The software must therefore support durable activities, relevant state and consequences without assuming that every character has a wallet, armour slots, employment or human-scale movement.
+
+## Benchmark questions
+
+When evaluating future features, ask:
+
+- Does this preserve the difference between intending something and completing it?
+- Can meaningful progress require real elapsed time without constant narration?
+- Can an interruption invalidate or alter an unfinished activity?
+- Are earned resources, relationships and consequences committed consistently?
+- Does accumulated history make later choices more consequential?
+- Can the same machinery support radically different settings?
+- Are immediate actions still immediate rather than receiving artificial timers?
+- Can the player leave and later understand what actually happened?
+- Can meaningful loss occur when the fiction and campaign rules allow it?
+
+A feature that makes these experiences harder to support should be treated with suspicion even if it simplifies the current fixture.

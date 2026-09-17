@@ -39,3 +39,23 @@ This is both a game we want to play and a senior fullstack portfolio project. A 
 The delivery goal is a hosted, playable link from a CV or portfolio. A visitor should quickly experience a scene, make a meaningful choice and see persistent offscreen progression; inspecting GitHub is optional. Provide a short demonstration path without making the visitor wait ten minutes for their first interesting result. Keep longer real-time play available separately. A bounded sponsored AI trial is a later target, with an illustrative allowance around $2 rather than a settled entitlement or authorization to spend.
 
 The first proof of concept should let us create a character, experience ordinary life, encounter a development, intervene or let the character choose, and return to a coherent continuation. That gives us something real to play before expanding it.
+
+## Earned life
+
+The defining experience is not simply that an AI tells a story slowly. Time, persistence and consequence make the character's life feel earned.
+
+An action that should take meaningful fictional effort can require meaningful real elapsed time. A character walking across a region may genuinely be travelling for hours while the player is elsewhere. A work shift may occupy part of an evening. Recovering, studying, earning money, building trust or waiting for an opportunity may unfold over days.
+
+Completion is authoritative. Starting an eight-hour journey does not mean the character has already arrived. Beginning a shift does not immediately grant its pay. An estimated reward is not owned until the relevant activity actually reaches its valid completion or consequence.
+
+This creates value from otherwise modest things. A few coins can matter because they represent real time spent earning them. Ordinary equipment can matter because obtaining it required several days of decisions and survival. A familiar NPC can matter because the relationship accumulated through repeated encounters rather than being invented for the current prompt.
+
+Risk matters for the same reason. The storyteller must not protect accumulated progress merely because losing it would be inconvenient. If the campaign permits serious injury, theft or death, reckless choices may destroy things that genuinely took time to obtain. Consequences should follow the fiction and selected campaign risk rather than preserve a player's progression by default.
+
+Real waiting is not mandatory friction. Immediate events remain immediate. A reply in an active conversation should not acquire an artificial hour-long timer. Picking up an object beside the character need not take fifteen minutes merely because the game supports long-running activities. Duration should come from what is happening in the fiction, the campaign's selected pace and supported rules.
+
+The important distinction is between **instant narration** and **earned progression**. An ordinary chat interface can invent the next chapter immediately; Offscreen RPG should preserve the cost, elapsed time, state and uncertainty between intention and outcome.
+
+The game should therefore make unfinished activity visible. A player can know that their character is travelling, working, recovering or waiting without receiving fresh prose every minute. Relevant developments can interrupt that activity. If nothing meaningful happens, the activity can finish quietly and commit its result.
+
+This principle is setting-independent. The same foundation should support a fantasy traveller, a Roman soldier, a space merchant, an ordinary modern life, a microorganism or something abstract. The engine records only the state and rules that matter to the current story rather than implementing one universal economy, profession system or biological simulation.
