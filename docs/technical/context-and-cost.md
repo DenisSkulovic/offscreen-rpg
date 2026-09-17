@@ -8,6 +8,8 @@ The user allocated $10 of OpenRouter credit on 2026-09-17 to last at least one m
 
 The key is local and ignored, and no provider adapter is enabled. Before spending, add explicit live-run opt-in, a small declared run budget, conservative reservations and a durable cumulative usage record; enforce these across concurrent runs. Unknown billing holds the reservation rather than authorizing a retry. Ordinary tests, CI, startup and unattended demos must remain free of paid calls. These constraints are instructions today, not implemented budget enforcement. This allowance is separate from any future sponsored visitor trial.
 
+After every action or test, verify whether any provider invocation was possible. Report confirmed no-call actions as $0 model spend; reconcile live attempts, including failures, against a persistent charge/reservation ledger before further paid work. Unknown or delayed usage is not zero. Preserve the reservation, halt paid execution and prominently report unexpected spending, accounting gaps, unexplained balance changes or budget overruns. Track concurrent work against the same allowance. End-of-turn reports include turn spend and verified cumulative usage, or explicitly state that cumulative account usage is unverified. Local commands, documentation edits and scripted tests must not trigger a paid call merely to measure spending.
+
 ## Build context for a specific decision
 
 Assemble context in a deterministic order and record a compact manifest of source IDs, revisions and prompt versions:
