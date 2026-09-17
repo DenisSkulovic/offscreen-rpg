@@ -20,6 +20,7 @@ export const story = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'restrict' }),
     source: text('source').notNull(),
+    premise: jsonb('premise').$type<unknown>(),
     revision: integer('revision').notNull().default(1),
     viewVersion: integer('view_version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
@@ -97,6 +98,36 @@ export const storyControl = pgTable(
     request: jsonb('request').notNull().$type<unknown>(),
   },
   (t) => [unique('story_control_identity').on(t.storyId, t.operationId)],
+);
+
+export const storyResolution = pgTable(
+  'story_resolution',
+  {
+    generationId: uuid('generation_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'restrict' }),
+    basePassageId: uuid('base_passage_id')
+      .notNull()
+      .references(() => storyPassage.id, { onDelete: 'restrict' }),
+    baseRevision: integer('base_revision').notNull(),
+    operationId: uuid('operation_id').notNull(),
+    submission: jsonb('submission').notNull().$type<unknown>(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('story_resolution_operation').on(t.storyId, t.operationId),
+    unique('story_resolution_base').on(
+      t.storyId,
+      t.basePassageId,
+      t.baseRevision,
+    ),
+    check('story_resolution_revision_positive', sql`${t.baseRevision} > 0`),
+  ],
 );
 
 export const storyItem = pgTable(

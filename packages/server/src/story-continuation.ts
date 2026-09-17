@@ -33,6 +33,7 @@ type CommitContinuation = Readonly<{
   input: StoryContinuation;
   completingIntervalPassageId: string | undefined;
   completingDecisionPassageId: string | undefined;
+  sourceGenerationId?: string | null;
 }>;
 
 type AppendContinuation = Readonly<{
@@ -136,6 +137,8 @@ export async function commitStoryContinuation(
       response: args.input.response,
       completingDecisionPassageId: args.completingDecisionPassageId,
     }),
+    sourceGenerationId:
+      args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
   });
   await advanceStoryView(tx, {
     storyId: args.storyId,

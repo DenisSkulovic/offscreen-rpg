@@ -3,6 +3,7 @@ import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
 import { createOutbox } from '@offscreen/server/outbox';
 import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
+import { createScriptedContinuations } from '@offscreen/server/scripted-continuations';
 import { createStories } from '@offscreen/server/stories';
 import { createWorkerActivities } from './activities';
 import { closeWorkerConnections } from './close-worker-connections';
@@ -25,6 +26,7 @@ export async function startRuntime(
     const activities = createWorkerActivities({
       stories,
       openings: createScriptedOpenings(database),
+      continuations: createScriptedContinuations(database),
     });
     const worker = await Worker.create({
       connection: native,

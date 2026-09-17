@@ -100,6 +100,23 @@ export class StoriesController {
       });
     });
   }
+  @Put(':id/resolutions/:operationId')
+  @HttpCode(202)
+  admitResolution(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) =>
+      this.stories.admitResolution({
+        ownerId,
+        storyId: id,
+        operationId,
+        body,
+      }),
+    );
+  }
   @Put(':id/responses/:operationId')
   @HttpCode(200)
   respond(

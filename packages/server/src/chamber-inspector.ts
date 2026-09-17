@@ -1,4 +1,5 @@
 import {
+  playableContinuationArtifactSchema,
   playableOpeningArtifactSchema,
   playableProposalSchema,
 } from '@offscreen/ai/playable';
@@ -9,7 +10,11 @@ import {
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import {
+  story,
+  storyPassage,
+  storyResolution,
+} from '@offscreen/db/story-schema';
 import { and, desc, eq, lte } from 'drizzle-orm';
 import { z } from 'zod';
 import { parseStoryIdentifier, StoryError } from './story-errors';
@@ -143,6 +148,52 @@ export function createChamberInspector(database: Database) {
         )
         .orderBy(desc(storyPassage.sequence))
         .limit(chamberInspectorHistoryLimit);
+      const [activeResolution] = await database.db
+        .select({
+          operationId: storyResolution.operationId,
+          basePassageId: storyResolution.basePassageId,
+          baseRevision: storyResolution.baseRevision,
+          generationId: storyResolution.generationId,
+          generationKind: generation.kind,
+          generationState: generation.state,
+          generationInput: generation.input,
+          generationOutput: generation.output,
+        })
+        .from(storyResolution)
+        .innerJoin(generation, eq(generation.id, storyResolution.generationId))
+        .where(
+          and(
+            eq(storyResolution.storyId, id),
+            eq(storyResolution.basePassageId, snapshot.current.id),
+            eq(storyResolution.baseRevision, snapshot.revision),
+          ),
+        );
+      const sourceGeneration =
+        current.generationId === null
+          ? null
+          : inspectGeneration({
+              id: current.generationId,
+              kind:
+                current.generationKind ?? invariantMissing('generation kind'),
+              state:
+                current.generationState ?? invariantMissing('generation state'),
+              failureCode: current.generationFailureCode,
+              input: current.generationInput,
+              output: current.generationOutput,
+            });
+      const continuationArtifact = playableContinuationArtifactSchema.safeParse(
+        activeResolution?.generationInput,
+      );
+      const selectedOptionId = continuationArtifact.success
+        ? continuationArtifact.data.selectedOptionId
+        : null;
+      const selectedIntention =
+        sourceGeneration?.optionIntentions?.find(
+          (option) => option.id === selectedOptionId,
+        )?.intention ?? null;
+      const continuationProposal = playableProposalSchema.safeParse(
+        activeResolution?.generationOutput,
+      );
       return chamberInspectorSchema.parse({
         story: {
           id: snapshot.id,
@@ -192,20 +243,27 @@ export function createChamberInspector(database: Database) {
           hasDecision: entry.decisionPlan !== null,
           hasEffect: hasCommittedEffects(entry.effects),
         })),
-        generation:
-          current.generationId === null
+        generation: sourceGeneration,
+        resolution:
+          activeResolution === undefined
             ? null
-            : inspectGeneration({
-                id: current.generationId,
+            : {
+                operationId: activeResolution.operationId,
+                basePassageId: activeResolution.basePassageId,
+                baseRevision: activeResolution.baseRevision,
+                generationId: activeResolution.generationId,
                 kind:
-                  current.generationKind ?? invariantMissing('generation kind'),
+                  activeResolution.generationKind ??
+                  invariantMissing('resolution generation kind'),
                 state:
-                  current.generationState ??
-                  invariantMissing('generation state'),
-                failureCode: current.generationFailureCode,
-                input: current.generationInput,
-                output: current.generationOutput,
-              }),
+                  activeResolution.generationState ??
+                  invariantMissing('resolution generation state'),
+                selectedOptionId,
+                selectedIntention,
+                proposal: continuationProposal.success
+                  ? continuationProposal.data
+                  : null,
+              },
       });
     },
   };

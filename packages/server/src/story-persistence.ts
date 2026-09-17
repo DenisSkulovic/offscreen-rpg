@@ -192,6 +192,7 @@ export async function insertContinuationPassage(
     transitionId: string;
     input: StoryContinuation;
     responseSource: 'player' | 'default' | null;
+    sourceGenerationId?: string | null;
   },
 ) {
   const passageId = randomUUID();
@@ -219,6 +220,7 @@ export async function insertContinuationPassage(
           specification: args.input.interaction,
         })
       : null,
+    sourceGenerationId: args.sourceGenerationId ?? null,
   });
   return passageId;
 }

@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import {
   playableProposalSchema,
   playableOpeningArtifactSchema,
+  playableContinuationArtifactSchema,
   validatePlayableResult,
   playablePresentation,
   preparePlayableOpening,
@@ -100,6 +101,11 @@ test('new option identities carry an intention without fixture-specific branchin
   assert.equal(data.intention, proposal.next.options[0]!.intention);
   assert.equal(data.current.title, proposal.content.title);
   assert.equal(artifact.source.narrativeRevision, 3);
+  assert.equal(
+    playableContinuationArtifactSchema.parse(artifact).task,
+    'continuation',
+  );
+  assert.equal(artifact.selectedOptionId, 'sense-vibration');
   assert.ok(!JSON.stringify(artifact.request).includes(input.snapshot.id));
   input.publishedProposal.next.options[0]!.intention = 'Changed after capture';
   assert.equal(

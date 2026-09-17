@@ -29,7 +29,12 @@ export async function initializeStoryInTransaction(
 ) {
   const inserted = await tx
     .insert(story)
-    .values({ id: storyId, ownerId, source: input.source })
+    .values({
+      id: storyId,
+      ownerId,
+      source: input.source,
+      premise: input.premise ?? null,
+    })
     .onConflictDoNothing()
     .returning({ id: story.id });
 
@@ -50,7 +55,10 @@ export async function initializeStoryInTransaction(
       .where(
         and(eq(storyPassage.storyId, storyId), eq(storyPassage.sequence, 1)),
       );
-    if (!firstPassage || !initializationMatches(firstPassage, input)) {
+    if (
+      !firstPassage ||
+      !initializationMatches(firstPassage, input, priorStory.premise)
+    ) {
       throw new StoryError('conflict');
     }
     return;

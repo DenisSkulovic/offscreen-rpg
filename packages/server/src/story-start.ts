@@ -2,6 +2,7 @@ import {
   playableOpeningArtifactSchema,
   playablePresentation,
   playableProposalSchema,
+  premiseContentSchema,
   validatePlayableResult,
 } from '@offscreen/ai/playable';
 import type { Database } from '@offscreen/db';
@@ -105,6 +106,11 @@ export function createStoryStart(database: Database) {
         input: {
           source: playableOpeningStorySource,
           sourceGenerationId: generationId,
+          premise: premiseContentSchema.parse({
+            title: draft.title,
+            premise: draft.premise,
+            storytellingDirection: draft.storytellingDirection,
+          }),
           items: [],
           content: presentation.content,
           interaction: presentation.interaction,

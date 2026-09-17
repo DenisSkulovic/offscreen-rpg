@@ -1,16 +1,17 @@
 import { ApplicationFailure } from '@temporalio/client';
 import { GenerationError } from '@offscreen/server/generations';
 import type { createScriptedOpenings } from '@offscreen/server/scripted-openings';
-import { StoryError } from '@offscreen/server/stories';
-import type { createStories } from '@offscreen/server/stories';
+import type { createScriptedContinuations } from '@offscreen/server/scripted-continuations';
+import { StoryError, type createStories } from '@offscreen/server/stories';
 import type {
+  ContinuationActivities,
   DecisionActivities,
   IntervalActivities,
   OpeningActivities,
 } from '@offscreen/workflows/contracts';
 
 function mapOpeningActivityError(error: unknown): never {
-  if (error instanceof GenerationError) {
+  if (error instanceof GenerationError || error instanceof StoryError) {
     throw ApplicationFailure.nonRetryable(error.code, 'OpeningStateError');
   }
   // Avoid putting driver errors, SQL or request content in workflow history.
@@ -36,8 +37,12 @@ function mapStoryActivityError(
 export function createWorkerActivities(collaborators: {
   stories: ReturnType<typeof createStories>;
   openings: ReturnType<typeof createScriptedOpenings>;
-}): OpeningActivities & IntervalActivities & DecisionActivities {
-  const { stories, openings } = collaborators;
+  continuations: ReturnType<typeof createScriptedContinuations>;
+}): OpeningActivities &
+  ContinuationActivities &
+  IntervalActivities &
+  DecisionActivities {
+  const { stories, openings, continuations } = collaborators;
   return {
     async resolveStoryDecision(id) {
       try {
@@ -63,6 +68,13 @@ export function createWorkerActivities(collaborators: {
     async completeScriptedOpening(id) {
       try {
         await openings.complete(id);
+      } catch (error) {
+        mapOpeningActivityError(error);
+      }
+    },
+    async completeScriptedContinuation(id) {
+      try {
+        await continuations.complete(id);
       } catch (error) {
         mapOpeningActivityError(error);
       }

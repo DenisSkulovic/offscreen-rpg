@@ -99,7 +99,7 @@ async function waitForSucceededOpening(
   throw new Error('Expected the playable opening candidate to succeed');
 }
 
-async function prepareCurrentCandidate(
+export async function prepareCurrentCandidate(
   origin: string,
   cookie: string,
   expectedRevision = 1,
@@ -148,7 +148,8 @@ export async function checkStoryStart({
       const snapshot = storySnapshotSchema.parse(await started.json());
       assert.equal(snapshot.id, storyId);
       assert.equal(snapshot.revision, 1);
-      assert.equal(snapshot.canRespond, false);
+      assert.equal(snapshot.canRespond, true);
+      assert.equal(snapshot.resolution, null);
       assert.deepEqual(snapshot.current.content, preview.candidate?.content);
       assert.deepEqual(
         snapshot.current.interaction?.specification,
@@ -412,7 +413,7 @@ export async function checkStoryStart({
   );
 
   await t.test(
-    'browser starts a reviewed candidate and keeps generated choices unresolved',
+    'browser starts a reviewed candidate and can select a generated choice',
     async () => {
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
@@ -436,16 +437,15 @@ export async function checkStoryStart({
         await page.getByRole('button', { name: 'Start story' }).click();
         await page.waitForURL(/\/play\/[0-9a-f-]{36}$/);
         await page.getByText('A fork in the path', { exact: true }).waitFor();
-        await page.getByText('Continuation is not connected yet.').waitFor();
         const choice = page.getByRole('button', {
           name: 'Walk toward the water',
         });
-        assert.equal(await choice.isDisabled(), true);
+        assert.equal(await choice.isEnabled(), true);
         const liveUrl = page.url();
         await page.reload();
         assert.equal(page.url(), liveUrl);
         await page.getByText('A fork in the path', { exact: true }).waitFor();
-        assert.equal(await choice.isDisabled(), true);
+        assert.equal(await choice.isEnabled(), true);
       });
     },
   );

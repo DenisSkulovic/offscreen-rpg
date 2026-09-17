@@ -3,6 +3,7 @@ import { createStoryContinuation } from './story-continuation';
 import { StoryError } from './story-errors';
 import { createStoryInitialization } from './story-initialization';
 import { createStoryReads } from './story-reads';
+import { createStoryResolution } from './story-resolution';
 import { createStoryStart } from './story-start';
 import { createStoryTiming } from './story-timing';
 
@@ -18,6 +19,7 @@ export function createStories(database: Database) {
   const initializeStory = createStoryInitialization(database);
   const startPlayableCandidate = createStoryStart(database);
   const continuation = createStoryContinuation(database);
+  const resolution = createStoryResolution(database);
   const timing = createStoryTiming(database);
   return {
     read(args: { ownerId: string; storyId: string }) {
@@ -85,6 +87,19 @@ export function createStories(database: Database) {
       expectedDraftRevision: number;
     }) {
       await startPlayableCandidate(args);
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
+    },
+    async admitResolution(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      expectedRevision: number;
+      submission: unknown;
+    }) {
+      await resolution.admit(args);
       return reads.readSnapshot({
         ownerId: args.ownerId,
         storyId: args.storyId,

@@ -1,3 +1,4 @@
+import { premiseContentSchema } from '@offscreen/ai/playable';
 import {
   interactionSchema,
   interactionSpecificationSchema,
@@ -17,6 +18,7 @@ import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 export const initialStorySchema = z.strictObject({
   source: z.string().min(1).max(100),
   sourceGenerationId: z.uuid().nullable().optional(),
+  premise: premiseContentSchema.nullable().optional(),
   items: storyItemsSchema.default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
@@ -30,6 +32,7 @@ export const continuationSchema = z.strictObject({
   response: interactionSubmissionSchema.nullable().default(null),
   wait: waitPlanSchema.nullable().default(null),
   decision: decisionPlanSchema.nullable().default(null),
+  sourceGenerationId: z.uuid().nullable().optional(),
 });
 
 export type InitialStory = z.infer<typeof initialStorySchema>;
@@ -54,12 +57,14 @@ function passageContentMatches(
 export function initializationMatches(
   firstPassage: typeof storyPassage.$inferSelect,
   input: InitialStory,
+  storedPremise: unknown = null,
 ) {
   return (
     passageContentMatches(firstPassage, input) &&
     isDeepStrictEqual(firstPassage.initialItems ?? [], input.items) &&
     (firstPassage.sourceGenerationId ?? null) ===
-      (input.sourceGenerationId ?? null)
+      (input.sourceGenerationId ?? null) &&
+    isDeepStrictEqual(storedPremise ?? null, input.premise ?? null)
   );
 }
 
@@ -88,7 +93,9 @@ export function continuationRetryMatches(
         ? null
         : interactionSubmissionSchema.parse(priorPassage.response),
       input.response,
-    )
+    ) &&
+    (priorPassage.sourceGenerationId ?? null) ===
+      (input.sourceGenerationId ?? null)
   );
 }
 

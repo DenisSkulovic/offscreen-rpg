@@ -62,6 +62,12 @@ export const storySnapshotSchema = z.strictObject({
     content: passageContentSchema,
     interaction: interactionSchema.nullable(),
   }),
+  resolution: z
+    .strictObject({
+      state: z.enum(['pending', 'running', 'failed', 'uncertain']),
+    })
+    .nullable()
+    .default(null),
 });
 export type StorySnapshot = z.infer<typeof storySnapshotSchema>;
 // History is read-only presentation. Past offers are not actionable controls.

@@ -3,7 +3,12 @@ import {
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { generation } from '@offscreen/db/generation-schema';
+import {
+  story,
+  storyPassage,
+  storyResolution,
+} from '@offscreen/db/story-schema';
 import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { StoryError, parseStoryIdentifier } from './story-errors';
@@ -40,6 +45,18 @@ function timestampIso(value: Date | null, field: string) {
   return value.toISOString();
 }
 
+function publicResolutionState(
+  state: 'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain' | null,
+) {
+  if (state === null) {
+    return null;
+  }
+  if (state === 'succeeded') {
+    return { state: 'running' as const };
+  }
+  return { state };
+}
+
 export function createStoryReads(database: Database) {
   return {
     async readSnapshot({ ownerId, storyId }: OwnedStory) {
@@ -59,6 +76,7 @@ export function createStoryReads(database: Database) {
           intervalVersion: storyPassage.intervalVersion,
           controlRevision: storyPassage.controlRevision,
           remainingMs: storyPassage.remainingMs,
+          resolutionState: generation.state,
         })
         .from(story)
         .innerJoin(
@@ -68,6 +86,15 @@ export function createStoryReads(database: Database) {
             eq(storyPassage.sequence, story.revision),
           ),
         )
+        .leftJoin(
+          storyResolution,
+          and(
+            eq(storyResolution.storyId, story.id),
+            eq(storyResolution.basePassageId, storyPassage.id),
+            eq(storyResolution.baseRevision, story.revision),
+          ),
+        )
+        .leftJoin(generation, eq(generation.id, storyResolution.generationId))
         .where(
           and(
             eq(story.id, parseStoryIdentifier(storyId)),
@@ -109,6 +136,7 @@ export function createStoryReads(database: Database) {
           content: row.content,
           interaction: row.interaction,
         },
+        resolution: publicResolutionState(row.resolutionState ?? null),
       });
     },
 

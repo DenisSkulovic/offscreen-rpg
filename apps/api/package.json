@@ -14,6 +14,7 @@
     "test:stories:core": "node --test dist/test/stories-core.integration.js",
     "test:stories:http": "node --test dist/test/stories-http.integration.js",
     "test:stories:start": "node --test dist/test/story-start.integration.js",
+    "test:stories:resolution": "node --test dist/test/story-resolution.integration.js",
     "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
     "typecheck": "tsc --noEmit",
     "test": "node --test dist/test/*.test.js",

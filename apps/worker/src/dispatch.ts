@@ -7,7 +7,10 @@ import {
   storyIntervalTopic,
 } from '@offscreen/server/stories';
 import { scriptedOpeningTopic } from '@offscreen/server/scripted-openings';
+import { scriptedContinuationTopic } from '@offscreen/server/scripted-continuations';
 import {
+  continuationWorkflowId,
+  continuationWorkflowType,
   controlledIntervalWorkflowId,
   controlledIntervalWorkflowType,
   decisionWorkflowId,
@@ -57,10 +60,16 @@ const noticeDispatch = {
     workflowType: openingWorkflowType,
     workflowId: openingWorkflowId,
   },
+  [scriptedContinuationTopic]: {
+    kind: 'start',
+    workflowType: continuationWorkflowType,
+    workflowId: continuationWorkflowId,
+  },
 } as const satisfies Record<string, StartNotice | WakeNotice>;
 
 export const dispatchedNoticeTopics = [
   scriptedOpeningTopic,
+  scriptedContinuationTopic,
   storyIntervalTopic,
   controlledIntervalTopic,
   intervalWakeTopic,

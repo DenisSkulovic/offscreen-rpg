@@ -10,6 +10,7 @@ import type {
   OpeningActivities,
   IntervalActivities,
   DecisionActivities,
+  ContinuationActivities,
 } from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
@@ -21,6 +22,16 @@ const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
 // not a policy for retrying paid or otherwise uncertain external effects.
 export async function scriptedOpeningV1(id: string): Promise<void> {
   await completeScriptedOpening(id);
+}
+
+const { completeScriptedContinuation } =
+  proxyActivities<ContinuationActivities>({
+    startToCloseTimeout: '30 seconds',
+    retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+  });
+
+export async function scriptedContinuationV1(id: string): Promise<void> {
+  await completeScriptedContinuation(id);
 }
 
 const { advanceControlledInterval } = proxyActivities<IntervalActivities>({

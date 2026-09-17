@@ -3,6 +3,12 @@ export interface OpeningActivities {
 }
 export const openingWorkflowType = 'scriptedOpeningV1';
 export const openingWorkflowId = (id: string) => `scripted-opening/${id}`;
+export interface ContinuationActivities {
+  completeScriptedContinuation(id: string): Promise<void>;
+}
+export const continuationWorkflowType = 'scriptedContinuationV1';
+export const continuationWorkflowId = (id: string) =>
+  `scripted-continuation/${id}`;
 export interface IntervalActivities {
   advanceStoryInterval(id: string): Promise<number | null>;
   advanceControlledInterval(id: string): Promise<number | null>;

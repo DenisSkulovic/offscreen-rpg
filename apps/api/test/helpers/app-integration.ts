@@ -200,6 +200,10 @@ export async function withAppIntegration(
           [user.id],
         );
         await database.db.$client.query(
+          'DELETE FROM story_resolution WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
           'DELETE FROM story_passage WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
           [user.id],
         );

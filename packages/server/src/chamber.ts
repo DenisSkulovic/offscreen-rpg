@@ -10,7 +10,11 @@ import {
   type ChamberScenario,
 } from './chamber-fixtures';
 import { createChamberInspector } from './chamber-inspector';
-import { createStories, StoryError } from './stories';
+import {
+  createStories,
+  playableOpeningStorySource,
+  StoryError,
+} from './stories';
 
 export { listChamberScenarios };
 
@@ -40,7 +44,10 @@ export function createChamber(database: Database) {
     return {
       ...snapshot,
       canRespond:
-        chamberAllowsResponse(source) && snapshot.current.interaction !== null,
+        snapshot.current.interaction !== null &&
+        snapshot.resolution === null &&
+        (chamberAllowsResponse(source) ||
+          source === playableOpeningStorySource),
     };
   }
 
@@ -112,13 +119,33 @@ export function createChamber(database: Database) {
     inspect(args: { ownerId: string; storyId: string }) {
       return inspector.inspect(args);
     },
-    startFromCandidate(args: {
+    async startFromCandidate(args: {
       ownerId: string;
       storyId: string;
       candidateId: string;
       expectedDraftRevision: number;
     }) {
-      return stories.startFromCandidate(args);
+      await stories.startFromCandidate(args);
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
+    },
+    async admitResolution(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      const parsed = respondToStorySchema.safeParse(args.body);
+      if (!parsed.success) {
+        throw new StoryError('invalid');
+      }
+      await stories.admitResolution({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+        operationId: args.operationId,
+        expectedRevision: parsed.data.expectedRevision,
+        submission: parsed.data.submission,
+      });
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
   };
 }

@@ -126,5 +126,18 @@ export const chamberInspectorSchema = z.strictObject({
         .nullable(),
     })
     .nullable(),
+  resolution: z
+    .strictObject({
+      operationId: z.uuid(),
+      basePassageId: z.uuid(),
+      baseRevision: z.number().int().positive(),
+      generationId: z.uuid(),
+      kind: z.string().min(1),
+      state: z.enum(['pending', 'running', 'succeeded', 'failed', 'uncertain']),
+      selectedOptionId: z.string().nullable(),
+      selectedIntention: z.string().nullable(),
+      proposal: z.unknown().nullable(),
+    })
+    .nullable(),
 });
 export type ChamberInspector = z.infer<typeof chamberInspectorSchema>;

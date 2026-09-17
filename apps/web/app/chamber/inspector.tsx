@@ -169,6 +169,39 @@ export function ChamberInspectorPanel(args: {
             ) : (
               <p>No generation provenance on this passage.</p>
             )}
+            <h2>Active resolution</h2>
+            {inspection.resolution ? (
+              <dl>
+                <Field
+                  label="Operation ID"
+                  value={inspection.resolution.operationId}
+                />
+                <Field
+                  label="Base passage ID"
+                  value={inspection.resolution.basePassageId}
+                />
+                <Field
+                  label="Base revision"
+                  value={String(inspection.resolution.baseRevision)}
+                />
+                <Field
+                  label="Generation ID"
+                  value={inspection.resolution.generationId}
+                />
+                <Field label="Kind" value={inspection.resolution.kind} />
+                <Field label="State" value={inspection.resolution.state} />
+                <Field
+                  label="Selected option ID"
+                  value={inspection.resolution.selectedOptionId ?? 'None'}
+                />
+                <dt>Selected intention</dt>
+                <JsonValue value={inspection.resolution.selectedIntention} />
+                <dt>Proposal</dt>
+                <JsonValue value={inspection.resolution.proposal} />
+              </dl>
+            ) : (
+              <p>No active generated resolution on this passage.</p>
+            )}
           </>
         ) : null}
       </details>
