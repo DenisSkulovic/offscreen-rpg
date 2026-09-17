@@ -6,7 +6,7 @@ Create a character in a world of your choosing. Follow their ordinary life, step
 
 An LLM storyteller creates scenes, remembers connections and introduces developments. The browser presents the current scene and story; a messaging integration could bring occasional updates and choices to your phone.
 
-**The application includes PostgreSQL, GitHub sign-in, private story drafts and saved scripted opening previews. A scripted chamber supports a short branching conversation with saved choices, conclusions and history; a timed cafe visit continues while the browser is closed. Pause, pace controls and inventory effects remain unimplemented.** Running sign-in requires your own OAuth credentials. See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
+**The application includes PostgreSQL, GitHub sign-in, private story drafts and saved scripted opening previews. A scripted chamber supports a short branching conversation with saved choices, conclusions and history; a timed cafe visit continues while the browser is closed. The timed journey supports saved pause/resume. Pace controls, decision deadlines and inventory effects remain unimplemented.** Running sign-in requires your own OAuth credentials. See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
 
 A scripted browser prototype is available at `/demo` when the web app is running. Explore scenes, choices and chronology without signing in. Its time controls are manual and its state resets on refresh; it is not the persistent game.
 

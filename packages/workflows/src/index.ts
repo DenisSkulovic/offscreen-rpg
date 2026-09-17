@@ -1,4 +1,11 @@
-import { proxyActivities, sleep } from '@temporalio/workflow';
+import {
+  proxyActivities,
+  sleep,
+  condition,
+  defineSignal,
+  setHandler,
+} from '@temporalio/workflow';
+import { intervalChangedSignal } from './contracts';
 import type { OpeningActivities, IntervalActivities } from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
@@ -10,6 +17,25 @@ const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
 // not a policy for retrying paid or otherwise uncertain external effects.
 export async function scriptedOpeningV1(id: string): Promise<void> {
   await completeScriptedOpening(id);
+}
+
+const { advanceControlledInterval } = proxyActivities<IntervalActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
+export async function storyIntervalV2(id: string): Promise<void> {
+  let wakeVersion = 0;
+  setHandler(defineSignal(intervalChangedSignal), () => {
+    wakeVersion++;
+  });
+  while (true) {
+    const observed = wakeVersion;
+    const remaining = await advanceControlledInterval(id);
+    if (remaining === null) return;
+    if (observed !== wakeVersion) continue;
+    if (remaining < 0) await condition(() => observed !== wakeVersion);
+    else await condition(() => observed !== wakeVersion, remaining);
+  }
 }
 
 const { advanceStoryInterval } = proxyActivities<IntervalActivities>({

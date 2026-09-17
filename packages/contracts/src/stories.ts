@@ -9,10 +9,14 @@ export const passageContentSchema = z.strictObject({
 export const storySnapshotSchema = z.strictObject({
   id: z.uuid(),
   revision: z.number().int().positive(),
+  viewVersion: z.number().int().positive(),
   canRespond: z.boolean().default(false),
   waiting: z
     .strictObject({
-      dueAt: z.iso.datetime(),
+      dueAt: z.iso.datetime().nullable(),
+      canControl: z.boolean(),
+      controlRevision: z.number().int().nonnegative(),
+      remainingMs: z.number().int().nonnegative().nullable(),
       gameDurationMs: z.number().int().positive(),
     })
     .nullable()
@@ -44,4 +48,9 @@ export const startChamberSchema = z.strictObject({
 export const respondToStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   submission: interactionSubmissionSchema,
+});
+export const controlIntervalSchema = z.strictObject({
+  intervalId: z.uuid(),
+  expectedControlRevision: z.number().int().nonnegative().max(2147483646),
+  action: z.enum(['pause', 'resume']),
 });

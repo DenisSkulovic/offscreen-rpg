@@ -57,6 +57,13 @@
       "when": 1789659884593,
       "tag": "0007_passage_intervals",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789660699091,
+      "tag": "0008_interval_controls",
+      "breakpoints": true
     }
   ]
 }

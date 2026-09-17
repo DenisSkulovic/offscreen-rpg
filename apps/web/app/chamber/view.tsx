@@ -17,10 +17,10 @@ export function Chamber({
   const [error, setError] = useState('');
   const operation = useRef(initialId);
   const [scenario, setScenario] = useState('chamber.v3');
-  const waitingUntil = story?.waiting?.dueAt;
+  const hasWaiting = story?.waiting != null;
   const storyId = story?.id;
   useEffect(() => {
-    if (!waitingUntil || !storyId) return;
+    if (!hasWaiting || !storyId) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     async function refresh() {
@@ -36,7 +36,7 @@ export function Chamber({
         const latest = storySnapshotSchema.parse(await response.json());
         if (!controller.signal.aborted)
           setStory((prior) =>
-            !prior || latest.revision >= prior.revision ? latest : prior,
+            !prior || latest.viewVersion >= prior.viewVersion ? latest : prior,
           );
       } catch {
         /* Failed reads never advance the story; reopening also recovers it. */
@@ -49,8 +49,62 @@ export function Chamber({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [waitingUntil, storyId]);
+  }, [hasWaiting, storyId]);
   const responseOperation = useRef<{ id: string; body: unknown } | null>(null);
+  function acceptSnapshot(next: StorySnapshot) {
+    setStory((prior) =>
+      !prior || next.viewVersion >= prior.viewVersion ? next : prior,
+    );
+  }
+  const controlOperation = useRef<{ id: string; body: unknown } | null>(null);
+  async function control(action?: 'pause' | 'resume') {
+    if (!story || pending) return;
+    if (!controlOperation.current) {
+      if (!action || !story.waiting?.canControl) return;
+      controlOperation.current = {
+        id: crypto.randomUUID(),
+        body: {
+          intervalId: story.current.id,
+          expectedControlRevision: story.waiting.controlRevision,
+          action,
+        },
+      };
+    } else if (action) return;
+    setPending(true);
+    setError('');
+    try {
+      const response = await fetch(
+        `/api/stories/${story.id}/controls/${controlOperation.current.id}`,
+        {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(controlOperation.current.body),
+          signal: AbortSignal.timeout(10000),
+        },
+      );
+      if (response.status === 409) {
+        const latest = await fetch(`/api/stories/${story.id}`, {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!latest.ok) throw new Error('Unavailable');
+        acceptSnapshot(storySnapshotSchema.parse(await latest.json()));
+        setError(
+          'The wait changed or is already due. The current saved situation is shown.',
+        );
+      } else {
+        if (!response.ok) throw new Error('Unavailable');
+        acceptSnapshot(storySnapshotSchema.parse(await response.json()));
+      }
+      controlOperation.current = null;
+    } catch {
+      setError(
+        'Could not confirm the control. Retry the same request or reload.',
+      );
+    } finally {
+      setPending(false);
+    }
+  }
   async function respond(optionId?: string) {
     if (!story || pending || !story.canRespond || !story.current.interaction)
       return;
@@ -85,12 +139,12 @@ export function Chamber({
           signal: AbortSignal.timeout(10000),
         });
         if (!latest.ok) throw new Error('Unavailable');
-        setStory(storySnapshotSchema.parse(await latest.json()));
+        acceptSnapshot(storySnapshotSchema.parse(await latest.json()));
         responseOperation.current = null;
         setError('The situation changed. The latest saved scene is shown.');
       } else {
         if (!response.ok) throw new Error('Unavailable');
-        setStory(storySnapshotSchema.parse(await response.json()));
+        acceptSnapshot(storySnapshotSchema.parse(await response.json()));
         responseOperation.current = null;
       }
     } catch {
@@ -118,7 +172,7 @@ export function Chamber({
         },
       );
       if (!response.ok) throw new Error('Unavailable');
-      setStory(storySnapshotSchema.parse(await response.json()));
+      acceptSnapshot(storySnapshotSchema.parse(await response.json()));
     } catch {
       setError(
         'Could not confirm the saved story. Retry the same request or reload. If your session expired, sign in again.',
@@ -133,8 +187,8 @@ export function Chamber({
       <p className="eyebrow">Scripted testing chamber</p>
       <p>
         A short branching story with saved choices and consequences. No AI
-        calls. The timed visit advances while this page is closed. Pause, pace
-        controls and possessions are not connected yet.
+        calls. A timed visit can be paused and resumed; pace controls and
+        possessions are not connected yet.
       </p>
       {story ? (
         <>
@@ -143,12 +197,42 @@ export function Chamber({
             <p key={index}>{paragraph}</p>
           ))}
           {story.waiting && (
-            <p role="status">
-              Waiting for the saved arrival. Expected at {story.waiting.dueAt};
-              fictional duration: {story.waiting.gameDurationMs / 60000}{' '}
-              minutes. Processing may be delayed if the worker is unavailable.
-              Reloading does not restart the wait.
-            </p>
+            <section aria-label="Journey timing">
+              {story.waiting.remainingMs !== null ? (
+                <p>
+                  Journey paused. {Math.ceil(story.waiting.remainingMs / 1000)}{' '}
+                  real seconds remain.
+                </p>
+              ) : (
+                <p>
+                  Arrival estimated at {story.waiting.dueAt}. Processing may be
+                  delayed while the worker is unavailable.
+                </p>
+              )}
+              <p>
+                Fictional duration: {story.waiting.gameDurationMs / 60000}{' '}
+                minutes. Reloading never restarts the wait.
+              </p>
+              {story.waiting.canControl && (
+                <button
+                  disabled={pending || controlOperation.current !== null}
+                  onClick={() =>
+                    void control(
+                      story.waiting!.remainingMs === null ? 'pause' : 'resume',
+                    )
+                  }
+                >
+                  {story.waiting.remainingMs === null
+                    ? 'Pause journey'
+                    : 'Resume journey'}
+                </button>
+              )}
+            </section>
+          )}
+          {controlOperation.current && (
+            <button disabled={pending} onClick={() => void control()}>
+              Retry control
+            </button>
           )}
           {story.current.interaction && (
             <section aria-label="Offered interaction">

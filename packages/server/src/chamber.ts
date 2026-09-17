@@ -92,6 +92,15 @@ export function createChamber(database: Database) {
       return read(owner, id);
     },
     read,
+    async control(
+      owner: string,
+      id: string,
+      operationId: string,
+      body: unknown,
+    ) {
+      await stories.controlInterval(owner, id, operationId, body);
+      return read(owner, id);
+    },
     history: stories.history,
   };
 }

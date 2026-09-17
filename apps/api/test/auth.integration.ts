@@ -26,7 +26,7 @@ if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
 
 test(
   'identity integration through HTTP and the web application',
-  { timeout: 120000 },
+  { timeout: 180000 },
   async (t) => {
     const config = readDatabaseConfig({ DATABASE_URL: databaseURL });
     await applyMigrations(
@@ -319,6 +319,10 @@ test(
       );
       await database.db.$client.query(
         'DELETE FROM story_passage WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+        [user.id],
+      );
+      await database.db.$client.query(
+        'DELETE FROM story_control WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
         [user.id],
       );
       await database.db.$client.query('DELETE FROM story WHERE owner_id = $1', [

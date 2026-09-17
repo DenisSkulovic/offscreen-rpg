@@ -4,12 +4,15 @@ import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { enqueue, type Transaction } from './outbox';
 export const storyIntervalTopic = 'story.interval.v1';
+export const controlledIntervalTopic = 'story.interval.v2';
+export const intervalWakeTopic = 'story.interval.wake.v2';
 import type { Database } from '@offscreen/db';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import { story, storyPassage, storyControl } from '@offscreen/db/story-schema';
 import {
   passageContentSchema,
   storySnapshotSchema,
   storyHistorySchema,
+  controlIntervalSchema,
 } from '@offscreen/contracts/stories';
 import {
   interactionSpecificationSchema,
@@ -71,11 +74,15 @@ export function createStories(database: Database) {
       .select({
         id: story.id,
         revision: story.revision,
+        viewVersion: story.viewVersion,
         passageId: storyPassage.id,
         content: storyPassage.content,
         interaction: storyPassage.interaction,
         waitPlan: storyPassage.waitPlan,
         dueAt: storyPassage.dueAt,
+        intervalVersion: storyPassage.intervalVersion,
+        controlRevision: storyPassage.controlRevision,
+        remainingMs: storyPassage.remainingMs,
       })
       .from(story)
       .innerJoin(
@@ -90,11 +97,15 @@ export function createStories(database: Database) {
     return storySnapshotSchema.parse({
       id: row.id,
       revision: row.revision,
+      viewVersion: row.viewVersion,
       waiting:
         row.waitPlan === null
           ? null
           : {
-              dueAt: row.dueAt!.toISOString(),
+              dueAt: row.remainingMs === null ? row.dueAt!.toISOString() : null,
+              remainingMs: row.remainingMs,
+              canControl: row.intervalVersion === 1,
+              controlRevision: row.controlRevision,
               gameDurationMs: waitPlanSchema.parse(row.waitPlan).gameDurationMs,
             },
       current: {
@@ -183,6 +194,7 @@ export function createStories(database: Database) {
       transitionId,
       response: input.response,
       waitPlan: input.wait,
+      intervalVersion: input.wait ? 1 : 0,
       dueAt: input.wait
         ? sql`clock_timestamp() + ${input.wait.realDurationMs} * interval '1 millisecond'`
         : null,
@@ -194,20 +206,144 @@ export function createStories(database: Database) {
           })
         : null,
     });
-    await tx.update(story).set({ revision: next }).where(eq(story.id, id));
+    await tx
+      .update(story)
+      .set({ revision: next, viewVersion: current.viewVersion + 1 })
+      .where(eq(story.id, id));
     if (input.wait)
       await enqueue(tx, {
         id: passageId,
         operationId: passageId,
-        topic: storyIntervalTopic,
+        topic: controlledIntervalTopic,
       });
   }
   return {
     read,
+    async intervalNeedsWake(id: string) {
+      const [row] = await database.db
+        .select({ id: story.id })
+        .from(story)
+        .innerJoin(
+          storyPassage,
+          and(
+            eq(storyPassage.storyId, story.id),
+            eq(storyPassage.sequence, story.revision),
+          ),
+        )
+        .where(eq(storyPassage.id, identifier(id)));
+      return row !== undefined;
+    },
+    async controlInterval(
+      owner: string,
+      id: string,
+      operationId: string,
+      body: unknown,
+    ) {
+      identifier(id);
+      identifier(operationId);
+      const parsed = controlIntervalSchema.safeParse(body);
+      if (!parsed.success) throw new StoryError('invalid');
+      const input = parsed.data;
+      await database.db.transaction(async (tx) => {
+        const [current] = await tx
+          .select()
+          .from(story)
+          .where(and(eq(story.id, id), eq(story.ownerId, owner)))
+          .for('update');
+        if (!current) throw new StoryError('not_found');
+        const [receipt] = await tx
+          .select()
+          .from(storyControl)
+          .where(
+            and(
+              eq(storyControl.storyId, id),
+              eq(storyControl.operationId, operationId),
+            ),
+          );
+        if (receipt) {
+          if (
+            !isDeepStrictEqual(
+              controlIntervalSchema.parse(receipt.request),
+              input,
+            )
+          )
+            throw new StoryError('conflict');
+          return;
+        }
+        const [interval] = await tx
+          .select()
+          .from(storyPassage)
+          .where(
+            and(
+              eq(storyPassage.storyId, id),
+              eq(storyPassage.id, input.intervalId),
+              eq(storyPassage.sequence, current.revision),
+            ),
+          );
+        if (
+          !interval ||
+          interval.intervalVersion !== 1 ||
+          interval.waitPlan === null ||
+          interval.controlRevision !== input.expectedControlRevision
+        )
+          throw new StoryError('conflict');
+        const [clock] = await tx
+          .select({ now: sql<Date>`clock_timestamp()` })
+          .from(story)
+          .where(eq(story.id, id));
+        const now = new Date(clock!.now).getTime();
+        if (input.action === 'pause') {
+          if (interval.remainingMs !== null || interval.dueAt!.getTime() <= now)
+            throw new StoryError('conflict');
+          await tx
+            .update(storyPassage)
+            .set({
+              remainingMs: interval.dueAt!.getTime() - now,
+              controlRevision: interval.controlRevision + 1,
+            })
+            .where(eq(storyPassage.id, interval.id));
+        } else {
+          if (interval.remainingMs === null) throw new StoryError('conflict');
+          await tx
+            .update(storyPassage)
+            .set({
+              dueAt: new Date(now + interval.remainingMs),
+              remainingMs: null,
+              controlRevision: interval.controlRevision + 1,
+            })
+            .where(eq(storyPassage.id, interval.id));
+        }
+        await tx
+          .update(story)
+          .set({ viewVersion: current.viewVersion + 1 })
+          .where(eq(story.id, id));
+        await tx
+          .insert(storyControl)
+          .values({ storyId: id, operationId, request: input });
+        await enqueue(tx, {
+          id: randomUUID(),
+          operationId: interval.id,
+          topic: intervalWakeTopic,
+        });
+      });
+      return read(owner, id);
+    },
     /** Worker-only operation. PostgreSQL rechecks eligibility before publication. */
     async advanceInterval(intervalId: string): Promise<number | null> {
       identifier(intervalId);
       return database.db.transaction(async (tx) => {
+        const [reference] = await tx
+          .select()
+          .from(storyPassage)
+          .where(eq(storyPassage.id, intervalId));
+        if (!reference) throw new StoryError('not_found');
+        const [current] = await tx
+          .select()
+          .from(story)
+          .where(eq(story.id, reference.storyId))
+          .for('update');
+        if (!current) throw new StoryError('not_found');
+        // Timing state is mutable: read it only after acquiring the story lock.
         const [interval] = await tx
           .select()
           .from(storyPassage)
@@ -215,13 +351,8 @@ export function createStories(database: Database) {
         if (!interval || interval.waitPlan === null)
           throw new StoryError('not_found');
         const plan = waitPlanSchema.parse(interval.waitPlan);
-        const [current] = await tx
-          .select()
-          .from(story)
-          .where(eq(story.id, interval.storyId))
-          .for('update');
-        if (!current) throw new StoryError('not_found');
         if (current.revision !== interval.sequence) return null;
+        if (interval.remainingMs !== null) return -1;
         const [clock] = await tx
           .select({ now: sql<Date>`clock_timestamp()` })
           .from(story)

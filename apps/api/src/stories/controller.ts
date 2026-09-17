@@ -76,4 +76,16 @@ export class StoriesController {
       this.stories.respond(owner, id, operationId, body),
     );
   }
+  @Put(':id/controls/:operationId')
+  @HttpCode(200)
+  control(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (owner) =>
+      this.stories.control(owner, id, operationId, body),
+    );
+  }
 }

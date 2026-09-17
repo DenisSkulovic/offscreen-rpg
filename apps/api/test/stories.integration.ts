@@ -563,6 +563,55 @@ export async function checkStories(
           (error: unknown) =>
             error instanceof StoryError && error.code === 'conflict',
         );
+        await page.getByRole('button', { name: 'Pause journey' }).click();
+        await page.getByRole('button', { name: 'Resume journey' }).waitFor();
+        const paused = await createStories(database).read(owner, timedId);
+        assert.equal(paused.revision, waiting.revision);
+        assert.ok(paused.viewVersion > waiting.viewVersion);
+        assert.equal(paused.waiting!.dueAt, null);
+        assert.ok(paused.waiting!.remainingMs! > 0);
+        const receipt = (
+          await database.db.$client.query(
+            'SELECT operation_id, request FROM story_control WHERE story_id = $1',
+            [timedId],
+          )
+        ).rows[0];
+        const retryControl = (
+          body = receipt.request,
+          actor = cookie,
+          source = origin,
+        ) =>
+          fetch(
+            `${origin}/api/stories/${timedId}/controls/${receipt.operation_id}`,
+            {
+              method: 'PUT',
+              headers: {
+                cookie: actor,
+                origin: source,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            },
+          );
+        assert.equal((await retryControl()).status, 200);
+        assert.equal(
+          (await retryControl(receipt.request, otherCookie)).status,
+          404,
+        );
+        assert.equal((await retryControl(receipt.request, '')).status, 401);
+        assert.equal(
+          (await retryControl(receipt.request, cookie, 'https://evil.example'))
+            .status,
+          403,
+        );
+        assert.equal(
+          (await retryControl({ ...receipt.request, action: 'resume' })).status,
+          409,
+        );
+        assert.deepEqual(
+          await createStories(database).read(owner, timedId),
+          paused,
+        );
         await page.close();
         // Wait until dispatch is acknowledged, then restart the worker while the
         // persisted interval is still pending. No browser is driving progression.
@@ -578,6 +627,36 @@ export async function checkStories(
         }
         assert.ok(delivered);
         await restartWorker();
+        await delay(
+          Math.max(0, Date.parse(waiting.waiting.dueAt!) - Date.now()) + 250,
+        );
+        assert.equal(
+          await createStories(database).advanceInterval(waiting.current.id),
+          -1,
+        );
+        assert.deepEqual(
+          await createStories(database).read(owner, timedId),
+          paused,
+        );
+        const resumePage = await context.newPage();
+        await resumePage.goto(timedUrl);
+        await resumePage
+          .getByRole('button', { name: 'Resume journey' })
+          .click();
+        await resumePage
+          .getByRole('button', { name: 'Pause journey' })
+          .waitFor();
+        const resumed = await createStories(database).read(owner, timedId);
+        assert.equal(resumed.waiting!.remainingMs, null);
+        assert.equal(resumed.waiting!.controlRevision, 2);
+        assert.ok(Date.parse(resumed.waiting!.dueAt!) > Date.now());
+        // Retrying an old acknowledged pause cannot pause the resumed journey.
+        assert.equal((await retryControl()).status, 200);
+        assert.deepEqual(
+          await createStories(database).read(owner, timedId),
+          resumed,
+        );
+        await resumePage.close();
         const deadline = Date.now() + 30000;
         let arrived = await createStories(database).read(owner, timedId);
         while (arrived.waiting && Date.now() < deadline) {
@@ -587,7 +666,7 @@ export async function checkStories(
         assert.equal(arrived.current.content.title, 'At the cafe.');
         assert.equal(arrived.revision, 3);
         assert.equal(arrived.waiting, null);
-        assert.ok(Date.now() >= Date.parse(waiting.waiting.dueAt));
+        assert.ok(Date.now() >= Date.parse(waiting.waiting.dueAt!));
         assert.equal(
           await createStories(database).advanceInterval(waiting.current.id),
           null,

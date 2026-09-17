@@ -15,6 +15,8 @@ import {
   createStories,
   StoryError,
   storyIntervalTopic,
+  controlledIntervalTopic,
+  intervalWakeTopic,
 } from '@offscreen/server/stories';
 import { ApplicationFailure } from '@temporalio/client';
 import {
@@ -22,6 +24,9 @@ import {
   openingWorkflowType,
   intervalWorkflowType,
   intervalWorkflowId,
+  controlledIntervalWorkflowType,
+  controlledIntervalWorkflowId,
+  intervalChangedSignal,
 } from '@offscreen/workflows/contracts';
 import type {
   OpeningActivities,
@@ -44,6 +49,21 @@ export async function startRuntime(
     const openings = createScriptedOpenings(database);
     const stories = createStories(database);
     const activities: OpeningActivities & IntervalActivities = {
+      async advanceControlledInterval(id) {
+        try {
+          return await stories.advanceInterval(id);
+        } catch (error) {
+          if (error instanceof StoryError)
+            throw ApplicationFailure.nonRetryable(
+              error.code,
+              'IntervalStateError',
+            );
+          throw ApplicationFailure.retryable(
+            'Story storage unavailable',
+            'StorageUnavailable',
+          );
+        }
+      },
       async advanceStoryInterval(id) {
         try {
           return await stories.advanceInterval(id);
@@ -92,19 +112,38 @@ export async function startRuntime(
       () =>
         relayOne(
           outbox,
-          [scriptedOpeningTopic, storyIntervalTopic],
+          [
+            scriptedOpeningTopic,
+            storyIntervalTopic,
+            controlledIntervalTopic,
+            intervalWakeTopic,
+          ],
           async (notice) => {
+            if (notice.topic === intervalWakeTopic) {
+              if (await stories.intervalNeedsWake(notice.operationId)) {
+                await connection.withDeadline(Date.now() + 10000, () =>
+                  client.workflow
+                    .getHandle(controlledIntervalWorkflowId(notice.operationId))
+                    .signal(intervalChangedSignal),
+                );
+              }
+              return;
+            }
             try {
               await connection.withDeadline(Date.now() + 10000, () =>
                 client.workflow.start(
-                  notice.topic === storyIntervalTopic
-                    ? intervalWorkflowType
-                    : openingWorkflowType,
+                  notice.topic === controlledIntervalTopic
+                    ? controlledIntervalWorkflowType
+                    : notice.topic === storyIntervalTopic
+                      ? intervalWorkflowType
+                      : openingWorkflowType,
                   {
                     workflowId:
-                      notice.topic === storyIntervalTopic
-                        ? intervalWorkflowId(notice.operationId)
-                        : openingWorkflowId(notice.operationId),
+                      notice.topic === controlledIntervalTopic
+                        ? controlledIntervalWorkflowId(notice.operationId)
+                        : notice.topic === storyIntervalTopic
+                          ? intervalWorkflowId(notice.operationId)
+                          : openingWorkflowId(notice.operationId),
                     taskQueue: config.taskQueue,
                     workflowIdReusePolicy: 'REJECT_DUPLICATE',
                     args: [notice.operationId],
