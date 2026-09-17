@@ -1,6 +1,6 @@
 # Story execution with Temporal
 
-Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. There is no global simulation tick and no independent database scheduler driving the same story.
+Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome.
 
 ## Implemented opening flow
 
@@ -11,6 +11,16 @@ The relay claims one eligible notice at a time with `FOR UPDATE SKIP LOCKED`, a 
 A scripted notice starts `scriptedOpeningV1` with Workflow ID `scripted-opening/<operation-id>` and rejects reuse of an existing execution. Already-started acknowledgements count as delivery, not successful generation. Only the operation UUID enters workflow history. The Activity commits a fixed, validated result in PostgreSQL; repeated execution cannot overwrite success. Database failures retry with bounded intervals; invalid operation identity/state fails without retry. An unexpected workflow failure remains an operational problem to inspect in Temporal, not a reason to create another paid request automatically.
 
 The application worker and relay share a process for this slice, but their code and responsibilities are separate. Shutdown stops relay polling and drains worker execution before closing connections. The current connection settings target local development; hosted authentication, deployment/versioning policy, production monitoring and recovery administration remain future work. This flow does not implement story timers, decisions or provider calls.
+
+## Elapsed time and execution cadence
+
+The proposed live clock uses a committed fictional-time anchor, the corresponding real-time anchor, the applicable pace and explicit running/held state. An active interval also defines its next boundary and elapsed-time policy. Reads may project time within that interval; authoritative effects still commit through the normal transition path. A browser can refresh its display every second without sending a request or appending a passage each second. Browser time is never sufficient authority for an arrival, balance change or deadline admission.
+
+A scheduled-boundary implementation can wait for the earliest relevant change: an interval completion, a supported condition threshold, a prepared incident or a response deadline. A player command can invalidate that plan through the existing control fence. Known ordinary outcomes can advance through bounded, idempotent operations without model calls. Invoke interpretation only when the accepted policy needs it; unknown activities are not executable merely because an LLM described them.
+
+Every due boundary needs a declared result path: a trusted routine outcome, a valid prepared continuation, bounded generation or a visible hold. Do not project progress indefinitely beyond an unresolved boundary or spend rewards for an interval that was interrupted. After delayed execution, process causally relevant boundaries in order; batching repeated outcomes is valid only under an explicit equivalence rule and must stop where conditions could change. Never redraw an incident chance on every retry or browser refresh.
+
+This is the intended clock boundary, not an implemented timing schema. The first chamber still uses fixed interval durations and held response windows. General pace changes, recurring routines and condition thresholds follow after its wait/pause/recovery behavior works. A one-second tick remains a candidate where useful; measure its actual work before choosing. Repeated in-memory arithmetic need not imply per-tick persistence, narration or inference. A hybrid must use one authority for each effect so ticks and durable wake-ups cannot apply it twice.
 
 ## One workflow per story
 
@@ -86,6 +96,8 @@ Each billable attempt has a stable operation/attempt record. Before contacting a
 Notification Activities likewise check delivery records and expiry. A send may succeed before its acknowledgement is lost; tolerate a duplicate message while ensuring its button cannot duplicate a game action. Temporal guarantees durable orchestration, not exactly-once billing or human notification delivery.
 
 ## Long-lived execution and deployment
+
+A continuing character has no application-imposed maximum passage count or forced narrative ending. This is a design aim, not a claim of infinite storage or proven capacity. Keep per-wake work bounded by current control state and selected context rather than the character's lifetime. Page chronology, retain source-linked summaries separately, and avoid loading a world's full history into each workflow or model request. Storage still grows with committed content and needs measured retention/deletion behavior.
 
 Use Continue-As-New at safe boundaries to keep history bounded, carrying compact control state, pending references and the processed command cursor into the new run. Finish message handlers and account for pending messages before rollover. Application receipt deduplication remains valid across runs. Keep large prompts, images and prose outside workflow history, referenced by artifact ID. [Continue-As-New](https://docs.temporal.io/develop/typescript/workflows/continue-as-new).
 

@@ -19,6 +19,25 @@ const initialSchema = z.strictObject({
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
 });
+const continuationSchema = z.strictObject({
+  expectedRevision: z.number().int().positive().max(2147483646),
+  content: passageContentSchema,
+  interaction: interactionSpecificationSchema.nullable(),
+});
+function matchesPassage(
+  passage: typeof storyPassage.$inferSelect,
+  input: z.infer<typeof continuationSchema> | z.infer<typeof initialSchema>,
+) {
+  return (
+    isDeepStrictEqual(passage.content, input.content) &&
+    isDeepStrictEqual(
+      passage.interaction
+        ? interactionSchema.parse(passage.interaction).specification
+        : null,
+      input.interaction,
+    )
+  );
+}
 export class StoryError extends Error {
   constructor(readonly code: 'invalid' | 'not_found' | 'conflict') {
     super(code);
@@ -62,6 +81,67 @@ export function createStories(database: Database) {
   }
   return {
     read,
+    /** Internal commit for an already resolved narrative continuation.
+     * Not command admission, a rule resolver or an HTTP content-writing endpoint.
+     * No inference or other external work belongs inside this transaction.
+     */
+    async append(
+      owner: string,
+      id: string,
+      transitionId: string,
+      proposed: unknown,
+    ) {
+      identifier(id);
+      identifier(transitionId);
+      const parsed = continuationSchema.safeParse(proposed);
+      if (!parsed.success) throw new StoryError('invalid');
+      const input = parsed.data;
+      await database.db.transaction(async (tx) => {
+        const [current] = await tx
+          .select()
+          .from(story)
+          .where(and(eq(story.id, id), eq(story.ownerId, owner)))
+          .for('update');
+        if (!current) throw new StoryError('not_found');
+        const [prior] = await tx
+          .select()
+          .from(storyPassage)
+          .where(
+            and(
+              eq(storyPassage.storyId, id),
+              eq(storyPassage.transitionId, transitionId),
+            ),
+          );
+        // Check retries before the current revision: the story may have moved on.
+        if (prior) {
+          if (
+            prior.sequence !== input.expectedRevision + 1 ||
+            !matchesPassage(prior, input)
+          )
+            throw new StoryError('conflict');
+          return;
+        }
+        if (current.revision !== input.expectedRevision)
+          throw new StoryError('conflict');
+        const next = current.revision + 1;
+        await tx.insert(storyPassage).values({
+          id: randomUUID(),
+          storyId: id,
+          sequence: next,
+          transitionId,
+          content: input.content,
+          interaction: input.interaction
+            ? interactionSchema.parse({
+                id: randomUUID(),
+                specification: input.interaction,
+              })
+            : null,
+        });
+        await tx.update(story).set({ revision: next }).where(eq(story.id, id));
+      });
+      // A retry returns today's snapshot, never an old scene to roll the UI back.
+      return read(owner, id);
+    },
     async history(owner: string, id: string, before?: unknown) {
       // Parse query text explicitly: no coercion of arrays, blanks or fractions.
       const cursor = z
@@ -122,16 +202,7 @@ export function createStories(database: Database) {
             .where(
               and(eq(storyPassage.storyId, id), eq(storyPassage.sequence, 1)),
             );
-          if (
-            !first ||
-            !isDeepStrictEqual(first.content, input.content) ||
-            !isDeepStrictEqual(
-              first.interaction
-                ? interactionSchema.parse(first.interaction).specification
-                : null,
-              input.interaction,
-            )
-          )
+          if (!first || !matchesPassage(first, input))
             throw new StoryError('conflict');
           return;
         }

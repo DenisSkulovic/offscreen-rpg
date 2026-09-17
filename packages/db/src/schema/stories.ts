@@ -37,6 +37,7 @@ export const storyPassage = pgTable(
       .notNull()
       .references(() => story.id, { onDelete: 'restrict' }),
     sequence: integer('sequence').notNull(),
+    transitionId: uuid('transition_id'),
     content: jsonb('content').notNull().$type<unknown>(),
     interaction: jsonb('interaction').$type<unknown>(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
@@ -45,6 +46,7 @@ export const storyPassage = pgTable(
   },
   (t) => [
     unique('story_passage_sequence').on(t.storyId, t.sequence),
+    unique('story_passage_transition').on(t.storyId, t.transitionId),
     check('story_passage_sequence_positive', sql`${t.sequence} > 0`),
   ],
 );

@@ -4,11 +4,21 @@ The story unfolds across two kinds of time: duration inside the fiction and time
 
 ## Pace
 
+Fictional time normally continues during an active quiet interval, even when no new passage or choice appears. The character need not leave a familiar place for this to be meaningful. An ongoing life can span real months without a compulsory narrative ending. Manual pause, a declared decision hold or a system blocker can stop progression; simply not producing new prose does not.
+
 Give the player understandable expectations for an action's fictional duration and real wait. Estimates are conditional on the situation remaining unchanged. An interruption replaces the old expectation with the new situation.
 
 A selected pace should guide waiting, but a single multiplier is not sufficient to specify the entire experience. Immediate exchanges, long quiet stretches and response deadlines serve different purposes. The exact mapping, bounds and available pace controls are still open; they should be tested against the playthrough rather than inferred from a simulation tick rate.
 
 Changing pace must explain what happens to an existing wait or deadline. The application must not quietly move an imminent deadline while another participant is deciding. Faster play also means potentially more generation per real hour, which spending controls must account for.
+
+### Clock, consequences and narration
+
+Separate the clock advancing, supported rules reaching a boundary, and the storyteller producing a development. During a permitted routine, code may apply a known outcome and schedule the next relevant boundary without calling a model. Reaching a condition that needs interpretation can request the storyteller. Neither a clock refresh nor each ordinary state update requires narration, a notification or a new choice screen.
+
+A once-per-second tick is a candidate cadence, not a settled requirement. It may serve display, lightweight simulation or both; those roles need not share the same implementation. Show progress from an authoritative timing anchor and pace, then reconcile with committed state. Scheduling the next meaningful boundary is another option that can preserve continuous elapsed time while doing no per-second database writes or model calls. A duration estimate does not itself prove movement, earned resources or completion.
+
+For example, a supported rest interval can advance toward its next needs check while the screen remains unchanged. The check may produce a routine consequence or require a decision. This example does not establish a universal hunger meter or a subsystem for every activity. Arbitrary model-invented routines still need a supported resolution policy or fresh interpretation; quiet-story settings alone cannot make them free.
 
 ## Travel duration and progress
 

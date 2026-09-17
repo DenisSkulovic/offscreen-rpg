@@ -18,6 +18,117 @@ export async function checkStories(
   otherCookie: string,
 ) {
   await t.test(
+    'continuations commit once, fence stale writers and retain original start identity',
+    async () => {
+      const stories = createStories(database);
+      const id = randomUUID();
+      const opening = {
+        source: 'transition-test.v1',
+        content: {
+          version: 1,
+          title: 'Beginning',
+          paragraphs: ['A quiet room.'],
+        },
+        interaction: null,
+      };
+      await stories.initialize(owner, id, opening);
+      const transitionId = randomUUID();
+      const proposal = {
+        expectedRevision: 1,
+        content: {
+          version: 1,
+          title: 'A visitor',
+          paragraphs: ['Someone knocks.'],
+        },
+        interaction: {
+          kind: 'choice.v1',
+          prompt: 'What now?',
+          options: [
+            { id: 'answer', label: 'Answer' },
+            { id: 'wait', label: 'Wait' },
+          ],
+        },
+      };
+      const [a, b] = await Promise.all([
+        stories.append(owner, id, transitionId, proposal),
+        stories.append(owner, id, transitionId, proposal),
+      ]);
+      assert.deepEqual(a, b);
+      assert.equal(a.revision, 2);
+      assert.ok(a.current.interaction?.id);
+      const next = { ...proposal, expectedRevision: 2, interaction: null };
+      const race = await Promise.allSettled([
+        stories.append(owner, id, randomUUID(), next),
+        stories.append(owner, id, randomUUID(), next),
+      ]);
+      assert.equal(race.filter((r) => r.status === 'fulfilled').length, 1);
+      const loser = race.find((r) => r.status === 'rejected');
+      assert.ok(
+        loser?.status === 'rejected' &&
+          loser.reason instanceof StoryError &&
+          loser.reason.code === 'conflict',
+      );
+      const current = await stories.read(owner, id);
+      assert.equal(current.revision, 3);
+      assert.deepEqual(
+        await createStories(database).append(owner, id, transitionId, proposal),
+        current,
+      );
+      assert.deepEqual(await stories.initialize(owner, id, opening), current);
+      const rejects = async (
+        actor: string,
+        key: string,
+        body: unknown,
+        code: string,
+      ) => {
+        await assert.rejects(
+          stories.append(actor, id, key, body),
+          (error: unknown) =>
+            error instanceof StoryError && error.code === code,
+        );
+        assert.deepEqual(await stories.read(owner, id), current);
+      };
+      await rejects('another-owner', transitionId, proposal, 'not_found');
+      await rejects(owner, randomUUID(), proposal, 'conflict');
+      await rejects(
+        owner,
+        transitionId,
+        { ...proposal, expectedRevision: 2 },
+        'conflict',
+      );
+      await rejects(
+        owner,
+        transitionId,
+        { ...proposal, interaction: null },
+        'conflict',
+      );
+      await rejects(
+        owner,
+        transitionId,
+        { ...proposal, content: opening.content },
+        'conflict',
+      );
+      await rejects(
+        owner,
+        randomUUID(),
+        { ...proposal, expectedRevision: 3, interaction: { kind: 'unknown' } },
+        'invalid',
+      );
+      await rejects(
+        owner,
+        randomUUID(),
+        { ...proposal, expectedRevision: 2147483647 },
+        'invalid',
+      );
+      const history = await stories.history(owner, id);
+      assert.deepEqual(
+        history.items.map((entry) => entry.sequence),
+        [3, 2, 1],
+      );
+      assert.deepEqual(history.items[1]!.content, proposal.content);
+    },
+  );
+  await t.test(
     'history pages remain ordered as new passages arrive and never expose another owner',
     async () => {
       const id = randomUUID();
@@ -31,38 +142,17 @@ export async function checkStories(
         },
         interaction: null,
       });
-      // Test-only persisted history, not an alternative production write endpoint.
       async function append(from: number, to: number) {
-        const client = await database.db.$client.connect();
-        try {
-          await client.query('BEGIN');
-          for (let sequence = from; sequence <= to; sequence++) {
-            await client.query(
-              `
-            INSERT INTO story_passage (id, story_id, sequence, content)
-            VALUES ($1, $2, $3, $4::jsonb)`,
-              [
-                randomUUID(),
-                id,
-                sequence,
-                JSON.stringify({
-                  version: 1,
-                  title: `Passage ${sequence}`,
-                  paragraphs: ['An ordinary day.'],
-                }),
-              ],
-            );
-          }
-          await client.query('UPDATE story SET revision = $1 WHERE id = $2', [
-            to,
-            id,
-          ]);
-          await client.query('COMMIT');
-        } catch (error) {
-          await client.query('ROLLBACK');
-          throw error;
-        } finally {
-          client.release();
+        for (let sequence = from; sequence <= to; sequence++) {
+          await stories.append(owner, id, randomUUID(), {
+            expectedRevision: sequence - 1,
+            content: {
+              version: 1,
+              title: `Passage ${sequence}`,
+              paragraphs: ['An ordinary day.'],
+            },
+            interaction: null,
+          });
         }
       }
       await append(2, 45);

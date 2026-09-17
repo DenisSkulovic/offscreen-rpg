@@ -32,7 +32,7 @@ In shared play, interpret characters' intentions together where they interact. D
 
 Return to people, objects and unresolved situations when relevant. Callbacks should follow remembered facts, not resemble familiar names attached to unrelated inventions. Consequences can introduce new possibilities without erasing prior choices.
 
-Stories should be capable of reaching a satisfying ending. Not every character must die, and constant cliffhangers are not a substitute for resolution. Whether creation offers finite adventures, continuing lives or both remains open. Until that is chosen, do not impose an arbitrary lifetime on every story. A finished story remains readable and does not keep scheduling new developments.
+Continuing life is a target experience: a character can remain in the same world for real months, with minimal dramatic intervention and no compulsory ending. Individual adventures and relationships can reach a satisfying resolution without ending the playable life. Not every character must die, and constant cliffhangers are not a substitute for resolution. The creation controls for finite adventures versus continuing life remain to be designed. A deliberately finished story remains readable and does not keep scheduling new developments.
 
 ## First playable scope
 

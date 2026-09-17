@@ -105,6 +105,8 @@ These are implementation acceptance cases, not tests already written or passed. 
 
 AI evaluations complement these tests. Maintain a small set of story fixtures spanning tone, unusual characters, long-range callbacks, player agency and shared consequences. Human review checks whether options are meaningful and narration coherent. Repeatable fixtures make model/prompt comparisons possible without claiming deterministic prose.
 
+For continuing-life validation after the chamber, advance a scripted character through 30 and 90 days of permitted ordinary intervals with a counting fake provider. Assert no provider invocations during already-defined quiet progression, no unnecessary per-tick database/history growth, exactly-once routine effects, and interruption at the first boundary that requires a different outcome. This does not claim zero inference for arbitrary new conversations or activities. Include a hold/resume, delayed processing and workflow rollover while checking that elapsed time, pending commands and effects survive. Separately measure many concurrently waiting stories: report wake-ups, writes, history growth, memory and timer lag. Simulating one long lifetime does not prove multi-user throughput, and low token spending does not mean zero infrastructure cost.
+
 CI should run formatting/linting, type checks, contract/policy tests, relevant integration tests, builds and documentation checks. Keep live-provider evaluations opt-in and budgeted. Dependency and secret checks matter for a public repository that uses external credentials. Publish measured demo results only after running them; do not populate the README with invented benchmarks.
 
 ## Implementation order
