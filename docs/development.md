@@ -1,6 +1,6 @@
 # Local development
 
-The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts. Generation, shared setup, workflow workers and playable stories are not implemented yet.
+The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. Signed-in users can create, save and reopen private story drafts. Opening preparation and generation-record operations are tested backend components; generation UI, shared setup, workflow workers and playable stories are not implemented yet. See [implementation overview](progress.md) for coverage and current priorities. Paid services remain disconnected during broader application development.
 
 ## Requirements and startup
 
@@ -17,9 +17,9 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to an account page. Both applications watch their own source changes; rebuild shared packages and restart after changing database package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
+Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to their saved drafts. Both applications watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
 
-API and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for account-page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
+API and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
 
 ## Local dependencies
 
@@ -51,7 +51,7 @@ python scripts/check_docs.py
 
 The API test compiles with TypeScript's decorator metadata, boots Nest against an ephemeral HTTP port, checks routing and closes the app. Configuration tests reject invalid ports without exposing their values. This uses Node's test runner so the first test also exercises the same emitted JavaScript as production startup. A pure-policy runner can be added when there are policies to test.
 
-`/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; the account page is rendered dynamically with an uncached API read.
+`/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; authenticated draft pages are rendered dynamically with uncached API reads.
 
 `packages/config` exports shared compiler settings. `packages/contracts` contains browser-safe draft validation and types; `packages/server` contains owned draft operations and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add deterministic workflow packages when the first workflow is implemented.
 
@@ -88,7 +88,7 @@ The suite checks migration reruns and contention, failed-DDL rollback, transacti
 
 The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. These operations have no public endpoint or background dispatcher yet; no paid calls occur.
 
-Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table; generation makes no calls because it is not implemented.
+Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table. Generation tests use a fake callback and make no provider calls.
 
 `pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
 
@@ -98,4 +98,4 @@ Sessions live in PostgreSQL for seven days and are eligible for renewal after on
 
 Auth rate limits use the database. A server-written client-IP header prevents callers supplying their own rate-limit key; behind the current local Next proxy, requests share the proxy's address. Before public hosting, configure trusted ingress/client-IP forwarding, request size/time limits and operational error reporting. Library error logging is disabled to avoid leaking credentials; current process logs are deliberately minimal. Invitations, SSE authorization and story membership are not implemented by this identity slice.
 
-Next: validate live GitHub sign-in when credentials are configured, then build the smallest persisted story draft. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.
+Use [implementation overview](progress.md) for the next slice rather than inferring priority from this setup guide. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.

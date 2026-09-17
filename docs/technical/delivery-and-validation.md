@@ -6,7 +6,7 @@ The portfolio should demonstrate a coherent system operating under failure, not 
 
 Use Docker Compose for application PostgreSQL and a local Temporal development service, with application processes running locally for fast TypeScript feedback. Persist local Temporal state when demonstrating restart recovery; an ephemeral test service cannot prove persistence across service restarts. Also provide a full container profile for a reproducible demonstration. Add object storage locally only when media is implemented; use static sample artwork before then. Redis is not a required local dependency.
 
-Provide a deterministic fake storyteller/provider for tests and a no-paid-key demo. It should follow the same structured proposal contract as the live adapter and clearly identify itself as a scripted demonstration. Live calls require explicit configured credentials and a budget. Never run paid model tests automatically for arbitrary pull requests.
+Provide a deterministic fake storyteller/provider for tests and a no-paid-key demo. It should follow the same structured proposal contract as the eventual live adapter and clearly identify itself as a scripted demonstration. The current phase keeps paid integrations disconnected while the broader application is built, tested and tuned. Enable them only when the user explicitly elects to do so; credentials and budgets alone do not authorize that step. Never run paid model tests automatically for arbitrary pull requests.
 
 Pin supported runtime/dependency versions, the package manager and container image versions when scaffolding. Keep a single lockfile. Application code is TypeScript; SQL migrations, Compose YAML and a small documentation checker do not violate that preference.
 
@@ -46,7 +46,7 @@ Start with structured logs, basic metrics and a useful AI trace destination. Add
 
 ## Tests that demonstrate the architecture
 
-Use a test runner such as Vitest for pure policy/contract tests, PostgreSQL plus Temporal integration tests for execution, and Playwright for browser flows. Verify the runner's compatibility with NestJS decorators and Temporal's Node worker/test environment when scaffolding. Temporal's test environment supports time skipping, allowing multi-hour waits to be exercised quickly. [Temporal testing](https://docs.temporal.io/develop/typescript/best-practices/testing-suite).
+Use the established Node test runner for pure policy/contract tests and compiled Nest integration tests, PostgreSQL plus Temporal integration tests for execution, and Playwright for browser flows. Verify compatibility with Temporal's worker/test environment when adding it; there is no need for a second runner without a concrete limitation. Temporal's test environment supports time skipping, allowing multi-hour waits to be exercised quickly. [Temporal testing](https://docs.temporal.io/develop/typescript/best-practices/testing-suite).
 
 Temporal test time does not advance PostgreSQL's wall clock. For workflow-only tests, mock timing/admission Activities consistently; for cross-system deadline tests, use short real durations or an explicit test clock adapter aligned on both sides. Include history replay and Continue-As-New tests. Keep real service restart tests separate from time-skipping tests so the demonstration actually proves recovery.
 
@@ -87,10 +87,12 @@ CI should run formatting/linting, type checks, contract/policy tests, relevant i
 
 ## Implementation order
 
-1. **Prove integration seams:** scaffold the workspace, verify OAuth/session handling including invite return, same-origin SSE and phone notification feasibility. Select shared decision/pause defaults, the pace/deadline rule and the first phone channel. These small checks can prevent expensive architectural rework.
-2. **Build a fake-provider vertical slice:** edit a draft, invite, generate/review a candidate, start once, show the scene, submit intentions, publish a prepared interruption, resolve a timed choice, pause/resume and reconnect. Use PostgreSQL receipts/outbox, one story workflow and idempotent Activities. Prove worker restart, stale-candidate rejection and duplicate-message handling before adding paid calls.
-3. **Add real bounded generation:** premise to preview, structured continuation, relevant context, cost reservation and traces. Keep model/tool steps in TypeScript Activities and verify ambiguous-call recovery; add no second agent orchestration engine without an actual need.
-4. **Make absence convincing:** phone updates, fallbacks, recap, restart recovery and measured quiet-versus-active costs. Demonstrate a remembered fact changing a later scene.
-5. **Polish and showcase:** atmosphere and optional images, clear setup instructions, a scripted demo, evaluation examples and failure-recovery evidence. Then add the Kubernetes deployment exercise without rewriting the application as microservices.
+Use the [implementation overview](../progress.md) to identify the current checkpoint and missing components. It owns status; this section defines the delivery approach.
+
+1. **Connect the existing foundation:** draft editing, scripted opening generation, persisted processing and preview display/reopen. Add the worker/outbox and read/update interfaces needed to connect the flow. Prove failures and restart behavior without paid calls.
+2. **Build a playable scripted story:** settle the affected product rules, then implement start once, current scene, choices, chronology, waiting, pause/resume and reconnect. Test individual components and their interaction. Do not mistake an opening-text generator for the game.
+3. **Cover the broader experience:** shared setup and decisions, absence/default behavior, returning/recap, continuity and notification intents with local delivery substitutes. Exercise context selection, usage accounting with simulated costs and operational visibility. Define channel-specific behavior before implementing its adapter; no paid delivery is needed to test core intent handling.
+4. **Tune and demonstrate the complete application:** use a scripted browser experience, multiple story fixtures, recovery tests and clear setup instructions. Revisit product and technical specs as integration exposes gaps. Spend effort on the visible story experience as well as backend reliability.
+5. **Connect external services when explicitly chosen:** evaluate real bounded generation, provider failures, narrative quality, cache behavior and measured costs against the already tested application. Keep deterministic tests and the no-paid-key demo. Paid media, hosted deployment and Kubernetes are separate later choices, not prerequisites for completing application components.
 
 No subscription checkout, native app, public matchmaking or multi-agent population simulation is required for this sequence. Technical depth comes from the coherent execution of the intended game.

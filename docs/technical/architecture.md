@@ -1,6 +1,6 @@
 # Technical architecture
 
-This is the implementation design; the [development guide](../development.md) identifies what currently runs and what is still planned. It supports the [product walkthrough](../playthroughs.md). Product choices still open in [questions](../questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced.
+This is the implementation design; the [implementation overview](../progress.md) tracks coverage and current priorities, while the [development guide](../development.md) explains how to run and test existing code. The design supports the [product walkthrough](../playthroughs.md). Product choices still open in [questions](../questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
 
 ## Recommendation
 

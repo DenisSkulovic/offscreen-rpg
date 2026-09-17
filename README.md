@@ -8,6 +8,8 @@ An LLM storyteller creates scenes, remembers connections and introduces developm
 
 **The application includes PostgreSQL, GitHub sign-in and private story drafts you can save and reopen. No playable build yet.** Running sign-in requires your own OAuth credentials. See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
 
+See the [implementation overview](docs/progress.md) for component coverage, missing user flows and the current focus. We are building the broader application with scripted generation before connecting paid services.
+
 - [Vision](docs/vision.md): the experience and why we're making it.
 - [Gameplay](docs/gameplay.md): how the story could progress with little simulation.
 - [Player experience](docs/player-experience.md): entry, interaction and returning to a story.
