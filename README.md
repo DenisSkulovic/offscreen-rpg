@@ -2,48 +2,16 @@
 
 **An AI storytelling RPG where your character’s life continues while you’re away.**
 
-Create a character, give them a routine, and follow a life that unfolds over time. A quiet journey can become an unlikely friendship, a dangerous interruption, or a story you return to days later. Step in when you want to. Otherwise, the character acts within the autonomy you gave them. Hit pause when life needs to wait.
+Create a character in a world of your choosing. Follow their ordinary life, step into an unfolding story, make a decision between meetings, or leave them to their own judgment. Pause whenever you want.
 
-> **Status: product design; simplifying the v0.01 baseline.** This repository currently contains product specifications and documentation checks. There is no playable build, deployed demo, or measured runtime performance yet. Technical design and the first implementation are next.
+An LLM storyteller creates scenes, remembers connections and introduces developments. The browser presents the current scene and story; a messaging integration could bring occasional updates and choices to your phone.
 
-## The experience
+**Currently shaping the proof of concept. No playable build yet.**
 
-- **A life between visits.** Routines, travel and consequences continue while the campaign runs; ordinary unanswered invitations use permitted character decisions.
-- **An active AI storyteller.** Different storytelling styles can introduce incidents and connect people, places and past choices without simulating every inhabitant of a world.
-- **Continuity that matters.** Someone you met—or an object you gave away—can return much later. Established facts survive between scenes.
-- **Agency when you want it.** Observe, intervene, change direction, delegate or pause. Contextual choices versus free-text input remain a design decision.
-- **An atmospheric interface.** A simple browser experience focused on the current scene, contextual actions and a story-so-far chronology. Quiet moments belong on screen too. Messaging integrations are being considered for brief updates and decisions.
+- [Vision](docs/vision.md): the experience and why we're making it.
+- [Gameplay](docs/gameplay.md): how the story could progress with little simulation.
+- [Open questions](docs/questions.md): the few choices to settle before building.
 
-The platform aims to support different settings and kinds of characters through bounded mechanical profiles. D&D is the intended rules foundation; the source subset and extensions are still to be selected. Universal generated mechanics are an ambition, not an implemented capability.
+This is a senior fullstack portfolio project. Its depth should come from compelling interaction, coherent persistent stories, reliable background execution and efficient AI.
 
-## Engineering focus
-
-The first implementation will explore sparse persistent world state, recoverable time progression, validated storyteller actions, meaningful autonomous decisions, and explicit AI context and spending limits. The current proposal uses one story-progression flow with storyteller adjudication, instead of dedicated mechanics for every activity. Waiting and valid prepared outcomes need no call on every tick; novel continuation still has a model cost.
-
-This is a senior fullstack engineering portfolio project. The goal is a small, coherent game backed by demonstrable reliability and thoughtful AI integration. Architecture, model/provider choices and deployment will be documented as they are selected; this README does not imply they already exist.
-
-## Explore the design
-
-| Start here | What it answers |
-| --- | --- |
-| [Product vision](docs/product/PRODUCT_VISION.md) | What experience are we building? |
-| [Lightweight story progression](docs/product/experience/story-progression.md) | What can we simplify, and what must remain consistent? |
-| [First-release scope](docs/product/foundations/scope-and-release-plan.md) | What belongs in the initial slice, later, or possibly never? |
-| [Next design decisions](docs/TASKS.md) | What must be settled before implementation? |
-| [Storyteller and events](docs/product/worlds/world-events-and-causality.md) | How can stories develop while respecting game state? |
-| [AI budgets](docs/product/ai-experience/cost-budgets-and-degraded-play.md) | Where do models add value, and how are costs bounded? |
-| [Documentation index](docs/DOCUMENTATION_TREE.md) | Where do the supporting contracts live? |
-
-## Working with this repository
-
-Documentation uses stable IDs and relative links. Run the dependency-free checks with Python 3.10 or later:
-
-```sh
-python scripts/check_docs.py
-```
-
-The same checks run in GitHub Actions. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [AGENTS.md](AGENTS.md) for coding-agent guidance. Acceptance scenarios are proposed tests; they are not evidence of implemented gameplay.
-
-## Content and licensing
-
-Fictional settings mentioned in design examples are illustrative references, not bundled assets or claims of affiliation. No third-party rulebook text or game assets are included. Source selection and licensing are release decisions still to be resolved. No project license has been selected yet.
+The runtime stack is not chosen. Run `python scripts/check_docs.py` to check documentation links; it also runs in GitHub Actions. No project license has been selected yet.
