@@ -26,6 +26,14 @@ The generic record contains no draft, character, scene or timing fields. The ope
 
 The reusable relay store leases and acknowledges delivery; it does not own the referenced operation's outcome. No foreign key binds this cross-operation notice table exclusively to generations. The admitting module is responsible for creating a valid reference transactionally; future deletion must account for outstanding notices. Keep receipt retention separate from Temporal history retention and from game chronology.
 
+### Implemented story initialization
+
+`story` stores ownership, an immutable source key, a narrative revision and creation time. `story_passage` stores a story-scoped ordered sequence, versioned presentation content and an optional published interaction. A unique `(story_id, sequence)` prevents duplicate chronology positions; the current revision selects the current passage. Both rows are created in one transaction. There is no inventory, fictional clock, decision deadline or progression status yet. Later control changes must not be forced into this narrative sequence.
+
+`@offscreen/server/stories` owns initialization and snapshot reads independently of the authored fixture and HTTP. Its server-selected input includes the content and interaction specification; it assigns passage/interaction identities once. Repeating the same story ID checks owner, source and original opening content, then returns the saved snapshot. Conflicting content cannot replace an existing story. Reads join the current passage in one query. JSON is runtime-validated on write and read; ownership is derived from the session, not a browser DTO.
+
+The browser receives a story ID, narrative revision, current passage content and offered interaction. It receives no source code, effect instructions or owner information. Migration `0004_story_initialization` introduces these tables. Appending consequences, listing retained stories and paginating chronology are subsequent operations; a first saved passage does not prove those flows.
+
 ### Planned story records
 
 | Record family | What it owns |

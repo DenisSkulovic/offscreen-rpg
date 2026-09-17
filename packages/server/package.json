@@ -22,6 +22,14 @@
     "./outbox": {
       "types": "./dist/outbox.d.ts",
       "default": "./dist/outbox.js"
+    },
+    "./stories": {
+      "types": "./dist/stories.d.ts",
+      "default": "./dist/stories.js"
+    },
+    "./chamber": {
+      "types": "./dist/chamber.d.ts",
+      "default": "./dist/chamber.js"
     }
   },
   "scripts": {

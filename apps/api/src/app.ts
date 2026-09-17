@@ -18,6 +18,8 @@ import { createDrafts } from '@offscreen/server/drafts';
 import { DRAFTS, DraftsController } from './drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
 import { OPENINGS, OpeningsController } from './drafts/openings-controller.js';
+import { createChamber } from '@offscreen/server/chamber';
+import { STORIES, StoriesController } from './stories/controller.js';
 
 const DATABASE = Symbol('DATABASE');
 
@@ -63,6 +65,7 @@ export async function createApp(
         IdentityController,
         DraftsController,
         OpeningsController,
+        StoriesController,
       ],
       providers: [
         IdentityService,
@@ -71,6 +74,7 @@ export async function createApp(
         { provide: AUTH, useValue: auth },
         { provide: DRAFTS, useValue: createDrafts(database) },
         { provide: OPENINGS, useValue: createScriptedOpenings(database) },
+        { provide: STORIES, useValue: createChamber(database) },
       ],
     },
     {

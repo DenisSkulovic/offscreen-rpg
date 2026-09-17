@@ -14,6 +14,7 @@ import { checkDrafts } from './drafts.integration.js';
 import { checkDraftBrowser } from './drafts.browser.js';
 import { checkGenerations } from './generations.integration.js';
 import { checkOpeningHTTP } from './openings.integration.js';
+import { checkStories } from './stories.integration.js';
 import { startRuntime } from '@offscreen/worker/runtime';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
@@ -121,6 +122,14 @@ test(
         () => {},
       );
       await checkDraftBrowser(t, origin, cookie);
+      await checkStories(
+        t,
+        database,
+        user.id,
+        origin,
+        cookie,
+        otherLogin.headers.get('cookie')!,
+      );
 
       await t.test(
         'anonymous API requests fail and the page redirects to sign-in',
@@ -299,6 +308,13 @@ test(
         'DELETE FROM story_draft WHERE owner_id = $1',
         [user.id],
       );
+      await database.db.$client.query(
+        'DELETE FROM story_passage WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+        [user.id],
+      );
+      await database.db.$client.query('DELETE FROM story WHERE owner_id = $1', [
+        user.id,
+      ]);
       await helpers.deleteUser(otherUser.id);
       await helpers.deleteUser(user.id);
       await app.close();

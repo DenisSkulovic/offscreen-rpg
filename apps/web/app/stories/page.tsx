@@ -22,6 +22,9 @@ export default async function Stories() {
         New story
       </Link>
       <DraftList initial={draftListSchema.parse(await response.json())} />
+      <p>
+        <Link href="/chamber">Open the scripted testing chamber</Link>
+      </p>
       <SignOutButton />
     </main>
   );

@@ -28,6 +28,14 @@ Changes to participating characters, premise or shared play settings make an inc
 
 Readiness refers to the exact draft/preview and roster being accepted. A friend changing their character invalidates relevant readiness. The final UI for readiness is a product choice, but a boolean left true across arbitrary edits is not sufficient.
 
+## Scripted chamber initialization
+
+The chamber is a separate fixed fixture, not a generated preview converted into live play. `PUT /api/stories/:id/chamber` accepts only `{ scenario: "chamber.v1" }`, requires a verified owner and the configured write origin, and returns a saved snapshot. The server selects the content; clients cannot supply effects or an opening. Initialization is a short database transaction with no asynchronous work or timing obligation, so it returns 200 without creating an idle workflow. Add workflow dispatch transactionally when live timing is implemented.
+
+`GET /api/stories/:id` reopens an owned snapshot. `/chamber` is available from the signed-in stories page; before starting, the browser assigns and retains an ID in `/chamber?id=...`. Retrying or refreshing can recover the same saved opening. Inaccessible identities return 404. A fresh fixture uses a new ID; it never resets an existing story. Normal authentication remains required, and local browser integration tests use the existing test session helpers.
+
+The initial screen exposes saved identifiers/revision and disabled offered choices. It states that possessions, consequences and timers are absent. This establishes persistence and reopening only. The generated/shared start contract below remains to be implemented; the fixture does not bypass its eventual candidate, roster or spending checks.
+
 ## Start exactly the reviewed story
 
 A start command includes the candidate ID and expected draft/roster/settings revisions. Under the story lock, verify authority, participant readiness according to the chosen group policy, current funding eligibility and that no live execution has been initialized. Save a unique start receipt and freeze the selected candidate. Block further draft edits while start is pending and expose its status/recovery action; do not allow a second start or simultaneous editing to race initialization.

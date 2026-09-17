@@ -29,6 +29,13 @@
       "when": 1789654422182,
       "tag": "0003_execution_outbox",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789656948939,
+      "tag": "0004_story_initialization",
+      "breakpoints": true
     }
   ]
 }
