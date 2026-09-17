@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main>
@@ -11,6 +13,9 @@ export default function Home() {
         Create a character. Step into another world. Return to find out what
         happened.
       </p>
+      <Link className="button" href="/stories">
+        Enter Offscreen RPG
+      </Link>
       <p className="status">
         In development. The first adventure is still taking shape.
       </p>

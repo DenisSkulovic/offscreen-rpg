@@ -22,7 +22,7 @@ The primary screen needs the current scene, contextual actions, progression/deci
 
 ## Authentication and sessions
 
-Recommended candidate: Better Auth with PostgreSQL-backed sessions and one OAuth provider, then add another if useful. The documented NestJS integration is community-maintained and currently describes Fastify support as beta; start with Express and verify callback handling, cookies, logout and SSE authorization in a small integration test. [Better Auth NestJS integration](https://better-auth.com/docs/integrations/nestjs).
+Better Auth owns PostgreSQL-backed sessions and GitHub OAuth. Its official Node handler is mounted directly in Nest's Express server before body parsing, without a community Nest integration wrapper. The API uses ESM. The [development guide](../development.md) describes the implemented identity checks and remaining live-provider validation. SSE and invitation handling remain later integration work. [Better Auth Express integration](https://better-auth.com/docs/integrations/express).
 
 OAuth is an identity connection flow, not the application's complete access model. Let the library handle provider callbacks, state/PKCE where applicable and session lifecycle. Do not implement token exchange or password recovery ourselves. Use secure, HttpOnly cookies with an appropriate SameSite policy, trusted origins and CSRF protection on cookie-authenticated mutations. Do not put session tokens in localStorage or query strings.
 

@@ -1,23 +1,27 @@
 # Local development
 
-The foundation contains a pnpm/Turborepo workspace, strict TypeScript configuration, a Next.js page, a NestJS HTTP process and an independently tested PostgreSQL package. The API does not use that package yet. There is no authentication, workflow worker or playable story. Packages are created when their first implementation needs them; the architecture diagram is not a directory checklist.
+The foundation contains a TypeScript workspace, Next.js web application, NestJS API, PostgreSQL persistence and Better Auth identity/session handling. GitHub is the first OAuth provider. There is no story creation, workflow worker or playable story yet.
 
 ## Requirements and startup
 
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
+Install Docker with Compose v2 and start the dependencies below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file; supply your own GitHub OAuth app client ID and secret. Set its homepage to `http://localhost:3000` and callback to `http://localhost:3000/api/auth/callback/github`. Keep `.env` private; it is ignored by Git. Use `localhost` consistently in the browser so the configured origin and cookies agree.
+
 From the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm infra:up
+pnpm db:migrate
 pnpm dev
 ```
 
-Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api/health/live` is also proxied through the web server. Both applications watch source changes. Stop the task with Ctrl+C. This shell needs no credentials, paid services or Docker.
+Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to an account page. Both applications watch their own source changes; rebuild shared packages and restart after changing database package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
 
-The API accepts optional process environment variables `API_HOST` and `API_PORT`, defaulting to `127.0.0.1` and `3001`. It validates configuration before listening. The web proxy currently targets that default API address; keep the defaults for the local setup. No `.env` loading or deployment configuration is implied yet.
+API and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for account-page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
 
-## Dependencies for the next slice
+## Local dependencies
 
 With Docker and Compose v2 installed:
 
@@ -26,7 +30,7 @@ pnpm infra:up
 pnpm infra:down
 ```
 
-Compose defines application PostgreSQL on localhost:5432 and Temporal on localhost:7233, with its UI on localhost:8233. Named volumes preserve their data when stopped. `infra:down` retains those volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. Neither application consumes these services yet.
+Compose defines application PostgreSQL on localhost:5432 and Temporal on localhost:7233, with its UI on localhost:8233. Named volumes preserve their data when stopped. `infra:down` retains those volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API uses PostgreSQL; Temporal has no application worker yet.
 
 Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. CI starts both containers and waits for their health checks; persisted workflow recovery must be tested with the first actual workflow. Docker is not installed on the current Windows development machine, so local container execution has not been verified there.
 
@@ -45,7 +49,7 @@ python scripts/check_docs.py
 
 The API test compiles with TypeScript's decorator metadata, boots Nest against an ephemeral HTTP port, checks routing and closes the app. Configuration tests reject invalid ports without exposing their values. This uses Node's test runner so the first test also exercises the same emitted JavaScript as production startup. A pure-policy runner can be added when there are policies to test.
 
-The health route indicates process liveness only. Database readiness, auth, SSE delivery and durable recovery are not implemented or tested by this route. Build success is not a gameplay test.
+`/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; the account page is rendered dynamically with an uncached API read.
 
 `packages/config` currently exports only shared compiler settings. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add runtime contracts and deterministic workflow packages as the corresponding component is implemented and tested.
 
@@ -59,7 +63,7 @@ Use `database.db.transaction(async (tx) => { ... })` for atomic operations and i
 
 `@offscreen/db/migrate` exports `applyMigrations(config, folder)` for a Drizzle migration directory. It opens its own connection, takes a database-scoped advisory lock and invokes Drizzle's migrator. A competing runner fails promptly with a retry message. Closing the connection releases the lock even after SQL failure. Run migrations as a separate deployment operation, never implicitly on API startup. The runtime database account should eventually have narrower permissions than the migration account.
 
-No application tables or production migration files are defined yet. Generate the auth library's actual schema during identity integration, review its SQL, and add its migration directory and CLI then. SQL under `packages/db/test/fixtures` is a disposable test fixture, not a proposed product model. Applied migration files must remain immutable; add a new migration instead of editing an applied one. The wrapper does not add checksum-drift detection beyond Drizzle's migration bookkeeping.
+The first application migration creates Better Auth's five tables: user, account, session, verification and rate_limit. The generated schema was reviewed and includes an added unique constraint on `(provider_id, account_id)` to prevent a provider identity belonging to multiple records. `pnpm --filter @offscreen/api schema:generate` generates from the offline auth configuration: review the output and preserve that additional constraint before generating SQL with `pnpm --filter @offscreen/db generate --name <description>`. `pnpm db:migrate` uses the separate locked migration runner. Applied migration files must remain immutable. The wrapper does not add checksum-drift detection beyond Drizzle's bookkeeping. SQL under `packages/db/test/fixtures` remains a disposable test fixture.
 
 Run database tests against a dedicated database named **offscreen_db_test**, separate from `offscreen`. With Compose running, create it once:
 
@@ -78,4 +82,14 @@ On macOS/Linux, prefix `pnpm test:db` with `DATABASE_TEST_URL='postgresql://offs
 
 The suite checks migration reruns and contention, failed-DDL rollback, transaction rollback on a constraint error, statement cancellation, pool exhaustion/recovery, idle-connection failure/reconnection and repeatable shutdown. It does not yet prove OAuth persistence, story isolation or workflow recovery.
 
-Next: integrate identity/sessions and their reviewed schema, then build the smallest persisted story flow. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.
+## Identity checks
+
+`pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
+
+Test-only library helpers seed sessions; no test login routes, passwords or identity bypasses exist in the application. Tests exercise migrations, proxy/cookie forwarding, anonymous redirects, private rendering, OAuth initiation, external redirect rejection, invalid callback state, logout/revocation and expiry. They do not complete a real GitHub token exchange. A live OAuth app and a manual browser sign-in are still required to verify that external integration.
+
+Sessions live in PostgreSQL for seven days and are eligible for renewal after one day. Cookie caching is disabled so revoked sessions stop authorizing immediately. OAuth tokens are encrypted by Better Auth. Automatic account linking is disabled. Auth routes use the library's Node handler before Nest's JSON parser; the API is ESM as required by that integration.
+
+Auth rate limits use the database. A server-written client-IP header prevents callers supplying their own rate-limit key; behind the current local Next proxy, requests share the proxy's address. Before public hosting, configure trusted ingress/client-IP forwarding, request size/time limits and operational error reporting. Library error logging is disabled to avoid leaking credentials; current process logs are deliberately minimal. Invitations, SSE authorization and story membership are not implemented by this identity slice.
+
+Next: validate live GitHub sign-in when credentials are configured, then build the smallest persisted story draft. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.

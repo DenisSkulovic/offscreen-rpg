@@ -61,3 +61,31 @@ jobs:
       - run: pnpm test:db
         env:
           DATABASE_TEST_URL: postgresql://offscreen:local-test-only@127.0.0.1:5432/offscreen_db_test
+  identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.11-bookworm
+        env:
+          POSTGRES_USER: offscreen
+          POSTGRES_PASSWORD: local-test-only
+          POSTGRES_DB: offscreen_auth_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U offscreen -d offscreen_auth_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:auth
+        env:
+          DATABASE_TEST_URL: postgresql://offscreen:local-test-only@127.0.0.1:5432/offscreen_auth_test

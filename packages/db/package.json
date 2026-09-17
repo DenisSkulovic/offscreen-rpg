@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./schema": {
+      "types": "./dist/src/schema/auth.d.ts",
+      "default": "./dist/src/schema/auth.js"
+    },
     ".": {
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
@@ -13,6 +17,8 @@
     }
   },
   "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "node --env-file-if-exists=../../.env dist/src/migrate-cli.js",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "node --test dist/test/config.test.js",
@@ -27,6 +33,7 @@
     "@offscreen/config": "workspace:*",
     "@types/node": "22.20.3",
     "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.10",
     "typescript": "5.9.3"
   }
 }

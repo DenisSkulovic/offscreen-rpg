@@ -6,7 +6,7 @@ Create a character in a world of your choosing. Follow their ordinary life, step
 
 An LLM storyteller creates scenes, remembers connections and introduces developments. The browser presents the current scene and story; a messaging integration could bring occasional updates and choices to your phone.
 
-**The initial TypeScript workspace and web/API shells run locally. No playable build yet.** See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
+**The web/API foundation now includes PostgreSQL and GitHub sign-in code. No playable build yet.** Running sign-in requires your own OAuth credentials. See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
 
 - [Vision](docs/vision.md): the experience and why we're making it.
 - [Gameplay](docs/gameplay.md): how the story could progress with little simulation.

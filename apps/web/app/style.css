@@ -30,6 +30,30 @@ p {
   font-family: system-ui, sans-serif;
   font-size: 0.85rem;
 }
+
+button,
+.button {
+  display: inline-block;
+  padding: 0.8rem 1.3rem;
+  border: 1px solid #d7b87c;
+  border-radius: 0.35rem;
+  background: #d7b87c;
+  color: #121b22;
+  font:
+    600 1rem system-ui,
+    sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
 .eyebrow {
   letter-spacing: 0.18em;
   text-transform: uppercase;

@@ -1,10 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createApp } from '../src/app';
-import { readConfig } from '../src/config';
+import { createApp } from '../src/app.js';
+import { readConfig } from '../src/config.js';
+import { createDatabase, readDatabaseConfig } from '@offscreen/db';
+import { createAuth } from '../src/auth/auth.js';
 
 test('API binds a real HTTP listener and closes cleanly', async () => {
-  const app = await createApp();
+  const database = createDatabase(
+    readDatabaseConfig({
+      DATABASE_URL: 'postgresql://localhost/bootstrap_unused',
+    }),
+    () => {},
+  );
+  const auth = createAuth(database, {
+    origin: 'http://localhost:3000',
+    secret: 'bootstrap-only-placeholder-secret-1234',
+    githubClientId: 'test',
+    githubClientSecret: 'test',
+  });
+  const app = await createApp(database, auth);
   try {
     await app.listen(0, '127.0.0.1');
     const origin = await app.getUrl();

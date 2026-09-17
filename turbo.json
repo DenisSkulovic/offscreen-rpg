@@ -8,9 +8,22 @@
     "typecheck": { "dependsOn": ["^build"], "outputs": [] },
     "test": { "dependsOn": ["build"], "outputs": [] },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true,
-      "env": ["API_HOST", "API_PORT"]
+      "env": [
+        "API_HOST",
+        "API_PORT",
+        "APP_ORIGIN",
+        "BETTER_AUTH_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "DATABASE_URL",
+        "DB_POOL_MAX",
+        "DB_CONNECT_TIMEOUT_MS",
+        "DB_STATEMENT_TIMEOUT_MS",
+        "DB_IDLE_TRANSACTION_TIMEOUT_MS"
+      ]
     }
   }
 }
