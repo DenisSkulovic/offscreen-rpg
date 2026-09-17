@@ -1,0 +1,25 @@
+# Secrets and machine-local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+# Dependencies and generated outputs
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+coverage/
+# Private runtime data and scratch work
+work/
+data/
+saves/
+*.log
