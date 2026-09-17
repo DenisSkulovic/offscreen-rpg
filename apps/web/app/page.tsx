@@ -16,6 +16,9 @@ export default function Home() {
       <Link className="button" href="/stories">
         Enter Offscreen RPG
       </Link>
+      <p>
+        <Link href="/demo">Try a short scripted story →</Link>
+      </p>
       <p className="status">
         In development. The first adventure is still taking shape.
       </p>

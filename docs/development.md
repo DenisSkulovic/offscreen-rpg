@@ -4,6 +4,8 @@ The foundation contains a TypeScript workspace, Next.js web application, NestJS 
 
 ## Requirements and startup
 
+To inspect just the public story prototype, run `pnpm --filter @offscreen/contracts build` and `pnpm --filter @offscreen/web dev` after installing dependencies, then open http://localhost:3000/demo. This route needs neither PostgreSQL nor OAuth credentials. It uses a local authored script and manually advanced demonstration time; state is not saved. The full application startup below still requires its configured dependencies.
+
 Use Node **24.19.0** (also recorded in `.node-version`) and pnpm **11.19.0**. The system's default Node must match before running package scripts. Install the pinned pnpm with `npm install --global pnpm@11.19.0` if necessary.
 
 Install Docker with Compose v2 and start the dependencies below. Copy `.env.example` to `.env` in the repository root. Generate `BETTER_AUTH_SECRET` using the command in that file; supply your own GitHub OAuth app client ID and secret. Set its homepage to `http://localhost:3000` and callback to `http://localhost:3000/api/auth/callback/github`. Keep `.env` private; it is ignored by Git. Use `localhost` consistently in the browser so the configured origin and cookies agree.

@@ -2,6 +2,8 @@
 
 The player follows a character's life through scenes, choices and periods of waiting. Opening the website should feel like returning to a situation, not administering a simulation.
 
+The public `/demo` route is an authored browser prototype of that experience: a quiet interval, choices, immediate consequences, another interval, a conclusion and an inspectable chronology. It needs no sign-in or provider. Demonstration time advances manually; Pause disables interaction until Resume, and refreshing starts over. These controls explore presentation, not the production rules for time or absence. The script is separate from the scene component, and neither defines authoritative gameplay state.
+
 ## Arriving and returning
 
 A new visitor should quickly understand the promise: create a character, choose a storytelling direction, and receive developments over time. A representative scene with a choice can communicate this better than a catalogue of features.

@@ -6,6 +6,8 @@ For implementation work, read docs/technical/architecture.md and the technical d
 
 Read docs/progress.md before selecting the next implementation slice. Build and test the broader application with scripted generation and local/test substitutes; do not connect paid models, media or hosted integrations until the user explicitly chooses to enable them. Do not let an isolated subsystem's polish displace the next missing user flow.
 
+Progress in balanced passes: establish the main component boundaries and representative flows, connect and refine them, then deepen validation and polish together. Keep correctness at persistence/auth boundaries, but avoid exhausting one subsystem's edge cases while other major parts have no implementation. Clearly label prototypes; their example policies do not settle product decisions.
+
 - Keep docs current, concrete and useful. Use enough depth to explain the product; brevity is not the goal. Rewrite or delete obsolete text directly.
 - Derive each slice from its product flow and technical contract. Update those descriptions alongside behavior changes, and replace affected statuses in docs/progress.md. Distinguish tested components from connected user flows; progress is a snapshot, never a log.
 - Do not create decision ledgers, amendment histories, supersession notes, document IDs, review reports, archives or speculative feature catalogues.

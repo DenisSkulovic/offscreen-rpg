@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { chromium } from 'playwright';
+import { checkStoryDemo } from './story-demo.browser.js';
 
 export async function checkDraftBrowser(
   t: TestContext,
@@ -12,6 +13,9 @@ export async function checkDraftBrowser(
     async () => {
       const browser = await chromium.launch();
       try {
+        const visitor = await browser.newPage();
+        await checkStoryDemo(visitor, origin);
+        await visitor.close();
         const context = await browser.newContext();
         await context.addCookies(
           cookie.split(';').map((part) => {

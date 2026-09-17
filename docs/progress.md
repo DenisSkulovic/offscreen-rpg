@@ -18,13 +18,17 @@ This is the current project snapshot. Replace statuses and next steps in place; 
 | Story start, progression and chronology | Not started. | Define the first playable situation/choice contract; commit an opening once and retain subsequent passages. [Gameplay](gameplay.md), [lifecycle](technical/story-lifecycle.md). |
 | Decisions, time and autonomy | Not started. | Select initial agency, pacing, pause and absence rules before encoding them. [Time](time-and-autonomy.md), [questions](questions.md). |
 | Shared play | Not started. | Invitations, membership, authority and shared decisions; first group policy remains open. [Playthrough](playthroughs.md), [identity](technical/client-and-identity.md). |
-| Scene UI, updates and returning | Not started beyond draft screens. | Current scene/choices, reconnect, chronology and return after absence; no SSE yet. [Experience](player-experience.md). |
+| Scene UI, updates and returning | Browser prototype: `/demo` shows scripted scenes, choices, manual waits, pause/resume, endings and chronology without sign-in. | In-memory only; no saved story, elapsed-time processing, reconnect or SSE. Presentation is separate from the demo script. [Experience](player-experience.md). |
 | Continuity and consequences | Not started beyond retaining opening source/result text. | Consequential facts and references, coherent changes across scenes; avoid a population simulator. [Continuity](continuity-and-consequences.md), [data](technical/data.md). |
 | Notifications | Not started. | First channel remains open; test notification intents and stale actions locally before connecting delivery. [Notifications](technical/notifications.md). |
 | AI context, usage limits and quality | Partial design only; opening prompt/schema tests exist. | Context assembly, simulated usage accounting and narrative evaluation fixtures still absent. Real model routing, cache effectiveness and billed costs remain unverified. [Context and cost](technical/context-and-cost.md). |
 | Operations and showcase | Partial: automated code, database, browser and documentation checks; basic health checks. | Complete scripted demo, recovery evidence, operational visibility and setup polish. Hosted deployment, Kubernetes and paid media deferred. [Delivery](technical/delivery-and-validation.md). |
 
 ## Current focus and next checkpoints
+
+Work in balanced passes: establish representative behavior across major components, connect those boundaries, then deepen correctness tests and polish across the system. Prototype policies stay visibly provisional. Persistence and authorization still require meaningful correctness checks at their first implementation; balanced coverage does not justify unsafe shortcuts.
+
+The scene prototype now makes the experience inspectable. The next gap is connecting creation/preview and durable execution to presentation, while defining the smallest shared-play and timing contracts needed for the first complete flow. Do not expand this prototype into a separate client-side game engine.
 
 1. **Connect draft to scripted preview.** Reuse the existing components to request, process, display and reopen a clearly labelled scripted opening. Add only the execution and recovery pieces that this flow needs. Stop short of expanding provider routing, billing or reconciliation machinery.
 2. **Make one story playable without paid services.** Settle the affected product questions, then implement start, scene display, choices, chronology, waits and pause/resume in small connected steps. Include browser reconnect and worker interruption in the acceptance checks. Opening prose alone is not a playable story.

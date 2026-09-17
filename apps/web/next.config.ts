@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const config: NextConfig = {
+  agentRules: false, // Repository instructions are maintained in the root AGENTS.md.
   poweredByHeader: false,
   async rewrites() {
     return [
