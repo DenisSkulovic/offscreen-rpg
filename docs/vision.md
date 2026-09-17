@@ -4,7 +4,7 @@ Offscreen RPG is a story that unfolds over time. You create a character, become 
 
 The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first playable target includes a small group in a common storyline. Shared decision and pause rules still need to be settled before implementing that behavior.
 
-Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Explicit pause stops progression.
+Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Where the campaign permits pause, an authorized pause stops progression within its declared scope.
 
 ## The storyteller
 
@@ -28,8 +28,14 @@ Create an account, start a story from a premise, select basic storytelling and p
 
 This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
 
+## Larger shared worlds
+
+Thousands of players across independent stories, and eventually a world with roughly a hundred participants, are future design ambitions. They are not demonstrated capacity or requirements for the first release. Solo play and a small cooperative party come first. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
+
 ## Why build it
 
 This is both a game we want to play and a senior fullstack portfolio project. A small, convincing experience should demonstrate thoughtful abstraction, persistent state, background execution, model orchestration, context management and cost control.
+
+The delivery goal is a hosted, playable link from a CV or portfolio. A visitor should quickly experience a scene, make a meaningful choice and see persistent offscreen progression; inspecting GitHub is optional. Provide a short demonstration path without making the visitor wait ten minutes for their first interesting result. Keep longer real-time play available separately. A bounded sponsored AI trial is a later target, with an illustrative allowance around $2 rather than a settled entitlement or authorization to spend.
 
 The first proof of concept should let us create a character, experience ordinary life, encounter a development, intervene or let the character choose, and return to a coherent continuation. That gives us something real to play before expanding it.

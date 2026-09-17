@@ -38,11 +38,13 @@ Running a story while the browser is closed is part of the target experience. Or
 
 ## Pause and resume
 
-Explicit pause stops progression and decision countdowns. Resume preserves the situation and gives players the remaining opportunity to respond; paused time must not count as missed decisions. A generation already in progress must not publish a consequence that advances a paused story.
+When permitted, explicit pause stops progression and decision countdowns within its declared scope. Resume preserves the situation and gives players the remaining opportunity to respond; paused time must not count as missed decisions. A generation already in progress must not publish a consequence that advances a paused story.
 
 Show when a pause request is still being processed. Distinguish manual pause from a story held because generation failed, allowance ran out or no permitted default exists. Fixing a system problem must not silently undo the player's pause. A retry should continue the unresolved situation, not repeat an outcome that already happened.
 
-For shared stories, the authority to pause the whole group and the handling of individual unavailability remain open. A single browser disconnect should not implicitly pause everyone. These rules should be visible to participants rather than hidden in technical behavior.
+A solo story can grant pause to its player. A small cooperative party may share a pause policy, but host authority versus group agreement remains an open choice. A larger shared world should normally continue despite one participant being unavailable; leaving the browser is not a request to freeze everyone. Offer supported intentions/defaults or another declared absence policy instead of silently granting invulnerability to an unavailable character.
+
+Keep pause authority, response-window duration, whether that window holds fiction, and permitted defaults separate. Do not derive all four from player count or one multiplayer flag. A campaign exposes a supported combination at entry; arbitrary combinations are not necessarily coherent. A scene hold cannot freeze a shared object for some participants while others continue changing it without an explicit interaction rule. Changing policy must not retroactively shorten an already published response opportunity. Large-world local holds and simultaneous scenes remain outside the first release.
 
 ## Notifications and reliability
 

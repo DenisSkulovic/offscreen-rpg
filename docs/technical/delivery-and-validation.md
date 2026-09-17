@@ -32,6 +32,14 @@ Local access is part of the delivery task. Use configured GitHub sign-in for the
 
 Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See the [remaining implementation slices](../progress.md#remaining-work-to-reach-it) for current status.
 
+## Playable portfolio release
+
+The primary showcase is a link a recruiter can open and play. Offer a short authored entry that demonstrates a meaningful choice, a brief wait and a saved consequence, with an easy route into longer play. Explain scripted versus AI-generated content honestly. Do not require visitors to clone the repository, configure OAuth or bring a model key. Choose a low-friction visitor identity/access policy before public release; a public authentication bypass is not that policy.
+
+Keep the scripted path usable when sponsored AI allowance is exhausted. A future developer-funded trial may allocate roughly $2 per eligible visitor, but the amount, eligibility and expiry remain product choices. Before paid public access, implement transactional reservations, account/story concurrency limits, an aggregate site budget and an operator stop control. Multiple accounts or concurrent stories must not imply unlimited sponsorship. Test allowance exhaustion and recovery using simulated charges first. Browser-provided budgets never authorize spending, and pausing or reading a story must not require new credit.
+
+Public delivery requires a deployed acceptance test on phone and desktop: open the link, enter the experience, choose, leave, return and find the same state. Measure time to first meaningful interaction. Include clear pending/error states, ownership isolation, basic admission limits and cleanup/retention for trial accounts. Hosting, notifications and model spend need separate operating envelopes. Deployment and paid services remain deferred until explicitly enabled; the existing local chamber is not yet this release.
+
 ## First hosted deployment
 
 Use one region with containerized web, API and Temporal workers plus managed application PostgreSQL. Prefer Temporal Cloud for the first hosted release if its measured cost fits the project budget; we still run our own application workers. Confirm current pricing, retention and connectivity before provisioning. Self-hosting Temporal is an alternative only with an explicit plan for its persistence, upgrades, security and recovery. A development server or casual Compose setup is not the production service. [Temporal deployment](https://docs.temporal.io/self-hosted-guide/deployment).
