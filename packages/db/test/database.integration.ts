@@ -129,9 +129,15 @@ test('PostgreSQL persistence component', async (t) => {
           (error) => backgroundErrors.push(error),
         );
         try {
-          await assert.rejects(limited.db.execute(sql`SELECT pg_sleep(1)`), {
-            cause: { code: '57014' },
-          });
+          await assert.rejects(
+            limited.db.execute(sql`SELECT pg_sleep(1)`),
+            (error: unknown) => {
+              assert.ok(error instanceof Error);
+              assert.ok(error.cause instanceof Error && 'code' in error.cause);
+              assert.equal(error.cause.code, '57014');
+              return true;
+            },
+          );
           await limited.checkConnection();
         } finally {
           await limited.close();
