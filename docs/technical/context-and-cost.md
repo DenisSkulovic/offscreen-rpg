@@ -17,6 +17,8 @@ Allocate a token budget to these sections and reserve output capacity. Required 
 
 The player and model may see different information. Server-only prepared futures can inform the storyteller without entering browser snapshots, notifications or public traces. Context retrieval must always be story-scoped and respect intended visibility.
 
+The context manifest references one immutable base snapshot and a frozen decision/settings version. Retrieval tools either read facts from that version or detect that it is stale and stop; they must not quietly mix the old situation with a new inventory. Read snapshots in a short transaction, persist the artifact, then release database resources before inference. Input/result artifacts remain available for unfinished and retryable workflows; their cleanup policy is not simply the telemetry retention period.
+
 Start retrieval with explicit entity references, chronology windows, unresolved threads and PostgreSQL text search. Introduce embeddings/pgvector only after examples show that semantic retrieval finds important memories those methods miss. A vector result is a candidate memory, not proof of a fact. No separate vector service is needed initially.
 
 ## Summaries without losing the story
@@ -51,6 +53,10 @@ Budget availability is `limit - settled usage - outstanding reservations`. Concu
 
 Reserve each attempt, or an operation envelope covering all permitted attempts, before it begins. Retries, repair, summarization, images and discarded results count. Free users still consume a developer-funded allowance; “free tier” is an entitlement, not free infrastructure.
 
+For development, use an explicit developer-funded account with per-story and global caps; this does not decide future commercial billing. Every operation pins its funding account and allowance period. Changing a story's owner, tier or preferences cannot silently move an already dispatched charge. Settle an attempt exactly once against its reservation, retain uncertain reservations across period boundaries and prevent a period reset from creating duplicate credit. Do not expire reservations merely because an Activity timed out.
+
+When allowance is unavailable, expose a generation blocker and permitted recovery action as specified in [story lifecycle](story-lifecycle.md). Reading, pausing and seeing why a story stopped remain available. A budget increase is not an instruction to rerun a previously committed resolution or clear a manual pause.
+
 An HTTP timeout can leave the provider request running and billable. Do not release its reservation immediately and send another call blindly. Mark usage uncertain, retain a conservative reservation, reconcile through provider identifiers where available and allow manual/operator resolution. Cancellation is best effort; it cannot promise zero charge.
 
 Temporal replay can reuse a recorded Activity result, but an unacknowledged Activity can retry. Its first step must inspect the persisted attempt and reservation. Bound total provider attempts across Temporal retries, SDK retries and model repair; no individual layer may create a fresh allowance. Returning artifact references rather than full prompts/results also limits workflow-history storage and exposure.
@@ -69,6 +75,8 @@ The following prices are invented arithmetic inputs, not quotes for any model. A
 At two calls per day, a seven-day unattended period would cost $0.084 in this simplified example. At one call every five minutes, it becomes 2,016 calls and $12.096. Neither includes setup, retries, tools, summaries, images, gateway fees or hosting. Model choice matters, but generation frequency can overwhelm a cheap token price.
 
 This also exposes the product tradeoff: frequent novel unattended developments and extremely low spending may conflict. Settings should constrain narrative frequency and spending independently. Faster fictional time need not automatically mean proportionally more narrated moments. If a story runs out of valid prepared material and budget, hold it with a clear reason rather than claim a logic-only engine can invent an equivalent continuation.
+
+Bound consecutive immediate autonomous transitions as well as provider calls. Even prepared zero-cost outcomes must not form an unbounded loop that consumes Temporal tasks or generates notification spam. Measure workflow actions/history, database/worker hosting, storage and delivery alongside model usage. The token envelope above is not the full cost of keeping a hosted story available for a week.
 
 ## Prompts and experiments
 

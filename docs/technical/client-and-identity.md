@@ -30,6 +30,10 @@ Session validation and story authorization are separate. Every command and snaps
 
 Invitations use expiring, revocable random tokens stored hashed. Redemption requires a signed-in user and occurs atomically against capacity and invitation state. Never auto-link accounts just because an untrusted provider returns a matching email. Notification channel account linking is a separate flow from signing in.
 
+Preserve a safe internal return destination through sign-in: a pending invitation or the story opened from a notification. Do not accept arbitrary redirect URLs. Keep invitation secrets out of provider redirect parameters, telemetry and referrers; use an opaque server-side pending reference where needed. After authentication, recheck invite expiry, roster capacity and current access before redemption. The same user redeeming twice should reach the existing membership rather than consume another slot.
+
+An expired session during a choice sends the user through sign-in and back to the current scene. Never automatically submit the old choice after login; its deadline or meaning may have changed. Keep unsent text as a local draft only where appropriate. Clearing an expired session is different from leaving the shared story.
+
 Apply account and IP rate limits to account entry, story creation and expensive commands, with stronger per-story/funding limits before inference. Bound submitted text and payload size. OAuth proves a provider identity; it does not make unlimited free generation safe to fund. The demo needs a global allowance even before commercial tiers exist.
 
 ## HTTP commands and SSE updates
@@ -38,13 +42,17 @@ Use a small REST API with shared runtime schemas and generated/documented HTTP c
 
 For example, `POST /api/stories/:storyId/decisions/:decisionId/intents` carries `characterId`, `optionId` (or permitted text), `decisionVersion` and `submissionVersion`, with an idempotency header. The server returns an operation/submission reference and current decision version. Use explicit error codes for expired choice, stale version, forbidden actor and exhausted allowance so the UI can explain the actual problem. Transport errors alone do not tell a client whether its command committed; retry using the same key or read the operation status.
 
+The minimal HTTP surface must also cover saving a versioned draft, requesting/reading preview generation, starting a reviewed candidate, reading a command receipt, updating reading progress and registering/revoking a device subscription. Each mutation declares whether it is a synchronous database edit or an asynchronous receipt; do not make the frontend infer this from a spinner. The [lifecycle contract](story-lifecycle.md) governs draft/start and recovery operations.
+
 Updates use SSE because the server mainly tells browsers that a committed revision or decision status changed. The browser still sends commands through ordinary authenticated HTTP. EventSource supports event IDs and reconnection, but durable replay is our responsibility. [MDN SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 
-Publish small authorized update envelopes with story ID, public revision/cursor and change kind. Do not send hidden plans, full model traces or raw database rows. On receipt, update or refetch the snapshot. Order by server revision, ignore duplicates and never replace a newer snapshot with an older HTTP response.
+Publish small authorized update envelopes with story ID, `viewVersion` and change kind. Do not send hidden plans, full model traces or raw database rows. On receipt, update or refetch the snapshot. Order by that visible-state version, not narrative revision, and never replace a newer snapshot with an older HTTP response. An unchanged narrative can still have newly ready players, a completed pause or an image available.
 
 A transport update such as `story.changed` or `decision.changed` is a notice about committed application data. It is different from a fictional event in the narration, a Temporal Signal or an Activity invocation. Give each payload a schema version and stable identifier; do not expose workflow internals as the public API merely because both are called events.
 
-On reconnect, either replay authorized retained updates from a cursor or return a fresh snapshot when history is unavailable. Subscribe before taking the snapshot and buffer subsequent updates, or use an equivalent watermark protocol to avoid missing a change between the read and subscription. Periodic lightweight revision checks repair missed live signals.
+For the first version, reconnect by fetching a fresh authorized snapshot; do not require a separate durable SSE event history. Establish the stream before the snapshot read and buffer subsequent invalidation hints, then refetch if any have a newer view version. Periodic lightweight version checks repair missed live signals. SSE event IDs can indicate a gap, but are not a promise to replay every message.
+
+The snapshot includes the visible situation, lifecycle/control state, current decision/interval, server time, timing projections, pending receipts visible to that member and allowed actions with reasons when unavailable. Read these coherently in one short transaction or use an equivalent version-checked read. The UI estimates countdowns from server time and resynchronizes; the displayed zero is never the authority for accepting a command. Revalidate actions on the server even if they were shown moments ago.
 
 Initially use PostgreSQL LISTEN/NOTIFY for compact live-change hints between Activity workers and API instances. Issue the notification with the state transaction so it becomes visible after commit. Each API listener uses a dedicated connection and authorizes which connected clients may receive the resulting update. Send IDs/revisions, not private narrative content. Monitor listener health and notification backlog; long listener transactions must not obstruct delivery. [PostgreSQL NOTIFY](https://www.postgresql.org/docs/current/sql-notify.html).
 
@@ -63,3 +71,17 @@ An intent submission should carry the decision version and actor's submission ve
 Owner-controlled start/pause/resume is a simple initial proposal, not an established requirement. Individual notification preferences remain personal. Do not silently grant a paid user control over another person's character. Likewise, group model quality and spend should be selected for the story, not vary according to who clicked last.
 
 Before implementing resolution, settle whether players can see unsealed intentions, whether everyone must explicitly ready, and how conflicting intentions are adjudicated. None requires a network lockstep game engine. All require explicit product behavior and the transactional execution described in [execution](execution.md).
+
+## Returning and reading the story
+
+Persist a member's last displayed chronology sequence, updated monotonically across devices. Opening a push notification is not proof the new passage was read, and loading a story list must not mark all its stories read. When the current scene/recap is actually displayed, acknowledge the appropriate sequence. Browser cache keys include the viewer and are cleared on logout/account switch.
+
+On return, show the current situation immediately with recent committed entries or an existing recap. If a richer recap needs inference, generate it separately with a budget; it must not delay a currently available decision. Bind each recap to its source range and viewer. If the story advances during generation, label the recap's coverage and show newer entries rather than pretending it includes them.
+
+Chronology pagination uses stable sequence cursors and a captured upper bound for a reading session, so new passages do not cause duplicate/missing pages. Old choices render as history. A bookmark into a deleted or inaccessible story gives an access-appropriate message without exposing the former content.
+
+## Scene media
+
+An illustration is an asynchronous presentation artifact, not part of deciding whether the story advances. Bind its operation and attachment to a scene/candidate identity plus an expected presentation revision. A delayed mountain image may attach to its historical passage but must not overwrite the current apple scene. Publishing the attachment increments the view version without invalidating narrative generation.
+
+Use private object storage for generated story media, accessed through an authorized endpoint or short-lived URLs. Do not put permanent public URLs into private snapshots and call the story private. A failed image leaves a readable text scene. No arbitrary uploads or model-supplied remote image fetches are needed for the first slice.

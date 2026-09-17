@@ -90,11 +90,27 @@ Redis is optional for measured cache, distributed rate-limit or live fan-out nee
 | New scene reaching connected browsers | SSE, snapshots and lightweight live-change hints. |
 | A local module informing another module | A direct application call unless durable decoupling is actually needed. |
 
-BullMQ is not included: these needs do not require a second queue system. Temporal Task Queues already dispatch workflow and Activity work; they are not browser broadcasts. Keep that distinction explicit instead of treating everything called an event as the same transport problem.
+The initial workloads do not justify a separate event broker. Temporal Task Queues dispatch workflow and Activity work; they are not general application publish/subscribe. If several independently operated consumers need durable delivery of the same application fact, evaluate a broker such as RabbitMQ. Keep the outbox relay narrow; do not grow subscriber routing, per-subscriber backlogs and dead-letter administration into a homemade broker.
+
+## User-flow contracts
+
+| Player flow | Defining technical contract |
+| --- | --- |
+| Sign in or follow an invitation | [Client and identity](client-and-identity.md): return destination, session, redemption and access. |
+| Edit, generate, review and start | [Story lifecycle](story-lifecycle.md): draft/candidate revisions and one live initialization. |
+| Choose, wait, interrupt, pause or resume | [Execution](execution.md): command admission, timers, resolution and commit fences. |
+| Interpret a choice and prepare what follows | [Storyteller runtime](storyteller-runtime.md): proposal boundaries and conditional publication. |
+| Leave and return on another device | [Client and identity](client-and-identity.md): current snapshot, read progress and recap. |
+| Hear about a decision away from the browser | [Notifications](notifications.md): subscription ownership, delivery and expiry. |
+| Reach a limit, lose a participant or finish | [Story lifecycle](story-lifecycle.md): holds, access changes and terminal states. |
+| Keep memories and spending coherent | [Data](data.md) and [context and cost](context-and-cost.md). |
+
+These contracts are enough to build the first integrated slice. They are not proof of implementation correctness or evidence that open play policies have been decided. Group input, autonomy, pace and funding choices must be selected before implementing the affected resolution rules.
 
 ## Where to go deeper
 
 - [Data](data.md): durable records, constraints and flexible content.
+- [Story lifecycle](story-lifecycle.md): draft, preview, start, holds, membership and completion.
 - [Execution](execution.md): time, scheduling, races and recovery.
 - [Client and identity](client-and-identity.md): frontend, auth, transport and shared play.
 - [Storyteller runtime](storyteller-runtime.md): model routing, tools and bounded workflows.

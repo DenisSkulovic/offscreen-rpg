@@ -22,6 +22,8 @@ Running a story while the browser is closed is part of the target experience. Or
 
 Explicit pause stops progression and decision countdowns. Resume preserves the situation and gives players the remaining opportunity to respond; paused time must not count as missed decisions. A generation already in progress must not publish a consequence that advances a paused story.
 
+Show when a pause request is still being processed. Distinguish manual pause from a story held because generation failed, allowance ran out or no permitted default exists. Fixing a system problem must not silently undo the player's pause. A retry should continue the unresolved situation, not repeat an outcome that already happened.
+
 For shared stories, the authority to pause the whole group and the handling of individual unavailability remain open. A single browser disconnect should not implicitly pause everyone. These rules should be visible to participants rather than hidden in technical behavior.
 
 ## Notifications and reliability

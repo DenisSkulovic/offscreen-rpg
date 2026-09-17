@@ -22,6 +22,8 @@ Pace and availability also matter: how long someone expects to wait, whether una
 
 Present a concise preview: premise, characters, storytelling direction, pace and unattended behavior, followed by the opening situation. Allow corrections to a misunderstanding without requiring an entirely new world. Changes that require regeneration should be explicit rather than triggered on every keystroke.
 
+If someone changes their character or the shared setup, make clear when the preview no longer matches. Starting must use the opening the participants actually reviewed. Returning after closing the page should recover the saved draft and any completed preview, without charging for a fresh generation automatically.
+
 Creating an opening and starting its real-time progression are different user actions. The story must not begin consuming response windows while the creator is still reviewing setup or waiting for a friend. Show useful progress during generation and allow recovery from failure without duplicate stories or duplicate spending.
 
 ## First playable scope

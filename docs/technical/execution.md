@@ -4,7 +4,7 @@ Temporal owns the durable control flow: waiting, waking, coordinating inputs and
 
 ## One workflow per story
 
-Use a stable Workflow ID derived from the story ID. Its execution chain coordinates that story's current interval, open decision, pause state and generation operation. It holds compact control state and references, not the entire narrative or model context. Creation can use a separate bounded workflow to produce the preview; starting live progression is an explicit command.
+Use a stable Workflow ID derived from the story ID. Its execution chain coordinates that story's current interval, open decision, pause state and generation operation. It holds compact control state and references, not the entire narrative or model context. [Story lifecycle](story-lifecycle.md) defines the separate draft-generation operations and frozen start command; a generic wake-up message cannot initialize a live story.
 
 Workflow code uses deterministic TypeScript and Temporal primitives. Database reads/writes, model requests and notification sends execute as Activities. A recorded Activity result is reused on replay; an Activity whose completion was not recorded may run again. Consequently, database effects and external requests still need idempotency and explicit retry policies. [Temporal Activities](https://docs.temporal.io/develop/typescript/activities).
 
@@ -20,18 +20,22 @@ Deadline timestamps in PostgreSQL support the UI and command admission. They are
 
 1. The API validates session, membership, character control and request shape. Look up an authorized prior receipt before applying new-command version/deadline checks, so retrying an accepted command after expiry still returns its receipt. Under a short story/decision lock, check eligibility and persist a new command receipt with a per-story sequence plus an outbox notice. Scope idempotency keys by actor, story and operation; reject reuse with different content.
 2. Return `202` with a receipt ID and pending status. This means the request was durably received, not that its fictional consequence or pause has completed. Clients observe the receipt/current snapshot for the result.
-3. A small outbox relay starts the workflow with its stable ID or signals the running workflow that commands are available. Retry uncertain delivery with the same application message ID. Mark delivery only after Temporal acknowledges it. The relay moves messages across the PostgreSQL/Temporal boundary; it never executes game timers or story logic.
-4. A signal handler wakes the workflow's serialized command processor. An Activity reads pending commands in sequence and applies or rejects them against current permissions/state. Record each processed receipt and its result transactionally. Duplicate or out-of-order wake-up signals do not reorder the stored commands.
+3. A small outbox relay handles typed messages: a start notice starts the designated operation, while a command notice signals an existing live workflow. Retry uncertain delivery with the same application message ID. Mark delivery only after Temporal acknowledges it or the command is proven already processed. The relay moves messages across the PostgreSQL/Temporal boundary; it never executes game timers or story logic.
+4. A signal handler records the highest notified command sequence and wakes the workflow's serialized command processor. An Activity reads pending commands in sequence and applies or rejects them against current permissions/state. Record each processed receipt and its result transactionally. Drain again if a newer sequence was signalled while the Activity ran. Duplicate/out-of-order notices neither reorder commands nor lose a wake-up between an empty read and waiting.
 
 Signals are asynchronous notices; Temporal Updates can provide a processed response, while Queries read workflow state. The first API uses persisted command receipts plus Signals so reception survives a Temporal outage. Do not equate a signal acknowledgement with successful command execution. Updates can be introduced for a specific interaction if they simplify its response contract. [Workflow messages](https://docs.temporal.io/develop/typescript/workflows/message-passing).
 
-The relay claims bounded outbox batches with short leases and releases database locks before network I/O. Polling an unpublished-message index is sufficient; no queue product is needed for that bridge. Check workflow existence/health when delivery fails, and surface unexpectedly closed or failed executions instead of silently starting the same story from scratch. Define Workflow ID conflict/reuse policy explicitly at implementation.
+The relay claims bounded outbox batches with short leases and releases database locks before network I/O. Polling an unpublished-message index is sufficient; no queue product is needed for that bridge. A duplicate start locates the existing execution/result; prohibit reuse of a finished live story ID. Do not use a generic signal-with-start path for ordinary commands. If a workflow is unexpectedly closed, keep unprocessed receipts visible for controlled recovery; if the domain operation is already terminal, settle obsolete notices without restarting it. Temporal distinguishes stable Workflow IDs from individual Run IDs; target the execution chain and retain application deduplication across runs. [Workflow IDs](https://docs.temporal.io/workflow-execution/workflowid-runid).
 
 ## From decision to consequence
 
 When enough participants are ready or the timer fires, a sealing Activity drains eligible admitted commands and freezes the accepted intentions/defaults in one transaction. Store a stable resolution ID. The workflow then invokes bounded context/generation Activities outside the transaction, followed by a commit Activity.
 
+If any required missing intent has no permitted fallback, do not invent one or seal a supposedly complete input. Record a blocker and preserve the decision for explicit intervention. Recovery reissues a fresh decision version/window as described in [story lifecycle](story-lifecycle.md), rather than accepting expired buttons. Once sealed, retry the same frozen resolution; a separately authorized change must cancel/fence it before replacing its input.
+
 Commit validates the expected narrative revision, resolution identity, lifecycle, permissions and control epoch. It applies the outcome, chronology and delivery intents atomically, returning references and the next interval/decision timing. A unique causation key prevents a retry from applying the same result twice. PostgreSQL row locks protect short conflicting commits, not the duration of inference. [PostgreSQL locking](https://www.postgresql.org/docs/current/explicit-locking.html).
+
+Admission of a disruptive command fences old work immediately. Until all admitted disruptive commands through the current control epoch have been applied or rejected, no new generation may capture that epoch and commit around those pending controls. Keep an applied-control epoch or equivalent pending-command check. Otherwise a fresh attempt could load the new epoch before the pause itself has been processed and incorrectly advance the story.
 
 Async workflow handlers can interleave across awaits. They should enqueue/wake rather than independently launch competing story transitions. Keep one normal resolution path per story, with an explicit control path to process pause/invalidation during a long Activity. Cancellation is best effort; the database commit fence remains decisive if the provider or Activity finishes late.
 
@@ -42,6 +46,16 @@ Recommended admission rule: the API accepts a decision submission into the durab
 All receipt admission and sealing use the same story/decision lock order. Once sealed, new submissions are rejected. The configured group policy determines early sealing, editable intentions and permitted defaults; Temporal does not choose those game rules.
 
 The sealing Activity must drain commands through a transactionally captured sequence boundary, including earlier control commands, rather than trust which Signal arrived first. If a pre-deadline input reached PostgreSQL during a worker outage, recovery still includes it. A click whose request arrives after the cutoff is expired even if the phone's countdown was delayed.
+
+Keep the set of eligible characters and the fallback policy version on the published decision. An actor's duplicate or edited submission uses that decision and their own submission version. Roster/access changes trigger explicit invalidation or a hold; do not silently shrink the eligible set to force early resolution. Decide whether the group can see draft intentions and how readiness works before implementing that policy.
+
+## Publishing a prepared continuation
+
+Store a prepared passage/effect packet separately from current truth, bound to its interval, post-commit base revision, policy versions and activation conditions. At the timer boundary, an Activity validates those preconditions, applies that packet and publishes its decision/next interval exactly once. If it offers a decision, compute its response deadline at publication; do not embed an already ageing deadline during preparation.
+
+A valid packet needs no further model call. An invalid packet is discarded and replaced through the bounded generation path or held if no allowance exists. Do not move its narrative effects into the present merely because generation finished early. The detailed proposal boundary is in [storyteller runtime](storyteller-runtime.md).
+
+Quiet intervals store a fictional duration and code-selected real duration under a pacing-policy version. Any displayed interpolation is an estimate, not proof of arrival. On interruption, commit elapsed fictional time once under the selected policy, bounded by the interval's total; pause excludes paused real time. Calendar labels can remain prose. The concrete pace mapping and elapsed-time rule need selection before timer behavior ships; infrastructure latency must not accidentally choose them.
 
 ## Pause, resume and changed intentions
 

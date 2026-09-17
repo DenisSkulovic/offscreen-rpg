@@ -52,20 +52,34 @@ Temporal test time does not advance PostgreSQL's wall clock. For workflow-only t
 
 | Scenario | Evidence required |
 | --- | --- |
+| OAuth interrupted while following an invitation | Safe return to the invite; expiry/capacity rechecked; no duplicate membership. |
+| Friend edits a character while a preview is generating | Old candidate cannot become the live opening; its actual usage remains recorded. |
+| Start clicked twice or retried after initialization commit | One frozen candidate, one opening and one live workflow chain. |
 | Double-click/retried command | One accepted intent and one committed effect. |
 | Two players plus deadline | Deterministic sealing of valid submissions; one coherent outcome. |
 | Pause during inference | Result cannot advance a paused story; resume preserves remaining time. |
+| New generation races a received but unapplied pause | Pending control fence blocks it until the command settles. |
 | Companion changes apple location | Old prepared continuation is rejected; billed attempt remains accounted for. |
 | Worker dies after database commit, before Activity completion is recorded | Retry returns existing outcome rather than applying it again. |
 | Command receipt commits while Temporal is unavailable | Outbox delivery eventually wakes the workflow; pre-deadline admission is preserved. |
 | Worker restarts during a long timer | Workflow replays and continues without recreating the wait or calling the model again. |
 | Continue-As-New with pending inputs | Commands remain ordered and deduplicated across runs. |
+| Signal arrives during inbox drain or an old notice targets a finished story | No lost wake-up and no accidental restart. |
 | New workflow build meets an existing history | Replay is compatible or the prior worker version remains available. |
 | Model timeout with unknown billing | Reservation remains conservative; no uncontrolled retry cascade. |
 | Concurrent budget requests | Aggregate reservations never exceed the application's available allowance. |
+| Budget period changes while usage is uncertain | Existing reservation remains accounted for; no automatic duplicate credit. |
+| Provider/allowance recovers while manually paused | Blocker recovery does not resume a player's paused story. |
+| Deadline expires with no permitted fallback | Story holds, then explicit recovery provides a valid fresh decision; old buttons remain expired. |
 | Out-of-order browser responses/reconnect | UI converges on the latest authorized revision. |
+| Readiness, pause or image changes without new narration | View version advances and clients see the change. |
+| Return on a second device while a recap generates | Current decision stays available; read cursor is monotonic and recap coverage explicit. |
 | Membership revoked | HTTP, SSE and integration actions cease granting story access. |
+| Shared browser switches accounts or story pauses before push send | Old account/deadline does not receive a newly generated actionable notification. |
+| Story finishes or is deleted while media/generation completes | Late work cannot advance/recreate the story or replace the current scene. |
 | Provider sends invalid references or negative resources | Rejected or bounded repair, never partially committed. |
+
+These are implementation acceptance cases, not tests already written or passed. Documentation/link checks only validate the documents. Prove the fake-provider slice against the lifecycle and race cases before claiming durable gameplay; live model evaluations then test a different property, narrative quality.
 
 AI evaluations complement these tests. Maintain a small set of story fixtures spanning tone, unusual characters, long-range callbacks, player agency and shared consequences. Human review checks whether options are meaningful and narration coherent. Repeatable fixtures make model/prompt comparisons possible without claiming deterministic prose.
 
@@ -73,8 +87,8 @@ CI should run formatting/linting, type checks, contract/policy tests, relevant i
 
 ## Implementation order
 
-1. **Prove integration seams:** scaffold the workspace, verify OAuth/session handling with Nest/Next, same-origin SSE and phone notification feasibility. Select shared decision/pause defaults and the first phone channel. These small checks can prevent expensive architectural rework.
-2. **Build a fake-provider vertical slice:** create/invite/start, show the scene, submit intentions, resolve a timed choice, pause/resume and reconnect. Use PostgreSQL receipts/outbox, one story workflow and idempotent Activities. Prove worker restart and duplicate-message handling before adding paid calls.
+1. **Prove integration seams:** scaffold the workspace, verify OAuth/session handling including invite return, same-origin SSE and phone notification feasibility. Select shared decision/pause defaults, the pace/deadline rule and the first phone channel. These small checks can prevent expensive architectural rework.
+2. **Build a fake-provider vertical slice:** edit a draft, invite, generate/review a candidate, start once, show the scene, submit intentions, publish a prepared interruption, resolve a timed choice, pause/resume and reconnect. Use PostgreSQL receipts/outbox, one story workflow and idempotent Activities. Prove worker restart, stale-candidate rejection and duplicate-message handling before adding paid calls.
 3. **Add real bounded generation:** premise to preview, structured continuation, relevant context, cost reservation and traces. Keep model/tool steps in TypeScript Activities and verify ambiguous-call recovery; add no second agent orchestration engine without an actual need.
 4. **Make absence convincing:** phone updates, fallbacks, recap, restart recovery and measured quiet-versus-active costs. Demonstrate a remembered fact changing a later scene.
 5. **Polish and showcase:** atmosphere and optional images, clear setup instructions, a scripted demo, evaluation examples and failure-recovery evidence. Then add the Kubernetes deployment exercise without rewriting the application as microservices.

@@ -71,7 +71,21 @@ Start with a few evaluated routes, not an LLM that selects another LLM on every 
 
 These are separate dimensions. Structured output describes the expected result format. Tool calling lets the model request specific application operations. Streaming delivers output incrementally. A model can stream structured content, but partial JSON is not a valid committed transition. OpenRouter structured output support depends on the model/provider. [Structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs).
 
-The primary proposal contains player-facing narration, constrained state changes, next choices, time estimates and optional conditional continuation. The application supplies IDs, permissions, deadlines and any authoritative random results. Validate shape, reference scope, ownership, quantity rules and generation preconditions before commitment. A schema-valid lie can still contradict the story; evaluation and relevant context remain necessary.
+The primary proposal separates what happens now from what may happen after a wait. Its schema must make those different fields, not depend on prose interpretation:
+
+| Proposal part | Contract |
+| --- | --- |
+| Current passage and effects | Narration and typed changes to commit together for this resolution. |
+| Next state | One of a decision, a quiet interval or an ending; not an arbitrary combination. |
+| Decision | Choices with eligible actors and apparent intent/risk; fallback must fit the supplied autonomy policy. |
+| Interval | Fictional duration and a suggested narrative boundary. Code maps that to real time under the chosen pacing policy. |
+| Optional prepared continuation | A bounded future passage/effect packet with activation assumptions, stored privately until validated at publication. |
+
+For “set out toward the tower,” departure can be current and arrival future. For “accept the apple,” becoming trapped can be immediate. A completed future packet cannot charge coins, change location or reveal an encounter before its activation. Limit the first horizon to one prepared continuation rather than an unbounded tree.
+
+The application supplies permanent IDs, policy/permissions, response deadlines and authoritative random results. After accepting the current proposal, bind future material to its resulting revision and mapped entity IDs. Validate shape, reference scope, ownership, quantities and generation preconditions before commitment, and validate future material again on publication. A schema-valid lie can still contradict the story; evaluation and relevant context remain necessary.
+
+Autonomy governs choosing for an absent player, while storyteller risk preferences govern which consequences may be introduced. They are not the same setting. A permitted “wait” fallback cannot by itself authorize any imaginable permanent consequence. Supply the applicable policy to generation and validate declared consequential changes against it; if the policy is unspecified, hold or request player input instead of pretending the prompt solves that product decision.
 
 Begin by rendering the complete validated result. Show progress while generation is running. If later streaming prose improves perceived latency, label it provisional or stream a presentation of an already committed result. Never stream a private tool response or let partial prose decide inventory changes. Streaming tokens is distinct from SSE publishing committed application updates.
 

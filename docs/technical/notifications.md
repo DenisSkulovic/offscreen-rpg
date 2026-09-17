@@ -10,6 +10,8 @@ This is a recommendation to verify on the actual target phones before committing
 
 The product should explain setup when the player wants to leave a running story, offer a test notification and show whether that device is subscribed. Do not request permission on the first landing page before demonstrating value. Declined permission is a supported state; show that the player must return manually or choose another available channel.
 
+Register subscriptions through an authenticated endpoint and associate them with both account and device/browser installation. Multiple devices may receive updates, but a browser endpoint must not remain attached to a previous account after account switching. Recommended logout behavior is to unlink that device's subscription without pausing the story; explicitly tell the user how to keep receiving updates on another device. Subscription expiry, permission revocation and re-registration are supported states, not silent permanent delivery failures.
+
 ## Alternatives
 
 | Channel | Fit | Cost or constraint |
@@ -35,6 +37,8 @@ WhatsApp is not part of the proposed first integration. Do not build several pro
 Acceptance by a push service is not proof that a person saw the message. Even successful delivery cannot guarantee five minutes of human attention. Response windows begin from an authoritative story publication rule, not an unverifiable read receipt. Best-effort contact and permitted fallback behavior are both necessary.
 
 Group low-urgency reports; do not collapse distinct unresolved decisions into an ambiguous notification. Use expiry and replacement tags where supported, but do not rely on those features as the only duplicate protection. Messages may duplicate after an uncertain send; application commands must remain idempotent.
+
+Include a decision timing/version reference on delivery intents. Recheck it before sending: a paused story must not receive a fresh “five minutes remaining” message for its suspended deadline. A resolved/expired decision is skipped or becomes a clearly retrospective report using committed content, without another storytelling call. A late or already displayed notification cannot always be recalled; opening it must show the current situation and updated timing.
 
 ## Contact, privacy and actions
 
