@@ -3,18 +3,52 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import { createOpenings } from './openings';
-import { openingOutputSchema } from '@offscreen/ai/opening';
+import {
+  playablePresentation,
+  validatePlayableResult,
+} from '@offscreen/ai/playable';
 import { enqueue } from './outbox';
 import { validId, GenerationError } from './generations';
 export { OpeningInputError } from '@offscreen/ai/opening';
 
-// Versioned, deterministic sample. Keep v1 stable for recovery of admitted work.
-const kind = 'opening.scripted.v1';
-export const scriptedOpeningTopic = 'opening.scripted.v1';
-const output = openingOutputSchema.parse({
-  opening:
-    'A bell rings beyond the trees. At the bend in the road, a small figure waits with an apple in one hand and a pear in the other.\n\n“A gift for a traveller,” the figure says. The road continues behind him, disappearing into the evening mist.',
+// Versioned, deterministic sample. Keep this kind stable for recovery of admitted work.
+const kind = 'opening.playable.scripted.v1';
+export const scriptedOpeningTopic = 'opening.playable.scripted.v1';
+const scriptedPlayableOpening = validatePlayableResult('opening', {
+  version: 1,
+  content: {
+    version: 1,
+    title: 'A fork in the path',
+    paragraphs: [
+      'The path splits beside a weathered post. One way is quieter. The other carries a distant sound of water.',
+    ],
+  },
+  next: {
+    kind: 'choice',
+    prompt: 'What do you attempt?',
+    options: [
+      {
+        id: 'follow-water',
+        label: 'Walk toward the water',
+        intention: 'Follow the sound of water and see what is ahead.',
+      },
+      {
+        id: 'take-quiet-path',
+        label: 'Take the quieter path',
+        intention: 'Leave the water behind and continue along the quieter way.',
+      },
+    ],
+  },
 });
+const presented = playablePresentation(scriptedPlayableOpening);
+if (!presented.interaction) {
+  throw new Error('scripted opening fixture must offer a choice');
+}
+export { scriptedPlayableOpening };
+export const scriptedOpeningPresentation = {
+  content: presented.content,
+  interaction: presented.interaction,
+};
 
 /** Only a fixture runner. Never replace this local update with a provider call. */
 export function createScriptedOpenings(database: Database) {
@@ -23,14 +57,26 @@ export function createScriptedOpenings(database: Database) {
   );
   const present = (
     record: Awaited<ReturnType<typeof operations.read>>,
-  ): OpeningPreview => ({
-    id: record.id,
-    sourceRevision: record.input.source.draftRevision,
-    isCurrent: record.isCurrent,
-    mode: 'scripted',
-    state: record.state,
-    opening: record.output?.opening ?? null,
-  });
+  ): OpeningPreview => {
+    const presentation =
+      record.state === 'succeeded' && record.output
+        ? playablePresentation(record.output)
+        : null;
+    return {
+      id: record.id,
+      sourceRevision: record.input.source.draftRevision,
+      isCurrent: record.isCurrent,
+      mode: 'scripted',
+      state: record.state,
+      candidate:
+        presentation && presentation.interaction
+          ? {
+              content: presentation.content,
+              interaction: presentation.interaction,
+            }
+          : null,
+    };
+  };
   return {
     async latest(owner: string, draftId: string) {
       const record = await operations.latest(owner, draftId);
@@ -60,7 +106,7 @@ export function createScriptedOpenings(database: Database) {
         .set({
           state: 'succeeded',
           attemptId: id,
-          output,
+          output: scriptedPlayableOpening,
           updatedAt: sql`clock_timestamp()`,
         })
         .where(

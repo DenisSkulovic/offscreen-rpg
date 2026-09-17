@@ -69,38 +69,41 @@ export async function checkDraftBrowser(
           'First-tab saved idea',
         );
         await page
-          .getByRole('link', { name: 'Review a scripted opening' })
+          .getByRole('link', { name: 'Review opening candidate' })
           .click();
         await page
           .getByRole('button', {
-            name: 'Generate scripted preview',
+            name: 'Generate opening candidate',
             exact: true,
           })
           .click();
-        await page.getByRole('region', { name: 'Saved opening' }).waitFor();
+        await page.getByRole('region', { name: 'Opening candidate' }).waitFor();
+        await page.getByText('A fork in the path', { exact: true }).waitFor();
         await page
-          .getByText('A bell rings beyond the trees.', { exact: false })
+          .getByRole('button', { name: 'Walk toward the water' })
           .waitFor();
         const opening = await page
-          .getByRole('region', { name: 'Saved opening' })
+          .getByRole('region', { name: 'Opening candidate' })
           .innerText();
         await page.reload();
         assert.equal(
-          await page.getByRole('region', { name: 'Saved opening' }).innerText(),
+          await page
+            .getByRole('region', { name: 'Opening candidate' })
+            .innerText(),
           opening,
         );
         await page.getByRole('link', { name: 'Back to draft' }).click();
         await page.getByLabel('Who are you').fill('A new premise.');
         assert.equal(
           await page
-            .getByRole('link', { name: 'Review a scripted opening' })
+            .getByRole('link', { name: 'Review opening candidate' })
             .count(),
           0,
         );
         await page.getByRole('button', { name: 'Save draft' }).click();
         await page.getByText('Saved.', { exact: true }).waitFor();
         await page
-          .getByRole('link', { name: 'Review a scripted opening' })
+          .getByRole('link', { name: 'Review opening candidate' })
           .click();
         await page
           .getByRole('alert')

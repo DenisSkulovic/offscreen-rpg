@@ -3,23 +3,22 @@ import type { Database } from '@offscreen/db';
 import { storyDraft } from '@offscreen/db/draft-schema';
 import { generation, draftOpening } from '@offscreen/db/generation-schema';
 import {
-  openingArtifactSchema,
-  openingOutputSchema,
-  openingRequest,
-  prepareOpening,
-} from '@offscreen/ai/opening';
+  playableOpeningArtifactSchema,
+  playableProposalSchema,
+  preparePlayableOpening,
+} from '@offscreen/ai/playable';
 import { createGenerations, GenerationError, validId } from './generations';
 import type { Transaction } from './outbox';
 
 export function createOpenings(
   database: Database,
-  kind = 'opening.v1',
+  kind = 'opening.playable.v1',
   dispatch?: (tx: Transaction, id: string) => Promise<void>,
 ) {
   const operations = createGenerations(database, {
     kind,
-    input: openingArtifactSchema,
-    output: openingOutputSchema,
+    input: playableOpeningArtifactSchema,
+    output: playableProposalSchema,
   });
   async function read(owner: string, id: string) {
     const operation = await operations.read(owner, id);
@@ -79,7 +78,9 @@ export function createOpenings(
         if (prior) {
           if (prior.ownerId !== owner || prior.kind !== kind)
             throw new GenerationError('not_found');
-          const source = openingArtifactSchema.parse(prior.input).source;
+          const source = playableOpeningArtifactSchema.parse(
+            prior.input,
+          ).source;
           if (
             source.draftId !== draftId ||
             source.draftRevision !== expectedRevision
@@ -99,19 +100,17 @@ export function createOpenings(
           ['pending', 'running', 'uncertain'].includes(latest.state)
         )
           throw new GenerationError('busy');
-        const prepared = prepareOpening({
-          id: draft.id,
-          revision: draft.revision,
-          title: draft.title,
-          premise: draft.premise,
-          storytellingDirection: draft.storytellingDirection,
-          createdAt: draft.createdAt.toISOString(),
-          updatedAt: draft.updatedAt.toISOString(),
-        });
-        const artifact = openingArtifactSchema.parse({
-          ...prepared,
-          request: openingRequest(prepared),
-        });
+        const artifact = playableOpeningArtifactSchema.parse(
+          preparePlayableOpening({
+            id: draft.id,
+            revision: draft.revision,
+            title: draft.title,
+            premise: draft.premise,
+            storytellingDirection: draft.storytellingDirection,
+            createdAt: draft.createdAt.toISOString(),
+            updatedAt: draft.updatedAt.toISOString(),
+          }),
+        );
         await operations.insert(tx, owner, id, artifact);
         await dispatch?.(tx, id);
         await tx

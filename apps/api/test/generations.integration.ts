@@ -11,6 +11,33 @@ import {
 import { z } from 'zod';
 import { requireDefined } from './helpers/require.js';
 
+function playableOutput(title: string) {
+  return {
+    version: 1 as const,
+    content: {
+      version: 1 as const,
+      title,
+      paragraphs: ['The surrounding air is still.'],
+    },
+    next: {
+      kind: 'choice' as const,
+      prompt: 'What do you attempt?',
+      options: [
+        {
+          id: 'wait',
+          label: 'Wait',
+          intention: 'Remain still and observe.',
+        },
+        {
+          id: 'move',
+          label: 'Move closer',
+          intention: 'Approach the nearest notable feature.',
+        },
+      ],
+    },
+  };
+}
+
 export async function checkGenerations(
   t: TestContext,
   database: Database,
@@ -53,7 +80,7 @@ export async function checkGenerations(
       assert.equal(retried.isCurrent, false);
       assert.deepEqual(retried.input, first.input);
       assert.equal(
-        JSON.parse(retried.input.request.messages[1].content).premise,
+        JSON.parse(retried.input.request.messages[1].content).premise.premise,
         content.premise,
       );
       await assert.rejects(
@@ -81,7 +108,7 @@ export async function checkGenerations(
       let calls = 0;
       const fake = () => {
         calls++;
-        return { opening: 'The bird wakes beneath a flickering star chart.' };
+        return playableOutput('The bird wakes');
       };
       const results = claims.filter((claim) => claim.claimed).map(() => fake());
       const result = requireDefined(
@@ -111,7 +138,7 @@ export async function checkGenerations(
       await assert.rejects(
         restarted.settle(owner, id, attempt, {
           state: 'succeeded',
-          output: { opening: 'A different result' },
+          output: playableOutput('A different result'),
         }),
         code('conflict'),
       );
@@ -124,8 +151,8 @@ export async function checkGenerations(
       const pending = await openings.request(owner, draftId, next, 2);
       assert.equal(pending.isCurrent, true);
       assert.equal(
-        (await openings.read(owner, id)).output?.opening,
-        'The bird wakes beneath a flickering star chart.',
+        (await openings.read(owner, id)).output?.content.title,
+        'The bird wakes',
       );
       assert.equal((await openings.read(owner, id)).isCurrent, false);
       const attempt = randomUUID();
@@ -149,7 +176,7 @@ export async function checkGenerations(
       );
       await openings.settle(owner, next, attempt, {
         state: 'succeeded',
-        output: { opening: 'The fish finds a warm current.' },
+        output: playableOutput('The fish finds a warm current.'),
       });
       assert.equal((await openings.read(owner, next)).state, 'succeeded');
       // A delayed timeout handler cannot overwrite a reconciled success.
@@ -169,7 +196,15 @@ export async function checkGenerations(
       await assert.rejects(
         openings.settle(owner, failed, attempt, {
           state: 'succeeded',
-          output: { opening: '' },
+          output: {
+            version: 1 as const,
+            content: {
+              version: 1 as const,
+              title: '',
+              paragraphs: ['Still.'],
+            },
+            next: { kind: 'end' as const },
+          },
         }),
         code('invalid'),
       );

@@ -114,16 +114,16 @@ export function OpeningPreviewPanel({
   return (
     <main className="editor">
       <SessionRefresh />
-      <p className="eyebrow">Offscreen RPG · Scripted preview</p>
+      <p className="eyebrow">Offscreen RPG · Opening candidate</p>
       <h1>{draft.title || 'A possible beginning.'}</h1>
       <p className="field-help">
-        This fixed sample tests saving and reopening an opening. It is not
-        adapted to your premise or storytelling direction. No AI calls are made,
-        and it does not start a story.
+        This fixed sample tests saving and reopening a playable opening. It is
+        not adapted to your premise or storytelling direction. No AI calls are
+        made. The choices are a preview only and do not start a story.
       </p>
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
       {preview && (
-        <section aria-label="Saved opening">
+        <section aria-label="Opening candidate">
           <p className="field-help">
             Based on saved draft revision {preview.sourceRevision}.
           </p>
@@ -134,12 +134,27 @@ export function OpeningPreviewPanel({
               current opening.
             </p>
           )}
-          {preview.opening && (
-            <p style={{ whiteSpace: 'pre-wrap' }}>{preview.opening}</p>
-          )}
+          {preview.candidate ? (
+            <>
+              <h2>{preview.candidate.content.title}</h2>
+              {preview.candidate.content.paragraphs.map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+              <section aria-label="Offered interaction">
+                <p>{preview.candidate.interaction.prompt}</p>
+                {preview.candidate.interaction.options.map((option) => (
+                  <p key={option.id}>
+                    <button type="button" disabled>
+                      {option.label}
+                    </button>
+                  </p>
+                ))}
+              </section>
+            </>
+          ) : null}
           {['pending', 'running'].includes(preview.state) && (
             <p>
-              Request saved. You can leave this page while the preview is
+              Request saved. You can leave this page while the candidate is
               prepared.
             </p>
           )}
@@ -154,14 +169,14 @@ export function OpeningPreviewPanel({
         onClick={() => void generate()}
       >
         {pending
-          ? 'Preparing sample…'
+          ? 'Preparing candidate…'
           : message
-            ? 'Retry scripted preview'
+            ? 'Retry opening candidate'
             : unresolved
-              ? 'Awaiting scripted preview'
+              ? 'Awaiting opening candidate'
               : preview
-                ? 'Generate another scripted preview'
-                : 'Generate scripted preview'}
+                ? 'Generate another opening candidate'
+                : 'Generate opening candidate'}
       </button>
       {!draft.premise.trim() && (
         <p>Add and save a premise before generating.</p>

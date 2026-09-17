@@ -49,6 +49,14 @@ export function prepareOpening(draft: unknown) {
 
 export type OpeningInput = ReturnType<typeof prepareOpening>;
 
+export const capturedProviderRequestSchema = z.strictObject({
+  messages: z.tuple([
+    z.strictObject({ role: z.literal('system'), content: z.string() }),
+    z.strictObject({ role: z.literal('user'), content: z.string() }),
+  ]),
+  outputSchema: z.json(),
+});
+
 // Persist the exact request as well as its source, so a later prompt edit cannot
 // change an already accepted operation during recovery.
 export const openingArtifactSchema = z.strictObject({
@@ -59,13 +67,7 @@ export const openingArtifactSchema = z.strictObject({
     draftRevision: z.number().int().positive(),
   }),
   content: premiseContentSchema,
-  request: z.strictObject({
-    messages: z.tuple([
-      z.strictObject({ role: z.literal('system'), content: z.string() }),
-      z.strictObject({ role: z.literal('user'), content: z.string() }),
-    ]),
-    outputSchema: z.json(),
-  }),
+  request: capturedProviderRequestSchema,
 });
 
 /** Provider adapters may map these messages and JSON Schema to their own SDK. */

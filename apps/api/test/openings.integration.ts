@@ -6,6 +6,8 @@ import { createOutbox } from '@offscreen/server/outbox';
 import {
   scriptedOpeningTopic,
   createScriptedOpenings,
+  scriptedPlayableOpening,
+  scriptedOpeningPresentation,
 } from '@offscreen/server/scripted-openings';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -67,6 +69,7 @@ export async function checkOpeningHTTP(
       );
       assert.equal(preview.mode, 'scripted');
       assert.equal(preview.isCurrent, true);
+      assert.equal(preview.candidate, null);
       assert.equal(Object.hasOwn(raw, 'input'), false);
       assert.equal(Object.hasOwn(raw, 'attemptId'), false);
       assert.deepEqual(await (await submit()).json(), preview);
@@ -140,6 +143,33 @@ export async function checkOpeningHTTP(
           preview.state,
           'succeeded',
           'saved request completes without another PUT',
+        );
+        assert.deepEqual(preview.candidate, scriptedOpeningPresentation);
+        const publicBody = JSON.stringify(preview);
+        assert.equal(publicBody.includes('intention'), false);
+        assert.equal(publicBody.includes('"system"'), false);
+        if (scriptedPlayableOpening.next.kind !== 'choice') {
+          throw new Error('Expected a choice fixture');
+        }
+        for (const option of scriptedPlayableOpening.next.options) {
+          assert.equal(publicBody.includes(option.intention), false);
+        }
+        const stored = await database.db.$client.query(
+          'SELECT input, output FROM generation WHERE id = $1 AND owner_id = $2',
+          [id, owner],
+        );
+        const storedInput = stored.rows[0].input;
+        const storedOutput = stored.rows[0].output;
+        assert.equal(storedInput.task, 'opening');
+        assert.equal(storedInput.promptVersion, 'playable.v1');
+        assert.equal(storedOutput.next.kind, 'choice');
+        assert.deepEqual(
+          storedOutput.next.options.map(
+            (option: { intention: string }) => option.intention,
+          ),
+          scriptedPlayableOpening.next.options.map(
+            (option) => option.intention,
+          ),
         );
       } finally {
         await runtime.stop();
@@ -267,7 +297,7 @@ export async function checkOpeningHTTP(
       const old = openingPreviewSchema.parse(await (await submit()).json());
       assert.equal(old.id, id);
       assert.equal(old.isCurrent, false);
-      assert.equal(old.opening, preview.opening);
+      assert.deepEqual(old.candidate, preview.candidate);
     },
   );
 }

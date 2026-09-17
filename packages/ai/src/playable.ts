@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { validateInteractionSubmission } from '@offscreen/contracts/interactions';
-import { prepareOpening } from './opening';
+import { capturedProviderRequestSchema, prepareOpening } from './opening';
 import { premiseContentSchema } from './premise';
 import {
   playablePresentation,
@@ -64,6 +64,21 @@ function selectedIntention(proposal: PlayableProposal, optionId: string) {
   }
   return selected;
 }
+
+export const playableOpeningArtifactSchema = z.strictObject({
+  inputVersion: z.literal(1),
+  promptVersion: z.literal('playable.v1'),
+  task: z.literal('opening'),
+  source: z.strictObject({
+    draftId: z.uuid(),
+    draftRevision: z.number().int().positive(),
+  }),
+  request: capturedProviderRequestSchema,
+});
+
+export type PlayableOpeningArtifact = z.infer<
+  typeof playableOpeningArtifactSchema
+>;
 
 /** Owned saved draft in; immutable request artifact out. No provider or storage I/O. */
 export function preparePlayableOpening(draft: unknown) {

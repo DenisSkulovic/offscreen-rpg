@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import {
   playableProposalSchema,
+  playableOpeningArtifactSchema,
   validatePlayableResult,
   playablePresentation,
   preparePlayableOpening,
@@ -79,6 +80,17 @@ test('opening captures the premise as data and emits a playable schema, not priv
     premise.premise,
   );
   assert.ok(Object.isFrozen(artifact.request.messages));
+  assert.equal(playableOpeningArtifactSchema.parse(artifact).task, 'opening');
+  assert.equal(
+    playableOpeningArtifactSchema.parse(artifact).promptVersion,
+    'playable.v1',
+  );
+  assert.throws(() =>
+    playableOpeningArtifactSchema.parse({
+      ...artifact,
+      promptVersion: 'opening.v1',
+    }),
+  );
   assert.throws(() => preparePlayableOpening({ ...draft, premise: ' ' }));
 });
 test('new option identities carry an intention without fixture-specific branching', () => {

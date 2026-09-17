@@ -191,7 +191,7 @@ export function DraftEditor({
       )}
       {saved && !dirty && !pending && (
         <p>
-          <a href={`/stories/${id}/preview`}>Review a scripted opening</a>
+          <a href={`/stories/${id}/preview`}>Review opening candidate</a>
         </p>
       )}
       <p className="field-help">
