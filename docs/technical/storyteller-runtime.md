@@ -4,6 +4,16 @@ The storyteller is application code, versioned instructions, selected context, m
 
 ## Initial orchestration
 
+The implemented `@offscreen/ai/opening` component prepares and validates an opening request without database, HTTP, provider or workflow dependencies. It accepts a saved draft with a nonblank premise and captures its exact content and source revision. A blank title or direction is allowed. Saving an incomplete draft remains valid; preparing it for inference has a stronger prerequisite.
+
+The request has stable application instructions and a separate JSON-encoded user message containing only title, premise and direction. Draft identity, ownership and revision are not sent to the model. This separation prevents application code from promoting player text into system instructions; it does not prove that a model will resist prompt injection or faithfully follow the premise.
+
+The first output contract is one bounded, nonblank plain-text `opening` (at most 6,000 UTF-16 code units). It describes the character and immediate situation in prose. It accepts no extra fields: the model cannot supply lifecycle, source revision, effects or deadlines. `openingOutputSchema` supplies both runtime validation and JSON Schema for the eventual adapter. Structural validation does not verify narrative quality, premise fidelity or content suitability. Render the text literally, never as HTML.
+
+The captured input has `inputVersion: 1` and `promptVersion: opening.v1`. Changing generation instructions requires changing the prompt version. Version labels do not themselves preserve old execution behavior: before durable retries are connected, retain the exact request artifact or implement version-aware reconstruction. The current component has no persisted attempts, provider call, repair loop or generated preview UI.
+
+This textual preview is a building block for review, not a startable gameplay proposal. Starting requires the first decision/interval and selected play policies described below. Do not manufacture timers, stats, possessions or autonomous choices to fill that gap. Authorization, quotas, immutable persistence and stale-result checks belong to the application operation that will invoke this component.
+
 Use bounded TypeScript steps within Temporal orchestration. Database/context I/O, provider requests and commits execute as Activities, with compact artifact references returned to the workflow:
 
 ```text

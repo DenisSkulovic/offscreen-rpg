@@ -12,6 +12,8 @@ An explicit generate request freezes the draft revision, roster/character revisi
 
 Generation produces a candidate preview with its source revision. It does not yet insert the opening into the live chronology, transfer possessions or start a response window. The preview operation can be pending, successful, failed or no longer current while the draft remains editable. Returning after closing the tab retrieves the same operation and candidate rather than generating again.
 
+The opening-text preparation/validation component currently captures the saved draft revision and asks only for prose. It does not implement this generation operation or persist a candidate. Its output is insufficient for Start: the first live decision/interval and relevant group, pace and autonomy policies must be defined and reviewed before initialization is implemented. See [storyteller runtime](storyteller-runtime.md) for the implemented boundary.
+
 Changes to participating characters, premise or shared play settings make an incompatible candidate unstartable. Keep the old candidate available for comparison only if useful during editing; do not present it as the current opening. A late provider result cannot replace a newer candidate. A stale or cancelled result can still have incurred usage, which stays attached to its operation.
 
 Readiness refers to the exact draft/preview and roster being accepted. A friend changing their character invalidates relevant readiness. The final UI for readiness is a product choice, but a boolean left true across arbitrary edits is not sufficient.

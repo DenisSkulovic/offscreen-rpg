@@ -38,6 +38,8 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
+`@offscreen/ai/opening` is an offline component for preparing a saved premise and validating opening prose. Its tests run under `pnpm test` without credentials: they check snapshot isolation, separation of user input from application instructions, source metadata exclusion, and rejection of malformed or authority-bearing model output. The exported JSON Schema is not yet verified against a hosted provider. No Generate button or provider adapter is wired into the application.
+
 ```sh
 pnpm format:check
 pnpm lint
