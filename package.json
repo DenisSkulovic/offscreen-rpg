@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "infra:up": "docker compose up -d --wait",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "chamber": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api chamber"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
