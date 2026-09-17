@@ -186,6 +186,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@offscreen/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -195,10 +198,16 @@ importers:
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
     devDependencies:
       '@offscreen/config':
         specifier: workspace:*
         version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
       typescript:
         specifier: 5.9.3
         version: 5.9.3

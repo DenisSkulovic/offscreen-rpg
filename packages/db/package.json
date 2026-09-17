@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./generation-schema": {
+      "types": "./dist/src/schema/generations.d.ts",
+      "default": "./dist/src/schema/generations.js"
+    },
     "./draft-schema": {
       "types": "./dist/src/schema/drafts.d.ts",
       "default": "./dist/src/schema/drafts.js"

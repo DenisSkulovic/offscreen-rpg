@@ -12,6 +12,7 @@ import { createApp } from '../src/app.js';
 import { authOptions } from '../src/auth/auth.js';
 import { checkDrafts } from './drafts.integration.js';
 import { checkDraftBrowser } from './drafts.browser.js';
+import { checkGenerations } from './generations.integration.js';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
 if (!databaseURL || new URL(databaseURL).pathname !== '/offscreen_auth_test') {
@@ -99,6 +100,7 @@ test(
       const otherLogin = await helpers.login({ userId: otherUser.id });
       await checkDrafts(t, origin, cookie, otherLogin.headers.get('cookie')!);
       await checkDraftBrowser(t, origin, cookie);
+      await checkGenerations(t, database, user.id, otherUser.id);
 
       await t.test(
         'anonymous API requests fail and the page redirects to sign-in',
@@ -260,6 +262,14 @@ test(
         web.kill();
         await exited;
       }
+      await database.db.$client.query(
+        'DELETE FROM draft_opening WHERE draft_id IN (SELECT id FROM story_draft WHERE owner_id = $1)',
+        [user.id],
+      );
+      await database.db.$client.query(
+        'DELETE FROM generation WHERE owner_id = $1',
+        [user.id],
+      );
       await database.db.$client.query(
         'DELETE FROM story_draft WHERE owner_id = $1',
         [user.id],

@@ -44,6 +44,29 @@ export function prepareOpening(draft: unknown) {
 
 export type OpeningInput = ReturnType<typeof prepareOpening>;
 
+// Persist the exact request as well as its source, so a later prompt edit cannot
+// change an already accepted operation during recovery.
+export const openingArtifactSchema = z.strictObject({
+  inputVersion: z.literal(1),
+  promptVersion: z.literal('opening.v1'),
+  source: z.strictObject({
+    draftId: z.uuid(),
+    draftRevision: z.number().int().positive(),
+  }),
+  content: z.strictObject({
+    title: z.string().max(160),
+    premise: z.string().max(6000).regex(/\S/),
+    storytellingDirection: z.string().max(2000),
+  }),
+  request: z.strictObject({
+    messages: z.tuple([
+      z.strictObject({ role: z.literal('system'), content: z.string() }),
+      z.strictObject({ role: z.literal('user'), content: z.string() }),
+    ]),
+    outputSchema: z.json(),
+  }),
+});
+
 /** Provider adapters may map these messages and JSON Schema to their own SDK. */
 export function openingRequest(input: OpeningInput) {
   return {

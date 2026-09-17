@@ -12,6 +12,14 @@ The premise currently contains both character intent and starting circumstances.
 
 An owner/creation-time/ID index supports stable paginated reads. Timestamps use millisecond precision to preserve cursor comparisons through JavaScript dates. Owner deletion is restricted by the foreign key until account/story deletion policy is implemented. Public DTOs omit ownership; the server derives it from authentication. `@offscreen/contracts/drafts` owns runtime validation and transport types; `@offscreen/server/drafts` owns database operations independently of Nest and React. See [draft lifecycle](story-lifecycle.md) for concurrency and retry behavior.
 
+### Implemented generation records
+
+`generation` stores an owner, a versioned task kind, immutable JSON input, processing state, one attempt ID, validated output or a short failure code, and timestamps. `@offscreen/server/generations` supplies the common insert/read/claim/settle operations using task-specific input/output schemas. These are private server operations, not public response DTOs: inputs can contain application prompts. Each task kind must retain the schema needed to read its stored version.
+
+Opening-specific behavior lives in `@offscreen/server/openings`. Its input contains the source draft ID/revision, exact content, prompt version, and exact messages/output schema. `draft_opening` points to the latest requested operation for each draft. Old operations remain readable by their owner; only the latest operation matching the current draft revision is current. This flag is a read-time observation, never authorization to start gameplay. Future Start must recheck under the appropriate transaction lock.
+
+The generic record contains no draft, character, scene or timing fields. The opening module owns draft authorization, revision checking and the one-unresolved-request-per-draft rule. The test suite also uses the common lifecycle with a different input/result schema. There is no universal job dispatcher, subscription mechanism or database scheduler in this component.
+
 ### Planned story records
 
 | Record family | What it owns |

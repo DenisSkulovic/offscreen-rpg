@@ -86,6 +86,8 @@ The suite checks migration reruns and contention, failed-DDL rollback, transacti
 
 ## Identity checks
 
+The same PostgreSQL suite exercises generation records through server application operations with a fake generator: duplicate admission, immutable input capture, competing claims, restart/retry behavior, uncertain and late outcomes, stale previews, ownership and transactional rollback. It also uses a separate test task schema to check that the common lifecycle has no dependency on opening fields. Migration `0002_generation_records` adds `generation` and `draft_opening`. These operations have no public endpoint or background dispatcher yet; no paid calls occur.
+
 Install the browser used by this suite with `pnpm --filter @offscreen/api exec playwright install chromium` (Linux CI also uses `--with-deps`). In addition to identity checks, the suite exercises draft ownership, validation, CSRF, concurrent saves, retry recovery and pagination against PostgreSQL. Chromium checks saving and reopening through the actual editor and preserving conflicting text in two tabs. Migration `0001_story_drafts` adds the owned draft table; generation makes no calls because it is not implemented.
 
 `pnpm test:auth` uses a separate disposable database named `offscreen_auth_test`, configured through `DATABASE_TEST_URL`. Create it with `docker compose exec postgres createdb -U offscreen offscreen_auth_test`, then use the same connection pattern as above with that name. Stop local application processes first: the suite starts the real API on port 3001 and the production Next server on 3100. CI provisions its own database. This suite is not cached.
