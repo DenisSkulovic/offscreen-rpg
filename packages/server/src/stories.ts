@@ -6,11 +6,10 @@ import {
   continuationRetryMatches,
   continuationSchema,
   hasValidDecisionDefault,
-  initializationMatches,
-  initialStorySchema,
   type StoryContinuation,
 } from './story-command-policy';
 import { StoryError, parseStoryIdentifier } from './story-errors';
+import { createStoryInitialization } from './story-initialization';
 import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 import { createStoryReads } from './story-reads';
 export const decisionDeadlineTopic = 'story.decision.v1';
@@ -37,6 +36,7 @@ function identifier(value: unknown) {
 
 export function createStories(database: Database) {
   const reads = createStoryReads(database);
+  const initializeStory = createStoryInitialization(database);
   async function read(owner: string, id: string) {
     return reads.readSnapshot({ ownerId: owner, storyId: id });
   }
@@ -404,47 +404,7 @@ export function createStories(database: Database) {
     },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(owner: string, id: string, initial: unknown) {
-      identifier(id);
-      const input = initialStorySchema.parse(initial);
-      await database.db.transaction(async (tx) => {
-        const inserted = await tx
-          .insert(story)
-          .values({ id, ownerId: owner, source: input.source })
-          .onConflictDoNothing()
-          .returning({ id: story.id });
-        if (!inserted.length) {
-          const [prior] = await tx.select().from(story).where(eq(story.id, id));
-          if (!prior || prior.ownerId !== owner)
-            throw new StoryError('not_found');
-          if (prior.source !== input.source) throw new StoryError('conflict');
-          const [first] = await tx
-            .select()
-            .from(storyPassage)
-            .where(
-              and(eq(storyPassage.storyId, id), eq(storyPassage.sequence, 1)),
-            );
-          if (!first || !initializationMatches(first, input))
-            throw new StoryError('conflict');
-          return;
-        }
-        if (input.items.length)
-          await tx
-            .insert(storyItem)
-            .values(input.items.map((item) => ({ storyId: id, ...item })));
-        await tx.insert(storyPassage).values({
-          id: randomUUID(),
-          storyId: id,
-          sequence: 1,
-          initialItems: input.items,
-          content: input.content,
-          interaction: input.interaction
-            ? interactionSchema.parse({
-                id: randomUUID(),
-                specification: input.interaction,
-              })
-            : null,
-        });
-      });
+      await initializeStory({ ownerId: owner, storyId: id, initial });
       return read(owner, id);
     },
   };
