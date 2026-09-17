@@ -1,11 +1,18 @@
 # What we need to decide next
 
-1. **Player input:** contextual choices, free text, or both? We need genuine variety without making every interaction expensive or ambiguous.
-2. **Stable rules:** how much should abilities and dice constrain storyteller judgment? Identify the few outcomes where consistency matters most.
-3. **Time:** a consistent fictional-to-real-time pace, or scene-dependent waits? During a response window, does the world run or briefly hold?
-4. **Possessions:** significant items and counted coins, or more descriptive resources? Exact spending needs exact bookkeeping; incidental detail may not.
-5. **Inference budget:** what can we spend during development and unattended play? Test a short preparation horizon and decide what happens when it runs out.
-6. **First interface:** a small atmospheric browser experience is intended. When should we add a messaging channel, and which one?
-7. **Playing together:** how do invited players control characters, make conflicting choices and continue when someone is away? Work through a shared playthrough to establish the first playable scope.
+The product is concrete enough to begin technical design. These choices remain open; do not silently settle them by choosing a database schema or a scheduling library.
 
-Once these are concrete enough for a playable loop, choose the technical approach and build it. We do not need to resolve every possible world or future feature first.
+## Settle before implementing the affected behavior
+
+1. **Shared decisions:** how are individual intentions collected and conflicting actions resolved? Who can start, pause and resume the group story? Begin with one shared situation and an invited pair; choose the supported group limit.
+2. **Agency:** contextual choices are central. Does the first version also allow free-text intentions, and when can someone interrupt a quiet interval? Define commitment and frequency limits without reducing interaction to endless regeneration.
+3. **Pace and deadlines:** how does selected pace map fictional duration to real waiting while allowing immediate exchanges? Does a decision window hold the situation or allow danger to progress? What happens to active waits when pace changes?
+4. **Autonomy:** which consequential choices can a character make without its player? What should happen when the available fallback exceeds permission or a player is absent for a long time?
+5. **Rules and possessions:** which abilities, chance checks and counted resources are necessary for the first coherent experience? Keep contextual judgment while making actual outcomes and transfers consistent.
+6. **Spending:** what are the initial generation and ongoing budgets, who funds a shared story, and what does the player see when the limit is reached? Choose bounded behavior for model failure as well as exhaustion.
+7. **Notifications:** which first channel reaches someone away from the browser, and does it link back or support decisions directly? A workplace messaging integration is a candidate, not a selected dependency.
+8. **Endings:** does the first experience offer a finite adventure, a continuing life, or both? Does ending an adventure end the playable character's story?
+
+## Refine through the first experience
+
+Exact storyteller presets, initial example premises, image frequency and the placement of sign-in can be tested without postponing the whole technical design. Reusable custom storytellers and separate simultaneous party adventures do not need to be designed now.

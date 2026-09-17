@@ -1,12 +1,12 @@
 # How a story could unfold
 
-The working approach is one generic progression flow. Walking, noticing a tower, making an agreement, spending an afternoon somewhere and meeting a stranger can all become moments in the same chronology. We do not need a dedicated software system for each verb.
+The working approach is one generic progression flow. Walking, noticing a tower, making an agreement, spending an afternoon somewhere and meeting a stranger can all become moments in the same chronology. We do not need a dedicated software system for each verb. This overview connects the product; the [playthrough](playthroughs.md) shows it from the players' perspective.
 
 ## From intention to continuation
 
 The storyteller receives the current situation, relevant memories, character traits and campaign settings. It offers possible intentions or interprets the player's action, estimates duration and prepares a short continuation.
 
-Time passes. A quiet interval can finish, or a development can interrupt it. The player may respond, change direction, delegate or pause. A choice can resolve the situation or lead to another stage. Nonresponse uses a permitted character fallback rather than requiring constant attention.
+Time passes. A quiet interval can finish, or a development can interrupt it. The player may respond, delegate or pause; the scope of changing direction between offered choices remains open. A choice can resolve the situation or lead to another stage. Nonresponse uses a permitted character fallback rather than requiring constant attention. In shared play, interacting intentions must resolve into a common, coherent consequence.
 
 One passage might summarize a calm day, while a dangerous encounter unfolds through several moments. Neither narration nor notifications need to happen every tick.
 
@@ -38,7 +38,7 @@ How much inventory precision is worthwhile remains open. Avoid capacity rules, e
 
 ## Time and interruption
 
-An option can show an approximate fictional duration and real wait. We need a clear relationship between those values. A model can estimate fictional duration; the application can calculate waiting from a selected pace.
+An option can show an approximate fictional duration and real wait. A model can estimate fictional duration, while the application enforces timing. Selected pace, immediate exchanges and response windows need a clear relationship; a single multiplier does not define all three. See [time and autonomy](time-and-autonomy.md).
 
 An incident may offer a response window, then use a personality-influenced default. Some play styles may keep the story running during that window; others may briefly hold the scene. Manual pause remains indefinite.
 
@@ -57,3 +57,5 @@ If generation is unavailable or its budget exhausted, use only still-valid prepa
 Can this flow support a quiet interval, a surprising interruption, a changed intention and a memorable consequence? Does the player feel agency? Does the story remain coherent after absence, pause or restart? Is its ongoing cost acceptable?
 
 Answer those through play before adding specialized mechanics.
+
+The supporting descriptions cover [creation](story-creation.md), [the player experience](player-experience.md), [storyteller judgment](storytelling.md) and [continuity](continuity-and-consequences.md). Unresolved behavior is collected in [open questions](questions.md), rather than filled in implicitly during implementation.

@@ -2,7 +2,7 @@
 
 Offscreen RPG is a story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
 
-The intended experience includes inviting friends into a shared story. How players control characters and advance the story together still needs to be worked through, including what belongs in the first playable version.
+The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first playable target includes a small group in a common storyline. Shared decision and pause rules still need to be settled before implementing that behavior.
 
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Explicit pause stops progression.
 
@@ -21,6 +21,12 @@ The browser is a visual, atmospheric place to inhabit the current scene. Show wh
 Relevant possessions, people and places are available when useful. A focused chronology helps you remember the story and return after a long break. Avoid a spreadsheet of world systems.
 
 A messaging service such as Slack could support brief updates and choices during the day. Notification frequency, storyteller intensity and character autonomy are separate concerns.
+
+## First playable target
+
+Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone or with an invited friend. Follow a scene, choose an intention, leave during a quiet interval, receive a development and respond or let the character act. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring players back.
+
+This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
 
 ## Why build it
 
