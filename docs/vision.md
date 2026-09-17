@@ -1,6 +1,8 @@
 # A character with a life of their own
 
-Offscreen RPG is a single-player story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
+Offscreen RPG is a story that unfolds over time. You create a character, become familiar with their habits and relationships, and occasionally influence what happens next. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
+
+The intended experience includes inviting friends into a shared story. How players control characters and advance the story together still needs to be worked through, including what belongs in the first playable version.
 
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Explicit pause stops progression.
 

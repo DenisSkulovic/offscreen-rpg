@@ -10,6 +10,12 @@ An LLM storyteller creates scenes, remembers connections and introduces developm
 
 - [Vision](docs/vision.md): the experience and why we're making it.
 - [Gameplay](docs/gameplay.md): how the story could progress with little simulation.
+- [Player experience](docs/player-experience.md): entry, interaction and returning to a story (stub).
+- [Storytelling](docs/storytelling.md): the storyteller's role and creative controls (stub).
+- [Time and autonomy](docs/time-and-autonomy.md): waiting, response windows and absence (stub).
+- [Story creation](docs/story-creation.md): from premise to a playable beginning (stub).
+- [Continuity and consequences](docs/continuity-and-consequences.md): what the story must remember and respect (stub).
+- [Playthroughs](docs/playthroughs.md): concrete flows to develop together (stub).
 - [Open questions](docs/questions.md): the few choices to settle before building.
 
 This is a senior fullstack portfolio project. Its depth should come from compelling interaction, coherent persistent stories, reliable background execution and efficient AI.
