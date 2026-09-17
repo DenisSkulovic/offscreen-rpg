@@ -32,5 +32,6 @@ export function createChamber(database: Database) {
     start: (owner: string, id: string) =>
       stories.initialize(owner, id, opening),
     read: stories.read,
+    history: stories.history,
   };
 }

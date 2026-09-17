@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Put,
+  Query,
   Req,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -39,6 +40,16 @@ export class StoriesController {
   @Get(':id')
   read(@Req() request: Request, @Param('id') id: string) {
     return this.run(request, (owner) => this.stories.read(owner, id));
+  }
+  @Get(':id/history')
+  history(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Query('before') before: unknown,
+  ) {
+    return this.run(request, (owner) =>
+      this.stories.history(owner, id, before),
+    );
   }
   @Put(':id/chamber')
   @HttpCode(200)

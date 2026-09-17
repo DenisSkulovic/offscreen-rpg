@@ -3,7 +3,10 @@ import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
 import { createStories, StoryError } from '@offscreen/server/stories';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import {
+  storySnapshotSchema,
+  storyHistorySchema,
+} from '@offscreen/contracts/stories';
 import { chromium } from 'playwright';
 
 export async function checkStories(
@@ -14,6 +17,116 @@ export async function checkStories(
   cookie: string,
   otherCookie: string,
 ) {
+  await t.test(
+    'history pages remain ordered as new passages arrive and never expose another owner',
+    async () => {
+      const id = randomUUID();
+      const stories = createStories(database);
+      await stories.initialize(owner, id, {
+        source: 'history-test.v1',
+        content: {
+          version: 1,
+          title: 'Beginning',
+          paragraphs: ['Quiet morning.'],
+        },
+        interaction: null,
+      });
+      // Test-only persisted history, not an alternative production write endpoint.
+      async function append(from: number, to: number) {
+        const client = await database.db.$client.connect();
+        try {
+          await client.query('BEGIN');
+          for (let sequence = from; sequence <= to; sequence++) {
+            await client.query(
+              `
+            INSERT INTO story_passage (id, story_id, sequence, content)
+            VALUES ($1, $2, $3, $4::jsonb)`,
+              [
+                randomUUID(),
+                id,
+                sequence,
+                JSON.stringify({
+                  version: 1,
+                  title: `Passage ${sequence}`,
+                  paragraphs: ['An ordinary day.'],
+                }),
+              ],
+            );
+          }
+          await client.query('UPDATE story SET revision = $1 WHERE id = $2', [
+            to,
+            id,
+          ]);
+          await client.query('COMMIT');
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        } finally {
+          client.release();
+        }
+      }
+      await append(2, 45);
+      const url = `${origin}/api/stories/${id}/history`;
+      const read = async (query = '') => {
+        const response = await fetch(url + query, { headers: { cookie } });
+        assert.equal(response.status, 200);
+        return storyHistorySchema.parse(await response.json());
+      };
+      const first = await read();
+      assert.deepEqual(
+        first.items.map((entry) => entry.sequence),
+        Array.from({ length: 20 }, (_, i) => 45 - i),
+      );
+      assert.equal(first.nextBefore, 26);
+      assert.ok(first.items.every((entry) => !('interaction' in entry)));
+      await append(46, 46);
+      const second = await read(`?before=${first.nextBefore}`);
+      const third = await read(`?before=${second.nextBefore}`);
+      assert.deepEqual(
+        [...first.items, ...second.items, ...third.items].map(
+          (entry) => entry.sequence,
+        ),
+        Array.from({ length: 45 }, (_, i) => 45 - i),
+      );
+      assert.equal(third.nextBefore, null);
+      assert.equal((await read()).items[0]!.sequence, 46);
+      assert.deepEqual(await read('?before=1'), {
+        items: [],
+        nextBefore: null,
+      });
+      for (const query of [
+        '?before=0',
+        '?before=-1',
+        '?before=1.5',
+        '?before=',
+        '?before=2147483648',
+        '?before=2&before=3',
+      ]) {
+        assert.equal(
+          (await fetch(url + query, { headers: { cookie } })).status,
+          400,
+        );
+      }
+      assert.equal(
+        (await fetch(url, { headers: { cookie: otherCookie } })).status,
+        404,
+      );
+      assert.equal(
+        (await fetch(url + '?before=1', { headers: { cookie: otherCookie } }))
+          .status,
+        404,
+      );
+      assert.equal((await fetch(url)).status, 401);
+      assert.equal(
+        (
+          await fetch(`${origin}/api/stories/${randomUUID()}/history`, {
+            headers: { cookie },
+          })
+        ).status,
+        404,
+      );
+    },
+  );
   await t.test(
     'chamber starts once, is owner-scoped and reopens through a fresh application instance',
     async () => {
@@ -114,6 +227,18 @@ export async function checkStories(
         await page.reload();
         assert.equal(page.url(), url);
         assert.equal(await page.locator('details').textContent(), before);
+        await page.getByRole('button', { name: 'Read saved passages' }).click();
+        const history = page.getByRole('region', { name: 'Saved chronology' });
+        await history
+          .getByRole('heading', { name: '1. A gate and a small decision.' })
+          .waitFor();
+        assert.equal(await history.getByRole('article').count(), 1);
+        assert.equal(
+          await history
+            .getByRole('button', { name: 'Read older passages' })
+            .count(),
+          0,
+        );
         assert.equal(
           await page
             .getByRole('button', { name: 'Start scripted chamber' })

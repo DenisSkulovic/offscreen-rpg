@@ -1,12 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq, lt, lte } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { story, storyPassage } from '@offscreen/db/story-schema';
 import {
   passageContentSchema,
   storySnapshotSchema,
+  storyHistorySchema,
 } from '@offscreen/contracts/stories';
 import {
   interactionSpecificationSchema,
@@ -61,6 +62,45 @@ export function createStories(database: Database) {
   }
   return {
     read,
+    async history(owner: string, id: string, before?: unknown) {
+      // Parse query text explicitly: no coercion of arrays, blanks or fractions.
+      const cursor = z
+        .string()
+        .regex(/^[1-9]\d{0,9}$/)
+        .transform(Number)
+        .pipe(z.number().int().max(2147483647))
+        .optional()
+        .safeParse(before);
+      if (!cursor.success) throw new StoryError('invalid');
+      const rows = await database.db
+        .select({
+          id: storyPassage.id,
+          sequence: storyPassage.sequence,
+          content: storyPassage.content,
+        })
+        .from(story)
+        .leftJoin(
+          storyPassage,
+          and(
+            eq(storyPassage.storyId, story.id),
+            lte(storyPassage.sequence, story.revision),
+            cursor.data === undefined
+              ? undefined
+              : lt(storyPassage.sequence, cursor.data),
+          ),
+        )
+        .where(and(eq(story.id, identifier(id)), eq(story.ownerId, owner)))
+        .orderBy(desc(storyPassage.sequence))
+        .limit(21);
+      // The left join distinguishes an exhausted page from an inaccessible story
+      // within one database snapshot, including on empty cursor ranges.
+      if (!rows.length) throw new StoryError('not_found');
+      const entries = rows.filter((row) => row.id !== null);
+      return storyHistorySchema.parse({
+        items: entries.slice(0, 20),
+        nextBefore: entries.length > 20 ? entries[19]!.sequence : null,
+      });
+    },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(owner: string, id: string, initial: unknown) {
       identifier(id);

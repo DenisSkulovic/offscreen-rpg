@@ -34,7 +34,7 @@ The chamber is a separate fixed fixture, not a generated preview converted into 
 
 `GET /api/stories/:id` reopens an owned snapshot. `/chamber` is available from the signed-in stories page; before starting, the browser assigns and retains an ID in `/chamber?id=...`. Retrying or refreshing can recover the same saved opening. Inaccessible identities return 404. A fresh fixture uses a new ID; it never resets an existing story. Normal authentication remains required, and local browser integration tests use the existing test session helpers.
 
-The initial screen exposes saved identifiers/revision and disabled offered choices. It states that possessions, consequences and timers are absent. This establishes persistence and reopening only. The generated/shared start contract below remains to be implemented; the fixture does not bypass its eventual candidate, roster or spending checks.
+The initial screen exposes saved identifiers/revision and disabled offered choices, plus an on-demand saved chronology reader. The reader loads one bounded page at a time, offers older passages and a return to the latest, and does not render old offers as actionable controls. It states that possessions, consequences and timers are absent. This establishes persistence, reopening and history retrieval only. The generated/shared start contract below remains to be implemented; the fixture does not bypass its eventual candidate, roster or spending checks.
 
 ## Start exactly the reviewed story
 

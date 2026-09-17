@@ -22,6 +22,16 @@ A later map experiment may offer a rotatable uniform cube grid, selection to ins
 
 The chronology contains what happened, including autonomous choices. It helps someone understand how they reached the current situation. Returning after a long absence should offer a focused recap and then make any current decision clear; it should not require reading every quiet interval.
 
+### Reading a long life
+
+A month of ordinary life should remain enjoyable to revisit without becoming hundreds of equally prominent cards. Offer the detailed chronology underneath a shorter narrative overview. Quiet accomplishments, relationships and routines can matter as much as dramatic danger; significance is not a measure of violence or surprise.
+
+Chapters are a promising presentation of that overview: unequal stretches grouped around changes in circumstances, goals or relationships. Settling in a town could form a long chapter; a brief escape could form another. Neither a fixed entry count nor every dramatic incident automatically defines a boundary. A return recap can select across chapters while keeping the current situation and any available decision easy to reach.
+
+Treat significance and chapter boundaries as interpretations of recorded history. A passing acquaintance or ordinary purchase may become important later. The current chapter can remain provisional, and later context can change grouping or emphasis without rewriting what happened. Summaries should let the player open their supporting passages. Do not discard ordinary entries merely because they initially seem unimportant, and do not require every mechanical update to become a separate prose entry.
+
+This is a direction for the returning experience, not an implemented chapter engine or a requirement to score every passage. Evaluate it against a long quiet-life example after the first playable chamber; first provide dependable access to the underlying saved history.
+
 ## Acting and waiting
 
 At a meaningful decision, present a small set of distinct contextual options. They can include cautious, direct, strange or deliberately inactive responses when those make sense. There is no required universal number of choices.

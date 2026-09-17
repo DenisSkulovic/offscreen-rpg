@@ -16,6 +16,20 @@ export const storySnapshotSchema = z.strictObject({
   }),
 });
 export type StorySnapshot = z.infer<typeof storySnapshotSchema>;
+// History is read-only presentation. Past offers are not actionable controls.
+export const storyHistorySchema = z.strictObject({
+  items: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        sequence: z.number().int().positive(),
+        content: passageContentSchema,
+      }),
+    )
+    .max(20),
+  nextBefore: z.number().int().positive().nullable(),
+});
+export type StoryHistory = z.infer<typeof storyHistorySchema>;
 export const startChamberSchema = z.strictObject({
   scenario: z.literal('chamber.v1'),
 });

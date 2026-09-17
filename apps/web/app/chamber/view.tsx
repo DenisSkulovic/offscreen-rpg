@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '../stories/session-refresh';
+import { StoryHistoryView } from './history';
 
 export function Chamber({
   initial,
@@ -80,6 +81,7 @@ export function Chamber({
             </dl>
           </details>
           <p>Bookmark this URL to reopen the same story.</p>
+          <StoryHistoryView key={story.id} storyId={story.id} />
           <a href="/chamber">Prepare a fresh chamber</a>
         </>
       ) : (

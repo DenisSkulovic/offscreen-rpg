@@ -25,6 +25,10 @@ Start retrieval with explicit entity references, chronology windows, unresolved 
 
 Summaries are derived artifacts with source sequence coverage and a version. Create them when enough material accumulates, not after every sentence. They support retrieval and recaps; they do not replace authoritative possessions, current conditions, ownership or promises the product needs to enforce.
 
+Chapter groupings and significance judgments are derived in the same way. Keep their source references and coverage explicit; a chapter spans a contiguous stretch of chronology, while a focused recap may select across stretches. Later developments can change interpretation without changing the original entries. A single permanent importance score is insufficient for both narrative presentation and context retrieval: a low-drama promise can become the most relevant fact for today's decision.
+
+When chaptering is implemented, reassess a bounded amount of accumulated material at useful boundaries or on return, and reuse valid results. Do not call a model after each ordinary entry or repeatedly send the whole lifetime to rebuild every chapter. An unfinished chapter may be provisional; revision and source coverage distinguish it from a summary that includes newer material. Test that an early minor encounter can regain prominence, that routine achievements survive a recap, and that boundaries follow narrative changes rather than equal page sizes. No scoring service, chapter schema or automatic summarization is required for the chamber.
+
 Keep canonical facts linked to the passage or accepted change that established them. An unverified rumor remains a claim. When facts change, context assembly prefers the current record while preserving history explaining the change. Include a test in which a minor earlier object becomes relevant much later.
 
 Long histories need bounded retention of raw generation traces, not deletion of the player's readable chronology. Track stored media and trace volume as costs alongside tokens. Repeated recap requests should reuse an artifact valid for the same viewer and chronology revision.
