@@ -19,6 +19,7 @@ export class IdentityService {
   async requireUser(headers: Request['headers']) {
     const session = await this.auth.api.getSession({
       headers: fromNodeHeaders(headers),
+      query: { disableRefresh: true },
     });
     if (!session) throw new UnauthorizedException();
     return {

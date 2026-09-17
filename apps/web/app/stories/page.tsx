@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { SignOutButton } from './sign-out-button';
+import { SessionRefresh } from './session-refresh';
 
 const viewerSchema = z.object({
   id: z.string(),
@@ -24,6 +25,7 @@ export default async function Stories() {
   const user = viewerSchema.parse(await response.json());
   return (
     <main>
+      <SessionRefresh />
       <p className="eyebrow">Offscreen RPG</p>
       <h1>Welcome, {user.name}.</h1>
       <p>Your account is ready. Story creation is coming next.</p>

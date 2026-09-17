@@ -26,7 +26,7 @@ test(
     await applyMigrations(
       config,
       fileURLToPath(
-        new URL('../../../../../packages/db/migrations', import.meta.url),
+        new URL('../../../../packages/db/migrations', import.meta.url),
       ),
     );
     const database = createDatabase(config, () => {});
@@ -207,6 +207,30 @@ test(
           assert.equal(
             (await fetch(`${origin}/api/me`, { headers: { cookie } })).status,
             401,
+          );
+        },
+      );
+      await t.test(
+        'browser session reads renew the cookie; identity reads do not',
+        async () => {
+          const aging = await helpers.login({ userId: user.id });
+          const context = await auth.$context;
+          await context.internalAdapter.updateSession(aging.token, {
+            expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          });
+          const read = await fetch(`${origin}/api/me`, {
+            headers: aging.headers,
+          });
+          assert.equal(read.status, 200);
+          assert.equal(read.headers.get('set-cookie'), null);
+          const renewed = await fetch(`${origin}/api/auth/get-session`, {
+            headers: aging.headers,
+          });
+          assert.equal(renewed.status, 200);
+          assert.match(
+            renewed.headers.get('set-cookie') ?? '',
+            /session_token=/,
           );
         },
       );
