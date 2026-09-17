@@ -1,8 +1,8 @@
 # Product documentation — Offscreen RPG
 
-Updated: 2026-09-17. Product definition is baselined for technical design (D061); no implementation is claimed.
+Updated: 2026-09-17. Product v0.01 is being simplified under D064 before technical design; no implementation is claimed.
 
-A persistent, primarily text-based, single-player character life with an LLM storyteller. Ordinary activities run under explicit rules; the storyteller invents compatible incidents, people and connections. Only consequential world detail needs individual state. Established identities and consequences persist.
+A persistent, primarily text-based, single-player character life with an LLM storyteller. The current proposal uses storyteller-adjudicated continuation with a small consistency/check contract; dedicated activity systems are not prerequisites. Only consequential world detail needs individual state. Established identities and consequences persist.
 
 The player can observe, act, delegate or pause. Running delegated life continues through ordinary nonresponse; manual pause freezes the campaign. Quiet routines and unfolding stories are equally important. D&D remains the mechanical foundation, with a bounded first supported subset and explicit extensions.
 
@@ -11,8 +11,8 @@ The primary purpose is a credible senior fullstack engineering portfolio. The fi
 ## Continue development
 
 1. Read [project instructions](../AGENTS.md) and [TASKS](TASKS.md).
-2. Read [vision](product/PRODUCT_VISION.md) and [v0.01 release boundary](product/foundations/scope-and-release-plan.md).
-3. Resolve the short design-gate list in TASKS, write compact technical contracts, then implement a connected playable slice. Do not restart broad product brainstorming.
+2. Read [vision](product/PRODUCT_VISION.md) and [revised release proposal](product/foundations/scope-and-release-plan.md).
+3. Discuss the proposed [story progression](product/experience/story-progression.md) boundary, resolve the short queue and then derive technical contracts for a connected playable slice.
 
 ## Authority and navigation
 

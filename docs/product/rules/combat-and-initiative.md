@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [rules]
 tags: [dnd-rules, direct-control, autonomy, consequences]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: depends_on
     target: DOC-DND-BASELINE
@@ -13,6 +13,8 @@ relations:
 ---
 
 # Combat and initiative
+
+Optional later reference. This document describes detailed tactical combat only if deliberately selected. Under D064, danger, injury, defeat and escape can instead be story-adjudicated with generic conditions and adopted checks; this tactical contract is not a prerequisite for those narrative outcomes.
 
 This document owns the encounter contract. Exact initiative, action economy, round durations, checks, damage and recovery must come from the chosen source or explicit adaptations; none is invented here. SCN-004 supplies a small encounter fixture.
 

@@ -1,12 +1,13 @@
 # Product document index
 
-Updated: 2026-09-16. Inventory and optional coverage; **not a writing backlog or implementation commitment**.
+Updated: 2026-09-17. Inventory and optional coverage; **not a writing backlog or implementation commitment**.
 
-There are 29 existing product documents. Vision and release scope form product baseline v0.01; supporting topics retain draft labels where detailed options remain unaccepted. The 58-topic coverage map below includes those files and 29 uncreated possibilities. Existing documents may mix horizons; [release scope](product/foundations/scope-and-release-plan.md) owns capability placement. Document counts do not measure readiness.
+There are 30 existing product documents. D064 reopens the v0.01 mechanical boundary; vision/release scope and the new story-progression contract are proposals under revision. The library includes 29 uncreated topic possibilities, which remain optional reference ideas. Existing documents may mix horizons; [release scope](product/foundations/scope-and-release-plan.md) owns capability placement. Document counts do not measure readiness.
 
 ## Route by the current question
 
 - Next decision and restart: [TASKS](TASKS.md).
+- Proposed minimal progression: [DOC-STORY-PROGRESSION](product/experience/story-progression.md).
 - What to build first, later or possibly never: [DOC-RELEASE-SCOPE](product/foundations/scope-and-release-plan.md).
 - Logic versus models, budget and fallback: [DOC-AI-BUDGET](product/ai-experience/cost-budgets-and-degraded-play.md).
 - Concrete week, journey, encounter and failure cases: [DOC-REFERENCE-SCENARIOS](product/validation/reference-campaigns-and-journeys.md).
@@ -15,8 +16,11 @@ There are 29 existing product documents. Vision and release scope form product b
 
 ## Existing product documents
 
+The existing work/travel/combat topics now distinguish examples or optional detailed mechanics from the proposed minimal core.
+
 | Existing document | Status |
 | --- | --- |
+| [experience/story-progression.md](product/experience/story-progression.md) | draft |
 | [characters-and-autonomy/autonomous-risk-and-decisions.md](product/characters-and-autonomy/autonomous-risk-and-decisions.md) | draft |
 | [characters-and-autonomy/goals-orders-and-permissions.md](product/characters-and-autonomy/goals-orders-and-permissions.md) | draft |
 | [characters-and-autonomy/identity-personality-and-judgment.md](product/characters-and-autonomy/identity-personality-and-judgment.md) | draft |
@@ -31,12 +35,12 @@ There are 29 existing product documents. Vision and release scope form product b
 | [foundations/game-systems-map.md](product/foundations/game-systems-map.md) | draft |
 | [foundations/glossary-and-domain-map.md](product/foundations/glossary-and-domain-map.md) | draft |
 | [foundations/product-principles.md](product/foundations/product-principles.md) | draft |
-| [PRODUCT_VISION.md](product/PRODUCT_VISION.md) | working-baseline |
+| [PRODUCT_VISION.md](product/PRODUCT_VISION.md) | draft |
 | [worlds/invention-discovery-and-canon.md](product/worlds/invention-discovery-and-canon.md) | draft |
 | [worlds/starting-worlds-and-content.md](product/worlds/starting-worlds-and-content.md) | draft |
 | [worlds/world-detail-and-simulation-boundaries.md](product/worlds/world-detail-and-simulation-boundaries.md) | draft |
 | [worlds/world-events-and-causality.md](product/worlds/world-events-and-causality.md) | draft |
-| [foundations/scope-and-release-plan.md](product/foundations/scope-and-release-plan.md) | working-baseline |
+| [foundations/scope-and-release-plan.md](product/foundations/scope-and-release-plan.md) | draft |
 | [ai-experience/cost-budgets-and-degraded-play.md](product/ai-experience/cost-budgets-and-degraded-play.md) | draft |
 | [validation/reference-campaigns-and-journeys.md](product/validation/reference-campaigns-and-journeys.md) | draft |
 | [rules/dnd-baseline-and-coverage.md](product/rules/dnd-baseline-and-coverage.md) | draft |

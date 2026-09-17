@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [foundations]
 tags: [dnd-rules, autonomy, configurability, continuity]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PRODUCT-VISION
@@ -49,14 +49,17 @@ Definitions below are proposed terminology for the confirmed direction. They do 
 | Belief | What an actor considers true, possibly incorrectly |
 | Discovery / invention | Learning an existing fact / establishing new content; these require different authority rules |
 | State / history | What is currently true / what happened to bring the campaign here; conceptual distinction, not storage design |
+| Story segment | A proposed unit of continuation that may summarize multiple actions or dwell on one moment; no fixed time granularity |
+| Pending continuation | A conditional possible future, not a committed fact or part of the experienced chronology |
+| Adjudication | Contextual judgment of feasibility, uncertainty, time and consequences within campaign constraints; may use adopted checks |
 
 ## Activity, time and consequence
 
 | Term | Meaning |
 | --- | --- |
 | Action | A character attempt or decision whose result is resolved under the active rules |
-| Activity | Work extended over fictional time, potentially containing many actions, interruptions and results |
-| Routine | Recurring autonomous activity; repetition permissions and limits remain to be defined |
+| Activity | A narrative label for an intention unfolding over time; under D064 it does not imply a dedicated implementation per verb |
+| Routine | An ongoing intention guiding autonomous continuation; not necessarily a programmed schedule of activity modules |
 | Event | Something that occurs or changes the situation, initiated by the player or by the surrounding world |
 | Consequence | An effect of actions or events, including gains, losses, relationships, injury or death where enabled |
 | Fictional time | Time experienced within the campaign world |

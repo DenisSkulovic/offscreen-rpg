@@ -4,13 +4,15 @@ layer: product
 status: draft
 domains: [worlds]
 tags: [world-creation, continuity, autonomy]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: depends_on
     target: DOC-KNOWLEDGE-BELIEFS
 ---
 
 # Organizations, factions and local economic context
+
+Initial scope correction (D064): group purpose, affiliation, agreements and resources may be compact story facts. Jobs/access/economy examples below do not require dedicated mechanics or merchant stock simulation. DOC-STORY-PROGRESSION and DOC-INVENTORY own the proposed lighter boundary.
 
 The first generated-world direction includes some organizations/factions and both deliberately specified and procedural NPCs. This topic owns group identity, affiliation and its effects. It does not commit the MVP to strategic faction AI or a simulated regional economy.
 

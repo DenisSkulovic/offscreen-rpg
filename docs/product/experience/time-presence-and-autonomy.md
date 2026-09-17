@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [experience, time-and-settings, characters-and-autonomy]
 tags: [offline-play, autonomy, consequences, configurability, notifications]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PRODUCT-VISION
@@ -144,3 +144,13 @@ At constant speed s, one real hour permits s fictional hours while the campaign 
 Resolve activity/event boundaries within each interval before granting its end state. Manual/global pause contributes no fictional time. The initial service must support this progress while the browser is closed; restart reconciliation must not repeat already-applied intervals. Exact scheduler design is later technical work.
 
 [DOC-INTERVENTION](../notifications/event-intervention-and-timeouts.md) now owns notifications and offered choices. A mine-arrival update can be informational if beginning work is already authorized; an end-of-shift choice can pause under the selected policy. A different autonomy setting may continue into another permitted activity. D050 brings timed intervention into the proposed initial experience; DOC-INTERVENTION owns its real-time window, running-window baseline, optional hold alternatives, manual-pause priority and fallback contract.
+
+## Duration estimates and a conditional future
+
+D064 proposes model-estimated duration and scheduled story checkpoints. Recommend letting the storyteller estimate fictional duration while the application derives real waiting from a declared campaign pace. This needs arithmetic and scheduling, not movement/work formulas. A narrative segment may cover a glance, several hours or a week; the visible chronology need not expose each internal timing field.
+
+TIME-F01 is reopened for this choice. At a constant 96× pace, two fictional days correspond to 30 real minutes and five fictional hours to about 3.125 real minutes. Five fictional hours in eight real minutes instead imply 37.5×. These illustrative estimates need not be exact, but a single supposedly fixed speed cannot promise both ratios. An alternative is explicit narrative pacing, where real waits vary by scene; that is a different experience and must be presented honestly rather than hidden in model guesses. Neither policy is newly selected by the brainstorming examples.
+
+Recommend persisting a prepared checkpoint's fictional offset and recomputing its real due time when an allowed speed change occurs. A manual pause suspends progress; a changed intention invalidates incompatible completion/encounter plans. No arrival, payment or injury becomes history merely because it was pre-generated. Due points can trigger previously prepared content without a new model call, subject to current validity. Exact clock/storage mechanisms belong to technical design.
+
+The example of an encounter 13 real minutes into a 30-minute trip is possible without a travel subsystem. Preserve elapsed time and the coarse reached situation, then let the next intention continue or diverge. A timed three-minute hold remains an optional incident policy to discuss; it does not silently replace D057's normal running delegated experience or weaken indefinite manual pause.

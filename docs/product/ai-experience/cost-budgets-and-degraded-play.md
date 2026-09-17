@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [ai-experience]
 tags: [affordability, autonomy, offline-play, continuity]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PRODUCT-PRINCIPLES
@@ -16,45 +16,36 @@ relations:
 
 # AI contribution, spending and degraded play
 
-Confirmed direction: selective LLM use, substantial game logic, affordable unattended life, and configurable model/spending preferences (D003, D028, D030). Denis's examples range from a few cents to roughly a dollar or somewhat more for a week away. They express a desired affordability range, not an accepted budget or measured feasibility result. All contracts and numbers below are proposals.
+Confirmed goals remain affordable unattended life and configurable spending. D064 reopens the earlier division between substantial per-activity logic and selective models: lightweight story progression may depend more heavily on model adjudication. The scope/cost consequences must be evaluated rather than assumed away. Denis's examples range from a few cents to roughly a dollar or somewhat more for a week away. They express a desired affordability range, not an accepted budget or measured feasibility result. All contracts and numbers below are proposals.
 
 This document owns when expenditure is justified and what the player experiences. Provider integration, algorithms, data structures and specific model selection remain technical work for later.
 
 ## Three responsibilities
 
-**Mechanical resolution:** eligibility, movement, time, resources, checks, damage, wages and lasting effects belong to explicit game rules. Rules can include randomness and interacting systems; they need not be a script for every story. An LLM must not calculate a different result merely because the player chose a richer narration profile.
+**Story judgment:** interpret an intention, assess plausible duration and consequences, generate options and continue the story. The proposed lightweight version gives models more of this work instead of requiring specialized mechanics for each activity. Preserve character knowledge, campaign permissions and any adopted check result.
 
-**Character choice:** select an intention or action using that actor's permitted knowledge, personality and circumstances. Either ordinary logic or a bounded LLM contribution may serve this role. A stronger model is not a more intelligent character by default. It still portrays the chosen character, including foolishness.
+**Consistency and execution:** the application maintains authoritative committed facts, verifies relevant quantities/constraints, resolves adopted rolls once, schedules due changes and honors pause/cancellation. Models may propose contextual changes; they do not directly bypass this contract. Structural checks cannot guarantee semantic coherence.
 
-**Presentation and content:** dialogue, description, explanation and constrained invention can benefit from models. Prose that introduces an item, promise, route or power is not harmless decoration merely because it arrived in a narration response. Consequential additions must become explicit, checked facts before later mechanics rely on them.
-
-The minimum viable cheap experience needs coherent mechanical and decision behavior. Endless templated prose is not enough, but neither is expensive prose evidence of deeper simulation.
+**Presentation:** express actual outcomes, current choices and recaps. Combine compatible narration and adjudication work where useful; do not use a second call merely to paraphrase every result. A prepared narrative is not proof its future event has happened.
 
 ## Candidate decision nodes
 
-Each selected node needs a trigger, relevant facts, allowed output, authority, latency tolerance, expenditure ceiling and fallback. “Use AI if needed” is insufficient. The following is an initial product allocation to test.
+| Node | Possible model contribution | No-model behavior |
+| --- | --- | --- |
+| Opening | Premise, relevant facts and initial intentions | Use a valid prepared example only if explicitly presented as such |
+| Selected next story segment | Contextual adjudication, duration, options and bounded conditional continuation | Execute an existing still-valid segment; no new novel outcome is implied |
+| Due checkpoint, clock, accepted transfer or adopted roll | Usually none | Check eligibility and apply the permitted result once |
+| Player redirection or unexpected choice | Interpret and judge the changed situation | Offer valid prepared choices or disclose that new generation is needed |
+| Autonomous continuation | Short prepared default or budgeted new judgment | Follow valid authorized prepared behavior; block visibly if none exists |
+| Recap | Optional prose synthesis of relevant recorded facts | Factual current-state/history view remains available |
 
-| Node | Ordinary handling | When an LLM may add value | No-model behavior / authority |
-| --- | --- | --- | --- |
-| Work progress, pay, food, rest, travel progress | Rules/data | No call for arithmetic or routine progression | Resolve supported rules; record facts without a story paragraph per update |
-| Choose next routine action | Rules using traits, needs, commitments and eligibility | A novel conflict outside the supported policy, if meaningful and budgeted | Use a defined eligible fallback; pause if no valid fallback exists |
-| Autonomous tactical choice | Defined game policy and allowed actions | Selected unusual strategic choice | Same legal actions, information limits and character profile; outcome still resolves through rules |
-| Interpret free-text intent | Known controls/actions where unambiguous | Ambiguous or novel intent, principally during direct play | Offer supported actions or clarification; no invented successful action |
-| Conversation | Rules govern facts, commitments and effects | Responsive character speech and nuanced intent | Plain factual response or wait for dialogue; disclose reduced presentation |
-| New place/person/item | Existing content and constrained variants | Distinctive identity or local content when relevant | Reuse supported content or stop before unsupported creation; no invented executable powers |
-| Major personal decision | Defined goals/permissions and current facts | Rare, consequential conflict where richer portrayal is worthwhile | Configured action policy or whole-world pause; not an unrestricted premium escalation |
-| Distant developments | Defined processes and bounded event possibilities | Rare elaboration of a consequential connection | Maintain existing effects; do not run a conversation for every remote NPC |
-| Recap and explanation | Factual change/history summary | Readable narrative at return or requested summary time | Plain facts remain available; no LLM required merely to know what happened |
-
-These are behavioral roles, not nine services or mandatory calls. One interaction may combine compatible generation tasks. Independent actors must not receive each other's secrets simply to save tokens.
+These are responsibilities, not one mandatory call or service per row. A single bounded request may prepare a short segment and its options, but generating every option's entire future wastes work when the player chooses only one.
 
 ## When to spend more
 
-Proposed preference order: use existing valid content/rules; consider a model for novelty or expressive interaction; select among models qualified for that node; apply the player's quality, latency and spending limits; use the node's fallback when no eligible call fits.
+Reuse relevant context/content and still-valid planned outcomes. Call a model for actual new judgment or meaningful expressive value, not to check the clock or decide every minute whether a model call is necessary. Bound response size, tools, repair attempts and planning horizon together. Discarding invalidated pre-generation is part of real cost, not a free operation.
 
-Higher stakes alone are not a reason to call a model. A lethal attack with fully defined mechanics requires correct rules. A delicate negotiation may warrant richer interpretation, but cannot authorize secret knowledge or waived costs. Player presence raises the value of expressive generation; absence should strongly favor supported logic and infrequent exceptional decisions. An unchanged scene does not justify repeated deliberation.
-
-Avoid spending an LLM call to decide whether every routine event deserves another LLM call. A scarce richer-decision allowance must not become a target that the game tries to exhaust. Budget is a ceiling, not a required spend.
+Higher budget may affect narrative variety and adjudication; it is not permission to change character capabilities, rewrite history or exceed gameplay limits. Repeated comparable judgments may vary even across identical models; evaluate this explicitly. Spending allowance is a ceiling, not a target to exhaust.
 
 ## Proposed spending contract
 
@@ -63,7 +54,7 @@ Avoid spending an LLM call to decide whether every routine event deserves anothe
 | AI-COST-001 | Player spending limits bind narration, autonomous choices, generation, retries and fallback models together. A character's personality cannot bypass them. |
 | AI-COST-002 | Show unattended and active-play allowances separately, plus an overall limit, currency, accounting interval and reset behavior. Budget periods use real time, independent of campaign acceleration. |
 | AI-COST-003 | Before admitting a paid request, its bounded potential cost must fit remaining allowance, accounting for outstanding calls and retries. If cost cannot be bounded, that route cannot satisfy a strict cap. Actual billed usage remains visible. |
-| AI-COST-004 | Reaching a limit stops optional generation first. Supported mechanics and their authorized risks may continue with plain presentation. An unresolved required decision without a valid fallback pauses the whole world and records the reason. This fallback policy still needs Denis's agreement. |
+| AI-COST-004 | Reaching a limit stops optional generation. Still-valid prepared continuation and implemented generic fallbacks may execute; arbitrary novel story judgment cannot be promised without a call. When no legitimate continuation fits, pause at the unresolved boundary and explain the generation block. This proposed policy and actual fallback coverage still need agreement. |
 | AI-COST-005 | No automatic paid upgrade, unlimited repair loop, or later burst of unrequested background narration. At most a bounded retry/fallback allowance chosen for the node. |
 | AI-COST-006 | A delayed or rejected model response cannot retroactively change resolved play. A retry cannot award a second reward or spend the same fictional resource twice. |
 | AI-COST-007 | Distinguish reduced presentation, paused progression and ongoing logical simulation. Never imply the character has continued living if progression stopped. |
@@ -75,7 +66,7 @@ Automatic top-ups, exact reset intervals, caps and notifications are unselected.
 
 Richer narration can vary without changing mechanical results. Richer decision-making can change which valid action is selected and therefore the story and survival odds. “All tiers use the same rules” does not eliminate that difference.
 
-AI-F01: Recommend the initial spending preference primarily change expression and frequency of optional elaboration, with a common tested autonomy policy for consequential decisions. A later explicitly chosen simulation profile may allow model-dependent behavioral variation. Alternative: allow richer decision-making immediately, disclose the difference, and test character consistency and outcome bias across profiles. No claim of identical outcomes across different models is made.
+AI-F01 is reopened by D064. In a model-adjudicated game, spending/model choice can affect consequential judgments, not just prose. Recommend shared hard limits and any adopted check semantics, with model-dependent variation disclosed and evaluated. A mechanically identical inexpensive/rich outcome guarantee is not credible without a separate deterministic resolution system, which is no longer assumed.
 
 The user explicitly welcomes hybrid logic/LLM nodes; this fork asks how far the resulting behavioral difference should go, not whether hybrid handling is permitted in principle.
 
@@ -104,7 +95,7 @@ Qualify models by role using the same small scenario set: valid permitted action
 
 ## What must be decided next
 
-World preparation and genuinely new mechanic authoring have a separate cost/latency envelope from unattended play (D034). A budget for a cheap week must not silently authorize expensive setup or mid-campaign extension work. Generate and check reusable behavior when required, then resolve supported routine instances through it. The [preparation contract](../worlds/starting-worlds-and-content.md#mechanical-variety-and-simple-setup) owns how unsupported mechanics are disclosed. A scale transition does not automatically authorize generating every newly relevant microscopic entity or repeatedly asking a model for physical laws.
+Opening generation and novel continuation have separate workload profiles. A cheap unattended-week budget must not silently authorize expensive setup or pre-generation. Reuse established context and valid short continuations; do not require generated executable mechanics to tell a new kind of scene. The [preparation contract](../worlds/starting-worlds-and-content.md#mechanical-variety-and-simple-setup) owns how unsupported mechanics are disclosed. A scale transition does not automatically authorize generating every newly relevant microscopic entity or repeatedly asking a model for physical laws.
 
 Resolve AI-F01, actual setup/active/unattended limits and the explicit essential-no-fallback policy. Ordinary supported continuation is the current direction; browser/computer-closed progression and phone contact are already selected by D038, not an unresolved availability choice. Use [reference scenarios](../validation/reference-campaigns-and-journeys.md) to expose the experience before choosing infrastructure.
 
@@ -114,7 +105,7 @@ Distinguish three optimizations: reuse already generated world content; reduce/r
 
 Official OpenRouter documentation describes provider-dependent prompt caching. That is a candidate for hosted inference; cache eligibility, routing, lifetime and charges need validation. [Prompt caching](https://openrouter.ai/docs/guides/best-practices/prompt-caching), checked 2026-09-16. vLLM documents prefix caching that reuses KV state for shared prefixes; this is a serving-runtime capability, not control over a hosted provider's GPU from the web application. [vLLM prefix caching](https://docs.vllm.ai/en/v0.9.2/features/automatic_prefix_caching.html), versioned documentation checked 2026-09-16.
 
-Recommend generated-content reuse, bounded per-node context, actual usage visibility and provider-supported caching where beneficial for the initial app. Treat self-hosted GPU serving/KV optimization as a later experiment unless a measured workload justifies it. Do not promise a GPU cost saving without comparing operating expense and maintenance. Ordinary ticks, map movement, wages, inventory and factual notifications should need no model call.
+Recommend generated-content reuse, bounded per-node context, actual usage visibility and provider-supported caching where beneficial for the initial app. Treat self-hosted GPU serving/KV optimization as a later experiment unless a measured workload justifies it. Do not promise a GPU cost saving without comparing operating expense and maintenance. Clock checks, applying a valid prepared outcome or explicit transfer, and factual notifications need no model call. Novel progress/outcome judgment may require one; no specialized movement/wage engine is presumed.
 
 World creation may dominate a short demo's inference cost; frequent active dialogue could dominate a longer campaign. Measure setup and ongoing usage separately. Omitting dialogue in the first release is a valid proposed saving, not proof of a particular weekly bill. In an account-hosted web platform, do not share private campaign context or generated responses across users through an incorrectly scoped cache.
 
@@ -146,3 +137,9 @@ For v0.01, derive a small, inspectable context/tool contract from these product 
 - Evaluate a small repeatable set: valid incident, contradictory identity/custody, omitted old obligation, hidden-fact leakage, unsupported effect, stale response, exhausted budget and nonresponse fallback. Keep mocked runs distinguishable from paid live evaluation.
 
 Do not turn this into a second product specification or a mandatory multi-agent design. The experiment should reveal where retrieval, constraints or creative variety fail and guide the next small change.
+
+## Measuring the simplified version
+
+D064's reduced code complexity changes the inference workload. Measure calls per meaningful continuation, per active intervention and per real day, separating quiet compressed intervals, frequent decisions, long-gap context and canceled plans. Compare short preparation with generating at every boundary. Do not use the hypothetical pricing table as proof that a model-adjudicated week will meet its target.
+
+Quiet intervals can summarize several ordinary actions without one call per action, and the application can publish valid prepared content later. However, preparing a full unattended week in advance sacrifices responsiveness and may waste tokens after the first interruption. Test a short horizon first. A model outage/budget limit exposes the real amount of autonomy supported by prepared content; disclose it instead of quietly adding the removed activity engine back into scope.

@@ -15,7 +15,7 @@ Do not require the complete long-term library before building anything. Once a c
 
 ## Current phase and boundaries
 
-D061 closes this product-definition pass at baseline v0.01. Next session: derive compact technical documents, then implement a playable MVP under Denis's direction. This review itself performs no technical implementation, account setup, deployment or paid model calls. Prior product-only restrictions describe the completed exploration phase, not a prohibition on the requested next phase.
+D061 established product baseline v0.01; D064 now explicitly reopens its mechanics before technical design. Evaluate and apply a lighter story-progression contract, distinguishing owner direction from proposed details. This revision performs no game implementation, paid model calls or deployment. Technical design follows a coherent chosen boundary, not a requirement to finish every optional topic.
 
 A baseline freezes the current direction and scope long enough to build. It does not mark every draft option accepted. Technical design resolves the short queue in TASKS, records chosen defaults and maps them to supported behavior; playtests can reopen a specific product decision with evidence. Do not require completion of the optional topic tree.
 

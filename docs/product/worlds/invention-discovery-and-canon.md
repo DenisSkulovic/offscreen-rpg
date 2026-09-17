@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [worlds]
 tags: [world-creation, continuity, consequences, dnd-rules]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: depends_on
     target: DOC-GLOSSARY
@@ -80,7 +80,7 @@ Still open: how much authoring can change an active character's circumstances, w
 
 Before a generated detail affects an outcome, identify whether it is description, a supported capability/combination, or a new mechanic. Description may enrich the scene, but if the player uses the described ladder, passage or device, its relevant existence, access, limits and interactions must be established consistently before resolving that action. Do not retroactively withdraw a relied-upon fact merely because it was initially intended as decoration.
 
-A genuinely new effect needs defined prerequisites, target/reach, time, cost, consequences and interactions under DOC-DND-BASELINE and WORLD-F05. If those are absent, offer an explicit approximation or pause for clarification/extension; do not imply the full mechanic exists. A later generation cannot rewrite an already-resolved outcome to repair its own contradiction.
+Under D064, a narrative effect may be adjudicated in context and committed through generic fact/condition/possession changes; it does not require a dedicated simulation before it can occur. Important costs, constraints and consequences must still be coherent and respect any adopted rules. State an approximation when precise behavior is not supported. Repeated consequential abilities may need explicit persistent limits; do not force a full rules module for every invention. Later generation cannot rewrite an already-resolved outcome to repair a contradiction.
 
 ## Storyteller incident authorship
 

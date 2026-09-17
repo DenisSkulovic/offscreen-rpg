@@ -4,30 +4,32 @@ layer: product
 status: draft
 domains: [rules]
 tags: [continuity, consequences, dnd-rules]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: depends_on
     target: DOC-DND-BASELINE
 ---
 
-# Inventory, equipment and resources
+# Possessions, promises and contextual value
 
-User direction: an inspectable inventory, including worn clothes and currency, belongs in the first playable life loop. This document owns possessions, access and transfers; exact carrying limits and item effects remain profile/source choices.
+D064 reopens how much inventory and economic structure the experience needs. The proposal here is a compact continuity record, not a full inventory or trade system. Initial representation remains an open product choice.
 
 ## Proposed initial behavior
 
-An item has a stable identity or stack identity, quantity, relevant properties, location/custody and any ownership distinction that matters. An actor sees accessible possessions and separately sees equipped items and currency. Worn clothing is not a second copy of a carried item. Currency may be an item or another explicitly denominated resource; the product does not require coins in every world.
+A prose list can be sufficient for presentation: a torn shirt, a dagger, some silver. But repeated use, transfers and returning objects require identifying what those phrases refer to. Recommend persistent identity for distinctive consequential items, descriptive facts for ordinary possessions, and quantities only where exact counts matter. This does not require equip slots, item classes, weight/capacity rules or numerical attributes for every object.
 
-Acquiring, consuming, equipping, dropping and transferring an item applies an actual state change and records its cause. Equipping needs a compatible capability or body attachment; generic concepts must not require human hands or slots. The initial world can use ordinary clothing/tool rules without claiming support for every anatomy.
-
-Inaccessible, already spent or already transferred resources cannot be used again. A command repeated after a timeout must not duplicate pay or purchases. Interrupted actions retain or consume resources according to their owning activity rule, rather than restoring everything automatically.
+“Some silver” can stay approximate while nothing depends on the count. Before an exact purchase, establish the available count compatibly with prior facts and make the offer clear. If prior history says no coins remain, generation cannot invent an unnoticed purse to complete the deal. Alternatively use explicitly coarse means such as “enough for modest supplies”; then do not present precise balances or promise exact affordability. These are alternatives, not simultaneously precise and vague accounting.
 
 ## Small trade proposal
 
-Recommend one local merchant with listed stock and explicit prices for the first slice. A purchase checks access, available quantity, price/currency and funds, then transfers consideration and goods as one completed exchange or reports why it did not occur. Narration is optional. A quoted price or button displayed earlier is not proof the offer is still available; recheck before committing and disclose a changed offer.
+Recommend a storyteller-adjudicated offer plus a minimal recorded exchange. The model judges wants, scarcity, trust and circumstances. The player sees the actual proposed cost before committing. The application checks known possession/quantity and records both sides of an accepted exchange once; it does not calculate a universal fair price.
 
-NPC inventories and merchant stock remain authoritative while they move. Do not regenerate possessions when reopening a location. Rich pricing, bargaining, crafting quality, detailed cargo and arbitrary nested storage are later candidates. Exact stock replenishment and carrying-limit behavior are unresolved profile choices, not permission for infinite stock or capacity.
+An illustrative offer is one sack of flour for three silver coins. From five known coins, accepting leaves two and adds the sack; declining leaves both unchanged. Bartering a dagger instead records that transfer, without assigning both objects a universal numeric value. A meal, promise or favor can also be consideration, with its relevant obligation retained as a fact.
+
+Exact coin counts do not require simulating every merchant's treasury or worldwide supply. Generate available goods when relevant, compatible with prior facts; do not replenish a previously sold unique object by reopening a scene. A changed offer must be visible rather than silently charging more than accepted.
+
+INV-F01: Choose compact counted possessions for consequential exchanges, or coarse narrative means. Recommend the former where the UI offers exact spending, while leaving incidental detail prose-only. A closed economy, currency conversion, price engine, restocking schedules and universal item value are not initial requirements.
 
 ## Consequential objects outlive active scenes
 
-D048's golden spear illustrates a persistent item whose history connects distant scenes. Leaving the player's inventory must not erase its identity when future ownership or story consequences depend on it. Preserve the completed transfer and relevant later changes while its holder is dormant. A later appearance must reference that same item, not mint a lookalike with copied history. If it was subsequently destroyed or transferred, the storyteller must respect that fact or establish a valid new development; elapsed time alone is not an explanation. Fungible commodities can remain stacks/quantities; this does not require tracking every trivial object individually.
+The same distinctive spear can return with a later owner. Preserve its identity and relevant transfers even while it is absent from the player's list; do not duplicate it or restore it after known destruction. Rich history is selective: there is no need to identify every grain of flour. Proposed changes are judged against current facts before being committed, not inferred as true merely because narration mentions them.

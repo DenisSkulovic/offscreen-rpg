@@ -4,7 +4,7 @@
 
 Create a character, give them a routine, and follow a life that unfolds over time. A quiet journey can become an unlikely friendship, a dangerous interruption, or a story you return to days later. Step in when you want to. Otherwise, the character acts within the autonomy you gave them. Hit pause when life needs to wait.
 
-> **Status: product design baseline v0.01.** This repository currently contains product specifications and documentation checks. There is no playable build, deployed demo, or measured runtime performance yet. Technical design and the first implementation are next.
+> **Status: product design; simplifying the v0.01 baseline.** This repository currently contains product specifications and documentation checks. There is no playable build, deployed demo, or measured runtime performance yet. Technical design and the first implementation are next.
 
 ## The experience
 
@@ -18,7 +18,7 @@ The platform aims to support different settings and kinds of characters through 
 
 ## Engineering focus
 
-The first implementation will explore sparse persistent world state, recoverable time progression, validated storyteller actions, meaningful autonomous decisions, and explicit AI context and spending limits. Ordinary simulation should not require a model call on every tick.
+The first implementation will explore sparse persistent world state, recoverable time progression, validated storyteller actions, meaningful autonomous decisions, and explicit AI context and spending limits. The current proposal uses one story-progression flow with storyteller adjudication, instead of dedicated mechanics for every activity. Waiting and valid prepared outcomes need no call on every tick; novel continuation still has a model cost.
 
 This is a senior fullstack engineering portfolio project. The goal is a small, coherent game backed by demonstrable reliability and thoughtful AI integration. Architecture, model/provider choices and deployment will be documented as they are selected; this README does not imply they already exist.
 
@@ -27,6 +27,7 @@ This is a senior fullstack engineering portfolio project. The goal is a small, c
 | Start here | What it answers |
 | --- | --- |
 | [Product vision](docs/product/PRODUCT_VISION.md) | What experience are we building? |
+| [Lightweight story progression](docs/product/experience/story-progression.md) | What can we simplify, and what must remain consistent? |
 | [First-release scope](docs/product/foundations/scope-and-release-plan.md) | What belongs in the initial slice, later, or possibly never? |
 | [Next design decisions](docs/TASKS.md) | What must be settled before implementation? |
 | [Storyteller and events](docs/product/worlds/world-events-and-causality.md) | How can stories develop while respecting game state? |

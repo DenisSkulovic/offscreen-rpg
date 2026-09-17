@@ -1,16 +1,16 @@
 ---
 id: DOC-PRODUCT-VISION
 layer: product
-status: working-baseline
+status: draft
 domains: [foundations]
 tags: [dnd-rules, time-cost, autonomy, configurability, affordability]
-updated: 2026-09-16
+updated: 2026-09-17
 relations: []
 ---
 
 # Product vision
 
-Owner: Denis. Product baseline v0.01 (D061), ready for technical design; unresolved detailed proposals are not approved by this label.
+Owner: Denis. Enduring direction from v0.01; mechanical scope is under revision through D064. The lighter [story-progression contract](experience/story-progression.md) is a proposal, not an accepted new baseline.
 Scope: enduring direction. D041 supersedes D031's mandatory first-release adventure; D045–D060 establish story-first autonomous life. The [release boundary](foundations/scope-and-release-plan.md) owns the bounded first delivery and development checkpoints.
 
 ## Inhabit a world, earn a life within it
@@ -23,11 +23,11 @@ The promise is: **inhabit a world of your choosing, earn your progress, and carr
 
 ## A complete game, supported by language models
 
-The harness provides persistent state, supported rules, possessions, resources, capabilities, relationships, activities, time and consequences. The LLM storyteller deliberately originates incidents and compatible content, maintains relevant story threads and portrays the world. This is a persistent AI-DM experience with a mechanical core, not an exhaustive simulator with optional narrative decoration.
+The proposed lightweight harness preserves a chronology, current situation, consequential facts, time, permissions and a small check/transition contract. Work, travel, meals and encounters can be adjudicated through one story-progression flow rather than dedicated subsystems. The LLM storyteller deliberately originates incidents and compatible content, maintains relevant story threads and portrays the world. This is a persistent AI-DM experience with a mechanical core, not an exhaustive simulator with optional narrative decoration.
 
 A few minutes of persuading the narrator must not produce legendary equipment or years of wages. Actions must meet their requirements. The world remembers what was earned, spent, learned, changed, and lost. Affordable LLM use must support worthwhile play; expensive generation is not a substitute for game depth.
 
-D&D mechanics and the dungeon-master relationship are the actual foundation, not merely an inspiration for a custom rules system. Reuse established mechanics broadly, including attributes, checks and dice, classes, levels, combat, equipment and magic as applicable to the selected edition. The edition and exact source scope remain to be chosen. The core concept is D&D with LLMs, persistent autonomy and configurable passage of time. Rimworld, EVE Online, The Sims and Tamagotchi inform time, investment and character autonomy without prescribing exact mechanics. No existing code, architecture, or detailed design is carried forward from the old project.
+D&D and the dungeon-master relationship remain the intended foundation. D064 reopens how much explicit machinery is useful: a small attributes/skills/check subset is proposed before broad class, combat, equipment or magic coverage. Do not treat that subset or a wholly improvised replacement as already selected. The edition and exact source scope remain to be chosen. The core concept is D&D with LLMs, persistent autonomy and configurable passage of time. Rimworld, EVE Online, The Sims and Tamagotchi inform time, investment and character autonomy without prescribing exact mechanics. No existing code, architecture, or detailed design is carried forward from the old project.
 
 ## Time, attention, and pause
 
@@ -49,9 +49,9 @@ This does not promise exhaustive simulation of every distant person or event. Th
 
 Campaigns may start almost undefined and develop through play, begin from a custom premise, or draw on extensive established lore. Unspecified facts, established truths, and undiscovered secrets are distinct. New content must respect what the campaign has already established.
 
-World and character flexibility is mechanical as well as narrative (D033). The harness must not assume medieval technology, humanoid bodies, human needs, surface geography or a single physical scale. Intended possibilities include antiquity, modern transport and weapons, space travel, magic, mixed worlds, animals and microscopic organisms, including transitions between domains in one campaign. Configuration and extensions must give those differences actual consequences; renaming a sword as a laser is insufficient when their behavior differs.
+World and character flexibility is mechanical as well as narrative (D033). The harness must not assume medieval technology, humanoid bodies, human needs, surface geography or a single physical scale. Intended possibilities include antiquity, modern transport and weapons, space travel, magic, mixed worlds, animals and microscopic organisms, including transitions between domains in one campaign. Those differences must have coherent consequences, which may be storyteller-adjudicated rather than separately simulated. Renaming a sword as a laser need not require a weapons engine, but the model must respect established differences when they affect a choice.
 
-D&D remains the actual foundation. Which adopted mechanics apply unchanged, which can be parameterized and which need explicit extensions is an open design boundary, not permission to silently replace the foundation or promise a universal physics simulator. Setup should turn a natural-language premise into a playable situation quickly, with LLM-assisted preparation as a candidate approach (D034). Generating a description is not proof of a functioning mechanic. [Starting worlds](worlds/starting-worlds-and-content.md) owns the proposed world/mechanics setup contract.
+D&D remains the actual foundation. Which adopted mechanics apply unchanged, which can be parameterized and which need explicit extensions is an open design boundary, not permission to silently replace the foundation or promise a universal physics simulator. Setup should turn a natural-language premise into a playable situation quickly, with LLM-assisted preparation as a candidate approach (D034). Generating a description is not proof of consistent consequences; a specialized coded mechanic is not the only possible way to establish them. [Starting worlds](worlds/starting-worlds-and-content.md) owns the proposed world/mechanics setup contract.
 
 Setting flexibility does not promise automatic fidelity to every fictional canon. Powerful starting identities can be deliberately established during creation; earned progression governs subsequent actions under that starting contract. Player control over creation must remain distinct from changing established outcomes during play.
 
@@ -59,9 +59,9 @@ Setting flexibility does not promise automatic fidelity to every fictional canon
 
 ### First delivery: a web platform
 
-D036–D038 clarify the initial delivery and development aim: a SaaS-style web app and a quickly achievable GitHub project demonstrating full-stack and AI engineering. The first loop generates a local square-map world with relevant NPCs/groups, then supports travel, work, inventory, phone updates and simple next-action decisions. It can use factual code narration without dialogue. See [release scope](foundations/scope-and-release-plan.md) for the narrowed first slice; richer adventures remain later candidates.
+D036–D038 clarify the initial delivery and development aim: a SaaS-style web app and a quickly achievable GitHub project demonstrating full-stack and AI engineering. The first loop is being simplified under D064 toward a generated opening, generic story continuation, minimal persistent facts, phone updates and meaningful choices. Grid maps, dedicated travel/work code and rich inventory are no longer prerequisites of the proposed slice; their usefulness remains open. See [release scope](foundations/scope-and-release-plan.md) for the narrowed first slice; richer adventures remain later candidates.
 
-Single-player describes each campaign, not a promise that only one web account can exist. Account scope, hosting, stack and repository visibility are unselected. Billing and multiplayer are not implied by SaaS. Architectural ambition should make this loop reliable and explainable rather than require a conventional game engine or an exhaustive simulator.
+Single-player describes each campaign, not a promise that only one web account can exist. The repository is public; account scope, hosting and runtime stack remain unselected. Billing and multiplayer are not implied by SaaS. Architectural ambition should make this loop reliable and explainable rather than require a conventional game engine or an exhaustive simulator.
 
 ### Ongoing direction
 
@@ -69,7 +69,7 @@ Support a range of AI providers and models, with understandable control over spe
 
 Success means wanting to return, valuing what the character has earned, seeing consequences persist, and finding both active involvement and autonomous activity satisfying. We will test these outcomes rather than equate long waits with fun.
 
-Product baseline v0.01 closes this exploration pass. Technical design is next, followed by a playable implementation and empirical refinement. D&D source/profile, input/channel and bounded defaults remain explicit design gates in TASKS, not reasons to expand the product library. Multiplayer is outside the product direction.
+Product baseline v0.01 is now being revised at the owner's request to reduce mechanics. Focused product discussion precedes technical design, a playable implementation and empirical refinement. D&D source/profile, input/channel and bounded defaults remain explicit design gates in TASKS, not reasons to expand the product library. Multiplayer is outside the product direction.
 
 ## First release serves a professional goal
 

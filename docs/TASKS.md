@@ -1,43 +1,23 @@
-# Technical-design handoff — product baseline v0.01
+# Simplify story progression before technical design
 
-Updated: 2026-09-17. Product baseline v0.01 is ready for technical design, then an executable MVP (D061). The public repository now versions this baseline and runs documentation checks. No game implementation, runtime stack, deployment or paid model experiment is claimed.
+Updated: 2026-09-17. D064 reopens the v0.01 mechanical boundary at the owner's request. This is a focused product revision, not a chosen schema or an invitation to expand the library. Git remains authoritative; no game code or paid experiment is introduced by this revision.
 
-## Start here
-
-Read [release scope](product/foundations/scope-and-release-plan.md), then the owners needed for the next design choice. Do not reread all documents or populate the optional library. The stable concept is story-first character life, authoritative mechanics, sparse persistent entities, meaningful optional intervention and low-cost unattended progression.
+Read [story progression](product/experience/story-progression.md) and [release scope](product/foundations/scope-and-release-plan.md). The proposed direction is one narrative continuation flow with a small consistency layer, rather than dedicated work, travel, eating, sleep and trading systems.
 
 ## Short design-gate list
 
-These are remaining choices, not reasons to reopen the product. Recommendations below are assistant proposals until chosen; record consequential selections before implementing affected behavior.
-
-| Gate | Proposed starting point | Owner |
+| Choice | Recommendation to discuss | Owner |
 | --- | --- | --- |
-| Supported profile and rules | One local-life profile; one reusable routine and a bounded set of incident effects. Choose D&D edition/source subset and explicitly identify time/livelihood extensions. No combat or arbitrary generated rules prerequisite. | RULES-F01, WORLD-F05, WORK-F01 |
-| Input and handoff | Contextual actions first is the smallest experiment; free text/hybrid remains open. Define interruption, taking control and behavior when direct control receives no new command. Do not silently restore guaranteed autonomous obedience. | PLAY-F01, CTRL-001–007, GOAL-F02 |
-| Clock, windows and recovery | Running delegated windows are settled by D057. Choose pace, window duration, option invalidation, pause/resume and outage reconciliation. Existing INTERVENTION-001–006 supply draft defaults. | TIME-F01, DOC-INTERVENTION |
-| Initial agency and risk | Define permitted automatic actions, trait/dice influence, supported loss and no-legal-fallback behavior. Prefer a bounded effect set with an explainable continuation; pause only for an explicit policy or genuine blocked state. | DOC-AUTONOMOUS-RISK, GOAL-F02, ROUTINE-008 |
-| Surface, phone channel and access | Compact story-centered web interaction; validate one phone delivery/response route. Slack and push are candidates. Choose local prototype versus hosted demo sequencing and account/access scope. | DOC-MOMENT-TO-MOMENT-PLAY, DOC-INTERVENTION |
-| AI limits and experiment settings | Separate setup/ongoing budgets; bounded calls/tools/repairs; explicit exhaustion fallback. Choose numeric caps and profile values rather than copying illustrative prices, wages or deadlines. | AI-COST-001–008, AI-F01 |
+| Adjudication boundary | Storyteller judges situations/durations/outcomes; application preserves facts, clock, limits and single-resolution changes. No per-verb implementation requirement. | DOC-STORY-PROGRESSION |
+| Character and checks | Small explicit abilities/skills/check contract; separate action success from story pacing/event luck. Exact D&D subset and disclosure unselected. | RULES-F01/F02 |
+| Fictional versus real time | Choose a consistent pace or explicitly accept narrative waiting independent of duration; the model cannot supply contradictory conversions under one claimed speed. | TIME-F01 |
+| Possessions and exchange | Preserve significant identities and exact quantities only where a choice needs them; model-adjudicated prices/barter, generic recorded transfer. Compare with deliberately coarse means. | INV-F01 |
+| Pending story and costs | Prepare only a short selected continuation, cancel incompatible futures, retain actual history. Define what happens when no new model call fits. | STORY-001–006, AI-COST-001–008 |
 
-Grid size/neighborhood, wages, durations, recurrence syntax, and initial content are reversible experiment settings. Make them explicit and testable; do not present assistant-picked values as Denis-approved balance. A public release additionally needs rules/content provenance and appropriate security.
+The prior mandatory grid, wage and supported-activity definition gates are removed. This is a recommendation for lighter scope, not owner approval of every default. Free text versus choices/hybrid, phone channel/access and exact budgets remain real choices for the subsequent technical design; retain their existing owners rather than generating more documents now.
 
-## Compact technical documents to derive
+## Next practical comparison
 
-Recommended grouping, not mandatory file count or architecture:
+Walk [SCN-019](product/validation/reference-campaigns-and-journeys.md#scn-019--generic-story-progression-and-contextual-exchange): an intention, quiet passage, pending interruption, changed plan and contextual bargain. Evaluate whether the minimal facts/checks preserve meaningful consequences. Older detailed economic/movement fixtures are optional later references, not requirements to implement payroll or pathfinding.
 
-1. Architecture and authority: state ownership, persistence, background progression, deployment/access boundary and key tradeoffs.
-2. Domain and interaction contracts: supported actions/effects, timing, interruption, permissions, idempotency, stale responses and recovery.
-3. AI contract and evaluation: generator/storyteller responsibilities, relevant context, allowed tools/outputs, validation, budgets, fallback and continuity tests.
-4. Build/test plan: one runnable slice, setup, automated acceptance cases and demo evidence.
-
-Include only what makes the first slice buildable. Pick technologies by this workload and Denis's senior fullstack goals, not by the number of services or agent frameworks.
-
-## Build sequence
-
-Use the incremental checkpoints and completion checks in DOC-RELEASE-SCOPE. Bring up state and a routine, add the bounded storyteller immediately after that core, then integrate the selected phone path and harden the full loop. Preserve authority/pause/accounting from the first increment; later polish does not excuse corrupt state.
-
-Experiment with a short playable loop and inspect actual outcomes, prompts/context, admitted versus rejected proposals, latency and costs. A seeded/mock provider path can make tests reproducible, but must not be presented as a live storyteller demonstration. Paid calls require an explicitly chosen development budget.
-
-## Baseline maintenance
-
-D061 closes open-ended product expansion for this pass. Keep remaining alternatives in their existing topic owners; record only decisions necessary for the next slice. Change the product when a real implementation/playtest finding justifies it, preserving the reason. Git is authoritative for project documentation and future code; the prior Drive documents are retained as a migration snapshot. Do not copy private career material into a public repository.
+Discuss this boundary, then derive compact architecture, state/time and AI contracts and implement one connected loop. Preserve the senior fullstack portfolio bar: reliable scheduling, coherent current state/history, bounded inference, meaningful agency, polished scenes and measured evidence. Do not substitute an unbounded prompt transcript for those responsibilities.

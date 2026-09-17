@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [foundations]
 tags: [dnd-rules, configurability, autonomy, continuity, affordability]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PRODUCT-VISION
@@ -95,7 +95,7 @@ The exact player-authoring policy remains open.
 
 Basis: D003, D006, D011, D015, D028; supports NEED-008.
 
-The harness owns explicit entities, state and executable game mechanics. Routine progression and resolution should not depend on repeated model judgments. Models contribute selectively to narration, content creation and decisions where ordinary game logic is inadequate. Affordable models must support a worthwhile experience; provider choice must not itself become permission to bypass mechanics.
+D064 reopens the earlier preference for substantial activity-specific logic. The proposed lighter harness preserves state, time, limits and adopted checks while the storyteller judges generic story continuation. Avoid calls per tick, but do not promise novel adjudication without inference. Provider choice cannot bypass established facts, permissions or adopted roll semantics. Evaluate coherence and cost rather than requiring dedicated work/travel/trade implementations.
 
 Procedural generation supplies varied content within defined mechanical contracts. An invented entity's prose does not by itself establish executable abilities, costs or effects. Intentional chance in the game is distinct from a model inconsistently interpreting the rules. Fallible character behavior remains intentional; its consequences still follow the active mechanics.
 
@@ -120,3 +120,5 @@ When drafting a topic, cite only the principles that actually constrain it. Prec
 D&D edition/source scope; bounded adaptations; defaults/locks; direct-order and authorship details; numerical budgets and responsiveness targets. Product v0.01's release boundary is consolidated in DOC-RELEASE-SCOPE; TASKS owns decisions needed for the next build.
 
 Future playtests should assess whether these principles produce the intended experience, not merely whether the documents repeat them consistently.
+
+The chronology metaphor is a product lens, not literal evidence that no mechanics exist. Choices, time, uncertainty, state and limits are still rules of the experience. D064 calls for reducing that contract to what actually makes play coherent, with proposed alternatives discussed rather than mechanically adopting every example.

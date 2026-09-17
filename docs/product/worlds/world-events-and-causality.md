@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [worlds]
 tags: [continuity, consequences, autonomy, time-cost]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PRODUCT-PRINCIPLES
@@ -17,6 +17,8 @@ relations:
 ---
 
 # World events and causality
+
+Revision boundary (D064): [story progression](../experience/story-progression.md) now owns the proposed generic intention/chronology/pending-continuation contract. This topic owns storyteller pacing and incident authorship. “Supported consequence” can mean a coherent generic state change adjudicated by the model; it does not require a dedicated activity or combat subsystem.
 
 Owner: Denis. Release disposition: unassigned.
 Scope: developments beyond the player's immediate action and their effects.
@@ -98,7 +100,7 @@ D043–D046 establish an LLM-based storyteller that originates incidents and dev
 
 D059–D060 make this the primary world-building philosophy rather than an optimization around a hidden exhaustive simulation. Like a human dungeon master, the storyteller keeps the cast, open threads, current situation and useful larger plans in view, then invents compatible detail at the edge of play. It does not need 100,000 simulated NPCs so that one interesting encounter can statistically fall out. This is deliberate authorship, not proof that all prior causes were computed.
 
-EVENT-006: Distinguish a proposal, an admitted event, its resolved consequences and its presentation. The director may choose among permitted developments or propose new compatible content under the authorship contract. World rules check prerequisites, resource/location constraints and campaign policy before anything becomes authoritative. Reject unsupported effects rather than accepting prose as a state change. Whether an effect is expressed through detailed or coarse rules depends on supported mechanics, not on how dramatic its description is.
+EVENT-006: Distinguish a proposal, an admitted event, its resolved consequences and its presentation. The director may choose among permitted developments or propose new compatible content under the authorship contract. Check the proposed changes against established facts, tracked resources, adopted roll results and campaign policy before they become authoritative. The storyteller may judge contextual feasibility; the application checks what it can actually enforce and records effects once. Structural checks alone cannot prove narrative coherence. Whether an effect is expressed through detailed or coarse rules depends on supported mechanics, not on how dramatic its description is.
 
 EVENT-007: A storyline is an evolving set of circumstances and unresolved possibilities, not a predetermined ending. Player decisions, NPC actions and chance can derail it. Track only relevant unresolved threads; close or abandon obsolete ones instead of keeping every plot alive or calling a model on every tick. Do not undo a valid escape because a planned kidnapping chapter needs it.
 

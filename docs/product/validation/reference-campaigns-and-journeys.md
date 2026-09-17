@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [validation]
 tags: [offline-play, autonomy, time-cost, affordability, continuity]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: verifies
     target: DOC-AI-BUDGET
@@ -18,9 +18,9 @@ relations:
 
 These are product thought experiments and future acceptance cases, not executed game tests. Numerical fixtures are deliberately synthetic, not adopted D&D rules or balance. The purpose is to force exact questions without pretending they have been answered. Requirements remain owned by their topic documents.
 
-## v0.01 reading and test scope
+## Reading and test scope after the simplification review
 
-[DOC-RELEASE-SCOPE](../foundations/scope-and-release-plan.md#completion-checks) owns completion checks. Use SCN-010 for routine life, SCN-011–015 for storyteller/continuity/intervention, and SCN-016–018 for agency/return. Combine these in one small supported campaign rather than implementing a separate game for each example.
+[DOC-RELEASE-SCOPE](../foundations/scope-and-release-plan.md#completion-checks) owns current proposed completion checks. D064 makes SCN-019 the main lightweight comparison. SCN-001–018 remain historical/optional test ideas: extract relevant pause, continuity and agency cases, but do not implement their wage, distance, health or economy machinery just to satisfy them. Their numeric fixtures are not current first-release requirements.
 
 SCN-004 combat and SCN-008 cross-scale worlds are later design stress cases, not first-build gates. SCN-007 is a sparse-state comparison, not a required population benchmark. Alternate hold-mode cases apply only if that policy is implemented. All cases remain unexecuted.
 
@@ -209,3 +209,15 @@ Check notification cadence, discreet previews, in-channel versus browser consist
 Begin with a quiet activity, introduce a small development, then a supported incident with multiple consequential stages, followed by aftermath/quiet continuation. Vary report cadence within contact settings. Let the player act at one stage and ignore later invitations; permitted autonomous choices must carry the story forward without routine global pauses. Explicit pause still stops progression and pending windows.
 
 Compare contextual-choice and, if implemented, free-text/hybrid interactions for distinct supported intentions: purposeful, evasive, social, absurd or deliberately ineffective as appropriate. Verify differences in action/time/resource outcomes rather than synonymous buttons. Check stale actions, changing eligibility and limits on model interpretation. Do not require ten-minute notifications, fifteen options, battle, looting or limb mechanics. Earlier SCN-014 hold-mode checks remain optional-policy tests; continuous progression is the D057 baseline. No gameplay evaluation has yet been run.
+
+## SCN-019 — Generic story progression and contextual exchange
+
+Proposed comparison under D064, not an executed test or chosen story. Establish a character, current place, a meaningful possession and an ongoing intention. Offer a quiet continuation and a possible destination with fictional-duration estimates under an explicit pace. No dedicated work/travel subsystem is assumed.
+
+After selecting one intention, prepare a bounded next segment and a possible interruption. Before it is due, change course or pause: verify that incompatible future content does not fire and that established elapsed history remains. In another run, reach the checkpoint, admit a new situation and choose a different response or permitted default. Continue coherently without a prewritten guaranteed ending.
+
+If exact possessions are chosen, establish five silver coins and an offer of flour for three; acceptance leaves two and adds flour exactly once. Compare barter of a distinctive item: retrieve its changed owner in a later scene. The model chooses a contextual offer, not a coded market price. Reject an offer requiring unavailable possessions; a changed price needs a new choice. If coarse means are chosen instead, verify that the interface does not claim precise balances it cannot support.
+
+Where a character check is selected, set relevant traits/difficulty/stakes before rolling; ensure retries cannot reroll and the narrative respects the outcome. Separately test a storyteller pacing/event choice; neither is automatically the same as a D&D ability check.
+
+Reach an inference cap with valid prepared content, then with no legitimate continuation. Verify honest behavior in both cases and account for unused/canceled generation. Return after a gap to a recap distinguishing committed events, current facts, known rumors and uncommitted future plans. Compare semantic coherence, meaningful agency, human time to understand the scene and all-in cost. Quantities, place, encounter and profession are interchangeable fixtures, not mandatory content.

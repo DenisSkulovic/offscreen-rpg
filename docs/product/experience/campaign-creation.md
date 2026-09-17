@@ -4,7 +4,7 @@ layer: product
 status: draft
 domains: [experience]
 tags: [world-creation, dnd-rules, configurability, autonomy, affordability]
-updated: 2026-09-16
+updated: 2026-09-17
 relations:
   - type: derives_from
     target: DOC-PLAYER-NEEDS
@@ -17,6 +17,8 @@ relations:
 ---
 
 # Campaign creation
+
+Scope under revision (D064): the opening needs coherent character context and next intentions, not an assembled catalogue of implemented travel/work/trade mechanics. DOC-STARTING-WORLDS owns the current lighter preparation proposal; older mechanical-profile language is not a requirement to build a subsystem for each action.
 
 Owner: Denis. Release scope: unassigned.
 Purpose: define the journey from a desired roleplaying experience to a playable campaign.
