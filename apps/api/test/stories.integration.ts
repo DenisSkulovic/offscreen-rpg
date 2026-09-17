@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import { withAppIntegration } from './helpers/app-integration.js';
+import { checkStoryStart } from './story-start.integration.js';
 import { checkStoryBrowser } from './stories-browser.integration.js';
 import { checkStoryCore } from './stories-core.integration.js';
 import { checkStoryHttp } from './stories-http.integration.js';
@@ -20,6 +21,7 @@ test(
       };
       await checkStoryCore(shared);
       await checkStoryHttp(shared);
+      await checkStoryStart(shared);
       await checkStoryBrowser({
         ...shared,
         restartWorker: context.restartWorker,

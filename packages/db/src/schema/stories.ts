@@ -10,6 +10,7 @@ import {
   check,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
+import { generation } from './generations';
 
 export const story = pgTable(
   'story',
@@ -55,6 +56,10 @@ export const storyPassage = pgTable(
     remainingMs: integer('remaining_ms'),
     content: jsonb('content').notNull().$type<unknown>(),
     interaction: jsonb('interaction').$type<unknown>(),
+    sourceGenerationId: uuid('source_generation_id').references(
+      () => generation.id,
+      { onDelete: 'restrict' },
+    ),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),

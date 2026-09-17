@@ -194,14 +194,6 @@ export async function withAppIntegration(
           [user.id],
         );
         await database.db.$client.query(
-          'DELETE FROM generation WHERE owner_id = $1',
-          [user.id],
-        );
-        await database.db.$client.query(
-          'DELETE FROM story_draft WHERE owner_id = $1',
-          [user.id],
-        );
-        await database.db.$client.query(
           'DELETE FROM outbox WHERE operation_id IN (SELECT p.id FROM story_passage p JOIN story s ON s.id = p.story_id WHERE s.owner_id = $1)',
           [user.id],
         );
@@ -219,6 +211,14 @@ export async function withAppIntegration(
         );
         await database.db.$client.query(
           'DELETE FROM story WHERE owner_id = $1',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM generation WHERE owner_id = $1',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_draft WHERE owner_id = $1',
           [user.id],
         );
       },

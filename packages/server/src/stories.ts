@@ -3,6 +3,7 @@ import { createStoryContinuation } from './story-continuation';
 import { StoryError } from './story-errors';
 import { createStoryInitialization } from './story-initialization';
 import { createStoryReads } from './story-reads';
+import { createStoryStart } from './story-start';
 import { createStoryTiming } from './story-timing';
 
 export {
@@ -15,6 +16,7 @@ export {
 export function createStories(database: Database) {
   const reads = createStoryReads(database);
   const initializeStory = createStoryInitialization(database);
+  const startPlayableCandidate = createStoryStart(database);
   const continuation = createStoryContinuation(database);
   const timing = createStoryTiming(database);
   return {
@@ -76,7 +78,20 @@ export function createStories(database: Database) {
         storyId: args.storyId,
       });
     },
+    async startFromCandidate(args: {
+      ownerId: string;
+      storyId: string;
+      candidateId: string;
+      expectedDraftRevision: number;
+    }) {
+      await startPlayableCandidate(args);
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+      });
+    },
   };
 }
 
 export { StoryError };
+export { playableOpeningStorySource } from './story-start';

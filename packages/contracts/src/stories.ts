@@ -78,6 +78,10 @@ export const storyHistorySchema = z.strictObject({
   nextBefore: z.number().int().positive().nullable(),
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
+export const startStorySchema = z.strictObject({
+  candidateId: z.uuid(),
+  expectedDraftRevision: z.number().int().positive().max(2147483646),
+});
 export const startChamberSchema = z.strictObject({
   scenario: z.enum([
     'chamber.v1',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 import type { Draft } from '@offscreen/contracts/drafts';
 import {
   openingPreviewSchema,
@@ -20,6 +21,16 @@ export function OpeningPreviewPanel({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const attempt = useRef<{ id: string; revision: number } | null>(null);
+  const storyId = useRef<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  useEffect(() => {
+    const parsed = z
+      .uuid()
+      .safeParse(new URLSearchParams(window.location.search).get('story'));
+    if (parsed.success) {
+      storyId.current = parsed.data;
+    }
+  }, []);
   useEffect(() => {
     if (!preview || !['pending', 'running'].includes(preview.state)) return;
     const controller = new AbortController();
@@ -71,7 +82,7 @@ export function OpeningPreviewPanel({
     };
   }, [draft.id, preview?.id, preview?.state]);
   async function generate() {
-    if (pending) return;
+    if (pending || starting) return;
     attempt.current ??=
       preview?.state === 'pending'
         ? { id: preview.id, revision: preview.sourceRevision }
@@ -111,15 +122,74 @@ export function OpeningPreviewPanel({
   }
   const unresolved =
     preview && ['pending', 'running', 'uncertain'].includes(preview.state);
+  const canStart = Boolean(
+    preview &&
+    preview.state === 'succeeded' &&
+    preview.isCurrent &&
+    preview.sourceRevision === draft.revision &&
+    preview.candidate,
+  );
+  async function startStory() {
+    if (pending || starting || !preview || !canStart) {
+      return;
+    }
+    storyId.current ??= crypto.randomUUID();
+    window.history.replaceState(
+      null,
+      '',
+      `/stories/${draft.id}/preview?story=${storyId.current}`,
+    );
+    setStarting(true);
+    setMessage('');
+    try {
+      const response = await fetch(`/api/stories/${storyId.current}/start`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          candidateId: preview.id,
+          expectedDraftRevision: draft.revision,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (response.status === 401) {
+        setMessage('Sign in again, then retry.');
+        return;
+      }
+      if (response.status === 409) {
+        const latest = await fetch(`/api/drafts/${draft.id}/openings/latest`, {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10000),
+        });
+        if (latest.ok) {
+          setPreview(latestOpeningSchema.parse(await latest.json()).preview);
+        }
+        setMessage(
+          'The draft or candidate changed. The current preview is shown; it was not started.',
+        );
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Unavailable');
+      }
+      window.location.assign(`/play/${storyId.current}`);
+    } catch {
+      setMessage(
+        'The story could not be confirmed. Retry Start to recover the same story, or reload.',
+      );
+    } finally {
+      setStarting(false);
+    }
+  }
   return (
     <main className="editor">
       <SessionRefresh />
       <p className="eyebrow">Offscreen RPG · Opening candidate</p>
       <h1>{draft.title || 'A possible beginning.'}</h1>
       <p className="field-help">
-        This fixed sample tests saving and reopening a playable opening. It is
-        not adapted to your premise or storytelling direction. No AI calls are
-        made. The choices are a preview only and do not start a story.
+        This fixed sample tests saving, reviewing and starting a playable
+        opening. It is not adapted to your premise or storytelling direction. No
+        AI calls are made. Starting creates a live first scene; choosing an
+        option is not connected yet.
       </p>
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
       {preview && (
@@ -164,8 +234,21 @@ export function OpeningPreviewPanel({
           {preview.state === 'failed' && <p>The previous request failed.</p>}
         </section>
       )}
+      {canStart ? (
+        <p>
+          <button
+            type="button"
+            disabled={pending || starting}
+            onClick={() => void startStory()}
+          >
+            {starting ? 'Starting story…' : 'Start story'}
+          </button>
+        </p>
+      ) : null}
       <button
-        disabled={pending || !draft.premise.trim() || Boolean(unresolved)}
+        disabled={
+          pending || starting || !draft.premise.trim() || Boolean(unresolved)
+        }
         onClick={() => void generate()}
       >
         {pending

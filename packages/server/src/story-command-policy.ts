@@ -16,6 +16,7 @@ import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 
 export const initialStorySchema = z.strictObject({
   source: z.string().min(1).max(100),
+  sourceGenerationId: z.uuid().nullable().optional(),
   items: storyItemsSchema.default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
@@ -56,7 +57,9 @@ export function initializationMatches(
 ) {
   return (
     passageContentMatches(firstPassage, input) &&
-    isDeepStrictEqual(firstPassage.initialItems ?? [], input.items)
+    isDeepStrictEqual(firstPassage.initialItems ?? [], input.items) &&
+    (firstPassage.sourceGenerationId ?? null) ===
+      (input.sourceGenerationId ?? null)
   );
 }
 

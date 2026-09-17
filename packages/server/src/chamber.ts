@@ -104,5 +104,13 @@ export function createChamber(database: Database) {
     history(args: { ownerId: string; storyId: string; before?: unknown }) {
       return stories.history(args);
     },
+    startFromCandidate(args: {
+      ownerId: string;
+      storyId: string;
+      candidateId: string;
+      expectedDraftRevision: number;
+    }) {
+      return stories.startFromCandidate(args);
+    },
   };
 }

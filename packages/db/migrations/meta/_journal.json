@@ -78,6 +78,13 @@
       "when": 1789662243288,
       "tag": "0010_item_transfers",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789683409585,
+      "tag": "0011_passage_source_generation",
+      "breakpoints": true
     }
   ]
 }

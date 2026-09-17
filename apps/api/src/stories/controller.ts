@@ -14,7 +14,10 @@ import {
 import type { Request } from 'express';
 import type { createChamber } from '@offscreen/server/chamber';
 import { StoryError } from '@offscreen/server/stories';
-import { startChamberSchema } from '@offscreen/contracts/stories';
+import {
+  startChamberSchema,
+  startStorySchema,
+} from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
 
 export const STORIES = Symbol('STORIES');
@@ -56,6 +59,26 @@ export class StoriesController {
           ? { ownerId, storyId: id }
           : { ownerId, storyId: id, before };
       return this.stories.history(query);
+    });
+  }
+  @Put(':id/start')
+  @HttpCode(200)
+  startFromCandidate(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) => {
+      const parsed = startStorySchema.safeParse(body);
+      if (!parsed.success) {
+        throw new StoryError('invalid');
+      }
+      return this.stories.startFromCandidate({
+        ownerId,
+        storyId: id,
+        candidateId: parsed.data.candidateId,
+        expectedDraftRevision: parsed.data.expectedDraftRevision,
+      });
     });
   }
   @Put(':id/chamber')
