@@ -95,20 +95,18 @@ export function createStories(database: Database) {
             throw new StoryError('conflict');
           return;
         }
-        await tx
-          .insert(storyPassage)
-          .values({
-            id: randomUUID(),
-            storyId: id,
-            sequence: 1,
-            content: input.content,
-            interaction: input.interaction
-              ? interactionSchema.parse({
-                  id: randomUUID(),
-                  specification: input.interaction,
-                })
-              : null,
-          });
+        await tx.insert(storyPassage).values({
+          id: randomUUID(),
+          storyId: id,
+          sequence: 1,
+          content: input.content,
+          interaction: input.interaction
+            ? interactionSchema.parse({
+                id: randomUUID(),
+                specification: input.interaction,
+              })
+            : null,
+        });
       });
       return read(owner, id);
     },
