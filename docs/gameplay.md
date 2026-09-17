@@ -10,6 +10,8 @@ Time passes. A quiet interval can finish, or a development can interrupt it. The
 
 One passage might summarize a calm day, while a dangerous encounter unfolds through several moments. Neither narration nor notifications need to happen every tick.
 
+Interaction presentation should be able to evolve without redefining story progression. A situation may offer a few choices today and a different form of input later. The first testing chamber uses single selection from a variable-length set; it does not establish a fixed number of options for the product. Text, multiple selection and image-based interaction remain possibilities, each requiring a clear meaning and validation before becoming supported behavior. Player input expresses an intention; it does not directly supply the resulting world changes.
+
 ## What the game remembers
 
 - **History:** what actually happened.

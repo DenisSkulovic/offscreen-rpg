@@ -3,23 +3,29 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./interactions": {
+      "types": "./dist/src/interactions.d.ts",
+      "default": "./dist/src/interactions.js"
+    },
     "./openings": {
-      "types": "./dist/openings.d.ts",
-      "default": "./dist/openings.js"
+      "types": "./dist/src/openings.d.ts",
+      "default": "./dist/src/openings.js"
     },
     "./drafts": {
-      "types": "./dist/drafts.d.ts",
-      "default": "./dist/drafts.js"
+      "types": "./dist/src/drafts.d.ts",
+      "default": "./dist/src/drafts.js"
     }
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@types/node": "22.20.3",
     "@offscreen/config": "workspace:*",
     "typescript": "5.9.3"
   }

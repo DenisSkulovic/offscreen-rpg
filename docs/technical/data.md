@@ -47,6 +47,16 @@ The reusable relay store leases and acknowledges delivery; it does not own the r
 
 Some families can share a table initially. The purpose is to assign responsibility, not manufacture a large ER diagram. A story passage is not automatically both an `event` and a `node`. A workflow timer is a control-flow obligation, while a chronology entry is something that actually happened. Keep Temporal's persistence separate from application migrations and ORM access.
 
+## Interaction contract component
+
+`@offscreen/contracts/interactions` separates an interaction specification from a submitted answer. A published interaction has its own UUID and a versioned specification; a submission references that UUID and carries a versioned answer. Neither includes a next-scene reference, state changes, actor authority or scheduling commands. The application must load the authoritative current offer rather than accept an offer supplied by the browser.
+
+The first supported format is `choice.v1`: a prompt, a variable-length list of options with stable IDs, labels and optional descriptions, and an answer containing one option ID. Option identity does not depend on list order or display text. Duplicate option IDs and empty option lists are invalid. Current payload limits permit 1–100 options, 100-character reference IDs, 500-character labels and 2,000-character prompts/descriptions. These are bounded input limits, not a recommendation to show 100 buttons or a fixed gameplay option count.
+
+The validator checks answer shape, interaction identity and membership in the offered options. It does not check ownership, deadlines, pause state, command deduplication or apply consequences; those belong to transactional command admission and resolution. Once published, an offer's response meaning must remain stable. Replacing it requires a new interaction identity so an old button cannot select an unrelated new outcome. A stored chronology entry and a published interaction have different identities and purposes.
+
+Additional supported formats can add their own specification/answer variants and matching validation and rendering. Text interpretation or multiple selection may also need new resolution policy; versioning does not make those semantics automatic. Images used to illustrate an existing choice need not change its selection semantics. Unknown formats and extra fields are rejected, not stored as an unrestricted JSON escape hatch. No form-builder registry or universal rule interpreter is introduced. The first chamber still uses single selection; this component is not yet connected to story persistence or UI.
+
 ## Story snapshot and chronology
 
 Keep a current snapshot suitable for rendering and generation, plus a durable sequence of committed entries. Update both in one transaction. This is not full event sourcing: rebuilding all state by replaying years of model prose is neither specified nor reliable.
