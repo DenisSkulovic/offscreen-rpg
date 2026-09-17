@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { enqueue, type Transaction } from './outbox';
+import { StoryError, parseStoryIdentifier } from './story-errors';
+import { decisionPlanSchema, waitPlanSchema } from './story-plans';
+import { createStoryReads } from './story-reads';
 export const decisionDeadlineTopic = 'story.decision.v1';
 export const storyIntervalTopic = 'story.interval.v1';
 export const controlledIntervalTopic = 'story.interval.v2';
@@ -16,8 +19,6 @@ import {
 } from '@offscreen/db/story-schema';
 import {
   passageContentSchema,
-  storySnapshotSchema,
-  storyHistorySchema,
   controlIntervalSchema,
   storyItemsSchema,
   itemTransferSchema,
@@ -35,24 +36,6 @@ const initialSchema = z.strictObject({
   items: storyItemsSchema.default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
-});
-const waitPlanSchema = z.strictObject({
-  version: z.literal(1),
-  realDurationMs: z.number().int().min(1000).max(86400000),
-  gameDurationMs: z.number().int().positive().max(2147483647),
-  arrival: z.strictObject({
-    content: passageContentSchema,
-    interaction: interactionSpecificationSchema.nullable(),
-  }),
-});
-const decisionPlanSchema = z.strictObject({
-  version: z.literal(1),
-  responseDurationMs: z.number().int().min(1000).max(86400000),
-  defaultOptionId: z.string().min(1).max(100),
-  outcome: z.strictObject({
-    content: passageContentSchema,
-    interaction: interactionSpecificationSchema.nullable(),
-  }),
 });
 const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
@@ -77,75 +60,14 @@ function matchesPassage(
     )
   );
 }
-export class StoryError extends Error {
-  constructor(readonly code: 'invalid' | 'not_found' | 'conflict') {
-    super(code);
-  }
-}
 function identifier(value: unknown) {
-  const parsed = z.uuid().safeParse(value);
-  if (!parsed.success) throw new StoryError('invalid');
-  return parsed.data;
+  return parseStoryIdentifier(value);
 }
 
 export function createStories(database: Database) {
+  const reads = createStoryReads(database);
   async function read(owner: string, id: string) {
-    const [row] = await database.db
-      .select({
-        id: story.id,
-        revision: story.revision,
-        viewVersion: story.viewVersion,
-        items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
-        passageId: storyPassage.id,
-        content: storyPassage.content,
-        interaction: storyPassage.interaction,
-        waitPlan: storyPassage.waitPlan,
-        decisionPlan: storyPassage.decisionPlan,
-        responseDueAt: storyPassage.responseDueAt,
-        dueAt: storyPassage.dueAt,
-        intervalVersion: storyPassage.intervalVersion,
-        controlRevision: storyPassage.controlRevision,
-        remainingMs: storyPassage.remainingMs,
-      })
-      .from(story)
-      .innerJoin(
-        storyPassage,
-        and(
-          eq(storyPassage.storyId, story.id),
-          eq(storyPassage.sequence, story.revision),
-        ),
-      )
-      .where(and(eq(story.id, identifier(id)), eq(story.ownerId, owner)));
-    if (!row) throw new StoryError('not_found');
-    return storySnapshotSchema.parse({
-      id: row.id,
-      revision: row.revision,
-      viewVersion: row.viewVersion,
-      items: row.items,
-      decision:
-        row.decisionPlan === null
-          ? null
-          : {
-              dueAt: row.responseDueAt!.toISOString(),
-              defaultOptionId: decisionPlanSchema.parse(row.decisionPlan)
-                .defaultOptionId,
-            },
-      waiting:
-        row.waitPlan === null
-          ? null
-          : {
-              dueAt: row.remainingMs === null ? row.dueAt!.toISOString() : null,
-              remainingMs: row.remainingMs,
-              canControl: row.intervalVersion === 1,
-              controlRevision: row.controlRevision,
-              gameDurationMs: waitPlanSchema.parse(row.waitPlan).gameDurationMs,
-            },
-      current: {
-        id: row.passageId,
-        content: row.content,
-        interaction: row.interaction,
-      },
-    });
+    return reads.readSnapshot({ ownerId: owner, storyId: id });
   }
   async function commit(
     tx: Transaction,
@@ -535,43 +457,7 @@ export function createStories(database: Database) {
       return read(owner, id);
     },
     async history(owner: string, id: string, before?: unknown) {
-      // Parse query text explicitly: no coercion of arrays, blanks or fractions.
-      const cursor = z
-        .string()
-        .regex(/^[1-9]\d{0,9}$/)
-        .transform(Number)
-        .pipe(z.number().int().max(2147483647))
-        .optional()
-        .safeParse(before);
-      if (!cursor.success) throw new StoryError('invalid');
-      const rows = await database.db
-        .select({
-          id: storyPassage.id,
-          sequence: storyPassage.sequence,
-          content: storyPassage.content,
-        })
-        .from(story)
-        .leftJoin(
-          storyPassage,
-          and(
-            eq(storyPassage.storyId, story.id),
-            lte(storyPassage.sequence, story.revision),
-            cursor.data === undefined
-              ? undefined
-              : lt(storyPassage.sequence, cursor.data),
-          ),
-        )
-        .where(and(eq(story.id, identifier(id)), eq(story.ownerId, owner)))
-        .orderBy(desc(storyPassage.sequence))
-        .limit(21);
-      // The left join distinguishes an exhausted page from an inaccessible story
-      // within one database snapshot, including on empty cursor ranges.
-      if (!rows.length) throw new StoryError('not_found');
-      const entries = rows.filter((row) => row.id !== null);
-      return storyHistorySchema.parse({
-        items: entries.slice(0, 20),
-        nextBefore: entries.length > 20 ? entries[19]!.sequence : null,
-      });
+      return reads.readHistory({ ownerId: owner, storyId: id, before });
     },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(owner: string, id: string, initial: unknown) {
@@ -624,3 +510,5 @@ export function createStories(database: Database) {
     },
   };
 }
+
+export { StoryError } from './story-errors';

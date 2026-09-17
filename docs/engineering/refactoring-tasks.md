@@ -18,7 +18,7 @@ Do one numbered task at a time in dependency order. Commit a verified slice befo
 
 Use feature-local modules, functions and explicit dependencies. Keep useful framework classes already present. No mandatory OOP, generic repository, dependency-injection framework expansion, new microservice or workspace-package explosion. Names below indicate responsibilities, not compulsory filenames. Keep the existing public package exports stable where possible; internal call sites may be migrated together to named arguments. Avoid permanent compatibility wrappers for internal APIs once all consumers have moved.
 
-### 1. Establish the baseline and one read-side seam — pending
+### 1. Establish the baseline and one read-side seam — complete
 
 Scope: `packages/server/src/stories.ts`, its package exports and existing story tests.
 
