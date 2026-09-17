@@ -18,6 +18,10 @@ __pycache__/
 dist/
 build/
 coverage/
+.next/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
 # Private runtime data and scratch work
 work/
 data/

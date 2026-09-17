@@ -1,6 +1,6 @@
 # Technical architecture
 
-This is the recommended implementation design, not a description of running software. It supports the [product walkthrough](../playthroughs.md). Product choices still open in [questions](../questions.md) remain open; a technical example does not decide them. Dependencies should be pinned and integration-tested when the repository is scaffolded.
+This is the implementation design; the [development guide](../development.md) identifies what currently runs and what is still planned. It supports the [product walkthrough](../playthroughs.md). Product choices still open in [questions](../questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced.
 
 ## Recommendation
 
@@ -48,7 +48,7 @@ There is no service per faction, inventory, storyteller or notification type. Ex
 
 ## Code organization
 
-Proposed layout, to create when implementation begins:
+Target layout. Create each package when its first implementation needs it:
 
 ```text
 apps/

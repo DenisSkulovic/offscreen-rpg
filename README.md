@@ -6,7 +6,7 @@ Create a character in a world of your choosing. Follow their ordinary life, step
 
 An LLM storyteller creates scenes, remembers connections and introduces developments. The browser presents the current scene and story; a messaging integration could bring occasional updates and choices to your phone.
 
-**Product documentation and an initial technical design are available. No playable build yet.**
+**The initial TypeScript workspace and web/API shells run locally. No playable build yet.** See [local development](docs/development.md) for setup, checks and the exact implementation boundary.
 
 - [Vision](docs/vision.md): the experience and why we're making it.
 - [Gameplay](docs/gameplay.md): how the story could progress with little simulation.
@@ -20,6 +20,6 @@ An LLM storyteller creates scenes, remembers connections and introduces developm
 
 This is a senior fullstack portfolio project. Its depth should come from compelling interaction, coherent persistent stories, reliable background execution and efficient AI.
 
-Start the technical reading with [Architecture](docs/technical/architecture.md). The design uses a TypeScript monorepo, Next.js, NestJS, PostgreSQL and Temporal, with links to execution, data, AI, notifications and delivery details. This is a design, not installed or deployed software. The [build sequence](docs/technical/delivery-and-validation.md) explains how to prove it in playable slices.
+Start the technical reading with [Architecture](docs/technical/architecture.md). The design uses a TypeScript monorepo, Next.js, NestJS, PostgreSQL and Temporal, with links to execution, data, AI, notifications and delivery details. Most application behavior remains to be implemented. The [build sequence](docs/technical/delivery-and-validation.md) explains how to prove it in playable slices.
 
 Run `python scripts/check_docs.py` to check documentation links; it also runs in GitHub Actions. No project license has been selected yet.
