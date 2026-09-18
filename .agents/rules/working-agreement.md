@@ -18,6 +18,8 @@ Build in balanced passes across meaningful user flows. Do not perfect a small su
 
 Use the feature workflow for significant work. The user agrees the product vision before bulk implementation. Authorization then persists across the agreed phases; do not repeatedly request approval for routine details. A material change to that vision, scope or cost needs discussion. Small authorized fixes proceed directly.
 
+Name every new feature folder `YYYY-MM-DD--HH-mm--feature-name`, using the repository's local timezone at creation and a lowercase kebab-case descriptive suffix. The timestamp is immutable after creation. Remove completed feature folders after their durable decisions have been folded into permanent documentation; Git retains their history.
+
 Checks are optional throughout the current POC lifecycle. Default to implementation without routine verification commands; do not chase green results or spend time on minor issues. Follow [Verification](verification.md), which overrides stricter check requirements in plans or engineering guidance. Keep this policy until the owner explicitly changes it.
 
 ## Roles, handoffs and cost

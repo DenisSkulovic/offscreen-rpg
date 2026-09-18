@@ -5,7 +5,7 @@ description: Design, phase, implement or review a significant Offscreen RPG feat
 
 # Feature workflow
 
-Read the repository entrypoint and relevant rules. Use docs/features/<descriptive-kebab-case-name>/FEATURE.md and PLAN.md for one significant change. Search for an existing active feature before creating another. Read only the current feature and the product/technical material it touches.
+Read the repository entrypoint and relevant rules. Use `docs/features/YYYY-MM-DD--HH-mm--<descriptive-kebab-case-name>/FEATURE.md` and `PLAN.md` for one significant change. Use the repository's local timezone at creation; keep the timestamp unchanged for the life of the feature. Search for an existing active feature before creating another. Read only the current feature and the product/technical material it touches.
 
 ## Shape the feature
 

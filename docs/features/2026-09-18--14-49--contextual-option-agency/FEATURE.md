@@ -25,7 +25,7 @@ Opportunity context, typed mechanical leaf actions, finite prepared category men
 
 ## Decisions still needed
 
-The [shared architecture repair plan](../dnd-checks-and-visible-outcomes/PLAN.md) records confirmed blockers. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
+The [shared architecture repair plan](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md) records confirmed blockers. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
 
 ## Owning specifications
 

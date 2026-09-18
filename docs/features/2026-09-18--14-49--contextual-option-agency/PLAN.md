@@ -30,4 +30,4 @@ Exit: broad ordinary freedom, constrained threat, one viable response and legiti
 
 ## Current checkpoint
 
-Follow the [shared implementation checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.
+Follow the [shared implementation checkpoint](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.

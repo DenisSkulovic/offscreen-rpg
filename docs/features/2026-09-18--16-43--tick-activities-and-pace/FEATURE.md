@@ -1,6 +1,6 @@
 # Tick-based activities and adjustable pace
 
-Status: clock arithmetic implemented; duration-driven activity design challenged by the owner and awaiting replacement. See [activity processes and world-defined progress](../activity-processes-and-progress/FEATURE.md). Do not extend `durationTicks` as the general progress model.
+Status: clock arithmetic implemented; duration-driven activity design challenged by the owner and awaiting replacement. See [activity processes and world-defined progress](../2026-09-18--16-48--activity-processes-and-progress/FEATURE.md). Do not extend `durationTicks` as the general progress model.
 Approval: the owner authorized this correction and continued implementation on 2026-09-18.
 
 ## Intended outcome
