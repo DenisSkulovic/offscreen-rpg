@@ -10,6 +10,8 @@ The pure proposal validator returns bounded structured diagnostics rather than t
 
 `contracts/campaign.ts` defines the selected D&D ability-check subset, character state, commands and receipts. The six abilities and HP belong to this selected rules subset. Named skill proficiencies come from content. Quantities are optional. Declared string/boolean facts support conditions such as containment, exposure and capability without turning them into resource counters. Effects can change an existing quantity or set an existing fact; they cannot invent a balance or introduce an undeclared fact. This is a small typed effect vocabulary, not arbitrary world simulation.
 
+Every character sheet retains all six scores but separately captures abilities currently applicable to its form and a bounded skill catalogue. Proficiency must reference that catalogue. Action admission rejects a check whose ability is unavailable or whose skill is undeclared. A custom setting can declare its own skills without changing dice arithmetic. Form changes and capability mutation are not accepted as immediate model effects in this slice.
+
 Opening admission explicitly selects authored seed content. The task captures its character, private plan content, opening facts and initial public offer before generation, while the provider request receives only the character, opening and public offer. Preview and Start cannot infer a scenario from premise keywords. Exact reuse of the reviewed opening's private plans at Start belongs to the planner-connection phase; current Start reconstructs them from the selected fixture seed.
 
 ## Admitted action and time

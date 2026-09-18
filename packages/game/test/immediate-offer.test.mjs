@@ -17,6 +17,8 @@ const character = {
     wisdom: 12,
     charisma: 8,
   },
+  applicableAbilities: ['constitution', 'wisdom'],
+  skills: [{ id: 'environment-sensing', label: 'Environmental sensing' }],
   proficientSkills: [],
   proficiencyBonus: 2,
   hp: 5,
@@ -124,4 +126,36 @@ test('proposal validation rejects ungrounded situational modifiers', () => {
   });
   assert.equal(result.kind, 'rejected');
   assert.equal(result.issues[0]?.code, 'unsupported-modifier');
+});
+
+test('current form constrains abilities and skills without changing the D&D ruleset', () => {
+  const proposal = {
+    ...structuredClone(content.plans[0]),
+    resolution: {
+      kind: 'check',
+      check: {
+        rule: 'srd-5.2.1-subset.v1',
+        purpose: 'Push a physical barrier',
+        skill: 'athletics',
+        ability: 'strength',
+        dc: 12,
+        advantage: false,
+        disadvantage: false,
+        modifiers: [],
+      },
+      difficultyBasis: 'The barrier is heavy.',
+      success: { text: 'Moved.', effects: [] },
+      failure: { text: 'Unmoved.', effects: [] },
+    },
+  };
+  const result = validateImmediateActionProposal({
+    proposal,
+    character,
+    evidenceHandles: new Set(),
+  });
+  assert.equal(result.kind, 'rejected');
+  assert.deepEqual(
+    result.issues.map((issue) => issue.code),
+    ['unavailable-ability', 'unknown-skill'],
+  );
 });

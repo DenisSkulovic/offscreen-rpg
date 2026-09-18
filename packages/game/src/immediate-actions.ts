@@ -51,6 +51,8 @@ export const actionProposalIssueSchema = z.strictObject({
     'unknown-evidence',
     'unknown-fact',
     'unknown-quantity',
+    'unavailable-ability',
+    'unknown-skill',
     'unsupported-modifier',
   ]),
   path: z.string().max(300),
@@ -108,18 +110,35 @@ export function validateImmediateActionProposal(input: {
       issue(issues, 'unknown-fact', `requires.${index}`, 'Prerequisite fact is not declared with this value type');
     }
   }
-  if (
-    plan.resolution.kind === 'check' &&
-    (plan.resolution.check.advantage ||
-      plan.resolution.check.disadvantage ||
-      plan.resolution.check.modifiers.length)
-  ) {
-    issue(
-      issues,
-      'unsupported-modifier',
-      'resolution.check',
-      'The first immediate-action contract does not admit situational modifiers',
-    );
+  if (plan.resolution.kind === 'check') {
+    const check = plan.resolution.check;
+    if (!input.character.applicableAbilities.includes(check.ability)) {
+      issue(
+        issues,
+        'unavailable-ability',
+        'resolution.check.ability',
+        'The check ability is not applicable to the current form',
+      );
+    }
+    if (
+      check.skill &&
+      !input.character.skills.some((skill) => skill.id === check.skill)
+    ) {
+      issue(
+        issues,
+        'unknown-skill',
+        'resolution.check.skill',
+        'The check skill is not declared on the current form',
+      );
+    }
+    if (check.advantage || check.disadvantage || check.modifiers.length) {
+      issue(
+        issues,
+        'unsupported-modifier',
+        'resolution.check',
+        'The first immediate-action contract does not admit situational modifiers',
+      );
+    }
   }
   const outcomes: Array<readonly [string, ImmediateOutcome]> =
     plan.resolution.kind === 'automatic'

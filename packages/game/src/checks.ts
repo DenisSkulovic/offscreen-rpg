@@ -4,7 +4,7 @@ import { abilitySchema, characterSchema, type Character } from './state';
 export const checkPlanSchema = z.strictObject({
   rule: z.literal('srd-5.2.1-subset.v1'),
   purpose: z.string().max(200),
-  skill: z.string().min(1).max(80),
+  skill: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).nullable(),
   ability: abilitySchema,
   dc: z.number().int().min(5).max(30),
   advantage: z.boolean(),
@@ -88,6 +88,12 @@ export function resolveCheck(
 ): Roll {
   characterSchema.parse(character);
   checkPlanSchema.parse(plan);
+  if (!character.applicableAbilities.includes(plan.ability)) {
+    throw new Error('Check ability is not applicable to the current form');
+  }
+  if (plan.skill && !character.skills.some((skill) => skill.id === plan.skill)) {
+    throw new Error('Check skill is not declared on the current form');
+  }
   const dice = [draw()];
   if (plan.advantage !== plan.disadvantage) {
     dice.push(draw());
@@ -101,12 +107,16 @@ export function resolveCheck(
       source: plan.ability,
       value: Math.floor((character.scores[plan.ability] - 10) / 2),
     },
-    {
-      source: `${plan.skill} proficiency`,
-      value: character.proficientSkills.includes(plan.skill)
-        ? character.proficiencyBonus
-        : 0,
-    },
+    ...(plan.skill
+      ? [
+          {
+            source: `${plan.skill} proficiency`,
+            value: character.proficientSkills.includes(plan.skill)
+              ? character.proficiencyBonus
+              : 0,
+          },
+        ]
+      : []),
     ...plan.modifiers,
   ];
   const total =

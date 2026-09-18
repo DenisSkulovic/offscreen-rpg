@@ -20,6 +20,8 @@ The fictional world may imply far more people, objects and places than the datab
 
 Settings and characters should be flexible: fantasy, space, everyday life, unusual creatures or mixtures. The core should not require a specific profession, human body, economy or geography. Creative freedom still needs continuity: established facts and player choices should have weight.
 
+The selected D&D rules can remain richer than a particular character's current form. Applicability belongs to the character and situation: a bodiless consciousness may have no current use for Strength or a humanoid skill, while a later embodied form can gain them through an admitted transformation. Preserve conventional D&D behavior when the world supports it; do not flatten the rules to the smallest common denominator or pretend every rule applies to every form.
+
 ## The experience on screen
 
 The browser is a visual, atmospheric place to inhabit the current scene. Show what the character is doing, what they perceive and what they can do next. Quiet moments do not need artificial activity to fill the screen.
