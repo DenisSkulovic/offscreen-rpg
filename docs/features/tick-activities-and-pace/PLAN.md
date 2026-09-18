@@ -11,6 +11,6 @@ Six source-only clock tests passed. No integrated app/build/type checks ran. The
 
 ## Remaining phase: generated activity flow
 
-Depends on consequence preparation isolation and bounded DM planning. Reuse the admitted tick plan and resolver; no work/travel handlers. Present committed tick progress, real wake estimates, dice and the next constrained intention. An interruption stops the original commitment; explicit resumption needs a validated continuation plan. Optional calendar labels are content presentation, never an implicit conversion.
+Blocked by the architecture review in [activity processes and world-defined progress](../activity-processes-and-progress/FEATURE.md). Do not connect the current `durationTicks` plan to generated play or rename it into generic points. Preserve the clock arithmetic as potential scheduling infrastructure, then reshape admission, progress and completion only after the replacement design is approved.
 
-Acceptance: human routine, microbe response and abstract process share the clock. Quiet intervals do not invoke a model per tick; generated interruption/choice tasks use saved outcomes. Exercise the connected offline flow when useful or requested. No provider call is authorized.
+Acceptance after redesign: human routine, microbe response and abstract process share the clock and lifecycle while retaining rule-specific progress semantics. Quiet intervals do not invoke a model per tick; generated interruption/choice tasks use saved outcomes. No provider call is authorized.

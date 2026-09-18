@@ -20,7 +20,7 @@ Six abilities, skill proficiency, captured proficiency bonus, HP and optional st
 - The UI shows raw dice, modifiers, result and effect from durable records, not a fake animation or prose extraction.
 - Server rolls and validated rule data determine the result before narration; success and failure apply their declared consequences.
 - Duplicate commands, narration retry and reload preserve one result and one application of effects.
-- Old saved narrative stories remain readable; only explicitly enrolled mechanical stories obtain a character sheet.
+- Only explicitly enrolled mechanical stories obtain a character sheet. Discarded pre-POC prototype data is reset when contracts change.
 - Context contains the authoritative result, while hidden information remains private.
 
 ## Decisions still needed
@@ -34,5 +34,5 @@ The [shared architecture repair plan](../dnd-checks-and-visible-outcomes/PLAN.md
 - [Rules and activities](../../technical/rules-and-activities.md)
 - [Settings and clock](../../technical/story-settings.md)
 
-World boundary: D&D + LLM DM + time is the core. Wages, currency, professions and locations in this feature are authored pineapple examples. Generic character/roll contracts must allow no quantities and no resource effects. Migration 0016 preserves earlier fixture balances while removing the dedicated money fields.
+World boundary: D&D + LLM DM + time is the core. Wages, currency, professions and locations in this feature are authored pineapple examples. Generic character/roll contracts must allow no quantities and no resource effects. The current baseline contains no dedicated money fields or prototype-balance preservation.
 

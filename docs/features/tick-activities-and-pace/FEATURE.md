@@ -1,11 +1,11 @@
 # Tick-based activities and adjustable pace
 
-Status: tick contract implemented; integrated runtime not exercised. See the [shared repair checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md).
+Status: clock arithmetic implemented; duration-driven activity design challenged by the owner and awaiting replacement. See [activity processes and world-defined progress](../activity-processes-and-progress/FEATURE.md). Do not extend `durationTicks` as the general progress model.
 Approval: the owner authorized this correction and continued implementation on 2026-09-18.
 
 ## Intended outcome
 
-Make elapsed simulation ticks produce durable rules-based outcomes. The character and setting define the meaning of an activity; the engine imposes no human calendar, occupation or currency. The player's real wait is controlled independently of fictional scale.
+Retain the useful clock goal: simulation ticks order rules-based outcomes without imposing a human calendar, occupation or currency, while the player's real wait is controlled independently of fictional scale. Elapsed ticks alone must not constitute activity progress or completion.
 
 ## Representative flow
 
@@ -19,7 +19,7 @@ A microbe attempts an eight-tick environmental response. A distinct environmenta
 - Pause, restart, speed changes, catch-up and duplicate wakes cannot duplicate or skip due consequences.
 - Bounded batches preserve earned progress. Controls wait for due catch-up instead of changing already earned time.
 - An interruption stops later checks and completion effects. Automatic resumption of an interrupted plan remains unimplemented.
-- Old hourly and millisecond records remain inspectable and are never silently reinterpreted as ticks. The earlier narrative fixed-wait path retains its own protocol.
+- Discarded hourly and millisecond prototype data is reset rather than reinterpreted. The narrative fixed-wait path remains a separate current behavior because a prepared narrative arrival is not mechanical activity progress.
 
 ## Owning specifications
 

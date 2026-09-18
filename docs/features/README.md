@@ -19,11 +19,12 @@ This local solo milestone precedes broader shared-play, notification and hosted-
 
 ## Mechanical POC and customization
 
-Partially implemented following the owner's 2026-09-18 authorization; source review found architecture blockers. Start with the [shared repair plan](dnd-checks-and-visible-outcomes/PLAN.md). The tick arithmetic has a small source-only check; integrated runtime checks remain skipped. These handoffs extend the narrative rehearsal into a rules-based game. Suggested delivery order puts visible dice first; settings may proceed independently after its current runtime dependency. Checks remain optional, and no live spending is authorized.
+Partially implemented following the owner's 2026-09-18 authorization; source review found architecture blockers. The owner has since identified the duration-driven activity model as conceptually wrong. Review [activity processes and world-defined progress](activity-processes-and-progress/FEATURE.md) before further activity implementation. The tick arithmetic remains useful as clock/scheduling infrastructure, but ticks must not become the universal substance of progress. Checks remain optional, and no live spending is authorized.
 
 1. [D&D checks and visible outcomes](dnd-checks-and-visible-outcomes/FEATURE.md) — authoritative rolls, character state and effects before narration.
 2. [Situation-dependent options](contextual-option-agency/FEATURE.md) — broad menus, feasible constrained responses and typed actions.
 3. [Editable storyteller settings](editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
-4. [Tick-based activities and pace](tick-activities-and-pace/FEATURE.md) — scheduled checks, interruption boundaries and speed controls; depends on rules and settings.
+4. [Tick-based activities and pace](tick-activities-and-pace/FEATURE.md) — existing clock/scheduling slice; its duration-driven activity contract is superseded as a design direction pending review.
+5. [Activity processes and world-defined progress](activity-processes-and-progress/FEATURE.md) — proposed correction separating clock advancement, rule-owned progress, completion and estimates. Do not implement until reviewed.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).
