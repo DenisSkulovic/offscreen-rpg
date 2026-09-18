@@ -14,7 +14,7 @@ import type { Request } from 'express';
 import {
   QaJourneyError,
   type createQaJourneys,
-} from '@offscreen/server/qa-journeys';
+} from '@offscreen/application/developer-tools';
 import { IdentityService } from '../auth/identity.js';
 
 export const QA_JOURNEYS = Symbol('QA_JOURNEYS');

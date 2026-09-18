@@ -11,9 +11,9 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { createScriptedOpenings } from '@offscreen/server/scripted-openings';
-import { OpeningInputError } from '@offscreen/server/scripted-openings';
-import { GenerationError } from '@offscreen/server/generations';
+import type { createScriptedOpenings } from '@offscreen/application/generations';
+import { OpeningInputError } from '@offscreen/application/generations';
+import { GenerationError } from '@offscreen/application/generations';
 import { requestOpeningSchema } from '@offscreen/contracts/openings';
 import { IdentityService } from '../auth/identity.js';
 

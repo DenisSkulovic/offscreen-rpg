@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import type { TestContext } from 'node:test';
 import type { Database } from '@offscreen/db';
-import { createDrafts } from '@offscreen/server/drafts';
-import { createOpenings } from '@offscreen/server/openings';
+import { createDrafts } from '@offscreen/application/drafts';
+import { createOpenings } from '@offscreen/application/generations';
 import {
   createGenerations,
   GenerationError,
-} from '@offscreen/server/generations';
+} from '@offscreen/application/generations';
 import { z } from 'zod';
 import { requireDefined } from './helpers/require.js';
 

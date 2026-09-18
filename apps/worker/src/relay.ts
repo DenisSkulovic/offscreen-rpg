@@ -1,5 +1,5 @@
 import { setTimeout as delay } from 'node:timers/promises';
-import type { createOutbox, Notice } from '@offscreen/server/outbox';
+import type { createOutbox, Notice } from '@offscreen/application/outbox';
 
 // No database lock spans delivery. Failed/uncertain sends leave the lease to
 // expire, and the next attempt must use the same external operation identity.

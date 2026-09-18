@@ -7,11 +7,11 @@ import {
 } from '@offscreen/contracts/stories';
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import { createStories, StoryError } from '@offscreen/server/stories';
+import { createStories, StoryError } from '@offscreen/application/stories';
 import {
   createChamber,
   listChamberScenarios as listServerScenarios,
-} from '@offscreen/server/chamber';
+} from '@offscreen/application/developer-tools';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 

@@ -42,8 +42,8 @@ export default ts.config(
           patterns: [
             '@offscreen/db',
             '@offscreen/db/*',
-            '@offscreen/server',
-            '@offscreen/server/*',
+            '@offscreen/application',
+            '@offscreen/application/*',
             '@offscreen/storyteller',
             '@offscreen/storyteller/*',
             '@offscreen/workflows',
@@ -66,8 +66,8 @@ export default ts.config(
           patterns: [
             '@offscreen/db',
             '@offscreen/db/*',
-            '@offscreen/server',
-            '@offscreen/server/*',
+            '@offscreen/application',
+            '@offscreen/application/*',
             '@offscreen/storyteller',
             '@offscreen/storyteller/*',
             '@offscreen/workflows',
@@ -90,8 +90,8 @@ export default ts.config(
           patterns: [
             '@offscreen/db',
             '@offscreen/db/*',
-            '@offscreen/server',
-            '@offscreen/server/*',
+            '@offscreen/application',
+            '@offscreen/application/*',
             '@offscreen/storyteller',
             '@offscreen/storyteller/*',
             '@offscreen/worker',
@@ -112,8 +112,8 @@ export default ts.config(
           patterns: [
             '@offscreen/db',
             '@offscreen/db/*',
-            '@offscreen/server',
-            '@offscreen/server/*',
+            '@offscreen/application',
+            '@offscreen/application/*',
             '@nestjs/*',
             '@temporalio/*',
             '**/apps/**',

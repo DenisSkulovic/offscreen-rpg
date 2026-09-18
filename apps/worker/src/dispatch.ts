@@ -1,4 +1,4 @@
-import { storytellerTopic } from '@offscreen/server/storyteller-runtime';
+import { storytellerTopic } from '@offscreen/application/storyteller';
 import {
   storytellerWorkflowType,
   storytellerWorkflowId,
@@ -11,9 +11,9 @@ import {
   controlledIntervalTopic,
   decisionDeadlineTopic,
   intervalWakeTopic,
-} from '@offscreen/server/stories';
-import { scriptedOpeningTopic } from '@offscreen/server/scripted-openings';
-import { scriptedContinuationTopic } from '@offscreen/server/scripted-continuations';
+} from '@offscreen/application/stories';
+import { scriptedOpeningTopic } from '@offscreen/application/generations';
+import { scriptedContinuationTopic } from '@offscreen/application/generations';
 import {
   continuationWorkflowId,
   continuationWorkflowType,

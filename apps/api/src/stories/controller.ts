@@ -12,8 +12,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { createChamber } from '@offscreen/server/chamber';
-import { StoryError } from '@offscreen/server/stories';
+import type { createChamber } from '@offscreen/application/developer-tools';
+import { StoryError } from '@offscreen/application/stories';
 import {
   startChamberSchema,
   startStorySchema,

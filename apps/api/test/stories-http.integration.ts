@@ -4,7 +4,7 @@ import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { chamberInspectorSchema } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
-import { createStories, StoryError } from '@offscreen/server/stories';
+import { createStories, StoryError } from '@offscreen/application/stories';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 

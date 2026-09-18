@@ -59,7 +59,7 @@ packages/
   game/                framework-free game state, checks, effects, offers and time
   contracts/           Zod schemas, transport types, public error shapes
   workflows/           deterministic Temporal workflows and message contracts
-  server/              application modules, transactions and adapters
+  application/         use cases, transactions and application adapters
   db/                  Drizzle schema, migrations, database access
   storyteller/         profiles, context, tasks, planning, providers and fixtures
   config/              validated environment and build configuration
@@ -67,9 +67,9 @@ packages/
 
 Keep UI components inside `web` until another application genuinely shares them. Keep server packages out of the browser dependency graph. Sharing TypeScript does not mean exporting database rows, secrets or hidden storyteller plans to clients. Runtime validation is necessary for HTTP, jobs, model output and stored versioned JSON; TypeScript types disappear at runtime.
 
-Keep dependencies directional: `game` depends on no application package, runtime framework or database; `contracts` projects game values into transport validation without server imports; `server` composes `game`, `contracts`, `db` and `storyteller`. `workflows` imports only deterministic helpers and type-only Activity contracts, never NestJS, database clients or provider SDKs. Activity implementations live outside the workflow bundle. The Storyteller package receives constrained context/tool adapters rather than importing the application orchestrator back. Enforce these boundaries through package exports and import checks instead of trusting folder names.
+Keep dependencies directional: `game` depends on no application package, runtime framework or database; `contracts` projects game values into transport validation without application imports; `application` composes `game`, `contracts`, `db` and `storyteller`. `workflows` imports only deterministic helpers and type-only Activity contracts, never NestJS, database clients or provider SDKs. Activity implementations live outside the workflow bundle. The Storyteller package receives constrained context/tool adapters rather than importing the application orchestrator back. Enforce these boundaries through package exports and import checks instead of trusting folder names.
 
-Server modules cover identity/membership, story lifecycle, decision resolution, scheduling, generation, usage and delivery. `@offscreen/server/stories` remains the public story facade; initialization, continuation, timing and snapshot/history reads are story-local modules behind it. Authored chamber fixtures are selected through one closed catalog. The worker maps outbox topics to workflow start or wake in one dispatch table. Modules expose application operations rather than letting every caller update arbitrary tables. A story transition can coordinate those operations in one database transaction. Do not introduce a repository interface for every table or an event bus for every local function call.
+Application capabilities cover drafts, story lifecycle, campaign mechanics, generation, Storyteller execution, outbox delivery and developer tools. `@offscreen/application/stories` is the public story facade; initialization, continuation, timing and snapshot/history reads are story-local modules behind it. Authored Chamber fixtures are selected through one closed catalog exposed by the developer-tools facade. The worker maps outbox topics to workflow start or wake in one dispatch table. Modules expose application operations rather than letting every caller update arbitrary tables. A story transition can coordinate those operations in one database transaction. Do not introduce a repository interface for every table or an event bus for every local function call.
 
 ## Storage choices and alternatives
 

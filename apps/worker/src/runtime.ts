@@ -1,14 +1,14 @@
 import {
   createStorytellerRuntime,
   type StorytellerRuntimeOptions,
-} from '@offscreen/server/storyteller-runtime';
+} from '@offscreen/application/storyteller';
 import { Client, Connection } from '@temporalio/client';
 import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
-import { createOutbox } from '@offscreen/server/outbox';
-import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
-import { createScriptedContinuations } from '@offscreen/server/scripted-continuations';
-import { createStories } from '@offscreen/server/stories';
+import { createOutbox } from '@offscreen/application/outbox';
+import { createScriptedOpenings } from '@offscreen/application/generations';
+import { createScriptedContinuations } from '@offscreen/application/generations';
+import { createStories } from '@offscreen/application/stories';
 import { createWorkerActivities } from './activities';
 import { closeWorkerConnections } from './close-worker-connections';
 import type { WorkerConfig } from './config';

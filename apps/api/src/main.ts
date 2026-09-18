@@ -1,4 +1,4 @@
-import { readStorytellerExecution } from '@offscreen/server/storyteller-config';
+import { readStorytellerExecution } from '@offscreen/application/storyteller';
 import { createApp } from './app.js';
 import { readConfig } from './config.js';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';

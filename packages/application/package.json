@@ -1,0 +1,48 @@
+{
+  "name": "@offscreen/application",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./generations": {
+      "types": "./dist/generations/index.d.ts",
+      "default": "./dist/generations/index.js"
+    },
+    "./drafts": {
+      "types": "./dist/drafts/index.d.ts",
+      "default": "./dist/drafts/index.js"
+    },
+    "./outbox": {
+      "types": "./dist/outbox/index.d.ts",
+      "default": "./dist/outbox/index.js"
+    },
+    "./stories": {
+      "types": "./dist/stories/index.d.ts",
+      "default": "./dist/stories/index.js"
+    },
+    "./developer-tools": {
+      "types": "./dist/developer-tools/index.d.ts",
+      "default": "./dist/developer-tools/index.js"
+    },
+    "./storyteller": {
+      "types": "./dist/storyteller/index.d.ts",
+      "default": "./dist/storyteller/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@offscreen/storyteller": "workspace:*",
+    "zod": "4.6.5",
+    "@offscreen/db": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
+    "@offscreen/game": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

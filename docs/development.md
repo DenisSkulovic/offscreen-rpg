@@ -42,7 +42,7 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
-`@offscreen/storyteller/tasks` prepares a saved premise into a playable-opening request and validates a scene/choice proposal. Its tests run under `pnpm test` without credentials. The opening prose helper remains in the same task capability for snapshot isolation and request-shape checks. The exported JSON Schema is not yet verified against a hosted provider. The preview screen uses `@offscreen/server/scripted-openings`, a fixed local playable fixture, with no provider adapter. Generated continuation uses `@offscreen/server/scripted-continuations` the same way.
+`@offscreen/storyteller/tasks` prepares a saved premise into a playable-opening request and validates a scene/choice proposal. Its tests run under `pnpm test` without credentials. The opening prose helper remains in the same task capability for snapshot isolation and request-shape checks. The exported JSON Schema is not yet verified against a hosted provider. The preview and generated-continuation paths use fixed local fixtures exposed by `@offscreen/application/generations`, with no provider adapter.
 
 ```sh
 pnpm format:check
@@ -57,7 +57,7 @@ The API test compiles with TypeScript's decorator metadata, boots Nest against a
 
 `/api/health/live` indicates process liveness; `/api/health/ready` checks PostgreSQL connectivity. Neither verifies schema compatibility, OAuth provider availability or workflow recovery. `/api/me` requires a valid database session and returns only the user's ID, name and email. All API responses use `Cache-Control: no-store`; authenticated draft pages are rendered dynamically with uncached API reads.
 
-`packages/config` exports shared compiler settings. `packages/contracts` contains browser-safe draft validation and types; `packages/server` contains owned draft operations and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add deterministic workflow packages when the first workflow is implemented.
+`packages/config` exports shared compiler settings. `packages/contracts` contains browser-safe draft validation and types; `packages/application` contains owned use cases, transactions and revision checking, independent of HTTP frameworks. API configuration stays with its consumer. Workspace imports must use package names/exports, not reach across directories into another package. Add deterministic workflow packages when the first workflow is implemented.
 
 ## PostgreSQL component
 

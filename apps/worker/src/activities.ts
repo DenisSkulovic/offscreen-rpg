@@ -1,10 +1,10 @@
-import type { createStorytellerRuntime } from '@offscreen/server/storyteller-runtime';
+import type { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import type { StorytellerActivities, CampaignActivities } from '@offscreen/workflows/contracts';
 import { ApplicationFailure } from '@temporalio/client';
-import { GenerationError } from '@offscreen/server/generations';
-import type { createScriptedOpenings } from '@offscreen/server/scripted-openings';
-import type { createScriptedContinuations } from '@offscreen/server/scripted-continuations';
-import { StoryError, type createStories } from '@offscreen/server/stories';
+import { GenerationError } from '@offscreen/application/generations';
+import type { createScriptedOpenings } from '@offscreen/application/generations';
+import type { createScriptedContinuations } from '@offscreen/application/generations';
+import { StoryError, type createStories } from '@offscreen/application/stories';
 import type {
   ContinuationActivities,
   DecisionActivities,

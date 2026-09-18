@@ -12,8 +12,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { DraftError } from '@offscreen/server/drafts';
-import type { Drafts } from '@offscreen/server/drafts';
+import { DraftError } from '@offscreen/application/drafts';
+import type { Drafts } from '@offscreen/application/drafts';
 import { IdentityService } from '../auth/identity.js';
 
 export const DRAFTS = Symbol('DRAFTS');

@@ -55,7 +55,7 @@ Checks: compile application, API and worker directly. Use one focused offline in
 
 Exit: no production source remains at the application source root and no `@offscreen/server` import or package exists.
 
-Status: Not started.
+Status: Complete.
 
 ## Phase 4 — Separate deployable composition from development tooling
 
@@ -110,8 +110,8 @@ Status: Not started.
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 2 is complete; rename and capability-organize `@offscreen/server` as `@offscreen/application` in Phase 3.
-- Base/reviewed Git revision and relevant uncommitted changes: Phase 2 started from `68b3c90` on `main`; the atomic Storyteller package rename, capability exports, consumer imports and permanent documentation updates are ready to commit.
-- Actual checks/results for this revision; checks not run: the Storyteller build and all 22 focused package tests passed; API build passed. Server build reaches only the same two pre-existing `exactOptionalPropertyTypes` errors in `story-command-policy.ts`. No integration/browser suite or provider call was run.
-- Unresolved findings/blockers: none for Phase 2. The `planning` capability will be created when the playable DM slice introduces its contracts; no empty placeholder module or invented runtime was added.
+- Current phase and exact next action: Phase 3 is complete; separate Chamber composition from deployable API/worker dependencies in Phase 4.
+- Base/reviewed Git revision and relevant uncommitted changes: Phase 3 started from `9364a2b` on `main`; the application package rename, capability directories, six public facades and consumer import updates are ready to commit.
+- Actual checks/results for this revision; checks not run: API and worker builds passed. Application typechecking resolves the full reorganized graph and reaches only the same two pre-existing `exactOptionalPropertyTypes` errors, now in `stories/command-policy.ts`. No integration/browser suite or provider call was run.
+- Unresolved findings/blockers: none for Phase 3. Existing transaction calls were preserved across capability directories; this phase did not introduce repositories, events or gameplay behavior.
 - Provider spend and accounting certainty: no provider calls; spend $0.

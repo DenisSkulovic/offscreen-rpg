@@ -4,7 +4,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import type { TestContext } from 'node:test';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
-import { createChamber } from '@offscreen/server/chamber';
+import { createChamber } from '@offscreen/application/developer-tools';
 import {
   createScriptedContinuations,
   scriptedGeneratedIntervalRealMs,
@@ -12,12 +12,12 @@ import {
   scriptedPlayableContinuation,
   scriptedTimedContinuation,
   storyContinuationFromGeneratedResult,
-} from '@offscreen/server/scripted-continuations';
+} from '@offscreen/application/generations';
 import {
   scriptedOpeningPresentation,
   scriptedPlayableOpening,
-} from '@offscreen/server/scripted-openings';
-import { createStories, StoryError } from '@offscreen/server/stories';
+} from '@offscreen/application/generations';
+import { createStories, StoryError } from '@offscreen/application/stories';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';

@@ -14,13 +14,13 @@ import {
   storytellerFunding,
   storytellerRun,
 } from '@offscreen/db/storyteller-schema';
-import { createDrafts } from '@offscreen/server/drafts';
-import { createScriptedOpenings } from '@offscreen/server/scripted-openings';
-import { createStorytellerOpenings } from '@offscreen/server/storyteller-openings';
-import { createStorytellerRuntime } from '@offscreen/server/storyteller-runtime';
-import { createStorytellerBudget } from '@offscreen/server/storyteller-budget';
-import { createChamber } from '@offscreen/server/chamber';
-import { createStories } from '@offscreen/server/stories';
+import { createDrafts } from '@offscreen/application/drafts';
+import { createScriptedOpenings } from '@offscreen/application/generations';
+import { createStorytellerOpenings } from '@offscreen/application/storyteller';
+import { createStorytellerRuntime } from '@offscreen/application/storyteller';
+import { createStorytellerBudget } from '@offscreen/application/storyteller';
+import { createChamber } from '@offscreen/application/developer-tools';
+import { createStories } from '@offscreen/application/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
