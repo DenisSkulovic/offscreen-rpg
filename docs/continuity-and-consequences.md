@@ -16,6 +16,32 @@ A tavern may visibly contain several patrons without running a background life s
 
 Do not decide yet whether future durable people, places and objects use one entity table, separate typed tables, or another representation. That requires a concrete gameplay slice. Do not build one LLM agent per NPC, place or faction. A future storyteller can produce one bounded coherent scene or world proposal and materialize only what earns persistence. Space and movement representation remains an open product question; this distinction does not settle a map model.
 
+## Places, scenes and cinematic presentation
+
+The game needs a structured account of the situated present without turning every description into simulated geometry. Separate three concerns:
+
+1. **World truth** records facts later correctness depends on: the current place, present durable participants, possession or placement of consequential objects, and spatial relations that enable or prevent actions.
+2. **Scene staging** records what is salient now: local conditions, current focus, atmosphere and lightweight blocking such as inside/outside, nearby/distant, holding, following, concealed or blocking an exit.
+3. **Cinematic presentation** chooses how to portray that truth: shot size, angle, composition, focus, lighting, palette and small sensory details. These choices guide prose or illustration generation but do not independently change game state.
+
+A **place** earns durable identity when the player may return, something consequential remains there, its relationship to another place constrains movement, or a stable visual identity matters. Structural anchors such as a gate's twin towers may persist. Rain, temporary crowds and the current light normally belong to a scene rather than redefining the place.
+
+A **scene** is a continuous situation at one primary place and time with relatively stable participants and constraints. Several action resolutions may produce several beats inside one scene. A conversation becoming hostile is usually a new beat; crossing town is a scene transition. Returning tomorrow creates a new scene at the same place, reconstructed from stable place identity, persistent changes and new conditions.
+
+Do not promote every named background object, person or spatial detail. A cup on a table can remain scene dressing. Materialize the object if possession, location, later recognition or rule enforcement begins to depend on that exact cup. Likewise, “a drop of sweat rolls down her face” is normally presentation; it becomes state only when it establishes a consequential condition or observed clue.
+
+The initial scene representation should remain a bounded `scene-frame.v1`, not a map or universal entity system. Candidate information includes:
+
+- a durable place reference or temporary place description;
+- fictional time and temporary environmental conditions;
+- present durable participants and salient durable objects;
+- a small set of meaningful spatial relations;
+- current focus and atmosphere for generation.
+
+The storyteller may propose an updated scene frame alongside a DM turn. Application code validates references to durable identities and authoritative relations. Prose remains free to add disposable texture. A later image pipeline derives a separate visual frame containing composition, shot, angle, lighting, palette and reference anchors. Camera instructions are never prerequisites, effects or evidence that an event occurred.
+
+Scene transitions should be explicit enough to distinguish continuing the same situation, moving to another place, departing into a timed activity and arriving after one. Remote cutaways are not part of the solo POC because they can expose events the player character does not know.
+
 ## What happened, what is true, what might happen
 
 The chronology records completed developments and choices. The current situation describes the facts relevant now. A prepared continuation is a possible future, not history. These are distinctions in meaning, not a requirement for three particular software entities.

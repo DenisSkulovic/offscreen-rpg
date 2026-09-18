@@ -212,6 +212,35 @@ Application code revalidates the full result against captured evidence, current 
 
 One bounded repair attempt is enough for the POC. Persist the rejected output and structured diagnostics, then submit those diagnostics with the same captured authority snapshot. If repair fails, hold visibly. Do not hide an unbounded agent loop behind the word “retry.”
 
+### Scene-frame follow-up: situated continuity before visual generation
+
+The generated DM loop will need more than free prose to answer where the action is occurring, who is present and which objects or spatial constraints matter. Add a bounded `scene-frame.v1` after direct receipts and emergent facts work, either with the first generated DM turn or as the immediately following slice. Do not pull it into the direct-adjudication diff.
+
+The contract should distinguish:
+
+- a durable place identity from temporary weather, light and scene dressing;
+- a scene from the individual action-resolution beats occurring inside it;
+- authoritative presence, possession and meaningful spatial relations from cinematic emphasis;
+- durable people/items from temporary descriptive participants and props;
+- a same-scene update from departure, timed travel and arrival.
+
+The smallest useful frame contains a place reference or bounded temporary place description, fictional time/conditions, referenced durable participants, salient durable objects, a bounded list of lightweight spatial relations, current focus and atmosphere. It does not contain coordinates, pathfinding, camera settings or a complete inventory of everything mentioned in prose.
+
+The DM may propose the next scene frame. Application code validates durable references and mechanically consequential relations before publication. Returning to a known place combines its stable identity and saved changes with the new scene conditions; it does not reuse stale weather, cast or mood automatically.
+
+Illustration generation later derives `visual-frame.v1` from the committed scene plus creative settings. Candidate presentation fields include shot size, angle, subject/focus, foreground/background composition, lighting, palette, mood and identity/environment reference anchors. This derived frame may change without changing the fiction. A close-up cannot move an item, introduce a participant or prove that a narrated event happened.
+
+Acceptance for the first scene-frame rehearsal:
+
+- three consecutive actions can remain in one place and scene while focus/blocking changes;
+- movement creates an explicit new scene rather than silently rewriting location text;
+- returning to a prior place restores its stable anchors and persistent changes but allows different conditions and participants;
+- an item transferred or left behind constrains later offers correctly;
+- pineapple and microbe use the same frame without assuming terrestrial geography or human anatomy;
+- an image prompt can be derived without exposing private action branches or converting camera choices into authority.
+
+The owning product boundary is [places, scenes and cinematic presentation](../../continuity-and-consequences.md#places-scenes-and-cinematic-presentation). Map topology, exact travel geometry, generalized entities and image generation remain separate follow-ups.
+
 ### Quality constraints the structural schema cannot enforce
 
 The first live evaluation should judge these separately from JSON validity:
