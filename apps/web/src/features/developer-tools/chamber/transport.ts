@@ -14,7 +14,7 @@ import {
   readSnapshotFromResponse,
   readStorySnapshot,
   submitStoryJson,
-} from '../stories/story-transport';
+} from '@/src/lib/story-transport';
 
 const requestTimeoutMs = 10000;
 

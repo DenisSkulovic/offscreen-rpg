@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { draftContentSchema, draftSchema } from '@offscreen/contracts/drafts';
 import type { Draft, DraftContent } from '@offscreen/contracts/drafts';
-import { SessionRefresh } from './session-refresh';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
 
 const empty: DraftContent = {
   storyteller: null,

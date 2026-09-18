@@ -1,18 +1,18 @@
 'use client';
-import { CampaignPlay } from '../../stories/campaign-play';
-import { CampaignSettingsEditor } from '../../stories/campaign-settings';
-import { StoryHistoryView } from '../../stories/history';
-import { ResolutionRecovery } from '../../stories/resolution-recovery';
+import { CampaignPlay } from './campaign-play';
+import { CampaignSettingsEditor } from './campaign-settings';
+import { StoryHistoryView } from './history';
+import { ResolutionRecovery } from './resolution-recovery';
 
 import { useEffect, useRef, useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
-import { SessionRefresh } from '../../stories/session-refresh';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
 import {
   preferNewerSnapshot,
   readSnapshotFromResponse,
   readStorySnapshot,
   submitStoryJson,
-} from '../../stories/story-transport';
+} from '@/src/lib/story-transport';
 
 function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
   if (waiting.remainingMs === null) {

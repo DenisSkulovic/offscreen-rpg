@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { creativeSettingsSchema, campaignSettingsSchema, type CampaignView, type CreativeSettings } from '@offscreen/contracts/campaign';
 import { useCampaignCommand } from './use-campaign-command';
-import { submitStoryJson } from './story-transport';
+import { submitStoryJson } from '@/src/lib/story-transport';
 
 const presetSchema = z.object({ id: z.string(), name: z.string(), creative: creativeSettingsSchema });
 type Preset = z.infer<typeof presetSchema>;

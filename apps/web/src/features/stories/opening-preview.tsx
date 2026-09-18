@@ -8,8 +8,8 @@ import {
   latestOpeningSchema,
 } from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
-import { SessionRefresh } from './session-refresh';
-import { paceOptions } from './campaign-play';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
+import { paceOptions } from '@/src/features/play/campaign-play';
 
 export function OpeningPreviewPanel({
   draft,

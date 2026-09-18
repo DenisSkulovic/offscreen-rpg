@@ -1,5 +1,5 @@
 'use client';
-import { SessionRefresh } from '../stories/session-refresh';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { ChamberScene, ChamberStart } from './scene';
 import { useChamberPlay } from './use-chamber-play';
 import type { StorySnapshot } from '@offscreen/contracts/stories';

@@ -89,7 +89,7 @@ Checks: web typecheck/build if existing unrelated failures allow it; otherwise r
 
 Exit: substantial feature components and hooks no longer accumulate in route folders, and browser imports remain inside allowed packages.
 
-Status: Not started.
+Status: Complete.
 
 ## Phase 6 — Align documentation and remove obsolete structure
 
@@ -110,8 +110,8 @@ Status: Not started.
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 4 is complete; thin the Next.js route tree in Phase 5.
-- Base/reviewed Git revision and relevant uncommitted changes: Phase 4 started from `cc4c69a` on `main`; API/worker capability folders, dedicated Chamber and API-integration workspaces, deployable export surfaces and command updates are ready to commit.
-- Actual checks/results for this revision; checks not run: API, worker, Chamber and API-integration builds passed; both Chamber cleanup tests passed. Turbo's dry graph confirms the API build has no worker or workflow dependency. The smoke reached the reorganized API and Temporal worker after resetting the dedicated squashed-migration database, then stopped because the existing web build has four unrelated strict optional/null errors in `opening-preview.tsx`; no broader integration suite or provider call was run.
-- Unresolved findings/blockers: none in the package graph. A complete browser smoke awaits the existing web type errors; they were left outside this structural phase under the POC verification policy.
+- Current phase and exact next action: Phase 5 is complete; align residual documentation, scripts and obsolete structure in Phase 6.
+- Base/reviewed Git revision and relevant uncommitted changes: Phase 5 started from `01374f4` on `main`; story creation, play/session logic and Chamber presentation now live under `src/features`, with shared browser/auth transport in `src/lib` and route entry files retained in `app`.
+- Actual checks/results for this revision; checks not run: Next compiled the reorganized module graph successfully, then stopped on the same four pre-existing strict optional/null errors now located at `src/features/stories/opening-preview.tsx`. No browser suite or provider call was run.
+- Unresolved findings/blockers: none caused by the move. The four existing opening-preview type errors still block a production web build and full Chamber smoke.
 - Provider spend and accounting certainty: no provider calls; spend $0.

@@ -1,4 +1,4 @@
-import { SignInButton } from './sign-in-button';
+import { SignInButton } from '@/src/features/session/sign-in-button';
 
 export default async function SignIn({
   searchParams,

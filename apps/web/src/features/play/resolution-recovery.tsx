@@ -5,7 +5,7 @@ import {
   readStorySnapshot,
   readSnapshotFromResponse,
   submitStoryJson,
-} from './story-transport';
+} from '@/src/lib/story-transport';
 
 export function ResolutionRecovery({
   story,

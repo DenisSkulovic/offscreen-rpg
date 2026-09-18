@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
 import { latestOpeningSchema } from '@offscreen/contracts/openings';
-import { apiOrigin, requireViewer } from '../../viewer';
-import { OpeningPreviewPanel } from '../../opening-preview';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
 
 export default async function Preview({
   params,

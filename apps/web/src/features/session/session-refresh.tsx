@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { authClient } from '../auth-client';
+import { authClient } from '@/src/lib/auth-client';
 
 export function SessionRefresh({
   redirectOnExpiry = true,

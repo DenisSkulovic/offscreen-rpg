@@ -1,11 +1,11 @@
 import { storyListSchema } from '@offscreen/contracts/stories';
-import { LiveStoryList } from './live-story-list';
+import { LiveStoryList } from '@/src/features/stories/live-story-list';
 import Link from 'next/link';
 import { draftListSchema } from '@offscreen/contracts/drafts';
-import { apiOrigin, requireViewer } from './viewer';
-import { SignOutButton } from './sign-out-button';
-import { SessionRefresh } from './session-refresh';
-import { DraftList } from './draft-list';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { SignOutButton } from '@/src/features/session/sign-out-button';
+import { SessionRefresh } from '@/src/features/session/session-refresh';
+import { DraftList } from '@/src/features/stories/draft-list';
 
 export default async function Stories() {
   const { user, cookie } = await requireViewer();

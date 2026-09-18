@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { draftIdSchema } from '@offscreen/contracts/drafts';
-import { apiOrigin, requireViewer } from '../viewer';
-import { DraftEditor } from '../draft-editor';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { DraftEditor } from '@/src/features/stories/draft-editor';
 
 export default async function NewDraft({
   searchParams,

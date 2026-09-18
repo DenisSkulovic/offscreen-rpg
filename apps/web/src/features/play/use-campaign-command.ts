@@ -1,7 +1,11 @@
 'use client';
 import { useRef, useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
-import { readSnapshotFromResponse, readStorySnapshot, submitStoryJson } from './story-transport';
+import {
+  readSnapshotFromResponse,
+  readStorySnapshot,
+  submitStoryJson,
+} from '@/src/lib/story-transport';
 
 export function useCampaignCommand(storyId: string, onSnapshot: (story: StorySnapshot) => void) {
   const saved = useRef<{ url: string; body: unknown } | null>(null);

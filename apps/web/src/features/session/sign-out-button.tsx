@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { authClient } from '../auth-client';
+import { authClient } from '@/src/lib/auth-client';
 
 export function SignOutButton() {
   const [pending, setPending] = useState(false);

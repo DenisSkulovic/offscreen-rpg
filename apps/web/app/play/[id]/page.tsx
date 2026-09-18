@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import { z } from 'zod';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import { apiOrigin, requireViewer } from '../../stories/viewer';
-import { PlayScene } from './view';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { PlayScene } from '@/src/features/play/view';
 
 export default async function PlayPage({
   params,

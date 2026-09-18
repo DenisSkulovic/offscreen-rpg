@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
-import { apiOrigin, requireViewer } from '../stories/viewer';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
-import { Chamber } from './view';
+import { Chamber } from '@/src/features/developer-tools/chamber/view';
 
 export default async function ChamberPage({
   searchParams,

@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
-import { apiOrigin, requireViewer } from '../viewer';
-import { DraftEditor } from '../draft-editor';
+import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { DraftEditor } from '@/src/features/stories/draft-editor';
 
 export default async function SavedDraft({
   params,
