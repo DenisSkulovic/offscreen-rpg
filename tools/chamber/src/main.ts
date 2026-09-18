@@ -1,7 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { mkdir } from 'node:fs/promises';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { betterAuth } from 'better-auth';
@@ -17,8 +20,12 @@ import { stopChamberResources } from './stop.js';
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
 const smoke = process.argv.includes('--smoke');
-if (process.argv.slice(2).some((arg) => arg !== '--smoke')) {
-  throw new Error('Only --smoke is supported.');
+const review = process.argv.includes('--review');
+if (
+  (smoke && review) ||
+  process.argv.slice(2).some((arg) => !['--smoke', '--review'].includes(arg))
+) {
+  throw new Error('Use either --smoke or --review.');
 }
 const origin = 'http://127.0.0.1:3100';
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -229,7 +236,10 @@ try {
   if (!ready) {
     throw new Error('Web server did not become ready.');
   }
-  browser = await chromium.launch({ headless: smoke });
+  // Review mode uses the launcher's authenticated production path and saves
+  // disposable visual evidence. This avoids introducing test-only auth routes
+  // merely to let an automated reviewer see the same pages as a local player.
+  browser = await chromium.launch({ headless: smoke || review });
   const launchedBrowser = browser;
   const context = await launchedBrowser.newContext();
   await context.addCookies(
@@ -239,7 +249,59 @@ try {
   await page.goto(`${origin}/chamber`);
   await page.getByRole('button', { name: 'Start scripted chamber' }).waitFor();
   await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
-  if (smoke) {
+  if (review) {
+    const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
+    await mkdir(evidenceDirectory, { recursive: true });
+    await page.goto(`${origin}/stories/new`);
+    await page
+      .getByLabel('Choose your storyteller')
+      .selectOption('quiet-eerie-mystery/1');
+    await page
+      .getByLabel('Who are you, and where does this begin?')
+      .fill('I am SpongeBob in the pineapple with Gary.');
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    await page
+      .getByRole('link', { name: 'Review opening candidate' })
+      .click();
+    await page.getByLabel('Opening seed').selectOption('pineapple-mechanics.v4');
+    await page
+      .getByRole('button', {
+        name: 'Generate opening candidate',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole('button', { name: 'Start story', exact: true })
+      .waitFor({ timeout: 30000 });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({
+      path: join(evidenceDirectory, 'opening-wide.png'),
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      path: join(evidenceDirectory, 'opening-narrow.png'),
+      fullPage: true,
+    });
+    await page.getByRole('button', { name: 'Start story', exact: true }).click();
+    await page.waitForURL('**/play/**');
+    await page
+      .getByRole('button', { name: 'Slip behind the sofa', exact: true })
+      .waitFor({ timeout: 30000 });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({
+      path: join(evidenceDirectory, 'play-wide.png'),
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      path: join(evidenceDirectory, 'play-narrow.png'),
+      fullPage: true,
+    });
+    console.log(
+      `Local review evidence saved to ${evidenceDirectory}. Model spend: $0; no provider calls.`,
+    );
+  } else if (smoke) {
     await page
       .getByRole('combobox', { name: 'Scenario' })
       .selectOption('chamber.v5');

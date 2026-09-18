@@ -48,6 +48,8 @@ The API is mounted only when `developerTools` is enabled. The production story A
 
 Launch `pnpm chamber` and open `/chamber`. The QA workspace lists every journey and explains why unavailable work is blocked. It stores the last run UUID in local browser storage so a reload resumes the durable database record. Operators can record stage observations, artifact references and anchored ratings, finalize early as inconclusive or defective, then export a standalone evidence bundle. Starting again clears only the local pointer; it never deletes or rewrites the prior run.
 
+Run `pnpm chamber:review` for a headless, authenticated visual pass over the mechanical pineapple opening and first live scene. It writes wide and narrow full-page screenshots to the temporary `offscreen-rpg-review` directory reported by the command. The images are disposable evidence and are not committed; the flow uses the normal API, worker and persistence boundaries with offline fixtures only.
+
 The same case IDs, stage IDs and commands support browser automation. Automation should record structural evidence only. Human-judgment stages remain for an operator even when surrounding navigation and state assertions are automated.
 
 No live model call was made while implementing this system. Its offline accounting is zero calls, zero tokens, zero charge and no reservation.

@@ -20,6 +20,7 @@
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
     "chamber": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start",
+    "chamber:review": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber review",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"
   },
   "devDependencies": {

@@ -49,27 +49,35 @@ export function CampaignPlay({
     <section aria-label="Character and activities">
       <p>
         {campaign.character?.name} · HP {campaign.character?.hp}/
-        {campaign.character?.maxHp} · {campaign.location}
+        {campaign.character?.maxHp}
+        {campaign.location ? ` · ${campaign.location}` : ''}
       </p>
-      {campaign.character?.quantities.map((quantity) => (
-        <p key={quantity.id}>
-          {quantity.label}: {quantity.value}
+      <details>
+        <summary>Character state and rules</summary>
+        {/* These values are invaluable when checking deterministic authority,
+            but raw fact identifiers make the primary scene read like a debug
+            console. Keep them available without placing them in the player's
+            path from fiction to choice. */}
+        {campaign.character?.quantities.map((quantity) => (
+          <p key={quantity.id}>
+            {quantity.label}: {quantity.value}
+          </p>
+        ))}
+        {campaign.character?.facts.map((fact) => (
+          <p key={fact.id}>
+            {fact.id}: {String(fact.value)}
+          </p>
+        ))}
+        {campaign.storyFacts.map((fact) => (
+          <p key={fact.id}>
+            Story fact · {fact.id}: {String(fact.value)}
+          </p>
+        ))}
+        <p>
+          Tick {campaign.tick}. SRD 5.2.1 ability-check subset; server-resolved
+          nonlethal actions.
         </p>
-      ))}
-      {campaign.character?.facts.map((fact) => (
-        <p key={fact.id}>
-          {fact.id}: {String(fact.value)}
-        </p>
-      ))}
-      {campaign.storyFacts.map((fact) => (
-        <p key={fact.id}>
-          Story fact · {fact.id}: {String(fact.value)}
-        </p>
-      ))}
-      <p>
-        Tick {campaign.tick}. SRD 5.2.1 ability-check subset; server-resolved
-        nonlethal actions.
-      </p>
+      </details>
       {activity ? (
         <div>
           <h2>{activity.label}</h2>
