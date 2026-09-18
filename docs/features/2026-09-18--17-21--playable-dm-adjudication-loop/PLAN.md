@@ -17,7 +17,7 @@ Owning components:
 
 - `packages/contracts`: public offer/receipt schemas and private proposal schemas where shared;
 - `packages/db`: clean baseline tables for offer plans, planning operations and steps;
-- `packages/server`: persistence and admission boundaries.
+- `packages/application`: persistence and admission boundaries.
 
 Work:
 

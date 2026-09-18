@@ -51,7 +51,7 @@ Do not reset or reinterpret existing saved Chamber stories.
 
 ### 1. Add scenario metadata
 
-Refactor `packages/server/src/chamber-fixtures.ts` so every fixture has developer-facing metadata in addition to its versioned behavior.
+Refactor `packages/application/src/developer-tools/chamber-fixtures.ts` so every fixture has developer-facing metadata in addition to its versioned behavior.
 
 Suggested shape:
 

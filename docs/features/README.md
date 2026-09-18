@@ -24,8 +24,4 @@ The next implementation target is one playable immediate DM loop, not completion
 3. [Tick-based activities and pace](2026-09-18--16-43--tick-activities-and-pace/FEATURE.md) — existing clock/scheduling slice; its duration-driven activity contract is superseded as a design direction pending review.
 4. [Activity processes and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — proposed correction separating clock advancement, rule-owned progress, completion and estimates. Do not implement until reviewed.
 
-## Architecture
-
-1. [Monorepo architecture rework](2026-09-18--17-58--monorepo-architecture-rework/FEATURE.md) — reviewed package ownership, dependency direction, application capability modules and Chamber tooling separation before the DM loop expands them.
-
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

@@ -405,6 +405,6 @@ In particular:
 - `docs/technical/delivery-and-validation.md`
 - `docs/development.md`
 - `docs/progress.md`
-- `packages/server/src/chamber.ts`
-- `packages/server/src/chamber-fixtures.ts`
-- `apps/api/dev/chamber.ts`
+- `packages/application/src/developer-tools/chamber.ts`
+- `packages/application/src/developer-tools/chamber-fixtures.ts`
+- `tools/chamber/src/main.ts`

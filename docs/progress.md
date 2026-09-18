@@ -55,7 +55,7 @@ Next proposed slice: review the [playable DM adjudication loop](features/2026-09
 
 ## Current focus and next gate
 
-The repository structure has now been reviewed against its actual dependency graph. The first five phases of the [monorepo architecture rework](features/2026-09-18--17-58--monorepo-architecture-rework/FEATURE.md) establish `@offscreen/game` as the framework-free rules owner, organize the Storyteller and application packages around honest capabilities, move Chamber/integration orchestration into tooling workspaces, and move substantial web implementation from route folders into `src/features`. API and worker compile independently; the API build graph no longer includes worker or workflows. The remaining phase aligns residual scripts/documentation and removes obsolete structure.
+The repository architecture now reflects its actual dependency graph. `@offscreen/game` owns framework-free rules; Storyteller and application packages expose capability boundaries; Chamber and integration orchestration live in tooling workspaces; and substantial web implementation lives under `src/features` instead of route folders. API and worker compile independently, and the API build graph does not include worker or workflows.
 
 The reorganized API, worker, Chamber and integration workspaces compile, and both Chamber cleanup tests pass. Next compiles the reorganized web module graph, then its type pass stops on four existing strict optional/null errors in `src/features/stories/opening-preview.tsx`. Those unrelated POC errors remain visible rather than being folded into the architecture rework.
 
