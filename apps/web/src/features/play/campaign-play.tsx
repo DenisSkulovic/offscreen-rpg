@@ -67,8 +67,8 @@ export function CampaignPlay({
         </p>
       ))}
       <p>
-        Tick {campaign.tick}. SRD 5.2.1 ability-check subset; authored nonlethal
-        activities.
+        Tick {campaign.tick}. SRD 5.2.1 ability-check subset; server-resolved
+        nonlethal actions.
       </p>
       {activity ? (
         <div>
@@ -187,8 +187,8 @@ export function CampaignPlay({
       ) : null}
       {!story.resolution && !active && !nodes.length ? (
         <p>
-          The story is held: this authored content has no supported action for
-          the current circumstances. Your character's life has not ended.
+          The story is held: the current plan produced no supported action for
+          these circumstances. Your character's life has not ended.
         </p>
       ) : null}
       {command.message ? <p role="status">{command.message}</p> : null}

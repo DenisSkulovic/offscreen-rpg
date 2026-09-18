@@ -107,11 +107,19 @@ export function OpeningPreviewPanel({
     if (pending || starting) {
       return;
     }
-    const request = attempt.current ?? (
-      preview?.state === 'pending'
-        ? { id: preview.id, revision: preview.sourceRevision, contentId: preview.contentId }
-        : { id: crypto.randomUUID(), revision: draft.revision, contentId: contentId || undefined }
-    );
+    const request =
+      attempt.current ??
+      (preview?.state === 'pending'
+        ? {
+            id: preview.id,
+            revision: preview.sourceRevision,
+            contentId: preview.contentId,
+          }
+        : {
+            id: crypto.randomUUID(),
+            revision: draft.revision,
+            contentId: contentId || undefined,
+          });
     attempt.current = request;
     setPending(true);
     setMessage('');
@@ -179,7 +187,11 @@ export function OpeningPreviewPanel({
         body: JSON.stringify({
           candidateId: preview.id,
           expectedDraftRevision: draft.revision,
-          campaign: { mechanics: Boolean(preview.contentId), locked, pace: paceOptions.find((option) => option.value === pace)?.pace },
+          campaign: {
+            mechanics: Boolean(preview.contentId),
+            locked,
+            pace: paceOptions.find((option) => option.value === pace)?.pace,
+          },
         }),
         signal: AbortSignal.timeout(15000),
       });
@@ -223,7 +235,7 @@ export function OpeningPreviewPanel({
     generateLabel = 'Retry opening candidate';
   }
   if (pending) {
-    generateLabel = 'Preparing candidate�';
+    generateLabel = 'Preparing candidate…';
   }
   return (
     <main className="editor">
@@ -233,18 +245,36 @@ export function OpeningPreviewPanel({
       <p className="field-help">
         {preview?.mode === 'provider'
           ? 'This opening was requested from the selected storyteller. Start uses exactly the candidate you review here.'
-          : 'Offline rehearsal: authored content exercises choices, continuity and real waits without model calls. Arbitrary premises are saved but are not improvised.'}
+          : preview?.contentId
+            ? 'Offline mechanical rehearsal: the saved seed is planned through the same private-plan boundary used after each action. No model call is made.'
+            : 'Offline narrative rehearsal: authored scenes exercise choices, continuity and real waits without model calls. Arbitrary premises are saved but are not improvised.'}
       </p>
       {preview?.storyteller ? (
         <p>Storyteller: {preview.storyteller.name}</p>
       ) : null}
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
-      {draft.storyteller ? <label>Opening content <select disabled={pending || starting || Boolean(unresolved)} value={contentId} onChange={(event) => setContentId(event.target.value)}>
-        <option value="">Narrative rehearsal</option>
-        {mechanicalContent.map((entry) => (
-          <option key={entry.id} value={entry.id}>{entry.name}</option>
-        ))}
-      </select><span className="field-help">Authored examples. Generate a candidate to review its actual starting situation and choices. Selecting content does not rewrite an existing candidate.</span></label> : null}
+      {draft.storyteller ? (
+        <label>
+          Opening seed{' '}
+          <select
+            disabled={pending || starting || Boolean(unresolved)}
+            value={contentId}
+            onChange={(event) => setContentId(event.target.value)}
+          >
+            <option value="">Narrative rehearsal</option>
+            {mechanicalContent.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.name}
+              </option>
+            ))}
+          </select>
+          <span className="field-help">
+            Authored starting-state examples. The offline planner creates the
+            candidate's private actions; selecting a seed does not rewrite an
+            existing candidate.
+          </span>
+        </label>
+      ) : null}
       {preview && (
         <section aria-label="Opening candidate">
           <p className="field-help">
@@ -290,9 +320,31 @@ export function OpeningPreviewPanel({
       {canStart && preview?.storyteller ? (
         <fieldset disabled={starting || pending}>
           <legend>Campaign rules</legend>
-          <label><input type="checkbox" checked={locked} onChange={(event) => setLocked(event.target.checked)} /> Lock storyteller and speed settings at Start</label>
-          <label>Game speed <select value={pace} onChange={(event) => setPace(event.target.value)}>{paceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-          <p>Nonlethal rules subset. Pausing remains available. Start preserves the reviewed content and choices.</p>
+          <label>
+            <input
+              type="checkbox"
+              checked={locked}
+              onChange={(event) => setLocked(event.target.checked)}
+            />{' '}
+            Lock storyteller and speed settings at Start
+          </label>
+          <label>
+            Game speed{' '}
+            <select
+              value={pace}
+              onChange={(event) => setPace(event.target.value)}
+            >
+              {paceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p>
+            Nonlethal rules subset. Pausing remains available. Start preserves
+            the reviewed content and choices.
+          </p>
         </fieldset>
       ) : null}
       {canStart ? (

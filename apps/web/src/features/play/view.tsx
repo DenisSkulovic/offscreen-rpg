@@ -26,7 +26,10 @@ function resolutionMessage(story: StorySnapshot) {
     return null;
   }
   if (story.campaign?.character) {
-    if (story.resolution.state === 'failed' || story.resolution.state === 'blocked') {
+    if (
+      story.resolution.state === 'failed' ||
+      story.resolution.state === 'blocked'
+    ) {
       return 'The outcome and dice are saved. Narration could not finish; retry reuses those results.';
     }
     if (story.resolution.state !== 'uncertain') {
@@ -65,7 +68,8 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const shouldPoll =
     story.resolution?.state === 'pending' ||
     story.resolution?.state === 'running' ||
-    waiting != null || story.campaign?.activity?.state === 'running';
+    waiting != null ||
+    story.campaign?.activity?.state === 'running';
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));
@@ -198,10 +202,12 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       <p className="eyebrow">Offscreen RPG · Live story</p>
       {story.storyteller ? (
         <p>
-          {story.storyteller.name} �{' '}
+          {story.storyteller.name} ·{' '}
           {story.sourceMode === 'provider'
             ? 'Generated story'
-            : 'Offline authored rehearsal'}
+            : story.campaign?.character
+              ? 'Offline mechanical rehearsal'
+              : 'Offline authored rehearsal'}
         </p>
       ) : null}
       <h1>{story.current.content.title}</h1>
@@ -268,8 +274,22 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       ) : null}
       {status ? <p role="status">{status}</p> : null}
       <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
-      {story.campaign?.character ? <CampaignPlay key={story.campaign.offer?.id ?? story.id} story={story} campaign={story.campaign} onSnapshot={acceptSnapshot} /> : null}
-      {story.campaign ? <CampaignSettingsEditor key={story.campaign.settings.revision} story={story} campaign={story.campaign} onSnapshot={acceptSnapshot} /> : null}
+      {story.campaign?.character ? (
+        <CampaignPlay
+          key={story.campaign.offer?.id ?? story.id}
+          story={story}
+          campaign={story.campaign}
+          onSnapshot={acceptSnapshot}
+        />
+      ) : null}
+      {story.campaign ? (
+        <CampaignSettingsEditor
+          key={story.campaign.settings.revision}
+          story={story}
+          campaign={story.campaign}
+          onSnapshot={acceptSnapshot}
+        />
+      ) : null}
       <StoryHistoryView storyId={story.id} />
       <details>
         <summary>Inspect saved state</summary>
