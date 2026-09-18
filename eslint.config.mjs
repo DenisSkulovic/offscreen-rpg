@@ -15,4 +15,92 @@ export default ts.config(
       ],
     },
   },
+  {
+    files: ['packages/game/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '@offscreen/*',
+            'node:*',
+            'drizzle-orm',
+            '@nestjs/*',
+            '@temporalio/*',
+            'better-auth',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/contracts/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '@offscreen/db',
+            '@offscreen/db/*',
+            '@offscreen/server',
+            '@offscreen/server/*',
+            '@offscreen/ai',
+            '@offscreen/ai/*',
+            '@offscreen/workflows',
+            '@offscreen/workflows/*',
+            '@offscreen/worker',
+            '@offscreen/worker/*',
+            '**/apps/**',
+            '**/packages/**',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '@offscreen/db',
+            '@offscreen/db/*',
+            '@offscreen/server',
+            '@offscreen/server/*',
+            '@offscreen/ai',
+            '@offscreen/ai/*',
+            '@offscreen/workflows',
+            '@offscreen/workflows/*',
+            '@offscreen/worker',
+            '@offscreen/worker/*',
+            '**/apps/**',
+            '**/packages/**',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/workflows/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '@offscreen/db',
+            '@offscreen/db/*',
+            '@offscreen/server',
+            '@offscreen/server/*',
+            '@offscreen/ai',
+            '@offscreen/ai/*',
+            '@offscreen/worker',
+            '@offscreen/worker/*',
+            '**/apps/**',
+            '**/packages/**',
+          ],
+        },
+      ],
+    },
+  },
 );

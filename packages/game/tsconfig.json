@@ -1,0 +1,11 @@
+{
+  "extends": "@offscreen/config/typescript/base",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist/src"
+  },
+  "include": ["src/**/*.ts"]
+}

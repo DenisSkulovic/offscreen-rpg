@@ -1,9 +1,27 @@
-import type { Pace } from '@offscreen/contracts/campaign';
+import { z } from 'zod';
 
-export type TickProgress = Readonly<{
-  elapsedTicks: number;
-  remainder: Readonly<{ numerator: string; denominator: string }>;
-}>;
+export const paceSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('rate'),
+    ticks: z.number().int().min(1).max(1_000_000),
+    realMs: z.number().int().min(1).max(86_400_000),
+  }),
+  z.strictObject({ kind: z.literal('instant') }),
+]);
+export type Pace = z.infer<typeof paceSchema>;
+
+export const tickProgressSchema = z.strictObject({
+  elapsedTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  remainder: z
+    .strictObject({
+      numerator: z.string().regex(/^(0|[1-9]\d*)$/),
+      denominator: z.string().regex(/^[1-9]\d*$/),
+    })
+    .refine(
+      (fraction) => BigInt(fraction.numerator) < BigInt(fraction.denominator),
+    ),
+});
+export type TickProgress = z.infer<typeof tickProgressSchema>;
 
 export function wholeTicks(elapsedTicks: number): TickProgress {
   return { elapsedTicks, remainder: { numerator: '0', denominator: '1' } };
@@ -16,7 +34,7 @@ function gcd(left: bigint, right: bigint): bigint {
   return left;
 }
 
-/** Exact earned progress at the real-time anchor, independent of resolved checks. */
+/** Exact earned progress at the real-time anchor, independent of checks. */
 export function earnedTicks(input: {
   progress: TickProgress;
   anchorAt: Date;
@@ -31,12 +49,16 @@ export function earnedTicks(input: {
   if (input.pace.kind === 'instant') {
     return wholeTicks(input.durationTicks);
   }
-  const realElapsedMs = BigInt(Math.max(0, input.now - input.anchorAt.getTime()));
+  const realElapsedMs = BigInt(
+    Math.max(0, input.now - input.anchorAt.getTime()),
+  );
   const previousDenominator = BigInt(input.progress.remainder.denominator);
   const denominator = previousDenominator * BigInt(input.pace.realMs);
-  const numerator = BigInt(input.progress.remainder.numerator) * BigInt(input.pace.realMs)
-    + realElapsedMs * BigInt(input.pace.ticks) * previousDenominator;
-  const elapsedTicks = BigInt(input.progress.elapsedTicks) + numerator / denominator;
+  const numerator =
+    BigInt(input.progress.remainder.numerator) * BigInt(input.pace.realMs) +
+    realElapsedMs * BigInt(input.pace.ticks) * previousDenominator;
+  const elapsedTicks =
+    BigInt(input.progress.elapsedTicks) + numerator / denominator;
   if (elapsedTicks >= BigInt(input.durationTicks)) {
     return wholeTicks(input.durationTicks);
   }
@@ -52,13 +74,18 @@ export function earnedTicks(input: {
 }
 
 /** Real wait only. Long waits wake periodically within native timer limits. */
-export function realMsUntilTick(progress: TickProgress, boundaryTick: number, pace: Pace): number {
+export function realMsUntilTick(
+  progress: TickProgress,
+  boundaryTick: number,
+  pace: Pace,
+): number {
   if (pace.kind === 'instant' || progress.elapsedTicks >= boundaryTick) {
     return 0;
   }
   const denominator = BigInt(progress.remainder.denominator);
-  const remaining = BigInt(boundaryTick - progress.elapsedTicks) * denominator
-    - BigInt(progress.remainder.numerator);
+  const remaining =
+    BigInt(boundaryTick - progress.elapsedTicks) * denominator -
+    BigInt(progress.remainder.numerator);
   const realNumerator = remaining * BigInt(pace.realMs);
   const realDenominator = denominator * BigInt(pace.ticks);
   const roundedUp = (realNumerator + realDenominator - 1n) / realDenominator;

@@ -1,5 +1,9 @@
-import { campaignSettingsSchema, characterSchema, offerSchema, rollSchema, outcomeEffectsSchema } from '@offscreen/contracts/campaign';
-import { actionContentSchema } from '@offscreen/contracts/action-content';
+import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { actionContentSchema } from '@offscreen/game/activities';
+import { rollSchema } from '@offscreen/game/checks';
+import { outcomeEffectsSchema } from '@offscreen/game/effects';
+import { offerSchema } from '@offscreen/game/offers';
+import { characterSchema } from '@offscreen/game/state';
 import { z } from 'zod';
 import {
   passageContentSchema,
@@ -15,18 +19,30 @@ export const evidencePassageSchema = z.strictObject({
   response: z.string().max(2000).nullable(),
 });
 export const contextInputSchema = z.strictObject({
-  mechanicalOpening: z.strictObject({
-    character: characterSchema,
-    content: actionContentSchema,
-    offer: offerSchema,
-    opening: passageContentSchema,
-  }).optional(),
-  resolution: z.strictObject({
-    character: characterSchema,
-    tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-    offer: offerSchema,
-    receipts: z.array(z.strictObject({ id: z.uuid(), roll: rollSchema, effects: outcomeEffectsSchema })).max(192),
-  }).optional(),
+  mechanicalOpening: z
+    .strictObject({
+      character: characterSchema,
+      content: actionContentSchema,
+      offer: offerSchema,
+      opening: passageContentSchema,
+    })
+    .optional(),
+  resolution: z
+    .strictObject({
+      character: characterSchema,
+      tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+      offer: offerSchema,
+      receipts: z
+        .array(
+          z.strictObject({
+            id: z.uuid(),
+            roll: rollSchema,
+            effects: outcomeEffectsSchema,
+          }),
+        )
+        .max(192),
+    })
+    .optional(),
   campaignSettings: campaignSettingsSchema.optional(),
   premise: premiseContentSchema,
   current: evidencePassageSchema.nullable(),
@@ -52,9 +68,13 @@ export function contextPayload(context: StorytellerContext) {
     return `p${passage.sequence}`;
   };
   return {
-    ...(context.mechanicalOpening ? { mechanicalOpening: context.mechanicalOpening } : {}),
+    ...(context.mechanicalOpening
+      ? { mechanicalOpening: context.mechanicalOpening }
+      : {}),
     ...(context.resolution ? { resolution: context.resolution } : {}),
-    ...(context.campaignSettings ? { campaignSettings: context.campaignSettings } : {}),
+    ...(context.campaignSettings
+      ? { campaignSettings: context.campaignSettings }
+      : {}),
     premise: context.premise,
     current: context.current
       ? {

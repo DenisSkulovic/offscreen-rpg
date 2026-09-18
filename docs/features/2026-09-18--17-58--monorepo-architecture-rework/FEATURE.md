@@ -1,7 +1,7 @@
 # Monorepo architecture rework
 
-Status: Draft for owner review.
-Approval: The owner requested a proper codebase and monorepo review on 2026-09-18. The review and proposal are authorized; bulk file movement awaits review of this target.
+Status: Implementing.
+Approval: The owner approved proceeding with the proposed architecture rework on 2026-09-18. Phase 1 establishes the game boundary; later phases retain their documented scope.
 
 ## Intended outcome
 

@@ -1,0 +1,47 @@
+{
+  "name": "@offscreen/game",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./state": {
+      "types": "./dist/src/state.d.ts",
+      "default": "./dist/src/state.js"
+    },
+    "./checks": {
+      "types": "./dist/src/checks.d.ts",
+      "default": "./dist/src/checks.js"
+    },
+    "./effects": {
+      "types": "./dist/src/effects.d.ts",
+      "default": "./dist/src/effects.js"
+    },
+    "./offers": {
+      "types": "./dist/src/offers.d.ts",
+      "default": "./dist/src/offers.js"
+    },
+    "./time": {
+      "types": "./dist/src/time.d.ts",
+      "default": "./dist/src/time.js"
+    },
+    "./activities": {
+      "types": "./dist/src/activities.d.ts",
+      "default": "./dist/src/activities.js"
+    },
+    "./opportunities": {
+      "types": "./dist/src/opportunities.d.ts",
+      "default": "./dist/src/opportunities.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

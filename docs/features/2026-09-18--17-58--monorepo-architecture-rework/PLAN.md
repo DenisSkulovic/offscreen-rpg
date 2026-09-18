@@ -1,7 +1,7 @@
 # Monorepo architecture rework plan
 
 Feature: [Monorepo architecture rework](FEATURE.md)
-Execution scope: Review and proposal are authorized. Bulk restructuring begins after owner review of the target layout.
+Execution scope: Approved on 2026-09-18. Implement phases in order without compatibility shims or unrelated gameplay changes.
 Implementation owner: Codex or a cheaper implementation model; Codex reviews each ownership boundary.
 
 ## Phase 1 — Establish the game boundary
@@ -20,7 +20,7 @@ Checks: compile `game`, `contracts`, `storyteller/ai` and application/server pac
 
 Exit: one definition owns each game value; no pure rule imports the database, API, provider or scheduler.
 
-Status: Proposed.
+Status: Complete.
 
 ## Phase 2 — Give the Storyteller an honest package
 
@@ -110,8 +110,8 @@ Status: Not started.
 
 ## Current checkpoint
 
-- Current phase and exact next action: owner review of the proposed package names and target boundary; then implement Phase 1 before adding the playable DM contracts.
-- Base/reviewed Git revision and relevant uncommitted changes: reviewed `e287e81` on `main`; this feature proposal and small documentation-index corrections are uncommitted.
-- Actual checks/results for this revision; checks not run: read-only package/import/source inventory completed. The declared workspace graph is acyclic. No build, typecheck or tests were run for this documentation-only review.
-- Unresolved findings/blockers: choose `@offscreen/application` versus `@offscreen/app-core`, and workspace package versus script directory for Chamber tooling. Recommendations are recorded in FEATURE.md.
+- Current phase and exact next action: Phase 1 is complete; rename and reorganize the AI package as `@offscreen/storyteller` in Phase 2.
+- Base/reviewed Git revision and relevant uncommitted changes: implementation started from `d9392bd` on `main`; the Phase 1 game package, consumer import changes, boundary lint rules and documentation updates are ready for an atomic commit.
+- Actual checks/results for this revision; checks not run: game, contracts and AI builds passed; six pure tick-clock tests passed. Server build reaches only the same two pre-existing `exactOptionalPropertyTypes` errors in `story-command-policy.ts`. No integration or browser suite was run because this phase moves ownership without intended gameplay behavior changes.
+- Unresolved findings/blockers: none for Phase 1. The duration-driven activity prototype remains intentionally unchanged and will be redesigned separately rather than folded into a package move.
 - Provider spend and accounting certainty: no provider calls; spend $0.

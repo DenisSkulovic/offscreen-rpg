@@ -34,10 +34,6 @@
     "./campaign": {
       "types": "./dist/src/campaign.d.ts",
       "default": "./dist/src/campaign.js"
-    },
-    "./action-content": {
-      "types": "./dist/src/action-content.d.ts",
-      "default": "./dist/src/action-content.js"
     }
   },
   "scripts": {
@@ -46,6 +42,7 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
+    "@offscreen/game": "workspace:*",
     "zod": "4.6.5"
   },
   "devDependencies": {

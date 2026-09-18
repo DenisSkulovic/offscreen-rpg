@@ -58,14 +58,14 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "test:clock": "node --test test/tick-clock.test.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@offscreen/ai": "workspace:*",
     "zod": "4.6.5",
     "@offscreen/db": "workspace:*",
     "@offscreen/contracts": "workspace:*",
+    "@offscreen/game": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {
