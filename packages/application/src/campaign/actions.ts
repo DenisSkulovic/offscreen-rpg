@@ -19,6 +19,7 @@ import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import { commandReceipt, saveCommand } from './settings';
 import {
   campaignCharacter,
+  campaignStoryFacts,
   campaignOffer,
   requireCampaign,
   loadOfferPlan,
@@ -92,7 +93,11 @@ export function createCampaignActions(database: Database) {
       });
       if (
         !definition ||
-        !immediateActionAvailable(campaignCharacter(state), definition)
+        !immediateActionAvailable(
+          campaignCharacter(state),
+          campaignStoryFacts(state),
+          definition,
+        )
       ) {
         throw new StoryError('conflict');
       }
@@ -115,7 +120,9 @@ export function createCampaignActions(database: Database) {
       }
       const resolved = resolveImmediateAction(
         campaignCharacter(state),
+        campaignStoryFacts(state),
         definition,
+        args.operationId,
         () => randomInt(1, 21),
       );
       await tx.insert(gameActionReceipt).values({
@@ -131,12 +138,14 @@ export function createCampaignActions(database: Database) {
         outcome: resolved.outcome,
         outcomeText: resolved.text,
         effects: resolved.effects,
+        declarations: resolved.declarations,
         roll: resolved.roll,
       });
       await tx
         .update(campaign)
         .set({
           character: resolved.character,
+          storyFacts: resolved.storyFacts,
           offer: null,
           activeActivityId: null,
         })

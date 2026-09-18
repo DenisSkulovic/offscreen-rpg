@@ -2,12 +2,33 @@ import { z } from 'zod';
 import { checkPlanSchema } from './checks';
 import { resolveCheck, type DrawD20, type Roll } from './checks';
 import { applyOutcomeEffects, outcomeEffectsSchema } from './effects';
-import { factSchema, type Character } from './state';
+import {
+  factSchema,
+  storyFactSchema,
+  type Character,
+  type StoryFact,
+} from './state';
 
 const actionKeySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
+export const storyFactDeclarationsSchema = z
+  .array(
+    z.strictObject({
+      fact: storyFactSchema.omit({ declaredBy: true }),
+      evidence: z.array(z.string().min(1).max(100)).min(1).max(4),
+    }),
+  )
+  .max(4)
+  .refine(
+    (declarations) =>
+      new Set(declarations.map((declaration) => declaration.fact.id)).size ===
+      declarations.length,
+    'Duplicate story fact declaration',
+  )
+  .default([]);
 const outcomeSchema = z.strictObject({
   text: z.string().min(1).max(1000),
   effects: outcomeEffectsSchema,
+  declarations: storyFactDeclarationsSchema,
 });
 type ImmediateOutcome = z.infer<typeof outcomeSchema>;
 
@@ -19,6 +40,16 @@ export const immediateActionPlanSchema = z.strictObject({
   risk: z.string().min(1).max(300).nullable(),
   evidence: z.array(z.string().min(1).max(100)).max(8),
   requires: z.array(factSchema).max(16),
+  requiresStory: z.array(factSchema).max(16).default([]),
+  requiresQuantities: z
+    .array(
+      z.strictObject({
+        quantityId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/),
+        minimum: z.number().int().nonnegative().max(2147483647),
+      }),
+    )
+    .max(16)
+    .default([]),
   resolution: z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('automatic'), outcome: outcomeSchema }),
     z.strictObject({
@@ -83,6 +114,7 @@ export function validateImmediateActionProposal(input: {
   proposal: unknown;
   character: Character;
   evidenceHandles: ReadonlySet<string>;
+  storyFacts?: readonly StoryFact[];
 }): ImmediateActionValidation {
   const parsed = immediateActionPlanSchema.safeParse(input.proposal);
   if (!parsed.success) {
@@ -121,6 +153,10 @@ export function validateImmediateActionProposal(input: {
   const knownQuantities = new Set(
     input.character.quantities.map((quantity) => quantity.id),
   );
+  const storyFacts = input.storyFacts ?? [];
+  const knownStoryFacts = new Map(
+    storyFacts.map((fact) => [fact.id, typeof fact.value]),
+  );
   for (const [index, required] of plan.requires.entries()) {
     if (knownFacts.get(required.id) !== typeof required.value) {
       issue(
@@ -128,6 +164,26 @@ export function validateImmediateActionProposal(input: {
         'unknown-fact',
         `requires.${index}`,
         'Prerequisite fact is not declared with this value type',
+      );
+    }
+  }
+  for (const [index, required] of plan.requiresStory.entries()) {
+    if (knownStoryFacts.get(required.id) !== typeof required.value) {
+      issue(
+        issues,
+        'unknown-fact',
+        `requiresStory.${index}`,
+        'Story prerequisite is not declared with this value type',
+      );
+    }
+  }
+  for (const [index, required] of plan.requiresQuantities.entries()) {
+    if (!knownQuantities.has(required.quantityId)) {
+      issue(
+        issues,
+        'unknown-quantity',
+        `requiresQuantities.${index}`,
+        'Required quantity is not declared',
       );
     }
   }
@@ -189,6 +245,32 @@ export function validateImmediateActionProposal(input: {
         );
       }
     }
+    const declared = new Set<string>();
+    for (const [index, declaration] of outcome.declarations.entries()) {
+      const path = `resolution.${outcomeKey}.declarations.${index}`;
+      if (
+        declared.has(declaration.fact.id) ||
+        knownStoryFacts.has(declaration.fact.id)
+      ) {
+        issue(
+          issues,
+          'unknown-fact',
+          path,
+          'Story fact declaration must introduce one new identity',
+        );
+      }
+      declared.add(declaration.fact.id);
+      if (
+        declaration.evidence.some((handle) => !plan.evidence.includes(handle))
+      ) {
+        issue(
+          issues,
+          'unknown-evidence',
+          path,
+          'Declaration evidence must be captured by the action plan',
+        );
+      }
+    }
   }
   return issues.length
     ? { kind: 'rejected', issues }
@@ -197,12 +279,46 @@ export function validateImmediateActionProposal(input: {
 
 export function immediateActionAvailable(
   character: Character,
+  storyFacts: readonly StoryFact[],
   plan: ImmediateActionPlan,
 ) {
-  return plan.requires.every((required) =>
-    character.facts.some(
-      (fact) => fact.id === required.id && fact.value === required.value,
-    ),
+  const possibleDeclarations =
+    plan.resolution.kind === 'automatic'
+      ? plan.resolution.outcome.declarations
+      : [
+          ...plan.resolution.success.declarations,
+          ...plan.resolution.failure.declarations,
+        ];
+  const maximumDeclarations =
+    plan.resolution.kind === 'automatic'
+      ? plan.resolution.outcome.declarations.length
+      : Math.max(
+          plan.resolution.success.declarations.length,
+          plan.resolution.failure.declarations.length,
+        );
+  const knownStoryIds = new Set(storyFacts.map((fact) => fact.id));
+  return (
+    plan.requires.every((required) =>
+      character.facts.some(
+        (fact) => fact.id === required.id && fact.value === required.value,
+      ),
+    ) &&
+    plan.requiresStory.every((required) =>
+      storyFacts.some(
+        (fact) => fact.id === required.id && fact.value === required.value,
+      ),
+    ) &&
+    plan.requiresQuantities.every((required) =>
+      character.quantities.some(
+        (quantity) =>
+          quantity.id === required.quantityId &&
+          quantity.value >= required.minimum,
+      ),
+    ) &&
+    storyFacts.length + maximumDeclarations <= 64 &&
+    possibleDeclarations.every(
+      (declaration) => !knownStoryIds.has(declaration.fact.id),
+    )
   );
 }
 
@@ -210,17 +326,22 @@ export type ImmediateActionResolution = Readonly<{
   outcome: 'automatic' | 'success' | 'failure';
   text: string;
   effects: ImmediateOutcome['effects'];
+  declarations: ImmediateOutcome['declarations'];
   roll: Roll | null;
   character: Character;
+  storyFacts: readonly StoryFact[];
 }>;
 
 /** Resolves one already-admitted plan without persistence or implicit retries. */
 export function resolveImmediateAction(
   character: Character,
+  storyFacts: readonly StoryFact[],
   plan: ImmediateActionPlan,
+  declarationSource: string,
   drawD20: DrawD20,
 ): ImmediateActionResolution {
-  if (!immediateActionAvailable(character, plan)) {
+  plan = immediateActionPlanSchema.parse(plan);
+  if (!immediateActionAvailable(character, storyFacts, plan)) {
     throw new Error('Immediate action prerequisites are no longer satisfied');
   }
   if (plan.resolution.kind === 'automatic') {
@@ -228,10 +349,16 @@ export function resolveImmediateAction(
       outcome: 'automatic',
       text: plan.resolution.outcome.text,
       effects: plan.resolution.outcome.effects,
+      declarations: plan.resolution.outcome.declarations,
       roll: null,
       character: applyOutcomeEffects(
         character,
         plan.resolution.outcome.effects,
+      ),
+      storyFacts: applyStoryFactDeclarations(
+        storyFacts,
+        plan.resolution.outcome.declarations,
+        declarationSource,
       ),
     };
   }
@@ -243,9 +370,28 @@ export function resolveImmediateAction(
     outcome: roll.success ? 'success' : 'failure',
     text: outcome.text,
     effects: outcome.effects,
+    declarations: outcome.declarations,
     roll,
     character: applyOutcomeEffects(character, outcome.effects),
+    storyFacts: applyStoryFactDeclarations(
+      storyFacts,
+      outcome.declarations,
+      declarationSource,
+    ),
   };
+}
+
+function applyStoryFactDeclarations(
+  current: readonly StoryFact[],
+  declarations: ImmediateOutcome['declarations'],
+  declaredBy: string,
+) {
+  return [
+    ...current,
+    ...declarations.map((declaration) =>
+      storyFactSchema.parse({ ...declaration.fact, declaredBy }),
+    ),
+  ];
 }
 
 /** A plan may currently write only state whose identity and value type are declared. */

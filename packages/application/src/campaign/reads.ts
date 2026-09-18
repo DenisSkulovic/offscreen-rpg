@@ -120,6 +120,7 @@ export async function readCampaign(
   return campaignViewSchema.parse({
     settings: campaignSettingsSchema.parse(row.settings),
     character: state.character,
+    storyFacts: state.storyFacts,
     location: state.location,
     tick: state.tick,
     offer: state.offer,
@@ -138,6 +139,7 @@ export async function readCampaign(
       outcome: receipt.outcome,
       text: receipt.outcomeText,
       effects: receipt.effects,
+      declarations: receipt.declarations,
       roll: receipt.roll,
       state: actionReceiptState(receipt.generationId, publicationState),
     })),

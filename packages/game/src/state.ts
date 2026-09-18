@@ -28,6 +28,20 @@ export const factSchema = z.strictObject({
 });
 export type Fact = z.infer<typeof factSchema>;
 
+export const storyFactSchema = z.strictObject({
+  id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/),
+  value: z.union([z.string().max(300), z.boolean()]),
+  declaredBy: z.string().uuid(),
+});
+export type StoryFact = z.infer<typeof storyFactSchema>;
+export const storyFactsSchema = z
+  .array(storyFactSchema)
+  .max(64)
+  .refine(
+    (facts) => new Set(facts.map((fact) => fact.id)).size === facts.length,
+    'Duplicate story fact identity',
+  );
+
 export const characterSchema = z
   .strictObject({
     name: z.string().min(1).max(100),
@@ -43,7 +57,8 @@ export const characterSchema = z
       .array(skillSchema)
       .max(64)
       .refine(
-        (skills) => new Set(skills.map((skill) => skill.id)).size === skills.length,
+        (skills) =>
+          new Set(skills.map((skill) => skill.id)).size === skills.length,
         'Duplicate skill identity',
       ),
     proficientSkills: z.array(skillSchema.shape.id).max(30),
@@ -69,7 +84,8 @@ export const characterSchema = z
   .superRefine((character, context) => {
     const skills = new Set(character.skills.map((skill) => skill.id));
     if (
-      new Set(character.proficientSkills).size !== character.proficientSkills.length ||
+      new Set(character.proficientSkills).size !==
+        character.proficientSkills.length ||
       character.proficientSkills.some((skill) => !skills.has(skill))
     ) {
       context.addIssue({

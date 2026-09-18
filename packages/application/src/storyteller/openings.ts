@@ -15,7 +15,10 @@ import {
   offlineExecution,
   type ExecutionPolicy,
 } from '@offscreen/storyteller/tasks';
-import { playablePresentation, playableProposalSchema } from '@offscreen/storyteller/tasks';
+import {
+  playablePresentation,
+  playableProposalSchema,
+} from '@offscreen/storyteller/tasks';
 import {
   mechanicalContentCatalogueSchema,
   openingPreviewSchema,
@@ -64,7 +67,11 @@ export function createStorytellerOpenings(
       .where(eq(draftOpening.draftId, task.source.draftId));
     const presentation =
       row.state === 'succeeded'
-        ? playablePresentation(playableProposalSchema.parse(storytellerResultSchema.parse(row.output).scene))
+        ? playablePresentation(
+            playableProposalSchema.parse(
+              storytellerResultSchema.parse(row.output).scene,
+            ),
+          )
         : null;
     return openingPreviewSchema.parse({
       id: row.id,
@@ -182,7 +189,7 @@ export function createStorytellerOpenings(
           profile: storytellerCatalogue.resolve(draft.storyteller),
           execution,
           context: {
-            ...(seed ? { mechanicalOpening: seed } : {}),
+            ...(seed ? { mechanicalOpening: { ...seed, storyFacts: [] } } : {}),
             premise: {
               title: seed?.opening.title ?? draft.title,
               premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,

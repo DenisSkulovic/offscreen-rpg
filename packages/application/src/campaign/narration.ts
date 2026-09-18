@@ -10,7 +10,7 @@ import {
 } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { offerSchema } from '@offscreen/game/offers';
-import { characterSchema } from '@offscreen/game/state';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
@@ -23,6 +23,7 @@ import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { rollSchema } from '@offscreen/game/checks';
+import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 
 export const campaignConsequenceTopic = 'campaign.consequence.v1';
 
@@ -117,6 +118,7 @@ async function admitActionNarration(
       ...context,
       resolution: {
         character: characterSchema.parse(state.character),
+        storyFacts: storyFactsSchema.parse(state.storyFacts),
         tick: state.tick,
         offer: offerSchema.parse(receipt.offer),
         receipts: [
@@ -126,6 +128,9 @@ async function admitActionNarration(
             text: receipt.outcomeText,
             roll: receipt.roll === null ? null : rollSchema.parse(receipt.roll),
             effects: outcomeEffectsSchema.parse(receipt.effects),
+            declarations: storyFactDeclarationsSchema.parse(
+              receipt.declarations,
+            ),
           },
         ],
       },
@@ -210,12 +215,14 @@ async function admitConsequenceNarration(
       ...context,
       resolution: {
         character: characterSchema.parse(state.character),
+        storyFacts: storyFactsSchema.parse(state.storyFacts),
         tick: state.tick,
         offer: offerSchema.parse(state.offer),
         receipts: rolls.map((roll) => ({
           id: roll.id,
           roll: roll.result,
           effects: roll.effects,
+          declarations: [],
         })),
       },
     }),

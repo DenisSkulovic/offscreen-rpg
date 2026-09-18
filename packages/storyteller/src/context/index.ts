@@ -1,9 +1,12 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
-import { immediateActionContentSchema } from '@offscreen/game/immediate-actions';
+import {
+  immediateActionContentSchema,
+  storyFactDeclarationsSchema,
+} from '@offscreen/game/immediate-actions';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { offerSchema } from '@offscreen/game/offers';
-import { characterSchema } from '@offscreen/game/state';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { z } from 'zod';
 import { isDeepStrictEqual } from 'node:util';
 import {
@@ -26,6 +29,7 @@ export const contextInputSchema = z.strictObject({
   mechanicalOpening: z
     .strictObject({
       character: characterSchema,
+      storyFacts: storyFactsSchema.default([]),
       content: immediateActionContentSchema,
       offer: offerSchema,
       opening: passageContentSchema,
@@ -44,6 +48,7 @@ export const contextInputSchema = z.strictObject({
             text: z.string().max(1000).optional(),
             roll: rollSchema.nullable(),
             effects: outcomeEffectsSchema,
+            declarations: storyFactDeclarationsSchema,
           }),
         )
         .max(192),

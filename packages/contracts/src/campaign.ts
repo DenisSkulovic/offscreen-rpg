@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
+import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 import { offerSchema } from '@offscreen/game/offers';
-import { characterSchema } from '@offscreen/game/state';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { paceSchema } from '@offscreen/game/time';
 import { storytellerReferenceSchema } from './storytellers';
 
@@ -36,6 +37,7 @@ export type CampaignSettings = z.infer<typeof campaignSettingsSchema>;
 export const campaignViewSchema = z.strictObject({
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
+  storyFacts: storyFactsSchema,
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   offer: offerSchema.nullable(),
@@ -78,6 +80,7 @@ export const campaignViewSchema = z.strictObject({
         outcome: z.enum(['automatic', 'success', 'failure']),
         text: z.string().max(1000),
         effects: outcomeEffectsSchema,
+        declarations: storyFactDeclarationsSchema,
         roll: rollSchema.nullable(),
         state: z.enum(['pending', 'generating', 'published', 'failed']),
       }),

@@ -112,11 +112,11 @@ Phase 2 has started with a pure structured proposal validator. It reports bounde
 
 Authored mechanical openings and the offline narrative graph now live in schema-validated JSON content. The generic loader resolves arbitrary catalogue IDs, the API exposes content summaries and the client renders that catalogue; no shared contract, policy version or runtime branch names a scenario. The old premise-word and profile conditionals have been replaced by data lookup. This separation is preparatory work, not generated world understanding.
 
-Direct exactly-once adjudication is implemented. Immediate selection resolves through pure game policy and atomically saves one automatic/check receipt, optional roll, effects, updated character, consumed offer, command receipt and outbox follow-up. It creates no activity row, appends no placeholder passage and advances no tick. A separate idempotent worker operation prepares narration from that receipt; another action cannot reuse the consumed offer. It does not yet publish generated proposals. Next: design bounded emergent story facts and quantity prerequisites, then connect one complete generated DM turn. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. Scope later trace work to the same DM-turn lifecycle. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
+Direct exactly-once adjudication and bounded emergent state are implemented. Immediate selection resolves through pure game policy and atomically saves one automatic/check receipt, optional roll, effects, explicit story-fact declarations with receipt provenance, updated character/story state, consumed offer, command receipt and outbox follow-up. Character facts remain character-owned; story facts use a separate capped collection, and minimum quantity prerequisites reject unavailable actions before rolling. It creates no activity row, appends no placeholder passage and advances no tick. A separate idempotent worker operation prepares narration from that receipt; another action cannot reuse the consumed offer. It does not yet publish generated proposals. Next: connect one complete generated DM turn. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. Scope later trace work to the same DM-turn lifecycle. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
 
 All authored examples use the same plan/admission/resolution contract. Neither task specialization nor context validation assumes a currency, human calendar, movement mode, profession, species or setting. Activity-progress design remains outside this authorization. No provider spend is authorized.
 
-Verification: game tests pass 13/13, including pure automatic and checked immediate resolution; Storyteller tests pass 24/24 with nullable automatic receipts. Game, database, Storyteller, contracts, application and workflows builds pass; application, web and worker typechecks pass. The single disposable database baseline was regenerated. No database/browser/full-game rehearsal was run, so receipt persistence and recovery remain unverified at runtime. Provider spend: $0; cumulative account usage unverified.
+Verification: game tests pass 16/16, including pure automatic/checked resolution, explicit story-fact declaration, declaration rejection and minimum-quantity availability; Storyteller tests pass 24/24. Game, database, Storyteller, contracts and application builds pass; web and worker typechecks pass. The single disposable database baseline was regenerated. No database/browser/full-game rehearsal was run, so emergent-state persistence remains unverified at runtime. Provider spend: $0; cumulative account usage unverified.
 
 ## POC acceleration audit — 2026-09-18
 
@@ -190,15 +190,15 @@ Do not use `gameRoll` as the only receipt: an automatic action still happened, a
 - no `gameActivity` row is created for an immediate action;
 - no paid provider call is made.
 
-### Immediately following slice: bounded emergent state
+### Implemented slice: bounded emergent state
 
-Generated play will remain authored branching unless an outcome can establish a fact that did not exist at story creation. Add this only after the receipt boundary is clean.
+An outcome can now establish bounded story truth that did not exist at story creation. This was added after the direct receipt boundary so every declaration retains its receipt provenance.
 
-Prefer an explicit declaration effect over silently changing `fact.set.v1` into an upsert. A declaration needs a stable normalized identifier, bounded boolean/string value, provenance from the generating task/receipt, a total count cap and duplicate/conflict rules. Existing-fact updates should remain a distinct operation so a typo cannot create state.
+The explicit declaration field does not change `fact.set.v1` into an upsert. A declaration has a stable normalized identifier, bounded boolean/string value, evidence handles, receipt provenance, a total count cap and duplicate/conflict rules. Existing character-fact updates remain a distinct operation so a typo cannot create state.
 
-The current `character.facts` location does not honestly represent situation/world facts. Before implementing `character` versus `situation` scope, decide who owns each collection and when situation facts expire or become durable. Do not add a `scope` string while leaving both kinds in the same eternal character bag; that would label the ambiguity rather than solve it. For the first generated loop, one bounded durable story-fact collection is sufficient if the product language says so plainly.
+`character.facts` continues to represent character-owned conditions. Durable situation/world truth lives in a separate capped `campaign.storyFacts` collection. This first generated loop deliberately supports durable story facts only; transient scene state and expiry belong to the later scene-frame design rather than a misleading `scope` label in one eternal character bag.
 
-Add quantity prerequisites at the same admission boundary (`quantity >= N`, initially). A plan such as “pay 5 silver” must be rejected before selection when only 3 exist, rather than relying on final character parsing to discover a negative balance.
+Quantity prerequisites use `quantity >= N` at the same admission boundary. A plan such as “pay 5 silver” is rejected before selection when only 3 exist, rather than relying on final character parsing to discover a negative balance.
 
 ### DM-turn contract after receipts and facts
 

@@ -19,6 +19,7 @@ export const campaign = pgTable('campaign', {
   settingsRevision: integer('settings_revision').notNull(),
   locked: integer('locked').notNull().default(0),
   character: jsonb('character').$type<unknown>(),
+  storyFacts: jsonb('story_facts').notNull().default([]).$type<unknown>(),
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
   tick: bigint('tick', { mode: 'number' }).notNull(),
@@ -134,6 +135,7 @@ export const gameActionReceipt = pgTable(
     outcome: text('outcome').notNull(),
     outcomeText: text('outcome_text').notNull(),
     effects: jsonb('effects').notNull().$type<unknown>(),
+    declarations: jsonb('declarations').notNull().$type<unknown>(),
     roll: jsonb('roll').$type<unknown>(),
     generationId: uuid('generation_id'),
     createdAt: timestamp('created_at', { withTimezone: true })

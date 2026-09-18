@@ -16,7 +16,7 @@ import type { Roll } from '@offscreen/game/checks';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
 import { composeOpportunities } from '@offscreen/game/opportunities';
-import { characterSchema } from '@offscreen/game/state';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import type { Transaction } from '../outbox/index';
 import {
   advanceStoryView,
@@ -61,6 +61,7 @@ export async function refreshOffer(
     id: randomUUID(),
     content: immediateActionContentSchema.parse(state.content),
     character: campaignCharacter(state),
+    storyFacts: campaignStoryFacts(state),
     busy: activityState === 'running' || activityState === 'paused',
   });
   await saveOfferPlans(
@@ -149,6 +150,9 @@ export async function appendMechanicalPassage(
 }
 export function campaignCharacter(state: CampaignRecord) {
   return characterSchema.parse(state.character);
+}
+export function campaignStoryFacts(state: CampaignRecord) {
+  return storyFactsSchema.parse(state.storyFacts);
 }
 export function campaignOffer(state: CampaignRecord) {
   return offerSchema.parse(state.offer);

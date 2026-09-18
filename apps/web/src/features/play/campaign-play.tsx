@@ -61,6 +61,11 @@ export function CampaignPlay({
           {fact.id}: {String(fact.value)}
         </p>
       ))}
+      {campaign.storyFacts.map((fact) => (
+        <p key={fact.id}>
+          Story fact · {fact.id}: {String(fact.value)}
+        </p>
+      ))}
       <p>
         Tick {campaign.tick}. SRD 5.2.1 ability-check subset; authored nonlethal
         activities.
@@ -202,6 +207,12 @@ export function CampaignPlay({
                 {receipt.state}
               </p>
               <p>{receipt.text}</p>
+              {receipt.declarations.map((declaration) => (
+                <p key={declaration.fact.id}>
+                  Established {declaration.fact.id}:{' '}
+                  {String(declaration.fact.value)}
+                </p>
+              ))}
               {receipt.roll ? (
                 <p>
                   d20: {receipt.roll.dice.join(', ')} → {receipt.roll.chosen} ={' '}

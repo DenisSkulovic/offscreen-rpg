@@ -1,5 +1,5 @@
 {
-  "id": "523e5e94-6da5-44ae-85be-7c0eb664aace",
+  "id": "99152383-b8c4-4b81-b7ad-10d7610f50ea",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -454,6 +454,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "story_facts": {
+          "name": "story_facts",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
         "content": {
           "name": "content",
           "type": "jsonb",
@@ -777,6 +784,12 @@
         },
         "effects": {
           "name": "effects",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "declarations": {
+          "name": "declarations",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true

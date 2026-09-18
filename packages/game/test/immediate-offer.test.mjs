@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   immediateActionContentSchema,
+  immediateActionAvailable,
   resolveImmediateAction,
   validateImmediateActionProposal,
 } from '../dist/src/immediate-actions.js';
@@ -65,9 +66,15 @@ test('public offer contains no private resolution mechanics', () => {
 });
 
 test('immediate resolution returns one authoritative automatic outcome', () => {
-  const resolved = resolveImmediateAction(character, content.plans[0], () => {
-    throw new Error('Automatic action must not draw a die');
-  });
+  const resolved = resolveImmediateAction(
+    character,
+    [],
+    content.plans[0],
+    '52a3f0b0-5405-4d58-a58e-a96759371852',
+    () => {
+      throw new Error('Automatic action must not draw a die');
+    },
+  );
   assert.equal(resolved.outcome, 'automatic');
   assert.equal(resolved.roll, null);
   assert.equal(resolved.text, 'The microbe contracts.');
@@ -98,11 +105,114 @@ test('immediate resolution selects one checked branch and applies it once', () =
       failure: { text: 'Not detected.', effects: [] },
     },
   };
-  const resolved = resolveImmediateAction(character, plan, () => 15);
+  const resolved = resolveImmediateAction(
+    character,
+    [],
+    plan,
+    '52a3f0b0-5405-4d58-a58e-a96759371852',
+    () => 15,
+  );
   assert.equal(resolved.outcome, 'success');
   assert.equal(resolved.roll?.dice.length, 1);
   assert.deepEqual(resolved.character.facts, [{ id: 'exposed', value: false }]);
   assert.deepEqual(character.facts, [{ id: 'exposed', value: true }]);
+});
+
+test('story fact declaration is explicit, durable and separate from character facts', () => {
+  const plan = immediateActionContentSchema.parse({
+    version: 1,
+    id: 'declaration-test',
+    plans: [
+      {
+        ...structuredClone(content.plans[0]),
+        evidence: ['p1'],
+        resolution: {
+          kind: 'automatic',
+          outcome: {
+            text: 'The promise becomes established.',
+            effects: [],
+            declarations: [
+              {
+                fact: { id: 'gary-made-promise', value: true },
+                evidence: ['p1'],
+              },
+            ],
+          },
+        },
+      },
+    ],
+  }).plans[0];
+  const source = '52a3f0b0-5405-4d58-a58e-a96759371852';
+  const resolved = resolveImmediateAction(character, [], plan, source, () => 1);
+  assert.deepEqual(resolved.storyFacts, [
+    {
+      id: 'gary-made-promise',
+      value: true,
+      declaredBy: source,
+    },
+  ]);
+  assert.deepEqual(resolved.character.facts, character.facts);
+});
+
+test('proposal validation rejects unsupported or duplicate story declarations', () => {
+  const proposal = {
+    ...structuredClone(content.plans[0]),
+    evidence: ['p1'],
+    resolution: {
+      kind: 'automatic',
+      outcome: {
+        text: 'A claim is proposed.',
+        effects: [],
+        declarations: [
+          {
+            fact: { id: 'known-promise', value: true },
+            evidence: ['missing'],
+          },
+        ],
+      },
+    },
+  };
+  const result = validateImmediateActionProposal({
+    proposal,
+    character,
+    storyFacts: [
+      {
+        id: 'known-promise',
+        value: true,
+        declaredBy: '52a3f0b0-5405-4d58-a58e-a96759371852',
+      },
+    ],
+    evidenceHandles: new Set(['p1']),
+  });
+  assert.equal(result.kind, 'rejected');
+  assert.deepEqual(
+    result.issues.map((issue) => issue.code),
+    ['unknown-fact', 'unknown-evidence'],
+  );
+});
+
+test('minimum quantity prerequisites reject an unavailable action before rolling', () => {
+  const plan = immediateActionContentSchema.parse({
+    version: 1,
+    id: 'quantity-test',
+    plans: [
+      {
+        ...structuredClone(content.plans[0]),
+        requiresQuantities: [{ quantityId: 'silver', minimum: 5 }],
+      },
+    ],
+  }).plans[0];
+  assert.equal(
+    immediateActionAvailable(
+      {
+        ...character,
+        quantities: [{ id: 'silver', label: 'Silver', value: 3 }],
+      },
+      [],
+      plan,
+    ),
+    false,
+  );
 });
 
 test('unmet prerequisites and busy state publish no private or public action', () => {
