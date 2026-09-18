@@ -98,6 +98,7 @@ function consequence() {
           facts: [],
           quantities: [],
         },
+        storyFacts: [],
         tick: 0,
         offer: {
           id: randomUUID(),
@@ -138,7 +139,11 @@ test('captured schemas expose only the result for the requested task', () => {
     },
     context: { ...resolved.context, resolution: undefined },
   });
-  const cases = [[initial, 1], [continuation, 2], [resolved, 3]] as const;
+  const cases = [
+    [initial, 1],
+    [continuation, 2],
+    [resolved, 3],
+  ] as const;
   for (const [task, version] of cases) {
     const schema = JSON.parse(JSON.stringify(task.request.outputSchema));
     assert.equal(schema.properties.scene.properties.version.const, version);
@@ -153,20 +158,38 @@ test('context rejects inconsistent current evidence and unpublished future evide
   const { context } = consequence();
   assert.ok(context.current);
   const current = context.current;
-  assert.throws(() => boundStorytellerContext({
-    ...context,
-    current: {
-      ...current,
-      content: { version: 1, title: 'Contradiction', paragraphs: ['Different facts.'] },
-    },
-  }, () => true), /Current passage differs/);
-  assert.throws(() => boundStorytellerContext({
-    ...context,
-    evidence: [
-      ...context.evidence,
-      { ...current, id: randomUUID(), sequence: current.sequence + 1 },
-    ],
-  }, () => true), /future passage/);
+  assert.throws(
+    () =>
+      boundStorytellerContext(
+        {
+          ...context,
+          current: {
+            ...current,
+            content: {
+              version: 1,
+              title: 'Contradiction',
+              paragraphs: ['Different facts.'],
+            },
+          },
+        },
+        () => true,
+      ),
+    /Current passage differs/,
+  );
+  assert.throws(
+    () =>
+      boundStorytellerContext(
+        {
+          ...context,
+          evidence: [
+            ...context.evidence,
+            { ...current, id: randomUUID(), sequence: current.sequence + 1 },
+          ],
+        },
+        () => true,
+      ),
+    /future passage/,
+  );
 });
 
 test('profiles are data; captured task is isolated and task-specific', () => {
@@ -230,7 +253,7 @@ test('offered agency checks reject duplicates, endings and fabricated/future evi
   );
 });
 
-test('consequence planning selects admitted actions without gaining mechanical authority', () => {
+test('consequence planning proposes fresh plans without gaining mechanical authority', () => {
   const task = consequence();
   const result = scriptedStorytellerResult(task);
   assert.equal(result.scene.version, 3);
@@ -238,23 +261,23 @@ test('consequence planning selects admitted actions without gaining mechanical a
     throw new Error('Expected consequence scene');
   }
   assert.deepEqual(
-    result.scene.next.options.map((option) => option.id),
-    ['withdraw'],
+    result.scene.next.plans.map((plan) => plan.key),
+    ['follow-up-2'],
   );
 
   const fabricated = structuredClone(result);
   if (fabricated.scene.version !== 3) {
     throw new Error('Expected consequence scene');
   }
-  fabricated.scene.next.options[0]!.id = 'invented-mechanic';
+  fabricated.scene.next.plans[0]!.evidence = ['invented-evidence'];
   assert.throws(() => validateStorytellerResult(task, fabricated));
 
   const duplicate = structuredClone(result);
   if (duplicate.scene.version !== 3) {
     throw new Error('Expected consequence scene');
   }
-  duplicate.scene.next.options.push({
-    ...duplicate.scene.next.options[0]!,
+  duplicate.scene.next.plans.push({
+    ...duplicate.scene.next.plans[0]!,
   });
   assert.throws(() => validateStorytellerResult(task, duplicate));
 });

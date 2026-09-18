@@ -17,6 +17,10 @@ import {
   playableProposalSchema,
   publishedPlayableFromGeneration,
 } from './playable-proposal';
+import {
+  immediateActionPlanSchema,
+  validateImmediateActionProposal,
+} from '@offscreen/game/immediate-actions';
 
 export * from './opening';
 export * from './playable';
@@ -26,17 +30,9 @@ const consequenceSceneSchema = z.strictObject({
   version: z.literal(3),
   content: passageContentSchema,
   next: z.strictObject({
-    kind: z.literal('opportunities'),
+    kind: z.literal('action-plans'),
     state: z.enum(['available', 'held']),
-    options: z
-      .array(
-        z.strictObject({
-          id: z.string().min(1).max(100),
-          label: z.string().min(1).max(500),
-          intention: z.string().min(1).max(2000),
-        }),
-      )
-      .max(6),
+    plans: z.array(immediateActionPlanSchema).max(4),
   }),
 });
 export const storytellerResultSchema = z.strictObject({
@@ -52,7 +48,9 @@ export const storytellerResultSchema = z.strictObject({
 // Provider guidance and local parsing share the same task-specific structural contract.
 const resultSchemas = {
   opening: storytellerResultSchema.extend({ scene: playableProposalSchema }),
-  continuation: storytellerResultSchema.extend({ scene: continuationResultSchema }),
+  continuation: storytellerResultSchema.extend({
+    scene: continuationResultSchema,
+  }),
   consequence: storytellerResultSchema.extend({
     scene: consequenceSceneSchema,
     arrivalNotes: continuityPatchSchema.max(0),
@@ -132,7 +130,7 @@ function requestFor(
       : 'Create a version-2 continuation. Use choice for immediate exchanges or interval for meaningful fictional duration. Supply only gameDurationMs and one prepared arrival with choices.';
   if (input.task === 'consequence') {
     taskRules =
-      'Create a version-3 scene with next.kind opportunities. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects. Select zero to six contextually appropriate leaf actions from resolution.offer. Preserve each selected action ID exactly, but write an honest concise label and intention for the present situation. Never invent an ID or change its underlying mechanics. Distinct options must represent materially different intentions. Set state to available when at least one option is selected, otherwise held. One option is valid when constrained. Creative guidance affects prose and selection only. No interval or arrival notes.';
+      'Create a version-3 scene with next.kind action-plans. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects to the committed result. Propose zero to four fresh immediate-action.v1 plans grounded in supplied evidence and current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.';
   } else if (context.mechanicalOpening) {
     taskRules +=
       ' Preserve the supplied mechanical opening facts and copy its offer IDs, labels and descriptions exactly into options (description becomes intention).';
@@ -245,27 +243,33 @@ export function validateStorytellerResult(
     if (
       !resolution ||
       result.scene.version !== 3 ||
-      next.kind !== 'opportunities' ||
+      next.kind !== 'action-plans' ||
       result.arrivalNotes.length
     ) {
       throw new Error('Invalid consequence narration');
     }
-    const admittedIds = new Set(
-      resolution.offer.nodes
-        .filter((node) => node.action)
-        .map((node) => node.id),
-    );
-    const selectedIds = next.options.map((option) => option.id);
-    const labels = next.options.map((option) =>
-      option.label.trim().toLocaleLowerCase('en-US'),
+    const keys = next.plans.map((plan) => plan.key);
+    const labels = next.plans.map((plan) =>
+      plan.label.trim().toLocaleLowerCase('en-US'),
     );
     if (
-      next.state !== (next.options.length ? 'available' : 'held') ||
-      new Set(selectedIds).size !== selectedIds.length ||
-      new Set(labels).size !== labels.length ||
-      selectedIds.some((id) => !admittedIds.has(id))
+      next.state !== (next.plans.length ? 'available' : 'held') ||
+      new Set(keys).size !== keys.length ||
+      new Set(labels).size !== labels.length
     ) {
       throw new Error('Invalid planned opportunities');
+    }
+    const evidenceHandles = new Set(Object.keys(taskEvidence(task)));
+    for (const plan of next.plans) {
+      const validation = validateImmediateActionProposal({
+        proposal: plan,
+        character: resolution.character,
+        storyFacts: resolution.storyFacts,
+        evidenceHandles,
+      });
+      if (validation.kind === 'rejected') {
+        throw new Error(`Invalid action plan: ${validation.issues[0]?.code}`);
+      }
     }
   }
   const expectedVersion =

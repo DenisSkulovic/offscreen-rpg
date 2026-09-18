@@ -1,9 +1,6 @@
 import { z } from 'zod';
 import type { StorytellerTask, StorytellerResult } from '../tasks';
-import {
-  storytellerResultSchema,
-  validateStorytellerResult,
-} from '../tasks';
+import { storytellerResultSchema, validateStorytellerResult } from '../tasks';
 import authoredRehearsal from './content/narrative-rehearsal.json';
 
 const authoredSource = z
@@ -48,10 +45,7 @@ const narrativeRehearsalSchema = z.strictObject({
     continuation: storytellerResultSchema,
   }),
   profiles: z.record(z.string().min(1).max(100), profileRehearsalSchema),
-  sharedContinuations: z.record(
-    z.string().min(1).max(100),
-    branchSchema,
-  ),
+  sharedContinuations: z.record(z.string().min(1).max(100), branchSchema),
 });
 
 const rehearsal = narrativeRehearsalSchema.parse(
@@ -93,15 +87,9 @@ function scriptedNarrativeResult(task: StorytellerTask): StorytellerResult {
     profile.continuations[selectedId] ??
     rehearsal.sharedContinuations[selectedId];
   if (!branch) {
-    return validateStorytellerResult(
-      task,
-      rehearsal.fallback.continuation,
-    );
+    return validateStorytellerResult(task, rehearsal.fallback.continuation);
   }
-  return validateStorytellerResult(
-    task,
-    selectedBranchResult(task, branch),
-  );
+  return validateStorytellerResult(task, selectedBranchResult(task, branch));
 }
 
 /** Pure repeatable no-provider source. Authored worlds live in validated content. */
@@ -134,27 +122,46 @@ export function scriptedStorytellerResult(
     if (!resolution || !task.context.current) {
       throw new Error('Missing committed consequence');
     }
-    const candidates = resolution.offer.nodes.filter((node) => node.action);
-    const alternatives = candidates.filter(
-      (node) => node.id !== task.context.selected?.id,
-    );
-    const selected = (alternatives.length ? alternatives : candidates).slice(
-      0,
-      3,
-    );
+    const evidence = `p${task.context.current.sequence}`;
+    const prior = resolution.receipts.at(-1);
+    const plans = [
+      {
+        version: 1,
+        key: `follow-up-${task.source.narrativeRevision}`,
+        label: 'Assess what changed',
+        intention:
+          'Pause long enough to understand the immediate result and choose a grounded next direction.',
+        risk: null,
+        evidence: [evidence],
+        requires: [],
+        requiresStory: [],
+        requiresQuantities: [],
+        resolution: {
+          kind: 'automatic',
+          outcome: {
+            text: 'You take stock of the changed situation.',
+            effects: [],
+            declarations: [],
+          },
+        },
+      },
+    ];
     return validateStorytellerResult(task, {
       version: 1,
       scene: {
         version: 3,
-        content: task.context.current.content,
+        content: {
+          version: 1,
+          title: task.context.selected?.label ?? 'The consequence',
+          paragraphs: [
+            prior?.text ??
+              'The committed action changes the immediate situation.',
+          ],
+        },
         next: {
-          kind: 'opportunities',
-          state: selected.length ? 'available' : 'held',
-          options: selected.map((node) => ({
-            id: node.id,
-            label: node.label,
-            intention: node.description,
-          })),
+          kind: 'action-plans',
+          state: 'available',
+          plans,
         },
       },
       currentNotes: [],

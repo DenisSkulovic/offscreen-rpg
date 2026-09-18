@@ -4,7 +4,7 @@ The immediate milestone is a solo story with reviewed opening, meaningful offere
 
 ## What exists and what is missing
 
-Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. The current mechanical narrator selects authored actions. It does not generate private action plans, use tools or demonstrate an open-ended DM. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
+Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. The offline mechanical DM turn now proposes and admits fresh private plans after a committed consequence. It does not use retrieval tools, generate the mechanical opening or establish live-model quality. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
 
 The next dependency order is:
 
@@ -24,7 +24,7 @@ The Storyteller is a profile, not an execution topology. A deterministic applica
 | --- | --- | --- | --- |
 | Admission and resolution | Pure rules coordinated in a transaction | Captured plan, current state, selected intention, fences, server dice | Model-authored rolls, client-authored effects |
 | Immediate opportunity planning (missing) | Bounded structured DM turn | Current scene, relevant committed facts/character, constraints, recent outcome, profile/settings guidance, relevant rule catalogue | Mutating tools, speculative future facts, unrelated history |
-| Consequence presentation | Focused generation; current task also selects authored candidates | Saved receipts, current scene, relevant continuity, admitted opportunities | Rerolls, new effects, retroactive success |
+| Consequence DM turn | Focused generation plus deterministic plan admission | Saved receipts, current scene and state, relevant continuity and supported action contract | Rerolls, retroactive success or direct state mutation |
 | Opening | Focused generation plus mechanical planning before review | Premise, starting state, selected profile/settings | A previous story's evidence or actions |
 | Continuity | Validated note patches published with their passage | Existing notes and bounded cited evidence | Treating summaries or dialogue as rules or state |
 | Scheduling, progress and recovery | Deterministic application/workflow logic | Committed clock/process/operation records | A model call per tick or a retry that repeats effects |

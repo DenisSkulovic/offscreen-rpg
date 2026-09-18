@@ -20,9 +20,9 @@ This package prepares bounded tasks and validates their results. It does not own
 
 - **Opening:** prepares a reviewable beginning. Mechanical openings currently copy content-supplied opportunities.
 - **Continuation:** resolves a narrative selection into an immediate scene or a prepared timed arrival. It does not adjudicate general mechanical effects.
-- **Consequence:** narrates already resolved mechanics and selects from admitted actions. It cannot roll, add effects or create new action IDs.
+- **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to four fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
 
-There is no tool-using DM planner yet. Task/schema versions and the authored content graph must not be mistaken for an agent loop. The proposed runner's status belongs in [progress](../../docs/progress.md).
+There is no tool-using or multi-round planner yet. The current one-shot offline DM turn is enough for the short playable loop; pre-narrative retrieval remains the separate memory proposal. Task/schema versions and the authored content graph must not be mistaken for demonstrated live-model quality.
 
 ## Content and rules
 

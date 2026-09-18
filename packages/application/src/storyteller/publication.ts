@@ -6,7 +6,10 @@ import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { offerSchema } from '@offscreen/game/offers';
-import type { ImmediateActionPlan } from '@offscreen/game/immediate-actions';
+import {
+  validateImmediateActionProposal,
+  type ImmediateActionPlan,
+} from '@offscreen/game/immediate-actions';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
@@ -23,7 +26,7 @@ import {
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
-import { loadOfferPlan, saveOfferPlans } from '../campaign/persistence';
+import { saveOfferPlans } from '../campaign/persistence';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -69,48 +72,42 @@ export async function publishStorytellerResult(
     if (task.task === 'consequence') {
       if (
         result.scene.version !== 3 ||
-        result.scene.next.kind !== 'opportunities'
+        result.scene.next.kind !== 'action-plans'
       ) {
         throw new StoryError('invalid');
       }
-      const candidates = new Map(
-        task.context.resolution?.offer.nodes
-          .filter((node) => node.action)
-          .map((node) => [node.id, node] as const) ?? [],
+      const resolutionContext = task.context.resolution;
+      if (!resolutionContext) {
+        throw new StoryError('invalid');
+      }
+      const evidenceHandles = new Set(
+        task.context.evidence.map((passage) => `p${passage.sequence}`),
       );
+      const selectedPlans: ImmediateActionPlan[] = [];
+      for (const proposal of result.scene.next.plans) {
+        const validation = validateImmediateActionProposal({
+          proposal,
+          character: resolutionContext.character,
+          storyFacts: resolutionContext.storyFacts,
+          evidenceHandles,
+        });
+        if (validation.kind === 'rejected') {
+          throw new StoryError('invalid');
+        }
+        selectedPlans.push(validation.plan);
+      }
       const plannedOffer = offerSchema.parse({
         id: randomUUID(),
-        nodes: result.scene.next.options.map((option) => {
-          const candidate = candidates.get(option.id);
-          if (!candidate?.action) {
-            throw new StoryError('invalid');
-          }
+        nodes: selectedPlans.map((plan) => {
           return {
-            id: option.id,
+            id: plan.key,
             parent: null,
-            label: option.label,
-            description: option.intention,
-            action: candidate.action,
+            label: plan.label,
+            description: plan.intention,
+            action: { kind: 'attempt' },
           };
         }),
       });
-      const sourceOffer = task.context.resolution?.offer;
-      if (!sourceOffer) {
-        throw new StoryError('invalid');
-      }
-      const selectedPlans: ImmediateActionPlan[] = [];
-      for (const option of result.scene.next.options) {
-        const plan = await loadOfferPlan(tx, {
-          storyId: current.id,
-          offerId: sourceOffer.id,
-          narrativeRevision: current.revision,
-          actionKey: option.id,
-        });
-        if (!plan) {
-          throw new StoryError('invalid');
-        }
-        selectedPlans.push(plan);
-      }
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id,
         sequence: current.revision + 1,
