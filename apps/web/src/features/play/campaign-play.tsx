@@ -82,8 +82,9 @@ export function CampaignPlay({
         <div>
           <h2>{activity.label}</h2>
           <p>
-            {activity.resolvedTicks}/{activity.durationTicks} ticks resolved ·{' '}
-            {activity.state}.
+            {activity.progress.label}: {activity.progress.earned}/
+            {activity.progress.required} · {activity.state}.{' '}
+            {activity.boundariesSettled} productive boundaries settled.
           </p>
           {activity.dueAt ? (
             <p>

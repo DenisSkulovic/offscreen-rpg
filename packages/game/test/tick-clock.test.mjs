@@ -3,13 +3,13 @@ import test from 'node:test';
 import { earnedTicks, realMsUntilTick, wholeTicks } from '../src/time.ts';
 
 const rate = (ticks, realMs) => ({ kind: 'rate', ticks, realMs });
-const earn = (progress, pace, now, state = 'running', durationTicks = 100) =>
+const earn = (progress, pace, now, state = 'running', maximumTicks = 100) =>
   earnedTicks({
     progress,
     pace,
     now,
     state,
-    durationTicks,
+    maximumTicks,
     anchorAt: new Date(0),
   });
 

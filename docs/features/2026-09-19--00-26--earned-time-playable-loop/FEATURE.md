@@ -1,7 +1,7 @@
 # Earned-time playable loop
 
-Status: Draft for owner review. Preparation does not authorize implementation or live inference.
-Approval: Pending.
+Status: Approved for offline implementation by the owner on 2026-09-19. Live inference remains unauthorized.
+Approval: Implement decisively with Codex selecting the bounded fixture and process details.
 
 ## Intended outcome
 
@@ -11,7 +11,7 @@ This feature selects one small contribution process as the gold vertical slice. 
 
 ## Representative flow
 
-A newly arrived character accepts a guard shift with modest compensation on valid completion. The screen shows what they are doing, the conditional expected completion and that the reward is not yet owned. The player closes the browser.
+A newly arrived character agrees to restore a storm-damaged signal beacon while keeping watch, with modest compensation on valid completion. The screen shows what they are doing, the contributed repair, the conditional expected completion and that the reward is not yet owned. The player closes the browser.
 
 At a meaningful boundary, either the shift progresses quietly or an approaching stranger interrupts it. The interruption commits progress up to that boundary and creates an immediate scene. The player can challenge, converse, seek help or abandon the post. The server performs any admitted D&D check once. The resulting facts determine whether the shift can resume, changes terms or fails.
 
@@ -55,12 +55,12 @@ The shift, compensation and humanoid capacity are fixture content. Shared runtim
 - The microbe contrast uses no mandatory wage, profession, anatomy or distance fields.
 - The player can explain why the resulting resource or progress was earned rather than narrated into existence.
 
-## Decisions still needed
+## Selected POC decisions
 
-- What fictional fixture best represents the first shift while avoiding unwanted employment-simulator assumptions in the product presentation?
-- Is the first capacity model one exclusive “primary commitment,” or a named capability claim already shaped for future distributed entities?
-- Which interruption outcomes allow resumption, and who chooses abandonment after an unresolved interruption?
-- What real duration is meaningful enough for acceptance without making development impractical?
+- The human fixture restores a storm-damaged signal beacon during a watch. This makes productive progress distinct from merely occupying elapsed time.
+- The minimal capacity model is one named exclusive `primary` commitment. The name is captured data, not a universal assumption that every character has one body or only one possible capacity.
+- A resolved interruption explicitly produces `resume`, `revise` or `invalidate`; unresolved danger never resumes automatically. The present player chooses abandonment.
+- Development uses accelerated pacing. The final acceptance includes one bounded 60-second wall-clock run through the same production contract.
 
 ## Owning specifications
 

@@ -41,13 +41,13 @@ export function earnedTicks(input: {
   state: string;
   pace: Pace;
   now: number;
-  durationTicks: number;
+  maximumTicks: number;
 }): TickProgress {
   if (input.state !== 'running') {
     return input.progress;
   }
   if (input.pace.kind === 'instant') {
-    return wholeTicks(input.durationTicks);
+    return wholeTicks(input.maximumTicks);
   }
   const realElapsedMs = BigInt(
     Math.max(0, input.now - input.anchorAt.getTime()),
@@ -59,8 +59,8 @@ export function earnedTicks(input: {
     realElapsedMs * BigInt(input.pace.ticks) * previousDenominator;
   const elapsedTicks =
     BigInt(input.progress.elapsedTicks) + numerator / denominator;
-  if (elapsedTicks >= BigInt(input.durationTicks)) {
-    return wholeTicks(input.durationTicks);
+  if (elapsedTicks >= BigInt(input.maximumTicks)) {
+    return wholeTicks(input.maximumTicks);
   }
   const remainder = numerator % denominator;
   const divisor = gcd(remainder, denominator);

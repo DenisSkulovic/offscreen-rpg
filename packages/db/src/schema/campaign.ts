@@ -74,7 +74,7 @@ export const gameActivity = pgTable('game_activity', {
     .references(() => story.id, { onDelete: 'cascade' }),
   plan: jsonb('plan').notNull().$type<unknown>(),
   state: text('state').notNull(),
-  completed: integer('completed').notNull().default(0),
+  boundariesSettled: integer('boundaries_settled').notNull().default(0),
   revision: integer('revision').notNull().default(0),
   progress: jsonb('progress').notNull().$type<unknown>(),
   anchorAt: timestamp('anchor_at', {

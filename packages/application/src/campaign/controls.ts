@@ -19,13 +19,14 @@ import {
 } from './settings';
 import { settleActivity, scheduleActivity } from './activities';
 import {
+  activityProgressSchema,
+  completionBoundaryTick,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import {
   earnedTicks,
   paceSchema,
-  tickProgressSchema,
 } from '@offscreen/game/time';
 import { StoryError } from '../stories/errors';
 
@@ -74,17 +75,20 @@ export function createCampaignControls(database: Database) {
       }
       const oldPace = paceSchema.parse(settled.activity.pace);
       const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
-      const progress = earnedTicks({
+      const storedProgress = activityProgressSchema.parse(
+        settled.activity.progress,
+      );
+      const clock = earnedTicks({
         ...settled.activity,
-        progress: tickProgressSchema.parse(settled.activity.progress),
+        progress: storedProgress.clock,
         pace: oldPace,
         now,
-        durationTicks: plan.action.durationTicks,
+        maximumTicks: completionBoundaryTick(plan, storedProgress.process),
       });
       if (
         settled.activity.state === 'running' &&
         nextBoundaryTick(plan, plan.resolvedThroughTick) <=
-          progress.elapsedTicks
+          clock.elapsedTicks
       ) {
         // Commit the batch and continue catch-up before accepting a control.
         // Throwing inside this transaction would undo the progress just made.
@@ -101,7 +105,7 @@ export function createCampaignControls(database: Database) {
         .update(gameActivity)
         .set({
           state: nextState,
-          progress,
+          progress: { ...storedProgress, clock },
           anchorAt: new Date(now),
           pace: parsed.data.pace ?? oldPace,
           revision: settled.activity.revision + 1,

@@ -3,6 +3,9 @@ import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
+  activityProgressSchema,
+  completionBoundaryTick,
+  contributeAtBoundary,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
@@ -12,7 +15,6 @@ import {
   earnedTicks,
   paceSchema,
   realMsUntilTick,
-  tickProgressSchema,
   wholeTicks,
 } from '@offscreen/game/time';
 import { enqueue, type Transaction } from '../outbox/index';
@@ -54,30 +56,35 @@ export async function settleActivity(
     return { activity, current, state };
   }
   const pace = paceSchema.parse(activity.pace);
-  const progress = earnedTicks({
+  const storedProgress = activityProgressSchema.parse(activity.progress);
+  const clock = earnedTicks({
     ...activity,
-    progress: tickProgressSchema.parse(activity.progress),
+    progress: storedProgress.clock,
     pace,
     now,
-    durationTicks: plan.action.durationTicks,
+    maximumTicks: completionBoundaryTick(plan, storedProgress.process),
   });
+  let processProgress = storedProgress.process;
   let cursorTick = plan.resolvedThroughTick;
-  let completed = activity.completed;
+  let boundariesSettled = activity.boundariesSettled;
   let nextState = 'running';
   let character = campaignCharacter(state);
   const lines: string[] = [];
   // The batch cap limits transaction work, not fictional duration or check cadence.
   for (let boundaryCount = 0; boundaryCount < 24; boundaryCount++) {
     const boundaryTick = nextBoundaryTick(plan, cursorTick);
-    if (boundaryTick > progress.elapsedTicks) {
+    if (boundaryTick > clock.elapsedTicks) {
       break;
     }
-    completed++;
+    boundariesSettled++;
+    let contributionComplete = false;
+    if (boundaryTick % plan.action.process.everyTicks === 0) {
+      const contribution = contributeAtBoundary(plan, processProgress);
+      processProgress = contribution.progress;
+      contributionComplete = contribution.complete;
+    }
     for (const schedule of plan.action.checks) {
-      if (
-        plan.action.durationTicks !== 0 &&
-        boundaryTick % schedule.everyTicks !== 0
-      ) {
+      if (boundaryTick % schedule.everyTicks !== 0) {
         continue;
       }
       const before = character;
@@ -89,7 +96,7 @@ export async function settleActivity(
       await recordRoll(tx, {
         storyId: current.id,
         operationId: activity.id,
-        segment: completed,
+        segment: boundariesSettled,
         checkKey: schedule.id,
         tick: plan.startTick + boundaryTick,
         plan: { resolution: schedule.resolution, character: before },
@@ -106,7 +113,7 @@ export async function settleActivity(
     if (nextState === 'encounter') {
       break;
     }
-    if (cursorTick === plan.action.durationTicks) {
+    if (contributionComplete) {
       character = applyOutcomeEffects(
         character,
         plan.action.completion.effects,
@@ -116,16 +123,18 @@ export async function settleActivity(
       break;
     }
   }
-  if (completed === activity.completed) {
+  if (boundariesSettled === activity.boundariesSettled) {
     return { activity, current, state };
   }
-  const retainedProgress =
-    nextState === 'encounter' ? wholeTicks(cursorTick) : progress;
+  const retainedProgress = {
+    clock: nextState === 'encounter' ? wholeTicks(cursorTick) : clock,
+    process: processProgress,
+  };
   const nextPlan = { ...plan, resolvedThroughTick: cursorTick };
   const nextActivity = {
     ...activity,
     plan: nextPlan,
-    completed,
+    boundariesSettled,
     state: nextState,
     progress: retainedProgress,
     anchorAt: new Date(now),
@@ -135,7 +144,7 @@ export async function settleActivity(
     .update(gameActivity)
     .set({
       plan: nextPlan,
-      completed,
+      boundariesSettled,
       state: nextState,
       progress: retainedProgress,
       anchorAt: new Date(now),
@@ -174,8 +183,8 @@ export async function settleActivity(
     await requestConsequenceNarration(tx, nextStory, {
       passageId,
       operationId: activity.id,
-      afterSegment: activity.completed,
-      throughSegment: completed,
+      afterSegment: activity.boundariesSettled,
+      throughSegment: boundariesSettled,
       label: plan.action.label,
       intention: plan.action.description,
     });
@@ -214,12 +223,15 @@ export function createCampaignActivities(database: Database) {
         }
         const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
         const pace = paceSchema.parse(settled.activity.pace);
+        const storedProgress = activityProgressSchema.parse(
+          settled.activity.progress,
+        );
         const progress = earnedTicks({
           ...settled.activity,
-          progress: tickProgressSchema.parse(settled.activity.progress),
+          progress: storedProgress.clock,
           pace,
           now,
-          durationTicks: plan.action.durationTicks,
+          maximumTicks: completionBoundaryTick(plan, storedProgress.process),
         });
         return realMsUntilTick(
           progress,

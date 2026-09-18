@@ -1,7 +1,7 @@
 # Activity processes and world-defined progress plan
 
 Feature: [Activity processes and world-defined progress](FEATURE.md)
-Status: Design checkpoint awaiting owner review. Do not implement yet.
+Status: Contribution/runtime subset approved for offline implementation on 2026-09-19. Waiting and traversal remain unapproved implementation scope.
 Provider spend: none required or authorized.
 
 ## Design decision proposed for review

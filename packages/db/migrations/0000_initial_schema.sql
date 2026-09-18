@@ -119,7 +119,7 @@ CREATE TABLE "game_activity" (
 	"story_id" uuid NOT NULL,
 	"plan" jsonb NOT NULL,
 	"state" text NOT NULL,
-	"completed" integer DEFAULT 0 NOT NULL,
+	"boundaries_settled" integer DEFAULT 0 NOT NULL,
 	"revision" integer DEFAULT 0 NOT NULL,
 	"progress" jsonb NOT NULL,
 	"anchor_at" timestamp (3) with time zone NOT NULL,

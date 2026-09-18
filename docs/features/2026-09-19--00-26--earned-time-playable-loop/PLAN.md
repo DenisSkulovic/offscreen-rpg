@@ -1,8 +1,8 @@
 # Earned-time playable loop plan
 
 Feature: [Earned-time playable loop](FEATURE.md)
-Execution scope: proposal only; no implementation or provider call is authorized.
-Implementation owner: Cursor by default; reviewer: Codex.
+Execution scope: offline implementation authorized on 2026-09-19; no provider call is authorized.
+Implementation owner: Codex for the current bounded slices.
 
 ## Dependencies and sequencing
 
@@ -52,8 +52,8 @@ Approve the player flow first, then approve only the contribution/runtime subset
 
 ## Current checkpoint
 
-- Current phase and exact next action: awaiting owner choice of the gold shift/interruption experience and minimal capacity semantics.
-- Base/reviewed Git revision and relevant changes: based on `8ad4e30`; the reorientation portfolio changes documentation only.
-- Actual checks/results for this revision; checks not run: vision, long-life benchmarks, current time contract and proposed activity-process design inspected; no code checks run.
-- Unresolved findings/blockers: current duration-driven activities do not meet the proposed process architecture, and the immediate generated DM loop is not connected to earned progression.
+- Current phase and exact next action: phase 2's contribution rule/progress correction is implemented; next add the beacon fixture and admit its process from a private playable plan.
+- Base/reviewed Git revision and relevant changes: based on `3fa93ae`; working changes replace duration completion with version-4 contribution plans and distinct clock/process progress.
+- Actual checks/results for this revision; checks not run: game build and 18 tests pass; contracts/application builds and web typecheck pass. No database integration or browser run was attempted because no playable process admission exists yet.
+- Unresolved findings/blockers: the contribution runtime has no creation path, capacity claim persistence or interruption-resumption command yet. Waiting and traversal semantics remain outside the approved implementation subset.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

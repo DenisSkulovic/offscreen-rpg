@@ -1,6 +1,6 @@
 # Activity processes and world-defined progress
 
-Status: Proposed for owner review. Architecture and documentation only; no implementation is authorized by this draft.
+Status: Approved on 2026-09-19 for the contribution/runtime subset required by the earned-time playable loop. Other process families remain proposals.
 
 ## Problem
 
