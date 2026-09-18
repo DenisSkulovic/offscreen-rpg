@@ -386,7 +386,7 @@ No product decisions are required for Phase 1.
 
 Later phases must be designed against the actual production contracts existing at that time.
 
-The next Chamber evolution is now split into three focused proposals: [QA journeys and evidence](../2026-09-18--17-27--qa-journeys-and-evidence/FEATURE.md), the [storyteller trace explorer](../2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md), and [conservative live-model evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md). They reuse this laboratory and its isolation boundary; they do not create parallel gameplay machinery.
+The next Chamber evolution uses the implemented [QA journey system](../../engineering/qa-journeys.md), the proposed [storyteller trace explorer](../2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md), and then [conservative live-model evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md). They reuse this laboratory and its isolation boundary; they do not create parallel gameplay machinery.
 
 In particular:
 

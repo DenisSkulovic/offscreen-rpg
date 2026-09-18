@@ -54,6 +54,8 @@ Next proposed slice: review the [playable DM adjudication loop](features/2026-09
 
 ## Current focus and next gate
 
+The repository structure has now been reviewed against its actual dependency graph. The proposed [monorepo architecture rework](features/2026-09-18--17-58--monorepo-architecture-rework/FEATURE.md) creates a framework-free game package, gives the Storyteller and application layers honest names, groups the flat application modules by capability, separates Chamber orchestration from the API build graph and thins the Next.js route tree. This rework should establish the Phase 1 game boundary before the DM loop adds private action plans; it must remain a bounded reorganization rather than delay the playable POC.
+
 The proposed [playable DM loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) is the next continuation point. The earlier storyteller runtime, continuity, provider adapter, simulated accounting and local UI are foundations; generated mechanical planning and agent tools are not yet implemented. Any live evaluation remains a separate gate. Retained feature documents provide implementation/review contracts; they are not permission to spend.
 
 The [QA journey system](engineering/qa-journeys.md) now defines the player-flow checks and records durable offline evidence. The next evaluation slice is the [trace explorer](features/2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md), followed by [conservative live evaluation](features/2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md) for a tiny explicitly authorized OpenRouter probe only after dry-run, trace and accounting preflights pass.

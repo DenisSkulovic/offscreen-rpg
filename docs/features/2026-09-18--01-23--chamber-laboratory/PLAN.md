@@ -10,7 +10,7 @@ Reviewer: ChatGPT/Codex after each completed phase is committed and pushed.
 
 ## Current evaluation-oriented continuation
 
-Do not implement the older roadmap phases merely because they are listed below. The next proposed Chamber work is ordered by [QA journeys](../2026-09-18--17-27--qa-journeys-and-evidence/PLAN.md), [trace exploration](../2026-09-18--17-27--storyteller-trace-explorer/PLAN.md), and only then [conservative live-model evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/PLAN.md). Implement concrete controls when those features require them; avoid a broad laboratory framework detached from the playable POC.
+Do not implement the older roadmap phases merely because they are listed below. The [QA journey system](../../engineering/qa-journeys.md) is implemented; next comes [trace exploration](../2026-09-18--17-27--storyteller-trace-explorer/PLAN.md), and only then [conservative live-model evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/PLAN.md). Implement concrete controls when those features require them; avoid a broad laboratory framework detached from the playable POC.
 
 ## Phase 1 — Scenario catalog and read-only inspector
 
