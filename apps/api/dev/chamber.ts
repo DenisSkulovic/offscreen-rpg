@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +21,16 @@ if (process.argv.slice(2).some((arg) => arg !== '--smoke')) {
   throw new Error('Only --smoke is supported.');
 }
 const origin = 'http://127.0.0.1:3100';
+const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
+  cwd: workspaceRoot,
+  encoding: 'utf8',
+}).trim();
+const gitDirty =
+  execFileSync('git', ['status', '--porcelain'], {
+    cwd: workspaceRoot,
+    encoding: 'utf8',
+  }).trim().length > 0;
 const databaseURL =
   process.env['CHAMBER_DATABASE_URL'] ??
   'postgresql://offscreen:local-development-only@127.0.0.1:5432/offscreen_chamber';
@@ -116,6 +126,10 @@ const app = await createApp(
   origin,
   {
     developerTools: true,
+    qaContext: {
+      git: { commit: gitCommit, dirty: gitDirty },
+      environment: { identity: 'local-chamber' },
+    },
   },
 );
 let runtime: Awaited<ReturnType<typeof startRuntime>> | undefined;

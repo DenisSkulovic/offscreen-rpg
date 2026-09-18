@@ -3,6 +3,7 @@ import { SessionRefresh } from '../stories/session-refresh';
 import { ChamberScene, ChamberStart } from './scene';
 import { useChamberPlay } from './use-chamber-play';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
+import { QaWorkspace } from './qa-workspace';
 
 export function Chamber({
   initial,
@@ -43,6 +44,7 @@ export function Chamber({
         />
       )}
       <p role="status">{play.error}</p>
+      <QaWorkspace />
       <p>
         <a href="/stories">Back to stories</a>
       </p>

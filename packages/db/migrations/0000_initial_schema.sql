@@ -164,6 +164,47 @@ CREATE TABLE "outbox" (
 	CONSTRAINT "outbox_delivered_shape" CHECK ("outbox"."delivered_at" IS NULL OR "outbox"."lease_id" IS NULL)
 );
 --> statement-breakpoint
+CREATE TABLE "qa_run" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"owner_id" text NOT NULL,
+	"case_id" text NOT NULL,
+	"case_version" integer NOT NULL,
+	"case_definition" jsonb NOT NULL,
+	"variant_id" text,
+	"driver" text NOT NULL,
+	"state" text DEFAULT 'open' NOT NULL,
+	"revision" integer DEFAULT 1 NOT NULL,
+	"git_commit" text NOT NULL,
+	"git_dirty" boolean NOT NULL,
+	"environment" jsonb NOT NULL,
+	"setup" jsonb NOT NULL,
+	"execution" jsonb NOT NULL,
+	"accounting" jsonb NOT NULL,
+	"disposition" text,
+	"operator_notes" text,
+	"started_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"finalized_at" timestamp (3) with time zone,
+	CONSTRAINT "qa_run_case_version_positive" CHECK ("qa_run"."case_version" > 0),
+	CONSTRAINT "qa_run_revision_positive" CHECK ("qa_run"."revision" > 0),
+	CONSTRAINT "qa_run_state_shape" CHECK (("qa_run"."state" = 'open' AND "qa_run"."disposition" IS NULL AND "qa_run"."operator_notes" IS NULL AND "qa_run"."finalized_at" IS NULL) OR ("qa_run"."state" = 'finalized' AND "qa_run"."disposition" IS NOT NULL AND "qa_run"."operator_notes" IS NOT NULL AND "qa_run"."finalized_at" IS NOT NULL))
+);
+--> statement-breakpoint
+CREATE TABLE "qa_run_stage" (
+	"run_id" uuid NOT NULL,
+	"stage_id" text NOT NULL,
+	"ordinal" integer NOT NULL,
+	"status" text NOT NULL,
+	"observation" text NOT NULL,
+	"evidence" jsonb NOT NULL,
+	"ratings" jsonb NOT NULL,
+	"recorded_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "qa_run_stage_run_id_stage_id_pk" PRIMARY KEY("run_id","stage_id"),
+	CONSTRAINT "qa_run_stage_ordinal" UNIQUE("run_id","ordinal"),
+	CONSTRAINT "qa_run_stage_ordinal_nonnegative" CHECK ("qa_run_stage"."ordinal" >= 0),
+	CONSTRAINT "qa_run_stage_status_valid" CHECK ("qa_run_stage"."status" IN ('passed', 'failed', 'blocked', 'skipped'))
+);
+--> statement-breakpoint
 CREATE TABLE "story" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"owner_id" text NOT NULL,
@@ -300,6 +341,8 @@ ALTER TABLE "story_draft" ADD CONSTRAINT "story_draft_owner_id_user_id_fk" FOREI
 ALTER TABLE "draft_opening" ADD CONSTRAINT "draft_opening_draft_id_story_draft_id_fk" FOREIGN KEY ("draft_id") REFERENCES "public"."story_draft"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "draft_opening" ADD CONSTRAINT "draft_opening_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "generation" ADD CONSTRAINT "generation_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "qa_run" ADD CONSTRAINT "qa_run_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "qa_run_stage" ADD CONSTRAINT "qa_run_stage_run_id_qa_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."qa_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story" ADD CONSTRAINT "story_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_control" ADD CONSTRAINT "story_control_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_item" ADD CONSTRAINT "story_item_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint

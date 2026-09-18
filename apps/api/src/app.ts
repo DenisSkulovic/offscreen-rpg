@@ -1,5 +1,10 @@
 import { StorytellersController } from './drafts/storytellers-controller.js';
 import type { ExecutionPolicy } from '@offscreen/ai/storyteller-policy';
+import type { z } from 'zod';
+import type {
+  qaEnvironmentSchema,
+  qaGitStateSchema,
+} from '@offscreen/contracts/qa';
 import 'reflect-metadata';
 import {
   Controller,
@@ -23,6 +28,11 @@ import { OPENINGS, OpeningsController } from './drafts/openings-controller.js';
 import { createChamber } from '@offscreen/server/chamber';
 import { STORIES, StoriesController } from './stories/controller.js';
 import { ChamberToolsController } from './stories/chamber-tools-controller.js';
+import { createQaJourneys } from '@offscreen/server/qa-journeys';
+import {
+  QA_JOURNEYS,
+  QaJourneysController,
+} from './stories/qa-journeys-controller.js';
 
 const DATABASE = Symbol('DATABASE');
 
@@ -58,6 +68,10 @@ class AppModule {}
 export type CreateAppOptions = Readonly<{
   developerTools?: boolean;
   storytellerExecution?: ExecutionPolicy;
+  qaContext?: {
+    git: z.infer<typeof qaGitStateSchema>;
+    environment: z.infer<typeof qaEnvironmentSchema>;
+  };
 }>;
 
 export async function createApp(
@@ -76,7 +90,9 @@ export async function createApp(
         StorytellersController,
         OpeningsController,
         StoriesController,
-        ...(options.developerTools === true ? [ChamberToolsController] : []),
+        ...(options.developerTools === true
+          ? [ChamberToolsController, QaJourneysController]
+          : []),
       ],
       providers: [
         IdentityService,
@@ -92,6 +108,16 @@ export async function createApp(
           ),
         },
         { provide: STORIES, useValue: createChamber(database) },
+        {
+          provide: QA_JOURNEYS,
+          useValue: createQaJourneys(
+            database,
+            options.qaContext ?? {
+              git: { commit: 'unrecorded', dirty: true },
+              environment: { identity: 'local-test' },
+            },
+          ),
+        },
       ],
     },
     {

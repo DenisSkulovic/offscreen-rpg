@@ -190,6 +190,7 @@ label {
     sans-serif;
 }
 input,
+select,
 textarea {
   box-sizing: border-box;
   width: 100%;
@@ -207,9 +208,99 @@ textarea {
   margin-bottom: 1rem;
 }
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #d7b87c;
   outline-offset: 3px;
+}
+.qa-workspace {
+  max-width: 46rem;
+  margin-top: 5rem;
+  padding-top: 3rem;
+  border-top: 1px solid #526762;
+}
+.qa-workspace h2 {
+  font-size: 2rem;
+  font-weight: normal;
+}
+.qa-workspace select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.8rem;
+  background: #18272e;
+  color: #f3e9d9;
+  border: 1px solid #829591;
+  border-radius: 0.3rem;
+  font:
+    1rem system-ui,
+    sans-serif;
+}
+.qa-case-summary,
+.qa-finalize {
+  margin-top: 2rem;
+}
+.qa-stage-list {
+  padding-left: 1.5rem;
+}
+.qa-stage-list li {
+  margin: 0.7rem 0;
+}
+.qa-stage-list span {
+  color: #b9c2c2;
+  font:
+    0.8rem system-ui,
+    sans-serif;
+}
+.qa-workspace fieldset {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #526762;
+}
+.qa-workspace legend {
+  padding-right: 1rem;
+  color: #d7b87c;
+  font:
+    600 1rem system-ui,
+    sans-serif;
+}
+.qa-workspace button {
+  margin-top: 1.25rem;
+  margin-right: 0.75rem;
+}
+.qa-rating {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid #526762;
+}
+.qa-rating input {
+  margin-top: 0.6rem;
+}
+.qa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.qa-recent {
+  margin-top: 3rem;
+}
+.qa-recent ul {
+  list-style: none;
+  padding: 0;
+}
+.qa-recent li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #526762;
+  font:
+    0.9rem system-ui,
+    sans-serif;
+}
+.qa-recent .quiet-button {
+  margin: 0;
+  padding: 0.45rem 0.8rem;
 }
 small,
 .field-help {

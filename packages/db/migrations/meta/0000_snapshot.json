@@ -1,5 +1,5 @@
 {
-  "id": "28292ae9-085b-48a0-bd7d-150d80cd16e6",
+  "id": "e63694b7-4b14-4c4e-b27e-c9def66b6a60",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1214,6 +1214,272 @@
         "outbox_delivered_shape": {
           "name": "outbox_delivered_shape",
           "value": "\"outbox\".\"delivered_at\" IS NULL OR \"outbox\".\"lease_id\" IS NULL"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.qa_run": {
+      "name": "qa_run",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "case_id": {
+          "name": "case_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "case_version": {
+          "name": "case_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "case_definition": {
+          "name": "case_definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "driver": {
+          "name": "driver",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "git_commit": {
+          "name": "git_commit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "git_dirty": {
+          "name": "git_dirty",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment": {
+          "name": "environment",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "setup": {
+          "name": "setup",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execution": {
+          "name": "execution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accounting": {
+          "name": "accounting",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "disposition": {
+          "name": "disposition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "operator_notes": {
+          "name": "operator_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "finalized_at": {
+          "name": "finalized_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qa_run_owner_id_user_id_fk": {
+          "name": "qa_run_owner_id_user_id_fk",
+          "tableFrom": "qa_run",
+          "tableTo": "user",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "qa_run_case_version_positive": {
+          "name": "qa_run_case_version_positive",
+          "value": "\"qa_run\".\"case_version\" > 0"
+        },
+        "qa_run_revision_positive": {
+          "name": "qa_run_revision_positive",
+          "value": "\"qa_run\".\"revision\" > 0"
+        },
+        "qa_run_state_shape": {
+          "name": "qa_run_state_shape",
+          "value": "(\"qa_run\".\"state\" = 'open' AND \"qa_run\".\"disposition\" IS NULL AND \"qa_run\".\"operator_notes\" IS NULL AND \"qa_run\".\"finalized_at\" IS NULL) OR (\"qa_run\".\"state\" = 'finalized' AND \"qa_run\".\"disposition\" IS NOT NULL AND \"qa_run\".\"operator_notes\" IS NOT NULL AND \"qa_run\".\"finalized_at\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.qa_run_stage": {
+      "name": "qa_run_stage",
+      "schema": "",
+      "columns": {
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_id": {
+          "name": "stage_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observation": {
+          "name": "observation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ratings": {
+          "name": "ratings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recorded_at": {
+          "name": "recorded_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "qa_run_stage_run_id_qa_run_id_fk": {
+          "name": "qa_run_stage_run_id_qa_run_id_fk",
+          "tableFrom": "qa_run_stage",
+          "tableTo": "qa_run",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "qa_run_stage_run_id_stage_id_pk": {
+          "name": "qa_run_stage_run_id_stage_id_pk",
+          "columns": [
+            "run_id",
+            "stage_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "qa_run_stage_ordinal": {
+          "name": "qa_run_stage_ordinal",
+          "nullsNotDistinct": false,
+          "columns": [
+            "run_id",
+            "ordinal"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "qa_run_stage_ordinal_nonnegative": {
+          "name": "qa_run_stage_ordinal_nonnegative",
+          "value": "\"qa_run_stage\".\"ordinal\" >= 0"
+        },
+        "qa_run_stage_status_valid": {
+          "name": "qa_run_stage_status_valid",
+          "value": "\"qa_run_stage\".\"status\" IN ('passed', 'failed', 'blocked', 'skipped')"
         }
       },
       "isRLSEnabled": false

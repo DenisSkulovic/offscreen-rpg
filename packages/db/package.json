@@ -38,6 +38,10 @@
     "./campaign-schema": {
       "types": "./dist/src/schema/campaign.d.ts",
       "default": "./dist/src/schema/campaign.js"
+    },
+    "./qa-schema": {
+      "types": "./dist/src/schema/qa.d.ts",
+      "default": "./dist/src/schema/qa.js"
     }
   },
   "scripts": {

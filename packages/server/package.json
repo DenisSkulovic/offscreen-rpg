@@ -35,6 +35,10 @@
       "types": "./dist/chamber.d.ts",
       "default": "./dist/chamber.js"
     },
+    "./qa-journeys": {
+      "types": "./dist/qa-journeys.d.ts",
+      "default": "./dist/qa-journeys.js"
+    },
     "./storyteller-runtime": {
       "types": "./dist/storyteller-runtime.d.ts",
       "default": "./dist/storyteller-runtime.js"

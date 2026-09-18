@@ -23,6 +23,10 @@
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"
     },
+    "./qa": {
+      "types": "./dist/src/qa.d.ts",
+      "default": "./dist/src/qa.js"
+    },
     "./storytellers": {
       "types": "./dist/src/storytellers.d.ts",
       "default": "./dist/src/storytellers.js"
