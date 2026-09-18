@@ -8,15 +8,18 @@ import {
   latestOpeningSchema,
 } from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
+import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { paceOptions } from '@/src/features/play/campaign-play';
 
 export function OpeningPreviewPanel({
   draft,
   initial,
+  mechanicalContent,
 }: {
   draft: Draft;
   initial: OpeningPreview | null;
+  mechanicalContent: MechanicalContentSummary[];
 }) {
   const [preview, setPreview] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -230,7 +233,7 @@ export function OpeningPreviewPanel({
       <p className="field-help">
         {preview?.mode === 'provider'
           ? 'This opening was requested from the selected storyteller. Start uses exactly the candidate you review here.'
-          : 'Offline rehearsal: authored scenes exercise choices, continuity and real waits without model calls. The pineapple scenario has two styles; arbitrary premises are saved but are not improvised.'}
+          : 'Offline rehearsal: authored content exercises choices, continuity and real waits without model calls. Arbitrary premises are saved but are not improvised.'}
       </p>
       {preview?.storyteller ? (
         <p>Storyteller: {preview.storyteller.name}</p>
@@ -238,8 +241,9 @@ export function OpeningPreviewPanel({
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
       {draft.storyteller ? <label>Opening content <select disabled={pending || starting || Boolean(unresolved)} value={contentId} onChange={(event) => setContentId(event.target.value)}>
         <option value="">Narrative rehearsal</option>
-        <option value="pineapple-mechanics.v4">Pineapple — dice and consequences</option>
-        <option value="microbe.v3">Microbe — environmental response</option>
+        {mechanicalContent.map((entry) => (
+          <option key={entry.id} value={entry.id}>{entry.name}</option>
+        ))}
       </select><span className="field-help">Authored examples. Generate a candidate to review its actual starting situation and choices. Selecting content does not rewrite an existing candidate.</span></label> : null}
       {preview && (
         <section aria-label="Opening candidate">

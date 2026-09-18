@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "pineapple-mechanics.v4",
+      "name": "Pineapple — dice and consequences",
+      "description": "An authored action scene used to inspect checks and committed consequences.",
+      "character": {
+        "name": "SpongeBob",
+        "scores": {
+          "strength": 10,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 14,
+          "charisma": 14
+        },
+        "applicableAbilities": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "skills": [
+          { "id": "persuasion", "label": "Persuasion" },
+          { "id": "perception", "label": "Perception" }
+        ],
+        "proficientSkills": ["persuasion", "perception"],
+        "proficiencyBonus": 2,
+        "hp": 10,
+        "maxHp": 10,
+        "facts": [
+          { "id": "gary-alert", "value": true },
+          { "id": "under-cover", "value": false },
+          { "id": "location", "value": "pineapple" }
+        ]
+      },
+      "content": {
+        "version": 1,
+        "id": "pineapple-mechanics.v4",
+        "plans": [
+          {
+            "version": 1,
+            "key": "talk-gary",
+            "label": "Ask Gary to lower the weapon",
+            "intention": "Try to calm Gary and learn why he is armed.",
+            "risk": "Gary may remain distrustful.",
+            "evidence": [],
+            "requires": [{ "id": "gary-alert", "value": true }],
+            "resolution": {
+              "kind": "check",
+              "check": {
+                "rule": "srd-5.2.1-subset.v1",
+                "purpose": "Calm Gary",
+                "skill": "persuasion",
+                "ability": "charisma",
+                "dc": 12,
+                "advantage": false,
+                "disadvantage": false,
+                "modifiers": []
+              },
+              "difficultyBasis": "Gary is alarmed but recognizes SpongeBob.",
+              "success": {
+                "text": "Gary lowers the weapon.",
+                "effects": [
+                  {
+                    "kind": "fact.set.v1",
+                    "fact": { "id": "gary-alert", "value": false }
+                  }
+                ]
+              },
+              "failure": {
+                "text": "Gary remains on alert. He has not agreed to lower the weapon.",
+                "effects": []
+              }
+            }
+          },
+          {
+            "version": 1,
+            "key": "cover",
+            "label": "Duck behind the furniture",
+            "intention": "Seek cover immediately.",
+            "risk": null,
+            "evidence": [],
+            "requires": [
+              { "id": "gary-alert", "value": true },
+              { "id": "under-cover", "value": false }
+            ],
+            "resolution": {
+              "kind": "automatic",
+              "outcome": {
+                "text": "You take cover behind the furniture.",
+                "effects": [
+                  {
+                    "kind": "fact.set.v1",
+                    "fact": { "id": "under-cover", "value": true }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "version": 1,
+            "key": "observe",
+            "label": "Watch Gary from cover",
+            "intention": "Look for what has alarmed Gary without leaving cover.",
+            "risk": "You may fail to identify the threat.",
+            "evidence": [],
+            "requires": [{ "id": "under-cover", "value": true }],
+            "resolution": {
+              "kind": "check",
+              "check": {
+                "rule": "srd-5.2.1-subset.v1",
+                "purpose": "Read Gary’s warning",
+                "skill": "perception",
+                "ability": "wisdom",
+                "dc": 12,
+                "advantage": false,
+                "disadvantage": false,
+                "modifiers": []
+              },
+              "difficultyBasis": "The room offers cover but Gary is behaving erratically.",
+              "success": {
+                "text": "Gary is watching the window, not you.",
+                "effects": []
+              },
+              "failure": {
+                "text": "You cannot tell what Gary is watching.",
+                "effects": []
+              }
+            }
+          }
+        ]
+      },
+      "opening": {
+        "version": 1,
+        "title": "An alarming morning",
+        "paragraphs": [
+          "You wake in the pineapple. Gary is alert beside the window, with a machine gun balanced on his shell. There is furniture nearby that could provide cover."
+        ]
+      }
+    },
+    {
+      "id": "microbe.v3",
+      "name": "Microscopic environmental response",
+      "description": "A world-independence probe without human or economic assumptions.",
+      "character": {
+        "name": "A microbe",
+        "scores": {
+          "strength": 8,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 8,
+          "wisdom": 12,
+          "charisma": 8
+        },
+        "applicableAbilities": ["constitution", "wisdom"],
+        "skills": [
+          {
+            "id": "environment-sensing",
+            "label": "Environmental sensing"
+          }
+        ],
+        "proficientSkills": ["environment-sensing"],
+        "proficiencyBonus": 2,
+        "hp": 5,
+        "maxHp": 5,
+        "facts": [
+          { "id": "exposed", "value": true },
+          { "id": "gradient-disrupted", "value": false }
+        ]
+      },
+      "content": {
+        "version": 1,
+        "id": "microbe.v3",
+        "plans": [
+          {
+            "version": 1,
+            "key": "respond",
+            "label": "Respond to the chemical gradient",
+            "intention": "Sense the gradient and move toward the sheltered pocket.",
+            "risk": "The changing gradient may keep the organism exposed.",
+            "evidence": [],
+            "requires": [
+              { "id": "exposed", "value": true },
+              { "id": "gradient-disrupted", "value": false }
+            ],
+            "resolution": {
+              "kind": "check",
+              "check": {
+                "rule": "srd-5.2.1-subset.v1",
+                "purpose": "Sense the gradient",
+                "skill": "environment-sensing",
+                "ability": "wisdom",
+                "dc": 12,
+                "advantage": false,
+                "disadvantage": false,
+                "modifiers": []
+              },
+              "difficultyBasis": "The gradient is changing but a sheltered pocket is detectable.",
+              "success": {
+                "text": "The organism reaches a sheltered pocket.",
+                "effects": [
+                  {
+                    "kind": "fact.set.v1",
+                    "fact": { "id": "exposed", "value": false }
+                  }
+                ]
+              },
+              "failure": {
+                "text": "The organism remains exposed.",
+                "effects": []
+              }
+            }
+          },
+          {
+            "version": 1,
+            "key": "contract",
+            "label": "Contract away from the disturbance",
+            "intention": "Make an immediate protective response without trying to reach shelter.",
+            "risk": null,
+            "evidence": [],
+            "requires": [{ "id": "exposed", "value": true }],
+            "resolution": {
+              "kind": "automatic",
+              "outcome": {
+                "text": "The organism contracts away from the strongest disturbance.",
+                "effects": []
+              }
+            }
+          }
+        ]
+      },
+      "opening": {
+        "version": 1,
+        "title": "A changing environment",
+        "paragraphs": [
+          "A microscopic organism is exposed to a changing chemical gradient. A sheltered pocket may be within reach."
+        ]
+      }
+    }
+  ]
+}

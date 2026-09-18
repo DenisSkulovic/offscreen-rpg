@@ -1,144 +1,37 @@
-import type { ScenePresentation } from './scene-view';
+import { z } from 'zod';
+import definitions from './content/script.json';
 
-type ScriptedScene = ScenePresentation & {
-  next: Readonly<Record<string, string>>;
-};
+const identitySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
+const sceneSchema = z.strictObject({
+  place: z.string().min(1).max(200),
+  title: z.string().min(1).max(200),
+  paragraphs: z.array(z.string().min(1).max(2000)).min(1).max(8),
+  phase: z.enum(['decision', 'waiting', 'ended']),
+  status: z.string().min(1).max(300),
+  choices: z.array(
+    z.strictObject({
+      id: identitySchema,
+      label: z.string().min(1).max(200),
+      detail: z.string().min(1).max(300),
+    }),
+  ),
+  next: z.record(identitySchema, identitySchema),
+});
+const scriptSchema = z
+  .record(identitySchema, sceneSchema)
+  .superRefine((scenes, context) => {
+    for (const [sceneId, scene] of Object.entries(scenes)) {
+      for (const [choiceId, targetId] of Object.entries(scene.next)) {
+        if (!scenes[targetId]) {
+          context.addIssue({
+            code: 'custom',
+            path: [sceneId, 'next', choiceId],
+            message: 'Transition target is not declared',
+          });
+        }
+      }
+    }
+  });
 
-// An authored interaction fixture, not a world model or the storyteller contract.
-export const scenes: Readonly<Record<string, ScriptedScene>> = {
-  road: {
-    place: 'The mountain road · Late afternoon',
-    title: 'Somewhere beyond the trees.',
-    paragraphs: [
-      'You are a wizard travelling to a house that appears on no map. The pines thin as you climb. Somewhere ahead, a bell rings once.',
-      'For now, there is only the road, your footsteps, and the peculiar comfort of having nowhere else to be.',
-    ],
-    phase: 'waiting',
-    status: 'Crossing the pass. You expect to reach the house by evening.',
-    choices: [],
-    next: { advance: 'goblin' },
-  },
-  goblin: {
-    place: 'A bend in the road · A little later',
-    title: 'An apple. A pear. A smile.',
-    paragraphs: [
-      'A goblin stands across the path. In one hand, an apple. In the other, a pear. His scarf is much too long for him.',
-      '“A gift for a traveller,” he says. Neither hand moves. His smile does.',
-    ],
-    phase: 'decision',
-    status: 'The goblin is waiting for an answer.',
-    choices: [
-      {
-        id: 'apple',
-        label: 'Accept the apple',
-        detail: 'A small kindness. Probably.',
-      },
-      {
-        id: 'joke',
-        label: 'Tell him a terrible joke',
-        detail: 'See whether that smile can get any wider.',
-      },
-      {
-        id: 'leave',
-        label: 'Decline and keep walking',
-        detail: 'You have a house to find.',
-      },
-    ],
-    next: { apple: 'seed', joke: 'laughter', leave: 'house' },
-  },
-  seed: {
-    place: 'Inside the apple · An instant later',
-    title: 'The world smells of sweetness.',
-    paragraphs: [
-      'Your fingers touch the apple. The mountain disappears.',
-      'You stand beside a seed as tall as a door. Pale flesh curves overhead. Somewhere beyond it, the goblin is humming. Your hat, mercifully, still fits.',
-    ],
-    phase: 'decision',
-    status: 'You are very small. Your choices still matter.',
-    choices: [
-      {
-        id: 'wait',
-        label: 'Wait and listen',
-        detail: 'Learn where he is taking you.',
-      },
-      {
-        id: 'knock',
-        label: 'Knock on the skin',
-        detail: 'Ask your host to reconsider his hospitality.',
-      },
-    ],
-    next: { wait: 'dark', knock: 'escape' },
-  },
-  dark: {
-    place: 'Beside the seed · Time passes',
-    title: 'Nothing to do but listen.',
-    paragraphs: [
-      'You sit in the fragrant dark. Footsteps come and go. A chair scrapes. For a long while, nothing changes.',
-      'Then a shadow falls across the skin. The humming stops.',
-    ],
-    phase: 'waiting',
-    status:
-      'Waiting inside the apple. The next disturbance will bring you back.',
-    choices: [],
-    next: { advance: 'bite' },
-  },
-  bite: {
-    place: 'Inside the apple · Suddenly',
-    title: 'Daylight. Teeth.',
-    paragraphs: [
-      'The roof splits. A goblin tooth descends where you were sitting.',
-      'Through the opening you can see a table, a window, and an exceptionally surprised pair of eyes.',
-    ],
-    phase: 'decision',
-    status: 'There is a way out. It will not stay open forever.',
-    choices: [
-      {
-        id: 'escape',
-        label: 'Leap through the opening',
-        detail: 'Aim for the tablecloth.',
-      },
-      {
-        id: 'shout',
-        label: 'Shout “I am not a filling!”',
-        detail: 'Make your position absolutely clear.',
-      },
-    ],
-    next: { escape: 'escape', shout: 'escape' },
-  },
-  laughter: {
-    place: 'The mountain road · After the laughter',
-    title: 'A useful exchange.',
-    paragraphs: [
-      'The goblin laughs so hard he drops both fruits. They roll uphill.',
-      '“You will fit right in,” he says, pointing towards a light between the trees. You decide not to ask what he means.',
-    ],
-    phase: 'ended',
-    status: 'This demonstration ends here. The house is another story.',
-    choices: [],
-    next: {},
-  },
-  house: {
-    place: 'The unmarked house · Evening',
-    title: 'You arrive with your doubts intact.',
-    paragraphs: [
-      'You leave the goblin and his gifts behind. By evening, the trees give way to a small house with a single lit window.',
-      'Someone has set a place for you. There is no fruit on the table.',
-    ],
-    phase: 'ended',
-    status: 'This demonstration ends here. You chose your own way through.',
-    choices: [],
-    next: {},
-  },
-  escape: {
-    place: 'The goblin’s kitchen · A moment later',
-    title: 'An apology, and a cup of tea.',
-    paragraphs: [
-      'The goblin puts you gently on the table. He mutters something about an unreliable orchard. With a soft pop, the room becomes its usual size around you.',
-      'You accept the tea. You decline the biscuits. Some lessons deserve to last.',
-    ],
-    phase: 'ended',
-    status: 'This demonstration ends here. You are yourself again.',
-    choices: [],
-    next: {},
-  },
-};
+// Authored presentation content is data; this module only validates its graph.
+export const scenes = scriptSchema.parse(definitions);

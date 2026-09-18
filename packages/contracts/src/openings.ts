@@ -5,8 +5,19 @@ import { passageContentSchema } from './stories';
 
 export const requestOpeningSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483647),
-  contentId: z.enum(['pineapple-mechanics.v4', 'microbe.v3']).optional(),
+  contentId: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/).optional(),
 });
+export const mechanicalContentSummarySchema = z.strictObject({
+  id: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/),
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().min(1).max(300),
+});
+export const mechanicalContentCatalogueSchema = z.strictObject({
+  entries: z.array(mechanicalContentSummarySchema).max(32),
+});
+export type MechanicalContentSummary = z.infer<
+  typeof mechanicalContentSummarySchema
+>;
 export const openingCandidateSchema = z.strictObject({
   content: passageContentSchema,
   interaction: choiceSpecificationSchema,

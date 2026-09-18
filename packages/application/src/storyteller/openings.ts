@@ -16,10 +16,16 @@ import {
   type ExecutionPolicy,
 } from '@offscreen/storyteller/tasks';
 import { playablePresentation, playableProposalSchema } from '@offscreen/storyteller/tasks';
-import { openingPreviewSchema } from '@offscreen/contracts/openings';
+import {
+  mechanicalContentCatalogueSchema,
+  openingPreviewSchema,
+} from '@offscreen/contracts/openings';
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
-import { mechanicalOpening } from '../campaign/fixtures/mechanical-content';
+import {
+  mechanicalContentCatalogue,
+  mechanicalOpening,
+} from '../campaign/fixtures/mechanical-content';
 
 export function createStorytellerOpenings(
   database: Database,
@@ -74,6 +80,11 @@ export function createStorytellerOpenings(
     });
   }
   return {
+    catalogue() {
+      return mechanicalContentCatalogueSchema.parse({
+        entries: mechanicalContentCatalogue(),
+      });
+    },
     async handles(ownerId: string, draftId: string, operationId: string) {
       const [prior] = await database.db
         .select()

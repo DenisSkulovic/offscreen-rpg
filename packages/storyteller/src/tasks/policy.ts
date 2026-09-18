@@ -15,7 +15,7 @@ export const modelPolicySchema = z.strictObject({
 export const executionPolicySchema = z.discriminatedUnion('mode', [
   z.strictObject({
     mode: z.literal('scripted'),
-    version: z.literal('pineapple.v1'),
+    version: z.literal('offline-rehearsal.v1'),
   }),
   z.strictObject({
     mode: z.literal('provider'),
@@ -27,7 +27,7 @@ export const executionPolicySchema = z.discriminatedUnion('mode', [
 export type ExecutionPolicy = z.infer<typeof executionPolicySchema>;
 export const offlineExecution: ExecutionPolicy = {
   mode: 'scripted',
-  version: 'pineapple.v1',
+  version: 'offline-rehearsal.v1',
 };
 
 /** Byte count conservatively bounds tokenizer input; include framing/schema overhead. */

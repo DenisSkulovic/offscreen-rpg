@@ -87,6 +87,9 @@ export function createScriptedOpenings(
     };
   };
   return {
+    catalogue() {
+      return profiled.catalogue();
+    },
     async latest(owner: string, draftId: string) {
       const selected = await profiled.latest(owner, draftId);
       if (selected) {

@@ -1,0 +1,391 @@
+{
+  "version": 1,
+  "matchTerms": ["spongebob", "pineapple"],
+  "offer": {
+    "kind": "choice",
+    "prompt": "What do you attempt?",
+    "options": [
+      {
+        "id": "ask",
+        "label": "Ask Gary about the delivery",
+        "intention": "Ask Gary what he knows about the delivery without promising to help."
+      },
+      {
+        "id": "quiet",
+        "label": "Make breakfast and give Gary space",
+        "intention": "De-escalate and enjoy an ordinary breakfast without investigating yet."
+      },
+      {
+        "id": "leave",
+        "label": "Walk to work and leave this for later",
+        "intention": "Leave the pineapple and walk to work, postponing the delivery question."
+      }
+    ]
+  },
+  "fallback": {
+    "opening": {
+      "version": 1,
+      "scene": {
+        "version": 1,
+        "content": {
+          "version": 1,
+          "title": "Scripted rehearsal",
+          "paragraphs": [
+            "This offline source has no authored content matching the saved premise. An explicitly enabled model source is required for an adapted story."
+          ]
+        },
+        "next": {
+          "kind": "choice",
+          "prompt": "What do you attempt?",
+          "options": [
+            {
+              "id": "observe",
+              "label": "Observe the situation",
+              "intention": "Pause and observe without committing to a larger action."
+            },
+            {
+              "id": "withdraw",
+              "label": "Step away",
+              "intention": "Leave the immediate situation and seek another approach."
+            }
+          ]
+        }
+      },
+      "currentNotes": [],
+      "arrivalNotes": []
+    },
+    "continuation": {
+      "version": 1,
+      "scene": {
+        "version": 2,
+        "content": {
+          "version": 1,
+          "title": "Scripted rehearsal",
+          "paragraphs": [
+            "This offline source cannot adapt the saved premise. The selected intention remains recorded."
+          ]
+        },
+        "next": {
+          "kind": "choice",
+          "prompt": "What do you attempt?",
+          "options": [
+            {
+              "id": "observe",
+              "label": "Observe the situation",
+              "intention": "Pause and observe without committing to a larger action."
+            },
+            {
+              "id": "withdraw",
+              "label": "Step away",
+              "intention": "Leave the immediate situation and seek another approach."
+            }
+          ]
+        }
+      },
+      "currentNotes": [],
+      "arrivalNotes": []
+    }
+  },
+  "profiles": {
+    "absurd-action-comedy": {
+      "opening": {
+        "version": 1,
+        "scene": {
+          "version": 1,
+          "content": {
+            "version": 1,
+            "title": "Morning in the pineapple",
+            "paragraphs": [
+              "You wake in the pineapple. Gary crawls across the kitchen wearing a tiny ammunition belt, a machine gun balanced on his shell. He has barricaded your missing breakfast delivery behind a cereal box."
+            ]
+          },
+          "next": "$offer"
+        },
+        "currentNotes": [
+          {
+            "kind": "create",
+            "key": "starting-place",
+            "text": "The character woke in the pineapple, with Gary nearby.",
+            "evidence": ["current"]
+          }
+        ],
+        "arrivalNotes": []
+      },
+      "continuations": {
+        "ask": {
+          "result": {
+            "version": 1,
+            "scene": {
+              "version": 2,
+              "content": {
+                "version": 1,
+                "title": "Gary’s promise",
+                "paragraphs": [
+                  "Gary lowers the weapon and points to a note: he promised to protect the delivery, but its owner has vanished. You know why he is guarding the kitchen; you have not promised to join him."
+                ]
+              },
+              "next": "$offer"
+            },
+            "currentNotes": [
+              {
+                "kind": "create",
+                "key": "gary-promise",
+                "text": "Gary says he promised to protect a delivery until its owner returned. The character has not promised to help.",
+                "evidence": ["current"]
+              }
+            ],
+            "arrivalNotes": []
+          },
+          "whenNotePresent": {
+            "gary-promise": {
+              "version": 1,
+              "scene": {
+                "version": 2,
+                "content": {
+                  "version": 1,
+                  "title": "Gary’s promise",
+                  "paragraphs": [
+                    "Gary points again to the promise he made. The delivery is still guarded, and you still have not promised to help."
+                  ]
+                },
+                "next": "$offer"
+              },
+              "currentNotes": [
+                {
+                  "kind": "update",
+                  "key": "gary-promise",
+                  "text": "Gary says he promised to protect a delivery until its owner returned. The character has not promised to help.",
+                  "evidence": ["current"]
+                }
+              ],
+              "arrivalNotes": []
+            }
+          }
+        },
+        "quiet": {
+          "result": {
+            "version": 1,
+            "scene": {
+              "version": 2,
+              "content": {
+                "version": 1,
+                "title": "Breakfast first",
+                "paragraphs": [
+                  "You take cover behind the breakfast counter and slide a bowl toward Gary. He pauses his operation to eat. You have bought a calm moment without joining the mission."
+                ]
+              },
+              "next": "$offer"
+            },
+            "currentNotes": [],
+            "arrivalNotes": []
+          }
+        }
+      }
+    },
+    "quiet-eerie-mystery": {
+      "opening": {
+        "version": 1,
+        "scene": {
+          "version": 1,
+          "content": {
+            "version": 1,
+            "title": "Morning in the pineapple",
+            "paragraphs": [
+              "You wake in the pineapple. Gary rests by an empty delivery box. A soft tapping comes from his shell, stops when you approach, and begins again behind the locked kitchen cupboard."
+            ]
+          },
+          "next": "$offer"
+        },
+        "currentNotes": [
+          {
+            "kind": "create",
+            "key": "starting-place",
+            "text": "The character woke in the pineapple, with Gary nearby.",
+            "evidence": ["current"]
+          }
+        ],
+        "arrivalNotes": []
+      },
+      "continuations": {
+        "ask": {
+          "result": {
+            "version": 1,
+            "scene": {
+              "version": 2,
+              "content": {
+                "version": 1,
+                "title": "Gary’s promise",
+                "paragraphs": [
+                  "Gary nudges a note toward you: he promised to protect a delivery until its owner returned. The owner has not returned. The tapping is a clue, not proof that anyone is trapped inside."
+                ]
+              },
+              "next": "$offer"
+            },
+            "currentNotes": [
+              {
+                "kind": "create",
+                "key": "gary-promise",
+                "text": "Gary says he promised to protect a delivery until its owner returned. The character has not promised to help.",
+                "evidence": ["current"]
+              }
+            ],
+            "arrivalNotes": []
+          },
+          "whenNotePresent": {
+            "gary-promise": {
+              "version": 1,
+              "scene": {
+                "version": 2,
+                "content": {
+                  "version": 1,
+                  "title": "Gary’s promise",
+                  "paragraphs": [
+                    "Gary returns to the same promise and the same unexplained tapping. Nothing new proves what is behind the cupboard."
+                  ]
+                },
+                "next": "$offer"
+              },
+              "currentNotes": [
+                {
+                  "kind": "update",
+                  "key": "gary-promise",
+                  "text": "Gary says he promised to protect a delivery until its owner returned. The character has not promised to help.",
+                  "evidence": ["current"]
+                }
+              ],
+              "arrivalNotes": []
+            }
+          }
+        },
+        "quiet": {
+          "result": {
+            "version": 1,
+            "scene": {
+              "version": 2,
+              "content": {
+                "version": 1,
+                "title": "Breakfast first",
+                "paragraphs": [
+                  "You step back and prepare breakfast. Gary eats beside you. The tapping stops for now, but neither of you has explained it."
+                ]
+              },
+              "next": "$offer"
+            },
+            "currentNotes": [],
+            "arrivalNotes": []
+          }
+        }
+      }
+    }
+  },
+  "sharedContinuations": {
+    "leave": {
+      "result": {
+        "version": 1,
+        "scene": {
+          "version": 2,
+          "content": {
+            "version": 1,
+            "title": "On the way to work",
+            "paragraphs": [
+              "You leave the pineapple and set off toward work. The delivery question remains unresolved."
+            ]
+          },
+          "next": {
+            "kind": "interval",
+            "gameDurationMs": 600000,
+            "arrival": {
+              "content": {
+                "version": 1,
+                "title": "Outside work",
+                "paragraphs": [
+                  "You arrive at work. The puzzling delivery at home remains unexplained."
+                ]
+              },
+              "next": {
+                "kind": "choice",
+                "prompt": "What next?",
+                "options": [
+                  {
+                    "id": "return",
+                    "label": "Return home to Gary",
+                    "intention": "Walk back to the pineapple to speak with Gary."
+                  },
+                  {
+                    "id": "observe",
+                    "label": "Take a quiet moment outside",
+                    "intention": "Pause outside work and observe the surroundings without committing to a new task."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "currentNotes": [],
+        "arrivalNotes": []
+      }
+    },
+    "return": {
+      "result": {
+        "version": 1,
+        "scene": {
+          "version": 2,
+          "content": {
+            "version": 1,
+            "title": "Heading home",
+            "paragraphs": ["You turn back and begin the walk home."]
+          },
+          "next": {
+            "kind": "interval",
+            "gameDurationMs": 600000,
+            "arrival": {
+              "content": {
+                "version": 1,
+                "title": "Back at the pineapple",
+                "paragraphs": [
+                  "Gary is still near the kitchen. You are home again, and the delivery question is yours to revisit or leave alone."
+                ]
+              },
+              "next": "$offer"
+            }
+          }
+        },
+        "currentNotes": [],
+        "arrivalNotes": []
+      }
+    },
+    "observe": {
+      "result": {
+        "version": 1,
+        "scene": {
+          "version": 2,
+          "content": {
+            "version": 1,
+            "title": "A quiet moment",
+            "paragraphs": [
+              "You pause outside work. Nothing demands an immediate response. The decision about returning home remains yours."
+            ]
+          },
+          "next": {
+            "kind": "choice",
+            "prompt": "What next?",
+            "options": [
+              {
+                "id": "return",
+                "label": "Walk home",
+                "intention": "Walk back home to the pineapple."
+              },
+              {
+                "id": "observe",
+                "label": "Stay and watch the street",
+                "intention": "Continue quietly observing the street."
+              }
+            ]
+          }
+        },
+        "currentNotes": [],
+        "arrivalNotes": []
+      }
+    }
+  }
+}

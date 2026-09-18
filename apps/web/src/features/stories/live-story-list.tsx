@@ -40,7 +40,7 @@ export function LiveStoryList({ initial }: { initial: StoryList }) {
             <Link href={`/play/${story.id}`}>{story.title}</Link>
           </h3>
           <p>
-            {story.storyteller?.name ?? 'Legacy scripted story'} ·{' '}
+            {story.storyteller?.name ?? 'Scripted story'} ·{' '}
             {story.status}
           </p>
         </article>

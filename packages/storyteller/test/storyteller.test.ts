@@ -25,11 +25,11 @@ function opening() {
       id: 'absurd-action-comedy',
       revision: 1,
     }),
-    execution: { mode: 'scripted', version: 'pineapple.v1' },
+    execution: { mode: 'scripted', version: 'offline-rehearsal.v1' },
     context: {
       premise: {
         title: '',
-        premise: 'SpongeBob wakes in the pineapple.',
+        premise: 'A traveler wakes beside an unfamiliar companion.',
         storytellingDirection: '',
       },
       current: null,
@@ -267,7 +267,7 @@ test('continuity updates preserve provenance and fail without mutating their bas
       {
         kind: 'create',
         key: 'promise',
-        text: 'Gary made a promise.',
+        text: 'A companion made a promise.',
         evidence: ['current'],
       },
     ],
@@ -290,7 +290,7 @@ test('continuity updates preserve provenance and fail without mutating their bas
       revision: 2,
     }),
   );
-  assert.equal(notes[0]?.text, 'Gary made a promise.');
+  assert.equal(notes[0]?.text, 'A companion made a promise.');
   assert.deepEqual(
     applyContinuityPatch({
       notes,

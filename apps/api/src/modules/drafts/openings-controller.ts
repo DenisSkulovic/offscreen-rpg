@@ -49,6 +49,10 @@ export class OpeningsController {
       this.openings.latest(owner, draftId).then((preview) => ({ preview })),
     );
   }
+  @Get('catalogue')
+  catalogue(@Req() request: Request) {
+    return this.run(request, async () => this.openings.catalogue());
+  }
   @Put(':id')
   @HttpCode(202)
   generate(

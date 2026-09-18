@@ -1,6 +1,9 @@
 import { notFound, redirect } from 'next/navigation';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
-import { latestOpeningSchema } from '@offscreen/contracts/openings';
+import {
+  latestOpeningSchema,
+  mechanicalContentCatalogueSchema,
+} from '@offscreen/contracts/openings';
 import { apiOrigin, requireViewer } from '@/src/lib/viewer';
 import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
 
@@ -17,19 +20,31 @@ export default async function Preview({
     cache: 'no-store' as const,
     signal: AbortSignal.timeout(5000),
   };
-  const [draftResponse, previewResponse] = await Promise.all([
+  const [draftResponse, previewResponse, catalogueResponse] = await Promise.all([
     fetch(`${apiOrigin()}/api/drafts/${parsed.data}`, options),
     fetch(`${apiOrigin()}/api/drafts/${parsed.data}/openings/latest`, options),
+    fetch(
+      `${apiOrigin()}/api/drafts/${parsed.data}/openings/catalogue`,
+      options,
+    ),
   ]);
-  if (draftResponse.status === 401 || previewResponse.status === 401)
+  if (
+    draftResponse.status === 401 ||
+    previewResponse.status === 401 ||
+    catalogueResponse.status === 401
+  )
     redirect('/sign-in');
   if (draftResponse.status === 404) notFound();
-  if (!draftResponse.ok || !previewResponse.ok)
+  if (!draftResponse.ok || !previewResponse.ok || !catalogueResponse.ok)
     throw new Error('Preview could not be loaded');
   return (
     <OpeningPreviewPanel
       draft={draftSchema.parse(await draftResponse.json())}
       initial={latestOpeningSchema.parse(await previewResponse.json()).preview}
+      mechanicalContent={
+        mechanicalContentCatalogueSchema.parse(await catalogueResponse.json())
+          .entries
+      }
     />
   );
 }

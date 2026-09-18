@@ -2,6 +2,7 @@ import {
   qaJourneyCaseSchema,
   type QaJourneyCase,
 } from '@offscreen/contracts/qa';
+import { mechanicalContentCatalogue } from '../campaign/fixtures/mechanical-content';
 
 type StageInput = Omit<
   QaJourneyCase['stages'][number],
@@ -202,23 +203,13 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
     initialScenario: null,
     drivers: ['manual-chamber', 'browser-automation'],
-    variants: [
-      {
-        id: 'pineapple',
-        name: 'Pineapple action scene',
-        description: 'Uses the SpongeBob and Gary POC premise.',
-        availability: { state: 'available' },
-        prerequisites: [],
-      },
-      {
-        id: 'microbe',
-        name: 'Microbe world-independence probe',
-        description:
-          'Repeats the loop without human, calendar, or economic assumptions.',
-        availability: { state: 'available' },
-        prerequisites: [],
-      },
-    ],
+    variants: mechanicalContentCatalogue().map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      description: entry.description,
+      availability: { state: 'available' as const },
+      prerequisites: [],
+    })),
     stages: [
       stage({
         id: 'start',
