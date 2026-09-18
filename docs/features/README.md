@@ -6,6 +6,10 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 - [Chamber laboratory](2026-09-18--01-23--chamber-laboratory/FEATURE.md) — evolve the scripted chamber into the controlled development laboratory.
 
+## Next implementation evolution
+
+1. [Multiple suspended commitments](2026-09-19--02-24--multiple-suspended-commitments/FEATURE.md) — replace the single-active-activity shortcut so A can be suspended, B performed, and the same A resumed with its earned progress after prerequisites and capacity are revalidated.
+
 ## Experience-first POC recalibration
 
 Implementation of new subsystems is paused while the owner reviews these proposals. They convert the product vision into observable play and prevent structural correctness from being mistaken for a satisfying game.

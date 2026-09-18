@@ -48,6 +48,6 @@ Contrasting authored examples enter through the same preview, private-plan looku
 
 ## Persistence and known limits
 
-The single baseline migration creates the current database directly, including immutable `game_offer` private plans, captured activities, rolls, effects and settings. There are no prototype conversions or compatibility DTOs. Local databases must be reset when the pre-POC schema changes. Process admission currently enforces the campaign's single active-activity pointer; the captured capacity name is not yet an independent concurrent claim.
+The single baseline migration creates the current database directly, including immutable `game_offer` private plans, captured activities, rolls, effects and settings. There are no prototype conversions or compatibility DTOs. Local databases must be reset when the pre-POC schema changes. Process admission currently enforces the campaign's single active-activity pointer. The approved next evolution retains multiple unfinished commitments, separates the running identity from lifecycle storage and reacquires named exclusive capacity on resume; it must not reinterpret “start B” as “abandon A.”
 
 Snapshot reads use their supplied repeatable-read transaction. Settings history is read-only. Start retry compares the original profile snapshot, not the subsequently edited story profile. Narration retries use existing generation/publication recovery. Broad typed rule domains, generated process planning, semantically grounded process modifiers and dynamic continuation of interrupted activities remain open work.
