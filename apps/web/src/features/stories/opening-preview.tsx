@@ -21,7 +21,11 @@ export function OpeningPreviewPanel({
   const [preview, setPreview] = useState(initial);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
-  const attempt = useRef<{ id: string; revision: number; contentId?: string } | null>(null);
+  const attempt = useRef<{
+    id: string;
+    revision: number;
+    contentId: string | undefined;
+  } | null>(null);
   const storyId = useRef<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [contentId, setContentId] = useState(initial?.contentId ?? '');
@@ -100,19 +104,24 @@ export function OpeningPreviewPanel({
     if (pending || starting) {
       return;
     }
-    attempt.current ??=
+    const request = attempt.current ?? (
       preview?.state === 'pending'
         ? { id: preview.id, revision: preview.sourceRevision, contentId: preview.contentId }
-        : { id: crypto.randomUUID(), revision: draft.revision, contentId: contentId || undefined };
+        : { id: crypto.randomUUID(), revision: draft.revision, contentId: contentId || undefined }
+    );
+    attempt.current = request;
     setPending(true);
     setMessage('');
     try {
       const response = await fetch(
-        `/api/drafts/${draft.id}/openings/${attempt.current.id}`,
+        `/api/drafts/${draft.id}/openings/${request.id}`,
         {
           method: 'PUT',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ expectedRevision: attempt.current.revision, contentId: attempt.current.contentId }),
+          body: JSON.stringify({
+            expectedRevision: request.revision,
+            contentId: request.contentId,
+          }),
           signal: AbortSignal.timeout(15000),
         },
       );

@@ -48,7 +48,7 @@ The current immediate planning slice uses a one-shot consequence task because it
 
 ## Supported behavior and evidence limits
 
-The offline pineapple rehearsal supports asking Gary, quiet breakfast, travelling to work, observing outside and returning home. It includes two contrasting profile examples, a remembered promise and real 20-second quick-play waits. Other premises are saved but receive an explicitly unadapted rehearsal message. Waiting, reading history, reload and pause/resume require no inference. Legacy fixture timing remains unchanged.
+The offline narrative pineapple rehearsal supports asking Gary, quiet breakfast, travelling to work, observing outside and returning home. It includes two contrasting profile examples, a remembered promise and real 20-second quick-play waits. Other premises are saved but receive an explicitly unadapted rehearsal message. Waiting, reading history, reload and pause/resume require no inference. This narrative fixture is separate from the mechanical immediate-action path.
 
 Tests exercise structured boundaries, context retention, provenance, fake charges, replay, publication recovery and the browser flow. They cannot establish whether a real model follows the profile, offers satisfying agency or sustains an enjoyable story. No live route, narrative quality or real billed-cost behavior is certified. Generated mechanical effects, multiplayer, automatic defaults, general interruptions, streaming and unlimited memory remain separate work.
 

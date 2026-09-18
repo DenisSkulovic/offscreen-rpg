@@ -12,7 +12,7 @@ Initial editor limits: 16 narrative tags, descriptions up to 400 characters, 4 c
 
 Creative revisions affect newly prepared storyteller tasks after the settings save. Existing offered mechanical terms remain pinned; admitted model tasks, retries, mechanical plans and prepared arrivals retain their captures. A later consequence narration is a separate task and captures the then-current creative revision. A settings update does not stale a valid in-flight result by itself: source fences must separate settings revision from narrative/world revision. A setting cannot mutate another field indirectly (for example comedy cannot enable death or accelerate the clock). A future explicit refresh may replace an untouched menu, but the initial editor does not generate on save.
 
-For existing profiled stories, initialize settings revision 1 from the saved snapshot, never the latest catalogue definition. Legacy fixture stories keep their explicit old path until deliberately migrated. Schema migration does not erase current waits or rewrite Temporal histories. Locked settings are chosen at Start and enforced on every write path.
+Profiled stories initialize settings revision 1 from the saved snapshot, never the latest catalogue definition. Separate narrative fixtures use their explicit contracts. Incompatible pre-POC data is reset instead of decoded through compatibility paths. Locked settings are chosen at Start and enforced on every write path.
 
 ## Clock and speed
 

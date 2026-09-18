@@ -1,6 +1,6 @@
 # Playable DM adjudication loop
 
-Status: Proposed for owner review. This document designs the next implementation slice; it does not authorize live inference.
+Status: In progress. The owner authorized implementation of this offline slice on 2026-09-18. This does not authorize live inference.
 
 ## Why this is the next slice
 
@@ -134,14 +134,14 @@ Offline scripted execution is the implementation default. Live inference stays d
 
 This slice proves a playable DM loop, not general artificial intelligence or a universal simulation. It does not establish that a live model produces enjoyable options; that requires a later authorized evaluation. It does not solve long-term activity progress, travel, combat, character creation for arbitrary species, or all possible world effects.
 
-## Decisions requested in review
+## Accepted implementation boundaries
 
-- Approve immediate actions as the entire next playable slice, leaving every long-running process out.
-- Approve offer-local private plans instead of a global catalogue of authored action definitions.
-- Approve the small `character`/current-`situation` fact boundary for generated consequences, with richer entities deferred.
-- Approve the three tools and the three-round/six-call ceiling as initial execution policy rather than permanent game rules.
-- Approve generating and reviewing the opening's mechanical options before Start, then copying those exact private plans into the story.
+- Immediate actions are the entire next playable slice; long-running processes remain separate.
+- Offers own private plans instead of resolving through a global catalogue of authored action definitions.
+- Generated consequences use a small `character`/current-`situation` fact boundary; richer entities remain deferred.
+- The three tools and three-round/six-call ceiling are initial execution policy rather than permanent game rules.
+- Opening mechanical options are generated and reviewed before Start, then their exact private plans are copied into the story.
 
-## Owning specifications after approval
+## Owning specifications
 
-Approval should update [game rules](../../game-rules.md), [storyteller runtime](../../technical/storyteller-runtime.md), [rules and activities](../../technical/rules-and-activities.md), [data](../../technical/data.md), and [progress](../../progress.md) before implementation.
+[Game rules](../../game-rules.md), [storyteller runtime](../../technical/storyteller-runtime.md), [rules and activities](../../technical/rules-and-activities.md), [data](../../technical/data.md), and [progress](../../progress.md) own the implemented boundary as it advances.

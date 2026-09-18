@@ -33,6 +33,8 @@ Planning tools inspect only the current story's committed evidence and selected 
 
 The current context budget is 48 KiB including messages and schema, retaining the current passage and all note sources plus up to six optional recent passages. This is a byte ceiling, not evidence of useful or sufficient memory. Inspect what is omitted and why. Current prose appears both as focus and cited evidence; optimize that duplication only with measured benefit. Relevant older facts without notes cannot currently be recovered by a tool. Notes can also be semantically wrong despite valid citations. These are explicit evaluation questions, not reasons to dump the entire history into every request.
 
+The first deterministic proposal diagnostics are implemented for existing declared character state and captured evidence. They intentionally reject ungrounded situational modifiers. Creation of new scoped facts and admission of skills/capabilities remain open contracts; a structurally valid package is not yet a publishable generated plan.
+
 ## Manual matrix
 
 Use the existing [QA workspace](qa-journeys.md) for available cases. For cases still marked planned, record observations in a local evidence file until their driver exists; do not mark them passed or build an automation fleet to accommodate the checklist. Each observation records revision, scenario/profile, action, expected result, actual result and artifact identifiers. No real credentials or private prose in committed evidence.

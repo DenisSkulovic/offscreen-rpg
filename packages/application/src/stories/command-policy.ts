@@ -21,8 +21,8 @@ import { z } from 'zod';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
 
 const hasCompleteGenerationProvenance = (value: {
-  sourceGenerationId?: string | null;
-  sourceGenerationPart?: string | null;
+  sourceGenerationId?: string | null | undefined;
+  sourceGenerationPart?: string | null | undefined;
 }) => Boolean(value.sourceGenerationId) === Boolean(value.sourceGenerationPart);
 
 export const initialStorySchema = z.strictObject({

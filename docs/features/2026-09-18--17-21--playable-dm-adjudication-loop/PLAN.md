@@ -1,7 +1,7 @@
 # Playable DM adjudication loop plan
 
 Feature: [Playable DM adjudication loop](FEATURE.md)
-Status: Proposed for owner review. No live provider calls are authorized.
+Status: In progress; offline implementation authorized. No live provider calls are authorized.
 
 ## Design trace
 
@@ -100,8 +100,10 @@ The owner requested review, planning and implementation toward an offline-verifi
 
 Phase 1's public/private offer boundary is implemented. `immediate-action.v1` has no duration field and supports an automatic outcome or one ability check. Public leaves contain only an attempt marker; `game_offer` owns the story/revision-fenced private plans. Selection resolves the leaf through that record instead of reopening a global authored definition array. Consequence publication copies selected saved plans into a new offer identity. Pineapple and microbe fixtures author this package temporarily through the same contract intended for generated plans.
 
-The remaining Phase 1 contract item is scoped declaration of a new character/situation fact. Current plans can require and update only facts or quantities already declared on the character; do not let the planner invent fact writes until that boundary is specified and persisted. Then Phase 2 adds structured proposal validation and direct deterministic adjudication. It must persist the committed action and durable follow-up intent independently of context assembly so a narration-preparation error cannot roll back or reroll a valid action. Scope later trace work to the same durable runner. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
+The remaining Phase 1 contract item is scoped declaration of a new character/situation fact. Current plans can require and update only facts or quantities already declared on the character; do not let the planner invent fact writes until that boundary is specified and persisted.
+
+Phase 2 has started with a pure structured proposal validator. It reports bounded diagnostics for shape, captured evidence, declared prerequisites/effects and unsupported situational modifiers, and fixture admission exercises the same policy. It does not yet validate an explicit supported-skill catalogue, publish generated proposals or replace the activity bridge. Next: design the scoped fact/capability input, then implement direct exactly-once adjudication. The commit must persist the action receipt and durable follow-up intent independently of context assembly so a narration-preparation error cannot roll back or reroll a valid action. Scope later trace work to the same durable runner. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
 
 Pineapple and microbe use the same plan/admission/resolution contract. Neither task specialization nor context validation assumes a currency, human calendar, movement mode or profession. Activity-progress design remains outside this authorization. No provider spend is authorized.
 
-Verification: game, contracts, database and Storyteller builds passed. Game tests passed 8/8, including private/public offer separation and unavailable-plan filtering. Storyteller tests passed 8/8, including task-specific schemas, context contradictions and injected provider transport with no network. Database generation reports the single baseline matches the schema. Application compilation reaches only the two pre-existing exact-optional errors in `stories/command-policy.ts`. No database/browser/full-game rehearsal was run. Provider spend: $0; cumulative account usage unverified.
+Verification: game tests passed 10/10, including private/public separation, availability and structured proposal rejection. Application compilation and the web production build pass after removing their small stale typing blockers. Earlier Storyteller tests passed 8/8, including task-specific schemas, context contradictions and injected provider transport with no network. Database generation reports the single baseline matches the schema. No database/browser/full-game rehearsal was run. Provider spend: $0; cumulative account usage unverified.

@@ -8,6 +8,7 @@ const outcomeSchema = z.strictObject({
   text: z.string().min(1).max(1000),
   effects: outcomeEffectsSchema,
 });
+type ImmediateOutcome = z.infer<typeof outcomeSchema>;
 
 export const immediateActionPlanSchema = z.strictObject({
   version: z.literal(1),
@@ -43,6 +44,105 @@ export const immediateActionContentSchema = z
   });
 export type ImmediateActionContent = z.infer<typeof immediateActionContentSchema>;
 
+export const actionProposalIssueSchema = z.strictObject({
+  code: z.enum([
+    'invalid-shape',
+    'duplicate-evidence',
+    'unknown-evidence',
+    'unknown-fact',
+    'unknown-quantity',
+    'unsupported-modifier',
+  ]),
+  path: z.string().max(300),
+  message: z.string().max(500),
+});
+export type ActionProposalIssue = z.infer<typeof actionProposalIssueSchema>;
+export type ImmediateActionValidation =
+  | Readonly<{ kind: 'accepted'; plan: ImmediateActionPlan }>
+  | Readonly<{ kind: 'rejected'; issues: readonly ActionProposalIssue[] }>;
+
+function issue(
+  issues: ActionProposalIssue[],
+  code: ActionProposalIssue['code'],
+  path: string,
+  message: string,
+) {
+  issues.push(actionProposalIssueSchema.parse({ code, path, message }));
+}
+
+/** Pure admission diagnostics shared by fixtures, the future planner tool and publication. */
+export function validateImmediateActionProposal(input: {
+  proposal: unknown;
+  character: Character;
+  evidenceHandles: ReadonlySet<string>;
+}): ImmediateActionValidation {
+  const parsed = immediateActionPlanSchema.safeParse(input.proposal);
+  if (!parsed.success) {
+    return {
+      kind: 'rejected',
+      issues: parsed.error.issues.slice(0, 16).map((problem) => ({
+        code: 'invalid-shape',
+        path: problem.path.join('.'),
+        message: problem.message.slice(0, 500),
+      })),
+    };
+  }
+  const plan = parsed.data;
+  const issues: ActionProposalIssue[] = [];
+  if (new Set(plan.evidence).size !== plan.evidence.length) {
+    issue(issues, 'duplicate-evidence', 'evidence', 'Evidence handles must be unique');
+  }
+  for (const [index, handle] of plan.evidence.entries()) {
+    if (!input.evidenceHandles.has(handle)) {
+      issue(issues, 'unknown-evidence', `evidence.${index}`, 'Evidence is outside the captured task');
+    }
+  }
+  const knownFacts = new Map(
+    input.character.facts.map((fact) => [fact.id, typeof fact.value]),
+  );
+  const knownQuantities = new Set(
+    input.character.quantities.map((quantity) => quantity.id),
+  );
+  for (const [index, required] of plan.requires.entries()) {
+    if (knownFacts.get(required.id) !== typeof required.value) {
+      issue(issues, 'unknown-fact', `requires.${index}`, 'Prerequisite fact is not declared with this value type');
+    }
+  }
+  if (
+    plan.resolution.kind === 'check' &&
+    (plan.resolution.check.advantage ||
+      plan.resolution.check.disadvantage ||
+      plan.resolution.check.modifiers.length)
+  ) {
+    issue(
+      issues,
+      'unsupported-modifier',
+      'resolution.check',
+      'The first immediate-action contract does not admit situational modifiers',
+    );
+  }
+  const outcomes: Array<readonly [string, ImmediateOutcome]> =
+    plan.resolution.kind === 'automatic'
+      ? [['outcome', plan.resolution.outcome]]
+      : [
+          ['success', plan.resolution.success],
+          ['failure', plan.resolution.failure],
+        ];
+  for (const [outcomeKey, outcome] of outcomes) {
+    for (const [effectIndex, effect] of outcome.effects.entries()) {
+      const path = `resolution.${outcomeKey}.effects.${effectIndex}`;
+      if (effect.kind === 'fact.set.v1') {
+        if (knownFacts.get(effect.fact.id) !== typeof effect.fact.value) {
+          issue(issues, 'unknown-fact', path, 'Outcome fact is not declared with this value type');
+        }
+      } else if (!knownQuantities.has(effect.quantityId)) {
+        issue(issues, 'unknown-quantity', path, 'Outcome quantity is not declared');
+      }
+    }
+  }
+  return issues.length ? { kind: 'rejected', issues } : { kind: 'accepted', plan };
+}
+
 export function immediateActionAvailable(
   character: Character,
   plan: ImmediateActionPlan,
@@ -59,28 +159,14 @@ export function validateImmediateActionState(
   content: ImmediateActionContent,
   character: Character,
 ) {
-  const knownFacts = new Map(
-    character.facts.map((fact) => [fact.id, typeof fact.value]),
-  );
-  const knownQuantities = new Set(character.quantities.map((value) => value.id));
   for (const plan of content.plans) {
-    for (const required of plan.requires) {
-      if (knownFacts.get(required.id) !== typeof required.value) {
-        throw new Error('Prerequisite references an undeclared fact');
-      }
-    }
-    const outcomes =
-      plan.resolution.kind === 'automatic'
-        ? [plan.resolution.outcome]
-        : [plan.resolution.success, plan.resolution.failure];
-    for (const effect of outcomes.flatMap((outcome) => outcome.effects)) {
-      if (effect.kind === 'fact.set.v1') {
-        if (knownFacts.get(effect.fact.id) !== typeof effect.fact.value) {
-          throw new Error('Outcome references an undeclared fact');
-        }
-      } else if (!knownQuantities.has(effect.quantityId)) {
-        throw new Error('Outcome references an undeclared quantity');
-      }
+    const result = validateImmediateActionProposal({
+      proposal: plan,
+      character,
+      evidenceHandles: new Set(plan.evidence),
+    });
+    if (result.kind === 'rejected') {
+      throw new Error(result.issues[0]?.message ?? 'Invalid immediate action');
     }
   }
 }

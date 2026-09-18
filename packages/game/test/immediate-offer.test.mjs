@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { immediateActionContentSchema } from '../dist/src/immediate-actions.js';
+import {
+  immediateActionContentSchema,
+  validateImmediateActionProposal,
+} from '../dist/src/immediate-actions.js';
 import { composeOpportunities } from '../dist/src/opportunities.js';
 import { selectOfferAction } from '../dist/src/offers.js';
 
@@ -73,4 +76,52 @@ test('unmet prerequisites and busy state publish no private or public action', (
   });
   assert.deepEqual(unavailable, { offer: { id: unavailable.offer.id, nodes: [] }, plans: [] });
   assert.deepEqual(busy, { offer: { id: busy.offer.id, nodes: [] }, plans: [] });
+});
+
+test('proposal validation returns bounded diagnostics without applying mechanics', () => {
+  const proposal = structuredClone(content.plans[0]);
+  proposal.evidence = ['p1', 'p1', 'other-story'];
+  proposal.resolution.outcome.effects = [
+    { kind: 'fact.set.v1', fact: { id: 'invented', value: true } },
+  ];
+  const result = validateImmediateActionProposal({
+    proposal,
+    character,
+    evidenceHandles: new Set(['p1']),
+  });
+  assert.equal(result.kind, 'rejected');
+  assert.deepEqual(
+    result.issues.map((issue) => issue.code),
+    ['duplicate-evidence', 'unknown-evidence', 'unknown-fact'],
+  );
+  assert.deepEqual(character.facts, [{ id: 'exposed', value: true }]);
+});
+
+test('proposal validation rejects ungrounded situational modifiers', () => {
+  const proposal = {
+    ...structuredClone(content.plans[0]),
+    resolution: {
+      kind: 'check',
+      check: {
+        rule: 'srd-5.2.1-subset.v1',
+        purpose: 'Sense a gradient',
+        skill: 'environment-sensing',
+        ability: 'wisdom',
+        dc: 12,
+        advantage: true,
+        disadvantage: false,
+        modifiers: [],
+      },
+      difficultyBasis: 'The signal is weak.',
+      success: { text: 'Detected.', effects: [] },
+      failure: { text: 'Not detected.', effects: [] },
+    },
+  };
+  const result = validateImmediateActionProposal({
+    proposal,
+    character,
+    evidenceHandles: new Set(),
+  });
+  assert.equal(result.kind, 'rejected');
+  assert.equal(result.issues[0]?.code, 'unsupported-modifier');
 });
