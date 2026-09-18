@@ -1,8 +1,8 @@
 # Storyteller agency and taste plan
 
 Feature: [Storyteller agency and taste](FEATURE.md)
-Execution scope: proposal only; no implementation or provider call is authorized.
-Implementation owner: Cursor by default; reviewer: Codex.
+Execution scope: offline implementation authorized on 2026-09-19; no provider call is authorized.
+Implementation owner: Codex for the current bounded slice; owner review remains the taste gate.
 
 ## Phases
 
@@ -40,8 +40,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Current checkpoint
 
-- Current phase and exact next action: awaiting owner review of FEATURE.md and selection of the canonical pineapple situation.
-- Base/reviewed Git revision and relevant changes: based on `8ad4e30`; the reorientation portfolio changes documentation only.
-- Actual checks/results for this revision; checks not run: repository vision, benchmarks, current fixtures, DM-loop acceptance and integration specification inspected; no builds or runtime checks needed for the proposal.
-- Unresolved findings/blockers: the current offline loop repeats generic assess actions and the three-round integration does not prove state-shaped agency.
+- Current phase and exact next action: phase 2 is implemented at the task/fixture boundary. Next implement phase 3 by reviewing the public plan projection and play UI so commitment/risk is readable without debug-first presentation.
+- Base/reviewed Git revision and relevant changes: implementation starts from `06da12a`; the working slice replaces generic mechanical fixture turns, adds pineapple/microbe/held evidence and updates the three-round integration expectation.
+- Actual checks/results for this revision; checks not run: Storyteller build passes; 27 Storyteller tests pass; API integration TypeScript build passes. The PostgreSQL/Temporal/browser integration was updated but not executed in this slice.
+- Unresolved findings/blockers: state-responsive offline proposals are structurally demonstrated, but no human taste review or persisted browser run yet establishes enjoyable play. Consequence prose still mirrors the committed receipt in one paragraph; presentation quality remains phase 3.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

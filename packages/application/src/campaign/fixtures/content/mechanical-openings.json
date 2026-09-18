@@ -4,7 +4,7 @@
     {
       "id": "pineapple-mechanics.v4",
       "name": "Pineapple — dice and consequences",
-      "description": "An authored action scene used to inspect checks and committed consequences.",
+      "description": "An absurd domestic scene used to inspect distinct intentions and state-shaped consequences.",
       "character": {
         "name": "SpongeBob",
         "scores": {
@@ -44,8 +44,8 @@
           {
             "version": 1,
             "key": "talk-gary",
-            "label": "Ask Gary to lower the weapon",
-            "intention": "Try to calm Gary and learn why he is armed.",
+            "label": "Talk Gary down",
+            "intention": "Try to calm Gary and learn why the rattling delivery alarms him.",
             "risk": "Gary may remain distrustful.",
             "evidence": [],
             "requires": [{ "id": "gary-alert", "value": true }],
@@ -138,7 +138,7 @@
         "version": 1,
         "title": "An alarming morning",
         "paragraphs": [
-          "You wake in the pineapple. Gary is alert beside the window, with a machine gun balanced on his shell. There is furniture nearby that could provide cover."
+          "You wake in the pineapple. Gary is bristling beside the window while a damp parcel rattles against the outside sill. There is furniture nearby that could provide cover."
         ]
       }
     },

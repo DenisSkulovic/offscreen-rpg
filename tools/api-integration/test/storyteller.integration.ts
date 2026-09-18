@@ -133,15 +133,12 @@ test(
         }
         const first = await candidate();
         await t.test(
-          'mechanical opening and three consequences retain one admitted plan source',
+          'mechanical opening and three consequences reshape plans from committed state',
           async () => {
             const started = await mechanicalCandidate();
             let snapshot = started.snapshot;
             assert.equal(snapshot.revision, 1);
-            assert.equal(
-              snapshot.campaign?.offer?.nodes[0]?.id,
-              'assess-situation',
-            );
+            assert.equal(snapshot.campaign?.offer?.nodes[0]?.id, 'take-cover');
 
             for (let round = 0; round < 3; round++) {
               const campaign = requireDefined(
@@ -201,6 +198,12 @@ test(
                 'published',
               );
               assert.ok(snapshot.campaign?.offer?.nodes.length);
+              if (round === 0) {
+                assert.deepEqual(
+                  snapshot.campaign?.offer?.nodes.map((node) => node.id),
+                  ['inspect-from-cover', 'leave-cover'],
+                );
+              }
             }
           },
         );

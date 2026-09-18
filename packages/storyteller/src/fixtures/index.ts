@@ -2,6 +2,10 @@ import { z } from 'zod';
 import type { StorytellerTask, StorytellerResult } from '../tasks';
 import { storytellerResultSchema, validateStorytellerResult } from '../tasks';
 import authoredRehearsal from './content/narrative-rehearsal.json';
+import {
+  scriptedMechanicalConsequence,
+  scriptedMechanicalOpening,
+} from './mechanical';
 
 const authoredSource = z
   .object({ offer: z.unknown() })
@@ -97,116 +101,14 @@ export function scriptedStorytellerResult(
   task: StorytellerTask,
 ): StorytellerResult {
   if (task.context.mechanicalOpening && task.task === 'opening') {
-    const opening = task.context.mechanicalOpening;
-    const ability = opening.character.applicableAbilities[0];
-    if (!ability) {
-      throw new Error(
-        'Mechanical opening character needs one applicable ability',
-      );
-    }
-    return validateStorytellerResult(task, {
-      version: 1,
-      scene: {
-        version: 1,
-        content: opening.opening,
-        next: {
-          kind: 'action-plans',
-          state: 'available',
-          plans: [
-            {
-              version: 1,
-              key: 'assess-situation',
-              label: 'Assess the immediate situation',
-              intention:
-                'Observe the immediate situation carefully before committing to a riskier move.',
-              risk: 'Important details may remain unclear.',
-              evidence: [],
-              requires: [],
-              requiresStory: [],
-              requiresQuantities: [],
-              resolution: {
-                kind: 'check',
-                check: {
-                  rule: 'srd-5.2.1-subset.v1',
-                  purpose: 'Assess the immediate situation',
-                  skill: null,
-                  ability,
-                  dc: 10,
-                  advantage: false,
-                  disadvantage: false,
-                  modifiers: [],
-                },
-                difficultyBasis:
-                  'The opening presents an immediate but observable situation.',
-                success: {
-                  text: 'You identify the most important immediate detail.',
-                  effects: [],
-                  declarations: [],
-                },
-                failure: {
-                  text: 'The immediate situation remains difficult to read.',
-                  effects: [],
-                  declarations: [],
-                },
-              },
-            },
-          ],
-        },
-      },
-      currentNotes: [],
-      arrivalNotes: [],
-    });
+    return validateStorytellerResult(task, scriptedMechanicalOpening(task));
   }
   if (task.task === 'consequence') {
     const resolution = task.context.resolution;
     if (!resolution || !task.context.current) {
       throw new Error('Missing committed consequence');
     }
-    const evidence = `p${task.context.current.sequence}`;
-    const prior = resolution.receipts.at(-1);
-    const plans = [
-      {
-        version: 1,
-        key: `follow-up-${task.source.narrativeRevision}`,
-        label: 'Assess what changed',
-        intention:
-          'Pause long enough to understand the immediate result and choose a grounded next direction.',
-        risk: null,
-        evidence: [evidence],
-        requires: [],
-        requiresStory: [],
-        requiresQuantities: [],
-        resolution: {
-          kind: 'automatic',
-          outcome: {
-            text: 'You take stock of the changed situation.',
-            effects: [],
-            declarations: [],
-          },
-        },
-      },
-    ];
-    return validateStorytellerResult(task, {
-      version: 1,
-      scene: {
-        version: 3,
-        content: {
-          version: 1,
-          title: task.context.selected?.label ?? 'The consequence',
-          paragraphs: [
-            prior?.text ??
-              'The committed action changes the immediate situation.',
-          ],
-        },
-        next: {
-          kind: 'action-plans',
-          state: 'available',
-          plans,
-        },
-      },
-      currentNotes: [],
-      arrivalNotes: [],
-    });
+    return validateStorytellerResult(task, scriptedMechanicalConsequence(task));
   }
   return scriptedNarrativeResult(task);
 }

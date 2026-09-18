@@ -1,7 +1,7 @@
 # Storyteller agency and taste
 
-Status: Draft for owner review. Preparation does not authorize implementation or live inference.
-Approval: Pending.
+Status: Approved for offline implementation by the owner on 2026-09-19. Live inference remains unauthorized.
+Approval: Implement the phased experience-quality slice with Codex choosing the bounded benchmark details.
 
 ## Intended outcome
 
@@ -11,7 +11,7 @@ This is the quality gate for the immediate DM loop. It does not weaken determini
 
 ## Representative flow
 
-In the pineapple benchmark, Gary is alarmed beside a suspicious delivery. The opening offers several materially different approaches: calm him, seek cover, inspect the delivery indirectly, or disengage. The player chooses conversation and the server commits a failed Charisma check. The next scene does not paraphrase “failure” and repeat the same menu. Gary's distrust is visible, direct inspection may become harder, cover or retreat remains possible, and a newly established clue may create a different approach.
+In the pineapple benchmark, Gary is alarmed beside a suspicious rattling delivery. The opening offers several materially different approaches: calm him, seek cover, inspect the delivery indirectly, or disengage. The player chooses conversation and the server commits a failed Charisma check. The next scene does not paraphrase “failure” and repeat the same menu. Gary's distrust is visible, direct inspection may become harder, cover or retreat remains possible, and a newly established clue may create a different approach.
 
 The same task handles a microbe responding to environmental change without translating the situation into human conversation, money or anatomy. A quiet premise may legitimately produce one low-stakes action or a held state. Absurd comedy changes framing and possibilities without forcing a joke into every outcome.
 
@@ -50,11 +50,11 @@ The acceptance rubric is not application authority. Human preference cannot make
 - Offline golden fixtures and anti-examples are inspectable and reproducible, but are not reported as live-model quality evidence.
 - One owner review records what felt specific, arbitrary, constrained, surprising and undesirable before any live evaluation is proposed.
 
-## Decisions still needed
+## Selected POC decisions
 
-- Which pineapple situation should be the canonical three-round taste benchmark: armed Gary and a delivery, or a less weapon-centered absurd domestic problem?
-- How much mechanical risk should the public option preview reveal: short qualitative risk, commitment, both, or neither?
-- Should the first quality review expose free-form player intent as a non-executable suggestion, or retain buttons only?
+- The canonical benchmark is the less weapon-centered absurd domestic problem: Gary and a suspicious rattling delivery at the pineapple window.
+- Public options expose the attempted commitment and concise apparent risk through the existing intention/risk projection, never hidden outcomes or DCs.
+- The first quality review retains admitted buttons only. Free-form gameplay intent remains outside this slice.
 
 ## Owning specifications
 

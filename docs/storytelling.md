@@ -40,7 +40,7 @@ Demonstrate contextual choices, ordinary intervals, a meaningful interruption, c
 
 ## Selected storyteller POC contract
 
-The approved solo POC selects a versioned storyteller profile before opening generation. Profiles are JSON content over shared task preparation and execution. Opening and continuation are separate bounded tasks, each proposing a coherent scene/offer and source-backed continuity changes in one result. The implemented rehearsal uses 2–5 distinct offered intentions, no free-text actions or automatic life ending. The next design replaces that fixed minimum with situation-dependent breadth and supported mechanical action contracts; see [game rules](game-rules.md). Inactivity admits no new generation; an accepted prepared interval may finish once. Implementation status remains in progress.md.
+The approved solo POC selects a versioned storyteller profile before opening generation. Profiles are JSON content over shared task preparation and execution. Opening and continuation are separate bounded tasks, each proposing a coherent scene/offer and source-backed continuity changes in one result. The narrative rehearsal uses 2–5 distinct offered intentions. Mechanical openings and consequences instead use zero to four admitted plans: zero is a visible held state, one is valid when the situation is genuinely constrained, and larger sets must differ in intended approach rather than wording. Public plans communicate the attempted commitment and concise apparent risk without revealing DCs or unused outcomes. There are no free-text gameplay actions or automatic life endings. Inactivity admits no new generation; an accepted prepared interval may finish once. Implementation status remains in progress.md.
 
 ## Evolving the DM during play
 

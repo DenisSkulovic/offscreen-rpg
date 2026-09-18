@@ -41,7 +41,16 @@ function opening() {
   });
 }
 
-function consequence() {
+function consequence(
+  options: {
+    facts?: Array<{ id: string; value: boolean | string }>;
+    storyFacts?: Array<{
+      id: string;
+      value: boolean | string;
+      declaredBy: string;
+    }>;
+  } = {},
+) {
   const base = opening();
   const passage = {
     id: randomUUID(),
@@ -90,15 +99,22 @@ function consequence() {
             'wisdom',
             'charisma',
           ],
-          skills: [],
-          proficientSkills: [],
+          skills: [
+            { id: 'persuasion', label: 'Persuasion' },
+            { id: 'perception', label: 'Perception' },
+          ],
+          proficientSkills: ['persuasion', 'perception'],
           proficiencyBonus: 2,
           hp: 5,
           maxHp: 5,
-          facts: [],
+          facts: options.facts ?? [
+            { id: 'gary-alert', value: true },
+            { id: 'under-cover', value: false },
+            { id: 'location', value: 'pineapple' },
+          ],
           quantities: [],
         },
-        storyFacts: [],
+        storyFacts: options.storyFacts ?? [],
         tick: 0,
         offer: {
           id: randomUUID(),
@@ -143,13 +159,20 @@ function mechanicalOpening() {
             wisdom: 12,
             charisma: 10,
           },
-          applicableAbilities: ['wisdom'],
-          skills: [],
-          proficientSkills: [],
+          applicableAbilities: ['wisdom', 'charisma'],
+          skills: [
+            { id: 'persuasion', label: 'Persuasion' },
+            { id: 'perception', label: 'Perception' },
+          ],
+          proficientSkills: ['persuasion', 'perception'],
           proficiencyBonus: 2,
           hp: 5,
           maxHp: 5,
-          facts: [{ id: 'ready', value: true }],
+          facts: [
+            { id: 'gary-alert', value: true },
+            { id: 'under-cover', value: false },
+            { id: 'location', value: 'pineapple' },
+          ],
           quantities: [],
         },
         storyFacts: [],
@@ -157,6 +180,49 @@ function mechanicalOpening() {
           version: 1,
           title: 'A fresh problem',
           paragraphs: ['Something nearby needs careful attention.'],
+        },
+      },
+    },
+  });
+}
+
+function microbeMechanicalOpening() {
+  const task = mechanicalOpening();
+  return prepareStorytellerTask({
+    ...task,
+    context: {
+      ...task.context,
+      mechanicalOpening: {
+        id: 'microbe.v3',
+        character: {
+          name: 'A microbe',
+          scores: {
+            strength: 8,
+            dexterity: 12,
+            constitution: 14,
+            intelligence: 8,
+            wisdom: 12,
+            charisma: 8,
+          },
+          applicableAbilities: ['constitution', 'wisdom'],
+          skills: [
+            { id: 'environment-sensing', label: 'Environmental sensing' },
+          ],
+          proficientSkills: ['environment-sensing'],
+          proficiencyBonus: 2,
+          hp: 5,
+          maxHp: 5,
+          facts: [
+            { id: 'exposed', value: true },
+            { id: 'gradient-disrupted', value: false },
+          ],
+          quantities: [],
+        },
+        storyFacts: [],
+        opening: {
+          version: 1,
+          title: 'A changing environment',
+          paragraphs: ['A chemical gradient shifts around the organism.'],
         },
       },
     },
@@ -173,27 +239,70 @@ test('mechanical opening captures fresh plans instead of an authored offer', () 
   }
   assert.deepEqual(
     result.scene.next.plans.map((plan) => plan.key),
-    ['assess-situation'],
+    ['take-cover', 'calm-gary', 'keep-distance'],
   );
 
   const invalid = structuredClone(result);
   if (
     invalid.scene.next.kind !== 'action-plans' ||
-    invalid.scene.next.plans[0]?.resolution.kind !== 'check'
+    invalid.scene.next.plans[1]?.resolution.kind !== 'check'
   ) {
     throw new Error('Expected checked opening plan');
   }
-  invalid.scene.next.plans[0].resolution.check.ability = 'strength';
+  invalid.scene.next.plans[1].resolution.check.ability = 'strength';
   assert.throws(() => validateStorytellerResult(task, invalid));
 
   const unavailable = structuredClone(result);
   if (unavailable.scene.next.kind !== 'action-plans') {
     throw new Error('Expected mechanical opening plans');
   }
-  unavailable.scene.next.plans[0]!.requires = [{ id: 'ready', value: false }];
+  unavailable.scene.next.plans[0]!.requires = [
+    { id: 'under-cover', value: true },
+  ];
   assert.throws(
     () => validateStorytellerResult(task, unavailable),
     /unavailable in captured state/,
+  );
+
+  const unknown = prepareStorytellerTask({
+    ...task,
+    context: {
+      ...task.context,
+      mechanicalOpening: {
+        ...task.context.mechanicalOpening!,
+        character: {
+          ...task.context.mechanicalOpening!.character,
+          applicableAbilities: ['wisdom'],
+          skills: [],
+          proficientSkills: [],
+          facts: [{ id: 'ready', value: true }],
+        },
+      },
+    },
+  });
+  const held = scriptedStorytellerResult(unknown);
+  assert.equal(held.scene.next.kind, 'action-plans');
+  if (held.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.equal(held.scene.next.state, 'held');
+  assert.deepEqual(held.scene.next.plans, []);
+});
+
+test('mechanical opening uses the same task contract for nonhuman agency', () => {
+  const result = scriptedStorytellerResult(microbeMechanicalOpening());
+  assert.equal(result.scene.next.kind, 'action-plans');
+  if (result.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.deepEqual(
+    result.scene.next.plans.map((plan) => plan.key),
+    ['follow-gradient', 'contract'],
+  );
+  assert.equal(
+    JSON.stringify(result).includes('gary'),
+    false,
+    'The nonhuman contrast must not inherit pineapple concepts',
   );
 });
 
@@ -334,7 +443,7 @@ test('consequence planning proposes fresh plans without gaining mechanical autho
   }
   assert.deepEqual(
     result.scene.next.plans.map((plan) => plan.key),
-    ['follow-up-2'],
+    ['take-cover', 'calm-gary', 'keep-distance'],
   );
 
   const fabricated = structuredClone(result);
@@ -352,6 +461,49 @@ test('consequence planning proposes fresh plans without gaining mechanical autho
     ...duplicate.scene.next.plans[0]!,
   });
   assert.throws(() => validateStorytellerResult(task, duplicate));
+});
+
+test('offline consequence plans change with committed pineapple state', () => {
+  const covered = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'gary-alert', value: true },
+        { id: 'under-cover', value: true },
+        { id: 'location', value: 'pineapple' },
+      ],
+    }),
+  );
+  if (covered.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    covered.scene.next.plans.map((plan) => plan.key),
+    ['inspect-from-cover', 'leave-cover'],
+  );
+
+  const identified = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'gary-alert', value: true },
+        { id: 'under-cover', value: true },
+        { id: 'location', value: 'pineapple' },
+      ],
+      storyFacts: [
+        {
+          id: 'delivery-at-window',
+          value: 'rattling-parcel',
+          declaredBy: randomUUID(),
+        },
+      ],
+    }),
+  );
+  if (identified.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    identified.scene.next.plans.map((plan) => plan.key),
+    ['draw-parcel-closer', 'leave-parcel-outside'],
+  );
 });
 
 test('continuity updates preserve provenance and fail without mutating their base', () => {

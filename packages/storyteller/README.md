@@ -26,7 +26,7 @@ There is no tool-using or multi-round planner yet. The current one-shot offline 
 
 ## Content and rules
 
-[profiles/definitions](src/profiles/definitions/) holds creative profiles; [profiles/index.ts](src/profiles/index.ts) validates and resolves their revisions. [fixtures/content](src/fixtures/content/) holds authored offline narrative responses. The fixture's term/profile/note lookups exercise scripted content only; they do not decide which species or mechanics an arbitrary world supports. Mechanical seed content lives in the application catalogue.
+[profiles/definitions](src/profiles/definitions/) holds creative profiles; [profiles/index.ts](src/profiles/index.ts) validates and resolves their revisions. [fixtures/content](src/fixtures/content/) holds authored offline narrative responses. The fixture's term/profile/note lookups exercise scripted content only; they do not decide which species or mechanics an arbitrary world supports. Mechanical benchmark branches recognize authored fact shapes only inside the offline fixture adapter so tests can prove state-responsive proposals; unknown shapes hold rather than inventing understanding. Mechanical seed content lives in the application catalogue, while generic application admission never branches on fixture identity.
 
 Continuity patches in [context/continuity.ts](src/context/continuity.ts) are source-backed reminders, not state-changing effects. Result validity establishes structural constraints, not fictional truth or enjoyable choices. The selected D&D rules and capability admission belong in `@offscreen/game`.
 
