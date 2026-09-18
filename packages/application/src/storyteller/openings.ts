@@ -83,6 +83,8 @@ export function createStorytellerOpenings(
                     options: scene.next.plans.map((plan) => ({
                       id: plan.key,
                       label: plan.label,
+                      description: plan.intention,
+                      risk: plan.risk,
                     })),
                   }
                 : null,

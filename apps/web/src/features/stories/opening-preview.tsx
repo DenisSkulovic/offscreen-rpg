@@ -296,11 +296,21 @@ export function OpeningPreviewPanel({
               <section aria-label="Offered interaction">
                 <p>{preview.candidate.interaction.prompt}</p>
                 {preview.candidate.interaction.options.map((option) => (
-                  <p key={option.id}>
+                  <article className="campaign-option" key={option.id}>
                     <button type="button" disabled>
                       {option.label}
                     </button>
-                  </p>
+                    {option.description ? (
+                      <p className="campaign-option-intention">
+                        {option.description}
+                      </p>
+                    ) : null}
+                    {option.risk ? (
+                      <p className="campaign-option-risk">
+                        <strong>Apparent risk:</strong> {option.risk}
+                      </p>
+                    ) : null}
+                  </article>
                 ))}
               </section>
             </>

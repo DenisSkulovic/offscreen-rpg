@@ -57,6 +57,11 @@ test('public offer contains no private resolution mechanics', () => {
     busy: false,
   });
   assert.deepEqual(offer.nodes[0]?.action, { kind: 'attempt' });
+  assert.equal(
+    offer.nodes[0]?.description,
+    'Contract away from the disturbance.',
+  );
+  assert.equal(offer.nodes[0]?.risk, null);
   assert.equal(JSON.stringify(offer).includes('resolution'), false);
   assert.equal(plans[0]?.resolution.kind, 'automatic');
   assert.deepEqual(selectOfferAction(offer, ['contract']), {

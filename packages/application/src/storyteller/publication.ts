@@ -114,6 +114,7 @@ export async function publishStorytellerResult(
             parent: null,
             label: plan.label,
             description: plan.intention,
+            risk: plan.risk,
             action: { kind: 'attempt' },
           };
         }),

@@ -251,7 +251,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
         <section aria-label="Offered interaction">
           <p>{offer.specification.prompt}</p>
           {offer.specification.options.map((option) => (
-            <p key={option.id}>
+            <article className="campaign-option" key={option.id}>
               <button
                 type="button"
                 disabled={pending || !canChoose || operation.current !== null}
@@ -259,7 +259,17 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
               >
                 {option.label}
               </button>
-            </p>
+              {option.description ? (
+                <p className="campaign-option-intention">
+                  {option.description}
+                </p>
+              ) : null}
+              {option.risk ? (
+                <p className="campaign-option-risk">
+                  <strong>Apparent risk:</strong> {option.risk}
+                </p>
+              ) : null}
+            </article>
           ))}
           {operation.current ? (
             <button

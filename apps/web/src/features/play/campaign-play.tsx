@@ -162,7 +162,7 @@ export function CampaignPlay({
             </button>
           ) : null}
           {children.map((node) => (
-            <div key={node.id}>
+            <article className="campaign-option" key={node.id}>
               <button
                 disabled={command.busy || command.retry}
                 onClick={() => {
@@ -180,8 +180,13 @@ export function CampaignPlay({
               >
                 {node.label}
               </button>
-              <p className="field-help">{node.description}</p>
-            </div>
+              <p className="campaign-option-intention">{node.description}</p>
+              {node.risk ? (
+                <p className="campaign-option-risk">
+                  <strong>Apparent risk:</strong> {node.risk}
+                </p>
+              ) : null}
+            </article>
           ))}
         </div>
       ) : null}

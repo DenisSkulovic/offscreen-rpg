@@ -10,6 +10,7 @@ export const menuNodeSchema = z.strictObject({
   parent: z.string().nullable(),
   label: z.string().min(1).max(200),
   description: z.string().max(500),
+  risk: z.string().min(1).max(300).nullable().optional(),
   action: gameActionSchema.nullable(),
 });
 export const offerSchema = z

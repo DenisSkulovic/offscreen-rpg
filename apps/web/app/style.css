@@ -309,6 +309,23 @@ small,
     sans-serif;
   color: #b9c2c2;
 }
+.campaign-option {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-left: 2px solid #526762;
+}
+.campaign-option p {
+  margin: 0.5rem 0 0;
+}
+.campaign-option-intention {
+  color: #eef2f1;
+}
+.campaign-option-risk {
+  color: #d7b87c;
+  font:
+    0.85rem/1.5 system-ui,
+    sans-serif;
+}
 a {
   color: #d7b87c;
 }

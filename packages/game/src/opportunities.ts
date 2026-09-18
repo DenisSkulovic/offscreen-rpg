@@ -25,6 +25,7 @@ export function composeOpportunities(input: {
       parent: null,
       label: plan.label,
       description: plan.intention,
+      risk: plan.risk,
       action: { kind: 'attempt' },
     })),
   });

@@ -24,6 +24,7 @@ export const choiceSpecificationSchema = z
           id: reference,
           label,
           description: z.string().max(2000).optional(),
+          risk: z.string().min(1).max(300).nullable().optional(),
         }),
       )
       .min(1)

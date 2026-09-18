@@ -40,8 +40,8 @@ Implementation owner: Codex for the current bounded slice; owner review remains 
 
 ## Current checkpoint
 
-- Current phase and exact next action: phase 2 is implemented at the task/fixture boundary. Next implement phase 3 by reviewing the public plan projection and play UI so commitment/risk is readable without debug-first presentation.
-- Base/reviewed Git revision and relevant changes: implementation starts from `06da12a`; the working slice replaces generic mechanical fixture turns, adds pineapple/microbe/held evidence and updates the three-round integration expectation.
-- Actual checks/results for this revision; checks not run: Storyteller build passes; 27 Storyteller tests pass; API integration TypeScript build passes. The PostgreSQL/Temporal/browser integration was updated but not executed in this slice.
-- Unresolved findings/blockers: state-responsive offline proposals are structurally demonstrated, but no human taste review or persisted browser run yet establishes enjoyable play. Consequence prose still mirrors the committed receipt in one paragraph; presentation quality remains phase 3.
+- Current phase and exact next action: phase 3 implementation is complete; next run the persisted browser flow and begin phase 4 owner review of specificity, agency, restraint, consequence fidelity and genre fit.
+- Base/reviewed Git revision and relevant changes: phase 2 was pushed as `5bed48b`; the current working slice adds public intention/risk projection to opening review and live play without exposing private mechanics.
+- Actual checks/results for this revision; checks not run: game build and 16 tests pass; contracts/application builds, web typecheck and API integration TypeScript build pass. The PostgreSQL/Temporal/browser integration and visual desktop/mobile walkthrough were not executed in this slice.
+- Unresolved findings/blockers: state-responsive offline proposals and their public projection are structurally demonstrated, but no persisted browser run or human taste review yet establishes enjoyable play. Consequence prose still mirrors the committed receipt in one paragraph.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.
