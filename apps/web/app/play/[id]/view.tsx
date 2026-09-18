@@ -1,4 +1,6 @@
 'use client';
+import { StoryHistoryView } from '../../stories/history';
+import { ResolutionRecovery } from '../../stories/resolution-recovery';
 
 import { useEffect, useRef, useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
@@ -22,10 +24,19 @@ function resolutionMessage(story: StorySnapshot) {
     return null;
   }
   if (story.resolution.state === 'failed') {
-    return 'Continuation failed. The current scene is unchanged.';
+    if (story.resolution.reason === 'budget_unavailable') {
+      return 'The generation allowance is unavailable. Your scene is unchanged.';
+    }
+    if (story.resolution.reason === 'provider_disabled') {
+      return 'Live generation is disabled. Your scene is unchanged.';
+    }
+    return 'Continuation failed. Your intention is saved and the current scene is unchanged.';
   }
   if (story.resolution.state === 'uncertain') {
-    return 'The continuation outcome is uncertain. Retry the same request or reload the saved story.';
+    return 'Provider usage is uncertain. Paid generation is stopped until it is reconciled; refreshing does not send another model request.';
+  }
+  if (story.resolution.state === 'blocked') {
+    return 'The saved continuation could not be published. Your current scene is unchanged.';
   }
   return 'The storyteller is resolving this intention.';
 }
@@ -41,7 +52,10 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const storyId = story.id;
   const isResolving = story.resolution !== null;
   const canChoose = story.canRespond && offer !== null && !isResolving;
-  const shouldPoll = isResolving || waiting != null;
+  const shouldPoll =
+    story.resolution?.state === 'pending' ||
+    story.resolution?.state === 'running' ||
+    waiting != null;
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));
@@ -172,6 +186,14 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     <main className="editor">
       <SessionRefresh />
       <p className="eyebrow">Offscreen RPG · Live story</p>
+      {story.storyteller ? (
+        <p>
+          {story.storyteller.name} �{' '}
+          {story.sourceMode === 'provider'
+            ? 'Generated story'
+            : 'Offline authored rehearsal'}
+        </p>
+      ) : null}
       <h1>{story.current.content.title}</h1>
       {story.current.content.paragraphs.map((paragraph, index) => (
         <p key={index}>{paragraph}</p>
@@ -235,9 +257,23 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
         </section>
       ) : null}
       {status ? <p role="status">{status}</p> : null}
+      <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
+      <StoryHistoryView storyId={story.id} />
       <details>
         <summary>Inspect saved state</summary>
         <dl>
+          {story.usage ? (
+            <>
+              <dt>Settled model usage (USD)</dt>
+              <dd>
+                {(Number(story.usage.settledMicrousd) / 1000000).toFixed(6)}
+              </dd>
+              <dt>Reserved pending usage (USD)</dt>
+              <dd>
+                {(Number(story.usage.reservedMicrousd) / 1000000).toFixed(6)}
+              </dd>
+            </>
+          ) : null}
           <dt>Story ID</dt>
           <dd>{story.id}</dd>
           <dt>Revision</dt>
@@ -246,7 +282,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
           <dd>{story.current.id}</dd>
         </dl>
       </details>
-      <p>Bookmark this URL to reopen the same story.</p>
+      <p>You can reopen this story from your stories list.</p>
       <p>
         <a href="/stories">Back to stories</a>
       </p>

@@ -66,6 +66,14 @@ const isoDateTime = z.iso.datetime();
 export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
+  storyteller: z
+    .strictObject({
+      profile: z.unknown(),
+      notes: z.unknown(),
+      context: z.unknown().nullable(),
+    })
+    .nullable()
+    .optional(),
   story: z.strictObject({
     id: z.uuid(),
     source: z.string().min(1),

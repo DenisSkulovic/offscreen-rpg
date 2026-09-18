@@ -30,6 +30,10 @@
     "./story-schema": {
       "types": "./dist/src/schema/stories.d.ts",
       "default": "./dist/src/schema/stories.js"
+    },
+    "./storyteller-schema": {
+      "types": "./dist/src/schema/storyteller.d.ts",
+      "default": "./dist/src/schema/storyteller.js"
     }
   },
   "scripts": {

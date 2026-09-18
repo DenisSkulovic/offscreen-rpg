@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { storytellerSummarySchema } from './storytellers';
 import { choiceSpecificationSchema } from './interactions';
 import { passageContentSchema } from './stories';
 
@@ -13,7 +14,8 @@ export const openingPreviewSchema = z.strictObject({
   id: z.uuid(),
   sourceRevision: z.number().int().positive(),
   isCurrent: z.boolean(),
-  mode: z.literal('scripted'),
+  mode: z.enum(['scripted', 'provider']),
+  storyteller: storytellerSummarySchema.nullable().optional(),
   state: z.enum(['pending', 'running', 'succeeded', 'failed', 'uncertain']),
   candidate: openingCandidateSchema.nullable(),
 });

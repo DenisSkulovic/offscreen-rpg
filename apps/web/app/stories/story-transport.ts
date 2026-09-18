@@ -7,6 +7,13 @@ export function preferNewerSnapshot(
   prior: StorySnapshot | null | undefined,
   next: StorySnapshot,
 ) {
+  if (
+    prior &&
+    next.viewVersion === prior.viewVersion &&
+    (next.resolution?.version ?? 0) < (prior.resolution?.version ?? 0)
+  ) {
+    return prior;
+  }
   if (!prior || next.viewVersion >= prior.viewVersion) {
     return next;
   }

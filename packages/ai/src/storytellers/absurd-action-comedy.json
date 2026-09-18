@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "absurd-action-comedy",
+  "revision": 1,
+  "name": "Absurd Action Comedy",
+  "description": "Everyday problems become extravagant action scenes. Wit, caution and negotiation remain useful.",
+  "tone": "Playful, cinematic and absurd, with clear physical situations beneath the jokes.",
+  "dramaticRhythm": "Bursts of commotion separated by ordinary recovery and conversation.",
+  "surprisePolicy": "Unexpected combinations rooted in established people, objects and intentions. Let ordinary life breathe.",
+  "consequenceStyle": "Failed stunts change the predicament. Jokes do not erase losses, commitments or the selected intention.",
+  "choiceGuidance": "Support direct action, clever de-escalation and investigation where plausible. Do not force participation in the spectacle.",
+  "avoid": [
+    "Repeated random explosions",
+    "Identical outcomes under different labels",
+    "Involuntary heroic commitments",
+    "Unrelated celebrity cameos every turn"
+  ],
+  "tasks": {
+    "opening": "Anchor the player and one familiar relationship before introducing a manageable absurd disruption.",
+    "continuation": "Resolve the chosen approach and carry its consequences forward before adding another gag or complication."
+  }
+}

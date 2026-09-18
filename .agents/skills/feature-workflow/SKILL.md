@@ -27,7 +27,7 @@ For this project, default to preparing the implementation handoff for Cursor. Co
 
 ## Execute an authorized phase
 
-Read its checkpoint, inspect Git status and confirm assumptions against code. Identify existing behavior to preserve and intentional changes. Implement one coherent phase, then run its selected checks in a batch under the verification rule.
+Read its checkpoint, inspect Git status and confirm assumptions against code. Identify existing behavior to preserve and intentional changes. Implement one coherent phase. Checks are optional during the POC lifecycle under the verification rule; if requested or directly useful, batch only the selected checks after the code. Do not chase green results or let minor issues prolong the work.
 
 Review the diff and trace the main path plus relevant failure/retry behavior. A green check is not proof of good design. If blocked, fix within the agreed scope or narrow the next action; do not mark the phase complete or keep expanding the task.
 
@@ -37,6 +37,6 @@ After each phase, update PLAN.md's current checkpoint and docs/progress.md where
 
 A reviewer compares the actual diff with approved acceptance, documentation and behavioral evidence. Report concrete defects with locations, consequences and a focused repair/check. Distinguish regressions, unfinished planned work and pre-existing debt. Do not certify untested behavior or create a separate review.md.
 
-A feature is complete when acceptance is satisfied, necessary checks pass, significant findings are resolved and permanent docs reflect the result. Fold useful explanations into the owning docs. Remove finished FEATURE.md/PLAN.md and their folder when they serve no continuing purpose; Git retains history. Keep docs/features/README.md a current index, not a completed-work ledger.
+A feature is complete when its agreed implementation scope is delivered, significant known blockers are resolved and permanent docs reflect the result. During the POC lifecycle, passing checks is not a completion gate; distinguish implemented behavior from verified behavior and record minor follow-ups without delaying handoff. Fold useful explanations into the owning docs. Remove finished FEATURE.md/PLAN.md and their folder when they serve no continuing purpose; Git retains history. Keep docs/features/README.md a current index, not a completed-work ledger.
 
 For interruption or handoff, leave only the latest checkpoint: phase, base/reviewed revision, working changes, verification, unresolved questions and exact next action. Resume from that state rather than regenerating the plan.

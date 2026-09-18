@@ -22,6 +22,10 @@
     "./chamber": {
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"
+    },
+    "./storytellers": {
+      "types": "./dist/src/storytellers.d.ts",
+      "default": "./dist/src/storytellers.js"
     }
   },
   "scripts": {

@@ -6,9 +6,13 @@ The intended experience includes solo play and inviting friends into a shared st
 
 Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Where the campaign permits pause, an authorized pause stops progression within its declared scope.
 
+## The D&D foundation
+
+The storyteller is the dungeon master. D&D-style character abilities, skill checks, dice and recorded consequences are fundamental across work, fishing, travel and combat, not optional narrative decoration. Start with the explicit [POC rules subset](game-rules.md); full edition fidelity and combat depth are separate scope decisions.
+
 ## The storyteller
 
-An LLM storyteller invents scenes, offers choices, judges situations and introduces developments. Different styles can shape tone, pace and unpredictability. Someone you met days ago or an object you gave away can become important again.
+A storyteller is a player-selected creative profile realized by reusable application logic, selected context and task-specific model generation. It shapes scenes, choices, judgments and developments; it is not necessarily one agent or one model. Profiles are data, while application rules retain authority over time, permissions and committed consequences. Different styles can shape tone, dramatic rhythm and unpredictability. In editable campaigns, players can switch and customize these presets during play using [typed settings, tags and guidance](storyteller-settings.md); locked campaigns preserve their declared commitments. Someone you met days ago or an object you gave away can become important again.
 
 The world should feel rich without simulating everyone in it. Establish people, places and lore when they matter. Remember consequential facts afterward. A character can disappear from the story for weeks without needing a background schedule of meals and errands.
 

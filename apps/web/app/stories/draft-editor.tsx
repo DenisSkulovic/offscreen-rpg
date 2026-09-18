@@ -1,4 +1,5 @@
 'use client';
+import { StorytellerSelect } from './storyteller-select';
 
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
@@ -7,6 +8,7 @@ import type { Draft, DraftContent } from '@offscreen/contracts/drafts';
 import { SessionRefresh } from './session-refresh';
 
 const empty: DraftContent = {
+  storyteller: null,
   title: '',
   premise: '',
   storytellingDirection: '',
@@ -23,6 +25,7 @@ export function DraftEditor({
   const [content, setContent] = useState<DraftContent>(
     initial
       ? draftContentSchema.parse({
+          storyteller: initial.storyteller ?? null,
           title: initial.title,
           premise: initial.premise,
           storytellingDirection: initial.storytellingDirection,
@@ -33,10 +36,14 @@ export function DraftEditor({
   const [message, setMessage] = useState('');
   const [conflict, setConflict] = useState(false);
   const dirty = (Object.keys(empty) as (keyof DraftContent)[]).some(
-    (field) => content[field] !== (saved?.[field] ?? ''),
+    (field) =>
+      JSON.stringify(content[field] ?? null) !==
+      JSON.stringify(saved?.[field] ?? (field === 'storyteller' ? null : '')),
   );
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty) {
+      return;
+    }
     const warn = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = '';
@@ -73,7 +80,9 @@ export function DraftEditor({
         );
         return;
       }
-      if (!response.ok) throw new Error('Save unavailable');
+      if (!response.ok) {
+        throw new Error('Save unavailable');
+      }
       const result = draftSchema.parse(await response.json());
       setSaved(result);
       setMessage('Saved.');
@@ -90,15 +99,19 @@ export function DraftEditor({
   async function loadSaved() {
     if (
       !window.confirm('Discard your current text and load the saved version?')
-    )
+    ) {
       return;
+    }
     setPending(true);
     try {
       const response = await fetch(`/api/drafts/${id}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Read unavailable');
+      if (!response.ok) {
+        throw new Error('Read unavailable');
+      }
       const latest = draftSchema.parse(await response.json());
       setSaved(latest);
       setContent({
+        storyteller: latest.storyteller ?? null,
         title: latest.title,
         premise: latest.premise,
         storytellingDirection: latest.storytellingDirection,
@@ -114,6 +127,13 @@ export function DraftEditor({
     }
   }
 
+  let saveStatus = 'Not saved yet.';
+  if (saved) {
+    saveStatus = 'All changes saved.';
+  }
+  if (dirty) {
+    saveStatus = 'Unsaved changes.';
+  }
   return (
     <main className="editor">
       <SessionRefresh redirectOnExpiry={false} />
@@ -126,11 +146,16 @@ export function DraftEditor({
       <form
         onSubmit={(event) => void save(event)}
         onChange={() => {
-          if (message === 'Saved.' || message === 'Saved version loaded.')
+          if (message === 'Saved.' || message === 'Saved version loaded.') {
             setMessage('');
+          }
         }}
       >
         <fieldset disabled={pending}>
+          <StorytellerSelect
+            value={content.storyteller ?? null}
+            onChange={(storyteller) => setContent({ ...content, storyteller })}
+          />
           <label htmlFor="title">
             Title <small>(optional)</small>
           </label>
@@ -171,14 +196,7 @@ export function DraftEditor({
           <button type="submit">{pending ? 'Saving…' : 'Save draft'}</button>
         </fieldset>
       </form>
-      <p role="status">
-        {message ||
-          (dirty
-            ? 'Unsaved changes.'
-            : saved
-              ? 'All changes saved.'
-              : 'Not saved yet.')}
-      </p>
+      <p role="status">{message || saveStatus}</p>
       {conflict && (
         <div>
           <a href={`/stories/${id}`} target="_blank" rel="noopener noreferrer">
@@ -202,8 +220,9 @@ export function DraftEditor({
       <a
         href="/stories"
         onClick={(event) => {
-          if (dirty && !window.confirm('Leave without saving your changes?'))
+          if (dirty && !window.confirm('Leave without saving your changes?')) {
             event.preventDefault();
+          }
         }}
       >
         Back to your stories

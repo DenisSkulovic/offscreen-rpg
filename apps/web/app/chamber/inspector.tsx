@@ -173,6 +173,14 @@ export function ChamberInspectorPanel(args: {
             ) : (
               <p>No generation provenance on this passage.</p>
             )}
+            {inspection.storyteller ? (
+              <>
+                <h2>Storyteller context and continuity</h2>
+                <dl>
+                  <JsonValue value={inspection.storyteller} />
+                </dl>
+              </>
+            ) : null}
             <h2>Active resolution</h2>
             {inspection.resolution ? (
               <dl>

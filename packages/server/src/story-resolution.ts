@@ -1,3 +1,4 @@
+import { admitStorytellerResolution } from './storyteller-admission';
 import { isDeepStrictEqual } from 'node:util';
 import {
   generatedStorytellerOutputSchema,
@@ -91,6 +92,15 @@ export function createStoryResolution(database: Database) {
           ownerId,
           storyId: id,
         });
+        if (current.storyteller != null) {
+          await admitStorytellerResolution(tx, {
+            current,
+            operationId: admittedOperationId,
+            expectedRevision,
+            submission: parsedSubmission.data,
+          });
+          return;
+        }
         const [existingOperation] = await tx
           .select()
           .from(storyResolution)

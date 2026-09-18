@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   pgTable,
   uuid,
+  integer,
   text,
   jsonb,
   timestamp,
@@ -18,6 +19,7 @@ export const generation = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'restrict' }),
     kind: text('kind').notNull(),
+    statusRevision: integer('status_revision').notNull().default(0),
     input: jsonb('input').notNull().$type<unknown>(),
     state: text('state')
       .notNull()

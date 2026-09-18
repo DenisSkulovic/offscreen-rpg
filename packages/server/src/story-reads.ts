@@ -1,5 +1,13 @@
 import {
+  storytellerProfileSchema,
+  storytellerSummary,
+} from '@offscreen/ai/storytellers';
+import { executionPolicySchema } from '@offscreen/ai/storyteller-policy';
+import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { storyListSchema } from '@offscreen/contracts/stories';
+import {
   storyHistorySchema,
+  passageContentSchema,
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
@@ -9,7 +17,7 @@ import {
   storyPassage,
   storyResolution,
 } from '@offscreen/db/story-schema';
-import { and, desc, eq, lt, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, lt, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { StoryError, parseStoryIdentifier } from './story-errors';
 import { decisionPlanSchema, waitPlanSchema } from './story-plans';
@@ -57,12 +65,84 @@ function publicResolutionState(
   return { state };
 }
 
+function listStoryStatus(row: {
+  wait: unknown;
+  remaining: number | null;
+  interaction: unknown;
+}) {
+  if (row.wait) {
+    return row.remaining === null ? 'Waiting' : 'Paused';
+  }
+  return row.interaction ? 'A choice awaits' : 'Concluded';
+}
+
 export function createStoryReads(database: Database) {
   return {
+    async listStories({
+      ownerId,
+      before,
+    }: {
+      ownerId: string;
+      before?: string;
+    }) {
+      let boundary;
+      if (before) {
+        const [row] = await database.db
+          .select()
+          .from(story)
+          .where(
+            and(
+              eq(story.id, parseStoryIdentifier(before)),
+              eq(story.ownerId, ownerId),
+            ),
+          );
+        if (!row) {
+          throw new StoryError('not_found');
+        }
+        boundary = or(
+          lt(story.createdAt, row.createdAt),
+          and(eq(story.createdAt, row.createdAt), lt(story.id, row.id)),
+        );
+      }
+      const rows = await database.db
+        .select({
+          id: story.id,
+          profile: story.storyteller,
+          content: storyPassage.content,
+          interaction: storyPassage.interaction,
+          wait: storyPassage.waitPlan,
+          remaining: storyPassage.remainingMs,
+        })
+        .from(story)
+        .innerJoin(
+          storyPassage,
+          and(
+            eq(storyPassage.storyId, story.id),
+            eq(storyPassage.sequence, story.revision),
+          ),
+        )
+        .where(and(eq(story.ownerId, ownerId), boundary))
+        .orderBy(desc(story.createdAt), desc(story.id))
+        .limit(21);
+      return storyListSchema.parse({
+        items: rows.slice(0, 20).map((row) => ({
+          id: row.id,
+          title: passageContentSchema.parse(row.content).title,
+          storyteller:
+            row.profile == null
+              ? null
+              : storytellerSummary(storytellerProfileSchema.parse(row.profile)),
+          status: listStoryStatus(row),
+        })),
+        nextBefore: rows.length > 20 ? rows[19]?.id : null,
+      });
+    },
     async readSnapshot({ ownerId, storyId }: OwnedStory) {
       const [row] = await database.db
         .select({
           id: story.id,
+          storyteller: story.storyteller,
+          execution: story.execution,
           revision: story.revision,
           viewVersion: story.viewVersion,
           items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
@@ -76,7 +156,12 @@ export function createStoryReads(database: Database) {
           intervalVersion: storyPassage.intervalVersion,
           controlRevision: storyPassage.controlRevision,
           remainingMs: storyPassage.remainingMs,
+          usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
           resolutionState: generation.state,
+          resolutionVersion: generation.statusRevision,
+          failureCode: generation.failureCode,
+          publicationState: storytellerPublication.state,
+          publicationFailure: storytellerPublication.failureCode,
         })
         .from(story)
         .innerJoin(
@@ -95,6 +180,10 @@ export function createStoryReads(database: Database) {
           ),
         )
         .leftJoin(generation, eq(generation.id, storyResolution.generationId))
+        .leftJoin(
+          storytellerPublication,
+          eq(storytellerPublication.generationId, generation.id),
+        )
         .where(
           and(
             eq(story.id, parseStoryIdentifier(storyId)),
@@ -106,9 +195,20 @@ export function createStoryReads(database: Database) {
       }
       return storySnapshotSchema.parse({
         id: row.id,
+        storyteller:
+          row.storyteller == null
+            ? null
+            : storytellerSummary(
+                storytellerProfileSchema.parse(row.storyteller),
+              ),
+        sourceMode:
+          row.execution == null
+            ? 'scripted'
+            : executionPolicySchema.parse(row.execution).mode,
         revision: row.revision,
         viewVersion: row.viewVersion,
         items: row.items,
+        usage: row.usage,
         decision:
           row.decisionPlan === null
             ? null
@@ -136,7 +236,22 @@ export function createStoryReads(database: Database) {
           content: row.content,
           interaction: row.interaction,
         },
-        resolution: publicResolutionState(row.resolutionState ?? null),
+        resolution:
+          row.resolutionState === null
+            ? null
+            : {
+                ...publicResolutionState(row.resolutionState),
+                state:
+                  row.publicationState === 'blocked' ||
+                  row.publicationState === 'stale'
+                    ? 'blocked'
+                    : publicResolutionState(row.resolutionState)?.state,
+                version: row.resolutionVersion ?? 0,
+                reason: row.publicationFailure ?? row.failureCode,
+                canRetry:
+                  row.publicationState === 'blocked' ||
+                  row.resolutionState === 'failed',
+              },
       });
     },
 

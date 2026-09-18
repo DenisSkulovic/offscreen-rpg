@@ -1,3 +1,5 @@
+import { storytellerKind } from './storyteller-records';
+import { startStorytellerCandidate } from './storyteller-start';
 import {
   playableOpeningArtifactSchema,
   playablePresentation,
@@ -50,6 +52,15 @@ export function createStoryStart(database: Database) {
         .where(eq(generation.id, generationId));
       if (!candidate || candidate.ownerId !== ownerId) {
         throw new StoryError('not_found');
+      }
+      if (candidate.kind === storytellerKind) {
+        await startStorytellerCandidate(tx, {
+          ownerId,
+          storyId: id,
+          expectedDraftRevision,
+          candidate,
+        });
+        return;
       }
       const artifact = playableOpeningArtifactSchema.safeParse(candidate.input);
       if (!artifact.success) {

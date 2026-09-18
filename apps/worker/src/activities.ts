@@ -1,3 +1,5 @@
+import type { createStorytellerRuntime } from '@offscreen/server/storyteller-runtime';
+import type { StorytellerActivities } from '@offscreen/workflows/contracts';
 import { ApplicationFailure } from '@temporalio/client';
 import { GenerationError } from '@offscreen/server/generations';
 import type { createScriptedOpenings } from '@offscreen/server/scripted-openings';
@@ -35,15 +37,24 @@ function mapStoryActivityError(
 }
 
 export function createWorkerActivities(collaborators: {
+  storyteller: ReturnType<typeof createStorytellerRuntime>;
   stories: ReturnType<typeof createStories>;
   openings: ReturnType<typeof createScriptedOpenings>;
   continuations: ReturnType<typeof createScriptedContinuations>;
-}): OpeningActivities &
+}): StorytellerActivities &
+  OpeningActivities &
   ContinuationActivities &
   IntervalActivities &
   DecisionActivities {
   const { stories, openings, continuations } = collaborators;
   return {
+    async completeStoryteller(id) {
+      try {
+        await collaborators.storyteller.complete(id);
+      } catch (error) {
+        mapOpeningActivityError(error);
+      }
+    },
     async resolveStoryDecision(id) {
       try {
         return await stories.resolveDecision({ passageId: id });

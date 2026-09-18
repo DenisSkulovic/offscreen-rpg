@@ -21,6 +21,9 @@ export const story = pgTable(
       .references(() => user.id, { onDelete: 'restrict' }),
     source: text('source').notNull(),
     premise: jsonb('premise').$type<unknown>(),
+    storyteller: jsonb('storyteller').$type<unknown>(),
+    execution: jsonb('execution').$type<unknown>(),
+    continuityNotes: jsonb('continuity_notes').$type<unknown>(),
     revision: integer('revision').notNull().default(1),
     viewVersion: integer('view_version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })

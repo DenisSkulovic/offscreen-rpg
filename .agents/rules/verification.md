@@ -1,18 +1,14 @@
-# Verification on this laptop
+# Verification during the POC phase
 
-The owner's Windows laptop is slow and resource constrained. Test selection is engineering work; a full-suite run is not the default.
+The owner explicitly made checks optional on 2026-09-18. We are shaping a pre-POC system, not preparing a production release. Prioritize useful implementation, sound design and the owner's time and usage budget. This policy remains in force until the owner explicitly asks to change it for a later lifecycle stage.
 
-- Inspect the affected code and callers, then choose the smallest checks that cover the changed behavior and its real risks. State that selection in the feature plan or briefly in the work update.
-- Batch a coherent phase of edits before running checks. Do not rerun typechecks, builds and suites after every file edit.
-- Prefer file-scoped lint/format checks, a package build or typecheck, and selected behavioral tests. Avoid both build and typecheck when the build already checks the same TypeScript.
-- Run heavyweight commands sequentially. Use bounded concurrency (for example Turbo --concurrency=1) when several packages must build. Avoid background watchers and duplicate servers during checks; stop processes started for the task.
-- Broaden validation for changed shared contracts, cross-package behavior, persistence/races or release readiness. Explain the additional coverage first. A broad integration run can be warranted; laziness about finding a smaller command is not a reason.
-- Inspect package scripts and test setup before filtering. Test files may only export helpers, and a parent test can still initialize PostgreSQL, Temporal and a browser despite a name filter. Do not invent a supposedly targeted command. If safe isolation is unavailable, disclose that and choose a deliberate integration run or a bounded review.
-- Tests consuming compiled dist files require a fresh affected build; do not report stale test results as verification of source edits.
-- Do not install replacement test frameworks, weaken checks or skip essential correctness checks merely to save time. Report checks not run and the resulting uncertainty.
-- Once checks pass, repeat only for subsequent relevant changes, a failure or unresolved concern. Reuse valid results for the same revision.
-- Ordinary tests must make no paid provider calls. Inspect call paths before execution and apply [Spending](spending.md).
+- Tests, builds, typechecks, lint, formatting checks, documentation validators and other verification commands are optional. Do not run them routinely or treat green results as a completion gate. Default to no check commands unless requested or a small targeted check directly helps resolve a concrete implementation problem.
+- Do not spend substantial time or tokens adding tests, expanding coverage, chasing green results or fixing one or two minor issues. Record minor issues briefly for later and hand back the useful work. Do not keep working merely to make every check pass.
+- Cross-package changes, persistence work and feature size do not automatically override this policy. Do not invent production-readiness requirements for the current phase or repeatedly ask permission to skip checks.
+- Read the code thoughtfully and preserve good architecture. Optional verification is not permission to claim untested behavior was verified, conceal known problems or remove existing tests to manufacture success. State skipped checks briefly when relevant, without a lengthy disclaimer.
+- If checks are useful or requested, batch them after the code changes and choose the smallest useful scope. Run heavyweight commands sequentially with bounded concurrency. Avoid broad suites, repeated builds, watchers and unrelated cleanup; stop processes started for the task.
+- Inspect scripts before filtering. Tests using compiled dist files need a fresh affected build if they are run; never report stale results as verification of new source.
+- Docs/rules-only changes do not require a documentation validator. Skill edits do not require a frontmatter validator. No blanket formatting or repository-wide autofixes.
+- Spending, credential protection and authorization rules still apply. Ordinary checks must make no paid provider calls; see [Spending](spending.md).
 
-For docs/rules-only edits, run python scripts/check_docs.py and inspect the diff; no application rebuild is needed. For a changed skill, also run its available frontmatter validator. For code, use the existing [development commands](../../docs/development.md), with file/package selection where genuinely supported.
-
-Do not run blanket pnpm format or repository-wide autofixes. Formatting owns only the changed files. Full lint:quality remains an optional audit of existing debt, not an excuse to repair unrelated files.
+This policy takes precedence over check/completion requirements in feature plans, templates and engineering guidance. Update the policy only when the owner requests a lifecycle change, not because an agent decides the project should be production-ready.

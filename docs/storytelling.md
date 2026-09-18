@@ -24,7 +24,7 @@ The storyteller may prepare an interruption when an intention is selected. That 
 
 The storyteller invents within the fiction; the application enforces ownership of player actions, timing, budgets and consistent application of outcomes. Model prose alone cannot authorize spending the same coins twice or applying an already resolved action again.
 
-Established traits and facts constrain plausible outcomes. Chance may contribute to uncertain actions, but the specific character and dice rules remain open. Story pacing and action success are separate judgments: finding an encounter is not automatically failing a travel check.
+Established traits and facts constrain plausible outcomes. D&D-style checks are mandatory for supported uncertain actions; the DM proposes challenges and code resolves them under the [game rules](game-rules.md). Story pacing and action success are separate judgments: finding an encounter is not automatically failing a travel check.
 
 In shared play, interpret characters' intentions together where they interact. Do not let the fastest player dictate every other character's behavior. The method of collecting conflicting intentions is to be chosen before implementing shared decision resolution.
 
@@ -37,3 +37,11 @@ Continuing life is a target experience: a character can remain in the same world
 ## First playable scope
 
 Demonstrate contextual choices, ordinary intervals, a meaningful interruption, consequences, a remembered detail and a coherent conclusion. Use a few understandable storytelling styles. Multiple autonomous agents are a possible implementation technique, not a product requirement or a reason to add extra calls.
+
+## Selected storyteller POC contract
+
+The approved solo POC selects a versioned storyteller profile before opening generation. Profiles are JSON content over shared task preparation and execution. Opening and continuation are separate bounded tasks, each proposing a coherent scene/offer and source-backed continuity changes in one result. The implemented rehearsal uses 2–5 distinct offered intentions, no free-text actions or automatic life ending. The next design replaces that fixed minimum with situation-dependent breadth and supported mechanical action contracts; see [game rules](game-rules.md). Inactivity admits no new generation; an accepted prepared interval may finish once. Implementation status remains in progress.md.
+
+## Evolving the DM during play
+
+[Storyteller settings](storyteller-settings.md) define switching presets, custom tags and guidance, effective boundaries and locked campaigns. Presets guide a shared DM runtime; they are not permanent character identities or permission to rewrite history. The [rules and activity pipeline](technical/rules-and-activities.md) separates adjudication, dice, effects and narrative/option composition without requiring one agent per responsibility.

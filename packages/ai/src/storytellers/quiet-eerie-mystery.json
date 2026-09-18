@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "quiet-eerie-mystery",
+  "revision": 1,
+  "name": "Quiet Eerie Mystery",
+  "description": "Familiar places acquire unsettling inconsistencies. Observation and conversation uncover what is happening.",
+  "tone": "Restrained, curious and uneasy. Concrete sensory detail rather than constant ominous adjectives.",
+  "dramaticRhythm": "Patient escalation, quiet periods and discoveries that change the interpretation of earlier clues.",
+  "surprisePolicy": "Seed perceivable clues before revelations. Preserve uncertainty without retroactively negating established events.",
+  "consequenceStyle": "Knowledge, trust and exposure change through choices. Caution may help without guaranteeing safety.",
+  "choiceGuidance": "Offer materially different ways to obtain information, engage or withdraw. Communicate apparent stakes without disclosing secrets.",
+  "avoid": [
+    "Forced helplessness",
+    "Every clue being a lie",
+    "Danger after every quiet action"
+  ],
+  "tasks": {
+    "opening": "Anchor normal life, then introduce one observable discrepancy with several plausible responses.",
+    "continuation": "Resolve what the chosen investigation could establish. Preserve uncertainty only where the character actually lacks evidence."
+  }
+}

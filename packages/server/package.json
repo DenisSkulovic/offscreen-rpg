@@ -34,6 +34,22 @@
     "./chamber": {
       "types": "./dist/chamber.d.ts",
       "default": "./dist/chamber.js"
+    },
+    "./storyteller-runtime": {
+      "types": "./dist/storyteller-runtime.d.ts",
+      "default": "./dist/storyteller-runtime.js"
+    },
+    "./storyteller-openings": {
+      "types": "./dist/storyteller-openings.d.ts",
+      "default": "./dist/storyteller-openings.js"
+    },
+    "./storyteller-budget": {
+      "types": "./dist/storyteller-budget.d.ts",
+      "default": "./dist/storyteller-budget.js"
+    },
+    "./storyteller-config": {
+      "types": "./dist/storyteller-config.d.ts",
+      "default": "./dist/storyteller-config.js"
     }
   },
   "scripts": {

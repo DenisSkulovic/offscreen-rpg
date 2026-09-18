@@ -1,4 +1,11 @@
 import {
+  storytellerTaskSchema,
+  storytellerResultSchema,
+  publishedStorytellerSlice,
+} from '@offscreen/ai/storyteller-tasks';
+import { storytellerProfileSchema } from '@offscreen/ai/storytellers';
+import { continuityNotesSchema } from '@offscreen/ai/continuity';
+import {
   generatedStorytellerOutputSchema,
   generationSourcePartSchema,
   playableContinuationArtifactSchema,
@@ -76,10 +83,12 @@ function inspectGeneration(row: {
   const artifact = playableOpeningArtifactSchema.safeParse(row.input);
   let published: ReturnType<typeof publishedPlayableFromGeneration> | null;
   try {
-    published = publishedPlayableFromGeneration({
-      output: row.output,
-      sourcePart: row.sourcePart,
-    });
+    published = storytellerResultSchema.safeParse(row.output).success
+      ? publishedStorytellerSlice(row.output, row.sourcePart)
+      : publishedPlayableFromGeneration({
+          output: row.output,
+          sourcePart: row.sourcePart,
+        });
   } catch {
     published = null;
   }
@@ -116,6 +125,8 @@ export function createChamberInspector(database: Database) {
         .select({
           createdAt: story.createdAt,
           source: story.source,
+          storyteller: story.storyteller,
+          continuityNotes: story.continuityNotes,
           sequence: storyPassage.sequence,
           transitionId: storyPassage.transitionId,
           responseSource: storyPassage.responseSource,
@@ -220,6 +231,22 @@ export function createChamberInspector(database: Database) {
         activeResolution?.generationOutput,
       );
       return chamberInspectorSchema.parse({
+        storyteller:
+          current.storyteller == null
+            ? null
+            : {
+                profile: storytellerProfileSchema.parse(current.storyteller),
+                notes: continuityNotesSchema.parse(
+                  current.continuityNotes ?? [],
+                ),
+                context: storytellerTaskSchema.safeParse(
+                  activeResolution?.generationInput,
+                ).success
+                  ? storytellerTaskSchema.parse(
+                      activeResolution?.generationInput,
+                    ).context
+                  : null,
+              },
         story: {
           id: snapshot.id,
           source: current.source,

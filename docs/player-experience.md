@@ -38,7 +38,7 @@ At a meaningful decision, present a small set of distinct contextual options. Th
 
 Selecting an option commits an intention. Show that it was received; do not leave an apparently clickable choice while its result is being prepared. Some consequences follow immediately, while others begin an interval during which the player can leave. Authenticated live stories at `/play/:id` now show a saved journey wait against the server deadline, including Pause/Resume when the interval is controllable. Reloading does not restart that wait.
 
-Agency between offered decisions needs deliberate limits. The player should understand whether they can change course now, and what doing so means. Free-text intervention is still an open scope choice. Neither repeated clicks nor reloading should produce free rerolls, duplicate actions or endless regeneration of suggestions. Rate limits can protect resources, but must not disguise whether a meaningful action is available.
+Agency between offered decisions needs deliberate limits. The player should understand whether they can change course now, and what doing so means. The POC uses pre-generated contextual options, with no free-text gameplay intervention; premise and storytelling direction remain text during setup. Neither repeated clicks nor reloading should produce free rerolls, duplicate actions or endless regeneration of suggestions. Rate limits can protect resources, but must not disguise whether a meaningful action is available.
 
 Quiet time is a valid experience. We should not manufacture choices merely because the player keeps the browser open. Pause, current progress and the expectation for the next update should remain understandable.
 

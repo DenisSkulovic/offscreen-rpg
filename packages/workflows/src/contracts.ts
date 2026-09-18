@@ -25,3 +25,9 @@ export interface DecisionActivities {
 }
 export const decisionWorkflowType = 'storyDecisionV1';
 export const decisionWorkflowId = (id: string) => `story-decision/${id}`;
+
+export interface StorytellerActivities {
+  completeStoryteller(id: string): Promise<void>;
+}
+export const storytellerWorkflowType = 'storytellerV1';
+export const storytellerWorkflowId = (id: string) => `storyteller/${id}`;

@@ -11,6 +11,7 @@ import type {
   IntervalActivities,
   DecisionActivities,
   ContinuationActivities,
+  StorytellerActivities,
 } from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
@@ -46,10 +47,17 @@ export async function storyIntervalV2(id: string): Promise<void> {
   while (true) {
     const observed = wakeVersion;
     const remaining = await advanceControlledInterval(id);
-    if (remaining === null) return;
-    if (observed !== wakeVersion) continue;
-    if (remaining < 0) await condition(() => observed !== wakeVersion);
-    else await condition(() => observed !== wakeVersion, remaining);
+    if (remaining === null) {
+      return;
+    }
+    if (observed !== wakeVersion) {
+      continue;
+    }
+    if (remaining < 0) {
+      await condition(() => observed !== wakeVersion);
+    } else {
+      await condition(() => observed !== wakeVersion, remaining);
+    }
   }
 }
 
@@ -61,7 +69,9 @@ const { advanceStoryInterval } = proxyActivities<IntervalActivities>({
 export async function storyIntervalV1(id: string): Promise<void> {
   while (true) {
     const remaining = await advanceStoryInterval(id);
-    if (remaining === null) return;
+    if (remaining === null) {
+      return;
+    }
     await sleep(remaining);
   }
 }
@@ -73,7 +83,24 @@ const { resolveStoryDecision } = proxyActivities<DecisionActivities>({
 export async function storyDecisionV1(id: string): Promise<void> {
   while (true) {
     const remaining = await resolveStoryDecision(id);
-    if (remaining === null) return;
+    if (remaining === null) {
+      return;
+    }
     await sleep(remaining);
   }
+}
+
+const { completeStoryteller } = proxyActivities<
+  import('./contracts').StorytellerActivities
+>({
+  startToCloseTimeout: '3 minutes',
+  retry: {
+    initialInterval: '2 seconds',
+    maximumInterval: '30 seconds',
+    maximumAttempts: 5,
+  },
+});
+// Redelivery retries execution bookkeeping/publication, never an uncertain paid dispatch.
+export async function storytellerV1(id: string): Promise<void> {
+  await completeStoryteller(id);
 }

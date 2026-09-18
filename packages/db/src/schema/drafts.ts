@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   pgTable,
+  jsonb,
   uuid,
   text,
   integer,
@@ -17,6 +18,7 @@ export const storyDraft = pgTable(
     ownerId: text('owner_id')
       .notNull()
       .references(() => user.id, { onDelete: 'restrict' }),
+    storyteller: jsonb('storyteller').$type<unknown>(),
     title: text('title').notNull(),
     premise: text('premise').notNull(),
     storytellingDirection: text('storytelling_direction').notNull(),

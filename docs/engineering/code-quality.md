@@ -110,11 +110,11 @@ Before calling an implementation slice complete, answer:
 4. Are error/retry/cancellation paths understandable, and are the important behavior changes actually tested?
 5. Are public contracts, docs and the reported implementation boundary accurate?
 
-`pnpm lint`, type checking, formatting and relevant tests remain required. `pnpm lint:quality` adds braces, nested-ternary and non-null-assertion checks. It is an opt-in full-repository audit and can fail on untouched existing code; it is not a CI gate. Refactor-touched handwritten files are expected to pass it. Do not disable rules or bulk-autofix the baseline to claim adoption. Check changed implementation files against the quality config and report existing violations separately. Most design rules still require reading the diff; no tool certifies maintainability.
+Tests, builds, type checking, lint and formatting checks are optional during the current POC lifecycle. `pnpm lint:quality` is an optional audit, not a completion gate for touched files or the repository. Do not spend time resolving minor lint issues or bulk-autofixing existing debt to claim green results. Keep design clear and report known limitations honestly; no tool certifies maintainability.
 
 Existing code may still violate these standards. Review each touched boundary; do not interpret extraction into files as proof of separation. Substantial redesign follows the feature workflow, with explicit intentional behavior changes.
 
-Choose verification using [the laptop-aware verification rule](../../.agents/rules/verification.md). Required relevant checks are batched at phase boundaries; the commands above are not a demand to run every repository-wide command after every edit.
+Choose verification using [the laptop-aware verification rule](../../.agents/rules/verification.md). Default to no routine check commands. If checks are requested or directly useful for a concrete problem, batch the smallest useful selection after the code. This POC policy remains until the owner explicitly changes it.
 
 ## Sources and adaptation
 

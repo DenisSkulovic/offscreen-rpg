@@ -1,3 +1,4 @@
+import { readStorytellerWorkerOptions } from '@offscreen/server/storyteller-config';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { readWorkerConfig } from './config';
 import { startRuntime } from './runtime';
@@ -14,8 +15,11 @@ async function main() {
   };
   try {
     await database.checkConnection();
-    runtime = await startRuntime(database, readWorkerConfig(process.env), () =>
-      console.error('Outbox delivery failed; notice retained for retry'),
+    runtime = await startRuntime(
+      database,
+      readWorkerConfig(process.env),
+      () => console.error('Outbox delivery failed; notice retained for retry'),
+      readStorytellerWorkerOptions(process.env),
     );
     process.once('SIGINT', stop);
     process.once('SIGTERM', stop);

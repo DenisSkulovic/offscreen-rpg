@@ -1,3 +1,5 @@
+import { storyListSchema } from '@offscreen/contracts/stories';
+import { LiveStoryList } from './live-story-list';
 import Link from 'next/link';
 import { draftListSchema } from '@offscreen/contracts/drafts';
 import { apiOrigin, requireViewer } from './viewer';
@@ -12,7 +14,18 @@ export default async function Stories() {
     cache: 'no-store',
     signal: AbortSignal.timeout(5000),
   });
-  if (!response.ok) throw new Error('Drafts could not be loaded');
+  if (!response.ok) {
+    throw new Error('Drafts could not be loaded');
+  }
+  const liveResponse = await fetch(`${apiOrigin()}/api/stories`, {
+    headers: { cookie },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!liveResponse.ok) {
+    throw new Error('Stories could not be loaded');
+  }
+  const liveStories = storyListSchema.parse(await liveResponse.json());
   return (
     <main>
       <SessionRefresh />
@@ -21,6 +34,7 @@ export default async function Stories() {
       <Link className="button" href="/stories/new">
         New story
       </Link>
+      <LiveStoryList initial={liveStories} />
       <DraftList initial={draftListSchema.parse(await response.json())} />
       <p>
         <Link href="/chamber">Open the scripted testing chamber</Link>

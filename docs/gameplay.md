@@ -4,7 +4,7 @@ The working approach is one generic progression flow. Walking, noticing a tower,
 
 ## From intention to continuation
 
-The storyteller receives the current situation, relevant memories, character traits and campaign settings. It offers possible intentions or interprets the player's action, estimates duration and prepares a short continuation.
+The storyteller receives the current situation, relevant memories, character capabilities and campaign settings. It offers contextual intentions. Supported rules adjudicate a selected attempt and commit its checks and effects; the storyteller narrates those results. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
 
 Time passes. A quiet interval can finish, or a development can interrupt it. The player may respond, delegate or pause; the scope of changing direction between offered choices remains open. A choice can resolve the situation or lead to another stage. Nonresponse uses a permitted character fallback rather than requiring constant attention. In shared play, interacting intentions must resolve into a common, coherent consequence.
 
@@ -12,7 +12,7 @@ One passage might summarize a calm day, while a dangerous encounter unfolds thro
 
 An extended ordinary life is a target playthrough, not filler between mandatory plot twists. The player may repeat a chosen intention, save for equipment, revisit familiar people and observe gradual changes over real days. Resource changes and any supported skill progression must be recorded consistently, but the exact progression rules remain open. Professions and activities are examples of content; they do not each require a dedicated simulation subsystem. The finite testing chamber does not decide the lifetime or dramatic density of the eventual character experience.
 
-Interaction presentation should be able to evolve without redefining story progression. A situation may offer a few choices today and a different form of input later. The first testing chamber uses single selection from a variable-length set; it does not establish a fixed number of options for the product. Text, multiple selection and image-based interaction remain possibilities, each requiring a clear meaning and validation before becoming supported behavior. Player input expresses an intention; it does not directly supply the resulting world changes.
+Interaction presentation should be able to evolve without redefining story progression. The POC uses single selection from pre-generated contextual options, with no free-text gameplay actions; the set may vary with the situation. Different interaction forms can be considered after this POC, each requiring a clear meaning and validation before becoming supported behavior. Player input expresses an intention; it does not directly supply the resulting world changes.
 
 ## What the game remembers
 
@@ -26,7 +26,7 @@ Important people and objects need consistent identity across appearances. Incide
 
 ## Judgment and chance
 
-The storyteller judges plausibility, costs and consequences in context. A small D&D-style character/check system may help uncertain actions feel consistent; its exact scope is open.
+The storyteller judges plausibility, costs and consequences in context. D&D mechanics are a required foundation: character abilities, skill checks, dice and persistent effects determine supported uncertain outcomes. The selected POC subset and visible-roll experience are defined in [game rules](game-rules.md).
 
 Whether an action succeeds and whether an interesting encounter occurs are different questions. Not every mundane action needs a roll. When a roll determines something, its result should constrain the story rather than be ignored or repeatedly rerolled.
 

@@ -1,124 +1,53 @@
 # Storyteller runtime and model routing
 
-The storyteller is application code, versioned instructions, selected context, model inference and validated tools working together. Database rows hold preferences, facts and run records; they are not by themselves an agent. Likewise, adding LangGraph does not define a coherent storyteller.
+A storyteller is a versioned content profile over shared application capabilities. It is not an agent instance or a provider/model selection. The runtime currently has two bounded generation tasks, opening and continuation, surrounded by deterministic context assembly, validation, accounting and publication. Additional agents, tools or summarization tasks can be introduced behind these boundaries when a concrete task needs them; no graph framework or autonomous loop is required for this slice.
 
-## Offline playable proposal component
+## Profile and task contracts
 
-`@offscreen/ai/playable` prepares opening and continuation requests without provider, database or workflow I/O. Opening output remains version-1 `PlayableProposal`: bounded scene prose and either an explicit end or a choice offer. New continuation output is version-2 `ContinuationResult`: the same immediate `choice`/`end` shapes, or one `interval` with fictional `gameDurationMs` and a single prepared arrival whose `next` is `choice` or `end`. An interval cannot also expose a current actionable interaction. Each option has a local ID, visible label and a plain-language intention. Intention is creative input for a later resolution, not executable code, a guaranteed success or permission to change state. Storyteller output must not include real waiting duration, deadlines or pace. The current bound of 1–12 options limits output size; it does not establish a universal product choice count.
+`packages/ai/src/storytellers/` contains JSON definitions. The private catalogue validates identity/revision, public description, tone, pacing, choice guidance, continuity guidance, creative limits and per-task guidance. Public catalogue responses expose metadata only. Adding another supported storyteller means supplying data and registering it in the catalogue; generic runtime code does not branch on profile identity. The explicitly scripted rehearsal source has authored profile-specific scenes and is not an inference implementation.
 
-`playablePresentation` adapts validated prose and labels to the existing presentation contract. The application must retain the full accepted proposal, including intentions, when this is connected. `preparePlayableContinuation` checks that the supplied proposal matches the current scene and published offer, validates the submitted option, and captures that option's intention with the current prose, items and premise. It carries story/revision/interaction references in its private artifact; those control references are not sent in model messages. Inputs are copied and the artifact is deeply frozen. The caller must load those inputs consistently from authorized storage and recheck state at commit; this pure component cannot establish either condition.
+A draft stores an optional profile reference. Admission resolves that reference and freezes the full profile in an immutable task artifact. Start copies the reviewed candidate's profile and execution policy to the story. Later catalogue edits cannot alter an admitted generation or existing story automatically. Planned explicit [settings revisions](story-settings.md) allow mid-story customization while retaining immutable task snapshots. Changing a draft's profile increments its revision and invalidates an older candidate. Legacy stories retain null profile fields and their original durable task names.
 
-Unknown fields, duplicate option IDs, empty offers and unoffered/stale submissions fail validation. Task validation requires a choice for an opening; only a continuation may propose an explicit ending. `publishedPlayableFromGeneration` recovers the exact published scene/offer from generation output plus a declared source part (`current`, `arrival`, or null for legacy v1). It does not infer the part from prose or option IDs. Continuation preparation still requires a current playable offer, so it rejects journeys and timed decisions. Version-2 output may propose one later interval; that is fictional duration, not an application clock or real wait. The component still has no effects, map, recall retrieval, arbitrary future trees or group policy. Prompts instruct the source to preserve known facts and avoid claiming unsupported changes; schema validation cannot prove that prose complies. Such contradictions are evaluation failures, not validated game state.
+`storyteller-tasks.ts` prepares `inputVersion: 2`, `promptVersion: storyteller.v1` artifacts for the `storyteller.profiled.v1` durable kind/topic. The artifact contains source fences, full profile, execution policy, bounded context, its manifest and exact model request. Only task-relevant instructions and profile guidance are assembled. The model sees local evidence handles, not database identifiers. Premise, fictional dialogue and retrieved prose are data below application authority. Schema validation does not prove resistance to prompt injection or semantic correctness.
 
-Fake-output tests exercise these boundaries and non-human premises without inference. Draft-to-candidate persistence is connected: a saved draft can request a deterministic playable opening, store the full proposal including intentions, and present only scene/choice labels. Explicit Start converts that accepted candidate into live passage 1, retaining generation provenance so hidden intentions stay server-side, and freezes the locked draft content as story-owned premise JSON. Selecting a generated option admits `continuation.playable.scripted.v1` through the ordinary generation/outbox/Temporal path. New continuation prepares store `promptVersion: playable.v2`; persisted `playable.v1` continuation artifacts remain readable. A deterministic fake result is validated and committed only while the story still matches the frozen resolution. Immediate v2 output publishes a playable scene; timed v2 output publishes the in-progress current part and an ordinary wait plan. Arrival later stores the same generation id with part `arrival`, so the next generic resolution recovers that arrival's hidden intention. The existing chamber still uses its authored resolver. Existing opening-prose preview records keep their own contract; they are not silently reinterpreted as playable proposals. Persisted v1 `PlayableProposal` records keep their meaning.
+The version-1 result envelope contains a scene plus separate current/arrival note patches. Opening scenes use playable v1; continuation scenes use v2 and can publish a choice or one prepared interval. The profiled POC requires 2–5 choices with distinct normalized labels and IDs, forbids automatic life ending, and never accepts a free-text gameplay command. The selected published intention is recovered server-side from generation provenance, including the current/arrival source part. Labels and intentions are attempts, not guaranteed outcomes or permission to mutate resources.
 
-## Initial orchestration
+## Context and continuity
 
-The implemented `@offscreen/ai/opening` component prepares and validates an opening request without database, HTTP, provider or workflow dependencies. It accepts a saved draft with a nonblank premise and captures its exact content and source revision. A blank title or direction is allowed. Saving an incomplete draft remains valid; preparing it for inference has a stronger prerequisite.
+Admission holds the story lock while reading the premise, current passage, selected intention, possessions, private notes and relevant committed evidence. The bounded policy retains every note's evidence and the current passage, then includes up to six optional recent passages while the complete serialized request fits 48 KiB. Missing evidence and mandatory overflow fail closed. The artifact records the recent window and omitted optional sequences; all earlier history is not replayed into each request. The server query is scoped to this story and its admitted revision. Prepared futures are never retrieved as committed evidence.
 
-The request has stable application instructions and a separate JSON-encoded user message containing only title, premise and direction. Draft identity, ownership and revision are not sent to the model. This separation prevents application code from promoting player text into system instructions; it does not prove that a model will resist prompt injection or faithfully follow the premise.
+There are at most 20 derived notes, each at most 400 characters and four evidence sources. A result can create, update or retire up to eight notes in each publication part. Sources must resolve to supplied evidence or the permitted newly published part. Notes cannot authorize inventory, combat, movement or time changes. Their semantic truth still needs evaluation; referencing a passage proves provenance, not that a summary faithfully interprets it.
 
-The active output contract is a `PlayableProposal`: bounded scene prose and a choice with visible labels plus server-only intentions. It accepts no extra application fields: the model cannot supply lifecycle, source revision, effects or deadlines. `playableProposalSchema` supplies both runtime validation and JSON Schema for the eventual adapter. The older prose-only `openingOutputSchema` remains available as a component, not the preview path. Structural validation does not verify narrative quality, premise fidelity or content suitability. Render scene text literally, never as HTML.
+Current prose, notes and narrative revision commit together. Arrival notes commit only with the corresponding arrival passage and actual passage identity. Replay and stale-result fences use the existing story transition machinery. No automatic compression call, embedding store or universal world entity model is introduced.
 
-The active opening generation stores `inputVersion: 1`, `promptVersion: playable.v1` and `task: opening`. Changing generation instructions requires changing the prompt version. The opening application module persists the exact request artifact from `preparePlayableOpening` so recovery does not rebuild it using newer instructions. `playableOpeningArtifactSchema` validates that stored version. The older prose-only `opening.v1` / `openingArtifactSchema` path remains a component contract, not the active preview. The browser displays a persisted scripted playable candidate through the fixture path described in [lifecycle](story-lifecycle.md). Provider calls and repair loops are not implemented.
+## Execution and publication
 
-This candidate can be started as a live first passage. Start maps the accepted generation onto an owned story without inference, timers, possessions or autonomous choices. Authorization, currentness and stale-result checks belong to that application operation. Generated option resolution uses a scripted continuation Activity, not a live provider. New continuation results use the version-2 contract; openings remain version-1 playable proposals.
+The server separates admission, execution, publication, memory and recovery into focused modules. Temporal carries operation identifiers only. A task executes outside database transactions and settles its result before publication under the story lock. The persisted publication record distinguishes pending, published, stale and blocked from the generation's own outcome. Domain validation includes the application timing policy before a transition can be saved.
 
-Use bounded TypeScript steps within Temporal orchestration. Database/context I/O, provider requests and commits execute as Activities, with compact artifact references returned to the workflow:
+Scripted sources are explicitly pure and may be recomputed after an interrupted execution. Provider execution is different: each attempt reserves budget, records dispatch intent, makes at most one request, and atomically saves its known charge and generation outcome. A replay reuses a saved result; a dispatched request whose outcome is unknown is never resent. A publication failure does not discard a successful result or require another paid call.
 
-```text
-create operation -> load snapshot -> assemble context -> reserve budget
-  -> generate proposal (optional bounded retrieval tools)
-  -> validate structure and domain references
-  -> bounded repair if eligible
-  -> conditionally commit or mark stale/blocked
-```
+An explicit recovery receipt retries the same admitted intention. Failed attempts with settled or confirmed-unsent usage may get a new attempt under the same run allowance. Blocked publication retries the saved result. Unknown usage offers read-only refresh and requires operator reconciliation. Retry notices have their own workflow identity while referencing the original generation. Old `opening.playable.scripted.v1` and `continuation.playable.scripted.v1` histories retain their decoders and meaning.
 
-An initial recommendation is at most one repair attempt after the primary proposal, with a total operation budget and wall-time limit. Exact limits are runtime configuration, not scattered constants. Any tool round or model fallback consumes that same operation allowance.
+## Provider and budget boundary
 
-Keep provider-call boundaries explicit so completing a later validation step does not require paying for an earlier successful call again. Store result artifacts before returning from the Activity and look up the operation/attempt on retry. A timeout with unknown provider outcome is a reconciliation case, not an automatic second request. Configure Temporal retry limits alongside SDK limits under the same budget. [Activity timeouts and retries](https://docs.temporal.io/develop/typescript/activities/timeouts).
+The OpenRouter HTTP adapter is constructed explicitly with a credential and opt-in. It accepts one pinned model/provider route, requires structured parameters, disallows route fallback and redirects, bounds output/response bytes and time, and has no internal retries. Its transport is injectable for free tests. Missing usage, ambiguous HTTP outcomes and timeouts retain the reservation and stop further paid admission. Known refusals or malformed output still settle their reported charge.
 
-World creation can require a richer bounded sequence: interpret premise/preferences, draft the local starting cast and situation, validate references, produce a preview. Do not launch one agent per person, faction or location. A single coherent structured proposal may outperform an elaborate multi-agent generation tree in both cost and consistency.
+Funding, run and attempt tables use integer USD microunits and decimal-string JSON boundaries. Conservative reservation covers the configured maximum input/output tokens. A byte-based input upper bound includes request/schema framing; exceeding it holds the operation. Accounting takes a global admission lock, then account, run and attempt locks; these transactions never acquire a story lock. Independent story publication does not acquire accounting locks. Account/run caps and attempt limits are shared across concurrent work. Unexpected over-reservation charges stop all funding accounts. Reconciliation does not automatically clear a stop.
 
-Some work needs no inference: waiting, displaying a stored passage, enforcing a deadline, validating quantities and applying an accepted transition. New narrative judgment, unusual intervention and a consequential continuation usually need generation. A cheaper model is not automatically suitable for validating another model's subtle mistakes.
+Normal startup and the local launcher use the offline source. Merely storing a key cannot enable inference. Production composition requires `STORYTELLER_LIVE_ENABLED=true`, a validated `STORYTELLER_EXECUTION_JSON`, a matching approved worker policy and pre-provisioned funding/run records. No account or allowance is fabricated at startup. There is currently no operator provisioning/reconciliation UI or selected live route. Before a deliberately authorized evaluation, verify the real allowance and current route/pricing and prepare the operator procedure; do not infer a balance from the original deposit. See [context and spending](context-and-cost.md).
 
-## Where LangGraph fits
+## Tools, rules and future tasks
 
-Begin without LangGraph. Temporal supplies durable orchestration; plain TypeScript defines the bounded model/tool steps. LangGraph may become useful for a sufficiently complex agent graph, but persistence alone is not a reason to add another execution engine. [LangGraph overview](https://docs.langchain.com/oss/javascript/langgraph/overview).
+No model tools are enabled for opening or continuation: their bounded evidence is supplied directly. Task instructions and constraints are versioned with the artifact, not accumulated in one ever-growing agent prompt. Introduce a capability only with a named task, story-scoped authorization, input/output bounds, call budget and failure contract. Prefer a deterministic query for known context over spending a tool round to request it. Never expose arbitrary SQL, filesystem access, browsing or credentials.
 
-Keep model/context logic behind narrow functions used by Activities, so a later graph abstraction does not replace domain contracts. If a graph is introduced, define its bounded invocation and map every billable internal call to the same operation/attempt records. Retrying an outer Activity must not replay already paid inner calls blindly. Do not run a separate graph checkpointer as a competing authority for story progression.
+Future narrative planning, entity adjudication or summarization can be separate pure functions, one-shot calls or bounded agent tasks. They must share the same durable operation/accounting boundaries and cannot become competing authorities for story state. Temporal owns durable scheduling; PostgreSQL owns committed story facts. A graph library is warranted only when its bounded task logic earns that complexity. One agent per character or an LLM router per choice is not part of this POC.
 
-Any graph state would concern a bounded generation operation, not the lifetime of the story. Long waits and player input remain in Temporal, and committed inventory/facts remain in PostgreSQL. LangGraph platform hosting is not part of the design.
+## Supported behavior and evidence limits
 
-## OpenRouter and LiteLLM
+The offline pineapple rehearsal supports asking Gary, quiet breakfast, travelling to work, observing outside and returning home. It includes two contrasting profile examples, a remembered promise and real 20-second quick-play waits. Other premises are saved but receive an explicitly unadapted rehearsal message. Waiting, reading history, reload and pause/resume require no inference. Legacy fixture timing remains unchanged.
 
-Use OpenRouter as the initial hosted gateway, accessed only from workers through a narrow TypeScript adapter. Its routing controls include provider ordering, capability requirements, price limits and data-policy restrictions. Select those explicitly rather than assuming every endpoint supports the same structured-output and tool features. [OpenRouter provider routing](https://openrouter.ai/docs/guides/routing/provider-selection).
+Tests exercise structured boundaries, context retention, provenance, fake charges, replay, publication recovery and the browser flow. They cannot establish whether a real model follows the profile, offers satisfying agency or sustains an enjoyable story. No live route, narrative quality or real billed-cost behavior is certified. Generated mechanical effects, multiplayer, automatic defaults, general interruptions, streaming and unlimited memory remain separate work.
 
-OpenRouter offers access to a range of model prices; it does not make the same inference intrinsically cheaper. Its pricing page lists platform fees as well as model access. Compare actual billed cost, quality, latency and retry rate, including fees, before picking a route. Do not depend on free endpoints for reliable timed gameplay. [OpenRouter pricing](https://openrouter.ai/pricing).
+## Next mechanical POC boundary
 
-LiteLLM provides a separate SDK/proxy layer for accessing models and managing gateway concerns. It is not required to use OpenRouter. Running its proxy would add an operated service and overlapping routing/budget behavior. Introduce it only if multiple applications, direct-provider credentials or centralized gateway administration justify it; otherwise the application adapter is enough. [LiteLLM overview](https://docs.litellm.ai/docs/).
-
-Use a maintained TypeScript client behind the adapter after verifying usage reporting, aborts, schema support and provider metadata. A direct HTTP client is also viable. Do not simultaneously introduce a gateway proxy, a broad AI SDK and framework model wrappers without assigning each a necessary responsibility.
-
-## Configuration and quality profiles
-
-Resolve a model policy from task kind, story quality preference, funding entitlement, remaining budget, required capabilities and measured route health. A user-facing “fast” or “richer” preference is relative to that story's allowed tier. It is not a model ID and does not override spending or privacy constraints.
-
-Illustrative policy shape, with no selected model names or prices:
-
-```ts
-type ModelPolicy = {
-  version: string;
-  task: 'create' | 'continue' | 'summarize';
-  candidates: Array<{
-    modelId: string;
-    allowedProviders: string[];
-  }>;
-  maxInputTokens: number;
-  maxOutputTokens: number;
-  maxAttempts: number;
-  timeoutMs: number;
-  maxCostMicrousd: string;
-  requireStructuredOutput: boolean;
-};
-```
-
-Store an effective immutable policy version with each run and the actual model/provider with each attempt. Admins may change the active policy for future runs without redeploying domain code. Validate and allowlist configuration; players cannot supply arbitrary provider URLs, credentials or executable prompts. Restrict user-created storyteller prose to preference data below application instructions.
-
-Start with a few evaluated routes, not an LLM that selects another LLM on every call. In shared stories, one agreed funding scope and policy governs a resolution. Commercial tier names, subscription prices and the payer rule are product decisions still to make; implement development quotas without building a payment system first.
-
-## Structured output, tools and streaming
-
-These are separate dimensions. Structured output describes the expected result format. Tool calling lets the model request specific application operations. Streaming delivers output incrementally. A model can stream structured content, but partial JSON is not a valid committed transition. OpenRouter structured output support depends on the model/provider. [Structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs).
-
-The primary proposal separates what happens now from what may happen after a wait. Its schema must make those different fields, not depend on prose interpretation:
-
-| Proposal part | Contract |
-| --- | --- |
-| Current passage and effects | Narration and typed changes to commit together for this resolution. |
-| Next state | One of a decision, a quiet interval or an ending; not an arbitrary combination. |
-| Decision | Choices with eligible actors and apparent intent/risk; fallback must fit the supplied autonomy policy. |
-| Interval | Fictional duration and a suggested narrative boundary. Code maps that to real time under the chosen pacing policy. |
-| Optional prepared continuation | A bounded future passage/effect packet with activation assumptions, stored privately until validated at publication. |
-
-For “set out toward the tower,” departure can be current and arrival future. For “accept the apple,” becoming trapped can be immediate. A completed future packet cannot charge coins, change location or reveal an encounter before its activation. Limit the first horizon to one prepared continuation rather than an unbounded tree.
-
-The application supplies permanent IDs, policy/permissions, response deadlines and authoritative random results. After accepting the current proposal, bind future material to its resulting revision and mapped entity IDs. Validate shape, reference scope, ownership, quantities and generation preconditions before commitment, and validate future material again on publication. A schema-valid lie can still contradict the story; evaluation and relevant context remain necessary.
-
-Autonomy governs choosing for an absent player, while storyteller risk preferences govern which consequences may be introduced. They are not the same setting. A permitted “wait” fallback cannot by itself authorize any imaginable permanent consequence. Supply the applicable policy to generation and validate declared consequential changes against it; if the policy is unspecified, hold or request player input instead of pretending the prompt solves that product decision.
-
-Begin by rendering the complete validated result. Show progress while generation is running. If later streaming prose improves perceived latency, label it provisional or stream a presentation of an already committed result. Never stream a private tool response or let partial prose decide inventory changes. Streaming tokens is distinct from SSE publishing committed application updates.
-
-Useful initial tools are read-only: fetch a story-scoped entity, retrieve relevant passages and inspect a constrained current fact. Prefer supplying obvious relevant facts directly so the model does not waste a round asking for them. Bound tool count, result size and call depth. No arbitrary SQL, filesystem, outbound browsing or provider credentials belong in the storyteller's tool surface.
-
-The model proposes effects; one application operation commits them. If chance rules are adopted, authoritative rolls are drawn once per resolution/check key and stored, then supplied to generation. A repair or retry must not roll again until it gets a desirable outcome.
-
-Player text, retrieved passages and fictional dialogue are untrusted content, not authority to change system instructions or tool permissions. Bind story identity and authorization server-side instead of accepting them from model arguments. Render generated text through a restricted Markdown/text renderer; do not execute embedded HTML or fetch arbitrary model-supplied asset URLs. These boundaries are part of using generated content in a real application.
-
-## Failure and provider behavior
-
-Classify refusals, invalid outputs, timeouts, provider errors and stale inputs separately. A refusal is not a signal to keep searching providers until one accepts the same request. Validate that selected providers can support the intended tone and content before promising unrestricted generation.
-
-Fallback routes must satisfy the original schema, data-policy and budget constraints. A cheaper failed call plus an expensive repair may cost more than a strong first attempt. Measure cost per accepted coherent continuation and latency to committed output, not just advertised tokens per second.
-
-Provider outages, exhausted budget or repeated invalid proposals produce an explained hold if no valid prepared continuation exists. A template can report that fact; it cannot replace novel story judgment with a fabricated success.
+The current scene envelope and fixed 2–5-choice validation describe the implemented narrative rehearsal, not the final DM architecture. The next [rules/activity contract](rules-and-activities.md) adds validated adjudication, server-owned rolls and effects before narration, situation-dependent menus and mandatory mechanical evidence. [Settings revisions](story-settings.md) add customization and clock policy without changing paid execution authority. These capabilities are planned and must use explicit new durable artifacts rather than reinterpret already admitted tasks.

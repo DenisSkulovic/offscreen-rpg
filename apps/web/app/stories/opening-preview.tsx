@@ -32,12 +32,16 @@ export function OpeningPreviewPanel({
     }
   }, []);
   useEffect(() => {
-    if (!preview || !['pending', 'running'].includes(preview.state)) return;
+    if (!preview || !['pending', 'running'].includes(preview.state)) {
+      return;
+    }
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     let reads = 0;
     async function poll() {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted) {
+        return;
+      }
       if (!document.hidden) {
         try {
           const response = await fetch(
@@ -50,17 +54,24 @@ export function OpeningPreviewPanel({
               ]),
             },
           );
-          if (!response.ok) throw new Error('Status unavailable');
+          if (!response.ok) {
+            throw new Error('Status unavailable');
+          }
           const result = latestOpeningSchema.parse(await response.json());
-          if (controller.signal.aborted) return;
+          if (controller.signal.aborted) {
+            return;
+          }
           setPreview(result.preview);
           if (
             !result.preview ||
             !['pending', 'running'].includes(result.preview.state)
-          )
+          ) {
             return;
+          }
         } catch {
-          if (controller.signal.aborted) return;
+          if (controller.signal.aborted) {
+            return;
+          }
           setMessage(
             'Unable to refresh the saved request. It can continue in the background; reload to check.',
           );
@@ -82,7 +93,9 @@ export function OpeningPreviewPanel({
     };
   }, [draft.id, preview?.id, preview?.state]);
   async function generate() {
-    if (pending || starting) return;
+    if (pending || starting) {
+      return;
+    }
     attempt.current ??=
       preview?.state === 'pending'
         ? { id: preview.id, revision: preview.sourceRevision }
@@ -109,7 +122,9 @@ export function OpeningPreviewPanel({
         );
         return;
       }
-      if (!response.ok) throw new Error('Unavailable');
+      if (!response.ok) {
+        throw new Error('Unavailable');
+      }
       setPreview(openingPreviewSchema.parse(await response.json()));
       attempt.current = null;
     } catch {
@@ -180,17 +195,32 @@ export function OpeningPreviewPanel({
       setStarting(false);
     }
   }
+  let generateLabel = 'Generate opening candidate';
+  if (preview) {
+    generateLabel = 'Generate another opening candidate';
+  }
+  if (unresolved) {
+    generateLabel = 'Awaiting opening candidate';
+  }
+  if (message) {
+    generateLabel = 'Retry opening candidate';
+  }
+  if (pending) {
+    generateLabel = 'Preparing candidate�';
+  }
   return (
     <main className="editor">
       <SessionRefresh />
       <p className="eyebrow">Offscreen RPG · Opening candidate</p>
       <h1>{draft.title || 'A possible beginning.'}</h1>
       <p className="field-help">
-        This fixed sample tests saving, reviewing and starting a playable
-        opening. It is not adapted to your premise or storytelling direction. No
-        AI calls are made. Starting creates a live first scene; choosing an
-        option is not connected yet.
+        {preview?.mode === 'provider'
+          ? 'This opening was requested from the selected storyteller. Start uses exactly the candidate you review here.'
+          : 'Offline rehearsal: authored scenes exercise choices, continuity and real waits without model calls. The pineapple scenario has two styles; arbitrary premises are saved but are not improvised.'}
       </p>
+      {preview?.storyteller ? (
+        <p>Storyteller: {preview.storyteller.name}</p>
+      ) : null}
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
       {preview && (
         <section aria-label="Opening candidate">
@@ -251,15 +281,7 @@ export function OpeningPreviewPanel({
         }
         onClick={() => void generate()}
       >
-        {pending
-          ? 'Preparing candidate…'
-          : message
-            ? 'Retry opening candidate'
-            : unresolved
-              ? 'Awaiting opening candidate'
-              : preview
-                ? 'Generate another opening candidate'
-                : 'Generate opening candidate'}
+        {generateLabel}
       </button>
       {!draft.premise.trim() && (
         <p>Add and save a premise before generating.</p>

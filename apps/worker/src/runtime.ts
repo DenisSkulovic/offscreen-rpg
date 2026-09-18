@@ -1,3 +1,7 @@
+import {
+  createStorytellerRuntime,
+  type StorytellerRuntimeOptions,
+} from '@offscreen/server/storyteller-runtime';
 import { Client, Connection } from '@temporalio/client';
 import { NativeConnection, Worker } from '@temporalio/worker';
 import type { Database } from '@offscreen/db';
@@ -16,6 +20,7 @@ export async function startRuntime(
   database: Database,
   config: WorkerConfig,
   report: () => void,
+  storytellerOptions: StorytellerRuntimeOptions = {},
 ) {
   const connection = await Connection.connect({ address: config.address });
   let native: NativeConnection | undefined;
@@ -25,6 +30,7 @@ export async function startRuntime(
     const stories = createStories(database);
     const activities = createWorkerActivities({
       stories,
+      storyteller: createStorytellerRuntime(database, storytellerOptions),
       openings: createScriptedOpenings(database),
       continuations: createScriptedContinuations(database),
     });

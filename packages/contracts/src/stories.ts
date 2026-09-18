@@ -1,3 +1,4 @@
+import { storytellerSummarySchema } from './storytellers';
 import { z } from 'zod';
 import { interactionSchema, interactionSubmissionSchema } from './interactions';
 
@@ -39,6 +40,14 @@ export const storySnapshotSchema = z.strictObject({
   revision: z.number().int().positive(),
   viewVersion: z.number().int().positive(),
   canRespond: z.boolean().default(false),
+  storyteller: storytellerSummarySchema.nullable().optional(),
+  sourceMode: z.enum(['scripted', 'provider']).optional(),
+  usage: z
+    .strictObject({
+      settledMicrousd: z.string().regex(/^\d+$/),
+      reservedMicrousd: z.string().regex(/^\d+$/),
+    })
+    .optional(),
   items: storyItemsSchema.default([]),
   decision: z
     .strictObject({
@@ -64,7 +73,10 @@ export const storySnapshotSchema = z.strictObject({
   }),
   resolution: z
     .strictObject({
-      state: z.enum(['pending', 'running', 'failed', 'uncertain']),
+      state: z.enum(['pending', 'running', 'failed', 'uncertain', 'blocked']),
+      version: z.number().int().nonnegative().optional(),
+      reason: z.string().max(80).nullable().optional(),
+      canRetry: z.boolean().optional(),
     })
     .nullable()
     .default(null),
@@ -106,3 +118,18 @@ export const controlIntervalSchema = z.strictObject({
   expectedControlRevision: z.number().int().nonnegative().max(2147483646),
   action: z.enum(['pause', 'resume']),
 });
+
+export const storyListSchema = z.strictObject({
+  items: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        title: z.string(),
+        storyteller: storytellerSummarySchema.nullable(),
+        status: z.string(),
+      }),
+    )
+    .max(20),
+  nextBefore: z.uuid().nullable(),
+});
+export type StoryList = z.infer<typeof storyListSchema>;

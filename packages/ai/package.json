@@ -10,6 +10,34 @@
     "./playable": {
       "types": "./dist/src/playable.d.ts",
       "default": "./dist/src/playable.js"
+    },
+    "./storytellers": {
+      "types": "./dist/src/storytellers.d.ts",
+      "default": "./dist/src/storytellers.js"
+    },
+    "./storyteller-tasks": {
+      "types": "./dist/src/storyteller-tasks.d.ts",
+      "default": "./dist/src/storyteller-tasks.js"
+    },
+    "./storyteller-context": {
+      "types": "./dist/src/storyteller-context.d.ts",
+      "default": "./dist/src/storyteller-context.js"
+    },
+    "./storyteller-policy": {
+      "types": "./dist/src/storyteller-policy.d.ts",
+      "default": "./dist/src/storyteller-policy.js"
+    },
+    "./continuity": {
+      "types": "./dist/src/continuity.d.ts",
+      "default": "./dist/src/continuity.js"
+    },
+    "./storyteller-fixtures": {
+      "types": "./dist/src/storyteller-fixtures.d.ts",
+      "default": "./dist/src/storyteller-fixtures.js"
+    },
+    "./openrouter": {
+      "types": "./dist/src/openrouter.d.ts",
+      "default": "./dist/src/openrouter.js"
     }
   },
   "scripts": {

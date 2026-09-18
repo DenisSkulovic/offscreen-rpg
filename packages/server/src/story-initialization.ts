@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { interactionSchema } from '@offscreen/contracts/interactions';
 import type { Database } from '@offscreen/db';
 import { story, storyItem, storyPassage } from '@offscreen/db/story-schema';
@@ -34,6 +35,9 @@ export async function initializeStoryInTransaction(
       ownerId,
       source: input.source,
       premise: input.premise ?? null,
+      storyteller: input.storyteller ?? null,
+      execution: input.execution ?? null,
+      continuityNotes: input.storyteller ? [] : null,
     })
     .onConflictDoNothing()
     .returning({ id: story.id });
@@ -46,7 +50,14 @@ export async function initializeStoryInTransaction(
     if (!priorStory || priorStory.ownerId !== ownerId) {
       throw new StoryError('not_found');
     }
-    if (priorStory.source !== input.source) {
+    if (
+      priorStory.source !== input.source ||
+      !isDeepStrictEqual(
+        priorStory.storyteller ?? null,
+        input.storyteller ?? null,
+      ) ||
+      !isDeepStrictEqual(priorStory.execution ?? null, input.execution ?? null)
+    ) {
       throw new StoryError('conflict');
     }
     const [firstPassage] = await tx
@@ -61,7 +72,7 @@ export async function initializeStoryInTransaction(
     ) {
       throw new StoryError('conflict');
     }
-    return;
+    return false;
   }
 
   if (input.items.length) {
@@ -84,6 +95,7 @@ export async function initializeStoryInTransaction(
     sourceGenerationId: input.sourceGenerationId ?? null,
     sourceGenerationPart: input.sourceGenerationPart ?? null,
   });
+  return true;
 }
 
 export function createStoryInitialization(database: Database) {

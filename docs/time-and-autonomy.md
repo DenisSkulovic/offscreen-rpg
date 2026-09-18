@@ -8,7 +8,7 @@ Fictional time normally continues during an active quiet interval, even when no 
 
 Give the player understandable expectations for an action's fictional duration and real wait. Estimates are conditional on the situation remaining unchanged. An interruption replaces the old expectation with the new situation.
 
-A selected pace should guide waiting, but a single multiplier is not sufficient to specify the entire experience. Immediate exchanges, long quiet stretches and response deadlines serve different purposes. The exact mapping, bounds and available pace controls are still open; they should be tested against the playthrough rather than inferred from a simulation tick rate.
+A selected pace should guide waiting, but a single multiplier is not sufficient to specify the entire experience. Immediate exchanges, long quiet stretches and response deadlines serve different purposes. The proposed solo controls are one game day per real day, hour or minute, plus instant resolution to the next meaningful boundary. These alter waiting, not the number or fairness of mechanical checks. The [clock contract](technical/story-settings.md) defines current-activity rescheduling, legacy wait boundaries and locked settings; this is planned, not implemented.
 
 Changing pace must explain what happens to an existing wait or deadline. The application must not quietly move an imminent deadline while another participant is deciding. Faster play also means potentially more generation per real hour, which spending controls must account for.
 
@@ -55,3 +55,11 @@ Scheduling must survive service restarts. Multiple devices, duplicate deliveries
 ## First playable scope
 
 Support a real wait, an immediate continuation, a timed choice with a fallback, manual pause/resume and continuation without an open browser. Define shared decision deadlines and pause permissions before implementing group progression. Defer elaborate per-player calendars and catch-up modes until the basic timing experience is convincing.
+
+## Local storyteller POC policy
+
+New profiled stories use an explicit quick-play policy: a proposed fictional interval takes twenty real seconds, while immediate conversation stays immediate. Test composition can inject a shorter duration. The profile cannot alter this policy. No fresh generation or autonomous choice is admitted during absence; an already prepared interval can publish once and then wait for the player. This bounded local POC policy does not settle the later campaign pace/autonomy controls.
+
+## Mechanical activities
+
+Five game hours of work can produce five hourly checks and earned outcomes; twenty game hours of travel can produce twenty encounter checks, all quiet. These checks run in code without hourly inference. Activity cadence is a rule/content choice, not a universal tick for conversation or combat. See [game rules](game-rules.md) and [segment execution](technical/rules-and-activities.md). Faster or instant play preserves costs, dice and decision boundaries.

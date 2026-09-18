@@ -1,3 +1,4 @@
+import { publishStorytellerNotes } from './storyteller-memory';
 import {
   InteractionInputError,
   validateInteractionSubmission,
@@ -140,6 +141,17 @@ export async function commitStoryContinuation(
     sourceGenerationId:
       args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
   });
+  if (current.storyteller != null && args.input.sourceGenerationId) {
+    await publishStorytellerNotes(tx, {
+      storyId: args.storyId,
+      generationId: args.input.sourceGenerationId,
+      passageId,
+      revision: nextRevision,
+      sourcePart:
+        args.input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current',
+      notes: current.continuityNotes,
+    });
+  }
   await advanceStoryView(tx, {
     storyId: args.storyId,
     revision: nextRevision,

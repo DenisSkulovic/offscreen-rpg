@@ -1,3 +1,4 @@
+import { readStorytellerExecution } from '@offscreen/server/storyteller-config';
 import { createApp } from './app.js';
 import { readConfig } from './config.js';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
@@ -16,6 +17,7 @@ async function main() {
       database,
       createAuth(database, authConfig),
       authConfig.origin,
+      { storytellerExecution: readStorytellerExecution(process.env) },
     );
     app.enableShutdownHooks();
     await app.listen(config.port, config.host);

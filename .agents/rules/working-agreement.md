@@ -16,6 +16,8 @@ Build in balanced passes across meaningful user flows. Do not perfect a small su
 
 Use the feature workflow for significant work. The user agrees the product vision before bulk implementation. Authorization then persists across the agreed phases; do not repeatedly request approval for routine details. A material change to that vision, scope or cost needs discussion. Small authorized fixes proceed directly.
 
+Checks are optional throughout the current POC lifecycle. Default to implementation without routine verification commands; do not chase green results or spend time on minor issues. Follow [Verification](verification.md), which overrides stricter check requirements in plans or engineering guidance. Keep this policy until the owner explicitly changes it.
+
 ## Roles, handoffs and cost
 
 The owner's preferred division is Codex for investigation, product/technical design and review; Cursor for bulk coding and refactoring. Prepare actionable phases instead of starting a large implementation pass in Codex without being asked. Do not launch another task, agent or subscription/model switch automatically.

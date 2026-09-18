@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { storytellerReferenceSchema } from './storytellers';
 
 export const draftIdSchema = z.uuid();
 export const draftContentSchema = z.strictObject({
+  storyteller: storytellerReferenceSchema.nullable().optional(),
   title: z.string().max(160),
   premise: z.string().max(6000),
   storytellingDirection: z.string().max(2000),

@@ -41,6 +41,22 @@ export class StoriesController {
       throw new ServiceUnavailableException('Story unavailable');
     }
   }
+  @Get()
+  list(@Req() request: Request, @Query('before') before?: string) {
+    return this.run(request, (ownerId) =>
+      this.stories.list(before ? { ownerId, before } : { ownerId }),
+    );
+  }
+  @Put(':id/retries/:retryId')
+  retry(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('retryId') retryId: string,
+  ) {
+    return this.run(request, (ownerId) =>
+      this.stories.retryResolution({ ownerId, storyId, retryId }),
+    );
+  }
   @Get(':id')
   read(@Req() request: Request, @Param('id') id: string) {
     return this.run(request, (ownerId) =>

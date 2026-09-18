@@ -4,7 +4,7 @@ Creation turns a premise into a small, playable beginning. It should invite imag
 
 ## Premise and characters
 
-The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. A saved, unchanged draft links to a preview page where an explicit request saves a deterministic playable opening candidate: scene prose plus visible choices. The page explains that this sample is not adapted to the premise. A successful current candidate can be started as a live story; that first passage is the reviewed presentation, not a regenerated scene. Choosing an option from that live opening is not connected yet. Returning reopens the saved candidate; editing the draft marks it stale. Live generation, presets and shared setup remain subsequent components.
+The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. A saved, unchanged draft links to a preview page where an explicit request saves a deterministic playable opening candidate: scene prose plus visible choices. The page explains that this sample is not adapted to the premise. A successful current candidate can be started as a live story; that first passage is the reviewed presentation, not a regenerated scene. Choosing an option from that live opening admits asynchronous scripted continuation, including a prepared timed arrival; no model is connected. Returning reopens the saved candidate; editing the draft marks it stale. Live generation, presets and shared setup remain subsequent components.
 
 If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story will support several players.
 
@@ -37,3 +37,11 @@ Creating an opening and starting its real-time progression are different user ac
 ## First playable scope
 
 Support a written premise, a few editable examples, basic storyteller preferences, a solo start or a small invited group, and a coherent opening. Defer exhaustive world generation, a preset marketplace, public discovery and elaborate character construction. World generation quality and cost remain important demonstrations even with a deliberately small initial world.
+
+## Selected profile and captured candidate
+
+Creation saves an optional catalogue reference with the draft revision. Profile selection is required for the new storyteller flow; legacy unprofiled drafts/candidates keep their scripted path. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story; subsequent catalogue changes do not alter it. New profiles are data files, not resolvers.
+
+## Planned campaign settings
+
+Creation will select a storyteller preset and editable versus locked settings, with a visible summary of fixed fields before Start. Editable stories can later switch presets or customize narrative tags/guidance without losing their character. Initial settings are provenance, not a lifetime prohibition on changes. See [storyteller settings](storyteller-settings.md) and [D&D rules](game-rules.md). These controls are planned; the current UI selects only a catalogue profile.

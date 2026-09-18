@@ -1,3 +1,5 @@
+import { storytellerProfileSchema } from '@offscreen/ai/storytellers';
+import { executionPolicySchema } from '@offscreen/ai/storyteller-policy';
 import {
   generationSourcePartSchema,
   premiseContentSchema,
@@ -20,6 +22,8 @@ import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 
 export const initialStorySchema = z.strictObject({
   source: z.string().min(1).max(100),
+  storyteller: storytellerProfileSchema.nullable().optional(),
+  execution: executionPolicySchema.nullable().optional(),
   sourceGenerationId: z.uuid().nullable().optional(),
   sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
   premise: premiseContentSchema.nullable().optional(),

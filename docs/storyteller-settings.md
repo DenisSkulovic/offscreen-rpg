@@ -1,0 +1,39 @@
+# Storyteller presets and customization
+
+Design target, not yet supported by the live-story UI. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
+
+## Settings with distinct meanings
+
+| Setting | Representation and meaning |
+| --- | --- |
+| Tone and themes | Tags and bounded player-written guidance: melancholy, absurd comedy, domestic life, exploration. |
+| Activity emphasis | Weighted preferences or ordered categories: economy, growth, social life, adventure. These guide opportunities, not compulsory character actions. |
+| Dramatic rhythm | Named policy and guidance for quiet stretches, scene density and transitions. |
+| Surprise frequency | A supported policy for how often eligible incidents are checked/triggered; independent of their severity. |
+| Surprise character | Descriptive guidance for how conventional or strange developments may be. Not a replacement for the random-number generator. |
+| Risk permissions | Typed limits on allowed consequences and unattended decisions. Creative text cannot override them. |
+| Pace | Explicit game-time/real-time mapping, separate from dramatic rhythm and response allowances. |
+
+Not every control is a number. Expose a small understandable editor first, with advanced bounded text and tags, rather than dozens of unexplained sliders. Saving a preset stores data, not another agent implementation. Applying a different preset replaces its creative defaults; show the effective result before saving and preserve separate campaign clock/risk choices unless the user explicitly changes them.
+
+## Tags and custom content
+
+Provide reusable tags with an identity, description, scope and revision. Narrative tags express meaning to the DM. Mechanical tags reference supported rule definitions, such as difficult terrain, and cannot gain numeric effects from their names alone. A user-created `wealthy` or `invincible` tag is creative guidance, not authority to mint money or grant immunity. Unsupported mechanical behavior needs a real rule definition.
+
+Allow private custom narrative tags and prompt snippets, with bounded length/count and clear scope (storyteller, character, location or activity). POC editing starts with storyteller scope; the same distinction guides later world/entity content without requiring a universal tag database now. Catalogue tags are suggestions, not the limit of creative expression. Do not expose hidden system instructions, credentials, executable tools or funding controls through this editor.
+
+Compile guidance from application invariants, campaign permissions, applicable mechanical facts, explicit player overrides and preset defaults in that order. Explicit typed overrides replace defaults; tags supplement rather than secretly overwrite fields. Reject mutually exclusive typed settings; show unresolved semantic tensions in descriptive guidance without claiming arbitrary prose can be validated perfectly. Existing world facts outrank a new tonal preference. Editing `the cat has already paid me 100 coins` must never apply that claim as an effect.
+
+## Changes during play
+
+Save a new immutable settings revision with an understandable effective boundary. Default: creative changes govern the next uncommitted action; already admitted actions and their retry artifacts retain their captured settings. An existing menu remains an honest offer. Its selection uses its captured mechanical commitments while the next resolution can use the newly active creative settings. A pending generation and a prepared arrival are not discarded or regenerated merely to adopt a new tone. Explain when an existing activity finishes under earlier settings.
+
+Settings can be saved while an activity runs, but cannot undo its outcomes or reroll its checks. Later hourly segments of that activity keep its captured rule/encounter plan. A new style applies after completion or a supported interruption. This predictable first implementation avoids continuously invalidating paid preparation. Immediate interruption/replanning can be a later explicit action; it is not implicit in a settings save.
+
+## Free and locked campaigns
+
+At creation, distinguish editable play from a campaign whose declared settings are locked. The lock records exactly which fields are fixed: rule version, risk, storyteller customization and allowed speed controls. Accessibility, sound and private notification preferences remain personal. POC lock is enforced server-side, cannot be silently disabled, and does not imply anti-cheat certification or an implemented permadeath system. A future fork into an editable campaign must be visibly a new continuation, not a rewritten locked record.
+
+Ironman may eventually bundle permadeath and other commitments; do not equate a settings lock with that entire mode. For the initial feature, label it **Locked settings**, with a visible summary before Start.
+
+See [game rules](game-rules.md) and [settings execution](technical/story-settings.md).

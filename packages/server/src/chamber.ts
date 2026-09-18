@@ -52,6 +52,17 @@ export function createChamber(database: Database) {
   }
 
   return {
+    list(args: { ownerId: string; before?: string }) {
+      return stories.list(args);
+    },
+    async retryResolution(args: {
+      ownerId: string;
+      storyId: string;
+      retryId: string;
+    }) {
+      await stories.retryResolution(args);
+      return read(args);
+    },
     async start(args: {
       ownerId: string;
       storyId: string;

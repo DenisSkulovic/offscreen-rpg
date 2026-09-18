@@ -1,3 +1,8 @@
+import { storytellerTopic } from '@offscreen/server/storyteller-runtime';
+import {
+  storytellerWorkflowType,
+  storytellerWorkflowId,
+} from '@offscreen/workflows/contracts';
 import type { Client, Connection } from '@temporalio/client';
 import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
 import {
@@ -36,6 +41,11 @@ type WakeNotice = {
 };
 
 const noticeDispatch = {
+  [storytellerTopic]: {
+    kind: 'start',
+    workflowType: storytellerWorkflowType,
+    workflowId: storytellerWorkflowId,
+  },
   [intervalWakeTopic]: {
     kind: 'wake',
     workflowId: controlledIntervalWorkflowId,
@@ -68,6 +78,7 @@ const noticeDispatch = {
 } as const satisfies Record<string, StartNotice | WakeNotice>;
 
 export const dispatchedNoticeTopics = [
+  storytellerTopic,
   scriptedOpeningTopic,
   scriptedContinuationTopic,
   storyIntervalTopic,
@@ -84,6 +95,7 @@ export function selectNoticeDispatch(topic: string) {
 }
 
 type DeliverNotice = {
+  id?: string;
   topic: string;
   operationId: string;
 };
@@ -114,7 +126,7 @@ export async function deliverOutboxNotice(
   try {
     await deps.connection.withDeadline(Date.now() + startDeadlineMs, () =>
       deps.client.workflow.start(dispatch.workflowType, {
-        workflowId: dispatch.workflowId(notice.operationId),
+        workflowId: dispatch.workflowId(notice.id ?? notice.operationId),
         taskQueue: deps.taskQueue,
         workflowIdReusePolicy: 'REJECT_DUPLICATE',
         args: [notice.operationId],

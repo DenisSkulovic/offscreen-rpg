@@ -1,3 +1,8 @@
+import { createStorytellerOpenings } from './storyteller-openings';
+import {
+  offlineExecution,
+  type ExecutionPolicy,
+} from '@offscreen/ai/storyteller-policy';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
@@ -51,7 +56,11 @@ export const scriptedOpeningPresentation = {
 };
 
 /** Only a fixture runner. Never replace this local update with a provider call. */
-export function createScriptedOpenings(database: Database) {
+export function createScriptedOpenings(
+  database: Database,
+  execution: ExecutionPolicy = offlineExecution,
+) {
+  const profiled = createStorytellerOpenings(database, execution);
   const operations = createOpenings(database, kind, (tx, id) =>
     enqueue(tx, { id, operationId: id, topic: scriptedOpeningTopic }),
   );
@@ -79,6 +88,10 @@ export function createScriptedOpenings(database: Database) {
   };
   return {
     async latest(owner: string, draftId: string) {
+      const selected = await profiled.latest(owner, draftId);
+      if (selected) {
+        return selected;
+      }
       const record = await operations.latest(owner, draftId);
       return record ? present(record) : null;
     },
@@ -88,6 +101,9 @@ export function createScriptedOpenings(database: Database) {
       id: string,
       revision: number,
     ) {
+      if (await profiled.handles(owner, draftId, id)) {
+        return profiled.request(owner, draftId, id, revision);
+      }
       await operations.request(owner, draftId, id, revision);
       return present(await operations.read(owner, id));
     },
@@ -98,7 +114,9 @@ export function createScriptedOpenings(database: Database) {
         .select({ owner: generation.ownerId })
         .from(generation)
         .where(and(eq(generation.id, id), eq(generation.kind, kind)));
-      if (!record) throw new GenerationError('not_found');
+      if (!record) {
+        throw new GenerationError('not_found');
+      }
       // No external side effect or running state: an interrupted fixture update
       // can safely repeat. The generic provider claim/uncertainty rules stay intact.
       await database.db
@@ -118,7 +136,9 @@ export function createScriptedOpenings(database: Database) {
           ),
         );
       const result = await operations.read(record.owner, id);
-      if (result.state !== 'succeeded') throw new GenerationError('conflict');
+      if (result.state !== 'succeeded') {
+        throw new GenerationError('conflict');
+      }
     },
   };
 }

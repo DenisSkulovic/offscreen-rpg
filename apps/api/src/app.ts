@@ -1,3 +1,5 @@
+import { StorytellersController } from './drafts/storytellers-controller.js';
+import type { ExecutionPolicy } from '@offscreen/ai/storyteller-policy';
 import 'reflect-metadata';
 import {
   Controller,
@@ -55,6 +57,7 @@ class AppModule {}
 
 export type CreateAppOptions = Readonly<{
   developerTools?: boolean;
+  storytellerExecution?: ExecutionPolicy;
 }>;
 
 export async function createApp(
@@ -70,6 +73,7 @@ export async function createApp(
         HealthController,
         IdentityController,
         DraftsController,
+        StorytellersController,
         OpeningsController,
         StoriesController,
         ...(options.developerTools === true ? [ChamberToolsController] : []),
@@ -80,7 +84,13 @@ export async function createApp(
         { provide: DATABASE, useValue: database },
         { provide: AUTH, useValue: auth },
         { provide: DRAFTS, useValue: createDrafts(database) },
-        { provide: OPENINGS, useValue: createScriptedOpenings(database) },
+        {
+          provide: OPENINGS,
+          useValue: createScriptedOpenings(
+            database,
+            options.storytellerExecution,
+          ),
+        },
         { provide: STORIES, useValue: createChamber(database) },
       ],
     },

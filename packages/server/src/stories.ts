@@ -1,3 +1,4 @@
+import { retryStoryteller } from './storyteller-recovery';
 import type { Database } from '@offscreen/db';
 import { createStoryContinuation } from './story-continuation';
 import { StoryError } from './story-errors';
@@ -22,6 +23,17 @@ export function createStories(database: Database) {
   const resolution = createStoryResolution(database);
   const timing = createStoryTiming(database);
   return {
+    list(args: { ownerId: string; before?: string }) {
+      return reads.listStories(args);
+    },
+    async retryResolution(args: {
+      ownerId: string;
+      storyId: string;
+      retryId: string;
+    }) {
+      await retryStoryteller(database, args);
+      return reads.readSnapshot(args);
+    },
     read(args: { ownerId: string; storyId: string }) {
       return reads.readSnapshot(args);
     },
