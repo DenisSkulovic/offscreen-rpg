@@ -110,7 +110,7 @@ export type PlayableOpeningArtifact = z.infer<
 
 export const playableContinuationArtifactSchema = z.strictObject({
   inputVersion: z.literal(1),
-  promptVersion: z.enum(['playable.v1', 'playable.v2']),
+  promptVersion: z.literal('playable.v2'),
   task: z.literal('continuation'),
   source: z.strictObject({
     storyId: z.uuid(),
@@ -150,15 +150,12 @@ export function preparePlayableContinuation(input: {
   premise: unknown;
   snapshot: unknown;
   publishedProposal: unknown;
-  sourcePart?: GenerationSourcePart | null;
+  sourcePart: GenerationSourcePart;
   submission: unknown;
 }) {
   const premise = premiseContentSchema.parse(input.premise);
   const snapshot = storySnapshotSchema.parse(input.snapshot);
-  const sourcePart =
-    input.sourcePart === undefined || input.sourcePart === null
-      ? null
-      : generationSourcePartSchema.parse(input.sourcePart);
+  const sourcePart = generationSourcePartSchema.parse(input.sourcePart);
   const published = publishedPlayableFromGeneration({
     output: input.publishedProposal,
     sourcePart,

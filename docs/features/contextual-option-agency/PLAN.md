@@ -4,21 +4,30 @@ Feature: [Situation-dependent options and meaningful agency](FEATURE.md).
 Execution scope: all phases authorized by the owner on 2026-09-18.
 Implementation owner: Codex, explicitly assigned by the owner.
 
-## Phases
+## Next implementation: bounded DM planning agent
 
-### Phase 1: opportunity and offer contract (next ready)
+Dependencies: tick action contract, isolated durable preparation, tag definition/application compilation. Mechanical selection/settlement stays authoritative. This is required POC work; the current consequence narrator only copies authored offers.
 
-Dependency: mechanical action contract from D&D feature phase 1. Owners: AI task/proposal schemas, server option policy, contracts. Inspect `storyteller-tasks.ts`, `playable-proposal.ts` and contracts/interactions.ts: generic choices already allow one option, while the profiled validator imposes 2–5. Version the new envelope and preserve saved artifacts. Define opportunity evidence, category navigation versus executable leaf, and a separate no-choice outcome. Keep constraints as structured facts with evidence; do not implement a fake numeric agency score. Exit: broad, tight, one-action and no-action authored examples fit the same bounded contract.
+### Phase 1: task and capabilities
 
-### Phase 2: server menu state and player experience
+Own a separate planning task with captured scene/revision, character capabilities/facts, selected intention, committed receipts, rules version and task-relevant creative guidance. Assemble essentials without tool round trips. Propose zero, one or several plausible intentions with declared constraints/evidence; no mandatory count or fake numeric agency score.
 
-Depends on phase 1. Owners: server provenance/admission, db if needed, API and web. Persist complete bounded menus; navigation is read-only selection of already saved nodes and supports Back. Admission validates current root, path, action terms and authoritative prerequisites. Labels explain known duration/commitment without secret DC leaks. Compose narrative and options in one bounded call when feasible. Exit: the ordinary play UI supports both broad exploration and constrained responses without extra inference per submenu click.
+Enable bounded, story-scoped tools to retrieve additional committed passage evidence, inspect an implemented rule's schema/meaning, and validate proposed action packages. Application code owns schemas, executors and authority. Results carry evidence identities and the captured revision. No SQL, filesystem, arbitrary executable names, live dice tool or direct world-state writes. The resolver rolls once after the player selects admitted terms, never repeatedly during planning.
 
-Optional evidence: manually inspect the four authored cases and stale-selection behavior if useful; semantic diversity remains a play-quality judgment, not a green-schema claim.
+The output proposes prose plus typed immediate/timed plans and separately admitted scene facts. Validate provenance, prerequisites, supported rule/effect vocabulary, durations/cadences and fact introductions before publication. Prose alone cannot establish mechanically relevant state. Fact introduction needs an explicit proposal boundary: current fact-set effects only modify declared facts.
+
+### Phase 2: durable bounded execution
+
+Use an agent runner with a task-specific tool allowlist, persisted model/tool steps and finite round/tool/output budgets. Start with at most three model rounds and six read/validation tool calls per task, as execution policy rather than storyteller content. No model router, critic swarm or framework merely to name something an agent.
+
+Every model round reserves and settles through the existing persistent run allowance. Persist responses before following steps; recover outputs and never resend an ambiguous paid request. Duplicate read tools are harmless; publication is scene-revision fenced. Invalid proposals, exhausted bounds or failures hold with explicit recovery, not hidden extra calls. A scripted transport supplies tool calls/results through the same runner and is labelled offline; it does not establish model behavior.
+
+### Phase 3: connected game loop
+
+Replace the authored-only handoff with validated planning output. Capture offered action terms, support read-only submenu navigation and submit offer/path identity. Immediate/timed resolution produces durable dice/effects and the next planning task, which adapts options to changed circumstances. Long activities remain deterministic between meaningful boundaries.
+
+Exit: broad ordinary freedom, constrained threat, one viable response and legitimate hold use the same task/publication contract. Microbes require no money or mandatory location. Selection reaches committed consequence and a freshly proposed choice or activity. Quality still requires a later authorized live evaluation; valid JSON is not evidence of enjoyable play.
 
 ## Current checkpoint
 
-- Status: connected authored mechanical slice implemented; full feature acceptance remains partial. The shared resolver and consequence narrator now use captured action content and the existing execution/publication/retry lifecycle.
-- Follow the [current repair checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md) for the delivered boundary, remaining generated opportunity/adjudication work and next action. Do not recreate the retired scenario-specific path.
-- Base: `ae9d144`; implementation remains uncommitted. Migration 0017 adds captured content; it has not been applied. Earlier prototype records remain inspectable with explicit unsupported status.
-- Verification: source review only. No builds/tests/lint/runtime checks or live calls. Provider spend $0; cumulative account usage unverified.
+Follow the [shared implementation checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.

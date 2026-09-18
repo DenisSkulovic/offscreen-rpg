@@ -209,7 +209,6 @@ export async function insertContinuationPassage(
       ? sql`clock_timestamp() + ${args.input.decision.responseDurationMs} * interval '1 millisecond'`
       : null,
     waitPlan: args.input.wait,
-    intervalVersion: args.input.wait ? 1 : 0,
     dueAt: args.input.wait
       ? sql`clock_timestamp() + ${args.input.wait.realDurationMs} * interval '1 millisecond'`
       : null,

@@ -161,10 +161,9 @@ export function createStoryResolution(database: Database) {
         if (!source || source.ownerId !== ownerId) {
           throw new StoryError('invalid');
         }
-        const sourcePartResult =
-          active.sourceGenerationPart == null
-            ? { success: true as const, data: null }
-            : generationSourcePartSchema.safeParse(active.sourceGenerationPart);
+        const sourcePartResult = generationSourcePartSchema.safeParse(
+          active.sourceGenerationPart,
+        );
         if (!sourcePartResult.success) {
           throw new StoryError('invalid');
         }

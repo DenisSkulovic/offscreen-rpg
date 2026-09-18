@@ -10,12 +10,9 @@ export const continuationWorkflowType = 'scriptedContinuationV1';
 export const continuationWorkflowId = (id: string) =>
   `scripted-continuation/${id}`;
 export interface IntervalActivities {
-  advanceStoryInterval(id: string): Promise<number | null>;
   advanceControlledInterval(id: string): Promise<number | null>;
 }
-export const intervalWorkflowType = 'storyIntervalV1';
-export const intervalWorkflowId = (id: string) => `story-interval/${id}`;
-export const controlledIntervalWorkflowType = 'storyIntervalV2';
+export const controlledIntervalWorkflowType = 'storyIntervalV1';
 export const controlledIntervalWorkflowId = (id: string) =>
   `controlled-interval/${id}`;
 export const intervalChangedSignal = 'intervalChanged';

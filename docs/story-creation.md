@@ -40,7 +40,7 @@ Support a written premise, a few editable examples, basic storyteller preference
 
 ## Selected profile and captured candidate
 
-Creation saves an optional catalogue reference with the draft revision. Profile selection is required for the new storyteller flow; legacy unprofiled drafts/candidates keep their scripted path. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story; subsequent catalogue changes do not alter it. New profiles are data files, not resolvers.
+Creation saves an optional catalogue reference while a draft is incomplete. Generating a playable storyteller candidate requires a selected profile. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story; subsequent catalogue changes do not alter it. New profiles are data files, not resolvers.
 
 ## Planned campaign settings
 

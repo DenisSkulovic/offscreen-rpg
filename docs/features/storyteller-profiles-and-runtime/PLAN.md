@@ -9,8 +9,8 @@ The owner explicitly authorized Codex implementation on 2026-09-18 and asked to 
 ## Implemented phases
 
 1. Profile/task contracts: JSON definitions, public metadata projection, strict private schema, task-specific instructions and frozen request artifacts are implemented.
-2. Creation: draft reference, captured candidate/profile, Start preservation, nullable legacy fields and browser selection are connected.
-3. Durable runtime: new kind/topic, source execution outside transactions, saved output before publication, stale fencing and distinct publication failure are implemented. Existing workflow names and legacy decoders remain usable.
+2. Creation: draft reference, captured candidate/profile, Start preservation and browser selection are connected.
+3. Durable runtime: task source execution outside transactions, saved output before publication, stale fencing and distinct publication failure are implemented. Discarded pre-POC decoders are removed.
 4. Composition and tests: default authored rehearsal plus injected provider/source boundaries; profile/source display and third-profile data-only unit case are present.
 
 ## Current checkpoint

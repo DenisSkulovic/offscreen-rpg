@@ -1,2 +1,0 @@
-ALTER TABLE "story_passage" ADD COLUMN "source_generation_id" uuid;--> statement-breakpoint
-ALTER TABLE "story_passage" ADD CONSTRAINT "story_passage_source_generation_id_generation_id_fk" FOREIGN KEY ("source_generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;

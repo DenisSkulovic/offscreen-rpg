@@ -30,18 +30,33 @@ export function validateContentState(content: ActionContent, character: Characte
 }
 
 export const resolvedActivityPlanSchema = z.strictObject({
-  version: z.literal(2),
+  version: z.literal(3),
   action: actionDefinitionSchema,
-  startGameTimeMs: z.number().int().nonnegative(),
+  startTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   settingsRevision: z.number().int().positive(),
-  resolvedThroughMs: z.number().int().nonnegative().default(0),
+  resolvedThroughTick: z.number().int().nonnegative().default(0),
 });
 export type ResolvedActivityPlan = z.infer<typeof resolvedActivityPlanSchema>;
 
-/** The cursor is committed game milliseconds, not a count of hours or dice. */
-export function nextBoundaryMs(plan: ResolvedActivityPlan, cursorMs: number) {
-  return Math.min(plan.action.durationMs, ...plan.action.checks.map(
-    (schedule) => (Math.floor(cursorMs / schedule.everyMs) + 1) * schedule.everyMs,
-  ));
+export const tickProgressSchema = z.strictObject({
+  elapsedTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  remainder: z.strictObject({
+    numerator: z.string().regex(/^(0|[1-9]\d*)$/),
+    denominator: z.string().regex(/^[1-9]\d*$/),
+  }).refine((fraction) => BigInt(fraction.numerator) < BigInt(fraction.denominator)),
+});
+
+/** Skip quiet ticks while preserving the earliest due mechanical boundary. */
+export function nextBoundaryTick(plan: ResolvedActivityPlan, cursorTick: number) {
+  const duration = BigInt(plan.action.durationTicks);
+  let next = duration;
+  for (const schedule of plan.action.checks) {
+    const cadence = BigInt(schedule.everyTicks);
+    const candidate = (BigInt(cursorTick) / cadence + 1n) * cadence;
+    if (candidate < next) {
+      next = candidate;
+    }
+  }
+  return Number(next);
 }
 

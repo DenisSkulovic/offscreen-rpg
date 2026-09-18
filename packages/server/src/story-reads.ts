@@ -112,7 +112,7 @@ export function createStoryReads(database: Database) {
           profile: story.storyteller,
           content: storyPassage.content,
           interaction: storyPassage.interaction,
-          activityState: sql<string | null>`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id})`,
+          activityState: sql<string | null>`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id} AND c.tick IS NOT NULL)`,
           wait: storyPassage.waitPlan,
           remaining: storyPassage.remainingMs,
         })
@@ -157,7 +157,6 @@ export function createStoryReads(database: Database) {
           decisionPlan: storyPassage.decisionPlan,
           responseDueAt: storyPassage.responseDueAt,
           dueAt: storyPassage.dueAt,
-          intervalVersion: storyPassage.intervalVersion,
           controlRevision: storyPassage.controlRevision,
           remainingMs: storyPassage.remainingMs,
           usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
@@ -198,7 +197,7 @@ export function createStoryReads(database: Database) {
         throw new StoryError('not_found');
       }
       return storySnapshotSchema.parse({
-        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', game: 1440, real: 1 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, location: null, gameTimeMs: 0, offer: null, activity: null, rolls: [] } : null),
+        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', ticks: 1, realMs: 1000 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, location: null, tick: 0, offer: null, activity: null, rolls: [] } : null),
         id: row.id,
         storyteller:
           row.storyteller == null
@@ -231,7 +230,7 @@ export function createStoryReads(database: Database) {
                     ? timestampIso(row.dueAt, 'interval due time')
                     : null,
                 remainingMs: row.remainingMs,
-                canControl: row.intervalVersion === 1,
+                canControl: true,
                 controlRevision: row.controlRevision,
                 gameDurationMs: waitPlanSchema.parse(row.waitPlan)
                   .gameDurationMs,

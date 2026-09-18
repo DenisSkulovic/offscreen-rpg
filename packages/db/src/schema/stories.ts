@@ -55,7 +55,6 @@ export const storyPassage = pgTable(
     }),
     waitPlan: jsonb('wait_plan').$type<unknown>(),
     dueAt: timestamp('due_at', { withTimezone: true, precision: 3 }),
-    intervalVersion: integer('interval_version').notNull().default(0),
     controlRevision: integer('control_revision').notNull().default(0),
     remainingMs: integer('remaining_ms'),
     content: jsonb('content').notNull().$type<unknown>(),
@@ -83,7 +82,7 @@ export const storyPassage = pgTable(
     check('story_passage_sequence_positive', sql`${t.sequence} > 0`),
     check(
       'story_passage_control_valid',
-      sql`${t.controlRevision} >= 0 AND ${t.intervalVersion} IN (0, 1) AND (${t.remainingMs} IS NULL OR (${t.remainingMs} >= 0 AND ${t.waitPlan} IS NOT NULL AND ${t.intervalVersion} = 1))`,
+      sql`${t.controlRevision} >= 0 AND (${t.remainingMs} IS NULL OR (${t.remainingMs} >= 0 AND ${t.waitPlan} IS NOT NULL))`,
     ),
     check(
       'story_passage_wait_pair',
@@ -91,7 +90,7 @@ export const storyPassage = pgTable(
     ),
     check(
       'story_passage_generation_part',
-      sql`${t.sourceGenerationPart} IS NULL OR (${t.sourceGenerationId} IS NOT NULL AND ${t.sourceGenerationPart} IN ('current', 'arrival'))`,
+      sql`(${t.sourceGenerationId} IS NULL AND ${t.sourceGenerationPart} IS NULL) OR (${t.sourceGenerationId} IS NOT NULL AND ${t.sourceGenerationPart} IN ('current', 'arrival'))`,
     ),
   ],
 );

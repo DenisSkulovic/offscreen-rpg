@@ -11,7 +11,6 @@ import {
   controlledIntervalTopic,
   decisionDeadlineTopic,
   intervalWakeTopic,
-  storyIntervalTopic,
 } from '@offscreen/server/stories';
 import { scriptedOpeningTopic } from '@offscreen/server/scripted-openings';
 import { scriptedContinuationTopic } from '@offscreen/server/scripted-continuations';
@@ -23,8 +22,6 @@ import {
   decisionWorkflowId,
   decisionWorkflowType,
   intervalChangedSignal,
-  intervalWorkflowId,
-  intervalWorkflowType,
   openingWorkflowId,
   openingWorkflowType,
 } from '@offscreen/workflows/contracts';
@@ -65,11 +62,6 @@ const noticeDispatch = {
     workflowType: controlledIntervalWorkflowType,
     workflowId: controlledIntervalWorkflowId,
   },
-  [storyIntervalTopic]: {
-    kind: 'start',
-    workflowType: intervalWorkflowType,
-    workflowId: intervalWorkflowId,
-  },
   [scriptedOpeningTopic]: {
     kind: 'start',
     workflowType: openingWorkflowType,
@@ -87,7 +79,6 @@ export const dispatchedNoticeTopics = [
   storytellerTopic,
   scriptedOpeningTopic,
   scriptedContinuationTopic,
-  storyIntervalTopic,
   controlledIntervalTopic,
   intervalWakeTopic,
   decisionDeadlineTopic,

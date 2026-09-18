@@ -1,1 +1,0 @@
-ALTER TABLE "campaign" ADD COLUMN "content" jsonb;

@@ -1,6 +1,6 @@
 # Tick and tag contracts
 
-Status: required correction, not implemented. The current campaign clock still uses fictional milliseconds and retains hourly compatibility fields. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
+Status: tick correction implemented with pure arithmetic checks; application integration unverified. Tag correction pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
 
 ## Simulation clock
 
@@ -14,7 +14,11 @@ Keep three separate contracts:
 
 Settle earned progress at the old rate before changing pace. Preserve the fractional remainder explicitly; repeated pause/resume or speed changes must neither discard it nor earn it twice. Process due checks in deterministic order, stopping at the first interruption. A batch-size cap limits work per transaction, not the duration of fiction. Real response allowances remain real deadlines, separate from simulation targets.
 
-Existing saved plans and workflow histories require an explicit version transition. Their milliseconds cannot silently become ticks. Inventory their versions before deciding between a declared conversion and a preserved historical decoder. Do not reset stories, rewrite historical receipts, or add a universal one-tick-equals-one-second assumption to avoid that decision.
+This pre-POC codebase supports one current clock contract. Prototype millisecond/hour schemas, decoders and data transitions are deleted instead of carried forward. Development databases may be reset when this schema changes. Never add a universal one-tick-equals-one-second assumption as a substitute for content-owned presentation.
+
+Action content version 2 and activity plan version 3 are the only supported mechanical formats. Their version fields fence malformed or stale local data; they do not imply maintained backward compatibility.
+
+New pace data is `{kind: 'rate', ticks, realMs}` or `{kind: 'instant'}`. Persist earned whole ticks plus a reduced rational tick remainder (decimal integer strings), independently of the resolved-boundary cursor. Integer arithmetic preserves that remainder across any supported rate changes. If a control encounters a backlog beyond one batch, commit that batch, continue catch-up and return a conflict/refresh instead of acknowledging an unapplied control. No speed change can discard that backlog or grant completion effects ahead of it. Only an actual interruption discards earned progress beyond its boundary. Real scheduler wakes may be capped for platform timer limits without capping simulation duration.
 
 ## Tag definitions and applications
 
@@ -47,4 +51,4 @@ A preference for fewer disruptions is guidance to the DM. It is not automaticall
 - Mid-story tone change: revised narrative applications affect newly admitted task context without changing committed facts, pending rolls or captured tasks.
 - Custom tag: its scoped meaning reaches the intended task; unknown mechanical semantics cannot change effects.
 
-These are design constraints. The current implementation has not passed them. Code changes must replace the affected contract across persistence, admission, clock arithmetic, task context and UI as a coherent slice; cosmetic field renames do not constitute completion.
+The tick slice now changes persistence, admission, arithmetic, context and UI coherently. Pure arithmetic checks do not certify the connected application flow. The tag acceptance traces remain design requirements, not implemented behavior.

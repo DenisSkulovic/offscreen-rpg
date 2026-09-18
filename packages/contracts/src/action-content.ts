@@ -8,7 +8,7 @@ const outcomeSchema = z.strictObject({
 });
 export const scheduledCheckSchema = z.strictObject({
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
-  everyMs: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   resolution: z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('ability'), plan: checkPlanSchema }),
     z.strictObject({
@@ -26,12 +26,12 @@ export const actionDefinitionSchema = z.strictObject({
   label: z.string().min(1).max(200),
   description: z.string().min(1).max(500),
   requires: z.array(factSchema).max(16),
-  durationMs: z.number().int().nonnegative().max(31_536_000_000),
+  durationTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
 });
 export const actionContentSchema = z.strictObject({
-  version: z.literal(1),
+  version: z.literal(2),
   id: z.string().min(1).max(100),
   actions: z.array(actionDefinitionSchema).min(1).max(6),
 }).superRefine((content, ctx) => {

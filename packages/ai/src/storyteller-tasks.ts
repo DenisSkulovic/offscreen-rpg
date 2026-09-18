@@ -35,7 +35,7 @@ export const storytellerResultSchema = z.strictObject({
   arrivalNotes: continuityPatchSchema,
 });
 const common = {
-  inputVersion: z.literal(2),
+  inputVersion: z.literal(3),
   promptVersion: z.literal('storyteller.v1'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -154,7 +154,7 @@ export function prepareStorytellerTask(
     ...input,
     context,
     contextManifest,
-    inputVersion: 2,
+    inputVersion: 3,
     promptVersion: 'storyteller.v1',
     request: requestFor(input, context),
   });
@@ -259,11 +259,11 @@ export function validateStorytellerResult(
 
 export function publishedStorytellerSlice(
   output: unknown,
-  sourcePart: 'current' | 'arrival' | null,
+  sourcePart: 'current' | 'arrival',
 ) {
   const result = storytellerResultSchema.parse(output);
   return publishedPlayableFromGeneration({
     output: result.scene,
-    sourcePart: result.scene.version === 1 ? null : sourcePart,
+    sourcePart,
   });
 }

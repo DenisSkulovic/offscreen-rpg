@@ -9,7 +9,7 @@ export const campaign = pgTable('campaign', {
   character: jsonb('character').$type<unknown>(),
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
-  gameTimeMs: bigint('game_time_ms', { mode: 'number' }).notNull(),
+  tick: bigint('tick', { mode: 'number' }).notNull(),
   offer: jsonb('offer').$type<unknown>(),
   activeActivityId: uuid('active_activity_id'),
 });
@@ -32,7 +32,7 @@ export const gameActivity = pgTable('game_activity', {
   state: text('state').notNull(),
   completed: integer('completed').notNull().default(0),
   revision: integer('revision').notNull().default(0),
-  elapsedMs: bigint('elapsed_ms', { mode: 'number' }).notNull(),
+  progress: jsonb('progress').notNull().$type<unknown>(),
   anchorAt: timestamp('anchor_at', { withTimezone: true, precision: 3 }).notNull(),
   pace: jsonb('pace').notNull().$type<unknown>(),
 });
@@ -42,7 +42,7 @@ export const gameRoll = pgTable('game_roll', {
   operationId: uuid('operation_id').notNull(),
   segment: integer('segment').notNull(),
   checkKey: text('check_key').notNull(),
-  gameTimeMs: bigint('game_time_ms', { mode: 'number' }).notNull(),
+  tick: bigint('tick', { mode: 'number' }).notNull(),
   plan: jsonb('plan').notNull().$type<unknown>(),
   result: jsonb('result').notNull().$type<unknown>(),
   effects: jsonb('effects').notNull().$type<unknown>(),

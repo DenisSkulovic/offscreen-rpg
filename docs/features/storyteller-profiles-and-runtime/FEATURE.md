@@ -69,10 +69,10 @@ These definitions are implementable seed content. Their names and wording are tu
 - Save a nullable profile reference on drafts; incomplete and existing drafts remain valid. New generation requires explicit selection. No silent default for pre-existing stories.
 - Changing selection increments the same draft revision as other content. Two-tab conflicts and old-candidate rejection keep their existing semantics.
 - At opening admission, resolve the exact catalogue revision server-side and capture the full validated definition in the immutable request artifact. At Start, copy this captured definition into a separate story-owned storyteller snapshot. Keep premise and operational policy separate.
-- Existing no-profile candidates/stories retain their legacy behavior and remain readable/resolvable. Do not relabel them as either new profile. Preserve actual historical artifact decoders rather than resetting saved data. Legacy draft owners can select a profile and explicitly generate a new candidate.
+- Incomplete drafts may have no profile. A playable candidate requires an explicit profile selection. Discarded pre-POC candidates and stories are reset rather than decoded through compatibility paths.
 - Pin story profile content for the POC; switching style mid-story and automatically upgrading catalogue revisions are deferred. Previously saved old references remain usable while their definition is shipped; missing definitions block new generation with a selection message, never resolve to a newer revision. Existing captured work does not need the catalogue to finish.
 - System constraints and authoritative state outrank all creative preferences. Profile guidance sets the default; optional player direction refines compatible details and can narrow content. Conflicting direction does not silently replace the chosen style. Neither field grants authority, capabilities or spending permission.
-- New profiled artifacts have a new discriminator/version; prompt version, profile revision, task contract and model policy are separate identities. Do not change the meaning of `playable.v1`/`playable.v2` or the existing generation kinds in place.
+- Prompt version, profile revision, task contract and model policy are separate identities. Openings use `playable.v1`; continuations use `playable.v2`. Discarded prototype formats are deleted rather than supported alongside the current contracts.
 
 ## Runtime separation required by the current code
 
@@ -92,7 +92,7 @@ Preserve `current`/`arrival` provenance and existing wait publication. An arriva
 - A third valid profile can be added as data and appear in creation without changing execution, task preparation or commit code. Prove this with a test-only profile, not a production third style.
 - Plain-text setup remains; gameplay exposes offered options only. Forged intentions, profile definitions and effect fields are rejected server-side.
 - Offline input-sensitive fixtures demonstrate two profiles and at least two materially different choice outcomes through the production path; test fixture branches stay in fixture data/source modules.
-- Existing authored chamber and legacy generated saves continue to work. Hidden intentions, profile instructions and prepared futures remain off public DTOs.
+- The authored chamber and current generated flow continue to work. Hidden intentions, profile instructions and prepared futures remain off public DTOs.
 - No provider calls, new agent framework, world simulator or gameplay subsystem are introduced.
 
 ## Decisions still needed

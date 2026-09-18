@@ -154,7 +154,6 @@ Initial inspector should include where applicable:
 - wait plan;
 - dueAt;
 - remainingMs;
-- intervalVersion;
 - controlRevision;
 - decision plan;
 - responseDueAt.

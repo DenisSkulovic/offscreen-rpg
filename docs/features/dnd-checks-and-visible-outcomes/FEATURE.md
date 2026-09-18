@@ -9,7 +9,7 @@ Deliver the first mechanically real POC action: a character attempts a supported
 
 ## Representative flow
 
-Start the pineapple story with an authored character sheet. Select a supported short paid task. See its known terms, then a saved roll such as 14 + 2 + 2 versus DC 12, and the earned currency. Reload: the roll and balance are unchanged. A narration failure shows the mechanical result with narration pending; retry cannot reroll or pay twice. An unsupported action is not silently narrated as mechanically complete.
+Start the pineapple story with an authored character sheet. Attempt to calm Gary. See its known terms, then a saved roll such as 14 + 2 + 2 versus DC 12, and the resulting alert state. Repeat the application path as a microbe responding to its environment over ticks, with no currency or mandatory location. Reload: the roll and consequences are unchanged. A narration failure shows the mechanical result with narration pending; retry cannot reroll or duplicate effects. An unsupported action is not silently narrated as mechanically complete.
 
 ## Scope and boundaries
 
@@ -18,8 +18,8 @@ Six abilities, skill proficiency, captured proficiency bonus, HP and optional st
 ## Acceptance
 
 - The UI shows raw dice, modifiers, result and effect from durable records, not a fake animation or prose extraction.
-- Server rolls and validated rule data determine the result before narration; a failed check can change earnings.
-- Duplicate commands, narration retry and reload preserve one result and one payment.
+- Server rolls and validated rule data determine the result before narration; success and failure apply their declared consequences.
+- Duplicate commands, narration retry and reload preserve one result and one application of effects.
 - Old saved narrative stories remain readable; only explicitly enrolled mechanical stories obtain a character sheet.
 - Context contains the authoritative result, while hidden information remains private.
 

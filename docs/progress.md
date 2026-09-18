@@ -33,27 +33,25 @@ Production web/API dependency builds passed. AI tests passed 21, shared contract
 
 The owner asked to stop spending effort chasing minor green checks. No further polish or broad audits were added. The last quality lint found one inline type-import issue, which was corrected; a final lint rerun was not performed.
 
-The selected regression scope includes the new profiled suite plus existing Start and generated-resolution integrations. It exercises the real PostgreSQL/Temporal/browser boundary without inference. The full auth and all legacy suites are not rerun by default on this laptop. Automated structural checks cannot certify profile fidelity, meaningful live agency, enjoyable prose or sustained model continuity.
+The selected regression scope includes the profiled suite plus Start and generated-resolution integrations. It exercises the real PostgreSQL/Temporal/browser boundary without inference. The full auth suite is not rerun by default on this laptop. Automated structural checks cannot certify profile fidelity, meaningful live agency, enjoyable prose or sustained model continuity.
 
-## Mechanical POC and customization — connected authored slice
+## Mechanical POC and customization — authored slice with tick clock
 
-**Known architectural blockers:** simulation must use ticks with separate real-time scheduling and optional fictional calendar presentation. Current code instead uses fictional milliseconds and retains hourly fields. The creative settings/tag implementation also falls short of the documented definition, revision, scope and conflict contract. Global `surprises` and `emphasis` enums are not a tag system. [Tick and tag contracts](technical/ticks-and-tags.md) records the required correction; it is not implemented. The connected path below does not establish architectural acceptance.
+The current development branch is `codex/mechanical-runtime-checkpoint`, based on pushed checkpoint `a77fe13`. The tick/retry correction is uncommitted. Nothing from this pass was merged into `main` or pushed.
 
-Review disposition: preserve the current work on `codex/mechanical-runtime-checkpoint` as an unfinished development checkpoint, without merging into `main`. Source review fixed creation-setting retry matching and misleading encounter-frequency labelling. Runtime/build checks remain skipped. Context-preparation failure isolation and recovery after a later profile switch remain recorded in the owning plan alongside the tick/tag blockers.
+New mechanical actions use integer ticks across captured content, durations/cadences, admission, workers, receipts, narration context and UI. Real pacing is ticks per real duration, with exact rational fractional progress retained across pause/resume and speed changes. Catch-up commits bounded batches before accepting controls. An interruption stops subsequent checks and completion effects. No human calendar, currency, profession or location is mandatory. Start recovery now compares the creation profile even after a storyteller switch.
 
-The architecture repair replaces the scenario-coupled command loop with captured action definitions, fact prerequisites, typed effects and a millisecond clock. Immediate and timed actions use one resolver. Independent ability and event schedules can coexist; an interruption stops future progress and completion effects. Core execution has no currency, profession, coastal route or storyteller-name branch.
+The pineapple and microbe remain authored examples. Terminal outcomes use the existing consequence narrator, execution/accounting, publication and recovery path; the narrator copies available actions rather than generating new mechanical opportunities. The current code is **not a tool-using DM agent**. The required tag contract is also incomplete: global `surprises`/`emphasis` and id/description-only tags remain. Context preparation still occurs inside mechanical settlement and can roll back valid outcomes if assembly fails. These are explicit blockers in the [shared implementation checkpoint](features/dnd-checks-and-visible-outcomes/PLAN.md).
 
-Opening preview explicitly selects pineapple or microbe content and captures the character, action definitions and reviewed choices. Start preserves that content. The microbe has no quantities or location and includes a possible environmental interruption during its ten-second response. No-choice is an explicit held state. These are small authored examples, not arbitrary-premise generation.
+The migration history is squashed to one current baseline. The intermediate schema steps and their millisecond/hour compatibility code were deleted. This pre-POC project resets discarded local data rather than carrying it into the architecture. Narrative prepared waits remain a separate current feature. No migration was applied.
 
-Terminal outcomes now admit a consequence task through the existing storyteller execution, accounting, publication, continuity and retry machinery. Its context contains saved dice/effects, character state, opportunities and creative settings. Failed narration leaves the deterministic outcome visible and cannot reroll it. The offline narrator repeats the factual summary; it does not improvise arbitrary styles or tags.
+Six pure clock tests passed through `node --test packages/server/test/tick-clock.test.mjs` (about 0.35 seconds inside Node). No application build, typecheck, lint or integration/browser playthrough was run. A Node source-module detection warning remains. Earlier broader test evidence above applies to earlier code, not this patch.
 
-The four mechanical/customization features remain partial: generated opportunity/adjudication, broader mechanical rules and richer interruption continuation remain open. See the [current repair checkpoint](features/dnd-checks-and-visible-outcomes/PLAN.md). This is a concrete connected foundation, not completion of arbitrary generated gameplay.
-
-Migration 0017 adds captured content without rewriting existing records. Earlier prototype stories remain inspectable with an explicit unavailable message; their old mechanics are retired. No migration was applied, and no builds/tests/lint/runtime checks were run. Migration generation only created local files. Earlier test evidence applies to earlier code.
+Next: isolate durable narration preparation, implement definition/application tags, then the [bounded DM planning agent and generated choice loop](features/contextual-option-agency/PLAN.md). Optional calendar presentation, full combat, new fact admission and resuming interrupted plans are still unfinished. Do not treat moving fixtures into data or reaching a prompt as proof of generic generated play.
 
 ## Current focus and next gate
 
-The three [storyteller features](features/README.md#storyteller-poc-sequence) hold the current review checkpoints. Generic runtime, continuity, provider adapter, simulated accounting and local UI are implemented. The focused offline checks have passed; any live evaluation remains a separate gate. Retained feature documents provide implementation/review contracts; they are not permission to spend.
+The [shared mechanical checkpoint](features/dnd-checks-and-visible-outcomes/PLAN.md) is the active continuation point. The earlier storyteller runtime, continuity, provider adapter, simulated accounting and local UI are foundations; generated mechanical planning and agent tools are not yet implemented. Any live evaluation remains a separate gate. Retained feature documents provide implementation/review contracts; they are not permission to spend.
 
 Before the first paid run, define a concrete small evaluation, verify current route/pricing and actual remaining allowance, provision explicit account/run limits, and establish operator reconciliation/stop procedures. The owner must deliberately reopen live evaluation under [spending](../.agents/rules/spending.md). No automatic repairs, fallback routes, autonomous calls or model judges should be added to make an unsuccessful evaluation look better.
 
@@ -61,7 +59,7 @@ The later real playthrough must score profile adherence, intention fidelity, opt
 
 ## Deferred depth
 
-The full Chamber laboratory, multiplayer, notifications, campaign pace, dynamic interruptions, richer entity state and hosted onboarding remain separate product work. A coherent small solo game does not require detailed population simulation, interactive 3D maps or an agent per NPC. New complexity should earn its place through observed failures in the playable loop.
+The full Chamber laboratory, multiplayer, notifications, calendar presentation, richer interruptions and entity state and hosted onboarding remain separate product work. A coherent small solo game does not require detailed population simulation, interactive 3D maps or an agent per NPC. New complexity should earn its place through observed failures in the playable loop.
 
 No live model calls occurred during this implementation. Provider spend is $0; cumulative OpenRouter account usage has not been verified. Local scripted testing remains the default.
 

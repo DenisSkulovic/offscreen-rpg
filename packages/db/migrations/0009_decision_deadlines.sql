@@ -1,5 +1,0 @@
-ALTER TABLE "story_passage" ADD COLUMN "response_source" text;--> statement-breakpoint
-ALTER TABLE "story_passage" ADD COLUMN "decision_plan" jsonb;--> statement-breakpoint
-ALTER TABLE "story_passage" ADD COLUMN "response_due_at" timestamp (3) with time zone;--> statement-breakpoint
-ALTER TABLE "story_passage" ADD CONSTRAINT "story_passage_decision_valid" CHECK (("story_passage"."decision_plan" IS NULL) = ("story_passage"."response_due_at" IS NULL) AND ("story_passage"."decision_plan" IS NULL OR ("story_passage"."interaction" IS NOT NULL AND "story_passage"."wait_plan" IS NULL)));--> statement-breakpoint
-ALTER TABLE "story_passage" ADD CONSTRAINT "story_passage_response_source_valid" CHECK ("story_passage"."response_source" IS NULL OR ("story_passage"."response" IS NOT NULL AND "story_passage"."response_source" IN ('player', 'default')));

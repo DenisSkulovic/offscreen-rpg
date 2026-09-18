@@ -23,7 +23,7 @@ export const contextInputSchema = z.strictObject({
   }).optional(),
   resolution: z.strictObject({
     character: characterSchema,
-    gameTimeMs: z.number().nonnegative(),
+    tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
     offer: offerSchema,
     receipts: z.array(z.strictObject({ id: z.uuid(), roll: rollSchema, effects: outcomeEffectsSchema })).max(192),
   }).optional(),

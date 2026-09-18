@@ -65,7 +65,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const shouldPoll =
     story.resolution?.state === 'pending' ||
     story.resolution?.state === 'running' ||
-    waiting != null || (!story.campaign?.unavailableReason && story.campaign?.activity?.state === 'running');
+    waiting != null || story.campaign?.activity?.state === 'running';
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));

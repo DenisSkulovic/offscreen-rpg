@@ -73,13 +73,6 @@ export function createWorkerActivities(collaborators: {
         mapStoryActivityError(error, 'IntervalStateError');
       }
     },
-    async advanceStoryInterval(id) {
-      try {
-        return await stories.advanceInterval({ intervalId: id });
-      } catch (error) {
-        mapStoryActivityError(error, 'IntervalStateError');
-      }
-    },
     async completeScriptedOpening(id) {
       try {
         await openings.complete(id);

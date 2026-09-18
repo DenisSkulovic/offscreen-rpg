@@ -20,6 +20,11 @@ import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { decisionPlanSchema, waitPlanSchema } from './story-plans';
 
+const hasCompleteGenerationProvenance = (value: {
+  sourceGenerationId?: string | null;
+  sourceGenerationPart?: string | null;
+}) => Boolean(value.sourceGenerationId) === Boolean(value.sourceGenerationPart);
+
 export const initialStorySchema = z.strictObject({
   source: z.string().min(1).max(100),
   storyteller: storytellerProfileSchema.nullable().optional(),
@@ -30,7 +35,7 @@ export const initialStorySchema = z.strictObject({
   items: storyItemsSchema.default([]),
   content: passageContentSchema,
   interaction: interactionSpecificationSchema.nullable(),
-});
+}).refine(hasCompleteGenerationProvenance, { message: 'Generation provenance must include identity and part' });
 
 export const continuationSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
@@ -42,7 +47,7 @@ export const continuationSchema = z.strictObject({
   decision: decisionPlanSchema.nullable().default(null),
   sourceGenerationId: z.uuid().nullable().optional(),
   sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
-});
+}).refine(hasCompleteGenerationProvenance, { message: 'Generation provenance must include identity and part' });
 
 export type InitialStory = z.infer<typeof initialStorySchema>;
 export type StoryContinuation = z.infer<typeof continuationSchema>;
@@ -175,7 +180,6 @@ export function intervalControlReceiptMatches(
 
 export function isControllableInterval<
   Interval extends {
-    intervalVersion: number;
     waitPlan: unknown;
     controlRevision: number;
   },
@@ -185,7 +189,6 @@ export function isControllableInterval<
 ): interval is Interval {
   return (
     interval !== undefined &&
-    interval.intervalVersion === 1 &&
     interval.waitPlan !== null &&
     interval.controlRevision === expectedControlRevision
   );

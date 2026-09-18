@@ -8,7 +8,7 @@ Implementation owner: Codex, explicitly assigned by the owner.
 
 ### Phase 1: revisions, compilation and commands (next ready)
 
-Dependencies: existing profiled runtime; can be implemented independently of dice. Owners: db, server settings operation, contracts and AI context compilation. Follow technical/story-settings.md for exact revision fields, limits, precedence and command semantics. Inspect `storyteller-start.ts`, `storyteller-admission.ts` and publication fences. Backfill profiled stories from their stored profile, not catalogue defaults; retain legacy fixture behavior. Capture a settings revision in every new task, with mechanical offer terms pinned separately. Saving settings changes view/settings revision, not narrative revision or in-flight task inputs. Exit: explicit settings updates preserve valid pending publication and lock policy.
+Dependencies: existing profiled runtime; can be implemented independently of dice. Owners: db, server settings operation, contracts and AI context compilation. Follow technical/story-settings.md for exact revision fields, limits, precedence and command semantics. Inspect `storyteller-start.ts`, `storyteller-admission.ts` and publication fences. Capture a settings revision in every new task, with mechanical offer terms pinned separately. Saving settings changes view/settings revision, not narrative revision or in-flight task inputs. Exit: explicit settings updates preserve valid pending publication and lock policy.
 
 ### Phase 2: editor, private presets and creation lock
 
@@ -18,7 +18,4 @@ Optional evidence: saved-revision/retry example, pending-generation switch and s
 
 ## Current checkpoint
 
-- Status: connected authored mechanical slice implemented; full feature acceptance remains partial. The shared resolver and consequence narrator now use captured action content and the existing execution/publication/retry lifecycle.
-- Follow the [current repair checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md) for the delivered boundary, remaining generated opportunity/adjudication work and next action. Do not recreate the retired scenario-specific path.
-- Base: `ae9d144`; implementation remains uncommitted. Migration 0017 adds captured content; it has not been applied. Earlier prototype records remain inspectable with explicit unsupported status.
-- Verification: source review only. No builds/tests/lint/runtime checks or live calls. Provider spend $0; cumulative account usage unverified.
+Follow the [shared implementation checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.

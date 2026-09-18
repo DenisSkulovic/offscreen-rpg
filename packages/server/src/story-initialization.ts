@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { interactionSchema } from '@offscreen/contracts/interactions';
 import type { Database } from '@offscreen/db';
 import { story, storyItem, storyPassage } from '@offscreen/db/story-schema';
+import { campaignSettings } from '@offscreen/db/campaign-schema';
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import {
@@ -50,10 +51,13 @@ export async function initializeStoryInTransaction(
     if (!priorStory || priorStory.ownerId !== ownerId) {
       throw new StoryError('not_found');
     }
+    const [creationSettings] = await tx.select({ profile: campaignSettings.profile })
+      .from(campaignSettings)
+      .where(and(eq(campaignSettings.storyId, storyId), eq(campaignSettings.revision, 1)));
     if (
       priorStory.source !== input.source ||
       !isDeepStrictEqual(
-        priorStory.storyteller ?? null,
+        creationSettings?.profile ?? priorStory.storyteller ?? null,
         input.storyteller ?? null,
       ) ||
       !isDeepStrictEqual(priorStory.execution ?? null, input.execution ?? null)

@@ -35,7 +35,7 @@ export async function admitConsequenceNarration(tx: Transaction, current: StoryR
     profile: storytellerProfileSchema.parse(current.storyteller),
     execution: executionPolicySchema.parse(current.execution),
     context: contextInputSchema.parse({ ...context, resolution: {
-      character: characterSchema.parse(state.character), gameTimeMs: state.gameTimeMs,
+      character: characterSchema.parse(state.character), tick: state.tick,
       offer: offerSchema.parse(state.offer),
       receipts: rolls.map((roll) => ({ id: roll.id, roll: roll.result, effects: roll.effects })),
     } }),

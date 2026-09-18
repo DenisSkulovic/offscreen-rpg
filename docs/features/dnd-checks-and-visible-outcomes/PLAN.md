@@ -1,35 +1,27 @@
-# D&D and storyteller repair checkpoint
+# D&D and storyteller implementation checkpoint
 
 ## Current checkpoint
 
-**Blocking correction:** the owner reaffirmed tick-based simulation and a properly designed tag system. The prior repair still violates both boundaries. Its millisecond game clock, hourly public/legacy fields, global `surprises`/`emphasis` enums and identity/description-only tags are not accepted architecture. Follow [Tick and tag contracts](../../technical/ticks-and-tags.md) before further implementation. The required tick/tag correction has not been implemented; do not report this slice as architecturally repaired.
+- Authorization: the owner requested continued fixes and movement toward the real agentic POC on 2026-09-18. Codex owns this slice. Live inference remains disabled; checks remain optional.
+- Base: `a77fe13` on `codex/mechanical-runtime-checkpoint`. This pass is uncommitted; nothing was merged or pushed.
+- Implemented: simulation ticks across content, admission, settlement, controls, receipts, narrator context and UI; exact rational fractional progress; bounded old-rate catch-up before controls. Start retry compares the creation profile rather than the mutable current profile.
+- Persistence: migration history is squashed into one current `0000_initial_schema.sql`. Prototype migrations, protocol flags, millisecond/hour columns, converters, decoders, historical DTOs and inspection UI were deleted. Local pre-POC databases must be reset rather than migrated. Content version 2 and plan version 3 are the only mechanical formats.
+- Evidence: source review of admission, control/retry, batching and the clean migration. `node --test packages/server/test/tick-clock.test.mjs`: 6 passed, about 0.35 seconds inside Node. Only pure clock code and type-only contracts are imported. A Node module-detection warning remains. No builds, typechecks, lint, application launch or integrated playthrough.
+- Provider spend: $0. Cumulative account usage unverified.
 
-- Authorized: owner requested implementation of the audit fixes on 2026-09-18.
-- Base: `ae9d144`. The owner authorized review, edits, commit and push. Publish this work as an unfinished development checkpoint on `codex/mechanical-runtime-checkpoint`; it is not approved for integration into `main`.
-- Implemented: captured action content, explicit opening source selection, declared fact effects, content-defined skills, shared immediate/timed resolver, independent check schedules, constrained offers and connected consequence narration through the existing execution/publication/retry machinery.
-- Removed: core work/fish/coast/cross semantics, mandatory location, special profile/tag voice branches, Start-time scenario inference and instant timed-action shortcuts.
-- Persistence: new nullable content migration 0017 generated, not applied. Old prototype records are retained for inspection with an explicit unsupported notice; no database reset or historical plan rewrite.
-- Review: traced action admission, clock settlement, consequence publication/retry, snapshot reads, migrations and UI wiring. Fixed Start retries silently accepting changed creation lock/pace; corrected a narrative preference labelled as mechanical encounter frequency; put the package type export before its runtime fallback. Tick/tag blockers remain unresolved. No builds, tests, lint or runtime playthrough. Migration generation produced a file; it did not connect to the database or apply SQL.
-- Provider spend: $0. Cumulative account usage unverified. Live inference remains disabled.
+## Design trace
 
-## Delivered boundary
+The invariant is ordered ticks and authoritative checks/effects, independent of prose or world scale. The pineapple uses immediate persuasion/cover and a twelve-tick quiet interval. The microbe uses eight ticks with separate environmental checks every four ticks, no quantity and no location. Neither grants a default fictional duration to a tick. A distributed consciousness uses the same integer positions without a human calendar or one model call per tick. Optional calendar presentation is not implemented.
 
-The implementation contract is maintained in [Rules and activities](../../technical/rules-and-activities.md). Mechanical action admission captures data, checks prerequisites and records commitment. The worker resolves due checks/effects. Terminal outcomes queue a separate consequence task with mandatory receipts and captured creative context. Narration uses the same offline/provider runner, ledger, generation records, notes, revision fences and recovery as other storyteller tasks. Failed narration cannot reroll an action.
+Earned progress and resolved boundaries are distinct. Fractions survive controls before the first boundary. A batch cap cannot discard earned time; an interruption can discard progress after its own boundary because that future never occurred. Instant still resolves ordered checks. Numeric bounds protect exact arithmetic, not a one-year fictional limit.
 
-Selected content owns the character, facts, opportunities, checks and prose. The executor never interprets an action, world or profile name. Both selectable examples use the same application path. SpongeBob begins with persuasion/cover under an explicit threat; the microbe responds over ten seconds with no currency or geography. Their consequences change declared facts. A pilot's interruption and a wizard's containment fit the same schedule/fact prerequisites without adding executor branches; those are design traces, not delivered scenarios.
+## Remaining blockers and exact next action
 
-The six D&D abilities and HP remain selected ruleset data. Fact/quantity effects are supported primitives, not a promise of general physics. A zero-duration action is explicit; every positive duration obeys the clock. Schedule ordering is captured, and an interrupt stops later checks and completion rewards. Batches are bounded separately from fictional duration.
+This remains a connected **authored** slice, not the generative DM POC. Do not describe task context or profile data as a working tool-using agent.
 
-## Remaining feature work
+1. **Next: isolate consequence preparation.** `settleActivity` still assembles context inside the mechanical transaction. A preparation failure can roll back valid rolls/effects. Persist a durable consequence intent/hold with the outcome, prepare its immutable request afterward, and expose preparation failure/retry without reopening resolution. Capture state/settings/evidence boundaries so delayed preparation cannot use a different scene. Reuse existing execution/accounting/publication after preparation.
+2. **Tag contract/editor.** Follow [ticks-and-tags](../../technical/ticks-and-tags.md): definition identity/revision, scope, parameter shape, authority and application snapshots, deterministic preset/override/removal semantics and task-specific compilation. Replace `emphasis`/`surprises` and id/description-only tags. Tags cannot select code or promote themselves into mechanical authority.
+3. **Real generated choice loop.** Implement the bounded tool-using opportunity/adjudication task in [the agency plan](../contextual-option-agency/PLAN.md). Validate proposed tick plans before offering commitments, roll after selection and supply saved outcomes to subsequent planning/narration. Authored content must become a substitute source for that same contract.
+4. **Connected POC exercise.** Then exercise preview, selection, d20/effect, narration, fresh choices and timed interruption locally. Live evaluation requires deliberate reopening of spending. Checks remain optional.
 
-The original four features remain partial. This repair establishes a connected authored mechanical slice; it does not complete arbitrary generated play.
-
-First implement the tick/tag contract above. Also separate narration preparation failure from mechanical settlement: context assembly currently occurs inside the effects transaction, so an oversized context can roll back an otherwise valid outcome instead of retaining it behind a narration hold. The present fixtures are small, but the broader contract must handle that failure explicitly. Start recovery after a subsequent storyteller switch also still compares the mutable current profile in generic initialization; recovery should compare the captured creation identity.
-
-1. Add a bounded opportunity/adjudication task for generated situations. Inputs should include relevant authoritative facts, capabilities, evidence and allowed effect vocabulary. Validate proposals into the existing action-content contract. Do not expand the consequence narrator into a monolithic DM or let prose grant effects.
-2. Expand authored content beyond the microbe example with its independent environmental interruption and follow-up wait. Route resumption is currently a new intention, not automatic continuation of the old plan. Secret encounter disclosure and richer event tables remain unimplemented; the current event rule uses a captured d20 threshold separate from ability success.
-3. Improve opportunity composition beyond six captured leaf actions and fact conjunctions. Preserve zero/one/many outcomes and finite menus without invented filler or unsupported commitments.
-4. Exercise the connected preview → action → time → receipts → narration/retry path when the owner elects to run the application. Checks remain optional; no broad test campaign is a completion ritual.
-
-Do not describe tags, model style fidelity or arbitrary-world improvisation as working merely because their data reaches a prompt. The offline narrator intentionally repeats the saved outcome summary. The owner has not authorized live evaluation.
-
+Other observed limits: same-tick roll history sorts by random UUID, so latest-100 ordering is not reliable for many immediate actions; add a stable committed order when revisiting the ledger. Broad D&D combat/damage, new world-fact admission, secret encounters, agency beyond six captured actions and resuming interrupted commitments remain unfinished.

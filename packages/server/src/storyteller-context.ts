@@ -1,5 +1,4 @@
-import { campaign } from '@offscreen/db/campaign-schema';
-import { loadCampaignSettings } from './campaign-settings';
+import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { and, desc, eq, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
@@ -76,7 +75,12 @@ export async function loadStorytellerContext(
     .from(storyItem)
     .where(eq(storyItem.storyId, input.storyId));
   const [settingsRow] = await tx.select().from(campaign).where(eq(campaign.storyId, input.storyId));
-  const captured = settingsRow ? await loadCampaignSettings(tx, input.storyId, settingsRow.settingsRevision) : null;
+  const [captured] = settingsRow ? await tx.select({ settings: campaignSettings.settings })
+    .from(campaignSettings)
+    .where(and(eq(campaignSettings.storyId, input.storyId), eq(campaignSettings.revision, settingsRow.settingsRevision))) : [];
+  if (settingsRow && !captured) {
+    throw new Error('Missing captured campaign settings');
+  }
   return contextInputSchema.parse({
     ...(captured ? { campaignSettings: captured.settings } : {}),
     premise: input.premise,

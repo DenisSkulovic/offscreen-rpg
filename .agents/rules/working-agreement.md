@@ -12,7 +12,7 @@ Documentation describes the current design. Replace or delete obsolete text in p
 
 ## Lifecycle and scope
 
-This is a very raw POC/MVP, intended for intensive daily evolution and a strong senior fullstack portfolio. Bold redesigns are expected when they improve the approved product. Do not retain internal compatibility layers, unused abstractions or migration machinery solely for hypothetical production users. Still account explicitly for actual saved stories, workflow histories, credentials and destructive actions.
+This is a very raw POC/MVP, intended for intensive daily evolution and a strong senior fullstack portfolio. Bold redesigns are expected when they improve the approved product. The current project has no production or user-owned game data: discarded prototype schemas, saves and workflow formats must be reset and removed, not preserved through compatibility code, historical DTOs, decoders or migration chains. Retain compatibility only after the owner explicitly declares a lifecycle change or identifies data that must survive. Credentials and external side effects always require explicit accounting.
 
 Build in balanced passes across meaningful user flows. Do not perfect a small subsystem while major parts of the experience remain disconnected. Keep fixture behavior honest: scripted tests are not a functioning AI storyteller. The core is world-independent: D&D checks, storyteller judgment and time. Currency, employment, wages, species and example activities belong to scenario content, never mandatory character or outcome fields. Do not turn a brainstorming example into a universal mechanic. Favor generic story progression over simulations for every activity or population.
 

@@ -163,11 +163,11 @@ test('continuation v2 rejects mixed, extra and invalid duration states', () => {
 });
 
 test('publication recovery uses the declared generation part', () => {
-  const legacy = publishedPlayableFromGeneration({
+  const opening = publishedPlayableFromGeneration({
     output: v1Proposal,
-    sourcePart: null,
+    sourcePart: 'current',
   });
-  assert.equal(legacy.next.kind, 'choice');
+  assert.equal(opening.next.kind, 'choice');
   const currentImmediate = publishedPlayableFromGeneration({
     output: immediate,
     sourcePart: 'current',
@@ -190,9 +190,6 @@ test('publication recovery uses the declared generation part', () => {
       output: v1Proposal,
       sourcePart: 'arrival',
     }),
-  );
-  assert.throws(() =>
-    publishedPlayableFromGeneration({ output: timed, sourcePart: null }),
   );
   assert.throws(() =>
     publishedPlayableFromGeneration({
@@ -247,7 +244,7 @@ test('arrival provenance recovers the exact hidden intention for continuation ca
   );
 });
 
-test('v1 proposals remain a supported opening/legacy publication', () => {
+test('v1 opening proposals publish from declared current provenance', () => {
   assert.equal(playableProposalSchema.parse(v1Proposal).version, 1);
   assert.equal(
     publishedPlayableFromGeneration({

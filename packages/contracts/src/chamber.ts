@@ -95,7 +95,6 @@ export const chamberInspectorSchema = z.strictObject({
     waitPlan: z.unknown().nullable(),
     dueAt: isoDateTime.nullable(),
     remainingMs: z.number().int().nonnegative().nullable(),
-    intervalVersion: z.number().int().nonnegative(),
     controlRevision: z.number().int().nonnegative(),
     decisionPlan: z.unknown().nullable(),
     responseDueAt: isoDateTime.nullable(),

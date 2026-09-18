@@ -50,7 +50,7 @@ No embeddings, separate extraction call, graph database, universal entity schema
 
 ## Agency contract
 
-For new profiled generations, offer 2–5 plausible choices. Aim for three; fewer are better than invented nonsense. Enforce count, nonblank labels/intentions, unique IDs and normalized label uniqueness. Keep existing legacy decoding limits. A visible label must honestly convey the attempted goal and apparent commitment; its private intention may clarify execution but cannot smuggle in a different action.
+Offer 2–5 plausible choices in the narrative rehearsal. Aim for three; fewer are better than invented nonsense. Enforce count, nonblank labels/intentions, unique IDs and normalized label uniqueness. A visible label must honestly convey the attempted goal and apparent commitment; its private intention may clarify execution but cannot smuggle in a different action.
 
 Quality requirements, judged against concrete continuations rather than claimed by schema validation:
 

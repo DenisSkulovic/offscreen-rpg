@@ -121,6 +121,7 @@ export function createStoryStart(database: Database) {
         input: {
           source: playableOpeningStorySource,
           sourceGenerationId: generationId,
+          sourceGenerationPart: 'current',
           premise: premiseContentSchema.parse({
             title: draft.title,
             premise: draft.premise,

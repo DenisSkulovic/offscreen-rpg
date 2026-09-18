@@ -78,7 +78,7 @@ export function ChamberInspectorPanel(args: {
               />
               <Field
                 label="Source generation part"
-                value={inspection.current.sourceGenerationPart ?? 'legacy'}
+                value={inspection.current.sourceGenerationPart ?? 'None'}
               />
               <Field label="Title" value={inspection.current.content.title} />
               <Field
@@ -100,10 +100,6 @@ export function ChamberInspectorPanel(args: {
                     ? 'None'
                     : String(inspection.timing.remainingMs)
                 }
-              />
-              <Field
-                label="Interval version"
-                value={String(inspection.timing.intervalVersion)}
               />
               <Field
                 label="Control revision"

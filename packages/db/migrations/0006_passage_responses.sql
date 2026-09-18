@@ -1,1 +1,0 @@
-ALTER TABLE "story_passage" ADD COLUMN "response" jsonb;

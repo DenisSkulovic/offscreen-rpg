@@ -6,15 +6,15 @@ import { lockOwnedStory, readDatabaseClockMs, incrementStoryViewVersion } from '
 import { requireCampaign } from './campaign-persistence';
 import { commandReceipt, saveCommand, loadCampaignSettings } from './campaign-settings';
 import { settleActivity, scheduleActivity } from './campaign-activities';
-import { elapsedGameMs } from './rules/clock';
-import { resolvedActivityPlanSchema } from './rules/action-content';
+import { earnedTicks } from './rules/tick-clock';
+import { resolvedActivityPlanSchema, tickProgressSchema, nextBoundaryTick } from './rules/action-content';
 import { StoryError } from './story-errors';
 
 export function createCampaignControls(database: Database) {
   return async function control(args: { ownerId: string; storyId: string; operationId: string; body: unknown }) {
     const parsed = activityControlSchema.safeParse(args.body);
     if (!parsed.success) throw new StoryError('invalid');
-    await database.db.transaction(async (tx) => {
+    const result = await database.db.transaction(async (tx) => {
       const current = await lockOwnedStory(tx, args);
       const request = { kind: 'activity-control', ...parsed.data };
       if (await commandReceipt(tx, current.id, args.operationId, request)) return;
@@ -34,9 +34,20 @@ export function createCampaignControls(database: Database) {
       }
       const oldPace = paceSchema.parse(settled.activity.pace);
       const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
-      const elapsedMs = elapsedGameMs({ ...settled.activity, pace: oldPace, now, durationMs: plan.action.durationMs });
-      const nextState = parsed.data.action === 'pause' ? 'paused' : parsed.data.action === 'resume' ? 'running' : settled.activity.state;
-      await tx.update(gameActivity).set({ state: nextState, elapsedMs, anchorAt: new Date(now), pace: parsed.data.pace ?? oldPace, revision: settled.activity.revision + 1 }).where(eq(gameActivity.id, activity.id));
+      const progress = earnedTicks({ ...settled.activity, progress: tickProgressSchema.parse(settled.activity.progress), pace: oldPace, now, durationTicks: plan.action.durationTicks });
+      if (settled.activity.state === 'running' && nextBoundaryTick(plan, plan.resolvedThroughTick) <= progress.elapsedTicks) {
+        // Commit the batch and continue catch-up before accepting a control.
+        // Throwing inside this transaction would undo the progress just made.
+        await scheduleActivity(tx, activity.id);
+        return 'catching-up' as const;
+      }
+      let nextState = settled.activity.state;
+      if (parsed.data.action === 'pause') {
+        nextState = 'paused';
+      } else if (parsed.data.action === 'resume') {
+        nextState = 'running';
+      }
+      await tx.update(gameActivity).set({ state: nextState, progress, anchorAt: new Date(now), pace: parsed.data.pace ?? oldPace, revision: settled.activity.revision + 1 }).where(eq(gameActivity.id, activity.id));
       if (parsed.data.pace) {
         const previous = await loadCampaignSettings(tx, current.id, state.settingsRevision);
         const revision = state.settingsRevision + 1;
@@ -47,5 +58,8 @@ export function createCampaignControls(database: Database) {
       await saveCommand(tx, current.id, args.operationId, request);
       if (nextState === 'running') await scheduleActivity(tx, activity.id);
     });
+    if (result === 'catching-up') {
+      throw new StoryError('conflict');
+    }
   };
 }

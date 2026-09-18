@@ -19,11 +19,11 @@ This local solo milestone precedes broader shared-play, notification and hosted-
 
 ## Mechanical POC and customization
 
-Partially implemented following the owner's 2026-09-18 authorization; source review found architecture blockers. Start with the [shared repair plan](dnd-checks-and-visible-outcomes/PLAN.md). Checks were not run. These handoffs extend the narrative rehearsal into a rules-based game. Suggested delivery order puts visible dice first; settings may proceed independently after its current runtime dependency. Checks remain optional, and no live spending is authorized.
+Partially implemented following the owner's 2026-09-18 authorization; source review found architecture blockers. Start with the [shared repair plan](dnd-checks-and-visible-outcomes/PLAN.md). The tick arithmetic has a small source-only check; integrated runtime checks remain skipped. These handoffs extend the narrative rehearsal into a rules-based game. Suggested delivery order puts visible dice first; settings may proceed independently after its current runtime dependency. Checks remain optional, and no live spending is authorized.
 
 1. [D&D checks and visible outcomes](dnd-checks-and-visible-outcomes/FEATURE.md) — authoritative rolls, character state and effects before narration.
 2. [Situation-dependent options](contextual-option-agency/FEATURE.md) — broad menus, feasible constrained responses and typed actions.
 3. [Editable storyteller settings](editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
-4. [Hourly activities and pace](hourly-activities-and-pace/FEATURE.md) — work/travel segments, encounter boundaries and speed controls; depends on rules and settings.
+4. [Tick-based activities and pace](tick-activities-and-pace/FEATURE.md) — scheduled checks, interruption boundaries and speed controls; depends on rules and settings.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

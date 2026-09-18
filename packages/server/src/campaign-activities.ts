@@ -6,10 +6,10 @@ import { paceSchema } from '@offscreen/contracts/campaign';
 import { enqueue, type Transaction } from './outbox';
 import { lockStoryById, readDatabaseClockMs, type StoryRecord } from './story-persistence';
 import { requireCampaign, campaignCharacter, recordRoll, refreshOffer, appendMechanicalPassage, type ActivityRecord, type CampaignRecord } from './campaign-persistence';
-import { resolvedActivityPlanSchema, nextBoundaryMs } from './rules/action-content';
+import { resolvedActivityPlanSchema, tickProgressSchema, nextBoundaryTick } from './rules/action-content';
 import { resolveScheduledCheck } from './rules/checks';
 import { applyOutcomeEffects } from './rules/effects';
-import { elapsedGameMs, waitUntilBoundary } from './rules/clock';
+import { earnedTicks, wholeTicks, realMsUntilTick } from './rules/tick-clock';
 import { admitConsequenceNarration } from './campaign-narration';
 
 export const campaignActivityTopic = 'campaign.activity.v1';
@@ -24,21 +24,21 @@ export async function settleActivity(tx: Transaction, current: StoryRecord, stat
     return { activity, current, state };
   }
   const pace = paceSchema.parse(activity.pace);
-  const elapsedMs = elapsedGameMs({ ...activity, pace, now, durationMs: plan.action.durationMs });
-  let cursorMs = plan.resolvedThroughMs;
+  const progress = earnedTicks({ ...activity, progress: tickProgressSchema.parse(activity.progress), pace, now, durationTicks: plan.action.durationTicks });
+  let cursorTick = plan.resolvedThroughTick;
   let completed = activity.completed;
   let nextState = 'running';
   let character = campaignCharacter(state);
   const lines: string[] = [];
   // The batch cap limits transaction work, not fictional duration or check cadence.
   for (let boundaryCount = 0; boundaryCount < 24; boundaryCount++) {
-    const boundaryMs = nextBoundaryMs(plan, cursorMs);
-    if (boundaryMs > elapsedMs) {
+    const boundaryTick = nextBoundaryTick(plan, cursorTick);
+    if (boundaryTick > progress.elapsedTicks) {
       break;
     }
     completed++;
     for (const schedule of plan.action.checks) {
-      if (plan.action.durationMs !== 0 && boundaryMs % schedule.everyMs !== 0) {
+      if (plan.action.durationTicks !== 0 && boundaryTick % schedule.everyTicks !== 0) {
         continue;
       }
       const before = character;
@@ -47,7 +47,7 @@ export async function settleActivity(tx: Transaction, current: StoryRecord, stat
       character = applyOutcomeEffects(character, outcome.effects);
       await recordRoll(tx, {
         storyId: current.id, operationId: activity.id, segment: completed,
-        checkKey: schedule.id, gameTimeMs: plan.startGameTimeMs + boundaryMs,
+        checkKey: schedule.id, tick: plan.startTick + boundaryTick,
         plan: { resolution: schedule.resolution, character: before }, result, effects: outcome.effects,
       });
       lines.push(outcome.text);
@@ -56,11 +56,11 @@ export async function settleActivity(tx: Transaction, current: StoryRecord, stat
         break;
       }
     }
-    cursorMs = boundaryMs;
+    cursorTick = boundaryTick;
     if (nextState === 'encounter') {
       break;
     }
-    if (cursorMs === plan.action.durationMs) {
+    if (cursorTick === plan.action.durationTicks) {
       character = applyOutcomeEffects(character, plan.action.completion.effects);
       lines.push(plan.action.completion.text);
       nextState = 'complete';
@@ -70,12 +70,12 @@ export async function settleActivity(tx: Transaction, current: StoryRecord, stat
   if (completed === activity.completed) {
     return { activity, current, state };
   }
-  const retainedElapsed = nextState === 'encounter' ? cursorMs : elapsedMs;
-  const nextPlan = { ...plan, resolvedThroughMs: cursorMs };
-  const nextActivity = { ...activity, plan: nextPlan, completed, state: nextState, elapsedMs: retainedElapsed, anchorAt: new Date(now), revision: activity.revision + 1 };
-  await tx.update(gameActivity).set({ plan: nextPlan, completed, state: nextState, elapsedMs: retainedElapsed, anchorAt: new Date(now), revision: nextActivity.revision }).where(eq(gameActivity.id, activity.id));
-  const nextCampaign = { ...state, character, gameTimeMs: plan.startGameTimeMs + cursorMs };
-  await tx.update(campaign).set({ character, gameTimeMs: nextCampaign.gameTimeMs }).where(eq(campaign.storyId, current.id));
+  const retainedProgress = nextState === 'encounter' ? wholeTicks(cursorTick) : progress;
+  const nextPlan = { ...plan, resolvedThroughTick: cursorTick };
+  const nextActivity = { ...activity, plan: nextPlan, completed, state: nextState, progress: retainedProgress, anchorAt: new Date(now), revision: activity.revision + 1 };
+  await tx.update(gameActivity).set({ plan: nextPlan, completed, state: nextState, progress: retainedProgress, anchorAt: new Date(now), revision: nextActivity.revision }).where(eq(gameActivity.id, activity.id));
+  const nextCampaign = { ...state, character, tick: plan.startTick + cursorTick };
+  await tx.update(campaign).set({ character, tick: nextCampaign.tick }).where(eq(campaign.storyId, current.id));
   await refreshOffer(tx, nextCampaign, nextState);
   // Receipts retain every roll. Keep the player-facing summary within passage bounds.
   const paragraphs = lines.slice(-8);
@@ -121,8 +121,8 @@ export function createCampaignActivities(database: Database) {
         }
         const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
         const pace = paceSchema.parse(settled.activity.pace);
-        const elapsed = elapsedGameMs({ ...settled.activity, pace, now, durationMs: plan.action.durationMs });
-        return waitUntilBoundary(elapsed, nextBoundaryMs(plan, plan.resolvedThroughMs), pace);
+        const progress = earnedTicks({ ...settled.activity, progress: tickProgressSchema.parse(settled.activity.progress), pace, now, durationTicks: plan.action.durationTicks });
+        return realMsUntilTick(progress, nextBoundaryTick(plan, plan.resolvedThroughTick), pace);
       });
     },
   };

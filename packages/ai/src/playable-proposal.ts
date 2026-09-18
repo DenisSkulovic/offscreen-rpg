@@ -127,7 +127,7 @@ function publishedFromProposal(proposal: PlayableProposal): PublishedPlayable {
 /** Selects the validated publishable slice named by persisted generation provenance. */
 export function publishedPlayableFromGeneration(input: {
   output: unknown;
-  sourcePart: GenerationSourcePart | null;
+  sourcePart: GenerationSourcePart;
 }): PublishedPlayable {
   const sourcePart = input.sourcePart;
   if (sourcePart === 'arrival') {
@@ -145,9 +145,6 @@ export function publishedPlayableFromGeneration(input: {
   const proposal = playableProposalSchema.safeParse(input.output);
   if (proposal.success) {
     return publishedFromProposal(proposal.data);
-  }
-  if (sourcePart === null) {
-    throw new Error('Legacy generation output must be a v1 playable proposal');
   }
   const result = continuationResultSchema.safeParse(input.output);
   if (!result.success) {

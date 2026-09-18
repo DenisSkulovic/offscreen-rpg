@@ -54,7 +54,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:clock": "node --test test/tick-clock.test.mjs"
   },
   "dependencies": {
     "@offscreen/ai": "workspace:*",

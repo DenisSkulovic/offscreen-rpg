@@ -17,7 +17,6 @@ export {
   controlledIntervalTopic,
   decisionDeadlineTopic,
   intervalWakeTopic,
-  storyIntervalTopic,
 } from './story-topics';
 
 export function createStories(database: Database) {

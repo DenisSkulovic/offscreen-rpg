@@ -19,26 +19,26 @@ export const pineappleCharacter = characterSchema.parse({
 const calmGary: ActionDefinition = {
   id: 'talk-gary', label: 'Ask Gary to lower the weapon',
   description: 'Try to calm him: Charisma (Persuasion), DC 12. An immediate exchange.',
-  requires: [{ id: 'gary-alert', value: true }], durationMs: 0,
-  checks: [{ id: 'persuasion', everyMs: 1, resolution: { kind: 'ability', plan: check('Calm Gary', 'persuasion', 'charisma') },
+  requires: [{ id: 'gary-alert', value: true }], durationTicks: 0,
+  checks: [{ id: 'persuasion', everyTicks: 1, resolution: { kind: 'ability', plan: check('Calm Gary', 'persuasion', 'charisma') },
     success: outcome('Gary lowers the weapon.', [fact('gary-alert', false)]),
     failure: outcome('Gary remains on alert. He has not agreed to lower the weapon.') }],
   completion: completion('Your attempt to speak to Gary is resolved.'),
 };
 export const pineappleContent = actionContentSchema.parse({
-  version: 1, id: 'pineapple-mechanics.v2', actions: [
+  version: 2, id: 'pineapple-mechanics.v3', actions: [
     calmGary,
     { id: 'cover', label: 'Duck behind the furniture', description: 'Seek cover immediately.',
-      requires: [{ id: 'gary-alert', value: true }, { id: 'under-cover', value: false }], durationMs: 0, checks: [],
+      requires: [{ id: 'gary-alert', value: true }, { id: 'under-cover', value: false }], durationTicks: 0, checks: [],
       completion: completion('You take cover behind the furniture.', [fact('under-cover', true)]) },
     { id: 'observe', label: 'Watch Gary from cover', description: 'Wisdom (Perception), DC 12. Look for what has alarmed him.',
-      requires: [{ id: 'under-cover', value: true }], durationMs: 0,
-      checks: [{ id: 'notice', everyMs: 1, resolution: { kind: 'ability', plan: check('Read Gary’s warning', 'perception', 'wisdom') },
+      requires: [{ id: 'under-cover', value: true }], durationTicks: 0,
+      checks: [{ id: 'notice', everyTicks: 1, resolution: { kind: 'ability', plan: check('Read Gary’s warning', 'perception', 'wisdom') },
         success: outcome('Gary is watching the window, not you.'), failure: outcome('You cannot tell what Gary is watching.') }],
       completion: completion('You finish watching from cover.') },
-    { id: 'quiet', label: 'Spend a quiet minute at home', description: 'Available once Gary is calm. Takes one game minute at the selected pace.',
-      requires: [{ id: 'gary-alert', value: false }], durationMs: 60000, checks: [],
-      completion: completion('A quiet minute passes at home.') },
+    { id: 'quiet', label: 'Spend a quiet moment at home', description: 'Available once Gary is calm. Takes 12 ticks at the selected pace.',
+      requires: [{ id: 'gary-alert', value: false }], durationTicks: 12, checks: [],
+      completion: completion('A quiet interval passes at home.') },
   ],
 });
 
@@ -49,33 +49,33 @@ export const microbeCharacter = characterSchema.parse({
   facts: [{ id: 'exposed', value: true }, { id: 'gradient-disrupted', value: false }],
 });
 export const microbeContent = actionContentSchema.parse({
-  version: 1, id: 'microbe.v1', actions: [{
-    id: 'respond', label: 'Respond to the chemical gradient', description: 'Attempt an environmental response over ten game seconds.',
-    requires: [{ id: 'exposed', value: true }, { id: 'gradient-disrupted', value: false }], durationMs: 10000,
+  version: 2, id: 'microbe.v2', actions: [{
+    id: 'respond', label: 'Respond to the chemical gradient', description: 'Attempt an environmental response over eight ticks.',
+    requires: [{ id: 'exposed', value: true }, { id: 'gradient-disrupted', value: false }], durationTicks: 8,
     checks: [{
-      id: 'environment', everyMs: 5000,
+      id: 'environment', everyTicks: 4,
       resolution: { kind: 'event', purpose: 'Chemical gradient disruption', threshold: 3, modifiers: [] },
       success: outcome('The gradient changes abruptly, interrupting the response.', [fact('gradient-disrupted', true)], true),
       failure: outcome('The gradient remains stable.'),
-    }, { id: 'response', everyMs: 10000, resolution: { kind: 'ability', plan: check('Sense the gradient', 'environment-sensing', 'wisdom') },
+    }, { id: 'response', everyTicks: 8, resolution: { kind: 'ability', plan: check('Sense the gradient', 'environment-sensing', 'wisdom') },
       success: outcome('The microbe reaches a sheltered pocket.', [fact('exposed', false)]),
       failure: outcome('The microbe remains exposed.') }],
     completion: completion('The response interval ends.'),
   }, {
     id: 'wait-for-gradient', label: 'Wait for the gradient to settle',
-    description: 'Wait five game seconds before attempting a new response. The interrupted attempt is not completed.',
-    requires: [{ id: 'gradient-disrupted', value: true }], durationMs: 5000, checks: [],
+    description: 'Wait four ticks before attempting a new response. The interrupted attempt is not completed.',
+    requires: [{ id: 'gradient-disrupted', value: true }], durationTicks: 4, checks: [],
     completion: completion('The gradient settles.', [fact('gradient-disrupted', false)]),
   }],
 });
 
 export function mechanicalOpening(id: string) {
   const seeds = {
-    'pineapple-mechanics.v2': {
+    'pineapple-mechanics.v3': {
       character: pineappleCharacter, content: pineappleContent,
       opening: { version: 1 as const, title: 'An alarming morning', paragraphs: ['You wake in the pineapple. Gary is alert beside the window, with a machine gun balanced on his shell. There is furniture nearby that could provide cover.'] },
     },
-    'microbe.v1': {
+    'microbe.v2': {
       character: microbeCharacter, content: microbeContent,
       opening: { version: 1 as const, title: 'A changing environment', paragraphs: ['You are a microbe exposed to a changing chemical gradient. A sheltered pocket may be within reach.'] },
     },

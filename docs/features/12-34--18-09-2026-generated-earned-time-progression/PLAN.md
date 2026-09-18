@@ -11,7 +11,7 @@ Reviewer: ChatGPT/Codex.
 
 Status: Implemented
 
-Outcome: A versioned continuation result can express an immediate scene or one interval with a prepared arrival. A pure helper recovers the exact published playable slice from generation output plus source part. Existing v1 `PlayableProposal` records keep their meaning.
+Outcome: The continuation result can express an immediate scene or one interval with a prepared arrival. A pure helper recovers the exact published playable slice from generation output plus source part.
 
 Dependencies: none.
 
@@ -28,11 +28,11 @@ Contracts:
 - `interval` carries fictional `gameDurationMs` and one `arrival` whose `next` is `choice` or `end`.
 - An interval cannot also expose a current actionable interaction.
 - Only one prepared future boundary. No effects. No real-wait field in storyteller output.
-- `generationSourcePart` is `current` | `arrival`. Null means legacy single publication.
+- Generated passages declare `generationSourcePart` as `current` or `arrival`; nongenerated passages have no generation provenance.
 - `publishedPlayableFromGeneration({ output, sourcePart })` validates kind/version/output, selects the declared part, and returns that bounded scene/offer.
-- Continuation prompt/artifact becomes `playable.v2` for new prepares. Persisted `playable.v1` continuation artifacts remain readable.
+- Continuations use `playable.v2`; openings use their separate `playable.v1` contract. Discarded prototype continuation artifacts are reset, not decoded.
 
-Checks: AI package tests for v2 immediate, timed, mixed/invalid duration, unique options, v1 compatibility, and exact hidden-intention recovery from an arrival slice.
+Checks: AI package tests for current immediate/timed output, mixed/invalid duration, unique options and exact hidden-intention recovery from an arrival slice.
 
 Exit: helper and schemas exist; no persistence yet.
 
@@ -48,7 +48,7 @@ Owning components:
 - `packages/server/src/story-command-policy.ts`
 - `packages/server/src/story-persistence.ts`
 - `packages/server/src/story-continuation.ts`
-- `packages/server/src/story-initialization.ts` / start (legacy null part)
+- `packages/server/src/story-initialization.ts` / start
 - chamber inspector current provenance
 
 Invariant: `source_generation_part` is null or `current`/`arrival`. Non-null part requires `source_generation_id`. Timing publisher copies the waiting passage's generation id and sets part `arrival` without parsing model output.
@@ -93,7 +93,7 @@ No client-authoritative countdown.
 
 Status: Implemented
 
-Outcome: Targeted integration proves generated resolution → wait → reload → worker restart → pause past due → resume → one arrival → arrival choice → second generic resolution, plus v1 compatibility and stale fencing. Permanent docs and `docs/progress.md` describe only the connected loop.
+Outcome: Targeted integration proves generated resolution → wait → reload → worker restart → pause past due → resume → one arrival → arrival choice → second generic resolution, plus stale fencing. Permanent docs and `docs/progress.md` describe only the connected loop.
 
 Checks:
 

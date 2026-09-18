@@ -83,12 +83,16 @@ function inspectGeneration(row: {
   const artifact = playableOpeningArtifactSchema.safeParse(row.input);
   let published: ReturnType<typeof publishedPlayableFromGeneration> | null;
   try {
-    published = storytellerResultSchema.safeParse(row.output).success
-      ? publishedStorytellerSlice(row.output, row.sourcePart)
-      : publishedPlayableFromGeneration({
-          output: row.output,
-          sourcePart: row.sourcePart,
-        });
+    if (row.sourcePart === null) {
+      published = null;
+    } else if (storytellerResultSchema.safeParse(row.output).success) {
+      published = publishedStorytellerSlice(row.output, row.sourcePart);
+    } else {
+      published = publishedPlayableFromGeneration({
+        output: row.output,
+        sourcePart: row.sourcePart,
+      });
+    }
   } catch {
     published = null;
   }
@@ -136,7 +140,6 @@ export function createChamberInspector(database: Database) {
           decisionPlan: storyPassage.decisionPlan,
           dueAt: storyPassage.dueAt,
           remainingMs: storyPassage.remainingMs,
-          intervalVersion: storyPassage.intervalVersion,
           controlRevision: storyPassage.controlRevision,
           responseDueAt: storyPassage.responseDueAt,
           generationId: generation.id,
@@ -275,7 +278,6 @@ export function createChamberInspector(database: Database) {
           remainingMs: snapshot.waiting
             ? snapshot.waiting.remainingMs
             : (current.remainingMs ?? null),
-          intervalVersion: current.intervalVersion,
           controlRevision: current.controlRevision,
           decisionPlan:
             current.decisionPlan === null

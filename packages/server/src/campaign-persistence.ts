@@ -17,7 +17,7 @@ export async function requireCampaign(tx: Transaction, storyId: string) {
 }
 export async function recordRoll(tx: Transaction, args: {
   storyId: string; operationId: string; segment: number; checkKey: string;
-  gameTimeMs: number; plan: unknown; result: Roll; effects: OutcomeEffect[];
+  tick: number; plan: unknown; result: Roll; effects: OutcomeEffect[];
 }) {
   await tx.insert(gameRoll).values({ id: randomUUID(), ...args });
 }

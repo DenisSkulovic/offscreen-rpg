@@ -59,6 +59,7 @@ function situation() {
     premise,
     snapshot,
     publishedProposal: structuredClone(proposal),
+    sourcePart: 'current' as const,
     submission: {
       interactionId: snapshot.current.interaction.id,
       answer: { kind: 'choice.v1', optionId: 'sense-vibration' },

@@ -27,7 +27,7 @@ export async function initializeCampaign(tx: Transaction, storyId: string, profi
   if (character && content) {
     validateContentState(content, character);
   }
-  await tx.insert(campaign).values({ storyId, settingsRevision: 1, locked: Number(options.locked), character, content, location: null, gameTimeMs: 0, offer: character && content ? composeOpportunities(content, character, false) : null });
+  await tx.insert(campaign).values({ storyId, settingsRevision: 1, locked: Number(options.locked), character, content, location: null, tick: 0, offer: character && content ? composeOpportunities(content, character, false) : null });
   await tx.insert(campaignSettings).values({ storyId, revision: 1, settings, profile });
 }
 
@@ -38,7 +38,7 @@ export async function loadCampaignSettings(tx: Transaction, storyId: string, rev
 }
 
 export function compileCreative(profile: StorytellerProfile, creative: CreativeSettings): StorytellerProfile {
-  // Keep editable data separate from the bounded legacy profile. The additional
+  // Keep editable data separate from the bounded catalogue profile. The additional
   // guidance goes in task context; this projection never changes capabilities.
   return storytellerProfileSchema.parse({ ...profile, tone: creative.tone, dramaticRhythm: `${profile.dramaticRhythm}\nEmphasis: ${creative.emphasis}.`.slice(0, 1200), surprisePolicy: `${profile.surprisePolicy}\nFrequency: ${creative.surprises}.`.slice(0, 1200) });
 }
@@ -57,7 +57,7 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
   const [existing] = await tx.select().from(campaign).where(eq(campaign.storyId, current.id));
   if (existing) return existing;
   if (!current.storyteller) throw new StoryError('conflict');
-  await initializeCampaign(tx, current.id, storytellerProfileSchema.parse(current.storyteller), { mechanics: false, locked: false, pace: { kind: 'rate', game: 1440, real: 1 } });
+  await initializeCampaign(tx, current.id, storytellerProfileSchema.parse(current.storyteller), { mechanics: false, locked: false, pace: { kind: 'rate', ticks: 1, realMs: 1000 } });
   const [created] = await tx.select().from(campaign).where(eq(campaign.storyId, current.id));
   if (!created) throw new Error('Campaign missing');
   return created;

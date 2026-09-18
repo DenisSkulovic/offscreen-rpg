@@ -1,6 +1,5 @@
 import {
   proxyActivities,
-  sleep,
   condition,
   defineSignal,
   setHandler,
@@ -40,7 +39,7 @@ const { advanceControlledInterval } = proxyActivities<IntervalActivities>({
   startToCloseTimeout: '30 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
-export async function storyIntervalV2(id: string): Promise<void> {
+export async function storyIntervalV1(id: string): Promise<void> {
   let wakeVersion = 0;
   setHandler(defineSignal(intervalChangedSignal), () => {
     wakeVersion++;
@@ -59,21 +58,6 @@ export async function storyIntervalV2(id: string): Promise<void> {
     } else {
       await condition(() => observed !== wakeVersion, remaining);
     }
-  }
-}
-
-const { advanceStoryInterval } = proxyActivities<IntervalActivities>({
-  startToCloseTimeout: '30 seconds',
-  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
-});
-// One bounded wait operation; no prose or per-second simulation enters history.
-export async function storyIntervalV1(id: string): Promise<void> {
-  while (true) {
-    const remaining = await advanceStoryInterval(id);
-    if (remaining === null) {
-      return;
-    }
-    await sleep(remaining);
   }
 }
 

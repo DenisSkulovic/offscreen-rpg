@@ -9,6 +9,7 @@ import { commandReceipt, saveCommand, loadCampaignSettings } from './campaign-se
 import { campaignCharacter, campaignOffer, requireCampaign, refreshOffer, appendMechanicalPassage } from './campaign-persistence';
 import { selectedAction } from './rules/options';
 import { actionContentSchema, actionAvailable, resolvedActivityPlanSchema } from './rules/action-content';
+import { wholeTicks } from './rules/tick-clock';
 import { scheduleActivity, settleActivity } from './campaign-activities';
 
 export function createCampaignActions(database: Database) {
@@ -52,8 +53,11 @@ export function createCampaignActions(database: Database) {
       const { settings } = await loadCampaignSettings(tx, current.id, state.settingsRevision);
       const now = await readDatabaseClockMs(tx, current.id);
       const plan = resolvedActivityPlanSchema.parse({
-        version: 2, action: definition, startGameTimeMs: state.gameTimeMs, settingsRevision: settings.revision,
+        version: 3, action: definition, startTick: state.tick, settingsRevision: settings.revision,
       });
+      if (definition.durationTicks > Number.MAX_SAFE_INTEGER - state.tick) {
+        throw new StoryError('invalid');
+      }
       // An interruption stops the old commitment. Follow-up intentions get new plans;
       // they cannot silently award its uncompleted future.
       if (active?.state === 'encounter') {
@@ -61,14 +65,14 @@ export function createCampaignActions(database: Database) {
       }
       const [activity] = await tx.insert(gameActivity).values({
         id: args.operationId, storyId: current.id, plan, state: 'running',
-        elapsedMs: 0, anchorAt: new Date(now), pace: settings.pace,
+        progress: wholeTicks(0), anchorAt: new Date(now), pace: settings.pace,
       }).returning();
       if (!activity) {
         throw new Error('Missing admitted activity');
       }
       const admitted = { ...state, activeActivityId: activity.id };
       await tx.update(campaign).set({ activeActivityId: activity.id }).where(eq(campaign.storyId, current.id));
-      if (definition.durationMs === 0) {
+      if (definition.durationTicks === 0) {
         await settleActivity(tx, current, admitted, activity, now);
       } else {
         await refreshOffer(tx, admitted, 'running');

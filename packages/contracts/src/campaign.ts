@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { storytellerReferenceSchema } from './storytellers';
 
 export const paceSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('rate'), game: z.number().int().min(1).max(86400), real: z.number().int().min(1).max(86400) }),
+  z.strictObject({ kind: z.literal('rate'), ticks: z.number().int().min(1).max(1_000_000), realMs: z.number().int().min(1).max(86_400_000) }),
   z.strictObject({ kind: z.literal('instant') }),
 ]);
 export type Pace = z.infer<typeof paceSchema>;
@@ -84,13 +84,7 @@ export const rollSchema = z.strictObject({
   success: z.boolean(),
 });
 export type Roll = z.infer<typeof rollSchema>;
-export const actionSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('attempt'), definition: z.string().min(1).max(100) }),
-  z.strictObject({ kind: z.literal('activity'), definition: z.string().min(1).max(100), hours: z.number().int().min(1).max(24) }),
-  z.strictObject({ kind: z.literal('check'), definition: z.string().min(1).max(100) }),
-  z.strictObject({ kind: z.literal('move'), destination: z.string().min(1).max(100) }),
-  z.strictObject({ kind: z.literal('encounter'), choice: z.enum(['continue', 'abandon']) }),
-]);
+export const actionSchema = z.strictObject({ kind: z.literal('attempt'), definition: z.string().min(1).max(100) });
 export type GameAction = z.infer<typeof actionSchema>;
 export const menuNodeSchema = z.strictObject({
   id: z.string().min(1).max(80),
@@ -105,20 +99,19 @@ export const offerSchema = z.strictObject({
 });
 export type GameOffer = z.infer<typeof offerSchema>;
 export const campaignViewSchema = z.strictObject({
-  unavailableReason: z.string().optional(),
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
   location: z.string().nullable(),
-  gameTimeMs: z.number().nonnegative(),
+  tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   offer: offerSchema.nullable(),
   activity: z.strictObject({
     id: z.uuid(), label: z.string(), state: z.enum(['running', 'paused', 'encounter', 'complete', 'abandoned']),
-    completed: z.number().int(), hours: z.number().nonnegative(), revision: z.number().int(),
-    durationMs: z.number().nonnegative().optional(),
-    dueAt: z.iso.datetime().nullable(), elapsedMs: z.number().nonnegative(),
+    completed: z.number().int(), revision: z.number().int(),
+    durationTicks: z.number().int().nonnegative(),
+    dueAt: z.iso.datetime().nullable(), resolvedTicks: z.number().int().nonnegative(),
     settingsRevision: z.number().int(),
   }).nullable(),
-  rolls: z.array(z.strictObject({ id: z.uuid(), segment: z.number().int(), gameTimeMs: z.number(), roll: rollSchema, effects: outcomeEffectsSchema })).max(100),
+  rolls: z.array(z.strictObject({ id: z.uuid(), segment: z.number().int(), tick: z.number().int().nonnegative(), roll: rollSchema, effects: outcomeEffectsSchema })).max(100),
 });
 export type CampaignView = z.infer<typeof campaignViewSchema>;
 export const settingsCommandSchema = z.strictObject({ expectedRevision: z.number().int().positive(), creative: creativeSettingsSchema, presetId: z.uuid().optional() });
@@ -129,6 +122,6 @@ export const activityControlSchema = z.strictObject({
 }).refine((v) => (v.action === 'pace') === (v.pace !== undefined));
 export const campaignStartSchema = z.strictObject({
   mechanics: z.boolean().default(false), locked: z.boolean().default(false),
-  pace: paceSchema.default({ kind: 'rate', game: 1440, real: 1 }),
+  pace: paceSchema.default({ kind: 'rate', ticks: 1, realMs: 1000 }),
 });
 export type CampaignStart = z.infer<typeof campaignStartSchema>;
