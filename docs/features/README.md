@@ -6,6 +6,14 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 - [Chamber laboratory](2026-09-18--01-23--chamber-laboratory/FEATURE.md) — evolve the scripted chamber into the controlled development laboratory.
 
+## POC evaluation sequence
+
+These features turn the intended player experience into reproducible evidence before meaningful provider credit is spent.
+
+1. [QA journeys and evidence](2026-09-18--17-27--qa-journeys-and-evidence/FEATURE.md) — versioned player journeys, stage expectations, human quality rubric and immutable run evidence.
+2. [Storyteller trace explorer](2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md) — correlated task, model, tool, validation, accounting, publication and state-change inspection in the Chamber.
+3. [Conservative live-model evaluation](2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md) — dry-run-first OpenRouter gates with explicit caps, stop rules and evidence reports. Design does not authorize live calls.
+
 ## Mechanical POC and customization
 
 The next implementation target is one playable immediate DM loop, not completion of every mechanical subsystem. Long-running activity work remains blocked by the separate progress redesign. Checks remain optional, and no live spending is authorized.
