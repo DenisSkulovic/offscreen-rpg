@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { stopChamberResources } from '../dev/chamber-stop.js';
+import { stopChamberResources } from '../src/stop.js';
 
 test('browser close failure still stops runtime, web, app and database', async () => {
   const closed: string[] = [];

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { relayOne } from '../src/relay';
+import { relayOne } from '../src/outbox/relay';
 
 test('a send with an uncertain acknowledgement retains the notice for the same operation', async () => {
   const notice = {

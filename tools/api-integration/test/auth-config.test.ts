@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readAuthConfig } from '../src/auth/config.js';
+import { readAuthConfig } from '@offscreen/api/auth-config';
 
 const valid = {
   APP_ORIGIN: 'http://localhost:3000',

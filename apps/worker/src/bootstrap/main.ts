@@ -1,7 +1,7 @@
 import { readStorytellerWorkerOptions } from '@offscreen/application/storyteller';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { readWorkerConfig } from './config';
-import { startRuntime } from './runtime';
+import { startRuntime } from '../runtime';
 
 async function main() {
   const database = createDatabase(readDatabaseConfig(process.env), () =>

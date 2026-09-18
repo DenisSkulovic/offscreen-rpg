@@ -12,8 +12,8 @@ import {
 } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
-import { createApp } from '../../src/app.js';
-import { authOptions } from '../../src/auth/auth.js';
+import { createApp } from '@offscreen/api/app';
+import { authOptions } from '@offscreen/api/auth';
 import { requireCookie } from './require.js';
 
 const databaseURL = process.env['DATABASE_TEST_URL'];
@@ -136,7 +136,7 @@ export async function withAppIntegration(
         '3100',
       ],
       {
-        cwd: fileURLToPath(new URL('../../../../web', import.meta.url)),
+        cwd: fileURLToPath(new URL('../../../../../apps/web', import.meta.url)),
         env: { ...process.env, API_INTERNAL_ORIGIN: 'http://127.0.0.1:3001' },
         stdio: 'ignore',
         windowsHide: true,

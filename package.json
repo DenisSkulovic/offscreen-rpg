@@ -11,15 +11,15 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:db": "pnpm --filter @offscreen/db build && pnpm --filter @offscreen/db test:integration",
-    "test:auth": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api test:integration",
-    "test:stories": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api test:stories",
+    "test:auth": "turbo run build --filter=@offscreen/api-integration && pnpm --filter @offscreen/api-integration test:integration",
+    "test:stories": "turbo run build --filter=@offscreen/api-integration && pnpm --filter @offscreen/api-integration test:stories",
     "db:migrate": "pnpm --filter @offscreen/db build && pnpm --filter @offscreen/db migrate",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
-    "chamber": "turbo run build --filter=@offscreen/api --filter=@offscreen/web && pnpm --filter @offscreen/api chamber",
+    "chamber": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"
   },
   "devDependencies": {

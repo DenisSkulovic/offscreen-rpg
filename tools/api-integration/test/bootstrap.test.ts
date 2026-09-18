@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { mock, test } from 'node:test';
-import { createApp } from '../src/app.js';
-import { readConfig } from '../src/config.js';
+import { createApp } from '@offscreen/api/app';
+import { readConfig } from '@offscreen/api/config';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { createAuth } from '../src/auth/auth.js';
+import { createAuth } from '@offscreen/api/auth';
 
 test('API binds a real HTTP listener and closes cleanly', async () => {
   const database = createDatabase(

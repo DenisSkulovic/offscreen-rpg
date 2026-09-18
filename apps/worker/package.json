@@ -4,15 +4,15 @@
   "private": true,
   "exports": {
     "./runtime": {
-      "types": "./dist/src/runtime.d.ts",
-      "default": "./dist/src/runtime.js"
+      "types": "./dist/src/runtime/index.d.ts",
+      "default": "./dist/src/runtime/index.js"
     }
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "start": "node --env-file-if-exists=../../.env dist/src/main.js",
-    "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/main.js\"",
+    "start": "node --env-file-if-exists=../../.env dist/src/bootstrap/main.js",
+    "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/bootstrap/main.js\"",
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {

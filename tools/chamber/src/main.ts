@@ -10,9 +10,9 @@ import { chromium } from 'playwright';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
-import { createApp } from '../src/app.js';
-import { authOptions, createAuth } from '../src/auth/auth.js';
-import { stopChamberResources } from './chamber-stop.js';
+import { createApp } from '@offscreen/api/app';
+import { authOptions, createAuth } from '@offscreen/api/auth';
+import { stopChamberResources } from './stop.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
@@ -108,6 +108,9 @@ const authConfig = {
 };
 // Provision through existing library test utilities, but never mount that plugin in the API.
 const utilities = testUtils();
+type ProvisioningHelpers = NonNullable<
+  ReturnType<typeof utilities.init>['context']
+>['test'];
 const provisioner = betterAuth({
   ...authOptions(database, authConfig),
   plugins: [
@@ -153,7 +156,11 @@ process.once('SIGTERM', () => {
   void stop();
 });
 try {
-  const helpers = (await provisioner.$context).test;
+  const provisionContext = await provisioner.$context;
+  // better-auth plugins augment context dynamically; retain that exact plugin type here.
+  const helpers = (
+    provisionContext as typeof provisionContext & { test: ProvisioningHelpers }
+  ).test;
   const existing = await database.db.$client.query(
     'SELECT id FROM "user" WHERE email = $1',
     ['chamber@local.invalid'],
@@ -190,7 +197,7 @@ try {
       '3100',
     ],
     {
-      cwd: fileURLToPath(new URL('../../../web', import.meta.url)),
+      cwd: fileURLToPath(new URL('../../../../apps/web', import.meta.url)),
       env: {
         PATH: process.env['PATH'],
         SYSTEMROOT: process.env['SYSTEMROOT'],

@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
-import { authOptions } from './src/auth/auth.js';
+import { authOptions } from './src/modules/auth/auth.js';
 
 // Schema generation is offline. These are placeholders, never runtime credentials.
 const database = createDatabase(

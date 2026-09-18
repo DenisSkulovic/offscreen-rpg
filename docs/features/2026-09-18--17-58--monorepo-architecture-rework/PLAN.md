@@ -72,7 +72,7 @@ Checks: inspect Turbo's package graph and compile each deployable independently.
 
 Exit: API build has no worker/workflow dependency, and Chamber still creates its isolated authenticated session without provider access.
 
-Status: Not started.
+Status: Complete.
 
 ## Phase 5 — Thin the Next.js route tree
 
@@ -110,8 +110,8 @@ Status: Not started.
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 3 is complete; separate Chamber composition from deployable API/worker dependencies in Phase 4.
-- Base/reviewed Git revision and relevant uncommitted changes: Phase 3 started from `9364a2b` on `main`; the application package rename, capability directories, six public facades and consumer import updates are ready to commit.
-- Actual checks/results for this revision; checks not run: API and worker builds passed. Application typechecking resolves the full reorganized graph and reaches only the same two pre-existing `exactOptionalPropertyTypes` errors, now in `stories/command-policy.ts`. No integration/browser suite or provider call was run.
-- Unresolved findings/blockers: none for Phase 3. Existing transaction calls were preserved across capability directories; this phase did not introduce repositories, events or gameplay behavior.
+- Current phase and exact next action: Phase 4 is complete; thin the Next.js route tree in Phase 5.
+- Base/reviewed Git revision and relevant uncommitted changes: Phase 4 started from `cc4c69a` on `main`; API/worker capability folders, dedicated Chamber and API-integration workspaces, deployable export surfaces and command updates are ready to commit.
+- Actual checks/results for this revision; checks not run: API, worker, Chamber and API-integration builds passed; both Chamber cleanup tests passed. Turbo's dry graph confirms the API build has no worker or workflow dependency. The smoke reached the reorganized API and Temporal worker after resetting the dedicated squashed-migration database, then stopped because the existing web build has four unrelated strict optional/null errors in `opening-preview.tsx`; no broader integration suite or provider call was run.
+- Unresolved findings/blockers: none in the package graph. A complete browser smoke awaits the existing web type errors; they were left outside this structural phase under the POC verification policy.
 - Provider spend and accounting certainty: no provider calls; spend $0.

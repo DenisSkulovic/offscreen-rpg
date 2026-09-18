@@ -7,8 +7,9 @@
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "declaration": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "dev/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

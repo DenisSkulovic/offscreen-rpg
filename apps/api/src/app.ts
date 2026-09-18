@@ -1,4 +1,4 @@
-import { StorytellersController } from './drafts/storytellers-controller.js';
+import { StorytellersController } from './modules/drafts/storytellers-controller.js';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { z } from 'zod';
 import type {
@@ -19,20 +19,27 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response, NextFunction, Express } from 'express';
 import type { Database } from '@offscreen/db';
 import { toNodeHandler } from 'better-auth/node';
-import type { Auth } from './auth/auth.js';
-import { AUTH, IdentityController, IdentityService } from './auth/identity.js';
+import type { Auth } from './modules/auth/auth.js';
+import {
+  AUTH,
+  IdentityController,
+  IdentityService,
+} from './modules/auth/identity.js';
 import { createDrafts } from '@offscreen/application/drafts';
-import { DRAFTS, DraftsController } from './drafts/controller.js';
+import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/application/generations';
-import { OPENINGS, OpeningsController } from './drafts/openings-controller.js';
+import {
+  OPENINGS,
+  OpeningsController,
+} from './modules/drafts/openings-controller.js';
 import { createChamber } from '@offscreen/application/developer-tools';
-import { STORIES, StoriesController } from './stories/controller.js';
-import { ChamberToolsController } from './stories/chamber-tools-controller.js';
+import { STORIES, StoriesController } from './modules/stories/controller.js';
+import { ChamberToolsController } from './modules/stories/chamber-tools-controller.js';
 import { createQaJourneys } from '@offscreen/application/developer-tools';
 import {
   QA_JOURNEYS,
   QaJourneysController,
-} from './stories/qa-journeys-controller.js';
+} from './modules/stories/qa-journeys-controller.js';
 
 const DATABASE = Symbol('DATABASE');
 

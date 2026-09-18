@@ -40,7 +40,7 @@ flowchart LR
     J --> O[Object storage]
 ```
 
-The API and Activity workers share application modules and PostgreSQL access. Workflow code is a separate deterministic bundle that calls Activities rather than importing database or network clients. Long model calls and delivery work do not occupy HTTP request lifetimes. Processes can be scaled differently while remaining one modular application. Temporal is infrastructure, not a reason to split the game into microservices.
+The API and Activity workers share application modules and PostgreSQL access without depending on each other. Workflow code is a separate deterministic bundle that calls Activities rather than importing database or network clients. The Chamber and integration workspaces compose deployables only for local development and tests. Long model calls and delivery work do not occupy HTTP request lifetimes. Processes can be scaled differently while remaining one modular application. Temporal is infrastructure, not a reason to split the game into microservices.
 
 The outbox relay forwards durable database notices into Temporal using stable identifiers. Temporal Service has its own managed persistence; its history tables are not application tables. Browser reads come from application PostgreSQL snapshots, not directly from workflow history.
 
@@ -55,6 +55,9 @@ apps/
   web/                 Next.js presentation
   api/                 HTTP, auth integration, SSE, webhooks
   worker/              Temporal worker bootstrap and Activity bindings
+tools/
+  chamber/             local authenticated product launcher
+  api-integration/     PostgreSQL, Temporal and browser integration harness
 packages/
   game/                framework-free game state, checks, effects, offers and time
   contracts/           Zod schemas, transport types, public error shapes

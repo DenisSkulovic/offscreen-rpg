@@ -1,0 +1,38 @@
+{
+  "name": "@offscreen/api-integration",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js",
+    "test:integration": "node --test --test-concurrency=1 dist/test/auth.integration.js dist/test/stories.integration.js",
+    "test:auth": "node --test dist/test/auth.integration.js",
+    "test:stories": "node --test dist/test/stories.integration.js",
+    "test:stories:core": "node --test dist/test/stories-core.integration.js",
+    "test:stories:http": "node --test dist/test/stories-http.integration.js",
+    "test:stories:start": "node --test dist/test/story-start.integration.js",
+    "test:stories:resolution": "node --test dist/test/story-resolution.integration.js",
+    "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
+    "test:storyteller": "node --test dist/test/storyteller.integration.js"
+  },
+  "dependencies": {
+    "@offscreen/api": "workspace:*",
+    "@offscreen/application": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
+    "@offscreen/db": "workspace:*",
+    "@offscreen/storyteller": "workspace:*",
+    "@offscreen/web": "workspace:*",
+    "@offscreen/worker": "workspace:*",
+    "better-auth": "1.7.5",
+    "drizzle-orm": "0.45.2",
+    "playwright": "1.63.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "@types/node": "22.20.3",
+    "typescript": "5.9.3"
+  }
+}

@@ -41,7 +41,9 @@ type WakeNotice = {
 
 const noticeDispatch = {
   'campaign.activity.v1': {
-    kind: 'start', workflowType: campaignActivityWorkflowType, workflowId: campaignActivityWorkflowId,
+    kind: 'start',
+    workflowType: campaignActivityWorkflowType,
+    workflowId: campaignActivityWorkflowId,
   },
   [storytellerTopic]: {
     kind: 'start',

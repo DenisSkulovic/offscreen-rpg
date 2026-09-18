@@ -9,11 +9,14 @@ import { createOutbox } from '@offscreen/application/outbox';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createScriptedContinuations } from '@offscreen/application/generations';
 import { createStories } from '@offscreen/application/stories';
-import { createWorkerActivities } from './activities';
-import { closeWorkerConnections } from './close-worker-connections';
-import type { WorkerConfig } from './config';
-import { deliverOutboxNotice, dispatchedNoticeTopics } from './dispatch';
-import { relayOne, runRelay } from './relay';
+import { createWorkerActivities } from '../activities';
+import { closeWorkerConnections } from './connections';
+import type { WorkerConfig } from '../bootstrap/config';
+import {
+  deliverOutboxNotice,
+  dispatchedNoticeTopics,
+} from '../outbox/dispatch';
+import { relayOne, runRelay } from '../outbox/relay';
 
 /** Explicit lifecycle: importing this module never connects or starts processing. */
 export async function startRuntime(

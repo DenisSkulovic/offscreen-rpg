@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { closeWorkerConnections } from '../src/close-worker-connections';
+import { closeWorkerConnections } from '../src/runtime/connections';
 
 test('native close failure still closes the client connection', async () => {
   const closed: string[] = [];
