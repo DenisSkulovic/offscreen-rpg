@@ -1,4 +1,4 @@
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { storyResolution } from '@offscreen/db/story-schema';
 import type { Database } from '@offscreen/db';
@@ -14,9 +14,13 @@ import {
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
-import { lockOwnedStory } from '../stories/persistence';
+import {
+  incrementStoryViewVersion,
+  lockOwnedStory,
+  readDatabaseClockMs,
+} from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import { commandReceipt, saveCommand } from './settings';
+import { commandReceipt, loadCampaignSettings, saveCommand } from './settings';
 import {
   campaignCharacter,
   campaignStoryFacts,
@@ -25,6 +29,8 @@ import {
   loadOfferPlan,
 } from './persistence';
 import { requestActionNarration } from './narration';
+import { scheduleActivity } from './activities';
+import { wholeTicks } from '@offscreen/game/time';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -117,6 +123,45 @@ export function createCampaignActions(database: Database) {
           .update(gameActivity)
           .set({ state: 'abandoned', revision: active.revision + 1 })
           .where(eq(gameActivity.id, active.id));
+      }
+      if (definition.resolution.kind === 'process') {
+        const activityId = randomUUID();
+        const now = await readDatabaseClockMs(tx, current.id);
+        const { settings } = await loadCampaignSettings(
+          tx,
+          current.id,
+          state.settingsRevision,
+        );
+        await tx.insert(gameActivity).values({
+          id: activityId,
+          storyId: current.id,
+          plan: {
+            version: 4,
+            action: definition.resolution.action,
+            startTick: state.tick,
+            settingsRevision: state.settingsRevision,
+            resolvedThroughTick: 0,
+          },
+          state: 'running',
+          boundariesSettled: 0,
+          progress: {
+            clock: wholeTicks(0),
+            process: { kind: 'contribution.v1', earned: 0 },
+          },
+          anchorAt: new Date(now),
+          pace: settings.pace,
+        });
+        await tx
+          .update(campaign)
+          .set({ offer: null, activeActivityId: activityId })
+          .where(eq(campaign.storyId, current.id));
+        await incrementStoryViewVersion(tx, {
+          storyId: current.id,
+          viewVersion: current.viewVersion + 1,
+        });
+        await saveCommand(tx, current.id, args.operationId, request);
+        await scheduleActivity(tx, activityId);
+        return;
       }
       const resolved = resolveImmediateAction(
         campaignCharacter(state),

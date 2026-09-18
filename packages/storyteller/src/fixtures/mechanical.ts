@@ -167,6 +167,84 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
   ];
 }
 
+function beaconOpeningPlans(character: MechanicalCharacter) {
+  if (
+    factValue(character.facts, 'location') !== 'harbor-beacon' ||
+    factValue(character.facts, 'beacon-damaged') !== true ||
+    factValue(character.facts, 'repair-tools') !== true
+  ) {
+    return null;
+  }
+  return [
+    {
+      version: 1,
+      key: 'restore-beacon',
+      label: 'Begin restoring the beacon',
+      intention:
+        'Commit to repairing the storm-damaged signal while keeping watch.',
+      risk: 'Failed attempts consume time, and trouble may interrupt the work.',
+      evidence: [],
+      requires: [
+        { id: 'beacon-damaged', value: true },
+        { id: 'repair-tools', value: true },
+      ],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        action: {
+          id: 'restore-beacon',
+          label: 'Restore the signal beacon',
+          description: 'Repair the storm-damaged beacon while keeping watch.',
+          requires: [
+            { id: 'beacon-damaged', value: true },
+            { id: 'repair-tools', value: true },
+          ],
+          capacity: 'primary',
+          process: {
+            kind: 'contribution.v1',
+            progressLabel: 'Beacon repair',
+            requiredContribution: 9,
+            everyTicks: 5,
+            attempt: {
+              check: {
+                rule: 'srd-5.2.1-subset.v1',
+                purpose: 'Repair the beacon',
+                skill: 'repair',
+                ability: 'intelligence',
+                dc: 13,
+                advantage: false,
+                disadvantage: false,
+                modifiers: [{ source: 'repair tools', value: 2 }],
+              },
+              successContribution: 3,
+              failureContribution: 0,
+              successText: 'A sound repair advances the beacon restoration.',
+              failureText:
+                'The attempt consumes time without producing a sound repair.',
+            },
+          },
+          checks: [],
+          completion: {
+            text: 'The beacon shines again, and the harbor records the completed watch.',
+            effects: [
+              {
+                kind: 'fact.set.v1',
+                fact: { id: 'beacon-damaged', value: false },
+              },
+              {
+                kind: 'quantity.change.v1',
+                quantityId: 'harbor-credit',
+                delta: 4,
+              },
+            ],
+          },
+        },
+      },
+    },
+  ];
+}
+
 export function scriptedMechanicalOpening(task: StorytellerTask) {
   const opening = task.context.mechanicalOpening;
   if (task.task !== 'opening' || !opening) {
@@ -174,7 +252,10 @@ export function scriptedMechanicalOpening(task: StorytellerTask) {
   }
   const character = opening.character;
   const plans =
-    pineappleOpeningPlans(character) ?? microbeOpeningPlans(character) ?? [];
+    pineappleOpeningPlans(character) ??
+    beaconOpeningPlans(character) ??
+    microbeOpeningPlans(character) ??
+    [];
   return {
     version: 1,
     scene: {

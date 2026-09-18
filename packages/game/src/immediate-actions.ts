@@ -8,6 +8,12 @@ import {
   type Character,
   type StoryFact,
 } from './state';
+import {
+  actionAvailable,
+  actionContentSchema,
+  actionDefinitionSchema,
+  validateContentState,
+} from './activities';
 
 const actionKeySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
 export const storyFactDeclarationsSchema = z
@@ -59,9 +65,41 @@ export const immediateActionPlanSchema = z.strictObject({
       success: outcomeSchema,
       failure: outcomeSchema,
     }),
+    z.strictObject({
+      kind: z.literal('process'),
+      action: actionDefinitionSchema,
+    }),
   ]),
 });
 export type ImmediateActionPlan = z.infer<typeof immediateActionPlanSchema>;
+
+function resolutionOutcomes(
+  plan: ImmediateActionPlan,
+): Array<readonly [string, ImmediateOutcome]> {
+  if (plan.resolution.kind === 'automatic') {
+    return [['outcome', plan.resolution.outcome]];
+  }
+  if (plan.resolution.kind === 'check') {
+    return [
+      ['success', plan.resolution.success],
+      ['failure', plan.resolution.failure],
+    ];
+  }
+  return [];
+}
+
+function possibleDeclarations(plan: ImmediateActionPlan) {
+  return resolutionOutcomes(plan).flatMap(([, outcome]) =>
+    outcome.declarations.map((declaration) => declaration),
+  );
+}
+
+function maximumDeclarations(plan: ImmediateActionPlan) {
+  const outcomes = resolutionOutcomes(plan);
+  return outcomes.length
+    ? Math.max(...outcomes.map(([, outcome]) => outcome.declarations.length))
+    : 0;
+}
 
 export const immediateActionContentSchema = z
   .strictObject({
@@ -217,13 +255,26 @@ export function validateImmediateActionProposal(input: {
       );
     }
   }
-  const outcomes: Array<readonly [string, ImmediateOutcome]> =
-    plan.resolution.kind === 'automatic'
-      ? [['outcome', plan.resolution.outcome]]
-      : [
-          ['success', plan.resolution.success],
-          ['failure', plan.resolution.failure],
-        ];
+  if (plan.resolution.kind === 'process') {
+    try {
+      validateContentState(
+        actionContentSchema.parse({
+          version: 2,
+          id: `process-${plan.key}`,
+          actions: [plan.resolution.action],
+        }),
+        input.character,
+      );
+    } catch (error) {
+      issue(
+        issues,
+        'invalid-shape',
+        'resolution.action',
+        error instanceof Error ? error.message : 'Invalid process action',
+      );
+    }
+  }
+  const outcomes = resolutionOutcomes(plan);
   for (const [outcomeKey, outcome] of outcomes) {
     for (const [effectIndex, effect] of outcome.effects.entries()) {
       const path = `resolution.${outcomeKey}.effects.${effectIndex}`;
@@ -282,20 +333,8 @@ export function immediateActionAvailable(
   storyFacts: readonly StoryFact[],
   plan: ImmediateActionPlan,
 ) {
-  const possibleDeclarations =
-    plan.resolution.kind === 'automatic'
-      ? plan.resolution.outcome.declarations
-      : [
-          ...plan.resolution.success.declarations,
-          ...plan.resolution.failure.declarations,
-        ];
-  const maximumDeclarations =
-    plan.resolution.kind === 'automatic'
-      ? plan.resolution.outcome.declarations.length
-      : Math.max(
-          plan.resolution.success.declarations.length,
-          plan.resolution.failure.declarations.length,
-        );
+  const declarations = possibleDeclarations(plan);
+  const declarationLimit = maximumDeclarations(plan);
   const knownStoryIds = new Set(storyFacts.map((fact) => fact.id));
   return (
     plan.requires.every((required) =>
@@ -315,10 +354,12 @@ export function immediateActionAvailable(
           quantity.value >= required.minimum,
       ),
     ) &&
-    storyFacts.length + maximumDeclarations <= 64 &&
-    possibleDeclarations.every(
+    storyFacts.length + declarationLimit <= 64 &&
+    declarations.every(
       (declaration) => !knownStoryIds.has(declaration.fact.id),
-    )
+    ) &&
+    (plan.resolution.kind !== 'process' ||
+      actionAvailable(character, plan.resolution.action))
   );
 }
 
@@ -361,6 +402,9 @@ export function resolveImmediateAction(
         declarationSource,
       ),
     };
+  }
+  if (plan.resolution.kind === 'process') {
+    throw new Error('A process plan must be admitted by the process runtime');
   }
   const roll = resolveCheck(character, plan.resolution.check, drawD20);
   const outcome = roll.success

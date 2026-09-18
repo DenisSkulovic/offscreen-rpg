@@ -8,7 +8,7 @@ import type * as Drizzle from 'drizzle-orm' with {
   'resolution-mode': 'require',
 };
 import { generation } from '@offscreen/db/generation-schema';
-import { gameActionReceipt } from '@offscreen/db/campaign-schema';
+import { gameActionReceipt, gameActivity } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
@@ -75,7 +75,9 @@ test(
           });
           return { draftId, generationId, storyId, snapshot };
         }
-        async function mechanicalCandidate() {
+        async function mechanicalCandidate(
+          contentId = 'pineapple-mechanics.v4',
+        ) {
           const draftId = randomUUID();
           await drafts.save(ownerId, draftId, {
             title: 'Mechanical loop test',
@@ -85,13 +87,7 @@ test(
             expectedRevision: 0,
           });
           const generationId = randomUUID();
-          await openings.request(
-            ownerId,
-            draftId,
-            generationId,
-            1,
-            'pineapple-mechanics.v4',
-          );
+          await openings.request(ownerId, draftId, generationId, 1, contentId);
           await runtime.complete(generationId);
           const storyId = randomUUID();
           const snapshot = await stories.startFromCandidate({
@@ -205,6 +201,69 @@ test(
                 );
               }
             }
+          },
+        );
+        await t.test(
+          'selecting earned work admits a durable process without paying its reward',
+          async () => {
+            const started = await mechanicalCandidate('beacon-watch.v1');
+            const campaign = requireDefined(
+              started.snapshot.campaign,
+              'Expected a mechanical campaign',
+            );
+            const offer = requireDefined(
+              campaign.offer,
+              'Expected a generated mechanical offer',
+            );
+            const action = requireDefined(
+              offer.nodes[0],
+              'Expected the beacon process action',
+            );
+            const operationId = randomUUID();
+
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId,
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [action.id],
+              },
+            });
+
+            const snapshot = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(snapshot.campaign?.offer, null);
+            assert.equal(snapshot.campaign?.activity?.state, 'running');
+            assert.deepEqual(snapshot.campaign?.activity?.progress, {
+              label: 'Beacon repair',
+              earned: 0,
+              required: 9,
+            });
+            assert.equal(
+              snapshot.campaign?.character?.quantities.find(
+                (quantity) => quantity.id === 'harbor-credit',
+              )?.value,
+              0,
+            );
+            assert.equal(snapshot.campaign?.actionReceipts.length, 0);
+
+            const [activity] = await database.db
+              .select({ plan: gameActivity.plan })
+              .from(gameActivity)
+              .where(eq(gameActivity.storyId, started.storyId));
+            // The DB column is intentionally JSON at this boundary; production
+            // reads parse the full plan before use. Here we only inspect the two
+            // admission invariants this integration owns.
+            const plan = activity?.plan as {
+              version?: unknown;
+              action?: { id?: unknown };
+            };
+            assert.equal(plan.version, 4);
+            assert.equal(plan.action?.id, 'restore-beacon');
           },
         );
         await t.test(

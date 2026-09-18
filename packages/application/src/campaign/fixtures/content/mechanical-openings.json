@@ -143,6 +143,118 @@
       }
     },
     {
+      "id": "beacon-watch.v1",
+      "name": "Beacon watch — earned repair",
+      "description": "A timed contribution process whose repair progress comes from D&D checks rather than elapsed time.",
+      "character": {
+        "name": "Mara",
+        "scores": {
+          "strength": 10,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 10
+        },
+        "applicableAbilities": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "skills": [{ "id": "repair", "label": "Repair" }],
+        "proficientSkills": ["repair"],
+        "proficiencyBonus": 2,
+        "hp": 10,
+        "maxHp": 10,
+        "quantities": [
+          { "id": "harbor-credit", "label": "Harbor credit", "value": 0 }
+        ],
+        "facts": [
+          { "id": "beacon-damaged", "value": true },
+          { "id": "repair-tools", "value": true },
+          { "id": "location", "value": "harbor-beacon" }
+        ]
+      },
+      "content": {
+        "version": 1,
+        "id": "beacon-watch.v1",
+        "plans": [
+          {
+            "version": 1,
+            "key": "restore-beacon",
+            "label": "Begin restoring the beacon",
+            "intention": "Commit to repairing the storm-damaged signal while keeping watch.",
+            "risk": "Failed attempts consume time, and trouble may interrupt the work.",
+            "evidence": [],
+            "requires": [
+              { "id": "beacon-damaged", "value": true },
+              { "id": "repair-tools", "value": true }
+            ],
+            "resolution": {
+              "kind": "process",
+              "action": {
+                "id": "restore-beacon",
+                "label": "Restore the signal beacon",
+                "description": "Repair the storm-damaged beacon while keeping watch.",
+                "requires": [
+                  { "id": "beacon-damaged", "value": true },
+                  { "id": "repair-tools", "value": true }
+                ],
+                "capacity": "primary",
+                "process": {
+                  "kind": "contribution.v1",
+                  "progressLabel": "Beacon repair",
+                  "requiredContribution": 9,
+                  "everyTicks": 5,
+                  "attempt": {
+                    "check": {
+                      "rule": "srd-5.2.1-subset.v1",
+                      "purpose": "Repair the beacon",
+                      "skill": "repair",
+                      "ability": "intelligence",
+                      "dc": 13,
+                      "advantage": false,
+                      "disadvantage": false,
+                      "modifiers": [{ "source": "repair tools", "value": 2 }]
+                    },
+                    "successContribution": 3,
+                    "failureContribution": 0,
+                    "successText": "A sound repair advances the beacon restoration.",
+                    "failureText": "The attempt consumes time without producing a sound repair."
+                  }
+                },
+                "checks": [],
+                "completion": {
+                  "text": "The beacon shines again, and the harbor records the completed watch.",
+                  "effects": [
+                    {
+                      "kind": "fact.set.v1",
+                      "fact": { "id": "beacon-damaged", "value": false }
+                    },
+                    {
+                      "kind": "quantity.change.v1",
+                      "quantityId": "harbor-credit",
+                      "delta": 4
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "opening": {
+        "version": 1,
+        "title": "The dark beacon",
+        "paragraphs": [
+          "Storm damage has left the harbor beacon dark. You have repair tools, an exposed mechanism, and a watch to keep while the work is underway. Compensation is promised only if the signal is restored."
+        ]
+      }
+    },
+    {
       "id": "microbe.v3",
       "name": "Microscopic environmental response",
       "description": "A world-independence probe without human or economic assumptions.",

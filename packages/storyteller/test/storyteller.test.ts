@@ -229,6 +229,50 @@ function microbeMechanicalOpening() {
   });
 }
 
+function beaconMechanicalOpening() {
+  const task = mechanicalOpening();
+  return prepareStorytellerTask({
+    ...task,
+    context: {
+      ...task.context,
+      mechanicalOpening: {
+        id: 'beacon-watch.v1',
+        character: {
+          name: 'Mara',
+          scores: {
+            strength: 10,
+            dexterity: 10,
+            constitution: 12,
+            intelligence: 14,
+            wisdom: 12,
+            charisma: 10,
+          },
+          applicableAbilities: ['intelligence', 'wisdom'],
+          skills: [{ id: 'repair', label: 'Repair' }],
+          proficientSkills: ['repair'],
+          proficiencyBonus: 2,
+          hp: 8,
+          maxHp: 8,
+          facts: [
+            { id: 'location', value: 'harbor-beacon' },
+            { id: 'beacon-damaged', value: true },
+            { id: 'repair-tools', value: true },
+          ],
+          quantities: [
+            { id: 'harbor-credit', label: 'Harbor credit', value: 0 },
+          ],
+        },
+        storyFacts: [],
+        opening: {
+          version: 1,
+          title: 'The dark beacon',
+          paragraphs: ['A storm-damaged beacon needs deliberate repair.'],
+        },
+      },
+    },
+  });
+}
+
 test('mechanical opening captures fresh plans instead of an authored offer', () => {
   const task = mechanicalOpening();
   assert.equal('offer' in task.context.mechanicalOpening!, false);
@@ -304,6 +348,23 @@ test('mechanical opening uses the same task contract for nonhuman agency', () =>
     false,
     'The nonhuman contrast must not inherit pineapple concepts',
   );
+});
+
+test('mechanical opening can offer a durable contribution process', () => {
+  const result = scriptedStorytellerResult(beaconMechanicalOpening());
+  assert.equal(result.scene.next.kind, 'action-plans');
+  if (result.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  const [plan] = result.scene.next.plans;
+  assert.equal(plan?.key, 'restore-beacon');
+  assert.equal(plan?.resolution.kind, 'process');
+  if (plan?.resolution.kind !== 'process') {
+    throw new Error('Expected a process resolution');
+  }
+  assert.equal(plan.resolution.action.process.kind, 'contribution.v1');
+  assert.equal(plan.resolution.action.process.requiredContribution, 9);
+  assert.equal(plan.resolution.action.completion.effects.length, 2);
 });
 
 test('captured schemas expose only the result for the requested task', () => {
