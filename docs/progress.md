@@ -24,7 +24,7 @@
 
 ## Where to resume feature work
 
-The [playable DM adjudication loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) owns the implementation checkpoint. Offer-local private plans and pure proposal diagnostics exist. Remaining work includes scoped fact admission, direct exactly-once mechanical resolution, durable bounded tool rounds and connecting generated opening/consequence plans to the player flow.
+The [playable DM adjudication loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) owns the implementation checkpoint. Offer-local private plans and pure proposal diagnostics exist. Remaining work includes direct exactly-once mechanical resolution, scoped fact admission, one bounded generated DM turn and connecting generated opening/consequence plans to the player flow. General tool-assisted planning is deferred until the smaller direct-context loop demonstrates a retrieval need.
 
 The immediate blocker is the transaction boundary: mechanical settlement still assembles narration context in the same transaction. A preparation failure can roll back a valid action. Mechanical receipts and durable follow-up intent must commit independently of later preparation failure. The application guide links the exact path.
 

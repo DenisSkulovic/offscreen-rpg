@@ -44,20 +44,24 @@ Work:
 
 Exit: normal, rejected and retried selections are understandable without model execution.
 
-## Phase 3 — Durable bounded agent runner
+## Phase 3 — Generate one complete DM turn
 
-Outcome: one task-specific runner persists model and tool steps and can resume without replaying completed work.
+Outcome: one bounded task turns committed evidence into consequence narration and a newly admitted private offer.
 
 Work:
 
-- add planning task/step schemas and persistence;
-- implement allowlisted `inspect_rule`, `read_evidence` and `validate_action_package` tools;
-- implement round/tool limits and final-result revalidation;
-- adapt accounting so each model round has its own attempt identity and saved request/outcome;
-- stop uncertain dispatches and stale publication safely;
-- implement a scripted agent that requests tools through the same protocol.
+- replace consequence selection from `resolution.offer` with a `dm-turn.v1` result containing scene prose, continuity changes and zero to four proposed immediate plans;
+- include the supported immediate-action schema, DC guidance, current character/state, prior receipt and bounded evidence directly in the captured request;
+- validate every proposed plan with the normal deterministic validator before publication;
+- allow one separately captured repair generation after structural or admission rejection, then hold explicitly;
+- preserve the existing generation/publication fence and accounting boundaries;
+- implement scripted DM-turn outputs through the same task/result/publication path.
 
-Exit: offline execution proves tool request → tool result → final package → saved publication across retry/restart boundaries.
+Exit: offline execution proves committed receipt → generated scene/private plans → deterministic admission → saved publication across retry/restart boundaries.
+
+### Deferred extension: tool-using planning
+
+Do not build a generic multi-round tool runner before the browser proves three worthwhile dynamic rounds. The first rules/state/evidence payload is intentionally small enough to capture directly. `inspect_rule`, `read_evidence` and multi-step validation become justified when measured prompt size, missing evidence or failed repairs demonstrate a retrieval problem. Their proposed authority limits remain useful design constraints, but they are not on the shortest POC path.
 
 ## Phase 4 — Connect opening and consequence planning
 
@@ -106,8 +110,126 @@ Phase 2 has started with a pure structured proposal validator. It reports bounde
 
 Authored mechanical openings and the offline narrative graph now live in schema-validated JSON content. The generic loader resolves arbitrary catalogue IDs, the API exposes content summaries and the client renders that catalogue; no shared contract, policy version or runtime branch names a scenario. The old premise-word and profile conditionals have been replaced by data lookup. This separation is preparatory work, not generated world understanding.
 
-It does not yet publish generated proposals or replace the activity bridge. Next: design the scoped character/situation fact input, then implement direct exactly-once adjudication. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. The adjudication commit must persist the action receipt and durable follow-up intent independently of context assembly so a narration-preparation error cannot roll back or reroll a valid action. Scope later trace work to the same durable runner. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
+It does not yet publish generated proposals or replace the activity bridge. Next: implement direct exactly-once adjudication and its durable receipt, then design bounded emergent story facts. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. The adjudication commit must persist the action receipt and durable follow-up intent independently of context assembly so a narration-preparation error cannot roll back or reroll a valid action. Scope later trace work to the same DM-turn lifecycle. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
 
 All authored examples use the same plan/admission/resolution contract. Neither task specialization nor context validation assumes a currency, human calendar, movement mode, profession, species or setting. Activity-progress design remains outside this authorization. No provider spend is authorized.
 
 Verification: game tests passed 11/11, including private/public separation, availability, structured proposal rejection and form-specific ability/skill admission. Game, contracts, Storyteller, application, API and web production builds pass. Storyteller tests pass 24/24, including task-specific schemas, context contradictions, validated offline content and injected provider transport with no network. Database generation reports the single baseline matches the schema. No database/browser/full-game rehearsal was run. Provider spend: $0; cumulative account usage unverified.
+
+## POC acceleration audit — 2026-09-18
+
+The repository has enough general infrastructure for the first playable loop. The present risk is not missing architecture; it is allowing infrastructure work to delay the first unscripted three-turn game. This checkpoint narrows the dependency chain:
+
+1. commit an immediate action and its receipt independently of narration;
+2. permit bounded state to emerge through outcomes;
+3. generate one complete DM turn containing narration and fresh private plans;
+4. play three consecutive rounds in the browser;
+5. only then connect one meaningful real-time commitment.
+
+The durable tool-agent runner, trace UI expansion, generalized process families, combat, spatial modelling and additional setting controls do not block those five steps.
+
+### Why direct adjudication is the first edit
+
+`campaign/actions.ts` currently translates an `ImmediateActionPlan` into a zero-duration `gameActivity`. `settleActivity()` then applies the outcome, appends a generic mechanical passage and calls `admitConsequenceNarration()` inside the same transaction. This creates four POC problems:
+
+- failure while preparing narrative context can roll back an authoritative die and its effects;
+- automatic actions have no durable resolution receipt equivalent to `gameRoll`;
+- the activity record and tick machinery describe an action that consumes no time;
+- a proper DM turn would otherwise create a second passage after the mechanical placeholder, making one player action look like two narrative beats.
+
+The target boundary is:
+
+**select stored plan → revalidate → roll at most once → apply typed effects → save action receipt → consume offer → commit → prepare/generate DM turn → publish one new scene and offer**
+
+The receipt is reality. Narration is a recoverable presentation of that reality. A failed or retried generation may delay the next scene but must never undo or repeat the action.
+
+### Cursor-ready slice: direct immediate adjudication
+
+Implement this as the next reviewable slice. Do not implement generated planning, new fact declaration or long-running time in the same diff.
+
+#### Product behavior
+
+- Selecting an admitted immediate option commits exactly one automatic/check outcome.
+- Both automatic and checked actions create a durable receipt.
+- The selected offer is consumed immediately; stale buttons cannot execute another action.
+- The player can reload after the commit and see that resolution is pending or failed without receiving a reroll.
+- Consequence-task preparation is admitted only after the mechanical transaction commits.
+- Successful publication creates one narrative consequence passage and the next offer. Do not append a generic mechanical passage first.
+
+#### Suggested ownership
+
+- `packages/game`: add a pure immediate resolver that accepts an admitted plan, current character and injected d20 source, and returns the selected outcome, optional roll and next character. It performs no persistence.
+- `packages/db`: replace the zero-duration activity's role with one `game_action_receipt` record (prototype schema may be reset). Capture operation/story/offer/action identity, base narrative revision, selected public intention, immutable plan or plan reference, outcome kind, optional roll, applied effects and a preparation/publication state or equivalent link.
+- `packages/application/src/campaign/actions.ts`: own the story lock, command replay, offer/plan fences, availability recheck, pure resolution call, receipt/effect persistence, offer consumption and durable follow-up enqueue.
+- `packages/application/src/campaign/narration.ts`: accept a committed receipt ID in a separate transaction, capture context, and idempotently admit the consequence task. It must not rerun resolution.
+- `packages/application/src/campaign/activities.ts`: retain only genuine elapsed-time activities. Remove immediate-action knowledge from it.
+- `packages/contracts` and web play UI: expose a small resolution state (`pending`, `failed`, or available next offer) and a public receipt projection. Never expose the unused outcome branch or private plan.
+
+Do not use `gameRoll` as the only receipt: an automatic action still happened, and narration/recovery needs its selected intention, outcome text and effects. A roll may be embedded in or linked from the action receipt; avoid maintaining two competing accounts of the same resolution.
+
+#### Transaction and retry invariants
+
+- Lock the story before checking command replay, revision, offer and plan.
+- Persist character changes, receipt, offer consumption, command receipt and outbox follow-up in one transaction.
+- Do not call context construction, task preparation, provider code or Storyteller validation inside that transaction.
+- Repeating the same operation ID returns the committed result without rolling or enqueueing twice.
+- A different operation against the consumed offer conflicts before rolling.
+- Follow-up admission is idempotent by action receipt identity.
+- Publication remains fenced to the receipt's base narrative revision. A preparation/publication failure leaves the receipt inspectable and retryable.
+
+#### Focused acceptance
+
+- controlled success and failure each save one die and apply one outcome;
+- an automatic plan saves a receipt with no die;
+- duplicate command, stale revision, stale offer and unavailable prerequisite never produce an additional receipt or roll;
+- forced context-preparation failure occurs after the receipt transaction and cannot undo it;
+- reload between receipt commit and task admission shows a coherent pending state;
+- consequence retry uses the original receipt and publishes at most one passage;
+- no `gameActivity` row is created for an immediate action;
+- no paid provider call is made.
+
+### Immediately following slice: bounded emergent state
+
+Generated play will remain authored branching unless an outcome can establish a fact that did not exist at story creation. Add this only after the receipt boundary is clean.
+
+Prefer an explicit declaration effect over silently changing `fact.set.v1` into an upsert. A declaration needs a stable normalized identifier, bounded boolean/string value, provenance from the generating task/receipt, a total count cap and duplicate/conflict rules. Existing-fact updates should remain a distinct operation so a typo cannot create state.
+
+The current `character.facts` location does not honestly represent situation/world facts. Before implementing `character` versus `situation` scope, decide who owns each collection and when situation facts expire or become durable. Do not add a `scope` string while leaving both kinds in the same eternal character bag; that would label the ambiguity rather than solve it. For the first generated loop, one bounded durable story-fact collection is sufficient if the product language says so plainly.
+
+Add quantity prerequisites at the same admission boundary (`quantity >= N`, initially). A plan such as “pay 5 silver” must be rejected before selection when only 3 exist, rather than relying on final character parsing to discover a negative balance.
+
+### DM-turn contract after receipts and facts
+
+Evolve the current consequence task rather than creating a second planner followed by a narrator. One task should return:
+
+- consequence scene content grounded in the committed receipt;
+- continuity-note changes with existing evidence rules;
+- zero to four public option projections;
+- the matching private `immediate-action.v1` plans, including both possible outcome branches;
+- an explicit held reason when no supported action is feasible.
+
+Application code revalidates the full result against captured evidence, current capabilities, prerequisites, quantity bounds, effect vocabulary and the still-current narrative revision. Publication stores scene, offer and private plans atomically. The model never rolls, applies effects or publishes directly.
+
+One bounded repair attempt is enough for the POC. Persist the rejected output and structured diagnostics, then submit those diagnostics with the same captured authority snapshot. If repair fails, hold visibly. Do not hide an unbounded agent loop behind the word “retry.”
+
+### Quality constraints the structural schema cannot enforce
+
+The first live evaluation should judge these separately from JSON validity:
+
+- options are materially different intentions, not paraphrases;
+- impossible actions are omitted rather than assigned a theatrical DC;
+- DCs are calibrated consistently from explicit anchors;
+- failure changes the situation or cost instead of saying “nothing happens”;
+- the narration honors the actual roll and effect without retroactive compensation;
+- knowledge stays asymmetric: the character cannot act on hidden evidence;
+- ordinary, low-drama choices remain available when plausible;
+- prior facts alter later options and are called back naturally;
+- the DM does not manufacture urgency merely because a turn occurred.
+
+Scripted tests can prove authority, retry and persistence. They cannot prove these qualities. After three offline rounds work, run a tiny separately authorized live comparison on one grounded human scenario and the microbe contrast, and inspect every captured task/result/receipt before expanding the architecture.
+
+### Product benchmark for the first enjoyable rehearsal
+
+Keep pineapple and microbe as contract tests. Add one grounded low-fantasy fixture only when the generated DM-turn path exists: arrival near a town in bad weather, a small declared resource quantity, one obligation, night approaching and several ordinary options. The test is whether scarcity, information, checks and later real time create attachment without a compulsory quest. It must use the same generic contracts; no town, coin or human branch belongs in application code.
+
+The POC gate is not “the agent framework runs.” It is: three consecutive choices that were not authored in a catalogue, one saved result materially changes the next offer, reload/retry cannot rewrite reality, and the player wants to click a fourth time.

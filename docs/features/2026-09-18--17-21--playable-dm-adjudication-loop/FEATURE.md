@@ -33,9 +33,9 @@ This slice supports immediate actions whose meaningful mechanical result can be 
 - an automatic action when uncertainty has no meaningful consequence;
 - success/failure outcome proposals with bounded typed effects;
 - durable private plans and public option projections;
-- one bounded tool-using DM planning task;
+- one bounded structured DM-turn task;
 - narration and fresh options after committed resolution;
-- an offline scripted agent that exercises the same task/tool/step protocol;
+- offline scripted outputs that exercise the same task/validation/publication path;
 - explicit held state when no supported action is appropriate.
 
 It excludes long-running contribution, traversal, clock-condition waiting, combat exchanges, inventory creation, arbitrary resource systems, autonomous absence choices, multiplayer and full world/entity modelling. Those exclusions prevent the rejected `durationTicks` model from leaking into the new loop.
@@ -83,21 +83,13 @@ A fact is authoritative only after its outcome commits. New facts require an exp
 
 This fact boundary is deliberately smaller than an entity system. It supports “Gary explained the promise” or “the microbe is exposed to the chemical” without creating a database census of every person and object mentioned in prose.
 
-## The bounded DM agent
+## The bounded DM turn
 
-The DM planner is a distinct task type, not an always-running personality process. It receives essential context without tool calls: current scene, selected prior intention, committed receipts, character capabilities, current facts, storyteller settings, recent evidence handles and the supported immediate-action capability.
+The DM turn is a distinct task type, not an always-running personality process. It receives the current scene, selected prior intention, committed receipts, character capabilities, current facts, storyteller settings, bounded evidence and the supported immediate-action contract. It returns consequence narration and the private plans behind the next public options together.
 
-It has a task-specific allowlist:
+The first POC captures that small authority snapshot directly. Application code validates every returned plan and may make one bounded repair request with structured diagnostics. The saved original request, rejected output, diagnostics and repair remain inspectable. A second invalid result holds the story explicitly.
 
-1. `inspect_rule` returns the exact schema and semantics of `immediate-action.v1`. It is pure and read-only.
-2. `read_evidence` returns only committed passages named by handles in the task's captured evidence manifest. It cannot search other stories or arbitrary storage.
-3. `validate_action_package` runs the real deterministic proposal validator and returns structured issues or a normalized preview. It does not persist, roll or reserve authority.
-
-The final result is revalidated independently; a successful tool response is not a publication token. Duplicate reads and validations are harmless.
-
-The runner allows at most three model rounds and six total tool calls for one planning operation. Each step is persisted before the next one begins. A round can request allowlisted tools or return a final scene/action package. Unknown tools, malformed arguments, exhausted bounds or invalid final output stop in an explicit held/failed state. There is no critic, router, voting swarm or agent per NPC.
-
-For the simple pineapple scene, the model may already have enough information and finish without a tool call. The runner is still tool-capable; forcing a meaningless call is not an acceptance criterion. The offline scripted agent must exercise at least `inspect_rule` and `validate_action_package` so orchestration is proven without claiming model quality.
+A later tool-using extension may expose `inspect_rule`, scoped `read_evidence` and non-mutating `validate_action_package` when measured context pressure or repair failures justify retrieval. It must retain the same captured story authority, bounded calls and final independent validation. It is not required before the three-round playable POC. There is no critic, router, voting swarm or agent per NPC.
 
 ## Durable execution and spending
 
@@ -110,8 +102,7 @@ Offline scripted execution is the implementation default. Live inference stays d
 ## Failure and recovery
 
 - Invalid proposal: retain structured diagnostics, expose retry, and do not publish an offer.
-- Tool/round limit exhausted: hold the story with an explicit planning failure; do not silently add rounds.
-- Crash after a saved step: resume from that step without repeating completed model work.
+- Repair limit exhausted: hold the story with an explicit planning failure; do not silently add attempts.
 - Crash after final output but before publication: publish the saved output under the normal revision fence.
 - Stale story revision: mark the operation stale and admit a fresh planner only from current state.
 - No valid actions: publish a legitimate held state and explanatory scene; do not invent duplicate options or end the life.
@@ -126,7 +117,7 @@ Offline scripted execution is the implementation default. Live inference stays d
 - Fabricated IDs, stale offers, unsupported effects and invalid prerequisites are rejected before rolling.
 - A retry cannot duplicate a roll, effect, fact or model round.
 - Zero, one and several valid options render coherently.
-- The scripted agent traverses persisted tool steps through the same runner used by a provider.
+- Scripted DM-turn outputs traverse the same task, validation and publication path used by a provider.
 - The UI shows the selected intention, visible d20 receipt/consequence and newly published options without exposing hidden outcome branches.
 - No long-running activity is admitted through this contract.
 
@@ -139,7 +130,7 @@ This slice proves a playable DM loop, not general artificial intelligence or a u
 - Immediate actions are the entire next playable slice; long-running processes remain separate.
 - Offers own private plans instead of resolving through a global catalogue of authored action definitions.
 - Generated consequences use a small `character`/current-`situation` fact boundary; richer entities remain deferred.
-- The three tools and three-round/six-call ceiling are initial execution policy rather than permanent game rules.
+- Tool-assisted planning is deferred until measured context or repair evidence justifies it.
 - Opening mechanical options are generated and reviewed before Start, then their exact private plans are copied into the story.
 
 ## Owning specifications

@@ -10,7 +10,7 @@ The next dependency order is:
 
 1. Tighten and inspect existing task contexts, schemas and offline evidence. Resolve local launch blockers before browser rehearsals.
 2. Implement offer-local private immediate plans and deterministic admission/resolution, including permitted fact changes. Isolate committed consequences from subsequent context/preparation failure. These are prerequisites for generated gameplay, not optional polish.
-3. Implement the bounded planning agent and its durable round/tool evidence together. Exercise it with scripted model messages through the actual runner, not a substitute engine that directly returns the expected final scene.
+3. Implement one bounded DM-turn task that returns consequence narration and fresh private plans together. Exercise scripted outputs through the actual task, validation and publication path rather than a substitute engine that bypasses admission. Defer a tool-using runner until measured context or repair failures justify it.
 4. Connect reviewed opening, three selection/resolution/planning rounds and held/recovery states to the browser. Use saved rolls and effects in narration.
 5. Perform the manual matrix below, retain failures and fix the failures that block this loop. Only then propose a separately authorized tiny real-model experiment.
 
@@ -23,13 +23,13 @@ The Storyteller is a profile, not an execution topology. A deterministic applica
 | Responsibility | Execution | Required information | Excluded authority |
 | --- | --- | --- | --- |
 | Admission and resolution | Pure rules coordinated in a transaction | Captured plan, current state, selected intention, fences, server dice | Model-authored rolls, client-authored effects |
-| Immediate opportunity planning (missing) | Bounded tool-using task | Current scene, relevant committed facts/character, constraints, recent outcome, profile/settings guidance, relevant rule catalogue | Mutating tools, speculative future facts, unrelated history |
+| Immediate opportunity planning (missing) | Bounded structured DM turn | Current scene, relevant committed facts/character, constraints, recent outcome, profile/settings guidance, relevant rule catalogue | Mutating tools, speculative future facts, unrelated history |
 | Consequence presentation | Focused generation; current task also selects authored candidates | Saved receipts, current scene, relevant continuity, admitted opportunities | Rerolls, new effects, retroactive success |
 | Opening | Focused generation plus mechanical planning before review | Premise, starting state, selected profile/settings | A previous story's evidence or actions |
 | Continuity | Validated note patches published with their passage | Existing notes and bounded cited evidence | Treating summaries or dialogue as rules or state |
 | Scheduling, progress and recovery | Deterministic application/workflow logic | Committed clock/process/operation records | A model call per tick or a retry that repeats effects |
 
-Planning tools inspect only the current story's committed evidence and selected rules and validate a proposal without applying it. Known mandatory state is supplied directly. Extra historical evidence is retrieved only as needed, with bounds and recorded results. Validate all tool arguments and results; tool descriptions alone do not enforce scope. Save each round before continuing, cap rounds/calls/bytes, and stop on missing evidence, invalid final output or uncertain dispatch. A scripted transcript must use these same boundaries.
+The first POC supplies known mandatory state and bounded evidence directly. Validate the final DM turn independently and permit at most one captured repair after structured rejection. A later planning-tool extension may inspect only the current story's committed evidence and selected rules and validate proposals without applying them; it must preserve the same authority snapshot and bounds.
 
 The current context budget is 48 KiB including messages and schema, retaining the current passage and all note sources plus up to six optional recent passages. This is a byte ceiling, not evidence of useful or sufficient memory. Inspect what is omitted and why. Current prose appears both as focus and cited evidence; optimize that duplication only with measured benefit. Relevant older facts without notes cannot currently be recovered by a tool. Notes can also be semantically wrong despite valid citations. These are explicit evaluation questions, not reasons to dump the entire history into every request.
 
@@ -49,8 +49,8 @@ Use the existing [QA workspace](qa-journeys.md) for available cases. For cases s
 | Agency | Broad calm scene; constrained scene; zero viable actions; single viable action | Distinct executable intentions when available; honest held/one-choice state when constrained; no arbitrary two-choice minimum in mechanical planning |
 | Mechanics | Resolve success/failure with controlled dice; attempt invalid effect, invented rule or stale plan | Server-derived modifiers/effects; invalid proposals rejected; one receipt; no hidden DC/private branch in public projection |
 | Repetition | Double-select; reload during resolution; deliver work twice | One committed attempt, same roll/effects, no duplicate publication |
-| Agent tools (missing) | Valid lookup; wrong-story/future lookup; unknown tool; malformed args; invalid proposal then repair; exhaust rounds | Scoped bounded tool evidence, validation diagnostics, terminal failure/held state with no unauthorized mutation |
-| Recovery | Fail after saved model result, after roll commit, before publication; interrupt a tool round | Saved progress reused; no reroll; no repeated paid dispatch; failed presentation cannot undo the action |
+| DM-turn repair (missing) | Invalid proposal; valid repair; invalid repair; stale publication | Saved rejection diagnostics, one bounded repair, terminal failure/held state with no unauthorized mutation |
+| Recovery | Fail after saved model result, after roll commit, before publication; interrupt a repair attempt | Saved progress reused; no reroll; no repeated paid dispatch; failed presentation cannot undo the action |
 | Time | Pause/resume/reload; change pace; return after elapsed time | Authoritative tick state; no inference while merely waiting; prepared arrival not current before completion |
 | Settings | Switch profile mid-story; inspect next task and an earlier artifact; try locked edits | New settings affect newly admitted work; prior captures/receipts unchanged; lock enforced |
 | World independence | Repeat immediate loop for pineapple and microbe; inspect state/proposals | Shared mechanics; no required coins, job, human calendar, walking or scenario-name branch |
