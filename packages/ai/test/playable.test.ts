@@ -106,6 +106,7 @@ test('new option identities carry an intention without fixture-specific branchin
     'continuation',
   );
   assert.equal(artifact.selectedOptionId, 'sense-vibration');
+  assert.equal(artifact.promptVersion, 'playable.v2');
   assert.ok(!JSON.stringify(artifact.request).includes(input.snapshot.id));
   input.publishedProposal.next.options[0]!.intention = 'Changed after capture';
   assert.equal(

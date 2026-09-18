@@ -4,14 +4,22 @@ import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import {
+  continuationArrivalPresentation,
+  continuationCurrentPresentation,
+  continuationResultSchema,
   playablePresentation,
+  validateContinuationResult,
   validatePlayableResult,
+  type ContinuationResult,
 } from '@offscreen/ai/playable';
 import { GenerationError, validId } from './generations';
+import { scriptedRealDurationMs } from './scripted-continuation-timing';
 import { commitStoryContinuation } from './story-continuation';
+import type { StoryContinuation } from './story-command-policy';
 import { StoryError } from './story-errors';
 import { lockOwnedStory, requireCurrentPassage } from './story-persistence';
 
+export { scriptedGeneratedIntervalRealMs } from './scripted-continuation-timing';
 export const scriptedContinuationKind = 'continuation.playable.scripted.v1';
 export const scriptedContinuationTopic = 'continuation.playable.scripted.v1';
 
@@ -45,7 +53,101 @@ export const scriptedPlayableContinuation = validatePlayableResult(
   },
 );
 
-const presented = playablePresentation(scriptedPlayableContinuation);
+export const scriptedImmediateContinuation = validateContinuationResult({
+  version: 2,
+  content: scriptedPlayableContinuation.content,
+  next: scriptedPlayableContinuation.next,
+});
+
+export const scriptedTimedContinuation = validateContinuationResult({
+  version: 2,
+  content: {
+    version: 1,
+    title: 'On the road',
+    paragraphs: [
+      'You leave the fork and walk toward a tavern whose sign you do not yet know.',
+    ],
+  },
+  next: {
+    kind: 'interval',
+    gameDurationMs: 600000,
+    arrival: {
+      content: {
+        version: 1,
+        title: 'At the tavern',
+        paragraphs: [
+          'You reach the tavern. A bartender watches the door, and a traveller sits apart.',
+        ],
+      },
+      next: {
+        kind: 'choice',
+        prompt: 'What do you attempt?',
+        options: [
+          {
+            id: 'speak-bartender',
+            label: 'Speak to the bartender',
+            intention: 'Ask the bartender what this place is like tonight.',
+          },
+          {
+            id: 'sit-traveller',
+            label: 'Sit beside the traveller',
+            intention: 'Sit near the traveller in the corner and listen.',
+          },
+        ],
+      },
+    },
+  },
+});
+
+export function storyContinuationFromGeneratedResult(args: {
+  output: unknown;
+  response: StoryContinuation['response'];
+  generationId: string;
+}): StoryContinuation {
+  const timed = continuationResultSchema.safeParse(args.output);
+  if (timed.success && timed.data.next.kind === 'interval') {
+    const current = continuationCurrentPresentation(timed.data);
+    const arrival = continuationArrivalPresentation(timed.data);
+    return {
+      expectedRevision: 0,
+      effects: [],
+      content: current.content,
+      interaction: null,
+      response: args.response,
+      wait: {
+        version: 1,
+        realDurationMs: scriptedRealDurationMs(timed.data.next.gameDurationMs),
+        gameDurationMs: timed.data.next.gameDurationMs,
+        arrival: {
+          content: arrival.content,
+          interaction: arrival.interaction,
+        },
+      },
+      decision: null,
+      sourceGenerationId: args.generationId,
+      sourceGenerationPart: 'current',
+    };
+  }
+  const immediate = continuationResultSchema.safeParse(args.output);
+  const presented = immediate.success
+    ? continuationCurrentPresentation(immediate.data)
+    : playablePresentation(args.output);
+  return {
+    expectedRevision: 0,
+    effects: [],
+    content: presented.content,
+    interaction: presented.interaction,
+    response: args.response,
+    wait: null,
+    decision: null,
+    sourceGenerationId: args.generationId,
+    sourceGenerationPart: 'current',
+  };
+}
+
+function fixtureOutput(): ContinuationResult {
+  return scriptedTimedContinuation;
+}
 
 /** Only a fixture runner. Never replace this local update with a provider call. */
 export function createScriptedContinuations(database: Database) {
@@ -73,12 +175,13 @@ export function createScriptedContinuations(database: Database) {
         if (!record) {
           throw new GenerationError('not_found');
         }
+        const output = fixtureOutput();
         await tx
           .update(generation)
           .set({
             state: 'succeeded',
             attemptId: id,
-            output: scriptedPlayableContinuation,
+            output,
             updatedAt: sql`clock_timestamp()`,
           })
           .where(
@@ -112,20 +215,19 @@ export function createScriptedContinuations(database: Database) {
         const submission = interactionSubmissionSchema.parse(
           resolution.submission,
         );
+        const proposed = storyContinuationFromGeneratedResult({
+          output: saved.output,
+          response: submission,
+          generationId: resolution.generationId,
+        });
         try {
           await commitStoryContinuation(tx, {
             ownerId: record.ownerId,
             storyId: resolution.storyId,
             transitionId: resolution.operationId,
             input: {
+              ...proposed,
               expectedRevision: resolution.baseRevision,
-              effects: [],
-              content: presented.content,
-              interaction: presented.interaction,
-              response: submission,
-              wait: null,
-              decision: null,
-              sourceGenerationId: resolution.generationId,
             },
             completingIntervalPassageId: undefined,
             completingDecisionPassageId: undefined,

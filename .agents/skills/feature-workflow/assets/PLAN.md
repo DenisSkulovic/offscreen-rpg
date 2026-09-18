@@ -7,6 +7,7 @@ Implementation owner: Cursor by default; reviewer: Codex unless assigned otherwi
 ## Phases
 
 For each phase, state:
+
 - Outcome and dependencies.
 - Owning components and bounded changes.
 - Contracts/invariants, including intentional changes.

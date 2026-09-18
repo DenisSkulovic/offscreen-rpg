@@ -1,7 +1,9 @@
 import {
+  generatedStorytellerOutputSchema,
+  generationSourcePartSchema,
   playableContinuationArtifactSchema,
   playableOpeningArtifactSchema,
-  playableProposalSchema,
+  publishedPlayableFromGeneration,
 } from '@offscreen/ai/playable';
 import {
   chamberInspectorHistoryLimit,
@@ -32,6 +34,17 @@ function timestampIso(value: Date | null) {
   return value === null ? null : value.toISOString();
 }
 
+function parseSourcePart(value: unknown) {
+  if (value == null) {
+    return null;
+  }
+  const parsed = generationSourcePartSchema.safeParse(value);
+  if (!parsed.success) {
+    throw new Error('Stored passage has an invalid generation source part');
+  }
+  return parsed.data;
+}
+
 function parseResponseSource(value: unknown) {
   if (value == null) {
     return null;
@@ -58,16 +71,26 @@ function inspectGeneration(row: {
   failureCode: string | null;
   input: unknown;
   output: unknown;
+  sourcePart: 'current' | 'arrival' | null;
 }) {
   const artifact = playableOpeningArtifactSchema.safeParse(row.input);
-  const proposal = playableProposalSchema.safeParse(row.output);
+  let published: ReturnType<typeof publishedPlayableFromGeneration> | null;
+  try {
+    published = publishedPlayableFromGeneration({
+      output: row.output,
+      sourcePart: row.sourcePart,
+    });
+  } catch {
+    published = null;
+  }
   const optionIntentions =
-    proposal.success && proposal.data.next.kind === 'choice'
-      ? proposal.data.next.options.map((option) => ({
+    published?.next.kind === 'choice'
+      ? published.next.options.map((option) => ({
           id: option.id,
           intention: option.intention,
         }))
       : null;
+  const proposal = generatedStorytellerOutputSchema.safeParse(row.output);
   return {
     id: row.id,
     kind: row.kind,
@@ -97,6 +120,7 @@ export function createChamberInspector(database: Database) {
           transitionId: storyPassage.transitionId,
           responseSource: storyPassage.responseSource,
           sourceGenerationId: storyPassage.sourceGenerationId,
+          sourceGenerationPart: storyPassage.sourceGenerationPart,
           waitPlan: storyPassage.waitPlan,
           decisionPlan: storyPassage.decisionPlan,
           dueAt: storyPassage.dueAt,
@@ -180,6 +204,7 @@ export function createChamberInspector(database: Database) {
               failureCode: current.generationFailureCode,
               input: current.generationInput,
               output: current.generationOutput,
+              sourcePart: parseSourcePart(current.sourceGenerationPart),
             });
       const continuationArtifact = playableContinuationArtifactSchema.safeParse(
         activeResolution?.generationInput,
@@ -191,7 +216,7 @@ export function createChamberInspector(database: Database) {
         sourceGeneration?.optionIntentions?.find(
           (option) => option.id === selectedOptionId,
         )?.intention ?? null;
-      const continuationProposal = playableProposalSchema.safeParse(
+      const continuationProposal = generatedStorytellerOutputSchema.safeParse(
         activeResolution?.generationOutput,
       );
       return chamberInspectorSchema.parse({
@@ -210,6 +235,7 @@ export function createChamberInspector(database: Database) {
           interaction: snapshot.current.interaction,
           responseSource: parseResponseSource(current.responseSource),
           sourceGenerationId: current.sourceGenerationId,
+          sourceGenerationPart: parseSourcePart(current.sourceGenerationPart),
         },
         timing: {
           waitPlan:

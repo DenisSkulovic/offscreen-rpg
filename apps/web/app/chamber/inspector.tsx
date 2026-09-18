@@ -76,6 +76,10 @@ export function ChamberInspectorPanel(args: {
                 label="Source generation ID"
                 value={inspection.current.sourceGenerationId ?? 'None'}
               />
+              <Field
+                label="Source generation part"
+                value={inspection.current.sourceGenerationPart ?? 'legacy'}
+              />
               <Field label="Title" value={inspection.current.content.title} />
               <Field
                 label="Interaction"

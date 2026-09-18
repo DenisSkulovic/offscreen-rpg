@@ -2,30 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '../../stories/session-refresh';
+import {
+  preferNewerSnapshot,
+  readSnapshotFromResponse,
+  readStorySnapshot,
+  submitStoryJson,
+} from '../../stories/story-transport';
 
-const requestTimeoutMs = 10000;
-
-function preferNewerSnapshot(prior: StorySnapshot, next: StorySnapshot) {
-  if (next.viewVersion >= prior.viewVersion) {
-    return next;
+function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
+  if (waiting.remainingMs === null) {
+    return 'pause' as const;
   }
-  return prior;
-}
-
-async function readStorySnapshot(storyId: string, signal?: AbortSignal) {
-  const response = await fetch(`/api/stories/${storyId}`, {
-    cache: 'no-store',
-    signal:
-      signal === undefined
-        ? AbortSignal.timeout(requestTimeoutMs)
-        : AbortSignal.any([signal, AbortSignal.timeout(requestTimeoutMs)]),
-  });
-  if (!response.ok) {
-    throw new Error('Unavailable');
-  }
-  return storySnapshotSchema.parse(await response.json());
+  return 'resume' as const;
 }
 
 function resolutionMessage(story: StorySnapshot) {
@@ -46,17 +35,20 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const operation = useRef<{ id: string; body: unknown } | null>(null);
+  const controlOperation = useRef<{ id: string; body: unknown } | null>(null);
   const offer = story.current.interaction;
+  const waiting = story.waiting;
   const storyId = story.id;
   const isResolving = story.resolution !== null;
   const canChoose = story.canRespond && offer !== null && !isResolving;
+  const shouldPoll = isResolving || waiting != null;
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));
   }
 
   useEffect(() => {
-    if (!isResolving) {
+    if (!shouldPoll) {
       return;
     }
     const controller = new AbortController();
@@ -79,7 +71,53 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [isResolving, storyId]);
+  }, [shouldPoll, storyId]);
+
+  async function control(action?: 'pause' | 'resume') {
+    if (!waiting?.canControl || pending) {
+      return;
+    }
+    if (!controlOperation.current) {
+      if (!action) {
+        return;
+      }
+      controlOperation.current = {
+        id: crypto.randomUUID(),
+        body: {
+          intervalId: story.current.id,
+          expectedControlRevision: waiting.controlRevision,
+          action,
+        },
+      };
+    } else if (action) {
+      return;
+    }
+    setPending(true);
+    setError('');
+    try {
+      const response = await submitStoryJson({
+        url: `/api/stories/${story.id}/controls/${controlOperation.current.id}`,
+        body: controlOperation.current.body,
+      });
+      if (response.status === 409) {
+        acceptSnapshot(await readStorySnapshot(story.id));
+        setError(
+          'The wait changed or is already due. The current saved situation is shown.',
+        );
+      } else if (!response.ok) {
+        throw new Error('Unavailable');
+      } else {
+        acceptSnapshot(await readSnapshotFromResponse(response));
+      }
+      controlOperation.current = null;
+    } catch {
+      setError(
+        'Could not confirm the control. Retry the same request or reload to check saved progress.',
+      );
+    } finally {
+      setPending(false);
+    }
+  }
 
   async function respond(optionId?: string) {
     if (!offer || pending) {
@@ -105,15 +143,10 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     setPending(true);
     setError('');
     try {
-      const response = await fetch(
-        `/api/stories/${story.id}/resolutions/${operation.current.id}`,
-        {
-          method: 'PUT',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(operation.current.body),
-          signal: AbortSignal.timeout(requestTimeoutMs),
-        },
-      );
+      const response = await submitStoryJson({
+        url: `/api/stories/${story.id}/resolutions/${operation.current.id}`,
+        body: operation.current.body,
+      });
       if (response.status === 409) {
         acceptSnapshot(await readStorySnapshot(story.id));
         operation.current = null;
@@ -121,7 +154,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       } else if (!response.ok) {
         throw new Error('Unavailable');
       } else {
-        acceptSnapshot(storySnapshotSchema.parse(await response.json()));
+        acceptSnapshot(await readSnapshotFromResponse(response));
         operation.current = null;
       }
     } catch {
@@ -143,6 +176,39 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       {story.current.content.paragraphs.map((paragraph, index) => (
         <p key={index}>{paragraph}</p>
       ))}
+      {waiting ? (
+        <section aria-label="Journey timing">
+          {waiting.remainingMs !== null ? (
+            <p>
+              Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
+              seconds remain.
+            </p>
+          ) : (
+            <p>
+              Still travelling. Arrival estimated at {waiting.dueAt}. Reloading
+              never restarts the wait.
+            </p>
+          )}
+          <p>
+            Fictional duration: {waiting.gameDurationMs / 60000} minutes. The
+            saved deadline is authoritative.
+          </p>
+          {waiting.canControl ? (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => void control(journeyAction(waiting))}
+            >
+              {waiting.remainingMs === null ? 'Pause' : 'Resume'}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
+      {controlOperation.current ? (
+        <button disabled={pending} type="button" onClick={() => void control()}>
+          Retry control
+        </button>
+      ) : null}
       {offer ? (
         <section aria-label="Offered interaction">
           <p>{offer.specification.prompt}</p>
@@ -158,7 +224,11 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
             </p>
           ))}
           {operation.current ? (
-            <button disabled={pending} onClick={() => void respond()}>
+            <button
+              disabled={pending}
+              type="button"
+              onClick={() => void respond()}
+            >
               Retry the same choice
             </button>
           ) : null}

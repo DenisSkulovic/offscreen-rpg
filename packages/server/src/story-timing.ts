@@ -217,9 +217,14 @@ export function createStoryTiming(database: Database) {
           input: continuationSchema.parse({
             expectedRevision: interval.sequence,
             ...plan.arrival,
+            sourceGenerationId: interval.sourceGenerationId,
+            sourceGenerationPart: interval.sourceGenerationId
+              ? 'arrival'
+              : null,
           }),
           completingIntervalPassageId: intervalId,
           completingDecisionPassageId: undefined,
+          sourceGenerationId: interval.sourceGenerationId,
         });
         return null;
       });

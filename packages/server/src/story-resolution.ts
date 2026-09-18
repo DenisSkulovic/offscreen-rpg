@@ -1,9 +1,11 @@
 import { isDeepStrictEqual } from 'node:util';
 import {
+  generatedStorytellerOutputSchema,
+  generationSourcePartSchema,
   playableContinuationArtifactSchema,
-  playableProposalSchema,
   premiseContentSchema,
   preparePlayableContinuation,
+  publishedPlayableFromGeneration,
 } from '@offscreen/ai/playable';
 import {
   InteractionInputError,
@@ -59,7 +61,7 @@ export function createStoryResolution(database: Database) {
   const operations = createGenerations(database, {
     kind: scriptedContinuationKind,
     input: playableContinuationArtifactSchema,
-    output: playableProposalSchema,
+    output: generatedStorytellerOutputSchema,
   });
 
   return {
@@ -149,8 +151,19 @@ export function createStoryResolution(database: Database) {
         if (!source || source.ownerId !== ownerId) {
           throw new StoryError('invalid');
         }
-        const proposal = playableProposalSchema.safeParse(source.output);
-        if (!proposal.success) {
+        const sourcePartResult =
+          active.sourceGenerationPart == null
+            ? { success: true as const, data: null }
+            : generationSourcePartSchema.safeParse(active.sourceGenerationPart);
+        if (!sourcePartResult.success) {
+          throw new StoryError('invalid');
+        }
+        try {
+          publishedPlayableFromGeneration({
+            output: source.output,
+            sourcePart: sourcePartResult.data,
+          });
+        } catch {
           throw new StoryError('invalid');
         }
         const items = storyItemsSchema.parse(
@@ -179,7 +192,8 @@ export function createStoryResolution(database: Database) {
                   interaction: interactionSchema.parse(active.interaction),
                 },
               },
-              publishedProposal: proposal.data,
+              publishedProposal: source.output,
+              sourcePart: sourcePartResult.data,
               submission: parsedSubmission.data,
             }),
           );

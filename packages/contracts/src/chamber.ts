@@ -81,6 +81,7 @@ export const chamberInspectorSchema = z.strictObject({
     interaction: interactionSchema.nullable(),
     responseSource: z.enum(['player', 'default']).nullable(),
     sourceGenerationId: z.uuid().nullable(),
+    sourceGenerationPart: z.enum(['current', 'arrival']).nullable(),
   }),
   timing: z.strictObject({
     waitPlan: z.unknown().nullable(),

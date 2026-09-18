@@ -1,6 +1,6 @@
 # Data and consistency
 
-Application PostgreSQL owns committed story state, chronology, command receipts, decisions and spend reservations. Temporal owns workflow history, timers and execution progress. Published deadlines are projected into PostgreSQL for display and admission checks; no database scheduler separately advances them. This is a proposed logical model; create migrations in working slices, not every table before the first screen.
+Application PostgreSQL owns committed story state, chronology, command receipts, decisions and spend reservations. Temporal owns workflow history, timers and execution progress. Published deadlines are projected into PostgreSQL for display and admission checks; no database scheduler separately advances them. This is a proposed logical model; create migrations in working slices, not every table before the first screen. The world may imply far more people, objects and places than these records store. Do not add NPC, location, relationship, fact, population, schedule or generic world-entity tables because a scene mentioned a crowd. Durable story-scoped identity is created when later correctness depends on that exact person, object or place. See [sparse world](../continuity-and-consequences.md#sparse-world-progressive-materialization). Scene-local references for targetable details are a later presentation/interaction concern, not a reason to persist a full world census.
 
 ## Durable records
 
@@ -34,6 +34,12 @@ The reusable relay store leases and acknowledges delivery; it does not own the r
 
 The browser receives a story ID, narrative revision, current passage content and offered interaction. It receives no source code, effect instructions or owner information. Migration `0004_story_initialization` introduces these tables. Player choice resolution, consequential effects and listing retained stories remain subsequent operations.
 
+### Implemented passage generation provenance
+
+Migration `0011_passage_source_generation` adds nullable `source_generation_id`. A generated opening or continuation passage names the generation whose validated output published it. Chamber fixtures keep this null.
+
+Migration `0013_passage_source_generation_part` adds nullable `source_generation_part`. Allowed values are `current` and `arrival`. Null means the older single-publication form, including v1 opening passages. One timed continuation generation can publish two passages: the in-progress current part immediately, and the prepared arrival later. A non-null part requires a generation id. Continuation retry identity includes this provenance, so changing it cannot reuse a committed transition. Hidden option intentions remain only on generation output; public story and wait DTOs omit them. Interval completion copies the waiting passage's generation id and sets part `arrival` without parsing model output.
+
 ### Implemented continuation commit component
 
 The internal `stories.append({ ownerId, storyId, transitionId, proposed })` operation accepts an expected narrative revision, validated passage content and an optional new interaction specification. Under a story row lock it verifies ownership, checks for an already committed transition, rejects stale revisions, and inserts the next passage together with advancing the story revision. It assigns new passage/interaction IDs once. Migration `0005_passage_transitions` adds a nullable transition UUID and story-scoped uniqueness; opening passages keep that field null.
@@ -53,6 +59,8 @@ Migration `0007_passage_intervals` adds nullable `wait_plan` and `due_at` to a p
 A continuation transaction saves the plan, computes its due time using PostgreSQL time, and inserts an outbox notice with the new passage ID. Duplicate admission preserves the original deadline and verifies the same plan. Ordinary append cannot replace an active wait. Worker completion reloads the interval after acquiring the story lock, checks pause state and due time, then commits the prepared arrival atomically. A stale completion is a no-op. Migration `0008_interval_controls` adds a per-interval control revision and nullable remaining milliseconds. Pause stores the remaining duration; resume assigns a new due time. The old due timestamp is retained while paused but cannot authorize completion. Controls are available only for scheduling protocol version 1; existing protocol-0 intervals retain their original executor and cannot be paused. General pace changes and generation control epochs remain unimplemented.
 
 The public snapshot includes nullable `waiting` with the fictional duration, control availability/revision and either a running due timestamp or paused remaining milliseconds. Paused snapshots expose no due timestamp. It never includes the prepared arrival. History remains committed prose; a future event is not added before it happens. An interval is not an entire world clock: the initial fixture maps a fixed fictional duration to a fixed real wait, without a cumulative calendar or adjustable pace.
+
+A generated continuation result may translate into this same wait plan. The storyteller supplies only fictional duration. Application policy chooses the real wait; the scripted generated fixture uses two real seconds and is not campaign pace. Arrival publication keeps the same generation id with part `arrival`.
 
 A `story_control` receipt has a unique story/operation ID and the validated original request. Owner authorization precedes receipt lookup; identical retries return current state, and conflicting reuse fails. Receipts, interval changes, view-version advancement and wake notices commit together. `view_version` is initialized from narrative revision for existing stories, then increases for each passage or control change. Clients use it to reject older snapshots even when prose has not changed.
 
@@ -84,7 +92,7 @@ This supports immediate authored transfers. Prepared arrivals and timeout conseq
 | Chronology entries | Ordered committed passages, actors, choice provenance, fictional time and causation. |
 | Commands, decisions, options and submissions | Durable command receipts/sequences, an open choice, eligible characters, version, published deadline, submitted intentions and a frozen resolution input. |
 | Continuations and timing projections | Prepared conditional material, expected revision, next displayed due time and pause remainder. Temporal executes the timers. |
-| Entities and relationships | Significant people, places and objects, with explicit references and flexible descriptions. |
+| Entities and relationships | Significant people, places and objects, with explicit references and flexible descriptions. This family is for identities that have earned persistence, not implied background population. One table, typed tables, or another representation remains undecided until a gameplay slice needs it. |
 | Generation runs and attempts | Why inference ran, input revision, policy/prompt versions, attempts, result reference, usage and completion state. |
 | Budget accounts, reservations and usage entries | Funding scope, period limits, concurrent reservations and measured charges. |
 | Outbox and delivery records | Durable work to publish, notification deduplication and delivery attempts. |
@@ -101,7 +109,7 @@ The first supported format is `choice.v1`: a prompt, a variable-length list of o
 
 The validator checks answer shape, interaction identity and membership in the offered options. It does not check ownership, deadlines, pause state, command deduplication or apply consequences; those belong to transactional command admission and resolution. Once published, an offer's response meaning must remain stable. Replacing it requires a new interaction identity so an old button cannot select an unrelated new outcome. A stored chronology entry and a published interaction have different identities and purposes.
 
-Additional supported formats can add their own specification/answer variants and matching validation and rendering. Text interpretation or multiple selection may also need new resolution policy; versioning does not make those semantics automatic. Images used to illustrate an existing choice need not change its selection semantics. Unknown formats and extra fields are rejected, not stored as an unrestricted JSON escape hatch. No form-builder registry or universal rule interpreter is introduced. The first chamber stores and displays a single-selection offer; the chamber connects player submission to an authored narrative consequence; one immediate item transfer is supported, while model-driven asynchronous resolution remains unimplemented.
+Additional supported formats can add their own specification/answer variants and matching validation and rendering. Text interpretation or multiple selection may also need new resolution policy; versioning does not make those semantics automatic. Images used to illustrate an existing choice need not change its selection semantics. Unknown formats and extra fields are rejected, not stored as an unrestricted JSON escape hatch. No form-builder registry or universal rule interpreter is introduced. The first chamber stores and displays a single-selection offer; the chamber connects player submission to an authored narrative consequence; one immediate item transfer is supported. Generated live options resolve asynchronously through `/resolutions/...`, including a timed continuation that uses the ordinary wait plan. Live provider calls remain unimplemented.
 
 ## Story snapshot and chronology
 

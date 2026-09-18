@@ -220,7 +220,9 @@ export async function insertContinuationPassage(
           specification: args.input.interaction,
         })
       : null,
-    sourceGenerationId: args.sourceGenerationId ?? null,
+    sourceGenerationId:
+      args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
+    sourceGenerationPart: args.input.sourceGenerationPart ?? null,
   });
   return passageId;
 }

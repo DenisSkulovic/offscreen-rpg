@@ -82,6 +82,7 @@ export async function initializeStoryInTransaction(
         })
       : null,
     sourceGenerationId: input.sourceGenerationId ?? null,
+    sourceGenerationPart: input.sourceGenerationPart ?? null,
   });
 }
 

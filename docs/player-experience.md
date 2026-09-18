@@ -36,7 +36,7 @@ This is a direction for the returning experience, not an implemented chapter eng
 
 At a meaningful decision, present a small set of distinct contextual options. They can include cautious, direct, strange or deliberately inactive responses when those make sense. There is no required universal number of choices.
 
-Selecting an option commits an intention. Show that it was received; do not leave an apparently clickable choice while its result is being prepared. Some consequences follow immediately, while others begin an interval during which the player can leave.
+Selecting an option commits an intention. Show that it was received; do not leave an apparently clickable choice while its result is being prepared. Some consequences follow immediately, while others begin an interval during which the player can leave. Authenticated live stories at `/play/:id` now show a saved journey wait against the server deadline, including Pause/Resume when the interval is controllable. Reloading does not restart that wait.
 
 Agency between offered decisions needs deliberate limits. The player should understand whether they can change course now, and what doing so means. Free-text intervention is still an open scope choice. Neither repeated clicks nor reloading should produce free rerolls, duplicate actions or endless regeneration of suggestions. Rate limits can protect resources, but must not disguise whether a meaningful action is available.
 

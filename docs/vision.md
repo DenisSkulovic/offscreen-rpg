@@ -12,6 +12,8 @@ An LLM storyteller invents scenes, offers choices, judges situations and introdu
 
 The world should feel rich without simulating everyone in it. Establish people, places and lore when they matter. Remember consequential facts afterward. A character can disappear from the story for weeks without needing a background schedule of meals and errands.
 
+The fictional world may imply far more people, objects and places than the database explicitly stores. Distinguish implied background, details that actually appeared in a scene, and the smaller set of identities that later correctness depends on. Appearance in prose is not by itself a durable world record. Do not create Farmer Bob because farms exist beyond the hill. If the player forms a relationship with a tavern patron, gives them an object, or later returns looking for them, that specific identity becomes continuity-relevant. A later storyteller should produce one bounded coherent scene or world proposal rather than one agent per NPC, place or faction. The representation of durable people, places and objects is chosen when a concrete gameplay slice needs it; it is not a reason to add a census of unused entities.
+
 Settings and characters should be flexible: fantasy, space, everyday life, unusual creatures or mixtures. The core should not require a specific profession, human body, economy or geography. Creative freedom still needs continuity: established facts and player choices should have weight.
 
 ## The experience on screen

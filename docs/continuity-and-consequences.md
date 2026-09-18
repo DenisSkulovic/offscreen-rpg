@@ -2,6 +2,20 @@
 
 The world can be sparsely described without being forgetful. Record enough to make player choices and later consequences believable; do not simulate a population merely to justify something the storyteller can introduce.
 
+## Sparse world, progressive materialization
+
+The fictional world may imply far more people, objects and places than the database explicitly stores.
+
+1. **Implied/background world** — facts or population that make the setting feel real but have never become individually relevant. “The tavern is crowded.” “There are farms beyond the hill.” Do not create durable records merely because such things logically exist. Incidental crowds do not need individual rows, schedules or breakfast habits.
+
+2. **Materialized scene detail** — people, objects and environmental details actually presented to the player in a passage. Nine patrons can genuinely appear in history when the storyteller establishes them. Individually targetable details may later need stable scene-local references so “talk to that woman” is unambiguous, but appearance alone does not require a full persistent world entity. Historical prose remains history even when an incidental detail was never promoted.
+
+3. **Durable continuity entities** — a person, object, place or other thing becomes worth persistent story-scoped identity when later correctness depends on it: the player engages with it, ownership/location/relationship/state changes, it is deliberately revisited, or future rules/storytelling need to refer to that exact thing. Once durable identity/state exists, later generation must respect it. Absence from current context is not deletion.
+
+A tavern may visibly contain several patrons without running a background life simulation for every patron. If the player forms a relationship with one patron, gives them an object, or later returns looking for them, that specific identity becomes continuity-relevant. The other patrons can remain scene detail.
+
+Do not decide yet whether future durable people, places and objects use one entity table, separate typed tables, or another representation. That requires a concrete gameplay slice. Do not build one LLM agent per NPC, place or faction. A future storyteller can produce one bounded coherent scene or world proposal and materialize only what earns persistence. Space and movement representation remains an open product question; this distinction does not settle a map model.
+
 ## What happened, what is true, what might happen
 
 The chronology records completed developments and choices. The current situation describes the facts relevant now. A prepared continuation is a possible future, not history. These are distinctions in meaning, not a requirement for three particular software entities.
@@ -28,7 +42,7 @@ Flexibility does not mean every imagined rule is automatically executable. A loc
 
 ## People, objects and capabilities
 
-Give consequential people and objects consistent identity. A golden spear sold to someone remains that spear if it returns later. A passing crowd does not need a record for every member. Detail can become worth recording when a player engages with it.
+Give consequential people and objects consistent identity. A golden spear sold to someone remains that spear if it returns later. A passing crowd does not need a record for every member. Scene appearance can materialize detail without promoting every mentioned person or object to a durable entity; promotion happens when later correctness depends on that identity. See [sparse world, progressive materialization](#sparse-world-progressive-materialization).
 
 Characters can have descriptive traits, capabilities, relationships and conditions. Their representation must accommodate unusual bodies and settings. Being miniature changes what is plausible; it need not automatically introduce a physics simulator. A character cannot use a lost object or an established unavailable ability simply because the next generated scene would be convenient.
 
@@ -50,7 +64,7 @@ The first shared experience can keep players on a common narrative view. Private
 
 Long-running play needs a distinction between established world state, character knowledge and current recall. A debt remains owed even when it is not in working context. A tavern visitor's story remains an attributed claim, not confirmed world truth. A character can recognize a returning acquaintance and retrieve a relevant earlier exchange without remembering every incidental remark from the past month.
 
-Keep modest identity and episode references for encountered people when later recognition could matter; no offscreen population simulation is necessary. Recent context, important relationships and unresolved commitments can stay readily available while older conversations are recalled through people, places, topics or objects. Being absent from current context is not deletion or proof that the character has forgotten. Deliberately vague or fallible recollection is a possible later gameplay feature, separate from accidentally losing data. Do not manufacture a memory when retrieval lacks supporting history.
+Keep modest identity and episode references for encountered people when later recognition could matter; no offscreen population simulation is necessary. Encountered people are rememberable once they have crossed into durable continuity, not merely because they stood in a crowded room. Recent context, important relationships and unresolved commitments can stay readily available while older conversations are recalled through people, places, topics or objects. Being absent from current context is not deletion or proof that the character has forgotten. Deliberately vague or fallible recollection is a possible later gameplay feature, separate from accidentally losing data. Do not manufacture a memory when retrieval lacks supporting history.
 
 ## Context and cost
 

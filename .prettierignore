@@ -6,3 +6,4 @@ dist
 docs
 README.md
 AGENTS.md
+packages/db/migrations/meta

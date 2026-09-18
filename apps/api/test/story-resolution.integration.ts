@@ -7,7 +7,11 @@ import type { Database } from '@offscreen/db';
 import { createChamber } from '@offscreen/server/chamber';
 import {
   createScriptedContinuations,
+  scriptedGeneratedIntervalRealMs,
+  scriptedImmediateContinuation,
   scriptedPlayableContinuation,
+  scriptedTimedContinuation,
+  storyContinuationFromGeneratedResult,
 } from '@offscreen/server/scripted-continuations';
 import {
   scriptedOpeningPresentation,
@@ -51,6 +55,52 @@ async function waitForRevision(
   throw new Error(`Expected story ${storyId} to reach revision ${revision}`);
 }
 
+async function waitForTitle(
+  origin: string,
+  cookie: string,
+  storyId: string,
+  title: string,
+) {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const snapshot = storySnapshotSchema.parse(
+      await (
+        await fetch(`${origin}/api/stories/${storyId}`, {
+          headers: { cookie },
+        })
+      ).json(),
+    );
+    if (snapshot.current.content.title === title) {
+      return snapshot;
+    }
+    await delay(100);
+  }
+  throw new Error(`Expected story ${storyId} to show ${title}`);
+}
+
+function assertNoHiddenIntentions(body: string) {
+  if (scriptedPlayableOpening.next.kind !== 'choice') {
+    throw new Error('Expected a choice fixture');
+  }
+  for (const option of scriptedPlayableOpening.next.options) {
+    assert.equal(body.includes(option.intention), false);
+  }
+  if (scriptedTimedContinuation.next.kind !== 'interval') {
+    throw new Error('Expected a timed fixture');
+  }
+  const arrivalNext = scriptedTimedContinuation.next.arrival.next;
+  if (arrivalNext.kind !== 'choice') {
+    throw new Error('Expected an arrival choice');
+  }
+  for (const option of arrivalNext.options) {
+    assert.equal(body.includes(option.intention), false);
+  }
+  for (const option of scriptedPlayableContinuation.next.kind === 'choice'
+    ? scriptedPlayableContinuation.next.options
+    : []) {
+    assert.equal(body.includes(option.intention), false);
+  }
+}
+
 export async function checkGeneratedResolution({
   t,
   database,
@@ -86,6 +136,26 @@ export async function checkGeneratedResolution({
     const snapshot = storySnapshotSchema.parse(await started.json());
     return { storyId, snapshot, draftId, candidateId };
   }
+
+  await t.test(
+    'immediate generated continuations still translate without a wait',
+    () => {
+      const proposed = storyContinuationFromGeneratedResult({
+        output: scriptedImmediateContinuation,
+        response: null,
+        generationId: randomUUID(),
+      });
+      assert.equal(proposed.wait, null);
+      assert.equal(proposed.interaction?.options[0]?.id, 'inspect-change');
+      assert.equal(proposed.sourceGenerationPart, 'current');
+      assert.equal(
+        JSON.stringify(proposed.interaction).includes(
+          'Look more closely at what has changed ahead.',
+        ),
+        false,
+      );
+    },
+  );
 
   await t.test(
     'Start freezes the owned draft premise onto the story',
@@ -148,12 +218,7 @@ export async function checkGeneratedResolution({
       assert.equal(pending.resolution?.state, 'pending');
       assert.equal(pending.canRespond, false);
       const publicBody = JSON.stringify(pending);
-      if (scriptedPlayableOpening.next.kind !== 'choice') {
-        throw new Error('Expected a choice fixture');
-      }
-      for (const option of scriptedPlayableOpening.next.options) {
-        assert.equal(publicBody.includes(option.intention), false);
-      }
+      assertNoHiddenIntentions(publicBody);
       const retried = await fetch(
         `${origin}/api/stories/${storyId}/resolutions/${operationId}`,
         {
@@ -204,25 +269,43 @@ export async function checkGeneratedResolution({
       });
       assert.equal(inspection.resolution?.operationId, operationId);
       assert.equal(inspection.resolution?.selectedOptionId, optionId);
+      if (scriptedPlayableOpening.next.kind !== 'choice') {
+        throw new Error('Expected a choice fixture');
+      }
       assert.equal(
         inspection.resolution?.selectedIntention,
         scriptedPlayableOpening.next.options[0]?.intention,
       );
       await continuations.complete(operationId);
-      const advanced = await waitForRevision(origin, cookie, storyId, 2);
-      assert.equal(advanced.resolution, null);
-      assert.equal(advanced.canRespond, true);
+      const travelling = await waitForRevision(origin, cookie, storyId, 2);
+      assert.equal(travelling.resolution, null);
+      assert.equal(travelling.canRespond, false);
+      assert.equal(travelling.current.interaction, null);
+      assert.equal(travelling.current.content.title, 'On the road');
       assert.deepEqual(
-        advanced.current.content,
-        scriptedPlayableContinuation.content,
+        travelling.current.content,
+        scriptedTimedContinuation.content,
       );
-      assert.equal(advanced.current.content.title, 'Around the old wall');
+      const waiting = requireDefined(
+        travelling.waiting,
+        'Expected a persisted generated wait',
+      );
+      assert.equal(waiting.gameDurationMs, 600000);
+      assert.equal(waiting.canControl, true);
+      assert.ok(waiting.dueAt);
+      assert.equal(
+        Date.parse(waiting.dueAt) - Date.now() <=
+          scriptedGeneratedIntervalRealMs + 2000,
+        true,
+      );
+      assertNoHiddenIntentions(JSON.stringify(travelling));
       const stored = await database.db.$client.query(
-        `SELECT source_generation_id, response_source FROM story_passage
-         WHERE story_id = $1 AND sequence = 2`,
+        `SELECT source_generation_id, source_generation_part, response_source
+         FROM story_passage WHERE story_id = $1 AND sequence = 2`,
         [storyId],
       );
       assert.equal(stored.rows[0].source_generation_id, operationId);
+      assert.equal(stored.rows[0].source_generation_part, 'current');
       assert.equal(stored.rows[0].response_source, 'player');
       await continuations.complete(operationId);
       const unchanged = storySnapshotSchema.parse(
@@ -233,10 +316,32 @@ export async function checkGeneratedResolution({
         ).json(),
       );
       assert.equal(unchanged.revision, 2);
-      assert.equal(unchanged.current.id, advanced.current.id);
+      assert.equal(unchanged.current.id, travelling.current.id);
+      let remaining = await createStories(database).advanceInterval({
+        intervalId: travelling.current.id,
+      });
+      if (remaining != null && remaining > 0) {
+        await delay(remaining + 50);
+        remaining = await createStories(database).advanceInterval({
+          intervalId: travelling.current.id,
+        });
+      }
+      assert.equal(remaining, null);
+      const arrived = await waitForRevision(origin, cookie, storyId, 3);
+      assert.equal(arrived.current.content.title, 'At the tavern');
+      assert.equal(arrived.waiting, null);
+      assert.equal(arrived.canRespond, true);
+      assertNoHiddenIntentions(JSON.stringify(arrived));
+      const arrivalStored = await database.db.$client.query(
+        `SELECT source_generation_id, source_generation_part
+         FROM story_passage WHERE story_id = $1 AND sequence = 3`,
+        [storyId],
+      );
+      assert.equal(arrivalStored.rows[0].source_generation_id, operationId);
+      assert.equal(arrivalStored.rows[0].source_generation_part, 'arrival');
       const nextOffer = requireDefined(
-        advanced.current.interaction,
-        'Expected a generated continuation offer',
+        arrived.current.interaction,
+        'Expected a generated arrival offer',
       );
       const nextOperation = randomUUID();
       const nextAdmit = await fetch(
@@ -245,7 +350,7 @@ export async function checkGeneratedResolution({
           method: 'PUT',
           headers,
           body: JSON.stringify({
-            expectedRevision: 2,
+            expectedRevision: 3,
             submission: {
               interactionId: nextOffer.id,
               answer: {
@@ -257,9 +362,17 @@ export async function checkGeneratedResolution({
         },
       );
       assert.equal(nextAdmit.status, 202);
+      const arrivalInspection = await chamber.inspect({
+        ownerId: owner,
+        storyId,
+      });
+      assert.equal(
+        arrivalInspection.resolution?.selectedIntention,
+        'Ask the bartender what this place is like tonight.',
+      );
       await continuations.complete(nextOperation);
-      const third = await waitForRevision(origin, cookie, storyId, 3);
-      assert.equal(third.current.content.title, 'Around the old wall');
+      const third = await waitForRevision(origin, cookie, storyId, 4);
+      assert.equal(third.current.content.title, 'On the road');
       assert.equal(
         (
           await fetch(
@@ -420,6 +533,104 @@ export async function checkGeneratedResolution({
   );
 
   await t.test(
+    'pause holds a generated wait past its original due time and resume publishes one arrival',
+    async () => {
+      const { storyId, snapshot } = await startLiveStory();
+      const offer = requireDefined(
+        snapshot.current.interaction,
+        'Expected generated opening offer',
+      );
+      const operationId = randomUUID();
+      assert.equal(
+        (
+          await fetch(
+            `${origin}/api/stories/${storyId}/resolutions/${operationId}`,
+            {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({
+                expectedRevision: 1,
+                submission: {
+                  interactionId: offer.id,
+                  answer: {
+                    kind: 'choice.v1',
+                    optionId: offer.specification.options[0]?.id,
+                  },
+                },
+              }),
+            },
+          )
+        ).status,
+        202,
+      );
+      await continuations.complete(operationId);
+      const travelling = await waitForRevision(origin, cookie, storyId, 2);
+      const waiting = requireDefined(
+        travelling.waiting,
+        'Expected a generated wait',
+      );
+      const originalDue = requireDefined(waiting.dueAt, 'Expected due time');
+      const pauseId = randomUUID();
+      assert.equal(
+        (
+          await fetch(`${origin}/api/stories/${storyId}/controls/${pauseId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              intervalId: travelling.current.id,
+              expectedControlRevision: waiting.controlRevision,
+              action: 'pause',
+            }),
+          })
+        ).status,
+        200,
+      );
+      await delay(Math.max(0, Date.parse(originalDue) - Date.now()) + 250);
+      assert.equal(
+        await createStories(database).advanceInterval({
+          intervalId: travelling.current.id,
+        }),
+        -1,
+      );
+      const stillWaiting = await waitForTitle(
+        origin,
+        cookie,
+        storyId,
+        'On the road',
+      );
+      assert.equal(stillWaiting.revision, 2);
+      assert.ok(stillWaiting.waiting?.remainingMs != null);
+      const resumeId = randomUUID();
+      assert.equal(
+        (
+          await fetch(`${origin}/api/stories/${storyId}/controls/${resumeId}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              intervalId: travelling.current.id,
+              expectedControlRevision: stillWaiting.waiting.controlRevision,
+              action: 'resume',
+            }),
+          })
+        ).status,
+        200,
+      );
+      const arrived = await waitForTitle(
+        origin,
+        cookie,
+        storyId,
+        'At the tavern',
+      );
+      assert.equal(arrived.revision, 3);
+      const count = await database.db.$client.query(
+        'SELECT count(*)::int AS count FROM story_passage WHERE story_id = $1',
+        [storyId],
+      );
+      assert.equal(count.rows[0].count, 3);
+    },
+  );
+
+  await t.test(
     'worker restart completes one generated continuation without duplicating it',
     async () => {
       const { storyId, snapshot } = await startLiveStory();
@@ -451,8 +662,9 @@ export async function checkGeneratedResolution({
         202,
       );
       await restartWorker();
-      const advanced = await waitForRevision(origin, cookie, storyId, 2);
-      assert.equal(advanced.current.content.title, 'Around the old wall');
+      const travelling = await waitForRevision(origin, cookie, storyId, 2);
+      assert.equal(travelling.current.content.title, 'On the road');
+      assert.ok(travelling.waiting);
       const count = await database.db.$client.query(
         'SELECT count(*)::int AS count FROM story_passage WHERE story_id = $1',
         [storyId],
@@ -497,16 +709,24 @@ export async function checkGeneratedResolution({
           .getByText('The storyteller is resolving this intention.')
           .waitFor();
         await page
-          .getByText('Around the old wall', { exact: true })
+          .getByText('On the road', { exact: true })
           .waitFor({ timeout: 20000 });
-        const next = page.getByRole('button', { name: 'Inspect the change' });
+        await page.getByText('Still travelling.').waitFor();
+        await page.reload();
+        await page.getByRole('heading', { name: 'On the road' }).waitFor();
+        await page
+          .getByText('At the tavern', { exact: true })
+          .waitFor({ timeout: 20000 });
+        const next = page.getByRole('button', {
+          name: 'Speak to the bartender',
+        });
         assert.equal(await next.isEnabled(), true);
         await next.click();
         await page
           .getByText('The storyteller is resolving this intention.')
           .waitFor();
         await page
-          .getByText('Around the old wall', { exact: true })
+          .getByText('On the road', { exact: true })
           .waitFor({ timeout: 20000 });
       });
     },

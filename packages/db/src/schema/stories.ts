@@ -61,6 +61,7 @@ export const storyPassage = pgTable(
       () => generation.id,
       { onDelete: 'restrict' },
     ),
+    sourceGenerationPart: text('source_generation_part'),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),
@@ -84,6 +85,10 @@ export const storyPassage = pgTable(
     check(
       'story_passage_wait_pair',
       sql`(${t.waitPlan} IS NULL) = (${t.dueAt} IS NULL)`,
+    ),
+    check(
+      'story_passage_generation_part',
+      sql`${t.sourceGenerationPart} IS NULL OR (${t.sourceGenerationId} IS NOT NULL AND ${t.sourceGenerationPart} IN ('current', 'arrival'))`,
     ),
   ],
 );
