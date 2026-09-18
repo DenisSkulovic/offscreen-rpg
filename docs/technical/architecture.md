@@ -48,6 +48,8 @@ There is no service per faction, inventory, storyteller or notification type. Ex
 
 ## Code organization
 
+For actual entry points, current coupling and task-oriented reading routes, use [Code navigation](../engineering/code-navigation.md). The application and Storyteller package guides linked there describe implemented flows; this document owns the architectural design.
+
 Target layout. Create each package when its first implementation needs it:
 
 ```text

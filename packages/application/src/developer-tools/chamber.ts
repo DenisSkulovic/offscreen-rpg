@@ -19,6 +19,9 @@ import {
 
 export { listChamberScenarios };
 
+// API composition currently uses this wrapper for normal story routes too.
+// Do not infer developer-only authorization from this directory's name.
+// See ../../README.md, Other entrances and misleading names.
 export function createChamber(database: Database) {
   const stories = createStories(database);
   const inspector = createChamberInspector(database);

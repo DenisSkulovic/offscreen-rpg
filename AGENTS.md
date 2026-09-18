@@ -6,4 +6,4 @@ Before implementation or review, read [Code quality](docs/engineering/code-quali
 
 For significant features, cross-component changes or substantial reworks, use [feature-workflow](.agents/skills/feature-workflow/SKILL.md). Routine fixes and documentation edits do not require a feature folder.
 
-Read [Progress](docs/progress.md), then only the relevant product and technical documents. The rules index is [.agents/README.md](.agents/README.md). Do not load every rule, skill and feature into context.
+Read [Progress](docs/progress.md), then use [Code navigation](docs/engineering/code-navigation.md) to locate the relevant flow and package guide. Read only the relevant product and technical documents. The rules index is [.agents/README.md](.agents/README.md). Do not load every rule, skill and feature into context.

@@ -10,6 +10,16 @@ Before changing shared domain contracts or progression logic, use [Vision](../..
 
 Documentation describes the current design. Replace or delete obsolete text in place. No superseded paragraphs, amendment tables, chronological logs or review-report dumps. Git holds history. Describe behavior, boundaries and consequential tradeoffs, not each branch of code. Keep open product choices in docs/questions.md until resolved. Brainstorming examples are inspiration, not automatic requirements.
 
+## Navigation and durable understanding
+
+Use [the code map](../../docs/engineering/code-navigation.md) to locate the owning flow, then read only the relevant package guide and implementation. Do not reload the entire architecture library for every task.
+
+When investigation reveals a non-obvious cross-file relationship, authority boundary, retry rule or implementation limitation that another maintainer would otherwise have to rediscover, preserve the useful conclusion beside its owner during the same change. A local comment explains a local invariant; a package README explains entry points and flow; a technical specification owns the design decision; progress owns current coverage; an active feature plan owns unfinished work. Link between them instead of copying the explanation. Do not record exploration diaries or obvious syntax.
+
+Before adding documentation, find its existing owner. Keep one authoritative explanation per decision. Update or remove affected navigation links and stale claims when moving code or changing behavior. Package guides should give a short route from input to authority to output, identify surprising coupling and link to the defining contract. Add file headers only where they explain otherwise hidden responsibility or constraints; no mandatory header on every file, exhaustive import lists, custom tag vocabulary or duplicate FAQ catalogue.
+
+Persist only inspected facts as implemented behavior. Mark proposals and unverified assumptions explicitly. Record verification scope once with its limits; remove superseded failures/counts rather than appending contradictory status paragraphs. Documentation cannot substitute for fixing confusing ownership: identify the structural issue and keep its proposed resolution distinguishable from the current path.
+
 ## Lifecycle and scope
 
 This is a very raw POC/MVP, intended for intensive daily evolution and a strong senior fullstack portfolio. Bold redesigns are expected when they improve the approved product. The current project has no production or user-owned game data: discarded prototype schemas, saves and workflow formats must be reset and removed, not preserved through compatibility code, historical DTOs, decoders or migration chains. Retain compatibility only after the owner explicitly declares a lifecycle change or identifies data that must survive. Credentials and external side effects always require explicit accounting.

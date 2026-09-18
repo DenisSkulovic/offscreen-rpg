@@ -13,7 +13,11 @@ import type { StoryRecord } from '../stories/persistence';
 import { loadStorytellerContext } from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
 
-/** Admits narration of immutable receipts, never another attempt at the action. */
+/**
+ * Admits narration of receipts, never another attempt at the action.
+ * Called inside settlement's transaction: context preparation can still roll back
+ * the mechanical result. See ../../README.md, Mechanical selection and consequence.
+ */
 export async function admitConsequenceNarration(
   tx: Transaction,
   current: StoryRecord,

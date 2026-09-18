@@ -1,82 +1,47 @@
 # Implementation overview
 
-This is the current project snapshot. Product documents define the experience, technical documents define its contracts, and tests establish the implemented boundary. Keep proposed behavior distinct from verified behavior.
+**Current focus:** feature implementation is on hold while we improve code navigation and preserve cross-file knowledge. The first pass adds a [code map](engineering/code-navigation.md), application/Storyteller package guides and ongoing maintenance rules. No runtime behavior changes are part of this documentation pass.
 
-**Current phase:** implement and exercise the solo storyteller POC with local/scripted substitutes. The owner authorized Codex to implement the storyteller features on 2026-09-18. Live inference remains disabled. The OpenRouter adapter and persistent budget controls exist, but no live route, allowance or provider quality has been verified. The original $10 deposit is not a verified balance.
+**Lifecycle:** pre-POC, solo development on `main`. Live inference remains disabled. Provider adapters and accounting exist, but no live route, balance or model quality is verified. A stored key and the original $10 deposit are not authorization to spend.
 
-## Coverage
+## Implemented boundary
 
-| Area | Current implementation | Boundary |
+| Area | Exists now | Important limit |
 | --- | --- | --- |
-| Workspace and infrastructure | TypeScript monorepo; PostgreSQL, Temporal, web/API/worker; sequential build and selected integration tooling. | Local Windows development. Hosted delivery remains separate work. |
-| Identity | Stored sessions, private pages, OAuth initiation, revocation and local developer launcher. | Real GitHub sign-in requires credentials/manual verification; no invitations or membership. |
-| Creation | Owned versioned drafts, profile selector, persistent reviewed opening, explicit idempotent Start. Candidate captures profile/configuration; story freezes the selected candidate. | Two JSON profile examples. Offline scenes are authored, not arbitrary-premise generation. |
-| Game rules | `@offscreen/game` owns framework-free state, d20 resolution, effects, offers, activities and tick arithmetic. Contracts and application code consume that single authority. | Current duration-driven activity model remains a prototype pending process/contribution design. |
-| Storyteller runtime | Separate opening/continuation preparation, immutable context artifacts, execution, validation, accounting, publication and recovery. | No tool loop or graph framework. Additional task types can share the boundaries without expanding one agent prompt. |
-| Choices and progression | Offered intentions resolve through durable generation and fenced atomic publication. Profiled offers require 2–5 distinct labels; no free-text gameplay or automatic life ending. | Narrative consequences only; no generated combat/economy/location effects. Separate narrative fixtures retain their own contracts. |
-| Context and continuity | Bounded recent context plus mandatory source-backed notes; note creation/update/retirement; current and arrival notes publish with their respective passage. | Maximum 20 notes; no embeddings, general world census or semantic truth validator. Overflow holds rather than silently losing required evidence. |
-| Time and autonomy | Prepared intervals, real waits, persisted pause/resume, reload/restart and arrival choices use existing story machinery. | Profiled quick-play waits are 20 seconds. Campaign pacing, general autonomy/defaults and mid-journey interruption policies remain separate. |
-| Player entry and return | Owned live-story list, profile/source labels, saved history, pending/failure states and explicit retry or read-only refresh. | Local launcher supplies a normal authenticated session. Hosted visitor onboarding is absent. |
-| Accounting/provider | Persistent account/run/attempt reservations, caps, exact integer settlement, dispatch uncertainty stop, no automatic retry/fallback, injected HTTP adapter. | Offline simulated evidence only. No operator provisioning/reconciliation UI or approved live execution policy. No real balance or pricing verification. |
-| Chamber | Existing scenario catalogue and read-only inspection; profiled inspection adds private captured context and notes behind the local developer boundary. | Interactive fake outcomes, time-warp and fault controls remain later laboratory work. |
-| QA journeys | Developer-only versioned case catalogue, durable owner-scoped runs, ordered immutable stage evidence, anchored human ratings, reload resume and sanitized JSON export. | Mechanical and fault-injection cases remain visibly planned; live-billable cases are server-blocked pending separate authorization and preflights. |
-| World/shared play | Existing one checked item transfer, chronology and ownership. | No NPC/location census, multiplayer, spatial engine or general world effects. |
-| Notifications/showcase | Design and local foundations. | Delivery, sponsored visitor admission, deployments and a public playable portfolio remain unimplemented. |
+| Workspace | Next.js web, NestJS API, Temporal worker/workflows, PostgreSQL; shared game, contracts, application and Storyteller packages | See the code map for actual wiring; architecture specifications also describe unbuilt capabilities |
+| Identity and creation | Stored sessions, GitHub OAuth integration, owned versioned drafts, profile selection, persistent opening review and idempotent Start | Real OAuth needs credentials/manual verification; local Chamber supplies a development session |
+| Narrative rehearsal | Authored opening, choices, continuity notes, saved waits, pause/resume, story list and history | Exercises persistence and UI, not arbitrary-premise generation |
+| Mechanical actions | Public offers backed by immutable private immediate-action plans; automatic outcomes or a D&D ability check; saved dice/effects and consequence narration | Plans are authored. Immediate selection currently adapts into the activity resolver |
+| Mechanical policy | Pure validation of shape, evidence, declared facts/quantities, abilities and skills; modifiers derived from character state | No scoped new fact declaration or generated plan publication; ungrounded situational modifiers rejected |
+| Character capabilities | Selected D&D scores plus currently applicable abilities and declared skills/proficiencies | No generated character setup or admitted capability-changing transformation |
+| Content | Validated JSON mechanical seeds, narrative rehearsal and creative profiles; server-supplied mechanical catalogue summaries | No species/world-specific engine branches; fixtures do not establish general world understanding |
+| Time and settings | Narrative prepared intervals; separate mechanical tick/cadence machinery and rational pacing; editable/lockable creative and speed settings | Duration-based activity completion is under redesign; full tag definition/application contract is incomplete |
+| Storyteller tasks | Opening, continuation and consequence tasks; bounded context, immutable requests, result validation, execution, publication and recovery | No bounded tool runner or DM-generated mechanical options yet |
+| Context | Recent passages plus mandatory source-backed notes; consistency and overflow rejection | Structural validation cannot establish narrative truth; no general world model or unlimited memory |
+| Provider/accounting | Explicit opt-in adapter, persistent reservations/settlement, uncertainty stop, injected fake transport | Offline only; no verified real spending or operator provisioning/reconciliation UI |
+| Exploration | Local Chamber inspection, manual QA catalogue, durable run/evidence records and sanitized export | Rich trace explorer and planned fault/mechanical scenarios remain unfinished |
+| World/showcase | Small authored transfer and chronology examples | General inventory/combat/travel, shared worlds, notifications and public visitor onboarding remain unimplemented |
 
-## Connected solo rehearsal
+## Where to resume feature work
 
-Launch `pnpm chamber`, navigate to `/stories`, choose a storyteller and create the pineapple/Gary premise. Review the opening and Start. Ask Gary, spend a quiet moment, walk to work, pause/resume, arrive, observe or return home. Reopen through the saved-story list and read previous passages. Fictional weapons and other scene details are prose, not implemented inventory/combat mechanics.
+The [playable DM adjudication loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) owns the implementation checkpoint. Offer-local private plans and pure proposal diagnostics exist. Remaining work includes scoped fact admission, direct exactly-once mechanical resolution, durable bounded tool rounds and connecting generated opening/consequence plans to the player flow.
 
-Both example profiles use the same runtime. Profile definitions and the intentionally authored offline rehearsal are validated data; generic runtime code contains no character, species, world or profile-specific branch. Unrecognized premises are stored but receive a clear unadapted-rehearsal message. This demonstrates the application loop and architecture, not an open-ended generative game.
+The immediate blocker is the transaction boundary: mechanical settlement still assembles narration context in the same transaction. A preparation failure can roll back a valid action. Mechanical receipts and durable follow-up intent must commit independently of later preparation failure. The application guide links the exact path.
 
-## Evidence and its limits
+The [offline acceptance contract](engineering/offline-poc-acceptance.md) defines the manual flow and responsibility-specific probes. The [trace explorer](features/2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md) remains planned. Contribution-based activities, spatial movement and richer rule domains are separate designs; do not turn an example's duration, anatomy or currency into a universal mechanic.
 
-Production web/API dependency builds passed. AI tests passed 21, shared contract tests 7, and worker tests 4. The final sequential storyteller, Start and generated-resolution integration run passed all 21 checks, including the browser playthrough, retained old evidence, saved-output publication recovery and deferred arrival notes. Documentation links and Git whitespace checks passed. Test processes shut down normally.
+Navigation follow-up should examine story timing/recovery and database record relationships next. Normal HTTP story composition currently passes through the Chamber wrapper; document its actual authorization and delegation before any later separation. No restructuring is implemented by this note.
 
-The owner asked to stop spending effort chasing minor green checks. No further polish or broad audits were added. The last quality lint found one inline type-import issue, which was corrected; a final lint rerun was not performed.
+## What can be tried
 
-The selected regression scope includes the profiled suite plus Start and generated-resolution integrations. It exercises the real PostgreSQL/Temporal/browser boundary without inference. The full auth suite is not rerun by default on this laptop. Automated structural checks cannot certify profile fidelity, meaningful live agency, enjoyable prose or sustained model continuity.
+Launch `pnpm chamber` and use `/stories` to select a storyteller, save a draft, review an authored opening and Start. Narrative rehearsal can exercise saved choices, continuity, waits and return visits. Select mechanical content in opening review to inspect authored actions and dice consequences. `/demo` is a separate browser-only presentation prototype with manual time and reset-on-refresh state.
 
-## Mechanical POC and customization — authored slice with tick clock
+Use [development](development.md) for setup and [QA journeys](engineering/qa-journeys.md) for manual evidence recording. An authored rehearsal is not proof of a functioning generative DM.
 
-The mechanical checkpoint and subsequent architecture corrections are committed on `main`. The current activity implementation remains a prototype because its duration-driven progress model is under redesign.
+## Verification evidence and limits
 
-New mechanical actions use integer ticks across captured content, durations/cadences, admission, workers, receipts, narration context and UI. Real pacing is ticks per real duration, with exact rational fractional progress retained across pause/resume and speed changes. Catch-up commits bounded batches before accepting controls. An interruption stops subsequent checks and completion effects. No human calendar, currency, profession or location is mandatory. Start recovery now compares the creation profile even after a storyteller switch.
+The latest runtime/content change (`815d92c`) reported successful contracts, Storyteller, application, API and web builds, plus 24 offline Storyteller tests. Prior pure game verification reported 11 passing tests. Earlier narrative integrations exercised PostgreSQL/Temporal/browser flows, but were not repeated after the latest mechanical/content changes. No complete generated mechanical playthrough or agent-tool rehearsal has been demonstrated. This navigation pass runs no builds or tests.
 
-The current mechanical examples remain authored content. Their identities, inhabitants, prose, capability sheets and plans now live in a validated JSON catalogue; the request contract and UI consume generic IDs and server-supplied summaries. Terminal outcomes use the existing consequence narrator, execution/accounting, publication and recovery path. The current code is **not a tool-using DM agent**: it can select among server-authored actions but cannot propose and admit new mechanical opportunities. The required tag contract is also incomplete: global `surprises`/`emphasis` and id/description-only tags remain. Context preparation still occurs inside mechanical settlement and can roll back valid outcomes if assembly fails.
+Checks remain optional under [verification policy](../.agents/rules/verification.md). Historical build failures that were subsequently fixed are not current blockers. Passing compilation or scripted tests does not certify meaningful agency, live continuity, prose quality or general mechanics.
 
-The migration history is squashed to one current baseline. The intermediate schema steps and their millisecond/hour compatibility code were deleted. This pre-POC project resets discarded local data rather than carrying it into the architecture. Narrative prepared waits remain a separate current feature. No migration was applied.
-
-Six pure clock tests passed through `node --test packages/game/test/tick-clock.test.mjs`. The game, contracts and Storyteller packages compile. Application typechecking reaches the same two pre-existing exact-optional provenance errors in `stories/command-policy.ts`; no integration/browser playthrough was run. A Node source-module detection warning remains. Earlier broader test evidence above applies to earlier code, not this patch.
-
-The immediate mechanical loop now lets the storyteller select and present a contextual subset of server-admitted actions after each committed consequence. Publication persists the fresh offer, while later selection resolves the captured authoritative action definition. Contracts, Storyteller, application, API and web production builds pass; the offline Storyteller suite passes 24/24. This does not yet add the bounded evidence/rule-inspection tool runner or authorize generated long-running processes.
-
-Next proposed slice: review the [playable DM adjudication loop](features/2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md). It replaces authored action lookup with offer-local private plans, adds deterministic proposal validation and a bounded durable planning agent, then connects three immediate rounds through visible d20 consequences. Optional calendar presentation, full combat, long-running processes and resuming interrupted plans remain outside that slice.
-
-## Current focus and next gate
-
-The [offline POC acceptance contract](engineering/offline-poc-acceptance.md) defines the dependency order and manual matrix. Immediate offers now separate public options from immutable private `immediate-action.v1` plans fenced by story, offer and narrative revision. Selection no longer resolves a public definition key through a global authored action array. Existing one-shot tasks expose task-specific result schemas; context preparation rejects inconsistent current-passage copies and future evidence.
-
-Fixture content still authors the private plans. New scoped fact declaration, generated proposal admission, durable tool rounds and generated planning remain missing. Mechanical settlement still prepares narration context inside the same transaction, so preparation failure can roll back a valid action. Whole-game offline playthroughs and agent-tool rehearsals have not yet been demonstrated.
-
-Pure structured proposal diagnostics now reject malformed packages, evidence outside the captured task, undeclared state targets and ungrounded situational modifiers without applying mechanics. They are the policy intended for the future validation tool, but generated publication and scoped new facts are not connected. Application compilation and the web production build pass; the earlier strict-optional blockers were housekeeping defects rather than gameplay evidence.
-
-Character sheets now separate the six selected D&D scores from abilities and skills applicable to the current form. The authoritative check resolver and proposal validator both reject unavailable abilities and undeclared skills. This permits conventional D&D catalogues and setting-specific skills without treating every protagonist as a humanoid; changing form/capabilities remains an unimplemented admitted transition.
-
-The repository architecture now reflects its actual dependency graph. `@offscreen/game` owns framework-free rules; Storyteller and application packages expose capability boundaries; Chamber and integration orchestration live in tooling workspaces; and substantial web implementation lives under `src/features` instead of route folders. API and worker compile independently, and the API build graph does not include worker or workflows.
-
-The reorganized API, worker, Chamber and integration workspaces compile, and both Chamber cleanup tests pass. Next compiles the reorganized web module graph, then its type pass stops on four existing strict optional/null errors in `src/features/stories/opening-preview.tsx`. Those unrelated POC errors remain visible rather than being folded into the architecture rework.
-
-The proposed [playable DM loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) is the next continuation point. The earlier storyteller runtime, continuity, provider adapter, simulated accounting and local UI are foundations; generated mechanical planning and agent tools are not yet implemented. Any live evaluation remains a separate gate. Retained feature documents provide implementation/review contracts; they are not permission to spend.
-
-The [QA journey system](engineering/qa-journeys.md) now defines the player-flow checks and records durable offline evidence. The next evaluation slice is the [trace explorer](features/2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md), followed by [conservative live evaluation](features/2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md) for a tiny explicitly authorized OpenRouter probe only after dry-run, trace and accounting preflights pass.
-
-Before the first paid run, define a concrete small evaluation, verify current route/pricing and actual remaining allowance, provision explicit account/run limits, and establish operator reconciliation/stop procedures. The owner must deliberately reopen live evaluation under [spending](../.agents/rules/spending.md). No automatic repairs, fallback routes, autonomous calls or model judges should be added to make an unsuccessful evaluation look better.
-
-The later real playthrough must score profile adherence, intention fidelity, option diversity, continuity and readability against specific passages. A valid JSON response is not POC acceptance. If quality fails, retain the evidence and make the smallest targeted change.
-
-## Deferred depth
-
-The full Chamber laboratory, multiplayer, notifications, calendar presentation, richer interruptions and entity state and hosted onboarding remain separate product work. A coherent small solo game does not require detailed population simulation, interactive 3D maps or an agent per NPC. New complexity should earn its place through observed failures in the playable loop.
-
-No live model calls occurred during this implementation. Provider spend is $0; cumulative OpenRouter account usage has not been verified. Local scripted testing remains the default.
+Live evaluation requires the owner to reopen it explicitly under [spending rules](../.agents/rules/spending.md), after offline flow/trace work and a concrete bounded evaluation design. No provider calls occurred in this pass: $0 provider spend; cumulative account usage unverified.

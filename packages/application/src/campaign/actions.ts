@@ -139,6 +139,8 @@ export function createCampaignActions(database: Database) {
   };
 }
 
+// Current adapter into settlement; zero duration is not the future process model.
+// See ../../README.md, Mechanical selection and consequence, before extending it.
 function activityAction(plan: ImmediateActionPlan) {
   const completion = { text: 'The immediate attempt is resolved.', effects: [] };
   if (plan.resolution.kind === 'automatic') {

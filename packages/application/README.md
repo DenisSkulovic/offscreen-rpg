@@ -1,0 +1,39 @@
+# Application operations
+
+This package owns use cases, transactions and coordination. The API and Activity worker compose its public exports from [package.json](package.json). Pure rules belong in `@offscreen/game`; task preparation and output validation belong in `@offscreen/storyteller`. Start with one flow below rather than reading every module.
+
+## Opening and Start
+
+1. [Scripted openings facade](src/generations/scripted-openings.ts) dispatches profiled drafts to [Storyteller openings](src/storyteller/openings.ts); the separate unprofiled rehearsal has its own generation kind.
+2. Profiled admission checks ownership, draft revision and request identity, captures content/context, then calls [records](src/storyteller/records.ts). That saves the generation, publication record and outbox notice in the caller's transaction.
+3. [Runtime](src/storyteller/runtime.ts) executes the saved task, then attempts publication. Opening success produces a reviewable candidate; it does not itself start a story.
+4. [Start](src/stories/start.ts) dispatches the profiled candidate to [Storyteller Start](src/storyteller/start.ts), which initializes the story and calls [campaign initialization](src/campaign/settings.ts).
+
+Mechanical Start uses the seed captured in the reviewed task, not a fresh catalogue lookup. It currently recomposes an offer from those captured plans. Preserving a planner-produced offer exactly is remaining DM-loop work. Content loading and summaries live in [the mechanical catalogue](src/campaign/fixtures/mechanical-content.ts); the HTTP contract does not enumerate worlds.
+
+## Mechanical selection and consequence
+
+1. [Campaign actions](src/campaign/actions.ts) locks the owned story, handles command replay, checks revision/current offer, loads the offer-local private plan and rechecks prerequisites.
+2. The current `activityAction` adapter translates that immediate plan into a zero-duration activity. [Activity settlement](src/campaign/activities.ts) resolves and saves dice/effects, updates state and prepares the next consequence. This is a current coupling scheduled for removal, not the intended universal action model.
+3. [Consequence admission](src/campaign/narration.ts) gathers receipts and context and saves a Storyteller task. **It currently runs inside mechanical settlement's transaction.** Context preparation can therefore roll back the action; independent mechanical commit and durable follow-up remain missing.
+4. [Publication](src/storyteller/publication.ts) checks the source fence, publishes the saved narrative and copies selected private plans into a new offer. The current narrator selects authored opportunities; it cannot generate new plans.
+
+[Campaign persistence](src/campaign/persistence.ts) owns offer/plan storage; [campaign reads](src/campaign/reads.ts) projects player-visible state. The pure admission diagnostics live in `packages/game/src/immediate-actions.ts`, not in these persistence helpers.
+
+## Execution, failure and retry
+
+[Execution](src/storyteller/execution.ts) owns scripted/provider dispatch and saved results. [Budget](src/storyteller/budget.ts) owns financial reservations and settlement. [Runtime](src/storyteller/runtime.ts) coordinates execution followed by publication; [recovery](src/storyteller/recovery.ts) handles explicit retry. A saved successful generation and an unpublished story are different states. Publication retry must not repeat dice or a successful provider request. Ambiguous provider dispatch must retain uncertainty rather than being blindly retried.
+
+The worker's [dispatch table](../../apps/worker/src/outbox/dispatch.ts) and [Activity bindings](../../apps/worker/src/activities/index.ts) connect outbox topics to these operations. Temporal payloads identify saved work; they are not alternate sources of story state.
+
+## Other entrances and misleading names
+
+- [Stories facade](src/stories/index.ts) exposes lifecycle, reads, campaign operations and timing. [Reads](src/stories/reads.ts) and [persistence](src/stories/persistence.ts) are good starting points for snapshot/revision questions.
+- Ordinary story HTTP routes currently receive [createChamber](src/developer-tools/chamber.ts) from [API composition](../../apps/api/src/app.ts). That wrapper delegates to `createStories` and adds response eligibility and fixture handling. Its directory name does not mean every method is guarded by the developer-tools switch. Separating normal composition from the fixture wrapper is a future structural review, not completed work.
+- Narrative option resolution enters [stories/resolution](src/stories/resolution.ts), while mechanical selection enters `campaign/actions.ts`. Trace the endpoint before assuming they share one adjudication path.
+- Narrative prepared waits in [stories/timing](src/stories/timing.ts) and mechanical ticks in `campaign/activities.ts` are distinct current paths. Neither implements the proposed contribution-based process system.
+- QA cases in [qa-catalog](src/developer-tools/qa-catalog.ts) are instructions/evidence requirements; [qa-journeys](src/developer-tools/qa-journeys.ts) stores manual run records. They are not a fleet of automatic QA agents.
+
+## Contracts and continuation point
+
+Business intent lives in [game rules](../../docs/game-rules.md); implemented authority in [rules and activities](../../docs/technical/rules-and-activities.md) and [Storyteller runtime](../../docs/technical/storyteller-runtime.md). [Progress](../../docs/progress.md) owns remaining gaps and the active feature link. Keep those decisions there; this guide owns how to find their implementation.
