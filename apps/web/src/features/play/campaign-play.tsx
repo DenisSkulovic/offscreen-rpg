@@ -93,6 +93,13 @@ export function CampaignPlay({
               while you are away.
             </p>
           ) : null}
+          {activity.estimatedCompletionAt ? (
+            <p>
+              Conditional completion estimate:{' '}
+              {new Date(activity.estimatedCompletionAt).toLocaleTimeString()}.
+              Future rolls, tools and interruptions can change it.
+            </p>
+          ) : null}
           {active &&
           activity.settingsRevision !== campaign.settings.revision ? (
             <p>

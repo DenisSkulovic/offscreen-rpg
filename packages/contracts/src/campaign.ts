@@ -60,6 +60,7 @@ export const campaignViewSchema = z.strictObject({
         required: z.number().int().positive(),
       }),
       dueAt: z.iso.datetime().nullable(),
+      estimatedCompletionAt: z.iso.datetime().nullable(),
       resolvedTicks: z.number().int().nonnegative(),
       settingsRevision: z.number().int(),
     })

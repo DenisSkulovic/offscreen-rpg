@@ -16,13 +16,12 @@ import {
 } from '@offscreen/contracts/campaign';
 import {
   activityProgressSchema,
+  estimatedCompletionBoundaryTick,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
-import {
-  paceSchema,
-  realMsUntilTick,
-} from '@offscreen/game/time';
+import { paceSchema, realMsUntilTick } from '@offscreen/game/time';
+import { characterSchema } from '@offscreen/game/state';
 
 function actionReceiptState(
   generationId: string | null,
@@ -95,6 +94,12 @@ export async function readCampaign(
     const plan = resolvedActivityPlanSchema.parse(activity.plan);
     const pace = paceSchema.parse(activity.pace);
     const progress = activityProgressSchema.parse(activity.progress);
+    const character = characterSchema.parse(state.character);
+    const estimatedCompletionTick = estimatedCompletionBoundaryTick(
+      plan,
+      progress.process,
+      character,
+    );
     activityView = {
       id: activity.id,
       label: plan.action.label,
@@ -117,6 +122,13 @@ export async function readCampaign(
                   nextBoundaryTick(plan, plan.resolvedThroughTick),
                   pace,
                 ),
+            ).toISOString()
+          : null,
+      estimatedCompletionAt:
+        activity.state === 'running' && estimatedCompletionTick !== null
+          ? new Date(
+              activity.anchorAt.getTime() +
+                realMsUntilTick(progress.clock, estimatedCompletionTick, pace),
             ).toISOString()
           : null,
     };

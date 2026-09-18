@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { checkResolutionSchema } from './checks';
+import {
+  checkPlanSchema,
+  checkResolutionSchema,
+  resolveCheck,
+  type DrawD20,
+} from './checks';
 import { outcomeEffectsSchema } from './effects';
 import { factSchema, type Character } from './state';
 import { tickProgressSchema } from './time';
@@ -25,9 +30,27 @@ export const actionDefinitionSchema = z.strictObject({
   process: z.strictObject({
     kind: z.literal('contribution.v1'),
     progressLabel: z.string().min(1).max(120),
-    requiredContribution: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    contributionPerBoundary: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    requiredContribution: z
+      .number()
+      .int()
+      .positive()
+      .max(Number.MAX_SAFE_INTEGER),
     everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    attempt: z.strictObject({
+      check: checkPlanSchema,
+      successContribution: z
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER),
+      failureContribution: z
+        .number()
+        .int()
+        .nonnegative()
+        .max(Number.MAX_SAFE_INTEGER),
+      successText: z.string().min(1).max(1000),
+      failureText: z.string().min(1).max(1000),
+    }),
   }),
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
@@ -49,6 +72,12 @@ export const actionContentSchema = z
       });
     }
     for (const action of content.actions) {
+      if (action.checks.some((check) => check.id === 'process-contribution')) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Scheduled check identity is reserved by the process runtime',
+        });
+      }
       if (
         new Set(action.checks.map((check) => check.id)).size !==
         action.checks.length
@@ -80,6 +109,18 @@ export function validateContentState(
   character: Character,
 ) {
   for (const action of content.actions) {
+    const contributionCheck = action.process.attempt.check;
+    if (!character.applicableAbilities.includes(contributionCheck.ability)) {
+      throw new Error(
+        'Contribution ability is not applicable to the current form',
+      );
+    }
+    if (
+      contributionCheck.skill &&
+      !character.skills.some((skill) => skill.id === contributionCheck.skill)
+    ) {
+      throw new Error('Contribution skill is not declared on the current form');
+    }
     for (const required of action.requires) {
       if (
         !character.facts.some(
@@ -140,17 +181,59 @@ export const activityProgressSchema = z.strictObject({
 });
 export type ActivityProgress = z.infer<typeof activityProgressSchema>;
 
-export function completionBoundaryTick(
+function abilityCheckSuccessChance(
+  character: Character,
+  plan: ActionDefinition,
+) {
+  const check = plan.process.attempt.check;
+  const abilityModifier = Math.floor(
+    (character.scores[check.ability] - 10) / 2,
+  );
+  const proficiencyModifier =
+    check.skill && character.proficientSkills.includes(check.skill)
+      ? character.proficiencyBonus
+      : 0;
+  const modifier =
+    abilityModifier +
+    proficiencyModifier +
+    check.modifiers.reduce((sum, entry) => sum + entry.value, 0);
+  let successes = 0;
+  let outcomes = 0;
+  const usesTwoDice = check.advantage !== check.disadvantage;
+  for (let first = 1; first <= 20; first++) {
+    for (let second = 1; second <= (usesTwoDice ? 20 : 1); second++) {
+      const chosen =
+        check.advantage && !check.disadvantage
+          ? Math.max(first, second)
+          : check.disadvantage && !check.advantage
+            ? Math.min(first, second)
+            : first;
+      successes += chosen + modifier >= check.dc ? 1 : 0;
+      outcomes++;
+    }
+  }
+  return successes / outcomes;
+}
+
+/** Conditional projection only; never use this value to award progress. */
+export function estimatedCompletionBoundaryTick(
   plan: ResolvedActivityPlan,
   progress: ContributionProgress,
+  character: Character,
 ) {
   const remaining = Math.max(
     0,
     plan.action.process.requiredContribution - progress.earned,
   );
-  const boundariesRemaining = Math.ceil(
-    remaining / plan.action.process.contributionPerBoundary,
-  );
+  const successChance = abilityCheckSuccessChance(character, plan.action);
+  const attempt = plan.action.process.attempt;
+  const expectedContribution =
+    successChance * attempt.successContribution +
+    (1 - successChance) * attempt.failureContribution;
+  if (expectedContribution <= 0) {
+    return null;
+  }
+  const boundariesRemaining = Math.ceil(remaining / expectedContribution);
   if (boundariesRemaining === 0) {
     return plan.resolvedThroughTick;
   }
@@ -167,14 +250,28 @@ export function completionBoundaryTick(
 export function contributeAtBoundary(
   plan: ResolvedActivityPlan,
   progress: ContributionProgress,
+  character: Character,
+  drawD20: DrawD20,
 ) {
+  const roll = resolveCheck(
+    character,
+    plan.action.process.attempt.check,
+    drawD20,
+  );
+  const attempt = plan.action.process.attempt;
+  const contribution = roll.success
+    ? attempt.successContribution
+    : attempt.failureContribution;
   const earned = Math.min(
     plan.action.process.requiredContribution,
-    progress.earned + plan.action.process.contributionPerBoundary,
+    progress.earned + contribution,
   );
   return {
     progress: { kind: 'contribution.v1', earned } as const,
     complete: earned === plan.action.process.requiredContribution,
+    contribution,
+    text: roll.success ? attempt.successText : attempt.failureText,
+    roll,
   };
 }
 

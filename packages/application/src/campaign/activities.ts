@@ -4,7 +4,6 @@ import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
   activityProgressSchema,
-  completionBoundaryTick,
   contributeAtBoundary,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
@@ -62,7 +61,10 @@ export async function settleActivity(
     progress: storedProgress.clock,
     pace,
     now,
-    maximumTicks: completionBoundaryTick(plan, storedProgress.process),
+    maximumTicks:
+      pace.kind === 'instant'
+        ? nextBoundaryTick(plan, plan.resolvedThroughTick)
+        : Number.MAX_SAFE_INTEGER,
   });
   let processProgress = storedProgress.process;
   let cursorTick = plan.resolvedThroughTick;
@@ -79,9 +81,32 @@ export async function settleActivity(
     boundariesSettled++;
     let contributionComplete = false;
     if (boundaryTick % plan.action.process.everyTicks === 0) {
-      const contribution = contributeAtBoundary(plan, processProgress);
+      const before = character;
+      const contribution = contributeAtBoundary(
+        plan,
+        processProgress,
+        before,
+        () => randomInt(1, 21),
+      );
       processProgress = contribution.progress;
       contributionComplete = contribution.complete;
+      await recordRoll(tx, {
+        storyId: current.id,
+        operationId: activity.id,
+        segment: boundariesSettled,
+        checkKey: 'process-contribution',
+        tick: plan.startTick + boundaryTick,
+        plan: {
+          resolution: {
+            kind: 'ability',
+            plan: plan.action.process.attempt.check,
+          },
+          character: before,
+        },
+        result: contribution.roll,
+        effects: [],
+      });
+      lines.push(contribution.text);
     }
     for (const schedule of plan.action.checks) {
       if (boundaryTick % schedule.everyTicks !== 0) {
@@ -231,7 +256,10 @@ export function createCampaignActivities(database: Database) {
           progress: storedProgress.clock,
           pace,
           now,
-          maximumTicks: completionBoundaryTick(plan, storedProgress.process),
+          maximumTicks:
+            pace.kind === 'instant'
+              ? nextBoundaryTick(plan, plan.resolvedThroughTick)
+              : Number.MAX_SAFE_INTEGER,
         });
         return realMsUntilTick(
           progress,

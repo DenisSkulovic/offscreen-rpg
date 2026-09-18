@@ -12,22 +12,14 @@ import {
   incrementStoryViewVersion,
 } from '../stories/persistence';
 import { requireCampaign } from './persistence';
-import {
-  commandReceipt,
-  saveCommand,
-  loadCampaignSettings,
-} from './settings';
+import { commandReceipt, saveCommand, loadCampaignSettings } from './settings';
 import { settleActivity, scheduleActivity } from './activities';
 import {
   activityProgressSchema,
-  completionBoundaryTick,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
-import {
-  earnedTicks,
-  paceSchema,
-} from '@offscreen/game/time';
+import { earnedTicks, paceSchema } from '@offscreen/game/time';
 import { StoryError } from '../stories/errors';
 
 export function createCampaignControls(database: Database) {
@@ -83,12 +75,14 @@ export function createCampaignControls(database: Database) {
         progress: storedProgress.clock,
         pace: oldPace,
         now,
-        maximumTicks: completionBoundaryTick(plan, storedProgress.process),
+        maximumTicks:
+          oldPace.kind === 'instant'
+            ? nextBoundaryTick(plan, plan.resolvedThroughTick)
+            : Number.MAX_SAFE_INTEGER,
       });
       if (
         settled.activity.state === 'running' &&
-        nextBoundaryTick(plan, plan.resolvedThroughTick) <=
-          clock.elapsedTicks
+        nextBoundaryTick(plan, plan.resolvedThroughTick) <= clock.elapsedTicks
       ) {
         // Commit the batch and continue catch-up before accepting a control.
         // Throwing inside this transaction would undo the progress just made.
@@ -118,18 +112,16 @@ export function createCampaignControls(database: Database) {
           state.settingsRevision,
         );
         const revision = state.settingsRevision + 1;
-        await tx
-          .insert(campaignSettings)
-          .values({
-            storyId: current.id,
+        await tx.insert(campaignSettings).values({
+          storyId: current.id,
+          revision,
+          profile: previous.profile,
+          settings: {
+            ...previous.settings,
             revision,
-            profile: previous.profile,
-            settings: {
-              ...previous.settings,
-              revision,
-              pace: parsed.data.pace,
-            },
-          });
+            pace: parsed.data.pace,
+          },
+        });
         await tx
           .update(campaign)
           .set({ settingsRevision: revision })

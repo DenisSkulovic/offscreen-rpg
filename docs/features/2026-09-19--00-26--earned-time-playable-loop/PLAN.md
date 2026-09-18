@@ -52,8 +52,8 @@ Approve the player flow first, then approve only the contribution/runtime subset
 
 ## Current checkpoint
 
-- Current phase and exact next action: phase 2's contribution rule/progress correction is implemented; next add the beacon fixture and admit its process from a private playable plan.
-- Base/reviewed Git revision and relevant changes: based on `3fa93ae`; working changes replace duration completion with version-4 contribution plans and distinct clock/process progress.
-- Actual checks/results for this revision; checks not run: game build and 18 tests pass; contracts/application builds and web typecheck pass. No database integration or browser run was attempted because no playable process admission exists yet.
+- Current phase and exact next action: phase 2's contribution rule/progress correction now includes roll-driven productivity and a non-authoritative estimate; next add the beacon fixture and admit its process from a private playable plan.
+- Base/reviewed Git revision and relevant changes: contribution/time separation was pushed as `8576f62`; the current slice replaces fixed contribution with a captured D&D attempt and persists every productive roll.
+- Actual checks/results for this revision; checks not run: game build and 18 tests pass; contracts/application builds and web typecheck pass. The tests cover success contribution, zero-progress failure, conditional estimate and nonproductive environmental boundaries. No database integration or browser run was attempted because no playable process admission exists yet.
 - Unresolved findings/blockers: the contribution runtime has no creation path, capacity claim persistence or interruption-resumption command yet. Waiting and traversal semantics remain outside the approved implementation subset.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.
