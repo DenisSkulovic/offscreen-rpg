@@ -3,8 +3,8 @@ import {
   storytellerReferenceSchema,
   storytellerSummarySchema,
 } from '@offscreen/contracts/storytellers';
-import comedy from './storytellers/absurd-action-comedy.json';
-import mystery from './storytellers/quiet-eerie-mystery.json';
+import comedy from './definitions/absurd-action-comedy.json';
+import mystery from './definitions/quiet-eerie-mystery.json';
 
 const guidance = z.string().min(1).max(1200);
 export const storytellerProfileSchema = storytellerSummarySchema

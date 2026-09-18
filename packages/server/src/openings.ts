@@ -6,7 +6,7 @@ import {
   playableOpeningArtifactSchema,
   playableProposalSchema,
   preparePlayableOpening,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import { createGenerations, GenerationError, validId } from './generations';
 import type { Transaction } from './outbox';
 

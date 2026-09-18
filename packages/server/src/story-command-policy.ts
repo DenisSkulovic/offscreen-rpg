@@ -1,9 +1,9 @@
-import { storytellerProfileSchema } from '@offscreen/ai/storytellers';
-import { executionPolicySchema } from '@offscreen/ai/storyteller-policy';
+import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
+import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import {
   generationSourcePartSchema,
   premiseContentSchema,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import {
   interactionSchema,
   interactionSpecificationSchema,

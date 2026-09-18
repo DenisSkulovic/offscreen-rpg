@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { storytellerCatalogue } from '@offscreen/ai/storytellers';
+import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 
 @Controller('storytellers')
 export class StorytellersController {

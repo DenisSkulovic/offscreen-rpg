@@ -1,5 +1,5 @@
-import type { StorytellerTask, StorytellerResult } from './storyteller-tasks';
-import { validateStorytellerResult } from './storyteller-tasks';
+import type { StorytellerTask, StorytellerResult } from '../tasks';
+import { validateStorytellerResult } from '../tasks';
 
 // Authored rehearsal content belongs only to this source, never runtime policy.
 const scenes: Record<
@@ -61,10 +61,22 @@ export function scriptedStorytellerResult(
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const opening = task.context.mechanicalOpening;
     return validateStorytellerResult(task, {
-      version: 1, scene: { version: 1, content: opening.opening, next: {
-        kind: 'choice', prompt: 'What do you attempt?',
-        options: opening.offer.nodes.map((node) => ({ id: node.id, label: node.label, intention: node.description })),
-      } }, currentNotes: [], arrivalNotes: [],
+      version: 1,
+      scene: {
+        version: 1,
+        content: opening.opening,
+        next: {
+          kind: 'choice',
+          prompt: 'What do you attempt?',
+          options: opening.offer.nodes.map((node) => ({
+            id: node.id,
+            label: node.label,
+            intention: node.description,
+          })),
+        },
+      },
+      currentNotes: [],
+      arrivalNotes: [],
     });
   }
   if (task.task === 'consequence') {
@@ -76,18 +88,27 @@ export function scriptedStorytellerResult(
     const alternatives = candidates.filter(
       (node) => node.id !== task.context.selected?.id,
     );
-    const selected = (alternatives.length ? alternatives : candidates).slice(0, 3);
+    const selected = (alternatives.length ? alternatives : candidates).slice(
+      0,
+      3,
+    );
     return validateStorytellerResult(task, {
       version: 1,
-      scene: { version: 3, content: task.context.current.content, next: {
-        kind: 'opportunities', state: selected.length ? 'available' : 'held',
-        options: selected.map((node) => ({
-          id: node.id,
-          label: node.label,
-          intention: node.description,
-        })),
-      } },
-      currentNotes: [], arrivalNotes: [],
+      scene: {
+        version: 3,
+        content: task.context.current.content,
+        next: {
+          kind: 'opportunities',
+          state: selected.length ? 'available' : 'held',
+          options: selected.map((node) => ({
+            id: node.id,
+            label: node.label,
+            intention: node.description,
+          })),
+        },
+      },
+      currentNotes: [],
+      arrivalNotes: [],
     });
   }
   const scene = scenes[task.profile.id] ?? scenes['quiet-eerie-mystery'];

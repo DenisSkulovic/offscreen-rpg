@@ -8,7 +8,7 @@ import {
   validateContinuationResult,
   validatePlayableResult,
   type ContinuationResult,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import { GenerationError, validId } from './generations';
 import { scriptedRealDurationMs } from './scripted-continuation-timing';
 import { commitStoryContinuation } from './story-continuation';

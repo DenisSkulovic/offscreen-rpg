@@ -9,7 +9,7 @@ import {
   playablePresentation,
   preparePlayableOpening,
   preparePlayableContinuation,
-} from '../src/playable';
+} from '../src/tasks/playable';
 const premise = {
   title: '',
   premise: 'I am a microscopic organism inside a spaceship.',

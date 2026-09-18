@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { validateInteractionSubmission } from '@offscreen/contracts/interactions';
 import { capturedProviderRequestSchema, prepareOpening } from './opening';
-import { premiseContentSchema } from './premise';
+import { premiseContentSchema } from '../context/premise';
 import {
   continuationResultSchema,
   generationSourcePartSchema,
@@ -32,7 +32,7 @@ export {
   type PlayableProposal,
   type PublishedPlayable,
 } from './playable-proposal';
-export { premiseContentSchema } from './premise';
+export { premiseContentSchema } from '../context/premise';
 export { capturedProviderRequestSchema } from './opening';
 
 const openingInstructions = `Propose one playable scene for Offscreen RPG as the specified JSON.

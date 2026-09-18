@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { draftSchema } from '@offscreen/contracts/drafts';
-import { premiseContentSchema } from './premise';
+import { premiseContentSchema } from '../context/premise';
 
 // Only narrative content comes from the model. Source identity stays outside it.
 export const openingOutputSchema = z.strictObject({

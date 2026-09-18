@@ -4,15 +4,18 @@ import { randomUUID } from 'node:crypto';
 import {
   createStorytellerCatalogue,
   storytellerCatalogue,
-} from '../src/storytellers';
+} from '../src/profiles';
 import {
   prepareStorytellerTask,
   validateStorytellerResult,
-} from '../src/storyteller-tasks';
-import { scriptedStorytellerResult } from '../src/storyteller-fixtures';
-import { applyContinuityPatch } from '../src/continuity';
-import { boundStorytellerContext } from '../src/storyteller-context';
-import { createOpenRouterProvider, usdToMicrousd } from '../src/openrouter';
+} from '../src/tasks';
+import { scriptedStorytellerResult } from '../src/fixtures';
+import { applyContinuityPatch } from '../src/context/continuity';
+import { boundStorytellerContext } from '../src/context';
+import {
+  createOpenRouterProvider,
+  usdToMicrousd,
+} from '../src/providers/openrouter';
 
 function opening() {
   return prepareStorytellerTask({

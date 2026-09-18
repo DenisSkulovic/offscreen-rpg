@@ -1,5 +1,5 @@
 import { StorytellersController } from './drafts/storytellers-controller.js';
-import type { ExecutionPolicy } from '@offscreen/ai/storyteller-policy';
+import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import type { z } from 'zod';
 import type {
   qaEnvironmentSchema,

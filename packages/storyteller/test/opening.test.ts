@@ -5,7 +5,7 @@ import {
   openingOutputSchema,
   openingRequest,
   prepareOpening,
-} from '../src/opening.js';
+} from '../src/tasks/opening.js';
 
 const draft = {
   id: '01317fd7-238b-42e2-83bb-613976d4c9bf',

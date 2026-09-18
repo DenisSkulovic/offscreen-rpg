@@ -9,7 +9,7 @@ import { offerSchema } from '@offscreen/game/offers';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
-} from '@offscreen/ai/storyteller-tasks';
+} from '@offscreen/storyteller/tasks';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { setPublication, storytellerKind } from './storyteller-records';
 import { translateGeneratedContinuation } from './generated-continuation';

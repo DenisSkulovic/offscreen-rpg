@@ -21,10 +21,10 @@ import { createStorytellerRuntime } from '@offscreen/server/storyteller-runtime'
 import { createStorytellerBudget } from '@offscreen/server/storyteller-budget';
 import { createChamber } from '@offscreen/server/chamber';
 import { createStories } from '@offscreen/server/stories';
-import { scriptedStorytellerResult } from '@offscreen/ai/storyteller-fixtures';
-import { storytellerTaskSchema } from '@offscreen/ai/storyteller-tasks';
-import { continuityNotesSchema } from '@offscreen/ai/continuity';
-import type { ExecutionPolicy } from '@offscreen/ai/storyteller-policy';
+import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
+import { continuityNotesSchema } from '@offscreen/storyteller/context';
+import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 

@@ -1,19 +1,26 @@
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import { capturedProviderRequestSchema } from './opening';
-import { storytellerProfileSchema } from './storytellers';
-import { executionPolicySchema } from './storyteller-policy';
+import { storytellerProfileSchema } from '../profiles';
+import { executionPolicySchema } from './policy';
 import {
   boundStorytellerContext,
   contextInputSchema,
   contextPayload,
-} from './storyteller-context';
-import { continuityPatchSchema, applyContinuityPatch } from './continuity';
+} from '../context';
+import {
+  continuityPatchSchema,
+  applyContinuityPatch,
+} from '../context/continuity';
 import {
   continuationResultSchema,
   playableProposalSchema,
   publishedPlayableFromGeneration,
 } from './playable-proposal';
+
+export * from './opening';
+export * from './playable';
+export * from './policy';
 
 const consequenceSceneSchema = z.strictObject({
   version: z.literal(3),
@@ -21,16 +28,24 @@ const consequenceSceneSchema = z.strictObject({
   next: z.strictObject({
     kind: z.literal('opportunities'),
     state: z.enum(['available', 'held']),
-    options: z.array(z.strictObject({
-      id: z.string().min(1).max(100),
-      label: z.string().min(1).max(500),
-      intention: z.string().min(1).max(2000),
-    })).max(6),
+    options: z
+      .array(
+        z.strictObject({
+          id: z.string().min(1).max(100),
+          label: z.string().min(1).max(500),
+          intention: z.string().min(1).max(2000),
+        }),
+      )
+      .max(6),
   }),
 });
 export const storytellerResultSchema = z.strictObject({
   version: z.literal(1),
-  scene: z.union([playableProposalSchema, continuationResultSchema, consequenceSceneSchema]),
+  scene: z.union([
+    playableProposalSchema,
+    continuationResultSchema,
+    consequenceSceneSchema,
+  ]),
   currentNotes: continuityPatchSchema,
   arrivalNotes: continuityPatchSchema,
 });
@@ -52,7 +67,11 @@ export const storytellerTaskSchema = z.discriminatedUnion('task', [
   z.strictObject({
     ...common,
     task: z.literal('consequence'),
-    source: z.strictObject({ storyId: z.uuid(), narrativeRevision: z.number().int().positive(), passageId: z.uuid() }),
+    source: z.strictObject({
+      storyId: z.uuid(),
+      narrativeRevision: z.number().int().positive(),
+      passageId: z.uuid(),
+    }),
   }),
   z.strictObject({
     ...common,
@@ -103,11 +122,14 @@ function requestFor(
       ? 'Create a version-1 opening with a choice. Establish the starting situation; do not advance time.'
       : 'Create a version-2 continuation. Use choice for immediate exchanges or interval for meaningful fictional duration. Supply only gameDurationMs and one prepared arrival with choices.';
   if (input.task === 'consequence') {
-    taskRules = 'Create a version-3 scene with next.kind opportunities. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects. Select zero to six contextually appropriate leaf actions from resolution.offer. Preserve each selected action ID exactly, but write an honest concise label and intention for the present situation. Never invent an ID or change its underlying mechanics. Distinct options must represent materially different intentions. Set state to available when at least one option is selected, otherwise held. One option is valid when constrained. Creative guidance affects prose and selection only. No interval or arrival notes.';
+    taskRules =
+      'Create a version-3 scene with next.kind opportunities. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects. Select zero to six contextually appropriate leaf actions from resolution.offer. Preserve each selected action ID exactly, but write an honest concise label and intention for the present situation. Never invent an ID or change its underlying mechanics. Distinct options must represent materially different intentions. Set state to available when at least one option is selected, otherwise held. One option is valid when constrained. Creative guidance affects prose and selection only. No interval or arrival notes.';
   } else if (context.mechanicalOpening) {
-    taskRules += ' Preserve the supplied mechanical opening facts and copy its offer IDs, labels and descriptions exactly into options (description becomes intention).';
+    taskRules +=
+      ' Preserve the supplied mechanical opening facts and copy its offer IDs, labels and descriptions exactly into options (description becomes intention).';
   } else {
-    taskRules += ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
+    taskRules +=
+      ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
   }
   return {
     messages: [
@@ -116,7 +138,11 @@ function requestFor(
         role: 'user' as const,
         content: JSON.stringify({
           task: input.task,
-          profile: { ...profile, taskGuidance: tasks[input.task === 'consequence' ? 'continuation' : input.task] },
+          profile: {
+            ...profile,
+            taskGuidance:
+              tasks[input.task === 'consequence' ? 'continuation' : input.task],
+          },
           ...contextPayload(context),
         }),
       },
@@ -188,17 +214,31 @@ export function validateStorytellerResult(
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
     const offered = task.context.mechanicalOpening.offer.nodes;
-    if (next.kind !== 'choice' || next.options.length !== offered.length || offered.some((node, index) => {
-      const option = next.options[index];
-      return !option || option.id !== node.id || option.label !== node.label || option.intention !== node.description;
-    })) {
+    if (
+      next.kind !== 'choice' ||
+      next.options.length !== offered.length ||
+      offered.some((node, index) => {
+        const option = next.options[index];
+        return (
+          !option ||
+          option.id !== node.id ||
+          option.label !== node.label ||
+          option.intention !== node.description
+        );
+      })
+    ) {
       throw new Error('Opening changed the admitted opportunities');
     }
   }
   if (task.task === 'consequence') {
     const resolution = task.context.resolution;
     const next = result.scene.next;
-    if (!resolution || result.scene.version !== 3 || next.kind !== 'opportunities' || result.arrivalNotes.length) {
+    if (
+      !resolution ||
+      result.scene.version !== 3 ||
+      next.kind !== 'opportunities' ||
+      result.arrivalNotes.length
+    ) {
       throw new Error('Invalid consequence narration');
     }
     const admittedIds = new Set(
@@ -219,7 +259,8 @@ export function validateStorytellerResult(
       throw new Error('Invalid planned opportunities');
     }
   }
-  const expectedVersion = task.task === 'consequence' ? 3 : task.task === 'opening' ? 1 : 2;
+  const expectedVersion =
+    task.task === 'consequence' ? 3 : task.task === 'opening' ? 1 : 2;
   if (result.scene.version !== expectedVersion) {
     throw new Error('Wrong task output version');
   }
@@ -240,7 +281,9 @@ export function validateStorytellerResult(
       option.label.trim().toLocaleLowerCase('en-US'),
     );
     if (
-      (task.task !== 'consequence' && !task.context.mechanicalOpening && (next.options.length < 2 || next.options.length > 5)) ||
+      (task.task !== 'consequence' &&
+        !task.context.mechanicalOpening &&
+        (next.options.length < 2 || next.options.length > 5)) ||
       new Set(labels).size !== labels.length
     ) {
       throw new Error('Offer must contain 2-5 distinct choices');

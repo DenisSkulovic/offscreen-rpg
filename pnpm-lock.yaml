@@ -41,9 +41,6 @@ importers:
       '@nestjs/platform-express':
         specifier: 12.0.3
         version: 12.0.3(@nestjs/common@12.0.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@12.0.3)(supports-color@8.1.1)
-      '@offscreen/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -53,6 +50,9 @@ importers:
       '@offscreen/server':
         specifier: workspace:*
         version: link:../../packages/server
+      '@offscreen/storyteller':
+        specifier: workspace:*
+        version: link:../../packages/storyteller
       better-auth:
         specifier: 1.7.5
         version: 1.7.5(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0))(next@16.3.5(@babel/core@7.29.7(supports-color@8.1.1))(@types/node@22.20.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -168,28 +168,6 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  packages/ai:
-    dependencies:
-      '@offscreen/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@offscreen/game':
-        specifier: workspace:*
-        version: link:../game
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
-    devDependencies:
-      '@offscreen/config':
-        specifier: workspace:*
-        version: link:../config
-      '@types/node':
-        specifier: 22.20.3
-        version: 22.20.3
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-
   packages/config: {}
 
   packages/contracts:
@@ -254,9 +232,6 @@ importers:
 
   packages/server:
     dependencies:
-      '@offscreen/ai':
-        specifier: workspace:*
-        version: link:../ai
       '@offscreen/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -266,9 +241,34 @@ importers:
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
+      '@offscreen/storyteller':
+        specifier: workspace:*
+        version: link:../storyteller
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.0)
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/storyteller:
+    dependencies:
+      '@offscreen/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@offscreen/game':
+        specifier: workspace:*
+        version: link:../game
       zod:
         specifier: 4.6.5
         version: 4.6.5

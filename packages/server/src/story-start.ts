@@ -7,7 +7,7 @@ import {
   playableProposalSchema,
   premiseContentSchema,
   validatePlayableResult,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import type { Database } from '@offscreen/db';
 import { storyDraft } from '@offscreen/db/draft-schema';
 import { draftOpening, generation } from '@offscreen/db/generation-schema';

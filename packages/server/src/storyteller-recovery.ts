@@ -7,7 +7,7 @@ import {
   storytellerPublication,
   storytellerRetry,
 } from '@offscreen/db/storyteller-schema';
-import { storytellerTaskSchema } from '@offscreen/ai/storyteller-tasks';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { lockOwnedStory, incrementStoryViewVersion } from './story-persistence';
 import { StoryError, parseStoryIdentifier } from './story-errors';
 import { enqueue } from './outbox';

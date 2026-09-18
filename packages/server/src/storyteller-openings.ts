@@ -5,17 +5,17 @@ import { generation, draftOpening } from '@offscreen/db/generation-schema';
 import {
   storytellerCatalogue,
   storytellerSummary,
-} from '@offscreen/ai/storytellers';
+} from '@offscreen/storyteller/profiles';
 import {
   prepareStorytellerTask,
   storytellerTaskSchema,
   storytellerResultSchema,
-} from '@offscreen/ai/storyteller-tasks';
+} from '@offscreen/storyteller/tasks';
 import {
   offlineExecution,
   type ExecutionPolicy,
-} from '@offscreen/ai/storyteller-policy';
-import { playablePresentation, playableProposalSchema } from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
+import { playablePresentation, playableProposalSchema } from '@offscreen/storyteller/tasks';
 import { openingPreviewSchema } from '@offscreen/contracts/openings';
 import { GenerationError, validId } from './generations';
 import { insertStorytellerTask, storytellerKind } from './storyteller-records';

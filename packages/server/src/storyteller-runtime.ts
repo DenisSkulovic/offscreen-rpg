@@ -2,7 +2,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
-import { storytellerTaskSchema } from '@offscreen/ai/storyteller-tasks';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import {
   createStorytellerExecution,
   type StorytellerRuntimeOptions,

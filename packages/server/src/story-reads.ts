@@ -3,8 +3,8 @@ import { readCampaign } from './campaign-reads';
 import {
   storytellerProfileSchema,
   storytellerSummary,
-} from '@offscreen/ai/storytellers';
-import { executionPolicySchema } from '@offscreen/ai/storyteller-policy';
+} from '@offscreen/storyteller/profiles';
+import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { storyListSchema } from '@offscreen/contracts/stories';
 import {

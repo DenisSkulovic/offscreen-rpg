@@ -5,9 +5,9 @@ import { generation } from '@offscreen/db/generation-schema';
 import {
   validateStorytellerResult,
   type StorytellerTask,
-} from '@offscreen/ai/storyteller-tasks';
-import { scriptedStorytellerResult } from '@offscreen/ai/storyteller-fixtures';
-import type { StorytellerProvider } from '@offscreen/ai/openrouter';
+} from '@offscreen/storyteller/tasks';
+import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
+import type { StorytellerProvider } from '@offscreen/storyteller/providers/openrouter';
 import {
   createStorytellerBudget,
   StorytellerBudgetError,

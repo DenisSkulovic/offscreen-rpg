@@ -37,7 +37,7 @@ Checks: compile the package and its direct consumers; run focused Storyteller co
 
 Exit: the package exposes Storyteller capabilities, contains no database/application imports, and the old package name is absent.
 
-Status: Not started.
+Status: Complete.
 
 ## Phase 3 — Rebuild the application package internally
 
@@ -110,8 +110,8 @@ Status: Not started.
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 1 is complete; rename and reorganize the AI package as `@offscreen/storyteller` in Phase 2.
-- Base/reviewed Git revision and relevant uncommitted changes: implementation started from `d9392bd` on `main`; the Phase 1 game package, consumer import changes, boundary lint rules and documentation updates are ready for an atomic commit.
-- Actual checks/results for this revision; checks not run: game, contracts and AI builds passed; six pure tick-clock tests passed. Server build reaches only the same two pre-existing `exactOptionalPropertyTypes` errors in `story-command-policy.ts`. No integration or browser suite was run because this phase moves ownership without intended gameplay behavior changes.
-- Unresolved findings/blockers: none for Phase 1. The duration-driven activity prototype remains intentionally unchanged and will be redesigned separately rather than folded into a package move.
+- Current phase and exact next action: Phase 2 is complete; rename and capability-organize `@offscreen/server` as `@offscreen/application` in Phase 3.
+- Base/reviewed Git revision and relevant uncommitted changes: Phase 2 started from `68b3c90` on `main`; the atomic Storyteller package rename, capability exports, consumer imports and permanent documentation updates are ready to commit.
+- Actual checks/results for this revision; checks not run: the Storyteller build and all 22 focused package tests passed; API build passed. Server build reaches only the same two pre-existing `exactOptionalPropertyTypes` errors in `story-command-policy.ts`. No integration/browser suite or provider call was run.
+- Unresolved findings/blockers: none for Phase 2. The `planning` capability will be created when the playable DM slice introduces its contracts; no empty placeholder module or invented runtime was added.
 - Provider spend and accounting certainty: no provider calls; spend $0.

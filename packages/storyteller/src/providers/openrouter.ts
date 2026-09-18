@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { StorytellerTask } from './storyteller-tasks';
-import { reservationForRequest } from './storyteller-policy';
+import type { StorytellerTask } from '../tasks';
+import { reservationForRequest } from '../tasks/policy';
 
 export type ProviderOutcome =
   | {

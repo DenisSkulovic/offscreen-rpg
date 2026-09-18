@@ -11,8 +11,8 @@ import { storyPassage } from '@offscreen/db/story-schema';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
-} from '@offscreen/ai/storyteller-tasks';
-import { playablePresentation, playableProposalSchema } from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
+import { playablePresentation, playableProposalSchema } from '@offscreen/storyteller/tasks';
 import type { Transaction } from './outbox';
 import { initializeStoryInTransaction } from './story-initialization';
 import { publishStorytellerNotes } from './storyteller-memory';

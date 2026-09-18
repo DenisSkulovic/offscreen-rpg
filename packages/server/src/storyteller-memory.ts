@@ -2,12 +2,12 @@ import { and, eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
 import { generation } from '@offscreen/db/generation-schema';
 import { story, storyPassage } from '@offscreen/db/story-schema';
-import { applyContinuityPatch } from '@offscreen/ai/continuity';
+import { applyContinuityPatch } from '@offscreen/storyteller/context';
 import {
   storytellerTaskSchema,
   taskEvidence,
   validateStorytellerResult,
-} from '@offscreen/ai/storyteller-tasks';
+} from '@offscreen/storyteller/tasks';
 import type { Transaction } from './outbox';
 import { storytellerKind } from './storyteller-records';
 

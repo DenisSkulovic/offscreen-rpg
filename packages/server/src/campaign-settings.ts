@@ -19,7 +19,7 @@ import {
   storytellerCatalogue,
   storytellerProfileSchema,
   type StorytellerProfile,
-} from '@offscreen/ai/storytellers';
+} from '@offscreen/storyteller/profiles';
 import { z } from 'zod';
 import { type Transaction } from './outbox';
 import {

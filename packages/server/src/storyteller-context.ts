@@ -2,8 +2,8 @@ import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { and, desc, eq, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
-import { contextInputSchema } from '@offscreen/ai/storyteller-context';
-import { continuityNotesSchema } from '@offscreen/ai/continuity';
+import { contextInputSchema } from '@offscreen/storyteller/context';
+import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import type { Transaction } from './outbox';
 
 /** Called inside admission while holding the story lock. No uncommitted future is evidence. */

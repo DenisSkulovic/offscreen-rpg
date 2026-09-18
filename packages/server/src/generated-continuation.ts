@@ -3,7 +3,7 @@ import {
   continuationCurrentPresentation,
   continuationResultSchema,
   playablePresentation,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import type { StoryContinuation } from './story-command-policy';
 
 export function translateGeneratedContinuation(args: {

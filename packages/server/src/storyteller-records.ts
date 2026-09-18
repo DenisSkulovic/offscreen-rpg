@@ -8,7 +8,7 @@ import {
   storytellerTaskSchema,
   storytellerResultSchema,
   type StorytellerTask,
-} from '@offscreen/ai/storyteller-tasks';
+} from '@offscreen/storyteller/tasks';
 import { createGenerations } from './generations';
 import type { Database } from '@offscreen/db';
 

@@ -2,16 +2,16 @@ import {
   storytellerTaskSchema,
   storytellerResultSchema,
   publishedStorytellerSlice,
-} from '@offscreen/ai/storyteller-tasks';
-import { storytellerProfileSchema } from '@offscreen/ai/storytellers';
-import { continuityNotesSchema } from '@offscreen/ai/continuity';
+} from '@offscreen/storyteller/tasks';
+import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
+import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import {
   generatedStorytellerOutputSchema,
   generationSourcePartSchema,
   playableContinuationArtifactSchema,
   playableOpeningArtifactSchema,
   publishedPlayableFromGeneration,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import {
   chamberInspectorHistoryLimit,
   chamberInspectorSchema,

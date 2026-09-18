@@ -10,7 +10,7 @@ import {
   executionPolicySchema,
   reservationForRequest,
   type ExecutionPolicy,
-} from '@offscreen/ai/storyteller-policy';
+} from '@offscreen/storyteller/tasks';
 import { isDeepStrictEqual } from 'node:util';
 import type { Transaction } from './outbox';
 

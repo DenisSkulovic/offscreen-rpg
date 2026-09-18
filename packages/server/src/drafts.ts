@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { storytellerCatalogue } from '@offscreen/ai/storytellers';
+import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
 import { storytellerReferenceSchema } from '@offscreen/contracts/storytellers';
 import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';

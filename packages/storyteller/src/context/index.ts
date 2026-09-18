@@ -12,6 +12,9 @@ import {
 import { premiseContentSchema } from './premise';
 import { continuityNotesSchema } from './continuity';
 
+export * from './continuity';
+export * from './premise';
+
 export const evidencePassageSchema = z.strictObject({
   id: z.uuid(),
   sequence: z.number().int().positive(),

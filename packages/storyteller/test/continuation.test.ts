@@ -11,7 +11,7 @@ import {
   publishedPlayableFromGeneration,
   selectedIntentionFromPublished,
   validateContinuationResult,
-} from '../src/playable';
+} from '../src/tasks/playable';
 
 const immediate = {
   version: 2 as const,

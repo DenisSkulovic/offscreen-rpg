@@ -61,7 +61,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@offscreen/ai": "workspace:*",
+    "@offscreen/storyteller": "workspace:*",
     "zod": "4.6.5",
     "@offscreen/db": "workspace:*",
     "@offscreen/contracts": "workspace:*",

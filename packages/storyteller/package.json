@@ -1,0 +1,42 @@
+{
+  "name": "@offscreen/storyteller",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./profiles": {
+      "types": "./dist/src/profiles/index.d.ts",
+      "default": "./dist/src/profiles/index.js"
+    },
+    "./context": {
+      "types": "./dist/src/context/index.d.ts",
+      "default": "./dist/src/context/index.js"
+    },
+    "./tasks": {
+      "types": "./dist/src/tasks/index.d.ts",
+      "default": "./dist/src/tasks/index.js"
+    },
+    "./providers/openrouter": {
+      "types": "./dist/src/providers/openrouter.d.ts",
+      "default": "./dist/src/providers/openrouter.js"
+    },
+    "./fixtures": {
+      "types": "./dist/src/fixtures/index.d.ts",
+      "default": "./dist/src/fixtures/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "@offscreen/contracts": "workspace:*",
+    "@offscreen/game": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "@types/node": "22.20.3",
+    "typescript": "5.9.3"
+  }
+}

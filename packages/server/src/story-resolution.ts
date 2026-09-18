@@ -7,7 +7,7 @@ import {
   premiseContentSchema,
   preparePlayableContinuation,
   publishedPlayableFromGeneration,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import {
   InteractionInputError,
   interactionSchema,

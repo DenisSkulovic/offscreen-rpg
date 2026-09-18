@@ -8,14 +8,14 @@ import {
   interactionSubmissionSchema,
   validateInteractionSubmission,
 } from '@offscreen/contracts/interactions';
-import { playablePresentation } from '@offscreen/ai/playable';
+import { playablePresentation } from '@offscreen/storyteller/tasks';
 import {
   publishedStorytellerSlice,
   prepareStorytellerTask,
   storytellerTaskSchema,
-} from '@offscreen/ai/storyteller-tasks';
-import { storytellerProfileSchema } from '@offscreen/ai/storytellers';
-import { executionPolicySchema } from '@offscreen/ai/storyteller-policy';
+} from '@offscreen/storyteller/tasks';
+import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
+import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import type { Transaction } from './outbox';
 import { enqueue } from './outbox';
 import {

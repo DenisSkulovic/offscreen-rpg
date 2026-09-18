@@ -1,8 +1,8 @@
 import {
   executionPolicySchema,
   offlineExecution,
-} from '@offscreen/ai/storyteller-policy';
-import { createOpenRouterProvider } from '@offscreen/ai/openrouter';
+} from '@offscreen/storyteller/tasks';
+import { createOpenRouterProvider } from '@offscreen/storyteller/providers/openrouter';
 
 /** Explicit opt-in only. A credential alone never selects a provider or creates an allowance. */
 export function readStorytellerExecution(env: NodeJS.ProcessEnv) {

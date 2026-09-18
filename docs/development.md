@@ -42,7 +42,7 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
-`@offscreen/ai/playable` prepares a saved premise into a playable-opening request and validates a scene/choice proposal. Its tests run under `pnpm test` without credentials. The older `@offscreen/ai/opening` prose helper remains for snapshot isolation and request-shape checks. The exported JSON Schema is not yet verified against a hosted provider. The preview screen uses `@offscreen/server/scripted-openings`, a fixed local playable fixture, with no provider adapter. Generated continuation uses `@offscreen/server/scripted-continuations` the same way.
+`@offscreen/storyteller/tasks` prepares a saved premise into a playable-opening request and validates a scene/choice proposal. Its tests run under `pnpm test` without credentials. The opening prose helper remains in the same task capability for snapshot isolation and request-shape checks. The exported JSON Schema is not yet verified against a hosted provider. The preview screen uses `@offscreen/server/scripted-openings`, a fixed local playable fixture, with no provider adapter. Generated continuation uses `@offscreen/server/scripted-continuations` the same way.
 
 ```sh
 pnpm format:check
@@ -116,11 +116,11 @@ The command does not read `.env.openrouter`, never constructs the live provider 
 
 ## Profiled storyteller rehearsal
 
-Run `pnpm chamber` for the authenticated local launcher, then navigate to `/stories`. Create a draft, select either storyteller, and use a premise such as “I am SpongeBob waking in the pineapple with Gary.” Save, review/generate the opening and Start. Choose offered actions, pause/resume the 20-second quick-play journey, read saved passages and reopen through the Stories list. This is an authored offline rehearsal; arbitrary premises are not improvised. Storyteller profiles are JSON in `packages/ai/src/storytellers/`, separate from rehearsal scenes.
+Run `pnpm chamber` for the authenticated local launcher, then navigate to `/stories`. Create a draft, select either storyteller, and use a premise such as “I am SpongeBob waking in the pineapple with Gary.” Save, review/generate the opening and Start. Choose offered actions, pause/resume the 20-second quick-play journey, read saved passages and reopen through the Stories list. This is an authored offline rehearsal; arbitrary premises are not improvised. Storyteller profiles are JSON in `packages/storyteller/src/profiles/definitions/`, separate from rehearsal scenes.
 
 Migration `0014_eminent_dagger.sql` adds nullable profile/execution/notes fields and private publication/accounting records. The launcher applies migrations to its dedicated local database. It creates no live funding allowance and does not enable provider execution.
 
-After a fresh affected build, `pnpm --filter @offscreen/api test:storyteller` runs the focused PostgreSQL/Temporal/browser suite with `DATABASE_TEST_URL` targeting `offscreen_auth_test`. Run it sequentially with other integration suites because they share ports. AI package tests inject fake HTTP transports; the integration suite uses local scripted/fake providers. No saved provider credentials are read. Production live flags and execution policy are documented in [runtime](technical/storyteller-runtime.md); their presence does not supersede the spending rule.
+After a fresh affected build, `pnpm --filter @offscreen/api test:storyteller` runs the focused PostgreSQL/Temporal/browser suite with `DATABASE_TEST_URL` targeting `offscreen_auth_test`. Run it sequentially with other integration suites because they share ports. Storyteller package tests inject fake HTTP transports; the integration suite uses local scripted/fake providers. No saved provider credentials are read. Production live flags and execution policy are documented in [runtime](technical/storyteller-runtime.md); their presence does not supersede the spending rule.
 
 ## Mechanical rehearsal
 

@@ -2,7 +2,7 @@ import { createStorytellerOpenings } from './storyteller-openings';
 import {
   offlineExecution,
   type ExecutionPolicy,
-} from '@offscreen/ai/storyteller-policy';
+} from '@offscreen/storyteller/tasks';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
@@ -11,10 +11,10 @@ import { createOpenings } from './openings';
 import {
   playablePresentation,
   validatePlayableResult,
-} from '@offscreen/ai/playable';
+} from '@offscreen/storyteller/tasks';
 import { enqueue } from './outbox';
 import { validId, GenerationError } from './generations';
-export { OpeningInputError } from '@offscreen/ai/opening';
+export { OpeningInputError } from '@offscreen/storyteller/tasks';
 
 // Versioned, deterministic sample. Keep this kind stable for recovery of admitted work.
 const kind = 'opening.playable.scripted.v1';
