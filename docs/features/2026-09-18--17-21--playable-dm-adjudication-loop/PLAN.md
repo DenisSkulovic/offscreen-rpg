@@ -63,6 +63,8 @@ Exit: offline execution proves committed receipt → generated scene/private pla
 
 Do not build a generic multi-round tool runner before the browser proves three worthwhile dynamic rounds. The first rules/state/evidence payload is intentionally small enough to capture directly. `inspect_rule`, `read_evidence` and multi-step validation become justified when measured prompt size, missing evidence or failed repairs demonstrate a retrieval problem. Their proposed authority limits remain useful design constraints, but they are not on the shortest POC path.
 
+This does not defer memory engineering indefinitely. The [memory and recall proposal](../2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) identifies current raw-source overflow and missing archival access. Its first slice separates provenance from prompt loading after direct receipts; scene/identity retrieval and narrowly bounded recall follow before long-story acceptance. A successful three-round loop does not establish continuing-life memory.
+
 ## Phase 4 — Connect opening and consequence planning
 
 Outcome: mechanical opening review and every committed immediate consequence use the same planner contract.

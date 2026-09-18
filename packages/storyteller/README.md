@@ -30,6 +30,8 @@ There is no tool-using DM planner yet. Task/schema versions and the authored con
 
 Continuity patches in [context/continuity.ts](src/context/continuity.ts) are source-backed reminders, not state-changing effects. Result validity establishes structural constraints, not fictional truth or enjoyable choices. The selected D&D rules and capability admission belong in `@offscreen/game`.
 
+The present notes are also an always-loaded working set: each source passage is mandatory raw context, not merely a provenance reference. Updating/retiring a note changes which older passages the loader can discover; it does not delete chronology, but no archival search replaces that access path. Current content is duplicated in the provider-facing `current` and `evidence` fields. A structurally valid new passage/notes combination is not preflighted for the next request's size. These limitations are the starting point for the proposed [memory and recall slice](../../docs/features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md), not implemented fixes.
+
 ## Working safely and economically
 
 Live calls remain disabled under [spending rules](../../.agents/rules/spending.md). The provider adapter exists but a stored credential is not permission to dispatch. The existing [Storyteller test](test/storyteller.test.ts) uses injected fake transport; tests under `test/` consume compiled output. Read [verification policy](../../.agents/rules/verification.md) before choosing checks. Package commands and exports are listed in [package.json](package.json).

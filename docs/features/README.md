@@ -19,8 +19,9 @@ The manual-first [QA journey system](../engineering/qa-journeys.md) is implement
 
 The next implementation target is one playable immediate DM loop, not completion of every mechanical subsystem. Long-running activity work remains blocked by the separate progress redesign. Checks remain optional, and no live spending is authorized.
 
-1. [Playable DM adjudication loop](2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) — active vertical slice: tool-capable planning, private admitted actions, authoritative d20 consequences and fresh options.
+1. [Playable DM adjudication loop](2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) — active vertical slice: bounded structured planning, private admitted actions, authoritative d20 consequences and fresh options.
 2. [Editable storyteller settings](2026-09-18--14-49--editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
 3. [Activity processes and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — proposed correction separating clock advancement, rule-owned progress, completion and estimates. Do not implement until reviewed.
+4. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — draft design: separate provenance from prompt loading, scene/identity-based episodic retrieval and bounded read-only recall. Direct receipts stay first; longevity is not established by the current note window.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

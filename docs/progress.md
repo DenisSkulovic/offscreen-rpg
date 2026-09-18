@@ -1,6 +1,6 @@
 # Implementation overview
 
-**Current focus:** feature implementation is on hold while we improve code navigation and preserve cross-file knowledge. The first pass adds a [code map](engineering/code-navigation.md), application/Storyteller package guides and ongoing maintenance rules. No runtime behavior changes are part of this documentation pass.
+**Current focus:** design and review of the shortest playable DM loop and its long-story context boundary. The [memory proposal](features/2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) identifies concrete limitations in the current note window and defines a phased extension for review. The next runtime slice remains direct immediate-action receipts. No runtime behavior changes are part of this design pass.
 
 **Lifecycle:** pre-POC, solo development on `main`. Live inference remains disabled. Provider adapters and accounting exist, but no live route, balance or model quality is verified. A stored key and the original $10 deposit are not authorization to spend.
 
@@ -17,7 +17,7 @@
 | Content | Validated JSON mechanical seeds, narrative rehearsal and creative profiles; server-supplied mechanical catalogue summaries | No species/world-specific engine branches; fixtures do not establish general world understanding |
 | Time and settings | Narrative prepared intervals; separate mechanical tick/cadence machinery and rational pacing; editable/lockable creative and speed settings | Duration-based activity completion is under redesign; full tag definition/application contract is incomplete |
 | Storyteller tasks | Opening, continuation and consequence tasks; bounded context, immutable requests, result validation, execution, publication and recovery | No bounded tool runner or DM-generated mechanical options yet |
-| Context | Recent passages plus mandatory source-backed notes; consistency and overflow rejection | Structural validation cannot establish narrative truth; no general world model or unlimited memory |
+| Context | Recent passages plus mandatory source-backed notes; consistency and overflow rejection | Every note source is mandatory raw input; no archived-memory lookup or scene/entity retrieval. The 20-note/48-KiB limits do not establish long-story recall |
 | Provider/accounting | Explicit opt-in adapter, persistent reservations/settlement, uncertainty stop, injected fake transport | Offline only; no verified real spending or operator provisioning/reconciliation UI |
 | Exploration | Local Chamber inspection, manual QA catalogue, durable run/evidence records and sanitized export | Rich trace explorer and planned fault/mechanical scenarios remain unfinished |
 | World/showcase | Small authored transfer and chronology examples | General inventory/combat/travel, shared worlds, notifications and public visitor onboarding remain unimplemented |
@@ -27,6 +27,8 @@
 The [playable DM adjudication loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) owns the implementation checkpoint. Offer-local private plans and pure proposal diagnostics exist. Remaining work includes direct exactly-once mechanical resolution, scoped fact admission, one bounded generated DM turn and connecting generated opening/consequence plans to the player flow. General tool-assisted planning is deferred until the smaller direct-context loop demonstrates a retrieval need.
 
 The immediate blocker is the transaction boundary: mechanical settlement still assembles narration context in the same transaction. A preparation failure can roll back a valid action. Mechanical receipts and durable follow-up intent must commit independently of later preparation failure. The application guide links the exact path.
+
+For continuing-life play, the [memory implementation proposal](features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) is the follow-up: first separate durable provenance from loaded source text, then add bounded scene/identity retrieval and scoped recall. It is a draft, not implementation authorization. A generic agent framework remains deferred; targeted retrieval must be demonstrated before claiming multi-day continuity.
 
 The [offline acceptance contract](engineering/offline-poc-acceptance.md) defines the manual flow and responsibility-specific probes. The [trace explorer](features/2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md) remains planned. Contribution-based activities, spatial movement and richer rule domains are separate designs; do not turn an example's duration, anatomy or currency into a universal mechanic.
 
