@@ -18,4 +18,4 @@ Optional evidence: saved-revision/retry example, pending-generation switch and s
 
 ## Current checkpoint
 
-Follow the [shared implementation checkpoint](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.
+Coordinate task-specific setting compilation with the proposed [playable DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md). The current settings feature remains partial. Provider spend is $0; cumulative usage is unverified.

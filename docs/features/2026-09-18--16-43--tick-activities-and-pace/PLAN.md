@@ -5,7 +5,7 @@ Owner: Codex; continued implementation authorized on 2026-09-18.
 
 ## Current checkpoint
 
-The tick slice is implemented on `a77fe13`; see the [shared checkpoint](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md) for working state and next action. Content version 2 and activity plan version 3 use ticks. One clean migration creates the current schema; discarded prototype data is reset. No migration was applied.
+The clock slice is implemented on `main`; the duration-driven action model is not an approved foundation for further work. One clean migration creates the current schema; discarded prototype data is reset. No migration was applied.
 
 Six source-only clock tests passed. No integrated app/build/type checks ran. The tests cover fractions across different rates, repeated anchors, pause/instant, completion bounds, wake rounding and a backward clock observation. They do not establish database/worker/UI integration.
 

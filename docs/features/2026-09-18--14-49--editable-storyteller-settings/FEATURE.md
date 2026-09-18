@@ -25,7 +25,7 @@ Versioned settings commands, preset application, private saved custom presets, c
 
 ## Decisions still needed
 
-The [shared architecture repair plan](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md) records confirmed blockers. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
+The proposed [playable DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) owns generated immediate adjudication. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
 
 ## Owning specifications
 
@@ -33,4 +33,3 @@ The [shared architecture repair plan](../2026-09-18--14-49--dnd-checks-and-visib
 - [Storyteller customization](../../storyteller-settings.md)
 - [Rules and activities](../../technical/rules-and-activities.md)
 - [Settings and clock](../../technical/story-settings.md)
-
