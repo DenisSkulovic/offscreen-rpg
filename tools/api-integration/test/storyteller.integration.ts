@@ -8,7 +8,12 @@ import type * as Drizzle from 'drizzle-orm' with {
   'resolution-mode': 'require',
 };
 import { generation } from '@offscreen/db/generation-schema';
-import { gameActionReceipt, gameActivity } from '@offscreen/db/campaign-schema';
+import {
+  campaign as campaignTable,
+  gameActionReceipt,
+  gameActivity,
+  gameOffer,
+} from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
@@ -252,7 +257,7 @@ test(
             assert.equal(snapshot.campaign?.actionReceipts.length, 0);
 
             const [activity] = await database.db
-              .select({ plan: gameActivity.plan })
+              .select({ id: gameActivity.id, plan: gameActivity.plan })
               .from(gameActivity)
               .where(eq(gameActivity.storyId, started.storyId));
             // The DB column is intentionally JSON at this boundary; production
@@ -264,6 +269,98 @@ test(
             };
             assert.equal(plan.version, 4);
             assert.equal(plan.action?.id, 'restore-beacon');
+
+            const activityId = requireDefined(
+              activity?.id,
+              'Expected the admitted activity identity',
+            );
+            const resumeOfferId = randomUUID();
+            const resumePlan = {
+              version: 1 as const,
+              key: 'resume-beacon-repair',
+              label: 'Return to the beacon repair',
+              intention:
+                'Resume the suspended repair from its last sound contribution.',
+              risk: null,
+              evidence: [],
+              requires: [
+                { id: 'beacon-damaged', value: true },
+                { id: 'repair-tools', value: true },
+                { id: 'stranger-at-beacon', value: false },
+              ],
+              requiresStory: [],
+              requiresQuantities: [],
+              resolution: {
+                kind: 'resume' as const,
+                activityActionId: 'restore-beacon',
+              },
+            };
+            await database.db.insert(gameOffer).values({
+              id: resumeOfferId,
+              storyId: started.storyId,
+              narrativeRevision: snapshot.revision,
+              plans: [resumePlan],
+            });
+            await database.db
+              .update(gameActivity)
+              .set({
+                state: 'encounter',
+                boundariesSettled: 1,
+                progress: {
+                  clock: {
+                    elapsedTicks: 5,
+                    remainder: { numerator: '0', denominator: '1' },
+                  },
+                  process: { kind: 'contribution.v1', earned: 3 },
+                },
+                plan: { ...plan, resolvedThroughTick: 5 },
+              })
+              .where(eq(gameActivity.id, activityId));
+            await database.db
+              .update(campaignTable)
+              .set({
+                offer: {
+                  id: resumeOfferId,
+                  nodes: [
+                    {
+                      id: resumePlan.key,
+                      parent: null,
+                      label: resumePlan.label,
+                      description: resumePlan.intention,
+                      risk: resumePlan.risk,
+                      action: { kind: 'attempt' },
+                    },
+                  ],
+                },
+              })
+              .where(eq(campaignTable.storyId, started.storyId));
+
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: snapshot.revision,
+                offerId: resumeOfferId,
+                path: [resumePlan.key],
+              },
+            });
+            const resumed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(resumed.campaign?.activity?.id, activityId);
+            assert.equal(resumed.campaign?.activity?.state, 'running');
+            assert.equal(resumed.campaign?.activity?.progress.earned, 3);
+            assert.equal(
+              (
+                await database.db
+                  .select({ id: gameActivity.id })
+                  .from(gameActivity)
+                  .where(eq(gameActivity.storyId, started.storyId))
+              ).length,
+              1,
+            );
           },
         );
         await t.test(

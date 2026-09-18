@@ -243,6 +243,49 @@ test('unmet prerequisites and busy state publish no private or public action', (
   });
 });
 
+test('resume intentions remain opaque and cannot settle as immediate actions', () => {
+  const resume = immediateActionContentSchema.parse({
+    version: 1,
+    id: 'resume-test',
+    plans: [
+      {
+        ...structuredClone(content.plans[0]),
+        key: 'resume-response',
+        resolution: {
+          kind: 'resume',
+          activityActionId: 'environmental-response',
+        },
+      },
+    ],
+  }).plans[0];
+  const opportunities = composeOpportunities({
+    id: '45469315-a0ca-4a89-b25d-d74a8e7250c8',
+    content: { version: 1, id: 'resume-test', plans: [resume] },
+    character,
+    busy: false,
+  });
+  assert.deepEqual(opportunities.offer.nodes[0]?.action, { kind: 'attempt' });
+  assert.equal(
+    validateImmediateActionProposal({
+      proposal: resume,
+      character,
+      evidenceHandles: new Set(),
+    }).kind,
+    'accepted',
+  );
+  assert.throws(
+    () =>
+      resolveImmediateAction(
+        character,
+        [],
+        resume,
+        '45469315-a0ca-4a89-b25d-d74a8e7250c8',
+        () => 20,
+      ),
+    /process lifecycle/,
+  );
+});
+
 test('proposal validation returns bounded diagnostics without applying mechanics', () => {
   const proposal = structuredClone(content.plans[0]);
   proposal.evidence = ['p1', 'p1', 'other-story'];

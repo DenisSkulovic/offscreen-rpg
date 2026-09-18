@@ -9,7 +9,10 @@ import { createOutbox } from '@offscreen/application/outbox';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createScriptedContinuations } from '@offscreen/application/generations';
 import { createStories } from '@offscreen/application/stories';
-import { createWorkerActivities } from '../activities';
+// Keep the directory entrypoint explicit. A removed legacy `activities.ts` can
+// leave `dist/src/activities.js` behind and otherwise shadow `activities/index.js`
+// in incremental/local builds, silently dropping newly registered activities.
+import { createWorkerActivities } from '../activities/index';
 import { closeWorkerConnections } from './connections';
 import type { WorkerConfig } from '../bootstrap/config';
 import {

@@ -15,6 +15,10 @@ import {
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
 import {
+  actionAvailable,
+  resolvedActivityPlanSchema,
+} from '@offscreen/game/activities';
+import {
   incrementStoryViewVersion,
   lockOwnedStory,
   readDatabaseClockMs,
@@ -116,15 +120,48 @@ export function createCampaignActions(database: Database) {
       if (active && ['running', 'paused'].includes(active.state)) {
         throw new StoryError('conflict');
       }
-      // An interruption stops the old commitment. Follow-up intentions get new plans;
-      // they cannot silently award its uncompleted future.
-      if (active?.state === 'encounter') {
+      if (definition.resolution.kind === 'resume') {
+        if (!active || active.state !== 'encounter') {
+          throw new StoryError('conflict');
+        }
+        const activePlan = resolvedActivityPlanSchema.parse(active.plan);
+        if (
+          activePlan.action.id !== definition.resolution.activityActionId ||
+          !actionAvailable(campaignCharacter(state), activePlan.action)
+        ) {
+          throw new StoryError('conflict');
+        }
+        const now = await readDatabaseClockMs(tx, current.id);
         await tx
           .update(gameActivity)
-          .set({ state: 'abandoned', revision: active.revision + 1 })
+          .set({
+            state: 'running',
+            anchorAt: new Date(now),
+            revision: active.revision + 1,
+          })
           .where(eq(gameActivity.id, active.id));
+        await tx
+          .update(campaign)
+          .set({ offer: null })
+          .where(eq(campaign.storyId, current.id));
+        await incrementStoryViewVersion(tx, {
+          storyId: current.id,
+          viewVersion: current.viewVersion + 1,
+        });
+        await saveCommand(tx, current.id, args.operationId, request);
+        await scheduleActivity(tx, active.id);
+        return;
       }
       if (definition.resolution.kind === 'process') {
+        // Starting a different commitment supersedes interrupted work. Immediate
+        // encounter responses do not: they leave the old progress suspended until
+        // a later admitted resume (or future explicit abandonment) decision.
+        if (active?.state === 'encounter') {
+          await tx
+            .update(gameActivity)
+            .set({ state: 'abandoned', revision: active.revision + 1 })
+            .where(eq(gameActivity.id, active.id));
+        }
         const activityId = randomUUID();
         const now = await readDatabaseClockMs(tx, current.id);
         const { settings } = await loadCampaignSettings(

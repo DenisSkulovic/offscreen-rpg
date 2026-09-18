@@ -257,6 +257,7 @@ function beaconMechanicalOpening() {
             { id: 'location', value: 'harbor-beacon' },
             { id: 'beacon-damaged', value: true },
             { id: 'repair-tools', value: true },
+            { id: 'stranger-at-beacon', value: false },
           ],
           quantities: [
             { id: 'harbor-credit', label: 'Harbor credit', value: 0 },
@@ -565,6 +566,46 @@ test('offline consequence plans change with committed pineapple state', () => {
     identified.scene.next.plans.map((plan) => plan.key),
     ['draw-parcel-closer', 'leave-parcel-outside'],
   );
+});
+
+test('beacon interruption plans resolve danger before offering process resumption', () => {
+  const interrupted = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'location', value: 'harbor-beacon' },
+        { id: 'beacon-damaged', value: true },
+        { id: 'repair-tools', value: true },
+        { id: 'stranger-at-beacon', value: true },
+      ],
+    }),
+  );
+  if (interrupted.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    interrupted.scene.next.plans.map((plan) => plan.key),
+    ['read-the-stranger', 'bar-the-door'],
+  );
+
+  const cleared = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'location', value: 'harbor-beacon' },
+        { id: 'beacon-damaged', value: true },
+        { id: 'repair-tools', value: true },
+        { id: 'stranger-at-beacon', value: false },
+      ],
+    }),
+  );
+  if (cleared.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  const [resume] = cleared.scene.next.plans;
+  assert.equal(resume?.key, 'resume-beacon-repair');
+  assert.deepEqual(resume?.resolution, {
+    kind: 'resume',
+    activityActionId: 'restore-beacon',
+  });
 });
 
 test('continuity updates preserve provenance and fail without mutating their base', () => {

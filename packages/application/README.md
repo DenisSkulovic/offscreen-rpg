@@ -20,6 +20,8 @@ Mechanical opening preparation captures a character/story-fact seed, and the Sto
 
 A consumed offer blocks another mechanical selection before narration exists. Retrying preparation is safe because the receipt records its resulting generation before completion; preparation can fail repeatedly without rerolling or undoing the visible outcome.
 
+An encounter-state activity is suspended, not implicitly abandoned. Immediate responses settle through their normal receipt while the activity retains its identity and progress. A later private `resume` plan must name that activity's captured action and pass its current prerequisites; admission reanchors and reschedules the existing row. Starting a different process is the explicit superseding action currently supported. A standalone abandon intention remains future work.
+
 [Campaign persistence](src/campaign/persistence.ts) owns offer/plan storage; [campaign reads](src/campaign/reads.ts) projects player-visible state. The pure admission diagnostics live in `packages/game/src/immediate-actions.ts`, not in these persistence helpers.
 
 ## Execution, failure and retry

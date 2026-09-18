@@ -69,6 +69,10 @@ export const immediateActionPlanSchema = z.strictObject({
       kind: z.literal('process'),
       action: actionDefinitionSchema,
     }),
+    z.strictObject({
+      kind: z.literal('resume'),
+      activityActionId: actionKeySchema,
+    }),
   ]),
 });
 export type ImmediateActionPlan = z.infer<typeof immediateActionPlanSchema>;
@@ -403,8 +407,10 @@ export function resolveImmediateAction(
       ),
     };
   }
-  if (plan.resolution.kind === 'process') {
-    throw new Error('A process plan must be admitted by the process runtime');
+  if (plan.resolution.kind === 'process' || plan.resolution.kind === 'resume') {
+    throw new Error(
+      'A process lifecycle plan must be admitted by the process runtime',
+    );
   }
   const roll = resolveCheck(character, plan.resolution.check, drawD20);
   const outcome = roll.success

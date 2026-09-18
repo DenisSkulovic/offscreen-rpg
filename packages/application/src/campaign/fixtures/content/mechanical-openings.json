@@ -175,6 +175,7 @@
         "facts": [
           { "id": "beacon-damaged", "value": true },
           { "id": "repair-tools", "value": true },
+          { "id": "stranger-at-beacon", "value": false },
           { "id": "location", "value": "harbor-beacon" }
         ]
       },
@@ -226,7 +227,36 @@
                     "failureText": "The attempt consumes time without producing a sound repair."
                   }
                 },
-                "checks": [],
+                "checks": [
+                  {
+                    "id": "stranger-approaches",
+                    "everyTicks": 10,
+                    "resolution": {
+                      "kind": "event",
+                      "purpose": "An unknown boat approaches the dark beacon",
+                      "threshold": 8,
+                      "modifiers": []
+                    },
+                    "success": {
+                      "text": "An unknown boat noses against the landing, and a stranger climbs toward the dark beacon.",
+                      "effects": [
+                        {
+                          "kind": "fact.set.v1",
+                          "fact": {
+                            "id": "stranger-at-beacon",
+                            "value": true
+                          }
+                        }
+                      ],
+                      "interrupts": true
+                    },
+                    "failure": {
+                      "text": "The water below remains empty while the repair continues.",
+                      "effects": [],
+                      "interrupts": false
+                    }
+                  }
+                ],
                 "completion": {
                   "text": "The beacon shines again, and the harbor records the completed watch.",
                   "effects": [

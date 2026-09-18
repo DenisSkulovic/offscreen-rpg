@@ -224,7 +224,33 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
                 'The attempt consumes time without producing a sound repair.',
             },
           },
-          checks: [],
+          checks: [
+            {
+              id: 'stranger-approaches',
+              everyTicks: 10,
+              resolution: {
+                kind: 'event',
+                purpose: 'An unknown boat approaches the dark beacon',
+                threshold: 8,
+                modifiers: [],
+              },
+              success: {
+                text: 'An unknown boat noses against the landing, and a stranger climbs toward the dark beacon.',
+                effects: [
+                  {
+                    kind: 'fact.set.v1',
+                    fact: { id: 'stranger-at-beacon', value: true },
+                  },
+                ],
+                interrupts: true,
+              },
+              failure: {
+                text: 'The water below remains empty while the repair continues.',
+                effects: [],
+                interrupts: false,
+              },
+            },
+          ],
           completion: {
             text: 'The beacon shines again, and the harbor records the completed watch.',
             effects: [
@@ -472,6 +498,108 @@ function pineappleConsequence(
   ];
 }
 
+function beaconConsequence(
+  resolution: NonNullable<StorytellerTask['context']['resolution']>,
+  evidence: string,
+) {
+  const character = resolution.character;
+  if (factValue(character.facts, 'location') !== 'harbor-beacon') {
+    return null;
+  }
+  if (factValue(character.facts, 'beacon-damaged') !== true) {
+    return [];
+  }
+  if (factValue(character.facts, 'stranger-at-beacon') === true) {
+    return [
+      {
+        version: 1,
+        key: 'read-the-stranger',
+        label: 'Challenge the stranger',
+        intention:
+          'Hold the beacon threshold and determine whether the arrival is a threat.',
+        risk: 'A mistaken read leaves the repair suspended and the stranger at the door.',
+        evidence: [evidence],
+        requires: [{ id: 'stranger-at-beacon', value: true }],
+        requiresStory: [],
+        requiresQuantities: [],
+        resolution: {
+          kind: 'check',
+          check: {
+            rule: 'srd-5.2.1-subset.v1',
+            purpose: 'Read and challenge the approaching stranger',
+            skill: null,
+            ability: 'wisdom',
+            dc: 11,
+            advantage: false,
+            disadvantage: false,
+            modifiers: [],
+          },
+          difficultyBasis:
+            'The stranger is visible at close range but has not declared an intention.',
+          success: outcome(
+            'The stranger accepts the warning and returns to the boat.',
+            [
+              {
+                kind: 'fact.set.v1',
+                fact: { id: 'stranger-at-beacon', value: false },
+              },
+            ],
+          ),
+          failure: outcome(
+            'The stranger refuses to leave, keeping you away from the exposed mechanism.',
+          ),
+        },
+      },
+      {
+        version: 1,
+        key: 'bar-the-door',
+        label: 'Bar the beacon door',
+        intention:
+          'Secure the entrance and wait until the stranger gives up the approach.',
+        risk: 'This is safer, but it consumes more of the watch before work can resume.',
+        evidence: [evidence],
+        requires: [{ id: 'stranger-at-beacon', value: true }],
+        requiresStory: [],
+        requiresQuantities: [],
+        resolution: {
+          kind: 'automatic',
+          outcome: outcome(
+            'You bar the door until the stranger returns to the boat.',
+            [
+              {
+                kind: 'fact.set.v1',
+                fact: { id: 'stranger-at-beacon', value: false },
+              },
+            ],
+          ),
+        },
+      },
+    ];
+  }
+  return [
+    {
+      version: 1,
+      key: 'resume-beacon-repair',
+      label: 'Return to the beacon repair',
+      intention:
+        'Resume the suspended repair from its last sound contribution.',
+      risk: 'Further failed attempts still consume time, and another interruption remains possible.',
+      evidence: [evidence],
+      requires: [
+        { id: 'beacon-damaged', value: true },
+        { id: 'repair-tools', value: true },
+        { id: 'stranger-at-beacon', value: false },
+      ],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'resume',
+        activityActionId: 'restore-beacon',
+      },
+    },
+  ];
+}
+
 function microbeConsequence(
   resolution: NonNullable<StorytellerTask['context']['resolution']>,
   evidence: string,
@@ -564,6 +692,7 @@ export function scriptedMechanicalConsequence(task: StorytellerTask) {
   const evidence = `p${current.sequence}`;
   const plans =
     pineappleConsequence(resolution, evidence) ??
+    beaconConsequence(resolution, evidence) ??
     microbeConsequence(resolution, evidence) ??
     [];
   const prior = resolution.receipts.at(-1);
