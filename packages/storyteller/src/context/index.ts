@@ -40,7 +40,9 @@ export const contextInputSchema = z.strictObject({
         .array(
           z.strictObject({
             id: z.uuid(),
-            roll: rollSchema,
+            outcome: z.enum(['automatic', 'success', 'failure']).optional(),
+            text: z.string().max(1000).optional(),
+            roll: rollSchema.nullable(),
             effects: outcomeEffectsSchema,
           }),
         )
@@ -73,11 +75,13 @@ export function contextPayload(context: StorytellerContext) {
   };
   return {
     ...(context.mechanicalOpening
-      ? { mechanicalOpening: {
-          character: context.mechanicalOpening.character,
-          offer: context.mechanicalOpening.offer,
-          opening: context.mechanicalOpening.opening,
-        } }
+      ? {
+          mechanicalOpening: {
+            character: context.mechanicalOpening.character,
+            offer: context.mechanicalOpening.offer,
+            opening: context.mechanicalOpening.opening,
+          },
+        }
       : {}),
     ...(context.resolution ? { resolution: context.resolution } : {}),
     ...(context.campaignSettings
@@ -127,7 +131,9 @@ export function boundStorytellerContext(
     if (!isDeepStrictEqual(currentEvidence, current)) {
       throw new Error('Current passage differs from context evidence');
     }
-    if (context.evidence.some((passage) => passage.sequence > current.sequence)) {
+    if (
+      context.evidence.some((passage) => passage.sequence > current.sequence)
+    ) {
       throw new Error('Context evidence includes a future passage');
     }
   }

@@ -93,6 +93,25 @@ CREATE TABLE "campaign_settings" (
 	CONSTRAINT "campaign_settings_story_id_revision_pk" PRIMARY KEY("story_id","revision")
 );
 --> statement-breakpoint
+CREATE TABLE "game_action_receipt" (
+	"operation_id" uuid PRIMARY KEY NOT NULL,
+	"story_id" uuid NOT NULL,
+	"offer_id" uuid NOT NULL,
+	"action_key" text NOT NULL,
+	"base_revision" integer NOT NULL,
+	"offer" jsonb NOT NULL,
+	"plan" jsonb NOT NULL,
+	"label" text NOT NULL,
+	"intention" text NOT NULL,
+	"outcome" text NOT NULL,
+	"outcome_text" text NOT NULL,
+	"effects" jsonb NOT NULL,
+	"roll" jsonb,
+	"generation_id" uuid,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "game_action_receipt_offer" UNIQUE("story_id","offer_id")
+);
+--> statement-breakpoint
 CREATE TABLE "game_activity" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"story_id" uuid NOT NULL,
@@ -355,6 +374,7 @@ ALTER TABLE "campaign" ADD CONSTRAINT "campaign_story_id_story_id_fk" FOREIGN KE
 ALTER TABLE "campaign_command" ADD CONSTRAINT "campaign_command_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_consequence" ADD CONSTRAINT "campaign_consequence_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_action_receipt" ADD CONSTRAINT "game_action_receipt_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity" ADD CONSTRAINT "game_activity_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_offer" ADD CONSTRAINT "game_offer_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_roll" ADD CONSTRAINT "game_roll_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

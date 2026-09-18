@@ -1,6 +1,6 @@
 # Implementation overview
 
-**Current focus:** design and review of the shortest playable DM loop and its long-story context boundary. The [memory proposal](features/2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) identifies concrete limitations in the current note window and defines a phased extension for review. The next runtime slice remains direct immediate-action receipts. No runtime behavior changes are part of this design pass.
+**Current focus:** implementation of the shortest playable DM loop and review of its long-story context boundary. Direct immediate-action receipts are implemented. The next runtime slice is bounded emergent story facts and quantity prerequisites. The [memory proposal](features/2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) identifies concrete limitations in the current note window and defines a later phased extension for review.
 
 **Lifecycle:** pre-POC, solo development on `main`. Live inference remains disabled. Provider adapters and accounting exist, but no live route, balance or model quality is verified. A stored key and the original $10 deposit are not authorization to spend.
 
@@ -11,7 +11,7 @@
 | Workspace | Next.js web, NestJS API, Temporal worker/workflows, PostgreSQL; shared game, contracts, application and Storyteller packages | See the code map for actual wiring; architecture specifications also describe unbuilt capabilities |
 | Identity and creation | Stored sessions, GitHub OAuth integration, owned versioned drafts, profile selection, persistent opening review and idempotent Start | Real OAuth needs credentials/manual verification; local Chamber supplies a development session |
 | Narrative rehearsal | Authored opening, choices, continuity notes, saved waits, pause/resume, story list and history | Exercises persistence and UI, not arbitrary-premise generation |
-| Mechanical actions | Public offers backed by immutable private immediate-action plans; automatic outcomes or a D&D ability check; saved dice/effects and consequence narration | Plans are authored. Immediate selection currently adapts into the activity resolver |
+| Mechanical actions | Public offers backed by immutable private immediate-action plans; direct exactly-once automatic/check receipts; saved effects and recoverable consequence narration | Plans are authored; generated DM turns are not connected |
 | Mechanical policy | Pure validation of shape, evidence, declared facts/quantities, abilities and skills; modifiers derived from character state | No scoped new fact declaration or generated plan publication; ungrounded situational modifiers rejected |
 | Character capabilities | Selected D&D scores plus currently applicable abilities and declared skills/proficiencies | No generated character setup or admitted capability-changing transformation |
 | Content | Validated JSON mechanical seeds, narrative rehearsal and creative profiles; server-supplied mechanical catalogue summaries | No species/world-specific engine branches; fixtures do not establish general world understanding |
@@ -26,7 +26,7 @@
 
 The [playable DM adjudication loop plan](features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) owns the immediate implementation checkpoint. Offer-local private plans and pure proposal diagnostics exist. Remaining work includes direct exactly-once mechanical resolution, scoped fact admission, one bounded generated DM turn and connecting generated opening/consequence plans to the player flow. A direct-context first slice does not replace the owner-requested pre-narrative exploration design; that follow-up has its own phased memory plan.
 
-Mechanical settlement now commits its receipt and durable consequence intent before a separate worker operation prepares narration context. Preparation failure cannot roll back or reroll the action. The next DM-loop boundary is scoped declaration of new character/situation facts, followed by direct immediate-action adjudication that removes the temporary activity adapter.
+Immediate selection now resolves directly without an activity row or tick advance. Its receipt, optional roll, effects, consumed offer and follow-up commit before a separate worker operation prepares narration, so preparation failure cannot roll back or reroll the action. The next DM-loop boundary is bounded emergent story facts and quantity prerequisites, followed by one generated DM turn.
 
 For continuing-life play, the [memory implementation proposal](features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) is the follow-up: first separate durable provenance from loaded source text, then add bounded scene/identity retrieval and scoped pre-narrative exploration. Compact orientation supplies registry slices, useful historical leads and tool guidance; the DM may investigate before composing. Optional semantic retrieval has an explicit investigation gate. The technical phases are a draft, not implementation authorization. A generic agent framework remains deferred; targeted retrieval must be demonstrated before claiming multi-day continuity.
 

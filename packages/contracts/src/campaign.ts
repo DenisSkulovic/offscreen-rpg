@@ -69,6 +69,20 @@ export const campaignViewSchema = z.strictObject({
       }),
     )
     .max(100),
+  actionReceipts: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        label: z.string().max(200),
+        intention: z.string().max(500),
+        outcome: z.enum(['automatic', 'success', 'failure']),
+        text: z.string().max(1000),
+        effects: outcomeEffectsSchema,
+        roll: rollSchema.nullable(),
+        state: z.enum(['pending', 'generating', 'published', 'failed']),
+      }),
+    )
+    .max(20),
 });
 export type CampaignView = z.infer<typeof campaignViewSchema>;
 

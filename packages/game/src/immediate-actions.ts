@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { checkPlanSchema } from './checks';
-import { outcomeEffectsSchema } from './effects';
+import { resolveCheck, type DrawD20, type Roll } from './checks';
+import { applyOutcomeEffects, outcomeEffectsSchema } from './effects';
 import { factSchema, type Character } from './state';
 
 const actionKeySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
@@ -38,11 +39,16 @@ export const immediateActionContentSchema = z
     plans: z.array(immediateActionPlanSchema).max(6),
   })
   .superRefine((content, context) => {
-    if (new Set(content.plans.map((plan) => plan.key)).size !== content.plans.length) {
+    if (
+      new Set(content.plans.map((plan) => plan.key)).size !==
+      content.plans.length
+    ) {
       context.addIssue({ code: 'custom', message: 'Duplicate action key' });
     }
   });
-export type ImmediateActionContent = z.infer<typeof immediateActionContentSchema>;
+export type ImmediateActionContent = z.infer<
+  typeof immediateActionContentSchema
+>;
 
 export const actionProposalIssueSchema = z.strictObject({
   code: z.enum([
@@ -92,11 +98,21 @@ export function validateImmediateActionProposal(input: {
   const plan = parsed.data;
   const issues: ActionProposalIssue[] = [];
   if (new Set(plan.evidence).size !== plan.evidence.length) {
-    issue(issues, 'duplicate-evidence', 'evidence', 'Evidence handles must be unique');
+    issue(
+      issues,
+      'duplicate-evidence',
+      'evidence',
+      'Evidence handles must be unique',
+    );
   }
   for (const [index, handle] of plan.evidence.entries()) {
     if (!input.evidenceHandles.has(handle)) {
-      issue(issues, 'unknown-evidence', `evidence.${index}`, 'Evidence is outside the captured task');
+      issue(
+        issues,
+        'unknown-evidence',
+        `evidence.${index}`,
+        'Evidence is outside the captured task',
+      );
     }
   }
   const knownFacts = new Map(
@@ -107,7 +123,12 @@ export function validateImmediateActionProposal(input: {
   );
   for (const [index, required] of plan.requires.entries()) {
     if (knownFacts.get(required.id) !== typeof required.value) {
-      issue(issues, 'unknown-fact', `requires.${index}`, 'Prerequisite fact is not declared with this value type');
+      issue(
+        issues,
+        'unknown-fact',
+        `requires.${index}`,
+        'Prerequisite fact is not declared with this value type',
+      );
     }
   }
   if (plan.resolution.kind === 'check') {
@@ -152,14 +173,26 @@ export function validateImmediateActionProposal(input: {
       const path = `resolution.${outcomeKey}.effects.${effectIndex}`;
       if (effect.kind === 'fact.set.v1') {
         if (knownFacts.get(effect.fact.id) !== typeof effect.fact.value) {
-          issue(issues, 'unknown-fact', path, 'Outcome fact is not declared with this value type');
+          issue(
+            issues,
+            'unknown-fact',
+            path,
+            'Outcome fact is not declared with this value type',
+          );
         }
       } else if (!knownQuantities.has(effect.quantityId)) {
-        issue(issues, 'unknown-quantity', path, 'Outcome quantity is not declared');
+        issue(
+          issues,
+          'unknown-quantity',
+          path,
+          'Outcome quantity is not declared',
+        );
       }
     }
   }
-  return issues.length ? { kind: 'rejected', issues } : { kind: 'accepted', plan };
+  return issues.length
+    ? { kind: 'rejected', issues }
+    : { kind: 'accepted', plan };
 }
 
 export function immediateActionAvailable(
@@ -171,6 +204,48 @@ export function immediateActionAvailable(
       (fact) => fact.id === required.id && fact.value === required.value,
     ),
   );
+}
+
+export type ImmediateActionResolution = Readonly<{
+  outcome: 'automatic' | 'success' | 'failure';
+  text: string;
+  effects: ImmediateOutcome['effects'];
+  roll: Roll | null;
+  character: Character;
+}>;
+
+/** Resolves one already-admitted plan without persistence or implicit retries. */
+export function resolveImmediateAction(
+  character: Character,
+  plan: ImmediateActionPlan,
+  drawD20: DrawD20,
+): ImmediateActionResolution {
+  if (!immediateActionAvailable(character, plan)) {
+    throw new Error('Immediate action prerequisites are no longer satisfied');
+  }
+  if (plan.resolution.kind === 'automatic') {
+    return {
+      outcome: 'automatic',
+      text: plan.resolution.outcome.text,
+      effects: plan.resolution.outcome.effects,
+      roll: null,
+      character: applyOutcomeEffects(
+        character,
+        plan.resolution.outcome.effects,
+      ),
+    };
+  }
+  const roll = resolveCheck(character, plan.resolution.check, drawD20);
+  const outcome = roll.success
+    ? plan.resolution.success
+    : plan.resolution.failure;
+  return {
+    outcome: roll.success ? 'success' : 'failure',
+    text: outcome.text,
+    effects: outcome.effects,
+    roll,
+    character: applyOutcomeEffects(character, outcome.effects),
+  };
 }
 
 /** A plan may currently write only state whose identity and value type are declared. */

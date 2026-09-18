@@ -8,7 +8,7 @@ Implementation owner: Cursor after agreement; reviewer: Codex unless assigned ot
 
 World-independent invariant: later correctness must depend on committed state and recoverable evidence, not on the last few messages. A returning gate guard, a spacecraft contact and a microbe's previously encountered environment need the same source/state/identity separation. None requires simulating unseen populations or treating prose as an executable rule.
 
-The [immediate DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) remains the gameplay spine. Complete its direct receipt boundary before enlarging context or adding memory jobs. Then deliver Phase 1 below alongside the first structured DM-turn work. Scene frames, emergent facts and a minimal durable identity directory enable Phase 2. Phase 3 adds targeted read-only recall, not a general agent platform. Demonstrate longevity before connecting arbitrary many-day play; do not defer this indefinitely behind a trace UI or map.
+The [immediate DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) remains the gameplay spine. Its direct receipt boundary is implemented. Deliver Phase 1 below alongside the first structured DM-turn work after the proposal is approved. Scene frames, emergent facts and a minimal durable identity directory enable Phase 2. Phase 3 adds targeted read-only recall, not a general agent platform. Demonstrate longevity before connecting arbitrary many-day play; do not defer this indefinitely behind a trace UI or map.
 
 Do not implement all phases in one Cursor pass. Phase 1 is deliberately useful without entities, scene tables, summaries or tools. Later phases are a scope boundary, not permission to start them automatically.
 
@@ -126,6 +126,6 @@ This is recorded follow-up work, not an instruction to install a vector service 
 - Investigation: traced context assembly, note patches, request sizing, memory publication, execution/recovery, schema and existing test coverage; reviewed existing context-cost and world-continuity specifications.
 - Follow-up design: pre-narrative orientation/exploration, scoped registry counts, multi-hop reads, optional creative leads, working-set pruning and the gated semantic-retrieval investigation are explicit. PostgreSQL/pgvector primary documentation was consulted for retrieval options, not as evidence of application quality.
 - Verification: two dependency-free JSON-size calculations (65,356 bytes for note-source subset; 60,216 bytes for duplicated large current content). These reproduce serialization pressure, not an application test. Builds, runtime suites, database and browser not run for this design change.
-- Blockers/limits: design approval; direct receipt integration; later scene/identity admission. Exact state versus derived scene memory must not acquire duplicate owners. No live-model recall quality established.
+- Blockers/limits: design approval and later scene/identity admission. Exact state versus derived scene memory must not acquire duplicate owners. No live-model recall quality established.
 - Provider spend: no game/provider calls, $0. Cumulative OpenRouter usage unverified.
 - Remote status: this and the preceding documentation work remain local; no remote publication is attempted in this work.

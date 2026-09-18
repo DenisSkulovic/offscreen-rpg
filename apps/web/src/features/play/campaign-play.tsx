@@ -192,6 +192,29 @@ export function CampaignPlay({
           Retry the same request
         </button>
       ) : null}
+      {campaign.actionReceipts.length ? (
+        <details open>
+          <summary>Committed immediate outcomes</summary>
+          {campaign.actionReceipts.map((receipt) => (
+            <article key={receipt.id}>
+              <p>
+                <strong>{receipt.label}</strong> · {receipt.outcome} ·{' '}
+                {receipt.state}
+              </p>
+              <p>{receipt.text}</p>
+              {receipt.roll ? (
+                <p>
+                  d20: {receipt.roll.dice.join(', ')} → {receipt.roll.chosen} ={' '}
+                  {receipt.roll.total}; DC {receipt.roll.dc}:{' '}
+                  {receipt.roll.success ? 'success' : 'failure'}.
+                </p>
+              ) : (
+                <p>No roll was required.</p>
+              )}
+            </article>
+          ))}
+        </details>
+      ) : null}
       <details>
         <summary>Character abilities</summary>
         <dl>

@@ -5,9 +5,10 @@ import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignConsequence,
+  gameActionReceipt,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema } from '@offscreen/game/state';
 import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
@@ -20,6 +21,8 @@ import { lockStoryById } from '../stories/persistence';
 import { loadStorytellerContext } from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
+import { outcomeEffectsSchema } from '@offscreen/game/effects';
+import { rollSchema } from '@offscreen/game/checks';
 
 export const campaignConsequenceTopic = 'campaign.consequence.v1';
 
@@ -55,6 +58,97 @@ export async function requestConsequenceNarration(
     operationId: parsed.operationId,
     topic: campaignConsequenceTopic,
   });
+}
+
+/** Enqueues preparation for a receipt already saved by the caller's transaction. */
+export async function requestActionNarration(
+  tx: Transaction,
+  operationId: string,
+) {
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId,
+    topic: campaignConsequenceTopic,
+  });
+}
+
+async function admitActionNarration(
+  tx: Transaction,
+  current: StoryRecord,
+  receipt: typeof gameActionReceipt.$inferSelect,
+) {
+  const [state] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, current.id));
+  const [passage] = await tx
+    .select({ id: storyPassage.id })
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, current.id),
+        eq(storyPassage.sequence, current.revision),
+      ),
+    );
+  if (!state || !passage) {
+    throw new Error('Missing committed action context');
+  }
+  const context = await loadStorytellerContext(tx, {
+    storyId: current.id,
+    revision: current.revision,
+    premise: current.premise,
+    notes: current.continuityNotes,
+    selected: {
+      id: receipt.operationId,
+      label: receipt.label,
+      intention: receipt.intention,
+    },
+  });
+  const task = prepareStorytellerTask({
+    task: 'consequence',
+    source: {
+      storyId: current.id,
+      narrativeRevision: current.revision,
+      passageId: passage.id,
+    },
+    profile: storytellerProfileSchema.parse(current.storyteller),
+    execution: executionPolicySchema.parse(current.execution),
+    context: contextInputSchema.parse({
+      ...context,
+      resolution: {
+        character: characterSchema.parse(state.character),
+        tick: state.tick,
+        offer: offerSchema.parse(receipt.offer),
+        receipts: [
+          {
+            id: receipt.operationId,
+            outcome: receipt.outcome,
+            text: receipt.outcomeText,
+            roll: receipt.roll === null ? null : rollSchema.parse(receipt.roll),
+            effects: outcomeEffectsSchema.parse(receipt.effects),
+          },
+        ],
+      },
+    }),
+  });
+  const generationId = randomUUID();
+  await insertStorytellerTask(tx, {
+    id: generationId,
+    ownerId: current.ownerId,
+    task,
+  });
+  await tx.insert(storyResolution).values({
+    generationId,
+    storyId: current.id,
+    basePassageId: passage.id,
+    baseRevision: current.revision,
+    operationId: generationId,
+    submission: {
+      kind: 'committed-consequence',
+      operationId: receipt.operationId,
+    },
+  });
+  return generationId;
 }
 
 /**
@@ -146,6 +240,28 @@ async function admitConsequenceNarration(
 export function createConsequenceNarration(database: Database) {
   return async function prepare(operationId: string) {
     await database.db.transaction(async (tx) => {
+      const [actionReceipt] = await tx
+        .select()
+        .from(gameActionReceipt)
+        .where(eq(gameActionReceipt.operationId, operationId))
+        .for('update');
+      if (actionReceipt) {
+        if (actionReceipt.generationId) return;
+        const current = await lockStoryById(tx, actionReceipt.storyId);
+        if (current.revision !== actionReceipt.baseRevision) {
+          throw new Error('Action narration lost its story revision fence');
+        }
+        const generationId = await admitActionNarration(
+          tx,
+          current,
+          actionReceipt,
+        );
+        await tx
+          .update(gameActionReceipt)
+          .set({ generationId })
+          .where(eq(gameActionReceipt.operationId, operationId));
+        return;
+      }
       const [intent] = await tx
         .select()
         .from(campaignConsequence)

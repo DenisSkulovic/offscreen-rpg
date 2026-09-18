@@ -112,11 +112,11 @@ Phase 2 has started with a pure structured proposal validator. It reports bounde
 
 Authored mechanical openings and the offline narrative graph now live in schema-validated JSON content. The generic loader resolves arbitrary catalogue IDs, the API exposes content summaries and the client renders that catalogue; no shared contract, policy version or runtime branch names a scenario. The old premise-word and profile conditionals have been replaced by data lookup. This separation is preparatory work, not generated world understanding.
 
-It does not yet publish generated proposals or replace the activity bridge. Mechanical settlement now persists its receipt, command result and a durable consequence intent before a separate idempotent worker operation prepares narration. A preparation error no longer rolls back or rerolls the valid action, and another action cannot overtake the pending intent at the same narrative revision. Next: implement direct exactly-once adjudication and remove the temporary activity adapter, then design bounded emergent story facts. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. Scope later trace work to the same DM-turn lifecycle. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
+Direct exactly-once adjudication is implemented. Immediate selection resolves through pure game policy and atomically saves one automatic/check receipt, optional roll, effects, updated character, consumed offer, command receipt and outbox follow-up. It creates no activity row, appends no placeholder passage and advances no tick. A separate idempotent worker operation prepares narration from that receipt; another action cannot reuse the consumed offer. It does not yet publish generated proposals. Next: design bounded emergent story facts and quantity prerequisites, then connect one complete generated DM turn. Capability-changing transformations are separate admitted state changes, not ordinary immediate effects. Scope later trace work to the same DM-turn lifecycle. No schema compatibility layer is required; discarded pre-POC artifacts are reset.
 
 All authored examples use the same plan/admission/resolution contract. Neither task specialization nor context validation assumes a currency, human calendar, movement mode, profession, species or setting. Activity-progress design remains outside this authorization. No provider spend is authorized.
 
-Verification: prior game tests passed 11/11 and prior package builds passed as recorded above. This transaction-boundary slice regenerated the single disposable database baseline. Database, application, workflows and worker TypeScript checks passed after the database package was rebuilt. No database/browser/full-game rehearsal was run. Provider spend: $0; cumulative account usage unverified.
+Verification: game tests pass 13/13, including pure automatic and checked immediate resolution; Storyteller tests pass 24/24 with nullable automatic receipts. Game, database, Storyteller, contracts, application and workflows builds pass; application, web and worker typechecks pass. The single disposable database baseline was regenerated. No database/browser/full-game rehearsal was run, so receipt persistence and recovery remain unverified at runtime. Provider spend: $0; cumulative account usage unverified.
 
 ## POC acceleration audit — 2026-09-18
 
@@ -132,12 +132,12 @@ The durable tool-agent runner, trace UI expansion, generalized process families,
 
 ### Why direct adjudication is the first edit
 
-`campaign/actions.ts` currently translates an `ImmediateActionPlan` into a zero-duration `gameActivity`. `settleActivity()` then applies the outcome, appends a generic mechanical passage and calls `admitConsequenceNarration()` inside the same transaction. This creates four POC problems:
+The former path translated an `ImmediateActionPlan` into a zero-duration `gameActivity`, applied the outcome through `settleActivity()`, appended a generic mechanical passage and prepared narration in the same transaction. The direct receipt implementation establishes that:
 
-- failure while preparing narrative context can roll back an authoritative die and its effects;
-- automatic actions have no durable resolution receipt equivalent to `gameRoll`;
-- the activity record and tick machinery describe an action that consumes no time;
-- a proper DM turn would otherwise create a second passage after the mechanical placeholder, making one player action look like two narrative beats.
+- context preparation cannot roll back an authoritative die or its effects;
+- automatic and checked actions share one durable resolution receipt;
+- an immediate action creates no activity record and consumes no time;
+- the later DM turn can publish one consequence passage without a mechanical placeholder beat.
 
 The target boundary is:
 
@@ -145,9 +145,9 @@ The target boundary is:
 
 The receipt is reality. Narration is a recoverable presentation of that reality. A failed or retried generation may delay the next scene but must never undo or repeat the action.
 
-### Cursor-ready slice: direct immediate adjudication
+### Implemented slice: direct immediate adjudication
 
-Implement this as the next reviewable slice. Do not implement generated planning, new fact declaration or long-running time in the same diff.
+This slice is implemented independently of generated planning, new fact declaration and long-running time.
 
 #### Product behavior
 

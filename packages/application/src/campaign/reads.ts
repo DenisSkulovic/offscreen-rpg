@@ -3,10 +3,12 @@ import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignSettings,
+  gameActionReceipt,
   gameActivity,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
+import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import {
   campaignViewSchema,
   campaignSettingsSchema,
@@ -21,6 +23,18 @@ import {
   realMsUntilTick,
   tickProgressSchema,
 } from '@offscreen/game/time';
+
+function actionReceiptState(
+  generationId: string | null,
+  publicationState: string | null,
+) {
+  if (!generationId) return 'pending' as const;
+  if (publicationState === 'published') return 'published' as const;
+  if (publicationState === 'blocked' || publicationState === 'stale') {
+    return 'failed' as const;
+  }
+  return 'generating' as const;
+}
 
 export async function readCampaign(
   db: Pick<Database['db'], 'select'>,
@@ -60,6 +74,22 @@ export async function readCampaign(
     .where(eq(gameRoll.storyId, storyId))
     .orderBy(desc(gameRoll.tick), desc(gameRoll.id))
     .limit(100);
+  const actionReceipts = await db
+    .select({
+      receipt: gameActionReceipt,
+      publicationState: storytellerPublication.state,
+    })
+    .from(gameActionReceipt)
+    .leftJoin(
+      storytellerPublication,
+      eq(storytellerPublication.generationId, gameActionReceipt.generationId),
+    )
+    .where(eq(gameActionReceipt.storyId, storyId))
+    .orderBy(
+      desc(gameActionReceipt.createdAt),
+      desc(gameActionReceipt.operationId),
+    )
+    .limit(20);
   let activityView = null;
   if (activity) {
     const plan = resolvedActivityPlanSchema.parse(activity.plan);
@@ -100,6 +130,16 @@ export async function readCampaign(
       tick: roll.tick,
       roll: roll.result,
       effects: roll.effects,
+    })),
+    actionReceipts: actionReceipts.map(({ receipt, publicationState }) => ({
+      id: receipt.operationId,
+      label: receipt.label,
+      intention: receipt.intention,
+      outcome: receipt.outcome,
+      text: receipt.outcomeText,
+      effects: receipt.effects,
+      roll: receipt.roll,
+      state: actionReceiptState(receipt.generationId, publicationState),
     })),
   });
 }

@@ -117,6 +117,32 @@ export const campaignConsequence = pgTable(
   // One follow-up owns a narrative revision even if callers race before locking.
   (t) => [unique('campaign_consequence_base').on(t.storyId, t.baseRevision)],
 );
+export const gameActionReceipt = pgTable(
+  'game_action_receipt',
+  {
+    operationId: uuid('operation_id').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    offerId: uuid('offer_id').notNull(),
+    actionKey: text('action_key').notNull(),
+    baseRevision: integer('base_revision').notNull(),
+    offer: jsonb('offer').notNull().$type<unknown>(),
+    plan: jsonb('plan').notNull().$type<unknown>(),
+    label: text('label').notNull(),
+    intention: text('intention').notNull(),
+    outcome: text('outcome').notNull(),
+    outcomeText: text('outcome_text').notNull(),
+    effects: jsonb('effects').notNull().$type<unknown>(),
+    roll: jsonb('roll').$type<unknown>(),
+    generationId: uuid('generation_id'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  // Consuming an offer permits exactly one receipt even across distinct commands.
+  (t) => [unique('game_action_receipt_offer').on(t.storyId, t.offerId)],
+);
 export const storytellerPreset = pgTable('storyteller_preset', {
   id: uuid('id').primaryKey(),
   ownerId: text('owner_id')

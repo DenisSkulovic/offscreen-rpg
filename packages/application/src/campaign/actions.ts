@@ -1,29 +1,29 @@
+import { randomInt } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { storyResolution } from '@offscreen/db/story-schema';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignConsequence,
+  gameActionReceipt,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { actionCommandSchema } from '@offscreen/contracts/campaign';
-import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import {
   immediateActionAvailable,
-  type ImmediateActionPlan,
+  resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
-import { wholeTicks } from '@offscreen/game/time';
-import { lockOwnedStory, readDatabaseClockMs } from '../stories/persistence';
+import { lockOwnedStory } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import { commandReceipt, saveCommand, loadCampaignSettings } from './settings';
+import { commandReceipt, saveCommand } from './settings';
 import {
   campaignCharacter,
   campaignOffer,
   requireCampaign,
   loadOfferPlan,
 } from './persistence';
-import { settleActivity } from './activities';
+import { requestActionNarration } from './narration';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -105,18 +105,6 @@ export function createCampaignActions(database: Database) {
       if (active && ['running', 'paused'].includes(active.state)) {
         throw new StoryError('conflict');
       }
-      const { settings } = await loadCampaignSettings(
-        tx,
-        current.id,
-        state.settingsRevision,
-      );
-      const now = await readDatabaseClockMs(tx, current.id);
-      const plan = resolvedActivityPlanSchema.parse({
-        version: 3,
-        action: activityAction(definition),
-        startTick: state.tick,
-        settingsRevision: settings.revision,
-      });
       // An interruption stops the old commitment. Follow-up intentions get new plans;
       // they cannot silently award its uncompleted future.
       if (active?.state === 'encounter') {
@@ -125,65 +113,36 @@ export function createCampaignActions(database: Database) {
           .set({ state: 'abandoned', revision: active.revision + 1 })
           .where(eq(gameActivity.id, active.id));
       }
-      const [activity] = await tx
-        .insert(gameActivity)
-        .values({
-          id: args.operationId,
-          storyId: current.id,
-          plan,
-          state: 'running',
-          progress: wholeTicks(0),
-          anchorAt: new Date(now),
-          pace: settings.pace,
-        })
-        .returning();
-      if (!activity) {
-        throw new Error('Missing admitted activity');
-      }
-      const admitted = { ...state, activeActivityId: activity.id };
+      const resolved = resolveImmediateAction(
+        campaignCharacter(state),
+        definition,
+        () => randomInt(1, 21),
+      );
+      await tx.insert(gameActionReceipt).values({
+        operationId: args.operationId,
+        storyId: current.id,
+        offerId: offer.id,
+        actionKey: definition.key,
+        baseRevision: current.revision,
+        offer,
+        plan: definition,
+        label: definition.label,
+        intention: definition.intention,
+        outcome: resolved.outcome,
+        outcomeText: resolved.text,
+        effects: resolved.effects,
+        roll: resolved.roll,
+      });
       await tx
         .update(campaign)
-        .set({ activeActivityId: activity.id })
+        .set({
+          character: resolved.character,
+          offer: null,
+          activeActivityId: null,
+        })
         .where(eq(campaign.storyId, current.id));
-      await settleActivity(tx, current, admitted, activity, now);
       await saveCommand(tx, current.id, args.operationId, request);
+      await requestActionNarration(tx, args.operationId);
     });
-  };
-}
-
-// Current adapter into settlement; zero duration is not the future process model.
-// See ../../README.md, Mechanical selection and consequence, before extending it.
-function activityAction(plan: ImmediateActionPlan) {
-  const completion = {
-    text: 'The immediate attempt is resolved.',
-    effects: [],
-  };
-  if (plan.resolution.kind === 'automatic') {
-    return {
-      id: plan.key,
-      label: plan.label,
-      description: plan.intention,
-      requires: plan.requires,
-      durationTicks: 0,
-      checks: [],
-      completion: plan.resolution.outcome,
-    };
-  }
-  return {
-    id: plan.key,
-    label: plan.label,
-    description: plan.intention,
-    requires: plan.requires,
-    durationTicks: 0,
-    checks: [
-      {
-        id: 'resolution',
-        everyTicks: 1,
-        resolution: { kind: 'ability' as const, plan: plan.resolution.check },
-        success: { ...plan.resolution.success, interrupts: false },
-        failure: { ...plan.resolution.failure, interrupts: false },
-      },
-    ],
-    completion,
   };
 }

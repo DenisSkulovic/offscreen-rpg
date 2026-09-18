@@ -197,7 +197,7 @@ export function createStoryReads(database: Database) {
         throw new StoryError('not_found');
       }
       return storySnapshotSchema.parse({
-        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', ticks: 1, realMs: 1000 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, location: null, tick: 0, offer: null, activity: null, rolls: [] } : null),
+        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', ticks: 1, realMs: 1000 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, location: null, tick: 0, offer: null, activity: null, rolls: [], actionReceipts: [] } : null),
         id: row.id,
         storyteller:
           row.storyteller == null
