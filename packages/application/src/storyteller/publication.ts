@@ -7,6 +7,7 @@ import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import {
+  immediateActionAvailable,
   validateImmediateActionProposal,
   type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
@@ -92,6 +93,15 @@ export async function publishStorytellerResult(
           evidenceHandles,
         });
         if (validation.kind === 'rejected') {
+          throw new StoryError('invalid');
+        }
+        if (
+          !immediateActionAvailable(
+            resolutionContext.character,
+            resolutionContext.storyFacts,
+            validation.plan,
+          )
+        ) {
           throw new StoryError('invalid');
         }
         selectedPlans.push(validation.plan);

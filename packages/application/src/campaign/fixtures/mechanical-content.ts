@@ -1,11 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import {
   immediateActionContentSchema,
   validateImmediateActionState,
 } from '@offscreen/game/immediate-actions';
-import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema } from '@offscreen/game/state';
 import definitions from './content/mechanical-openings.json';
 
@@ -37,11 +35,17 @@ const mechanicalOpeningCatalogueSchema = z
   .superRefine((content, context) => {
     const ids = content.entries.map((entry) => entry.id);
     if (new Set(ids).size !== ids.length) {
-      context.addIssue({ code: 'custom', message: 'Duplicate content identity' });
+      context.addIssue({
+        code: 'custom',
+        message: 'Duplicate content identity',
+      });
     }
   });
 
 const catalogue = mechanicalOpeningCatalogueSchema.parse(definitions);
+// The authored plans remain contract examples while this pre-POC catalogue is
+// being simplified. Runtime opening capture deliberately returns no plan or
+// offer from them: the reviewed Storyteller result is the sole plan source.
 for (const entry of catalogue.entries) {
   validateImmediateActionState(entry.content, entry.character);
 }
@@ -60,16 +64,10 @@ export function mechanicalOpening(id: string) {
     throw new Error('Unknown mechanical content');
   }
   const seed = structuredClone(entry);
-  const opportunities = composeOpportunities({
-    id: randomUUID(),
-    content: seed.content,
-    character: seed.character,
-    busy: false,
-  });
   return {
+    id: seed.id,
     character: seed.character,
-    content: seed.content,
+    storyFacts: [],
     opening: seed.opening,
-    offer: opportunities.offer,
   };
 }

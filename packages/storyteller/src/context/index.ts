@@ -1,8 +1,5 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
-import {
-  immediateActionContentSchema,
-  storyFactDeclarationsSchema,
-} from '@offscreen/game/immediate-actions';
+import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { offerSchema } from '@offscreen/game/offers';
@@ -28,10 +25,9 @@ export const evidencePassageSchema = z.strictObject({
 export const contextInputSchema = z.strictObject({
   mechanicalOpening: z
     .strictObject({
+      id: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/),
       character: characterSchema,
       storyFacts: storyFactsSchema.default([]),
-      content: immediateActionContentSchema,
-      offer: offerSchema,
       opening: passageContentSchema,
     })
     .optional(),
@@ -84,7 +80,7 @@ export function contextPayload(context: StorytellerContext) {
       ? {
           mechanicalOpening: {
             character: context.mechanicalOpening.character,
-            offer: context.mechanicalOpening.offer,
+            storyFacts: context.mechanicalOpening.storyFacts,
             opening: context.mechanicalOpening.opening,
           },
         }

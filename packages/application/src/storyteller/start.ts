@@ -1,4 +1,7 @@
-import { campaignStartSchema, campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import {
+  campaignStartSchema,
+  campaignSettingsSchema,
+} from '@offscreen/contracts/campaign';
 import { campaignSettings } from '@offscreen/db/campaign-schema';
 import { isDeepStrictEqual } from 'node:util';
 import { initializeCampaign } from '../campaign/settings';
@@ -10,13 +13,18 @@ import { storyDraft } from '@offscreen/db/draft-schema';
 import { storyPassage } from '@offscreen/db/story-schema';
 import {
   storytellerTaskSchema,
+  mechanicalOpeningSceneSchema,
   validateStorytellerResult,
 } from '@offscreen/storyteller/tasks';
-import { playablePresentation, playableProposalSchema } from '@offscreen/storyteller/tasks';
+import {
+  playablePresentation,
+  playableProposalSchema,
+} from '@offscreen/storyteller/tasks';
 import type { Transaction } from '../outbox/index';
 import { initializeStoryInTransaction } from '../stories/initialization';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
+import type { ImmediateActionPlan } from '@offscreen/game/immediate-actions';
 
 export async function startStorytellerCandidate(
   tx: Transaction,
@@ -62,7 +70,26 @@ export async function startStorytellerCandidate(
     throw new StoryError('invalid');
   }
   const result = validateStorytellerResult(task, input.candidate.output);
-  const presentation = playablePresentation(playableProposalSchema.parse(result.scene));
+  let openingPlans: ImmediateActionPlan[] = [];
+  const presentation = task.context.mechanicalOpening
+    ? (() => {
+        const scene = mechanicalOpeningSceneSchema.parse(result.scene);
+        openingPlans = scene.next.plans;
+        return {
+          content: scene.content,
+          interaction: scene.next.plans.length
+            ? {
+                kind: 'choice.v1' as const,
+                prompt: 'What do you attempt?',
+                options: scene.next.plans.map((plan) => ({
+                  id: plan.key,
+                  label: plan.label,
+                })),
+              }
+            : null,
+        };
+      })()
+    : playablePresentation(playableProposalSchema.parse(result.scene));
   const created = await initializeStoryInTransaction(tx, {
     ownerId: input.ownerId,
     storyId: input.storyId,
@@ -80,19 +107,39 @@ export async function startStorytellerCandidate(
   if (!created) {
     // A retry must recover the accepted creation settings, not silently accept
     // a different lock or pace under the same story identity.
-    const [initialSettings] = await tx.select().from(campaignSettings).where(and(
-      eq(campaignSettings.storyId, input.storyId),
-      eq(campaignSettings.revision, 1),
-    ));
+    const [initialSettings] = await tx
+      .select()
+      .from(campaignSettings)
+      .where(
+        and(
+          eq(campaignSettings.storyId, input.storyId),
+          eq(campaignSettings.revision, 1),
+        ),
+      );
     if (initialSettings) {
       const accepted = campaignSettingsSchema.parse(initialSettings.settings);
-      if (accepted.locked !== options.locked || !isDeepStrictEqual(accepted.pace, options.pace)) {
+      if (
+        accepted.locked !== options.locked ||
+        !isDeepStrictEqual(accepted.pace, options.pace)
+      ) {
         throw new StoryError('conflict');
       }
     }
     return;
   }
-  await initializeCampaign(tx, input.storyId, task.profile, options, task.context.mechanicalOpening);
+  await initializeCampaign(
+    tx,
+    input.storyId,
+    task.profile,
+    options,
+    task.context.mechanicalOpening
+      ? {
+          character: task.context.mechanicalOpening.character,
+          storyFacts: task.context.mechanicalOpening.storyFacts,
+          plans: openingPlans,
+        }
+      : undefined,
+  );
   const [passage] = await tx
     .select({ id: storyPassage.id })
     .from(storyPassage)

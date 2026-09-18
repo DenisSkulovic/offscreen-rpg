@@ -9,7 +9,7 @@ This package owns use cases, transactions and coordination. The API and Activity
 3. [Runtime](src/storyteller/runtime.ts) executes the saved task, then attempts publication. Opening success produces a reviewable candidate; it does not itself start a story.
 4. [Start](src/stories/start.ts) dispatches the profiled candidate to [Storyteller Start](src/storyteller/start.ts), which initializes the story and calls [campaign initialization](src/campaign/settings.ts).
 
-Mechanical Start uses the seed captured in the reviewed task, not a fresh catalogue lookup. It currently recomposes an offer from those captured plans. Preserving a planner-produced offer exactly is remaining DM-loop work. Content loading and summaries live in [the mechanical catalogue](src/campaign/fixtures/mechanical-content.ts); the HTTP contract does not enumerate worlds.
+Mechanical opening preparation captures a character/story-fact seed, and the Storyteller result owns the proposed private plans. Review projects only their public labels; Start persists those exact reviewed plans instead of reopening the catalogue or recomposing authored actions. Content loading and summaries live in [the mechanical catalogue](src/campaign/fixtures/mechanical-content.ts); the HTTP contract does not enumerate worlds.
 
 ## Mechanical selection and consequence
 

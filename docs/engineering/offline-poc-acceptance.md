@@ -4,7 +4,7 @@ The immediate milestone is a solo story with reviewed opening, meaningful offere
 
 ## What exists and what is missing
 
-Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. The offline mechanical DM turn now proposes and admits fresh private plans after a committed consequence. It does not use retrieval tools, generate the mechanical opening or establish live-model quality. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
+Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. Mechanical opening review and the offline consequence DM turn now propose and admit fresh private plans through the same deterministic boundary. Consecutive browser rounds, retrieval tools and live-model quality remain unverified. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
 
 The next dependency order is:
 

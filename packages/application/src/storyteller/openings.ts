@@ -8,6 +8,7 @@ import {
 } from '@offscreen/storyteller/profiles';
 import {
   prepareStorytellerTask,
+  mechanicalOpeningSceneSchema,
   storytellerTaskSchema,
   storytellerResultSchema,
 } from '@offscreen/storyteller/tasks';
@@ -65,14 +66,30 @@ export function createStorytellerOpenings(
       .select()
       .from(draftOpening)
       .where(eq(draftOpening.draftId, task.source.draftId));
-    const presentation =
+    const result =
       row.state === 'succeeded'
-        ? playablePresentation(
-            playableProposalSchema.parse(
-              storytellerResultSchema.parse(row.output).scene,
-            ),
-          )
+        ? storytellerResultSchema.parse(row.output)
         : null;
+    const presentation = result
+      ? task.context.mechanicalOpening
+        ? (() => {
+            const scene = mechanicalOpeningSceneSchema.parse(result.scene);
+            return {
+              content: scene.content,
+              interaction: scene.next.plans.length
+                ? {
+                    kind: 'choice.v1' as const,
+                    prompt: 'What do you attempt?',
+                    options: scene.next.plans.map((plan) => ({
+                      id: plan.key,
+                      label: plan.label,
+                    })),
+                  }
+                : null,
+            };
+          })()
+        : playablePresentation(playableProposalSchema.parse(result.scene))
+      : null;
     return openingPreviewSchema.parse({
       id: row.id,
       sourceRevision: task.source.draftRevision,
@@ -80,7 +97,7 @@ export function createStorytellerOpenings(
         draft?.revision === task.source.draftRevision &&
         latest?.generationId === id,
       mode: task.execution.mode,
-      contentId: task.context.mechanicalOpening?.content.id,
+      contentId: task.context.mechanicalOpening?.id,
       storyteller: storytellerSummary(task.profile),
       state: row.state,
       candidate: presentation?.interaction ? presentation : null,
@@ -159,7 +176,7 @@ export function createStorytellerOpenings(
             original.task !== 'opening' ||
             original.source.draftId !== draftId ||
             original.source.draftRevision !== expectedRevision ||
-            original.context.mechanicalOpening?.content.id !== contentId
+            original.context.mechanicalOpening?.id !== contentId
           ) {
             throw new GenerationError('conflict');
           }

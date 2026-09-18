@@ -125,6 +125,78 @@ function consequence() {
   });
 }
 
+function mechanicalOpening() {
+  const base = opening();
+  return prepareStorytellerTask({
+    ...base,
+    context: {
+      ...base.context,
+      mechanicalOpening: {
+        id: 'small-mechanical-seed.v1',
+        character: {
+          name: 'A careful observer',
+          scores: {
+            strength: 10,
+            dexterity: 10,
+            constitution: 10,
+            intelligence: 12,
+            wisdom: 12,
+            charisma: 10,
+          },
+          applicableAbilities: ['wisdom'],
+          skills: [],
+          proficientSkills: [],
+          proficiencyBonus: 2,
+          hp: 5,
+          maxHp: 5,
+          facts: [{ id: 'ready', value: true }],
+          quantities: [],
+        },
+        storyFacts: [],
+        opening: {
+          version: 1,
+          title: 'A fresh problem',
+          paragraphs: ['Something nearby needs careful attention.'],
+        },
+      },
+    },
+  });
+}
+
+test('mechanical opening captures fresh plans instead of an authored offer', () => {
+  const task = mechanicalOpening();
+  assert.equal('offer' in task.context.mechanicalOpening!, false);
+  const result = scriptedStorytellerResult(task);
+  assert.equal(result.scene.next.kind, 'action-plans');
+  if (result.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.deepEqual(
+    result.scene.next.plans.map((plan) => plan.key),
+    ['assess-situation'],
+  );
+
+  const invalid = structuredClone(result);
+  if (
+    invalid.scene.next.kind !== 'action-plans' ||
+    invalid.scene.next.plans[0]?.resolution.kind !== 'check'
+  ) {
+    throw new Error('Expected checked opening plan');
+  }
+  invalid.scene.next.plans[0].resolution.check.ability = 'strength';
+  assert.throws(() => validateStorytellerResult(task, invalid));
+
+  const unavailable = structuredClone(result);
+  if (unavailable.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  unavailable.scene.next.plans[0]!.requires = [{ id: 'ready', value: false }];
+  assert.throws(
+    () => validateStorytellerResult(task, unavailable),
+    /unavailable in captured state/,
+  );
+});
+
 test('captured schemas expose only the result for the requested task', () => {
   const initial = opening();
   const resolved = consequence();

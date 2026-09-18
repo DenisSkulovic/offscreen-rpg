@@ -98,19 +98,59 @@ export function scriptedStorytellerResult(
 ): StorytellerResult {
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const opening = task.context.mechanicalOpening;
+    const ability = opening.character.applicableAbilities[0];
+    if (!ability) {
+      throw new Error(
+        'Mechanical opening character needs one applicable ability',
+      );
+    }
     return validateStorytellerResult(task, {
       version: 1,
       scene: {
         version: 1,
         content: opening.opening,
         next: {
-          kind: 'choice',
-          prompt: 'What do you attempt?',
-          options: opening.offer.nodes.map((node) => ({
-            id: node.id,
-            label: node.label,
-            intention: node.description,
-          })),
+          kind: 'action-plans',
+          state: 'available',
+          plans: [
+            {
+              version: 1,
+              key: 'assess-situation',
+              label: 'Assess the immediate situation',
+              intention:
+                'Observe the immediate situation carefully before committing to a riskier move.',
+              risk: 'Important details may remain unclear.',
+              evidence: [],
+              requires: [],
+              requiresStory: [],
+              requiresQuantities: [],
+              resolution: {
+                kind: 'check',
+                check: {
+                  rule: 'srd-5.2.1-subset.v1',
+                  purpose: 'Assess the immediate situation',
+                  skill: null,
+                  ability,
+                  dc: 10,
+                  advantage: false,
+                  disadvantage: false,
+                  modifiers: [],
+                },
+                difficultyBasis:
+                  'The opening presents an immediate but observable situation.',
+                success: {
+                  text: 'You identify the most important immediate detail.',
+                  effects: [],
+                  declarations: [],
+                },
+                failure: {
+                  text: 'The immediate situation remains difficult to read.',
+                  effects: [],
+                  declarations: [],
+                },
+              },
+            },
+          ],
         },
       },
       currentNotes: [],

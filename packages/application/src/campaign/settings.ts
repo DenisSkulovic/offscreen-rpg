@@ -30,10 +30,11 @@ import {
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import {
   immediateActionContentSchema,
-  validateImmediateActionState,
+  immediateActionPlanSchema,
+  type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
 import { composeOpportunities } from '@offscreen/game/opportunities';
-import { characterSchema } from '@offscreen/game/state';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { randomUUID } from 'node:crypto';
 import { saveOfferPlans } from './persistence';
 
@@ -53,7 +54,11 @@ export async function initializeCampaign(
   storyId: string,
   profile: StorytellerProfile,
   options: CampaignStart,
-  seed?: { character: unknown; content: unknown },
+  seed?: {
+    character: unknown;
+    storyFacts?: unknown;
+    plans: readonly ImmediateActionPlan[];
+  },
 ) {
   const settings = campaignSettingsSchema.parse({
     revision: 1,
@@ -67,27 +72,42 @@ export async function initializeCampaign(
     throw new StoryError('invalid');
   }
   const character = seed ? characterSchema.parse(seed.character) : null;
-  const content = seed ? immediateActionContentSchema.parse(seed.content) : null;
-  if (character && content) {
-    validateImmediateActionState(content, character);
-  }
-  const opportunities = character && content
-    ? composeOpportunities({ id: randomUUID(), content, character, busy: false })
+  const storyFacts = seed ? storyFactsSchema.parse(seed.storyFacts ?? []) : [];
+  const content = seed
+    ? immediateActionContentSchema.parse({
+        version: 1,
+        id: `opening-${storyId}`,
+        plans: seed.plans.map((plan) => immediateActionPlanSchema.parse(plan)),
+      })
     : null;
-  await tx
-    .insert(campaign)
-    .values({
-      storyId,
-      settingsRevision: 1,
-      locked: Number(options.locked),
-      character,
-      content,
-      location: null,
-      tick: 0,
-      offer: opportunities?.offer ?? null,
-    });
+  const opportunities =
+    character && content
+      ? composeOpportunities({
+          id: randomUUID(),
+          content,
+          character,
+          busy: false,
+        })
+      : null;
+  await tx.insert(campaign).values({
+    storyId,
+    settingsRevision: 1,
+    locked: Number(options.locked),
+    character,
+    content,
+    storyFacts,
+    location: null,
+    tick: 0,
+    offer: opportunities?.offer ?? null,
+  });
   if (opportunities) {
-    await saveOfferPlans(tx, storyId, 1, opportunities.offer.id, opportunities.plans);
+    await saveOfferPlans(
+      tx,
+      storyId,
+      1,
+      opportunities.offer.id,
+      opportunities.plans,
+    );
   }
   await tx
     .insert(campaignSettings)
@@ -194,17 +214,15 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
 export function createCampaignSettings(database: Database) {
   return {
     catalogue() {
-      return storytellerCatalogue
-        .list()
-        .map((item) => ({
-          ...item,
-          creative: initialCreative(
-            storytellerCatalogue.resolve({
-              id: item.id,
-              revision: item.revision,
-            }),
-          ),
-        }));
+      return storytellerCatalogue.list().map((item) => ({
+        ...item,
+        creative: initialCreative(
+          storytellerCatalogue.resolve({
+            id: item.id,
+            revision: item.revision,
+          }),
+        ),
+      }));
     },
     async update(args: {
       ownerId: string;

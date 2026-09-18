@@ -14,11 +14,11 @@ This package prepares bounded tasks and validates their results. It does not own
 | Validate output | [tasks/index.ts](src/tasks/index.ts), `validateStorytellerResult` | Task version, opportunity IDs, continuity evidence and result constraints |
 | Commit the result | Application [storyteller/publication.ts](../application/src/storyteller/publication.ts) | Current-story fence and atomic publication; outside this package |
 
-`contextInputSchema` is the captured internal artifact. `contextPayload` is the provider-facing projection; they are intentionally different. For example, mechanical opening private plans are captured internally but omitted from the provider payload. Inspect both before changing context or asserting what the model can see.
+`contextInputSchema` is the captured internal artifact. `contextPayload` is the provider-facing projection; they are intentionally different. Database identities and complete historical rows stay outside the provider payload, while bounded evidence receives passage handles. Inspect both before changing context or asserting what the model can see.
 
 ## Implemented tasks and limits
 
-- **Opening:** prepares a reviewable beginning. Mechanical openings currently copy content-supplied opportunities.
+- **Opening:** prepares a reviewable beginning. A mechanical opening proposes fresh private plans from the captured character/story-fact seed; validation rejects unsupported or currently unavailable plans before review.
 - **Continuation:** resolves a narrative selection into an immediate scene or a prepared timed arrival. It does not adjudicate general mechanical effects.
 - **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to four fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
 

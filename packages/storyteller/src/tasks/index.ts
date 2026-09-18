@@ -18,6 +18,7 @@ import {
   publishedPlayableFromGeneration,
 } from './playable-proposal';
 import {
+  immediateActionAvailable,
   immediateActionPlanSchema,
   validateImmediateActionProposal,
 } from '@offscreen/game/immediate-actions';
@@ -26,19 +27,26 @@ export * from './opening';
 export * from './playable';
 export * from './policy';
 
+const actionPlanNextSchema = z.strictObject({
+  kind: z.literal('action-plans'),
+  state: z.enum(['available', 'held']),
+  plans: z.array(immediateActionPlanSchema).max(4),
+});
+export const mechanicalOpeningSceneSchema = z.strictObject({
+  version: z.literal(1),
+  content: passageContentSchema,
+  next: actionPlanNextSchema,
+});
 const consequenceSceneSchema = z.strictObject({
   version: z.literal(3),
   content: passageContentSchema,
-  next: z.strictObject({
-    kind: z.literal('action-plans'),
-    state: z.enum(['available', 'held']),
-    plans: z.array(immediateActionPlanSchema).max(4),
-  }),
+  next: actionPlanNextSchema,
 });
 export const storytellerResultSchema = z.strictObject({
   version: z.literal(1),
   scene: z.union([
     playableProposalSchema,
+    mechanicalOpeningSceneSchema,
     continuationResultSchema,
     consequenceSceneSchema,
   ]),
@@ -56,6 +64,10 @@ const resultSchemas = {
     arrivalNotes: continuityPatchSchema.max(0),
   }),
 };
+const mechanicalOpeningResultSchema = storytellerResultSchema.extend({
+  scene: mechanicalOpeningSceneSchema,
+  arrivalNotes: continuityPatchSchema.max(0),
+});
 const common = {
   inputVersion: z.literal(3),
   promptVersion: z.literal('storyteller.v1'),
@@ -132,8 +144,8 @@ function requestFor(
     taskRules =
       'Create a version-3 scene with next.kind action-plans. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects to the committed result. Propose zero to four fresh immediate-action.v1 plans grounded in supplied evidence and current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.';
   } else if (context.mechanicalOpening) {
-    taskRules +=
-      ' Preserve the supplied mechanical opening facts and copy its offer IDs, labels and descriptions exactly into options (description becomes intention).';
+    taskRules =
+      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to four fresh immediate-action.v1 plans grounded in its character and story facts. Never roll or apply effects. Set state to available when at least one plan exists, otherwise held. No arrival notes.';
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
@@ -154,7 +166,11 @@ function requestFor(
         }),
       },
     ] as const,
-    outputSchema: z.toJSONSchema(resultSchemas[input.task]),
+    outputSchema: z.toJSONSchema(
+      input.task === 'opening' && context.mechanicalOpening
+        ? mechanicalOpeningResultSchema
+        : resultSchemas[input.task],
+    ),
   };
 }
 
@@ -217,24 +233,47 @@ export function validateStorytellerResult(
   task: StorytellerTask,
   output: unknown,
 ): StorytellerResult {
-  const result = resultSchemas[task.task].parse(output);
+  const result = (
+    task.task === 'opening' && task.context.mechanicalOpening
+      ? mechanicalOpeningResultSchema
+      : resultSchemas[task.task]
+  ).parse(output);
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
-    const offered = task.context.mechanicalOpening.offer.nodes;
+    const keys =
+      next.kind === 'action-plans' ? next.plans.map((plan) => plan.key) : [];
+    const labels =
+      next.kind === 'action-plans'
+        ? next.plans.map((plan) => plan.label.trim().toLocaleLowerCase('en-US'))
+        : [];
     if (
-      next.kind !== 'choice' ||
-      next.options.length !== offered.length ||
-      offered.some((node, index) => {
-        const option = next.options[index];
-        return (
-          !option ||
-          option.id !== node.id ||
-          option.label !== node.label ||
-          option.intention !== node.description
-        );
-      })
+      next.kind !== 'action-plans' ||
+      next.state !== (next.plans.length ? 'available' : 'held') ||
+      new Set(keys).size !== keys.length ||
+      new Set(labels).size !== labels.length ||
+      result.arrivalNotes.length
     ) {
-      throw new Error('Opening changed the admitted opportunities');
+      throw new Error('Invalid mechanical opening plans');
+    }
+    for (const plan of next.plans) {
+      const validation = validateImmediateActionProposal({
+        proposal: plan,
+        character: task.context.mechanicalOpening.character,
+        storyFacts: task.context.mechanicalOpening.storyFacts,
+        evidenceHandles: new Set(),
+      });
+      if (validation.kind === 'rejected') {
+        throw new Error(`Invalid opening plan: ${validation.issues[0]?.code}`);
+      }
+      if (
+        !immediateActionAvailable(
+          task.context.mechanicalOpening.character,
+          task.context.mechanicalOpening.storyFacts,
+          validation.plan,
+        )
+      ) {
+        throw new Error('Opening plan is unavailable in captured state');
+      }
     }
   }
   if (task.task === 'consequence') {
@@ -269,6 +308,15 @@ export function validateStorytellerResult(
       });
       if (validation.kind === 'rejected') {
         throw new Error(`Invalid action plan: ${validation.issues[0]?.code}`);
+      }
+      if (
+        !immediateActionAvailable(
+          resolution.character,
+          resolution.storyFacts,
+          validation.plan,
+        )
+      ) {
+        throw new Error('Action plan is unavailable in captured state');
       }
     }
   }
