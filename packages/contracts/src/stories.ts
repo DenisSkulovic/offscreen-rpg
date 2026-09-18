@@ -1,3 +1,4 @@
+import { campaignViewSchema, campaignStartSchema } from './campaign';
 import { storytellerSummarySchema } from './storytellers';
 import { z } from 'zod';
 import { interactionSchema, interactionSubmissionSchema } from './interactions';
@@ -36,6 +37,7 @@ export const passageContentSchema = z.strictObject({
   paragraphs: z.array(z.string().min(1).max(6000)).min(1).max(10),
 });
 export const storySnapshotSchema = z.strictObject({
+  campaign: campaignViewSchema.nullable().optional(),
   id: z.uuid(),
   revision: z.number().int().positive(),
   viewVersion: z.number().int().positive(),
@@ -97,6 +99,7 @@ export const storyHistorySchema = z.strictObject({
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
 export const startStorySchema = z.strictObject({
+  campaign: campaignStartSchema.optional(),
   candidateId: z.uuid(),
   expectedDraftRevision: z.number().int().positive().max(2147483646),
 });

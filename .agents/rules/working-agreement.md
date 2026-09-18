@@ -6,13 +6,15 @@ Code is an artifact of the product and technical specifications. Before changing
 
 Keep proposed behavior distinguishable from implemented and verified behavior. Update docs/progress.md when that boundary changes. If implementation reveals a design problem, correct the owning specification before proceeding; never leave the code and docs knowingly contradictory.
 
+Before changing shared domain contracts or progression logic, use [Vision](../../docs/vision.md) and the [benchmark playthroughs](../../docs/playthroughs.md) as design constraints. Distinguish a universal invariant, selected ruleset/content, an illustrative fixture and an explicit implementation limit. Trace the proposed boundary through the immediate example and a contrasting existing benchmark, including the small/abstract benchmark when introducing character, world or resource assumptions. Record the short reasoning in the active feature plan. This is source/design reasoning, not a requirement to run tests or implement every example. A fixture must exercise the same application contract as generated play; moving constants to a fixture file is insufficient if shared handlers still interpret scenario names. Do not weaken acceptance or relabel an unfinished integration as future work to declare completion.
+
 Documentation describes the current design. Replace or delete obsolete text in place. No superseded paragraphs, amendment tables, chronological logs or review-report dumps. Git holds history. Describe behavior, boundaries and consequential tradeoffs, not each branch of code. Keep open product choices in docs/questions.md until resolved. Brainstorming examples are inspiration, not automatic requirements.
 
 ## Lifecycle and scope
 
 This is a very raw POC/MVP, intended for intensive daily evolution and a strong senior fullstack portfolio. Bold redesigns are expected when they improve the approved product. Do not retain internal compatibility layers, unused abstractions or migration machinery solely for hypothetical production users. Still account explicitly for actual saved stories, workflow histories, credentials and destructive actions.
 
-Build in balanced passes across meaningful user flows. Do not perfect a small subsystem while major parts of the experience remain disconnected. Keep fixture behavior honest: scripted tests are not a functioning AI storyteller. Favor generic story progression over simulations for every activity or population.
+Build in balanced passes across meaningful user flows. Do not perfect a small subsystem while major parts of the experience remain disconnected. Keep fixture behavior honest: scripted tests are not a functioning AI storyteller. The core is world-independent: D&D checks, storyteller judgment and time. Currency, employment, wages, species and example activities belong to scenario content, never mandatory character or outcome fields. Do not turn a brainstorming example into a universal mechanic. Favor generic story progression over simulations for every activity or population.
 
 Use the feature workflow for significant work. The user agrees the product vision before bulk implementation. Authorization then persists across the agreed phases; do not repeatedly request approval for routine details. A material change to that vision, scope or cost needs discussion. Small authorized fixes proceed directly.
 

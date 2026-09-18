@@ -1,3 +1,5 @@
+import { campaignSettingsSchema, characterSchema, offerSchema, rollSchema, outcomeEffectsSchema } from '@offscreen/contracts/campaign';
+import { actionContentSchema } from '@offscreen/contracts/action-content';
 import { z } from 'zod';
 import {
   passageContentSchema,
@@ -13,6 +15,19 @@ export const evidencePassageSchema = z.strictObject({
   response: z.string().max(2000).nullable(),
 });
 export const contextInputSchema = z.strictObject({
+  mechanicalOpening: z.strictObject({
+    character: characterSchema,
+    content: actionContentSchema,
+    offer: offerSchema,
+    opening: passageContentSchema,
+  }).optional(),
+  resolution: z.strictObject({
+    character: characterSchema,
+    gameTimeMs: z.number().nonnegative(),
+    offer: offerSchema,
+    receipts: z.array(z.strictObject({ id: z.uuid(), roll: rollSchema, effects: outcomeEffectsSchema })).max(192),
+  }).optional(),
+  campaignSettings: campaignSettingsSchema.optional(),
   premise: premiseContentSchema,
   current: evidencePassageSchema.nullable(),
   items: storyItemsSchema,
@@ -37,6 +52,9 @@ export function contextPayload(context: StorytellerContext) {
     return `p${passage.sequence}`;
   };
   return {
+    ...(context.mechanicalOpening ? { mechanicalOpening: context.mechanicalOpening } : {}),
+    ...(context.resolution ? { resolution: context.resolution } : {}),
+    ...(context.campaignSettings ? { campaignSettings: context.campaignSettings } : {}),
     premise: context.premise,
     current: context.current
       ? {

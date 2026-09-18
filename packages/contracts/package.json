@@ -26,6 +26,14 @@
     "./storytellers": {
       "types": "./dist/src/storytellers.d.ts",
       "default": "./dist/src/storytellers.js"
+    },
+    "./campaign": {
+      "types": "./dist/src/campaign.d.ts",
+      "default": "./dist/src/campaign.js"
+    },
+    "./action-content": {
+      "types": "./dist/src/action-content.d.ts",
+      "default": "./dist/src/action-content.js"
     }
   },
   "scripts": {

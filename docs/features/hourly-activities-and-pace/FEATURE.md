@@ -1,7 +1,7 @@
 # Hourly activities, travel checks and adjustable pace
 
-Status: Designed; not implemented.
-Approval: The owner requested these product capabilities and documentation/handoffs on 2026-09-18. Detailed POC policies below are proposed design decisions; bulk implementation is not authorized by this documentation request.
+Status: Connected authored slice implemented; broader feature acceptance remains partial. Checks not run. See the shared repair checkpoint.
+Approval: On 2026-09-18 the owner authorized implementation of all four features and delegated the D&D baseline choice. Use SRD 5.2.1 (revised fifth edition), with explicitly authored activity extensions.
 
 ## Intended outcome
 
@@ -17,7 +17,7 @@ Bounded work/travel activity definitions, durable hourly segments, quiet summari
 
 ## Acceptance
 
-- N completed hourly work segments have N stable outcomes; currency derives only from committed segments.
+- N completed hourly work segments have N stable outcomes; the fixture reward derives only from committed segments.
 - Quiet encounter rolls allow uneventful travel; occurrence and action success remain distinct.
 - Pause, offline catch-up, restart, speed change and stale timers cannot duplicate/skip payable segments.
 - Instant processing stops at the first decision/encounter/system blocker and retains all required rolls.
@@ -26,7 +26,7 @@ Bounded work/travel activity definitions, durable hourly segments, quiet summari
 
 ## Decisions still needed
 
-No blocker to the documented bounded offline subset. Exact D&D edition/content reuse must be selected before claiming full compatibility or importing published content. Broader combat, autonomy and shared-world policies are outside these features.
+The [shared architecture repair plan](../dnd-checks-and-visible-outcomes/PLAN.md) records confirmed blockers. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
 
 ## Owning specifications
 
@@ -34,3 +34,6 @@ No blocker to the documented bounded offline subset. Exact D&D edition/content r
 - [Storyteller customization](../../storyteller-settings.md)
 - [Rules and activities](../../technical/rules-and-activities.md)
 - [Settings and clock](../../technical/story-settings.md)
+
+World boundary: D&D + LLM DM + time is the core. Wages, currency, professions and locations in this feature are authored pineapple examples. Generic character/roll contracts must allow no quantities and no resource effects. Migration 0016 preserves earlier fixture balances while removing the dedicated money fields.
+

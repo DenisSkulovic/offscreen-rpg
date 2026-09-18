@@ -1,4 +1,6 @@
 'use client';
+import { CampaignPlay } from '../../stories/campaign-play';
+import { CampaignSettingsEditor } from '../../stories/campaign-settings';
 import { StoryHistoryView } from '../../stories/history';
 import { ResolutionRecovery } from '../../stories/resolution-recovery';
 
@@ -22,6 +24,14 @@ function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
 function resolutionMessage(story: StorySnapshot) {
   if (!story.resolution) {
     return null;
+  }
+  if (story.campaign?.character) {
+    if (story.resolution.state === 'failed' || story.resolution.state === 'blocked') {
+      return 'The outcome and dice are saved. Narration could not finish; retry reuses those results.';
+    }
+    if (story.resolution.state !== 'uncertain') {
+      return 'The outcome and dice are saved. The storyteller is preparing the next passage.';
+    }
   }
   if (story.resolution.state === 'failed') {
     if (story.resolution.reason === 'budget_unavailable') {
@@ -55,7 +65,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const shouldPoll =
     story.resolution?.state === 'pending' ||
     story.resolution?.state === 'running' ||
-    waiting != null;
+    waiting != null || (!story.campaign?.unavailableReason && story.campaign?.activity?.state === 'running');
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));
@@ -231,7 +241,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
           Retry control
         </button>
       ) : null}
-      {offer ? (
+      {offer && !story.campaign?.character ? (
         <section aria-label="Offered interaction">
           <p>{offer.specification.prompt}</p>
           {offer.specification.options.map((option) => (
@@ -258,6 +268,8 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       ) : null}
       {status ? <p role="status">{status}</p> : null}
       <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
+      {story.campaign?.character ? <CampaignPlay key={story.campaign.offer?.id ?? story.id} story={story} campaign={story.campaign} onSnapshot={acceptSnapshot} /> : null}
+      {story.campaign ? <CampaignSettingsEditor key={story.campaign.settings.revision} story={story} campaign={story.campaign} onSnapshot={acceptSnapshot} /> : null}
       <StoryHistoryView storyId={story.id} />
       <details>
         <summary>Inspect saved state</summary>

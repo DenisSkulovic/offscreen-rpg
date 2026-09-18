@@ -58,6 +58,29 @@ const content = (title: string, paragraph: string) => ({
 export function scriptedStorytellerResult(
   task: StorytellerTask,
 ): StorytellerResult {
+  if (task.context.mechanicalOpening && task.task === 'opening') {
+    const opening = task.context.mechanicalOpening;
+    return validateStorytellerResult(task, {
+      version: 1, scene: { version: 1, content: opening.opening, next: {
+        kind: 'choice', prompt: 'What do you attempt?',
+        options: opening.offer.nodes.map((node) => ({ id: node.id, label: node.label, intention: node.description })),
+      } }, currentNotes: [], arrivalNotes: [],
+    });
+  }
+  if (task.task === 'consequence') {
+    const resolution = task.context.resolution;
+    if (!resolution || !task.context.current) {
+      throw new Error('Missing committed consequence');
+    }
+    return validateStorytellerResult(task, {
+      version: 1,
+      scene: { version: 3, content: task.context.current.content, next: {
+        kind: 'opportunities', state: resolution.offer.nodes.length ? 'available' : 'held',
+        options: resolution.offer.nodes.filter((node) => node.action).map((node) => ({ id: node.id, label: node.label, intention: node.description })),
+      } },
+      currentNotes: [], arrivalNotes: [],
+    });
+  }
   const scene = scenes[task.profile.id] ?? scenes['quiet-eerie-mystery'];
   if (!scene) {
     throw new Error('Missing rehearsal content');

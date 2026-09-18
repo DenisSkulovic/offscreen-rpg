@@ -100,9 +100,13 @@ export function createScriptedOpenings(
       draftId: string,
       id: string,
       revision: number,
+      contentId?: string,
     ) {
       if (await profiled.handles(owner, draftId, id)) {
-        return profiled.request(owner, draftId, id, revision);
+        return profiled.request(owner, draftId, id, revision, contentId);
+      }
+      if (contentId) {
+        throw new GenerationError('invalid');
       }
       await operations.request(owner, draftId, id, revision);
       return present(await operations.read(owner, id));

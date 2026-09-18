@@ -1,3 +1,5 @@
+import { campaign } from '@offscreen/db/campaign-schema';
+import { loadCampaignSettings } from './campaign-settings';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { and, desc, eq, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
@@ -73,7 +75,10 @@ export async function loadStorytellerContext(
     })
     .from(storyItem)
     .where(eq(storyItem.storyId, input.storyId));
+  const [settingsRow] = await tx.select().from(campaign).where(eq(campaign.storyId, input.storyId));
+  const captured = settingsRow ? await loadCampaignSettings(tx, input.storyId, settingsRow.settingsRevision) : null;
   return contextInputSchema.parse({
+    ...(captured ? { campaignSettings: captured.settings } : {}),
     premise: input.premise,
     current,
     items,

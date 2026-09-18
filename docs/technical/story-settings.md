@@ -1,6 +1,6 @@
 # Versioned story settings and clock policy
 
-Planned contract for [editable presets](../storyteller-settings.md). Existing stories currently capture one profile at Start and have no settings command. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
+Implemented contract for [editable presets](../storyteller-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
 
 ## Data and commands
 
@@ -24,4 +24,10 @@ A creative preset change and a clock reschedule are separate commands. Default s
 
 Instant processes supported mechanics to the next meaningful decision, interruption or completion; it cannot bypass costs, checks, permissions, provider budgets or holds. It is not permission for endless unattended play. Response windows in the POC hold fiction and use a separate real-time allowance where present; changing speed never shortens an already published response deadline. Combat rounds/reactions need their own later scheduling policy, not hourly work ticks.
 
-See [rules and activities](rules-and-activities.md) for due-segment execution. Existing timing descriptions remain accurate for their fixed-duration protocol; this clock is the proposed new protocol, not implemented behavior.
+See [rules and activities](rules-and-activities.md) for due-segment execution. Existing timing descriptions remain accurate for their fixed-duration protocol; the new mechanical activity clock is implemented alongside that protocol.
+
+## Current adapters
+
+Authenticated routes: `PUT /stories/:id/settings/:operationId`, `GET /stories/:id/settings`, `PUT /stories/:id/actions/:operationId`, and `PUT /stories/:id/activity-controls/:operationId`. Private preset save/list and public-default projections are under authenticated `/stories/presets` routes. Start accepts optional campaign configuration; only the scripted pineapple rehearsal enables its authored character/activity menu. No old narrative story is automatically enrolled in mechanics.
+
+Creative task context captures the full settings revision separately from the compiled profile. Private preset application uses its saved profile snapshot. Catalogue defaults replace creative settings only; typed risk/rules remain the nonlethal subset. The lock currently fixes all creative fields and speed as one explicit choice; per-field lock editing and full Ironman remain later scope. Initial pace is selectable before Start. In-play speed controls reschedule an active mechanical activity and set the subsequent default; legacy fixed waits keep their deadlines.

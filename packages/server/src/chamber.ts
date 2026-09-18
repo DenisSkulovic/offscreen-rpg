@@ -1,3 +1,4 @@
+import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { respondToStorySchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { story } from '@offscreen/db/story-schema';
@@ -44,6 +45,7 @@ export function createChamber(database: Database) {
     return {
       ...snapshot,
       canRespond:
+        !snapshot.campaign?.character &&
         snapshot.current.interaction !== null &&
         snapshot.resolution === null &&
         (chamberAllowsResponse(source) ||
@@ -52,6 +54,9 @@ export function createChamber(database: Database) {
   }
 
   return {
+    campaignSettings: stories.campaignSettings,
+    campaignAction: stories.campaignAction,
+    campaignControl: stories.campaignControl,
     list(args: { ownerId: string; before?: string }) {
       return stories.list(args);
     },
@@ -135,6 +140,7 @@ export function createChamber(database: Database) {
       storyId: string;
       candidateId: string;
       expectedDraftRevision: number;
+    campaign?: CampaignStart;
     }) {
       await stories.startFromCandidate(args);
       return read({ ownerId: args.ownerId, storyId: args.storyId });

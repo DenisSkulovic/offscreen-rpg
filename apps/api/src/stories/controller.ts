@@ -47,6 +47,43 @@ export class StoriesController {
       this.stories.list(before ? { ownerId, before } : { ownerId }),
     );
   }
+  @Get('presets/catalogue')
+  presetCatalogue(@Req() request: Request) {
+    return this.run(request, async () => this.stories.campaignSettings.catalogue());
+  }
+  @Get('presets')
+  presets(@Req() request: Request) {
+    return this.run(request, (ownerId) => this.stories.campaignSettings.presets(ownerId));
+  }
+  @Put('presets/:presetId')
+  savePreset(@Req() request: Request, @Param('presetId') id: string, @Body() body: unknown) {
+    return this.run(request, (ownerId) => this.stories.campaignSettings.savePreset({ ownerId, id, body }));
+  }
+  @Get(':id/settings')
+  settingsHistory(@Req() request: Request, @Param('id') storyId: string) {
+    return this.run(request, (ownerId) => this.stories.campaignSettings.history({ ownerId, storyId }));
+  }
+  @Put(':id/settings/:operationId')
+  settings(@Req() request: Request, @Param('id') storyId: string, @Param('operationId') operationId: string, @Body() body: unknown) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.campaignSettings.update({ ownerId, storyId, operationId, body });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
+  @Put(':id/actions/:operationId')
+  campaignAction(@Req() request: Request, @Param('id') storyId: string, @Param('operationId') operationId: string, @Body() body: unknown) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.campaignAction({ ownerId, storyId, operationId, body });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
+  @Put(':id/activity-controls/:operationId')
+  campaignControl(@Req() request: Request, @Param('id') storyId: string, @Param('operationId') operationId: string, @Body() body: unknown) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.campaignControl({ ownerId, storyId, operationId, body });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
   @Put(':id/retries/:retryId')
   retry(
     @Req() request: Request,
@@ -94,6 +131,7 @@ export class StoriesController {
         storyId: id,
         candidateId: parsed.data.candidateId,
         expectedDraftRevision: parsed.data.expectedDraftRevision,
+        ...(parsed.data.campaign ? { campaign: parsed.data.campaign } : {}),
       });
     });
   }

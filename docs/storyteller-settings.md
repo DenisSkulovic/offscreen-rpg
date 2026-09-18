@@ -1,6 +1,6 @@
 # Storyteller presets and customization
 
-Design target, not yet supported by the live-story UI. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
+Implemented for profiled solo stories, with offline rehearsal limits described below. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
 
 ## Settings with distinct meanings
 
@@ -37,3 +37,10 @@ At creation, distinguish editable play from a campaign whose declared settings a
 Ironman may eventually bundle permadeath and other commitments; do not equate a settings lock with that entire mode. For the initial feature, label it **Locked settings**, with a visible summary before Start.
 
 See [game rules](game-rules.md) and [settings execution](technical/story-settings.md).
+
+## Current implementation boundary
+
+The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available.
+
+The offline source does not improvise from arbitrary text: creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. Its offline narrator repeats saved outcomes; it has no special profile voice or absurd-comedy tag branch. Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented. Mid-activity pace changes are separate controls.
+

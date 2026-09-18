@@ -9,6 +9,7 @@ import {
 } from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import { SessionRefresh } from './session-refresh';
+import { paceOptions } from './campaign-play';
 
 export function OpeningPreviewPanel({
   draft,
@@ -20,9 +21,12 @@ export function OpeningPreviewPanel({
   const [preview, setPreview] = useState(initial);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
-  const attempt = useRef<{ id: string; revision: number } | null>(null);
+  const attempt = useRef<{ id: string; revision: number; contentId?: string } | null>(null);
   const storyId = useRef<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [contentId, setContentId] = useState(initial?.contentId ?? '');
+  const [locked, setLocked] = useState(false);
+  const [pace, setPace] = useState('minute');
   useEffect(() => {
     const parsed = z
       .uuid()
@@ -98,8 +102,8 @@ export function OpeningPreviewPanel({
     }
     attempt.current ??=
       preview?.state === 'pending'
-        ? { id: preview.id, revision: preview.sourceRevision }
-        : { id: crypto.randomUUID(), revision: draft.revision };
+        ? { id: preview.id, revision: preview.sourceRevision, contentId: preview.contentId }
+        : { id: crypto.randomUUID(), revision: draft.revision, contentId: contentId || undefined };
     setPending(true);
     setMessage('');
     try {
@@ -108,7 +112,7 @@ export function OpeningPreviewPanel({
         {
           method: 'PUT',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ expectedRevision: attempt.current.revision }),
+          body: JSON.stringify({ expectedRevision: attempt.current.revision, contentId: attempt.current.contentId }),
           signal: AbortSignal.timeout(15000),
         },
       );
@@ -163,6 +167,7 @@ export function OpeningPreviewPanel({
         body: JSON.stringify({
           candidateId: preview.id,
           expectedDraftRevision: draft.revision,
+          campaign: { mechanics: Boolean(preview.contentId), locked, pace: paceOptions.find((option) => option.value === pace)?.pace },
         }),
         signal: AbortSignal.timeout(15000),
       });
@@ -222,6 +227,11 @@ export function OpeningPreviewPanel({
         <p>Storyteller: {preview.storyteller.name}</p>
       ) : null}
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
+      {draft.storyteller ? <label>Opening content <select disabled={pending || starting || Boolean(unresolved)} value={contentId} onChange={(event) => setContentId(event.target.value)}>
+        <option value="">Narrative rehearsal</option>
+        <option value="pineapple-mechanics.v2">Pineapple — dice and consequences</option>
+        <option value="microbe.v1">Microbe — environmental response</option>
+      </select><span className="field-help">Authored examples. Generate a candidate to review its actual starting situation and choices. Selecting content does not rewrite an existing candidate.</span></label> : null}
       {preview && (
         <section aria-label="Opening candidate">
           <p className="field-help">
@@ -264,6 +274,14 @@ export function OpeningPreviewPanel({
           {preview.state === 'failed' && <p>The previous request failed.</p>}
         </section>
       )}
+      {canStart && preview?.storyteller ? (
+        <fieldset disabled={starting || pending}>
+          <legend>Campaign rules</legend>
+          <label><input type="checkbox" checked={locked} onChange={(event) => setLocked(event.target.checked)} /> Lock storyteller and speed settings at Start</label>
+          <label>Game speed <select value={pace} onChange={(event) => setPace(event.target.value)}>{paceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+          <p>Nonlethal rules subset. Pausing remains available. Start preserves the reviewed content and choices.</p>
+        </fieldset>
+      ) : null}
       {canStart ? (
         <p>
           <button

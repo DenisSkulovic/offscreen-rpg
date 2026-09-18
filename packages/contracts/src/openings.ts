@@ -5,6 +5,7 @@ import { passageContentSchema } from './stories';
 
 export const requestOpeningSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483647),
+  contentId: z.enum(['pineapple-mechanics.v2', 'microbe.v1']).optional(),
 });
 export const openingCandidateSchema = z.strictObject({
   content: passageContentSchema,
@@ -16,6 +17,7 @@ export const openingPreviewSchema = z.strictObject({
   isCurrent: z.boolean(),
   mode: z.enum(['scripted', 'provider']),
   storyteller: storytellerSummarySchema.nullable().optional(),
+  contentId: z.string().optional(),
   state: z.enum(['pending', 'running', 'succeeded', 'failed', 'uncertain']),
   candidate: openingCandidateSchema.nullable(),
 });

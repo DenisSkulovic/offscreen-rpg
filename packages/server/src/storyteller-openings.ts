@@ -15,10 +15,11 @@ import {
   offlineExecution,
   type ExecutionPolicy,
 } from '@offscreen/ai/storyteller-policy';
-import { playablePresentation } from '@offscreen/ai/playable';
+import { playablePresentation, playableProposalSchema } from '@offscreen/ai/playable';
 import { openingPreviewSchema } from '@offscreen/contracts/openings';
 import { GenerationError, validId } from './generations';
 import { insertStorytellerTask, storytellerKind } from './storyteller-records';
+import { mechanicalOpening } from './fixtures/mechanical-content';
 
 export function createStorytellerOpenings(
   database: Database,
@@ -57,7 +58,7 @@ export function createStorytellerOpenings(
       .where(eq(draftOpening.draftId, task.source.draftId));
     const presentation =
       row.state === 'succeeded'
-        ? playablePresentation(storytellerResultSchema.parse(row.output).scene)
+        ? playablePresentation(playableProposalSchema.parse(storytellerResultSchema.parse(row.output).scene))
         : null;
     return openingPreviewSchema.parse({
       id: row.id,
@@ -66,6 +67,7 @@ export function createStorytellerOpenings(
         draft?.revision === task.source.draftRevision &&
         latest?.generationId === id,
       mode: task.execution.mode,
+      contentId: task.context.mechanicalOpening?.content.id,
       storyteller: storytellerSummary(task.profile),
       state: row.state,
       candidate: presentation?.interaction ? presentation : null,
@@ -111,6 +113,7 @@ export function createStorytellerOpenings(
       draftId: string,
       id: string,
       expectedRevision: number,
+      contentId?: string,
     ) {
       validId(id);
       validId(draftId);
@@ -137,7 +140,8 @@ export function createStorytellerOpenings(
           if (
             original.task !== 'opening' ||
             original.source.draftId !== draftId ||
-            original.source.draftRevision !== expectedRevision
+            original.source.draftRevision !== expectedRevision ||
+            original.context.mechanicalOpening?.content.id !== contentId
           ) {
             throw new GenerationError('conflict');
           }
@@ -160,15 +164,17 @@ export function createStorytellerOpenings(
         ) {
           throw new GenerationError('busy');
         }
+        const seed = contentId ? mechanicalOpening(contentId) : undefined;
         const task = prepareStorytellerTask({
           task: 'opening',
           source: { draftId, draftRevision: draft.revision },
           profile: storytellerCatalogue.resolve(draft.storyteller),
           execution,
           context: {
+            ...(seed ? { mechanicalOpening: seed } : {}),
             premise: {
-              title: draft.title,
-              premise: draft.premise,
+              title: seed?.opening.title ?? draft.title,
+              premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,
               storytellingDirection: draft.storytellingDirection,
             },
             current: null,

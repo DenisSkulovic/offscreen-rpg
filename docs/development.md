@@ -121,3 +121,7 @@ Run `pnpm chamber` for the authenticated local launcher, then navigate to `/stor
 Migration `0014_eminent_dagger.sql` adds nullable profile/execution/notes fields and private publication/accounting records. The launcher applies migrations to its dedicated local database. It creates no live funding allowance and does not enable provider execution.
 
 After a fresh affected build, `pnpm --filter @offscreen/api test:storyteller` runs the focused PostgreSQL/Temporal/browser suite with `DATABASE_TEST_URL` targeting `offscreen_auth_test`. Run it sequentially with other integration suites because they share ports. AI package tests inject fake HTTP transports; the integration suite uses local scripted/fake providers. No saved provider credentials are read. Production live flags and execution policy are documented in [runtime](technical/storyteller-runtime.md); their presence does not supersede the spending rule.
+
+## Mechanical rehearsal
+
+After the local launcher builds and applies migrations, open `/stories`, create the pineapple/SpongeBob premise, select a storyteller and generate the offline preview. Keep **D&D activity rehearsal** selected, choose the starting speed and optional settings lock, then Start. Town offers work and negotiation; shore offers fishing and coastal travel. The activity worker must be running for scheduled hourly results. Creative settings remain editable unless locked. No live key or provider call is needed. Migration 0015 is new; no database was migrated or application started in the implementation turn.

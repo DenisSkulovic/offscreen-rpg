@@ -34,6 +34,10 @@
     "./storyteller-schema": {
       "types": "./dist/src/schema/storyteller.d.ts",
       "default": "./dist/src/schema/storyteller.js"
+    },
+    "./campaign-schema": {
+      "types": "./dist/src/schema/campaign.d.ts",
+      "default": "./dist/src/schema/campaign.js"
     }
   },
   "scripts": {

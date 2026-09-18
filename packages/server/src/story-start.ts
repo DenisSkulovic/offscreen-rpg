@@ -1,3 +1,4 @@
+import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { storytellerKind } from './storyteller-records';
 import { startStorytellerCandidate } from './storyteller-start';
 import {
@@ -26,6 +27,7 @@ type StartFromCandidate = Readonly<{
   storyId: string;
   candidateId: string;
   expectedDraftRevision: number;
+    campaign?: CampaignStart;
 }>;
 
 export function createStoryStart(database: Database) {
@@ -34,6 +36,7 @@ export function createStoryStart(database: Database) {
     storyId,
     candidateId,
     expectedDraftRevision,
+    campaign,
   }: StartFromCandidate) {
     const id = parseStoryIdentifier(storyId);
     const generationId = parseStoryIdentifier(candidateId);
@@ -59,6 +62,7 @@ export function createStoryStart(database: Database) {
           storyId: id,
           expectedDraftRevision,
           candidate,
+          ...(campaign ? { campaign } : {}),
         });
         return;
       }

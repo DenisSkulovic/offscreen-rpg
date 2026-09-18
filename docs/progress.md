@@ -35,9 +35,21 @@ The owner asked to stop spending effort chasing minor green checks. No further p
 
 The selected regression scope includes the new profiled suite plus existing Start and generated-resolution integrations. It exercises the real PostgreSQL/Temporal/browser boundary without inference. The full auth and all legacy suites are not rerun by default on this laptop. Automated structural checks cannot certify profile fidelity, meaningful live agency, enjoyable prose or sustained model continuity.
 
-## Planned mechanical POC expansion
+## Mechanical POC and customization — connected authored slice
 
-On 2026-09-18 the owner reaffirmed D&D mechanics as fundamental and requested design/handoffs for visible checks, situation-dependent choices, editable storyteller presets/custom tags, locked settings and time controls. These are **designed, not implemented**. The narrative rehearsal has no character-check engine or generated mechanical effects. See the [next feature sequence](features/README.md#mechanical-poc-and-customization). Documentation preparation is authorized; this new implementation sequence has not been requested yet. Checks remain optional.
+**Known architectural blockers:** simulation must use ticks with separate real-time scheduling and optional fictional calendar presentation. Current code instead uses fictional milliseconds and retains hourly fields. The creative settings/tag implementation also falls short of the documented definition, revision, scope and conflict contract. Global `surprises` and `emphasis` enums are not a tag system. [Tick and tag contracts](technical/ticks-and-tags.md) records the required correction; it is not implemented. The connected path below does not establish architectural acceptance.
+
+Review disposition: preserve the current work on `codex/mechanical-runtime-checkpoint` as an unfinished development checkpoint, without merging into `main`. Source review fixed creation-setting retry matching and misleading encounter-frequency labelling. Runtime/build checks remain skipped. Context-preparation failure isolation and recovery after a later profile switch remain recorded in the owning plan alongside the tick/tag blockers.
+
+The architecture repair replaces the scenario-coupled command loop with captured action definitions, fact prerequisites, typed effects and a millisecond clock. Immediate and timed actions use one resolver. Independent ability and event schedules can coexist; an interruption stops future progress and completion effects. Core execution has no currency, profession, coastal route or storyteller-name branch.
+
+Opening preview explicitly selects pineapple or microbe content and captures the character, action definitions and reviewed choices. Start preserves that content. The microbe has no quantities or location and includes a possible environmental interruption during its ten-second response. No-choice is an explicit held state. These are small authored examples, not arbitrary-premise generation.
+
+Terminal outcomes now admit a consequence task through the existing storyteller execution, accounting, publication, continuity and retry machinery. Its context contains saved dice/effects, character state, opportunities and creative settings. Failed narration leaves the deterministic outcome visible and cannot reroll it. The offline narrator repeats the factual summary; it does not improvise arbitrary styles or tags.
+
+The four mechanical/customization features remain partial: generated opportunity/adjudication, broader mechanical rules and richer interruption continuation remain open. See the [current repair checkpoint](features/dnd-checks-and-visible-outcomes/PLAN.md). This is a concrete connected foundation, not completion of arbitrary generated gameplay.
+
+Migration 0017 adds captured content without rewriting existing records. Earlier prototype stories remain inspectable with an explicit unavailable message; their old mechanics are retired. No migration was applied, and no builds/tests/lint/runtime checks were run. Migration generation only created local files. Earlier test evidence applies to earlier code.
 
 ## Current focus and next gate
 
@@ -52,3 +64,5 @@ The later real playthrough must score profile adherence, intention fidelity, opt
 The full Chamber laboratory, multiplayer, notifications, campaign pace, dynamic interruptions, richer entity state and hosted onboarding remain separate product work. A coherent small solo game does not require detailed population simulation, interactive 3D maps or an agent per NPC. New complexity should earn its place through observed failures in the playable loop.
 
 No live model calls occurred during this implementation. Provider spend is $0; cumulative OpenRouter account usage has not been verified. Local scripted testing remains the default.
+
+

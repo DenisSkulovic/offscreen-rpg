@@ -19,7 +19,7 @@ This local solo milestone precedes broader shared-play, notification and hosted-
 
 ## Mechanical POC and customization
 
-Designed from the owner's 2026-09-18 requirements; not implemented. These handoffs extend the narrative rehearsal into a rules-based game. Suggested delivery order puts visible dice first; settings may proceed independently after its current runtime dependency. Checks remain optional, and no live spending is authorized.
+Partially implemented following the owner's 2026-09-18 authorization; source review found architecture blockers. Start with the [shared repair plan](dnd-checks-and-visible-outcomes/PLAN.md). Checks were not run. These handoffs extend the narrative rehearsal into a rules-based game. Suggested delivery order puts visible dice first; settings may proceed independently after its current runtime dependency. Checks remain optional, and no live spending is authorized.
 
 1. [D&D checks and visible outcomes](dnd-checks-and-visible-outcomes/FEATURE.md) — authoritative rolls, character state and effects before narration.
 2. [Situation-dependent options](contextual-option-agency/FEATURE.md) — broad menus, feasible constrained responses and typed actions.

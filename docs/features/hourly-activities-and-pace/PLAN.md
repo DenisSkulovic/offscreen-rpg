@@ -1,8 +1,8 @@
 # Implementation plan
 
 Feature: [Hourly activities, travel checks and adjustable pace](FEATURE.md).
-Execution scope: documentation/handoff only so far; implementation awaits an instruction to proceed.
-Implementation owner: Cursor by default; reviewer: Codex.
+Execution scope: all phases authorized by the owner on 2026-09-18.
+Implementation owner: Codex, explicitly assigned by the owner.
 
 ## Phases
 
@@ -22,8 +22,7 @@ Optional evidence: use injected rolls and a controlled clock for five-hour compl
 
 ## Current checkpoint
 
-- Current phase: design ready; implementation has not started. Next action: when assigned implementation, read phase 1 dependencies and current working changes, then implement that slice.
-- Base: existing uncommitted storyteller runtime implementation; no isolated clean revision is claimed. Preserve staged and unstaged work. Existing admission captures one profile; generated continuations have no mechanical effects.
-- Checks: none run for this documentation work. Checks are optional under [verification policy](../../../.agents/rules/verification.md), never a phase completion gate. Acceptance describes behavior to deliver, not a mandatory test suite.
-- Blockers: dependencies listed per phase; broader edition/combat decisions do not block the bounded subset.
-- Provider spend: $0; cumulative account usage unverified. Live inference remains disabled.
+- Status: connected authored mechanical slice implemented; full feature acceptance remains partial. The shared resolver and consequence narrator now use captured action content and the existing execution/publication/retry lifecycle.
+- Follow the [current repair checkpoint](../dnd-checks-and-visible-outcomes/PLAN.md) for the delivered boundary, remaining generated opportunity/adjudication work and next action. Do not recreate the retired scenario-specific path.
+- Base: `ae9d144`; implementation remains uncommitted. Migration 0017 adds captured content; it has not been applied. Earlier prototype records remain inspectable with explicit unsupported status.
+- Verification: source review only. No builds/tests/lint/runtime checks or live calls. Provider spend $0; cumulative account usage unverified.

@@ -1,7 +1,7 @@
 # D&D checks and visible persistent outcomes
 
-Status: Designed; not implemented.
-Approval: The owner requested these product capabilities and documentation/handoffs on 2026-09-18. Detailed POC policies below are proposed design decisions; bulk implementation is not authorized by this documentation request.
+Status: Connected authored slice implemented; broader feature acceptance remains partial. Checks not run. See the shared repair checkpoint.
+Approval: On 2026-09-18 the owner authorized implementation of all four features and delegated the D&D baseline choice. Use SRD 5.2.1 (revised fifth edition), with explicitly authored activity extensions.
 
 ## Intended outcome
 
@@ -13,7 +13,7 @@ Start the pineapple story with an authored character sheet. Select a supported s
 
 ## Scope and boundaries
 
-Six abilities, skill proficiency, captured proficiency bonus, HP/currency storage, d20 checks, advantage/disadvantage, supported currency effects and public roll history. HP is stored for later combat, not a complete damage/death system. One authored character and activity definition are sufficient. No character builder, full combat, XP, arbitrary model-defined effects or live inference.
+Six abilities, skill proficiency, captured proficiency bonus, HP and optional story-defined quantities, d20 checks, advantage/disadvantage, supported declared-quantity effects and public roll history. HP is stored for later combat, not a complete damage/death system. One authored character and activity definition are sufficient. No character builder, full combat, XP, arbitrary model-defined effects or live inference.
 
 ## Acceptance
 
@@ -25,7 +25,7 @@ Six abilities, skill proficiency, captured proficiency bonus, HP/currency storag
 
 ## Decisions still needed
 
-No blocker to the documented bounded offline subset. Exact D&D edition/content reuse must be selected before claiming full compatibility or importing published content. Broader combat, autonomy and shared-world policies are outside these features.
+The [shared architecture repair plan](../dnd-checks-and-visible-outcomes/PLAN.md) records confirmed blockers. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
 
 ## Owning specifications
 
@@ -33,3 +33,6 @@ No blocker to the documented bounded offline subset. Exact D&D edition/content r
 - [Storyteller customization](../../storyteller-settings.md)
 - [Rules and activities](../../technical/rules-and-activities.md)
 - [Settings and clock](../../technical/story-settings.md)
+
+World boundary: D&D + LLM DM + time is the core. Wages, currency, professions and locations in this feature are authored pineapple examples. Generic character/roll contracts must allow no quantities and no resource effects. Migration 0016 preserves earlier fixture balances while removing the dedicated money fields.
+

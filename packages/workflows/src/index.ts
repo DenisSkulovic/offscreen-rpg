@@ -12,6 +12,7 @@ import type {
   DecisionActivities,
   ContinuationActivities,
   StorytellerActivities,
+  CampaignActivities,
 } from './contracts';
 
 const { completeScriptedOpening } = proxyActivities<OpeningActivities>({
@@ -103,4 +104,16 @@ const { completeStoryteller } = proxyActivities<
 // Redelivery retries execution bookkeeping/publication, never an uncertain paid dispatch.
 export async function storytellerV1(id: string): Promise<void> {
   await completeStoryteller(id);
+}
+
+const { advanceCampaignActivity } = proxyActivities<CampaignActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
+export async function campaignActivityV1(id: string): Promise<void> {
+  while (true) {
+    const remaining = await advanceCampaignActivity(id);
+    if (remaining === null) return;
+    await sleep(Math.max(1, remaining));
+  }
 }

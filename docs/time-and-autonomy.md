@@ -1,6 +1,8 @@
 # Time and autonomy
 
-The story unfolds across two kinds of time: duration inside the fiction and time the player actually waits. A day's journey might occupy several real minutes or hours. A reply to someone standing in front of the character may need to follow immediately.
+Simulation time is measured in ticks. A tick is an ordered unit of progression, not an hour, a second, a narration beat or an LLM call. Real elapsed time determines how quickly eligible ticks advance under the selected pace. A world's calendar and duration labels are optional content projections over ticks; a microbe or distributed consciousness does not require human calendar concepts.
+
+Actions declare durations and rule cadences in ticks. Different checks can be due at different tick boundaries. The runtime may batch quiet ticks or wake at the next meaningful boundary, but must preserve the same ordered consequences and stop at the first interruption. Choosing an efficient scheduler does not change the simulation's time model.
 
 ## Pace
 
@@ -18,7 +20,7 @@ A development scheduled for a fictional date follows the game clock. Its estimat
 
 Separate the clock advancing, supported rules reaching a boundary, and the storyteller producing a development. During a permitted routine, code may apply a known outcome and schedule the next relevant boundary without calling a model. Reaching a condition that needs interpretation can request the storyteller. Neither a clock refresh nor each ordinary state update requires narration, a notification or a new choice screen.
 
-A once-per-second tick is a candidate cadence, not a settled requirement. It may serve display, lightweight simulation or both; those roles need not share the same implementation. Show progress from an authoritative timing anchor and pace, then reconcile with committed state. Scheduling the next meaningful boundary is another option that can preserve continuous elapsed time while doing no per-second database writes or model calls. A duration estimate does not itself prove movement, earned resources or completion.
+There is no universal real-time tick frequency. Keep simulation tick position, real-time scheduling and UI refresh cadence separate. Pace maps real elapsed time to simulation ticks; pause and decision holds stop advancement. Rate changes preserve earned progress, including the uncompleted fraction of a tick. Scheduling the next meaningful tick boundary avoids compulsory per-tick writes or model calls. A duration estimate does not itself prove movement, earned resources or completion.
 
 For example, a supported rest interval can advance toward its next needs check while the screen remains unchanged. The check may produce a routine consequence or require a decision. This example does not establish a universal hunger meter or a subsystem for every activity. Arbitrary model-invented routines still need a supported resolution policy or fresh interpretation; quiet-story settings alone cannot make them free.
 

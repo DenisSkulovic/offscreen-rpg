@@ -65,6 +65,7 @@ export class OpeningsController {
         draftId,
         id,
         parsed.data.expectedRevision,
+        parsed.data.contentId,
       );
     });
   }

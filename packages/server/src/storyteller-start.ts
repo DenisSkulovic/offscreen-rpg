@@ -1,3 +1,8 @@
+import { campaignStartSchema, campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { campaignSettings } from '@offscreen/db/campaign-schema';
+import { isDeepStrictEqual } from 'node:util';
+import { initializeCampaign } from './campaign-settings';
+import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { and, eq } from 'drizzle-orm';
 import type { generation } from '@offscreen/db/generation-schema';
 import { draftOpening } from '@offscreen/db/generation-schema';
@@ -7,7 +12,7 @@ import {
   storytellerTaskSchema,
   validateStorytellerResult,
 } from '@offscreen/ai/storyteller-tasks';
-import { playablePresentation } from '@offscreen/ai/playable';
+import { playablePresentation, playableProposalSchema } from '@offscreen/ai/playable';
 import type { Transaction } from './outbox';
 import { initializeStoryInTransaction } from './story-initialization';
 import { publishStorytellerNotes } from './storyteller-memory';
@@ -19,6 +24,7 @@ export async function startStorytellerCandidate(
     ownerId: string;
     storyId: string;
     expectedDraftRevision: number;
+    campaign?: CampaignStart;
     candidate: typeof generation.$inferSelect;
   },
 ) {
@@ -51,8 +57,12 @@ export async function startStorytellerCandidate(
   ) {
     throw new StoryError('conflict');
   }
+  const options = campaignStartSchema.parse(input.campaign ?? {});
+  if (options.mechanics !== Boolean(task.context.mechanicalOpening)) {
+    throw new StoryError('invalid');
+  }
   const result = validateStorytellerResult(task, input.candidate.output);
-  const presentation = playablePresentation(result.scene);
+  const presentation = playablePresentation(playableProposalSchema.parse(result.scene));
   const created = await initializeStoryInTransaction(tx, {
     ownerId: input.ownerId,
     storyId: input.storyId,
@@ -68,8 +78,21 @@ export async function startStorytellerCandidate(
     },
   });
   if (!created) {
+    // A retry must recover the accepted creation settings, not silently accept
+    // a different lock or pace under the same story identity.
+    const [initialSettings] = await tx.select().from(campaignSettings).where(and(
+      eq(campaignSettings.storyId, input.storyId),
+      eq(campaignSettings.revision, 1),
+    ));
+    if (initialSettings) {
+      const accepted = campaignSettingsSchema.parse(initialSettings.settings);
+      if (accepted.locked !== options.locked || !isDeepStrictEqual(accepted.pace, options.pace)) {
+        throw new StoryError('conflict');
+      }
+    }
     return;
   }
+  await initializeCampaign(tx, input.storyId, task.profile, options, task.context.mechanicalOpening);
   const [passage] = await tx
     .select({ id: storyPassage.id })
     .from(storyPassage)

@@ -1,3 +1,5 @@
+import { initialCreative } from './campaign-settings';
+import { readCampaign } from './campaign-reads';
 import {
   storytellerProfileSchema,
   storytellerSummary,
@@ -110,6 +112,7 @@ export function createStoryReads(database: Database) {
           profile: story.storyteller,
           content: storyPassage.content,
           interaction: storyPassage.interaction,
+          activityState: sql<string | null>`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id})`,
           wait: storyPassage.waitPlan,
           remaining: storyPassage.remainingMs,
         })
@@ -132,13 +135,14 @@ export function createStoryReads(database: Database) {
             row.profile == null
               ? null
               : storytellerSummary(storytellerProfileSchema.parse(row.profile)),
-          status: listStoryStatus(row),
+          status: row.activityState === 'running' ? 'Activity in progress' : row.activityState === 'paused' ? 'Activity paused' : row.activityState === 'encounter' ? 'An encounter awaits' : listStoryStatus(row),
         })),
         nextBefore: rows.length > 20 ? rows[19]?.id : null,
       });
     },
     async readSnapshot({ ownerId, storyId }: OwnedStory) {
-      const [row] = await database.db
+      return database.db.transaction(async (tx) => {
+      const [row] = await tx
         .select({
           id: story.id,
           storyteller: story.storyteller,
@@ -194,6 +198,7 @@ export function createStoryReads(database: Database) {
         throw new StoryError('not_found');
       }
       return storySnapshotSchema.parse({
+        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', game: 1440, real: 1 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, location: null, gameTimeMs: 0, offer: null, activity: null, rolls: [] } : null),
         id: row.id,
         storyteller:
           row.storyteller == null
@@ -253,6 +258,7 @@ export function createStoryReads(database: Database) {
                   row.resolutionState === 'failed',
               },
       });
+      }, { isolationLevel: 'repeatable read', accessMode: 'read only' });
     },
 
     async readHistory({ ownerId, storyId, before }: ReadStoryHistory) {

@@ -11,7 +11,8 @@ import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { setPublication, storytellerKind } from './storyteller-records';
 import { translateGeneratedContinuation } from './generated-continuation';
 import { commitStoryContinuation } from './story-continuation';
-import { lockOwnedStory } from './story-persistence';
+import { lockOwnedStory, insertContinuationPassage, advanceStoryView } from './story-persistence';
+import { publishStorytellerNotes } from './storyteller-memory';
 import { StoryError } from './story-errors';
 import { continuationSchema } from './story-command-policy';
 
@@ -55,6 +56,20 @@ export async function publishStorytellerResult(
       .where(eq(storyResolution.generationId, id));
     if (!resolution || resolution.basePassageId !== task.source.passageId) {
       throw new StoryError('invalid');
+    }
+    if (task.task === 'consequence') {
+      const passageId = await insertContinuationPassage(tx, {
+        storyId: current.id, sequence: current.revision + 1, transitionId: resolution.operationId,
+        sourceGenerationId: id, responseSource: null,
+        input: { expectedRevision: current.revision, content: result.scene.content,
+          effects: [], response: null, interaction: null, wait: null, decision: null,
+          sourceGenerationPart: 'current' },
+      });
+      await publishStorytellerNotes(tx, { storyId: current.id, generationId: id, passageId,
+        revision: current.revision + 1, sourcePart: 'current', notes: current.continuityNotes });
+      await advanceStoryView(tx, { storyId: current.id, revision: current.revision + 1, viewVersion: current.viewVersion + 1 });
+      await setPublication(tx, id, 'published');
+      return;
     }
     const proposed = translateGeneratedContinuation({
       output: result.scene,

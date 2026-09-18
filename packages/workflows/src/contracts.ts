@@ -29,5 +29,10 @@ export const decisionWorkflowId = (id: string) => `story-decision/${id}`;
 export interface StorytellerActivities {
   completeStoryteller(id: string): Promise<void>;
 }
+export interface CampaignActivities {
+  advanceCampaignActivity(id: string): Promise<number | null>;
+}
+export const campaignActivityWorkflowType = 'campaignActivityV1';
+export const campaignActivityWorkflowId = (id: string) => `campaign-activity/${id}`;
 export const storytellerWorkflowType = 'storytellerV1';
 export const storytellerWorkflowId = (id: string) => `storyteller/${id}`;

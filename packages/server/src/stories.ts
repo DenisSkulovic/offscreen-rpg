@@ -1,3 +1,8 @@
+import { createCampaignSettings } from './campaign-settings';
+import { createCampaignActions } from './campaign-actions';
+import { createCampaignControls } from './campaign-controls';
+import { createCampaignActivities } from './campaign-activities';
+import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { retryStoryteller } from './storyteller-recovery';
 import type { Database } from '@offscreen/db';
 import { createStoryContinuation } from './story-continuation';
@@ -23,6 +28,10 @@ export function createStories(database: Database) {
   const resolution = createStoryResolution(database);
   const timing = createStoryTiming(database);
   return {
+    campaignSettings: createCampaignSettings(database),
+    campaignAction: createCampaignActions(database),
+    campaignControl: createCampaignControls(database),
+    advanceCampaignActivity: createCampaignActivities(database).advance,
     list(args: { ownerId: string; before?: string }) {
       return reads.listStories(args);
     },
@@ -97,6 +106,7 @@ export function createStories(database: Database) {
       storyId: string;
       candidateId: string;
       expectedDraftRevision: number;
+    campaign?: CampaignStart;
     }) {
       await startPlayableCandidate(args);
       return reads.readSnapshot({

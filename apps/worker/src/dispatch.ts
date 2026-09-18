@@ -2,6 +2,8 @@ import { storytellerTopic } from '@offscreen/server/storyteller-runtime';
 import {
   storytellerWorkflowType,
   storytellerWorkflowId,
+  campaignActivityWorkflowType,
+  campaignActivityWorkflowId,
 } from '@offscreen/workflows/contracts';
 import type { Client, Connection } from '@temporalio/client';
 import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
@@ -41,6 +43,9 @@ type WakeNotice = {
 };
 
 const noticeDispatch = {
+  'campaign.activity.v1': {
+    kind: 'start', workflowType: campaignActivityWorkflowType, workflowId: campaignActivityWorkflowId,
+  },
   [storytellerTopic]: {
     kind: 'start',
     workflowType: storytellerWorkflowType,
@@ -78,6 +83,7 @@ const noticeDispatch = {
 } as const satisfies Record<string, StartNotice | WakeNotice>;
 
 export const dispatchedNoticeTopics = [
+  'campaign.activity.v1',
   storytellerTopic,
   scriptedOpeningTopic,
   scriptedContinuationTopic,

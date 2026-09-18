@@ -1,3 +1,4 @@
+import { campaign } from '@offscreen/db/campaign-schema';
 import { and, eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
 import { generation } from '@offscreen/db/generation-schema';
@@ -40,6 +41,10 @@ export async function admitStorytellerResolution(
   },
 ) {
   const { current, operationId, expectedRevision } = input;
+  const [mechanics] = await tx.select().from(campaign).where(eq(campaign.storyId, current.id));
+  // Mechanical intentions enter through campaign actions; consequence narration
+  // shares this runtime but cannot bypass the admitted plan or reroll its results.
+  if (mechanics?.character) throw new StoryError('conflict');
   const submission = interactionSubmissionSchema.parse(input.submission);
   const [prior] = await tx
     .select()
