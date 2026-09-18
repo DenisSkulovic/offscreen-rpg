@@ -290,7 +290,7 @@ test(
             });
             assert.match(
               arrived.current.content.paragraphs.join(' '),
-              /remembering/,
+              /delivery.*remains unexplained/i,
             );
             assert.equal(arrived.revision, journey.snapshot.revision + 1);
             await choose(first.storyId, 'return');

@@ -40,8 +40,8 @@ Implementation owner: Codex for the current bounded slice; owner review remains 
 
 ## Current checkpoint
 
-- Current phase and exact next action: phase 3 implementation is complete; next run the persisted browser flow and begin phase 4 owner review of specificity, agency, restraint, consequence fidelity and genre fit.
-- Base/reviewed Git revision and relevant changes: phase 2 was pushed as `5bed48b`; the current working slice adds public intention/risk projection to opening review and live play without exposing private mechanics.
-- Actual checks/results for this revision; checks not run: game build and 16 tests pass; contracts/application builds, web typecheck and API integration TypeScript build pass. The PostgreSQL/Temporal/browser integration and visual desktop/mobile walkthrough were not executed in this slice.
-- Unresolved findings/blockers: state-responsive offline proposals and their public projection are structurally demonstrated, but no persisted browser run or human taste review yet establishes enjoyable play. Consequence prose still mirrors the committed receipt in one paragraph.
+- Current phase and exact next action: phases 2 and 3 now have persisted production-path evidence; next begin phase 4 owner review of specificity, agency, restraint, consequence fidelity and genre fit, including the visual narrow/wide walkthrough.
+- Base/reviewed Git revision and relevant changes: phase 2 was pushed as `5bed48b` and public intention/risk projection as `891a012`; this verification slice refreshes the integration expectation to match the authored delivery-remains-unexplained consequence.
+- Actual checks/results for this revision; checks not run: game build and 16 tests pass; contracts/application builds, web typecheck and API integration TypeScript build pass. The focused PostgreSQL/Temporal Storyteller integration passes 9/9, including the three-round state-changing benchmark and a browser profile/start/choose/reload journey. The visual desktop/mobile taste walkthrough was not executed.
+- Unresolved findings/blockers: state-responsive offline proposals, public projection and persistence are structurally demonstrated, but human taste review has not established enjoyable play. Consequence prose still mirrors the committed receipt in one paragraph.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.
