@@ -116,7 +116,7 @@ Direct exactly-once adjudication, bounded emergent state and the offline opening
 
 All authored examples use the same plan/admission/resolution contract. Neither task specialization nor context validation assumes a currency, human calendar, movement mode, profession, species or setting. Activity-progress design remains outside this authorization. No provider spend is authorized.
 
-Verification: game tests pass 16/16. Storyteller tests pass 25/25, including fresh opening/consequence plans and rejection of fabricated evidence, unsupported abilities and duplicate plans. Storyteller and application builds plus web typecheck pass for this slice. No database/browser/full-game rehearsal was run, so consecutive persisted rounds remain unverified at runtime. Provider spend: $0; cumulative account usage unverified.
+Verification: game tests pass 16/16. Storyteller tests pass 25/25, including fresh opening/consequence plans and rejection of fabricated evidence, unsupported abilities and duplicate plans. Storyteller and application builds plus web typecheck pass. The API integration suite now specifies three consecutive generated mechanical rounds and compiles, but could not run because the local Docker engine—and therefore PostgreSQL/Temporal—was unavailable. Consecutive persisted browser rounds remain unverified at runtime. Provider spend: $0; cumulative account usage unverified.
 
 ## POC acceleration audit — 2026-09-18
 

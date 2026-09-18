@@ -8,6 +8,7 @@ import type * as Drizzle from 'drizzle-orm' with {
   'resolution-mode': 'require',
 };
 import { generation } from '@offscreen/db/generation-schema';
+import { gameActionReceipt } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
@@ -27,6 +28,7 @@ import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
 import { withBrowserSession } from './helpers/browser-session.js';
+import { requireDefined } from './helpers/require.js';
 
 const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');
 const { eq } = orm;
@@ -48,6 +50,7 @@ test(
         const drafts = createDrafts(database);
         const openings = createScriptedOpenings(database);
         const stories = createChamber(database);
+        const storyService = createStories(database);
         const runtime = createStorytellerRuntime(database, {
           realDurationMs: () => 1000,
         });
@@ -71,6 +74,38 @@ test(
             expectedDraftRevision: 1,
           });
           return { draftId, generationId, storyId, snapshot };
+        }
+        async function mechanicalCandidate() {
+          const draftId = randomUUID();
+          await drafts.save(ownerId, draftId, {
+            title: 'Mechanical loop test',
+            premise: 'Wake in a strange place and respond carefully.',
+            storytellingDirection: '',
+            storyteller: { id: 'absurd-action-comedy', revision: 1 },
+            expectedRevision: 0,
+          });
+          const generationId = randomUUID();
+          await openings.request(
+            ownerId,
+            draftId,
+            generationId,
+            1,
+            'pineapple-mechanics.v4',
+          );
+          await runtime.complete(generationId);
+          const storyId = randomUUID();
+          const snapshot = await stories.startFromCandidate({
+            ownerId,
+            storyId,
+            candidateId: generationId,
+            expectedDraftRevision: 1,
+            campaign: {
+              mechanics: true,
+              locked: false,
+              pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+            },
+          });
+          return { storyId, snapshot };
         }
         async function choose(storyId: string, optionId: string) {
           const before = await stories.read({ ownerId, storyId });
@@ -97,6 +132,78 @@ test(
           };
         }
         const first = await candidate();
+        await t.test(
+          'mechanical opening and three consequences retain one admitted plan source',
+          async () => {
+            const started = await mechanicalCandidate();
+            let snapshot = started.snapshot;
+            assert.equal(snapshot.revision, 1);
+            assert.equal(
+              snapshot.campaign?.offer?.nodes[0]?.id,
+              'assess-situation',
+            );
+
+            for (let round = 0; round < 3; round++) {
+              const campaign = requireDefined(
+                snapshot.campaign,
+                'Expected a mechanical campaign',
+              );
+              const offer = requireDefined(
+                campaign.offer,
+                'Expected a generated mechanical offer',
+              );
+              const action = requireDefined(
+                offer.nodes[0],
+                'Expected an admitted mechanical action',
+              );
+              assert.ok(action.action);
+              const operationId = randomUUID();
+              await stories.campaignAction({
+                ownerId,
+                storyId: started.storyId,
+                operationId,
+                body: {
+                  expectedRevision: snapshot.revision,
+                  offerId: offer.id,
+                  path: [action.id],
+                },
+              });
+              const committed = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(committed.revision, snapshot.revision);
+              assert.equal(committed.campaign?.offer, null);
+              assert.equal(
+                committed.campaign?.actionReceipts[0]?.id,
+                operationId,
+              );
+              assert.equal(
+                committed.campaign?.actionReceipts[0]?.state,
+                'pending',
+              );
+
+              await storyService.prepareCampaignConsequence(operationId);
+              const [receipt] = await database.db
+                .select({ generationId: gameActionReceipt.generationId })
+                .from(gameActionReceipt)
+                .where(eq(gameActionReceipt.operationId, operationId));
+              assert.ok(receipt?.generationId);
+              await runtime.complete(receipt.generationId);
+              snapshot = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(snapshot.revision, round + 2);
+              assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
+              assert.equal(
+                snapshot.campaign?.actionReceipts[0]?.state,
+                'published',
+              );
+              assert.ok(snapshot.campaign?.offer?.nodes.length);
+            }
+          },
+        );
         await t.test(
           'captured selection, ownership, duplicate publication and distinct intentions',
           async () => {
