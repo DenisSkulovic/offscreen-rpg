@@ -1,6 +1,6 @@
 # Playable DM adjudication loop
 
-Status: In progress. The owner authorized implementation of this offline slice on 2026-09-18. This does not authorize live inference.
+Status: Implementation paused at the owner-requested experience review. The offline authority work authorized on 2026-09-18 remains valid history, but no further expansion or live inference is authorized until the agency/taste review.
 
 ## Why this is the next slice
 

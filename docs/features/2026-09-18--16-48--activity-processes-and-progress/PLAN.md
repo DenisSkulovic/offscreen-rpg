@@ -8,7 +8,7 @@ Provider spend: none required or authorized.
 
 Replace tick-duration activities with a process protocol. The clock schedules resolution; a captured server-owned rule defines progress and completion. Do not rename `durationTicks` to `requiredPoints` and keep the same architecture.
 
-The first implementation should prove three genuinely different semantics through one lifecycle:
+The first implementation should now be driven by the [earned-time playable loop](../2026-09-19--00-26--earned-time-playable-loop/FEATURE.md). Approve and implement only the contribution/runtime subset required by that player flow before expanding to the other proposed semantics. The broader architecture should eventually prove three genuinely different semantics through one lifecycle:
 
 1. contribution toward a content-defined requirement;
 2. a clock-condition wait with no contribution quantity;
@@ -64,4 +64,4 @@ Exit: a generated option can begin a supported process, survive absence, reach a
 
 ## Current checkpoint
 
-The current code still uses `durationTicks` and therefore does not satisfy this feature. No code or schema changes were made in this design pass. The next action is owner review of FEATURE.md, especially the progress families, runtime/rule ownership and proposed first three semantics. After approval, update permanent specifications before changing contracts or migrations.
+The current code still uses `durationTicks` and therefore does not satisfy this feature. No code or schema changes were made in this design pass. The next action is joint owner review of this architecture and the earned-time feature's gold shift: settle the smallest contribution rule, capacity claim, interruption/resumption semantics and real-time acceptance duration. Do not implement traversal or all process families merely to complete this plan. After approval, update permanent specifications before changing contracts or migrations.
