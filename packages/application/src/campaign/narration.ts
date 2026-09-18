@@ -1,6 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq, gt, lte } from 'drizzle-orm';
-import { campaign, gameRoll } from '@offscreen/db/campaign-schema';
+import { z } from 'zod';
+import type { Database } from '@offscreen/db';
+import {
+  campaign,
+  campaignConsequence,
+  gameRoll,
+} from '@offscreen/db/campaign-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema } from '@offscreen/game/state';
@@ -10,15 +16,52 @@ import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import type { Transaction } from '../outbox/index';
 import type { StoryRecord } from '../stories/persistence';
+import { lockStoryById } from '../stories/persistence';
 import { loadStorytellerContext } from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
+import { enqueue } from '../outbox/index';
+
+export const campaignConsequenceTopic = 'campaign.consequence.v1';
+
+const consequenceReceiptSchema = z.strictObject({
+  passageId: z.uuid(),
+  operationId: z.uuid(),
+  afterSegment: z.number().int().nonnegative(),
+  throughSegment: z.number().int().nonnegative(),
+  label: z.string().min(1).max(200),
+  intention: z.string().min(1).max(500),
+});
+
+/**
+ * Persists only the durable request to narrate an already committed consequence.
+ * Context assembly belongs to the later worker operation because a missing note or
+ * oversized context must never undo dice, effects, or the player's command receipt.
+ */
+export async function requestConsequenceNarration(
+  tx: Transaction,
+  current: StoryRecord,
+  receipt: z.infer<typeof consequenceReceiptSchema>,
+) {
+  const parsed = consequenceReceiptSchema.parse(receipt);
+  await tx.insert(campaignConsequence).values({
+    operationId: parsed.operationId,
+    storyId: current.id,
+    passageId: parsed.passageId,
+    baseRevision: current.revision,
+    receipt: parsed,
+  });
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId: parsed.operationId,
+    topic: campaignConsequenceTopic,
+  });
+}
 
 /**
  * Admits narration of receipts, never another attempt at the action.
- * Called inside settlement's transaction: context preparation can still roll back
- * the mechanical result. See ../../README.md, Mechanical selection and consequence.
+ * This runs only from a saved consequence intent after mechanical settlement.
  */
-export async function admitConsequenceNarration(
+async function admitConsequenceNarration(
   tx: Transaction,
   current: StoryRecord,
   receipt: {
@@ -96,4 +139,33 @@ export async function admitConsequenceNarration(
       operationId: receipt.operationId,
     },
   });
+  return id;
+}
+
+/** Idempotently prepares narration after mechanical settlement has committed. */
+export function createConsequenceNarration(database: Database) {
+  return async function prepare(operationId: string) {
+    await database.db.transaction(async (tx) => {
+      const [intent] = await tx
+        .select()
+        .from(campaignConsequence)
+        .where(eq(campaignConsequence.operationId, operationId))
+        .for('update');
+      if (!intent || intent.generationId) return;
+      const current = await lockStoryById(tx, intent.storyId);
+      if (current.revision !== intent.baseRevision) {
+        throw new Error('Consequence narration lost its story revision fence');
+      }
+      const receipt = consequenceReceiptSchema.parse(intent.receipt);
+      const generationId = await admitConsequenceNarration(
+        tx,
+        current,
+        receipt,
+      );
+      await tx
+        .update(campaignConsequence)
+        .set({ generationId })
+        .where(eq(campaignConsequence.operationId, operationId));
+    });
+  };
 }

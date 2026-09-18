@@ -3,6 +3,7 @@ import {
   condition,
   defineSignal,
   setHandler,
+  sleep,
 } from '@temporalio/workflow';
 import { intervalChangedSignal } from './contracts';
 import type {
@@ -94,10 +95,19 @@ const { advanceCampaignActivity } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
+const { prepareCampaignConsequence } = proxyActivities<CampaignActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
 export async function campaignActivityV1(id: string): Promise<void> {
   while (true) {
     const remaining = await advanceCampaignActivity(id);
     if (remaining === null) return;
     await sleep(Math.max(1, remaining));
   }
+}
+
+// This retry can only prepare narration from saved receipts; it cannot reroll.
+export async function campaignConsequenceV1(id: string): Promise<void> {
+  await prepareCampaignConsequence(id);
 }

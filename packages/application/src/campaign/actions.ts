@@ -1,11 +1,13 @@
 import { and, eq } from 'drizzle-orm';
 import { storyResolution } from '@offscreen/db/story-schema';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
-import { actionCommandSchema } from '@offscreen/contracts/campaign';
 import {
-  resolvedActivityPlanSchema,
-} from '@offscreen/game/activities';
+  campaign,
+  campaignConsequence,
+  gameActivity,
+} from '@offscreen/db/campaign-schema';
+import { actionCommandSchema } from '@offscreen/contracts/campaign';
+import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import {
   immediateActionAvailable,
   type ImmediateActionPlan,
@@ -14,11 +16,7 @@ import { selectOfferAction } from '@offscreen/game/offers';
 import { wholeTicks } from '@offscreen/game/time';
 import { lockOwnedStory, readDatabaseClockMs } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import {
-  commandReceipt,
-  saveCommand,
-  loadCampaignSettings,
-} from './settings';
+import { commandReceipt, saveCommand, loadCampaignSettings } from './settings';
 import {
   campaignCharacter,
   campaignOffer,
@@ -58,6 +56,20 @@ export function createCampaignActions(database: Database) {
           ),
         );
       if (narration) {
+        throw new StoryError('conflict');
+      }
+      const [pendingConsequence] = await tx
+        .select({ operationId: campaignConsequence.operationId })
+        .from(campaignConsequence)
+        .where(
+          and(
+            eq(campaignConsequence.storyId, current.id),
+            eq(campaignConsequence.baseRevision, current.revision),
+          ),
+        );
+      // Another action cannot overtake the durable narration preparation that
+      // owns this narrative revision. The committed result remains readable.
+      if (pendingConsequence) {
         throw new StoryError('conflict');
       }
       const state = await requireCampaign(tx, current.id);
@@ -142,7 +154,10 @@ export function createCampaignActions(database: Database) {
 // Current adapter into settlement; zero duration is not the future process model.
 // See ../../README.md, Mechanical selection and consequence, before extending it.
 function activityAction(plan: ImmediateActionPlan) {
-  const completion = { text: 'The immediate attempt is resolved.', effects: [] };
+  const completion = {
+    text: 'The immediate attempt is resolved.',
+    effects: [],
+  };
   if (plan.resolution.kind === 'automatic') {
     return {
       id: plan.key,
@@ -160,13 +175,15 @@ function activityAction(plan: ImmediateActionPlan) {
     description: plan.intention,
     requires: plan.requires,
     durationTicks: 0,
-    checks: [{
-      id: 'resolution',
-      everyTicks: 1,
-      resolution: { kind: 'ability' as const, plan: plan.resolution.check },
-      success: { ...plan.resolution.success, interrupts: false },
-      failure: { ...plan.resolution.failure, interrupts: false },
-    }],
+    checks: [
+      {
+        id: 'resolution',
+        everyTicks: 1,
+        resolution: { kind: 'ability' as const, plan: plan.resolution.check },
+        success: { ...plan.resolution.success, interrupts: false },
+        failure: { ...plan.resolution.failure, interrupts: false },
+      },
+    ],
     completion,
   };
 }

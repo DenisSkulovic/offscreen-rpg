@@ -15,8 +15,10 @@ Mechanical Start uses the seed captured in the reviewed task, not a fresh catalo
 
 1. [Campaign actions](src/campaign/actions.ts) locks the owned story, handles command replay, checks revision/current offer, loads the offer-local private plan and rechecks prerequisites.
 2. The current `activityAction` adapter translates that immediate plan into a zero-duration activity. [Activity settlement](src/campaign/activities.ts) resolves and saves dice/effects, updates state and prepares the next consequence. This is a current coupling scheduled for removal, not the intended universal action model.
-3. [Consequence admission](src/campaign/narration.ts) gathers receipts and context and saves a Storyteller task. **It currently runs inside mechanical settlement's transaction.** Context preparation can therefore roll back the action; independent mechanical commit and durable follow-up remain missing.
+3. Mechanical settlement saves a `campaign_consequence` intent and outbox notice in the same transaction as the roll, effects, passage and command receipt. [Consequence admission](src/campaign/narration.ts) later locks that intent and story, gathers the committed receipts/context, and saves the Storyteller task in a separate transaction.
 4. [Publication](src/storyteller/publication.ts) checks the source fence, publishes the saved narrative and copies selected private plans into a new offer. The current narrator selects authored opportunities; it cannot generate new plans.
+
+A pending consequence intent blocks another mechanical selection at its narrative revision. Retrying preparation is safe because the intent records its resulting generation before completion; preparation can fail repeatedly without rerolling or undoing the visible mechanical passage.
 
 [Campaign persistence](src/campaign/persistence.ts) owns offer/plan storage; [campaign reads](src/campaign/reads.ts) projects player-visible state. The pure admission diagnostics live in `packages/game/src/immediate-actions.ts`, not in these persistence helpers.
 

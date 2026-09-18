@@ -73,6 +73,17 @@ CREATE TABLE "campaign_command" (
 	CONSTRAINT "campaign_command_story_id_operation_id_pk" PRIMARY KEY("story_id","operation_id")
 );
 --> statement-breakpoint
+CREATE TABLE "campaign_consequence" (
+	"operation_id" uuid PRIMARY KEY NOT NULL,
+	"story_id" uuid NOT NULL,
+	"passage_id" uuid NOT NULL,
+	"base_revision" integer NOT NULL,
+	"receipt" jsonb NOT NULL,
+	"generation_id" uuid,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "campaign_consequence_base" UNIQUE("story_id","base_revision")
+);
+--> statement-breakpoint
 CREATE TABLE "campaign_settings" (
 	"story_id" uuid NOT NULL,
 	"revision" integer NOT NULL,
@@ -342,6 +353,7 @@ ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign" ADD CONSTRAINT "campaign_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_command" ADD CONSTRAINT "campaign_command_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "campaign_consequence" ADD CONSTRAINT "campaign_consequence_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity" ADD CONSTRAINT "game_activity_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_offer" ADD CONSTRAINT "game_offer_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

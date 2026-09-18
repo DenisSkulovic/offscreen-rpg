@@ -30,7 +30,7 @@ import {
   type ActivityRecord,
   type CampaignRecord,
 } from './persistence';
-import { admitConsequenceNarration } from './narration';
+import { requestConsequenceNarration } from './narration';
 
 export const campaignActivityTopic = 'campaign.activity.v1';
 export async function scheduleActivity(tx: Transaction, activityId: string) {
@@ -41,7 +41,7 @@ export async function scheduleActivity(tx: Transaction, activityId: string) {
   });
 }
 
-/** Called under the story lock. Each boundary commits receipts and consequences together. */
+/** Called under the story lock. Mechanical state and its follow-up intent commit together. */
 export async function settleActivity(
   tx: Transaction,
   current: StoryRecord,
@@ -171,7 +171,7 @@ export async function settleActivity(
     viewVersion: current.viewVersion + 1,
   };
   if (nextState !== 'running') {
-    await admitConsequenceNarration(tx, nextStory, {
+    await requestConsequenceNarration(tx, nextStory, {
       passageId,
       operationId: activity.id,
       afterSegment: activity.completed,

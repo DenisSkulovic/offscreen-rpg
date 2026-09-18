@@ -59,6 +59,13 @@ export function createWorkerActivities(collaborators: {
         mapStoryActivityError(error, 'IntervalStateError');
       }
     },
+    async prepareCampaignConsequence(id) {
+      try {
+        await stories.prepareCampaignConsequence(id);
+      } catch (error) {
+        mapStoryActivityError(error, 'IntervalStateError');
+      }
+    },
     async completeStoryteller(id) {
       try {
         await collaborators.storyteller.complete(id);

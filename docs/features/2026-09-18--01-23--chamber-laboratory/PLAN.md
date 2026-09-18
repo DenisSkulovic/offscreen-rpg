@@ -506,9 +506,9 @@ A second radically different setting should eventually prove the same engine ass
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 1 implemented on this working tree. Stop for review; do not start Phase 2. Commit/push when the owner asks (plan originally listed that as the phase exit).
-- Base/reviewed Git revision: implemented against current local `main` plus existing uncommitted vision/playthrough docs.
-- Relevant uncommitted changes: Phase 1 catalog + inspector (contracts, server inspect, launcher-only `developerTools`, Chamber UI, tests, development/delivery/progress docs). Unrelated prior edits to `docs/vision.md` / `docs/playthroughs.md` were left untouched.
+- Current phase and exact next action: Phase 1 is implemented and landed on `main`. Do not start Phase 2 without returning to its planned scenario-fixture scope.
+- Base/reviewed Git revision: Phase 1 predates the current DM-loop work and is part of repository history.
+- Relevant uncommitted changes: none owned by this feature checkpoint.
 - Actual checks/results: `@offscreen/contracts` tests including catalog completeness; API bootstrap proves default `createApp` does not mount `/api/chamber-tools`; story core/http/start inspector tests in the full stories run; `stories-browser.integration.js` 4/4; `node dist/dev/chamber.js --smoke` passed; targeted Prettier/ESLint and `python scripts/check_docs.py`. Typecheck via package `tsc` for contracts/server/api/web. Did not rerun the entire combined `stories.integration.js` suite after the last browser locator fix (browser suite re-ran cleanly). `pnpm` was invoked as `corepack pnpm`.
 - Unresolved blockers for Phase 1: none. Generation provenance is shown when `sourceGenerationId` is present (playable start); authored chamber fixtures remain null there.
 - Provider spend and accounting certainty: $0 this turn; no provider calls; cumulative OpenRouter usage not verified.

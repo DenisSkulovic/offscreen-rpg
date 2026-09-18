@@ -2,6 +2,10 @@ import { createCampaignSettings } from '../campaign/settings';
 import { createCampaignActions } from '../campaign/actions';
 import { createCampaignControls } from '../campaign/controls';
 import { createCampaignActivities } from '../campaign/activities';
+import {
+  campaignConsequenceTopic,
+  createConsequenceNarration,
+} from '../campaign/narration';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { retryStoryteller } from '../storyteller/recovery';
 import type { Database } from '@offscreen/db';
@@ -31,6 +35,7 @@ export function createStories(database: Database) {
     campaignAction: createCampaignActions(database),
     campaignControl: createCampaignControls(database),
     advanceCampaignActivity: createCampaignActivities(database).advance,
+    prepareCampaignConsequence: createConsequenceNarration(database),
     list(args: { ownerId: string; before?: string }) {
       return reads.listStories(args);
     },
@@ -105,7 +110,7 @@ export function createStories(database: Database) {
       storyId: string;
       candidateId: string;
       expectedDraftRevision: number;
-    campaign?: CampaignStart;
+      campaign?: CampaignStart;
     }) {
       await startPlayableCandidate(args);
       return reads.readSnapshot({
@@ -131,3 +136,4 @@ export function createStories(database: Database) {
 
 export { StoryError };
 export { playableOpeningStorySource } from './start';
+export { campaignConsequenceTopic };
