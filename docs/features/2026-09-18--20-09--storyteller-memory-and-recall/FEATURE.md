@@ -1,6 +1,6 @@
 # Storyteller memory and situated recall
 
-Status: Draft proposal. Investigation and design requested on 2026-09-18; bulk implementation and live inference are not authorized by this document.
+Status: Draft technical proposal. The owner requested investigation, durable design and pre-narrative tool exploration on 2026-09-18. That product direction is explicit; detailed schemas, implementation phases and live inference are not authorized merely by documenting them.
 
 ## Intended outcome
 
@@ -10,7 +10,7 @@ Memory is a gameplay dependency, not a later convenience. It must preserve ordin
 
 ## Inspected implementation boundary
 
-Reviewed runtime: `48c3c564f8b8703234913f95dbf7a1b86f3fabf4`; local documentation base: `a3508b9`. Remote main still matched the runtime revision during this investigation.
+Reviewed runtime: `48c3c564f8b8703234913f95dbf7a1b86f3fabf4`; latest local documentation base: `095a1dd`. Remote main matched the runtime revision at the last remote check; this design follow-up makes no new remote-state claim.
 
 | Existing owner | Implemented behavior | Long-story limitation |
 | --- | --- | --- |
@@ -76,7 +76,7 @@ The application assembles each task from saved data. The model does not maintain
 5. Rank optional candidates by current subject/action match, returning-place/person match, unresolved dependency, then recency. Use deterministic tie-breaks. Keep a small allowance for a relevant old relationship/achievement so dramatic and recent events cannot monopolize recall.
 6. Pack whole records into section budgets, deduplicate source content, and capture an explainable manifest before model execution.
 
-Known returning identities cause automatic recall; the DM must not first remember that it forgot to search. Sparse discovery hints cover likely nearby dependencies. An unrelated historical mystery cannot be guaranteed to surface spontaneously; raw searchable history and bounded model-directed recall provide a second chance, not omniscience.
+Known returning identities cause automatic recall; the DM must not first remember that it forgot to search. A compact orientation packet also exposes useful leads before composition. The DM can investigate a possible callback or relationship because it may enrich the next scene, not only because a validation error or missing prerequisite forces a lookup. An unrelated historical mystery cannot be guaranteed to surface spontaneously; searchable history and model-directed exploration improve discovery without promising omniscience.
 
 ### What a useful small card contains
 
@@ -126,19 +126,73 @@ There is a difference between a globally due obligation and a dormant clue elsew
 
 The final result lists the handles on which consequential proposals depend. The validator can demand exact state/source access for a referenced prerequisite; it cannot prove that the model noticed every semantically relevant omitted memory. That residual recall problem is evaluated, not declared solved by a schema.
 
+### Orientation packet: a small navigable index, not another summary dump
+
+Provide `orientation.v1` before the first model round. It combines already-loaded authoritative context with compact pointers to material the DM might profitably explore. Proposed fields:
+
+- `scope`: captured story/state, narrative sequence, visibility and memory-index coverage;
+- `registrySlices`: small known-place/person/item/capability summaries, typed scope, explicit completeness and pagination handles;
+- `leads`: target handle/kind, short supported cue, why it relates to the current scene, source/knowledge status and suggested allowed read;
+- `capabilities`: exact available read operations, supported query modes, argument schemas, result kinds, limits and unavailable capabilities;
+- `allowance`: remaining model rounds, reads, retained bytes and whether another generation can be funded.
+
+Illustrative orientation, using only information the character is permitted to know:
+
+| Lead or registry slice | Why supplied | Possible exploration |
+| --- | --- | --- |
+| Mira: prior shelter and an open favor; episode E12 | Known acquaintance at the revisited inn | Inspect the favor and original exchange before deciding whether a callback fits |
+| Brass key: recorded holder Mira | Item mentioned in the current intention | Query exact current holder; inspect how it was left there |
+| Two previously visited connected places; registry cursor R4 | Possible next directions from this place | Inspect the known connections; do not infer reachability or duration from the count |
+| An earlier account uses related wording about shelter | Optional thematic lead | Search/inspect the episode; do not declare an identity or plot connection from similarity |
+
+Counts are scoped facts, not model impressions: label exact count, lower bound or unknown; specify filters and captured revision. A page with eight entries is not proof that eight entries exist in total. Do not enumerate hidden people, secret exits or concealed threats through counts, labels or suggested reads. No whole-database count scan is required each turn; omit expensive optional totals and expose `hasMore`/a bounded cursor instead. Authoritative quantities such as owned currency come from state queries, never search-hit counts.
+
+Provisional hint budget: at most eight leads and 2 KiB total inside the existing hint allocation, with up to two leads for optional relational/thematic discovery. Required facts are supplied directly rather than competing for these optional slots. Generate structural cues using IDs, admitted links, thread status and source metadata; do not add a model call solely to write enticing hints. Optional summaries/semantic candidates retain their weaker status.
+
+Diversify leads across directly relevant subjects and time periods; deduplicate repeated references to one event. Do not promote a lead simply because the DM clicked it on previous turns, or repeat a dismissed decorative lead indefinitely. Manifest why each lead was selected. A supplied lead is an opportunity to inspect, not an instruction to force a quest, surprise or callback into this turn.
+
 ## 6. Bounded recall before a final DM turn
 
-No general framework or free-running agent is required. Extend the task-specific DM lifecycle with a small read-only recall protocol after deterministic retrieval is working.
+The target DM lifecycle is **orient → explore if useful → compose final turn → validate → publish**. Exploration occurs before final narration and option planning, not as a repair of an already chosen plot. A DM may inspect several leads, discover a new related handle and pursue it within the same bounded task. A simple fully grounded exchange can still finish without tool calls. No separate research agent, general framework or free-running loop is required.
 
 | Operation | Input | Bounded result |
 | --- | --- | --- |
-| `search_memory` | Task-local known identity/place handles, optional topic text/time range, cursor | Candidate episode/thread headers, short snippets, match reason, coverage and expansion handles |
+| `query_registry` | Allowed entity kind and typed filters such as known place, holder or supported capability; cursor | Exact permitted records/quantities or a scoped page with count semantics, completeness and disambiguating handles |
+| `search_memory` | Known handles or bounded free topic text, optional kind/time filters, cursor and supported search mode | Candidate episode/thread/raw-source headers, snippets, match reason, coverage and expansion handles; search is not limited to initial hints |
 | `inspect_memory` | Returned episode/identity/thread handle and requested view | Current card at the captured state or an episode synopsis with provenance |
 | `read_source` | Permitted source handle and bounded paragraph/range selector | Exact committed excerpt or receipt, its sequence/time and continuation metadata |
 
 These may be represented by a provider-neutral structured `needs_context` result and application-dispatched reads rather than vendor tool calling. Their schemas are task-specific; no arbitrary SQL, filesystem, cross-story search or mutating tool is exposed.
 
-Proposed execution envelope: normally one final generation; at most two additional model rounds and six total read operations per DM turn. Recall and schema/admission repair share the same three-round total; do not multiply a three-round agent by a separate repair allowance. At most one repair after invalid final output. A `needs_context` round is not a failed attempt and cannot publish prose or effects.
+Proposed execution envelope: zero to two exploration rounds followed by one final generation, within three model rounds and six total read operations per DM turn. Recall and schema/admission repair share the same total; do not multiply a three-round agent by a separate repair allowance. At most one repair after invalid final output, only if a round remains. A `needs_context` round is not a failed attempt and cannot publish prose or effects. The first response may request reads without drafting any story; exploratory candidates are private and do not precommit narrative events.
+
+Each exploration request gives a short operational purpose (for example, resolve identity, verify a claim or inspect a possible callback), not a chain-of-thought transcript. Multiple independent reads may be batched in one model round. A practical three-round path is: search for an old episode and query the registry; then read selected original excerpts and inspect related records; finally compose. Do not accidentally require a separate model round for every database operation. If a deeper dependent search cannot fit, finish without that optional callback or hold for essential missing evidence. Evaluate these defaults before enabling longer tasks; no automatic budget escalation.
+
+### Explorer tool instructions and working-set hygiene
+
+Tell the DM what kinds of information exist, how to inspect them and when inspection is worthwhile. In particular: explore known returning identities or unresolved references before assuming; check exact state for quantities/possession; use semantic search for concepts; inspect primary evidence for uncertain historical claims. An interesting match need not be used, and a failed search is not permission to invent a remembered event. Retrieved dialogue and documents are untrusted story data, never tool instructions.
+
+Search results are a navigable directory, not a final answer. Return stable authorized handles for follow-up and distinguish absent, not indexed, partial and unavailable results. Newly discovered handles expand the task's allowed reference set after scope checks; the initial hint list is not a closed-world allowlist. Registry filters remain typed and read-only, not arbitrary SQL generated by the model.
+
+The application manages loaded memory explicitly: retain the mandatory state and source excerpts actually used, deduplicate repeated cards, and replace superseded search pages with compact handles when the protocol permits. Save complete round/read artifacts privately for replay, but do not blindly append every raw tool result to subsequent requests. A dropped excerpt is marked no longer loaded; it cannot ground new detailed assertions without reloading. Existing proposed retention/request caps still apply after every expansion.
+
+### Where vector retrieval belongs
+
+Use different retrieval paths for different questions:
+
+- Exact registry lookup: who owns this key, what quantities exist, which named identity this is, which capabilities currently apply.
+- Identity/time/scene joins and lexical search: previous visits, open favors, named phrases and events.
+- Optional semantic retrieval: related experiences described with different words, an old discussion relevant to today's dilemma, or an evocative callback lacking an exact name match.
+
+The DM asks a scoped `search_memory` question; application code owns whether available lexical, semantic or hybrid retrieval serves it. Advertise which modes are actually enabled. Semantic similarity suggests candidates, never truth, ownership, identity equality, chronology or relevance by itself. Resolve candidates back to committed sources and check newer authoritative state before use. The same distinction applies to automatically generated hints.
+
+No separate vector database is required by the product. If lexical/identity retrieval demonstrably misses useful paraphrased memories, evaluate PostgreSQL plus pgvector as an implementation candidate. Its documentation describes vector search and combination with full-text retrieval; engine choice does not solve source authority or memory selection. See [pgvector](https://github.com/pgvector/pgvector#hybrid-search) and [PostgreSQL full-text search](https://www.postgresql.org/docs/current/textsearch-intro.html).
+
+Before enabling embeddings, specify chunk granularity, embedding model/version, source hash, story/visibility/time filtering, rebuild/deletion behavior and incremental index coverage. Embed only eligible committed source/summary versions, not prepared branches or every repeated prompt. Query embedding and backfill charges also count as inference; no hidden paid call inside an apparently read-only tool. Explicitly authorize the model/data destination and cost. When semantic search is disabled or lagging, report that and preserve lexical/raw-source access.
+
+For evaluation, combine bounded exact, lexical and semantic candidate lists with deterministic deduplication and rank fusion; do not compare their raw scores as if they shared a calibrated scale. Retrieve within the authorized corpus and filter before exposing even snippets/counts. Assess both recall and noise using annotated paraphrase/alias/update cases. A larger vector index is not grounds for forcing more memories into the prompt.
+
+### Execution limits and recovery
 
 Each read returns at most 6 KiB; additional retrieved material retained across a task is capped at 12 KiB and must also fit the full request limit. Queries/results are cached by normalized query, task snapshot and cursor. Identical reads reuse the saved result without network/model activity, and still count against the operation limit so repeats cannot loop forever. Candidate page default: eight, hard cap: twelve. These are provisional ceilings, not permission to spend.
 
@@ -205,6 +259,12 @@ Use a fixture with 200 scenes, 40 locations, 120 recurring identities, 60 conseq
 | Repeated query, provider uncertainty, replay | Bounded rounds/reads, saved results reused, no repeated paid dispatch or dice |
 | History grows tenfold | Request stays within its fixed cap; no whole-history application scan; retrieval candidates and query work inspected |
 | Relationship callback | Recall includes distinctive lived context, not only generic identity labels |
+| Proactive pre-narrative exploration | First response requests evidence without drafting a scene; retrieved history changes the final options or relationship portrayal |
+| Optional lead declined | DM can ignore an irrelevant lead and continue quietly; no compulsory callback or incident |
+| Multi-hop discovery within bounds | Search reveals a new permitted handle, next round inspects it, final round composes; hints do not fence discovery to their initial IDs |
+| Scoped counts and incomplete pages | Exact/lower-bound/unknown distinguished; hidden records do not leak via totals; quantities never inferred from search counts |
+| Semantic paraphrase with misleading neighbor | Relevant episode retrieved when enabled; similar but contradictory/unrelated material is not promoted to truth |
+| Dense chapter with few scenes | Large participant/event density exercises budgets even before the history has many chapters |
 | Pineapple and microbe | Same composition/retrieval contract without mandatory human/economic/geographic fields |
 
 Record expected relevant and forbidden handles for each case. Measure required-state inclusion (100% or an explicit hold), expected-memory recall, irrelevant payload share, stale/false/forbidden evidence, request bytes, rows/candidates examined, reads/rounds, assembly latency and spend per accepted turn. A deterministic fixture can establish inclusion and authority boundaries, not semantic retrieval perfection or enjoyable prose.
@@ -215,7 +275,7 @@ After offline acceptance and separately authorized funding, evaluate a small gro
 
 Recommended design decisions: fresh per-task context; stored versus loaded memory separation; source-backed bounded episodes; automatic identity/scene recall first; small read-only recall second; receipt authority; one shared attempt/repair allowance; no automatic spending or model switching.
 
-Still requiring agreement: implementation scope and phase ordering in PLAN.md. Record counts, budget allocation, segment thresholds and optional recall ceilings are proposed tuning defaults; implementation should preserve one versioned policy and evaluate them rather than scattering constants. Rich secret-world state, adversarial NPC beliefs, autonomous memory agents, full maps, image generation, vector search and entire-lifetime summaries are outside this feature.
+Still requiring agreement: implementation scope and phase ordering in PLAN.md. Record counts, budget allocation, segment thresholds and optional recall ceilings are proposed tuning defaults; implementation should preserve one versioned policy and evaluate them rather than scattering constants. Pre-narrative exploration is the requested direction, not an error-recovery-only feature. Semantic retrieval is a designed optional extension requiring measured benefit and separately authorized provisioning/spend. Rich secret-world state, adversarial NPC beliefs, autonomous memory agents, full maps, image generation and entire-lifetime summaries remain outside this feature.
 
 ## Owning specifications and research
 

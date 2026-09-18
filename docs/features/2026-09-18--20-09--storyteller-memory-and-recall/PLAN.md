@@ -1,7 +1,7 @@
 # Storyteller memory implementation plan
 
 Feature: [Storyteller memory and situated recall](FEATURE.md).
-Execution scope: investigation/design only, requested on 2026-09-18. Implementation proposal awaiting owner agreement. No live calls, deployment or remote push authorized by this plan.
+Execution scope: investigation/design only, requested on 2026-09-18. The owner explicitly requested pre-narrative exploration using compact hints and read tools; implementation details and phases await agreement. No live calls, deployment or remote push authorized by this plan.
 Implementation owner: Cursor after agreement; reviewer: Codex unless assigned otherwise.
 
 ## Design trace and sequencing
@@ -69,24 +69,32 @@ Scope:
 - Build identity cards from existing state plus separately labelled narrative annotations. Current whereabouts, item holder and capabilities have one state owner. Keep aliases/disambiguation explicit.
 - Publish source links and required state atomically; propose short episode cards at scene/segment boundaries in the DM output. Summary failures have explicit status and coverage gaps, not invisible loss or rollback of gameplay.
 - Use current-scene/place/participant/action references to select cards, open threads and bounded previous episodes. Raw search remains available for unpromoted details.
+- Build the versioned orientation packet from FEATURE.md: scoped registry slices, relevant source-backed leads, available tool contracts/search modes and remaining allowance. Required state is supplied directly; optional historical/thematic leads invite exploration without forcing a callback. Structural hint selection needs no extra model call.
+- Bound pages, leads and selection work. Label exact/lower-bound/unknown counts and completeness at the captured revision; use cursors rather than expensive optional lifetime totals. Apply knowledge/visibility scope to counts and hints as well as bodies. An omitted record is not evidence of absence.
 - Scope item reads to action-relevant/current holdings and requested identities; do not carry the existing all-story `.max(50)` prompt list forward as the lifetime item model. Preserve explicit POC limits for simultaneously relevant carried items/capabilities and hold or narrow scope if they are exceeded.
 - Keep card/episode provenance versions and a monotonic index watermark; no historical state API faked by current rows.
 - Capture a semantic test oracle of expected and forbidden handles rather than hard-code scenario names into retrieval policy.
 
-Acceptance: return after 40 scenes, changed holder/bridge facts, duplicate names, closed versus still-open favor, single-scene segmentation, missing synopsis fallback, no forced human attributes. Query/candidate counts and prompt bytes stay bounded as irrelevant scenes increase.
+Acceptance: return after 40 scenes, changed holder/bridge facts, duplicate names, closed versus still-open favor, single-scene segmentation, missing synopsis fallback, no forced human attributes. Test dense early chapters as well as long histories; many entities can accumulate before many scenes do. Registry pages report scoped completeness without leaking hidden entities. Query/candidate counts and prompt bytes stay bounded as irrelevant scenes increase.
 
 Exit: one hundred-plus scene fixture resolves known returning identities and their relevant history without full transcript loading. The POC may use scripted episode proposals; do not label them demonstrated live-model memory.
 
-## Phase 3 — Targeted recall with one shared round budget
+## Phase 3 — Pre-narrative exploration with one shared round budget
 
-Outcome: the DM can discover and inspect a relevant source not included by deterministic composition.
+Outcome: before choosing final narration/options, the DM can follow a supplied lead or search for relevant history beyond the orientation packet. Exploration supports both necessary fact checks and optional narrative connections; it is not merely repair after a failed proposal.
 Dependencies: Phase 2 candidate query and visibility policies; existing attempt/accounting system; approved envelope from FEATURE.md.
 
-Owners: Storyteller task/result schema for `needs_context`; application for scoped `search_memory`, `inspect_memory`, `read_source`; task/attempt storage for saved rounds; existing workflows for operation delivery; no separate execution engine.
+Owners: Storyteller task/result schema for `needs_context`; application for scoped `query_registry`, `search_memory`, `inspect_memory`, `read_source`; task/attempt storage for saved rounds; existing workflows for operation delivery; no separate execution engine.
 
-Scope: persist each round and read result; share three total model rounds across recall and repair, max six reads, max one invalid-final repair; enforce per-read/aggregate/full-request caps. Include query normalization, duplicate-result reuse, stale snapshot rejection, index-coverage metadata and explicit insufficient-evidence outcomes. Provider-native tool calling is optional, not a prerequisite for a scripted structured protocol.
+Scope:
 
-Acceptance: old unpinned clue found by search; no-match handled without invented history; rephrased repeated queries hit the total cap; stale state cannot mix with captured inventory; uncertain dispatch halts; resume after saved round uses saved output; budgets include retransmission and repair. Secret titles, foreign-story IDs and uncommitted futures remain unavailable.
+- Allow a first response containing only read requests, without provisional prose or effects. Independent reads batch within a round; authorized handles discovered by search can be inspected in a subsequent round. Search is not restricted to initially supplied handles.
+- Persist each round and read result; share three total model rounds across exploration, final generation and repair, max six reads, max one invalid-final repair only if a round remains. A search-plus-registry batch, follow-up source/record batch and final generation fit this envelope. Fully grounded simple turns may finish without reads.
+- Enforce per-read/aggregate/full-request caps after every expansion. Keep mandatory state and used excerpts; deduplicate results and prune obsolete search pages to handles when the protocol permits. Full private replay artifacts are not automatically the next prompt. Record which evidence remains loaded.
+- Include typed filters, query normalization, duplicate-result reuse, stale snapshot rejection, index-coverage metadata and explicit absent/partial/not-indexed/unavailable outcomes. Tool instructions explain the distinction between exact state and candidate memories, when to expand sources, and why retrieved story text is not an instruction.
+- Provider-native tool calling is optional, not a prerequisite for a scripted structured protocol. Implement one protocol path first, not parallel orchestration frameworks.
+
+Acceptance: first response requests reads before any final prose; an old unpinned clue found by search changes the supported final result; a newly discovered handle can be followed; an irrelevant optional lead is ignored without forcing an incident. No-match is handled without invented history; rephrased repeated queries hit the total cap; stale state cannot mix with captured inventory; uncertain dispatch halts; resume after saved round uses saved output; budgets include retransmission and repair. Secret titles/counts, foreign-story IDs and uncommitted futures remain unavailable. Pruned excerpts cannot support new detailed claims without reload.
 
 Exit: the scripted source exercises a real retrieve → inspect → final-result path and a bounded failure path. No model quality or billing behavior inferred from the scripted result.
 
@@ -101,12 +109,23 @@ Inspect request budget, required-fact inclusion, optional recall quality, irrele
 
 Exit: offline behavior and known limitations recorded honestly. A later live evaluation requires an explicit allowance and selected hypotheses; neither this plan nor successful offline checks grants that permission. Embeddings are considered only if named lexical/identity retrieval failures persist.
 
+## Investigation gate — Semantic and hybrid retrieval
+
+This is recorded follow-up work, not an instruction to install a vector service now. The product requires useful exploration, not a particular index engine. Keep the tool contract backend-neutral and expose enabled search modes truthfully.
+
+1. Establish the exact/alias/relationship/lexical baseline with annotated questions and expected/forbidden results. Include paraphrased memories, low-drama callbacks, similar-but-unrelated events, stale quantities, duplicate names, multilingual wording where relevant, and details absent from summaries. Select acceptance thresholds before evaluating alternatives.
+2. Identify named misses that semantic candidates could remedy. Compare bounded lexical versus hybrid retrieval for relevant-source recall, irrelevant payload, latency/query work and estimated/authorized cost; no unsupported claim that embeddings improve this story corpus.
+3. Specify chunk boundaries, immutable source hashes, embedding model/version, eligible data destination, incremental coverage, deletion/rebuild policy and story/knowledge/time filtering. Query embeddings are potentially paid calls too. Require explicit authorization before any external embedding or live-model evaluation.
+4. If justified, evaluate PostgreSQL plus pgvector before selecting a separate service. Merge candidates with deduplication/rank fusion, not incomparable raw-score arithmetic. Preserve exact state lookup and primary-source inspection; similarity never settles identity or possession.
+5. Record the measured choice and remaining misses here. Disabled/stale semantic indexing must be visible, with lexical/raw-source fallback. A failed experiment must not silently expand prompt or spending limits.
+
 ## Current checkpoint
 
 - Phase: design complete for review; implementation not begun. Next action after approval: finish the DM plan's direct-receipt boundary, then implement Phase 1 only.
-- Reviewed code: runtime `48c3c56`; local documentation base `a3508b9`. No user code was changed.
+- Reviewed code: runtime `48c3c56`; latest local documentation base `095a1dd`. No runtime code was changed.
 - Investigation: traced context assembly, note patches, request sizing, memory publication, execution/recovery, schema and existing test coverage; reviewed existing context-cost and world-continuity specifications.
+- Follow-up design: pre-narrative orientation/exploration, scoped registry counts, multi-hop reads, optional creative leads, working-set pruning and the gated semantic-retrieval investigation are explicit. PostgreSQL/pgvector primary documentation was consulted for retrieval options, not as evidence of application quality.
 - Verification: two dependency-free JSON-size calculations (65,356 bytes for note-source subset; 60,216 bytes for duplicated large current content). These reproduce serialization pressure, not an application test. Builds, runtime suites, database and browser not run for this design change.
 - Blockers/limits: design approval; direct receipt integration; later scene/identity admission. Exact state versus derived scene memory must not acquire duplicate owners. No live-model recall quality established.
 - Provider spend: no game/provider calls, $0. Cumulative OpenRouter usage unverified.
-- Remote status: the two prior documentation commits remain local; no remote publication is attempted in this work.
+- Remote status: this and the preceding documentation work remain local; no remote publication is attempted in this work.
