@@ -14,6 +14,8 @@ The version-1 result envelope contains a scene plus separate current/arrival not
 
 ## Context and continuity
 
+Requests carry only their task's result schema: opening, continuation or consequence. Consequences cannot return arrival-note patches. Context preparation rejects conflicting copies of the current passage and evidence beyond its sequence before any dispatch. These structural checks do not validate the truth of prose. The [offline acceptance contract](../engineering/offline-poc-acceptance.md) defines responsibility-specific context and manual probes for the remaining DM work.
+
 Admission holds the story lock while reading the premise, current passage, selected intention, possessions, private notes and relevant committed evidence. The bounded policy retains every note's evidence and the current passage, then includes up to six optional recent passages while the complete serialized request fits 48 KiB. Missing evidence and mandatory overflow fail closed. The artifact records the recent window and omitted optional sequences; all earlier history is not replayed into each request. The server query is scoped to this story and its admitted revision. Prepared futures are never retrieved as committed evidence.
 
 There are at most 20 derived notes, each at most 400 characters and four evidence sources. A result can create, update or retire up to eight notes in each publication part. Sources must resolve to supplied evidence or the permitted newly published part. Notes cannot authorize inventory, combat, movement or time changes. Their semantic truth still needs evaluation; referencing a passage proves provenance, not that a summary faithfully interprets it.

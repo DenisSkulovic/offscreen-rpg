@@ -25,6 +25,13 @@ export const campaignCommand = pgTable('campaign_command', {
   operationId: uuid('operation_id').notNull(),
   request: jsonb('request').notNull().$type<unknown>(),
 }, (t) => [primaryKey({ columns: [t.storyId, t.operationId] })]);
+export const gameOffer = pgTable('game_offer', {
+  id: uuid('id').primaryKey(),
+  storyId: uuid('story_id').notNull().references(() => story.id, { onDelete: 'cascade' }),
+  narrativeRevision: integer('narrative_revision').notNull(),
+  plans: jsonb('plans').notNull().$type<unknown>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [unique('game_offer_story_identity').on(t.storyId, t.id)]);
 export const gameActivity = pgTable('game_activity', {
   id: uuid('id').primaryKey(),
   storyId: uuid('story_id').notNull().references(() => story.id, { onDelete: 'cascade' }),

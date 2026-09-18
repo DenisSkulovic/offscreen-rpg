@@ -1,10 +1,11 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
-import { actionContentSchema } from '@offscreen/game/activities';
+import { immediateActionContentSchema } from '@offscreen/game/immediate-actions';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema } from '@offscreen/game/state';
 import { z } from 'zod';
+import { isDeepStrictEqual } from 'node:util';
 import {
   passageContentSchema,
   storyItemsSchema,
@@ -25,7 +26,7 @@ export const contextInputSchema = z.strictObject({
   mechanicalOpening: z
     .strictObject({
       character: characterSchema,
-      content: actionContentSchema,
+      content: immediateActionContentSchema,
       offer: offerSchema,
       opening: passageContentSchema,
     })
@@ -72,7 +73,11 @@ export function contextPayload(context: StorytellerContext) {
   };
   return {
     ...(context.mechanicalOpening
-      ? { mechanicalOpening: context.mechanicalOpening }
+      ? { mechanicalOpening: {
+          character: context.mechanicalOpening.character,
+          offer: context.mechanicalOpening.offer,
+          opening: context.mechanicalOpening.opening,
+        } }
       : {}),
     ...(context.resolution ? { resolution: context.resolution } : {}),
     ...(context.campaignSettings
@@ -113,6 +118,18 @@ export function boundStorytellerContext(
     new Set(sequences).size !== sequences.length
   ) {
     throw new Error('Duplicate context evidence');
+  }
+  if (context.current) {
+    const current = context.current;
+    const currentEvidence = context.evidence.find(
+      (passage) => passage.id === current.id,
+    );
+    if (!isDeepStrictEqual(currentEvidence, current)) {
+      throw new Error('Current passage differs from context evidence');
+    }
+    if (context.evidence.some((passage) => passage.sequence > current.sequence)) {
+      throw new Error('Context evidence includes a future passage');
+    }
   }
   const required = new Set(context.notes.flatMap((note) => note.sources));
   if (context.current) {

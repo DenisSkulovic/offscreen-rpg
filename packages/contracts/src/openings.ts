@@ -5,7 +5,7 @@ import { passageContentSchema } from './stories';
 
 export const requestOpeningSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483647),
-  contentId: z.enum(['pineapple-mechanics.v3', 'microbe.v2']).optional(),
+  contentId: z.enum(['pineapple-mechanics.v4', 'microbe.v3']).optional(),
 });
 export const openingCandidateSchema = z.strictObject({
   content: passageContentSchema,

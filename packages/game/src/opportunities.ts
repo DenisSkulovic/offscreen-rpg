@@ -1,27 +1,31 @@
-import { actionAvailable, type ActionContent } from './activities';
+import {
+  immediateActionAvailable,
+  type ImmediateActionContent,
+} from './immediate-actions';
 import { offerSchema } from './offers';
 import type { Character } from './state';
 
 /** An empty offer is legitimate while an admitted activity owns progression. */
 export function composeOpportunities(input: {
   id: string;
-  content: ActionContent;
+  content: ImmediateActionContent;
   character: Character;
   busy: boolean;
 }) {
   const available = input.busy
     ? []
-    : input.content.actions.filter((action) =>
-        actionAvailable(input.character, action),
+    : input.content.plans.filter((plan) =>
+        immediateActionAvailable(input.character, plan),
       );
-  return offerSchema.parse({
+  const offer = offerSchema.parse({
     id: input.id,
-    nodes: available.map((action) => ({
-      id: action.id,
+    nodes: available.map((plan) => ({
+      id: plan.key,
       parent: null,
-      label: action.label,
-      description: action.description,
-      action: { kind: 'attempt', definition: action.id },
+      label: plan.label,
+      description: plan.intention,
+      action: { kind: 'attempt' },
     })),
   });
+  return { offer, plans: available };
 }

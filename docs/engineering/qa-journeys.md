@@ -4,6 +4,8 @@ The local Chamber contains a developer-only, manual-first QA workspace for repea
 
 ## Case catalogue
 
+The [offline POC acceptance matrix](offline-poc-acceptance.md) covers context, mechanics, agent tools, recovery and end-to-end play. It distinguishes checks possible now from those blocked on the DM runner; it does not change catalogue availability or claim those checks have been performed.
+
 Cases are versioned TypeScript data validated by `@offscreen/contracts/qa`. A case declares its cost class, availability, prerequisites, supported driver modes, variants, ordered stages, evidence requirements, reset policy and limits. A stage separates the player-visible expectation from the authoritative saved-state expectation.
 
 The catalogue contains:

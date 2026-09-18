@@ -55,6 +55,10 @@ Next proposed slice: review the [playable DM adjudication loop](features/2026-09
 
 ## Current focus and next gate
 
+The [offline POC acceptance contract](engineering/offline-poc-acceptance.md) defines the dependency order and manual matrix. Immediate offers now separate public options from immutable private `immediate-action.v1` plans fenced by story, offer and narrative revision. Selection no longer resolves a public definition key through a global authored action array. Existing one-shot tasks expose task-specific result schemas; context preparation rejects inconsistent current-passage copies and future evidence.
+
+Fixture content still authors the private plans. New scoped fact declaration, structured proposal admission, durable tool rounds and generated planning remain missing. Mechanical settlement still prepares narration context inside the same transaction, so preparation failure can roll back a valid action. Whole-game offline playthroughs and agent-tool rehearsals have not yet been demonstrated.
+
 The repository architecture now reflects its actual dependency graph. `@offscreen/game` owns framework-free rules; Storyteller and application packages expose capability boundaries; Chamber and integration orchestration live in tooling workspaces; and substantial web implementation lives under `src/features` instead of route folders. API and worker compile independently, and the API build graph does not include worker or workflows.
 
 The reorganized API, worker, Chamber and integration workspaces compile, and both Chamber cleanup tests pass. Next compiles the reorganized web module graph, then its type pass stops on four existing strict optional/null errors in `src/features/stories/opening-preview.tsx`. Those unrelated POC errors remain visible rather than being folded into the architecture rework.

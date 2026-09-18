@@ -30,6 +30,10 @@
     "./opportunities": {
       "types": "./dist/src/opportunities.d.ts",
       "default": "./dist/src/opportunities.js"
+    },
+    "./immediate-actions": {
+      "types": "./dist/src/immediate-actions.d.ts",
+      "default": "./dist/src/immediate-actions.js"
     }
   },
   "scripts": {

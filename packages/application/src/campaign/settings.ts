@@ -29,12 +29,13 @@ import {
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import {
-  actionContentSchema,
-  validateContentState,
-} from '@offscreen/game/activities';
+  immediateActionContentSchema,
+  validateImmediateActionState,
+} from '@offscreen/game/immediate-actions';
 import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema } from '@offscreen/game/state';
 import { randomUUID } from 'node:crypto';
+import { saveOfferPlans } from './persistence';
 
 export function initialCreative(profile: StorytellerProfile): CreativeSettings {
   return {
@@ -66,10 +67,13 @@ export async function initializeCampaign(
     throw new StoryError('invalid');
   }
   const character = seed ? characterSchema.parse(seed.character) : null;
-  const content = seed ? actionContentSchema.parse(seed.content) : null;
+  const content = seed ? immediateActionContentSchema.parse(seed.content) : null;
   if (character && content) {
-    validateContentState(content, character);
+    validateImmediateActionState(content, character);
   }
+  const opportunities = character && content
+    ? composeOpportunities({ id: randomUUID(), content, character, busy: false })
+    : null;
   await tx
     .insert(campaign)
     .values({
@@ -80,16 +84,11 @@ export async function initializeCampaign(
       content,
       location: null,
       tick: 0,
-      offer:
-        character && content
-          ? composeOpportunities({
-              id: randomUUID(),
-              content,
-              character,
-              busy: false,
-            })
-          : null,
+      offer: opportunities?.offer ?? null,
     });
+  if (opportunities) {
+    await saveOfferPlans(tx, storyId, 1, opportunities.offer.id, opportunities.plans);
+  }
   await tx
     .insert(campaignSettings)
     .values({ storyId, revision: 1, settings, profile });

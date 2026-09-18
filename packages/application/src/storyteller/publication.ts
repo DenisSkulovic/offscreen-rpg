@@ -6,6 +6,7 @@ import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { offerSchema } from '@offscreen/game/offers';
+import type { ImmediateActionPlan } from '@offscreen/game/immediate-actions';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
@@ -22,6 +23,7 @@ import {
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
+import { loadOfferPlan, saveOfferPlans } from '../campaign/persistence';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -92,6 +94,23 @@ export async function publishStorytellerResult(
           };
         }),
       });
+      const sourceOffer = task.context.resolution?.offer;
+      if (!sourceOffer) {
+        throw new StoryError('invalid');
+      }
+      const selectedPlans: ImmediateActionPlan[] = [];
+      for (const option of result.scene.next.options) {
+        const plan = await loadOfferPlan(tx, {
+          storyId: current.id,
+          offerId: sourceOffer.id,
+          narrativeRevision: current.revision,
+          actionKey: option.id,
+        });
+        if (!plan) {
+          throw new StoryError('invalid');
+        }
+        selectedPlans.push(plan);
+      }
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id,
         sequence: current.revision + 1,
@@ -117,6 +136,13 @@ export async function publishStorytellerResult(
         sourcePart: 'current',
         notes: current.continuityNotes,
       });
+      await saveOfferPlans(
+        tx,
+        current.id,
+        current.revision + 1,
+        plannedOffer.id,
+        selectedPlans,
+      );
       await tx
         .update(campaign)
         .set({ offer: plannedOffer })

@@ -4,10 +4,12 @@ import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import { actionCommandSchema } from '@offscreen/contracts/campaign';
 import {
-  actionAvailable,
-  actionContentSchema,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
+import {
+  immediateActionAvailable,
+  type ImmediateActionPlan,
+} from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
 import { wholeTicks } from '@offscreen/game/time';
 import { lockOwnedStory, readDatabaseClockMs } from '../stories/persistence';
@@ -21,10 +23,9 @@ import {
   campaignCharacter,
   campaignOffer,
   requireCampaign,
-  refreshOffer,
-  appendMechanicalPassage,
+  loadOfferPlan,
 } from './persistence';
-import { scheduleActivity, settleActivity } from './activities';
+import { settleActivity } from './activities';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -71,14 +72,15 @@ export function createCampaignActions(database: Database) {
       if (selection.state === 'incomplete') {
         throw new StoryError('invalid');
       }
-      const action = selection.action;
-      const content = actionContentSchema.parse(state.content);
-      const definition = content.actions.find(
-        (candidate) => candidate.id === action.definition,
-      );
+      const definition = await loadOfferPlan(tx, {
+        storyId: current.id,
+        offerId: offer.id,
+        narrativeRevision: current.revision,
+        actionKey: selection.actionKey,
+      });
       if (
         !definition ||
-        !actionAvailable(campaignCharacter(state), definition)
+        !immediateActionAvailable(campaignCharacter(state), definition)
       ) {
         throw new StoryError('conflict');
       }
@@ -99,13 +101,10 @@ export function createCampaignActions(database: Database) {
       const now = await readDatabaseClockMs(tx, current.id);
       const plan = resolvedActivityPlanSchema.parse({
         version: 3,
-        action: definition,
+        action: activityAction(definition),
         startTick: state.tick,
         settingsRevision: settings.revision,
       });
-      if (definition.durationTicks > Number.MAX_SAFE_INTEGER - state.tick) {
-        throw new StoryError('invalid');
-      }
       // An interruption stops the old commitment. Follow-up intentions get new plans;
       // they cannot silently award its uncompleted future.
       if (active?.state === 'encounter') {
@@ -134,16 +133,38 @@ export function createCampaignActions(database: Database) {
         .update(campaign)
         .set({ activeActivityId: activity.id })
         .where(eq(campaign.storyId, current.id));
-      if (definition.durationTicks === 0) {
-        await settleActivity(tx, current, admitted, activity, now);
-      } else {
-        await refreshOffer(tx, admitted, 'running');
-        await appendMechanicalPassage(tx, current, definition.label, [
-          'Your attempt begins. Its consequences will be resolved as game time elapses.',
-        ]);
-        await scheduleActivity(tx, activity.id);
-      }
+      await settleActivity(tx, current, admitted, activity, now);
       await saveCommand(tx, current.id, args.operationId, request);
     });
+  };
+}
+
+function activityAction(plan: ImmediateActionPlan) {
+  const completion = { text: 'The immediate attempt is resolved.', effects: [] };
+  if (plan.resolution.kind === 'automatic') {
+    return {
+      id: plan.key,
+      label: plan.label,
+      description: plan.intention,
+      requires: plan.requires,
+      durationTicks: 0,
+      checks: [],
+      completion: plan.resolution.outcome,
+    };
+  }
+  return {
+    id: plan.key,
+    label: plan.label,
+    description: plan.intention,
+    requires: plan.requires,
+    durationTicks: 0,
+    checks: [{
+      id: 'resolution',
+      everyTicks: 1,
+      resolution: { kind: 'ability' as const, plan: plan.resolution.check },
+      success: { ...plan.resolution.success, interrupts: false },
+      failure: { ...plan.resolution.failure, interrupts: false },
+    }],
+    completion,
   };
 }

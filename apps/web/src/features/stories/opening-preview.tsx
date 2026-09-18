@@ -229,8 +229,8 @@ export function OpeningPreviewPanel({
       <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
       {draft.storyteller ? <label>Opening content <select disabled={pending || starting || Boolean(unresolved)} value={contentId} onChange={(event) => setContentId(event.target.value)}>
         <option value="">Narrative rehearsal</option>
-        <option value="pineapple-mechanics.v3">Pineapple — dice and consequences</option>
-        <option value="microbe.v2">Microbe — environmental response</option>
+        <option value="pineapple-mechanics.v4">Pineapple — dice and consequences</option>
+        <option value="microbe.v3">Microbe — environmental response</option>
       </select><span className="field-help">Authored examples. Generate a candidate to review its actual starting situation and choices. Selecting content does not rewrite an existing candidate.</span></label> : null}
       {preview && (
         <section aria-label="Opening candidate">

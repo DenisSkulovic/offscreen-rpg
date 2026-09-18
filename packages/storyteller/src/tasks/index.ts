@@ -49,6 +49,15 @@ export const storytellerResultSchema = z.strictObject({
   currentNotes: continuityPatchSchema,
   arrivalNotes: continuityPatchSchema,
 });
+// Provider guidance and local parsing share the same task-specific structural contract.
+const resultSchemas = {
+  opening: storytellerResultSchema.extend({ scene: playableProposalSchema }),
+  continuation: storytellerResultSchema.extend({ scene: continuationResultSchema }),
+  consequence: storytellerResultSchema.extend({
+    scene: consequenceSceneSchema,
+    arrivalNotes: continuityPatchSchema.max(0),
+  }),
+};
 const common = {
   inputVersion: z.literal(3),
   promptVersion: z.literal('storyteller.v1'),
@@ -147,7 +156,7 @@ function requestFor(
         }),
       },
     ] as const,
-    outputSchema: z.toJSONSchema(storytellerResultSchema),
+    outputSchema: z.toJSONSchema(resultSchemas[input.task]),
   };
 }
 
@@ -210,7 +219,7 @@ export function validateStorytellerResult(
   task: StorytellerTask,
   output: unknown,
 ): StorytellerResult {
-  const result = storytellerResultSchema.parse(output);
+  const result = resultSchemas[task.task].parse(output);
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
     const offered = task.context.mechanicalOpening.offer.nodes;

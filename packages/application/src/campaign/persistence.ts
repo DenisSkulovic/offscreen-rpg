@@ -1,11 +1,17 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import {
   campaign,
+  gameOffer,
   gameRoll,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
-import { actionContentSchema } from '@offscreen/game/activities';
+import {
+  immediateActionContentSchema,
+  immediateActionPlanSchema,
+  type ImmediateActionPlan,
+} from '@offscreen/game/immediate-actions';
 import type { Roll } from '@offscreen/game/checks';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
@@ -49,18 +55,69 @@ export async function refreshOffer(
   tx: Transaction,
   state: CampaignRecord,
   activityState: string | null,
+  narrativeRevision: number,
 ): Promise<GameOffer> {
-  const offer = composeOpportunities({
+  const opportunities = composeOpportunities({
     id: randomUUID(),
-    content: actionContentSchema.parse(state.content),
+    content: immediateActionContentSchema.parse(state.content),
     character: campaignCharacter(state),
     busy: activityState === 'running' || activityState === 'paused',
   });
+  await saveOfferPlans(
+    tx,
+    state.storyId,
+    narrativeRevision,
+    opportunities.offer.id,
+    opportunities.plans,
+  );
   await tx
     .update(campaign)
-    .set({ offer })
+    .set({ offer: opportunities.offer })
     .where(eq(campaign.storyId, state.storyId));
-  return offer;
+  return opportunities.offer;
+}
+
+export async function saveOfferPlans(
+  tx: Transaction,
+  storyId: string,
+  narrativeRevision: number,
+  offerId: string,
+  plans: readonly ImmediateActionPlan[],
+) {
+  await tx.insert(gameOffer).values({
+    id: offerId,
+    storyId,
+    narrativeRevision,
+    plans: plans.map((plan) => immediateActionPlanSchema.parse(plan)),
+  });
+}
+
+export async function loadOfferPlan(
+  tx: Transaction,
+  input: {
+    storyId: string;
+    offerId: string;
+    narrativeRevision: number;
+    actionKey: string;
+  },
+) {
+  const [stored] = await tx
+    .select()
+    .from(gameOffer)
+    .where(
+      and(
+        eq(gameOffer.id, input.offerId),
+        eq(gameOffer.storyId, input.storyId),
+        eq(gameOffer.narrativeRevision, input.narrativeRevision),
+      ),
+    );
+  if (!stored) return null;
+  return (
+    z
+      .array(immediateActionPlanSchema)
+      .parse(stored.plans)
+      .find((plan) => plan.key === input.actionKey) ?? null
+  );
 }
 export async function appendMechanicalPassage(
   tx: Transaction,

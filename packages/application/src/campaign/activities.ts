@@ -151,7 +151,7 @@ export async function settleActivity(
     .update(campaign)
     .set({ character, tick: nextCampaign.tick })
     .where(eq(campaign.storyId, current.id));
-  await refreshOffer(tx, nextCampaign, nextState);
+  await refreshOffer(tx, nextCampaign, nextState, current.revision + 1);
   // Receipts retain every roll. Keep the player-facing summary within passage bounds.
   const paragraphs = lines.slice(-8);
   if (lines.length > 8) {
@@ -194,10 +194,7 @@ export function createCampaignActivities(database: Database) {
         if (!reference || reference.state !== 'running') {
           return null;
         }
-        // Older prototypes remain saved; never reinterpret their admitted plans.
-        if (!resolvedActivityPlanSchema.safeParse(reference.plan).success) {
-          return null;
-        }
+        resolvedActivityPlanSchema.parse(reference.plan);
         const current = await lockStoryById(tx, reference.storyId);
         const state = await requireCampaign(tx, current.id);
         if (state.activeActivityId !== id) {

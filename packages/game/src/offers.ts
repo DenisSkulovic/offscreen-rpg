@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 export const gameActionSchema = z.strictObject({
   kind: z.literal('attempt'),
-  definition: z.string().min(1).max(100),
 });
 export type GameAction = z.infer<typeof gameActionSchema>;
 
@@ -62,7 +61,7 @@ export const offerSchema = z
 export type GameOffer = z.infer<typeof offerSchema>;
 
 export type OfferSelection =
-  | Readonly<{ state: 'selected'; action: GameAction }>
+  | Readonly<{ state: 'selected'; actionKey: string }>
   | Readonly<{ state: 'missing' }>
   | Readonly<{ state: 'incomplete' }>;
 
@@ -82,6 +81,6 @@ export function selectOfferAction(
     parent = id;
   }
   return selected?.action
-    ? { state: 'selected', action: selected.action }
+    ? { state: 'selected', actionKey: selected.id }
     : { state: 'incomplete' };
 }

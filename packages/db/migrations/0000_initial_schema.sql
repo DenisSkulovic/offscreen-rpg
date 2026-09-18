@@ -94,6 +94,15 @@ CREATE TABLE "game_activity" (
 	"pace" jsonb NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "game_offer" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"story_id" uuid NOT NULL,
+	"narrative_revision" integer NOT NULL,
+	"plans" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "game_offer_story_identity" UNIQUE("story_id","id")
+);
+--> statement-breakpoint
 CREATE TABLE "game_roll" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"story_id" uuid NOT NULL,
@@ -335,6 +344,7 @@ ALTER TABLE "campaign" ADD CONSTRAINT "campaign_story_id_story_id_fk" FOREIGN KE
 ALTER TABLE "campaign_command" ADD CONSTRAINT "campaign_command_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity" ADD CONSTRAINT "game_activity_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_offer" ADD CONSTRAINT "game_offer_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_roll" ADD CONSTRAINT "game_roll_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_preset" ADD CONSTRAINT "storyteller_preset_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_draft" ADD CONSTRAINT "story_draft_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint

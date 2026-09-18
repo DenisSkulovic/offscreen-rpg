@@ -98,14 +98,14 @@ function consequence() {
               parent: null,
               label: 'Inspect',
               description: 'Inspect what changed.',
-              action: { kind: 'attempt', definition: 'inspect' },
+              action: { kind: 'attempt' },
             },
             {
               id: 'withdraw',
               parent: null,
               label: 'Withdraw',
               description: 'Step away from the situation.',
-              action: { kind: 'attempt', definition: 'withdraw' },
+              action: { kind: 'attempt' },
             },
           ],
         },
@@ -114,6 +114,51 @@ function consequence() {
     },
   });
 }
+
+test('captured schemas expose only the result for the requested task', () => {
+  const initial = opening();
+  const resolved = consequence();
+  const continuation = prepareStorytellerTask({
+    ...resolved,
+    task: 'continuation',
+    source: {
+      storyId: randomUUID(),
+      narrativeRevision: 2,
+      passageId: randomUUID(),
+      interactionId: randomUUID(),
+    },
+    context: { ...resolved.context, resolution: undefined },
+  });
+  const cases = [[initial, 1], [continuation, 2], [resolved, 3]] as const;
+  for (const [task, version] of cases) {
+    const schema = JSON.parse(JSON.stringify(task.request.outputSchema));
+    assert.equal(schema.properties.scene.properties.version.const, version);
+    assert.equal(schema.properties.scene.anyOf, undefined);
+    assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
+  }
+  const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
+  assert.equal(schema.properties.arrivalNotes.maxItems, 0);
+});
+
+test('context rejects inconsistent current evidence and unpublished future evidence', () => {
+  const { context } = consequence();
+  assert.ok(context.current);
+  const current = context.current;
+  assert.throws(() => boundStorytellerContext({
+    ...context,
+    current: {
+      ...current,
+      content: { version: 1, title: 'Contradiction', paragraphs: ['Different facts.'] },
+    },
+  }, () => true), /Current passage differs/);
+  assert.throws(() => boundStorytellerContext({
+    ...context,
+    evidence: [
+      ...context.evidence,
+      { ...current, id: randomUUID(), sequence: current.sequence + 1 },
+    ],
+  }, () => true), /future passage/);
+});
 
 test('profiles are data; captured task is isolated and task-specific', () => {
   const task = opening();

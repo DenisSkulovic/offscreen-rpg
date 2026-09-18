@@ -103,6 +103,8 @@ Some families can share a table initially. The purpose is to assign responsibili
 
 ## Interaction contract component
 
+Mechanical campaign offers have a separate private authority record. `campaign.offer` is the current public projection. `game_offer` owns the corresponding private immediate-action plans, story identity and narrative-revision fence. Public leaves contain no plan key beyond their offer-local option identity and expose no DC, outcome branch or effects. Replacing an offer inserts a new immutable private record before updating the current projection; selection loads it by story, offer and revision. Old records remain evidence but cannot authorize a current roll.
+
 `@offscreen/contracts/interactions` separates an interaction specification from a submitted answer. A published interaction has its own UUID and a versioned specification; a submission references that UUID and carries a versioned answer. Neither includes a next-scene reference, state changes, actor authority or scheduling commands. The application must load the authoritative current offer rather than accept an offer supplied by the browser.
 
 The first supported format is `choice.v1`: a prompt, a variable-length list of options with stable IDs, labels and optional descriptions, and an answer containing one option ID. Option identity does not depend on list order or display text. Duplicate option IDs and empty option lists are invalid. Current payload limits permit 1–100 options, 100-character reference IDs, 500-character labels and 2,000-character prompts/descriptions. These are bounded input limits, not a recommendation to show 100 buttons or a fixed gameplay option count.
