@@ -8,6 +8,12 @@ Implementation owner: Codex, explicitly assigned by the owner.
 
 Dependencies: tick action contract, isolated durable preparation, tag definition/application compilation. Mechanical selection/settlement stays authoritative. This is required POC work; the current consequence narrator only copies authored offers.
 
+### Implemented immediate planning slice
+
+The consequence task now selects a contextual subset of server-admitted immediate actions and supplies situation-specific labels and intentions. Validation rejects invented/duplicate action IDs and duplicate labels. Publication maps each selected ID back to its authoritative captured action and persists a fresh offer atomically with the narrated consequence. The offline source exercises the same contract by removing the just-selected action when alternatives exist. This creates an actual generation → offer → selection → mechanical consequence → fresh generated offer loop without extending the rejected duration model.
+
+This is not yet the richer tool-using agent below. The complete current scene, character, receipts and admitted candidates are essential input and therefore require no retrieval tool. Additional evidence/rule inspection tools become useful when a planning task may need information outside that bounded capture.
+
 ### Phase 1: task and capabilities
 
 Own a separate planning task with captured scene/revision, character capabilities/facts, selected intention, committed receipts, rules version and task-relevant creative guidance. Assemble essentials without tool round trips. Propose zero, one or several plausible intentions with declared constraints/evidence; no mandatory count or fake numeric agency score.
@@ -30,4 +36,4 @@ Exit: broad ordinary freedom, constrained threat, one viable response and legiti
 
 ## Current checkpoint
 
-Follow the [shared implementation checkpoint](../2026-09-18--14-49--dnd-checks-and-visible-outcomes/PLAN.md). Base is `a77fe13`; the tick/retry correction is uncommitted. The database has one current baseline migration and it has not been applied. Six source-only clock tests passed; no application/build checks or live calls ran. This feature remains partial. Provider spend $0; cumulative usage unverified.
+The immediate generated-option loop is implemented on `main`. Contracts and AI build; the focused storyteller test passes 6/6, including selection plus fabricated/duplicate-ID rejection. Server typechecking reaches only two existing `story-command-policy.ts` exact-optional provenance errors after rebuilding database declarations; this pass does not chase them. Next, exercise the loop locally and then add the bounded evidence/rule-inspection runner only for planning cases that cannot be answered from the captured essentials. Do not generate timed work, travel or waiting plans until [activity processes and world-defined progress](../2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) is approved and implemented. Provider spend is $0; cumulative usage is unverified.

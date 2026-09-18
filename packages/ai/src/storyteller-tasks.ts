@@ -103,7 +103,7 @@ function requestFor(
       ? 'Create a version-1 opening with a choice. Establish the starting situation; do not advance time.'
       : 'Create a version-2 continuation. Use choice for immediate exchanges or interval for meaningful fictional duration. Supply only gameDurationMs and one prepared arrival with choices.';
   if (input.task === 'consequence') {
-    taskRules = 'Create a version-3 scene with next.kind opportunities. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects. Copy all supplied resolution.offer leaf IDs, labels and descriptions exactly into options (description becomes intention); no extra options. Set state to available when options exist, otherwise held. One option is valid when constrained. Creative guidance affects prose only. No interval or arrival notes.';
+    taskRules = 'Create a version-3 scene with next.kind opportunities. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects. Select zero to six contextually appropriate leaf actions from resolution.offer. Preserve each selected action ID exactly, but write an honest concise label and intention for the present situation. Never invent an ID or change its underlying mechanics. Distinct options must represent materially different intentions. Set state to available when at least one option is selected, otherwise held. One option is valid when constrained. Creative guidance affects prose and selection only. No interval or arrival notes.';
   } else if (context.mechanicalOpening) {
     taskRules += ' Preserve the supplied mechanical opening facts and copy its offer IDs, labels and descriptions exactly into options (description becomes intention).';
   } else {
@@ -201,12 +201,22 @@ export function validateStorytellerResult(
     if (!resolution || result.scene.version !== 3 || next.kind !== 'opportunities' || result.arrivalNotes.length) {
       throw new Error('Invalid consequence narration');
     }
-    const nodes = resolution.offer.nodes.filter((node) => node.action);
-    if (next.state !== (nodes.length ? 'available' : 'held') || nodes.length !== next.options.length || nodes.some((node, index) => {
-      const option = next.options[index];
-      return !option || option.id !== node.id || option.label !== node.label || option.intention !== node.description;
-    })) {
-      throw new Error('Narration changed the admitted opportunities');
+    const admittedIds = new Set(
+      resolution.offer.nodes
+        .filter((node) => node.action)
+        .map((node) => node.id),
+    );
+    const selectedIds = next.options.map((option) => option.id);
+    const labels = next.options.map((option) =>
+      option.label.trim().toLocaleLowerCase('en-US'),
+    );
+    if (
+      next.state !== (next.options.length ? 'available' : 'held') ||
+      new Set(selectedIds).size !== selectedIds.length ||
+      new Set(labels).size !== labels.length ||
+      selectedIds.some((id) => !admittedIds.has(id))
+    ) {
+      throw new Error('Invalid planned opportunities');
     }
   }
   const expectedVersion = task.task === 'consequence' ? 3 : task.task === 'opening' ? 1 : 2;

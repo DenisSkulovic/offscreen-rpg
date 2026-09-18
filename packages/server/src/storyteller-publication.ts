@@ -1,8 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
+import { campaign } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import { offerSchema } from '@offscreen/contracts/campaign';
 import {
   storytellerTaskSchema,
   validateStorytellerResult,
@@ -58,6 +61,33 @@ export async function publishStorytellerResult(
       throw new StoryError('invalid');
     }
     if (task.task === 'consequence') {
+      if (
+        result.scene.version !== 3 ||
+        result.scene.next.kind !== 'opportunities'
+      ) {
+        throw new StoryError('invalid');
+      }
+      const candidates = new Map(
+        task.context.resolution?.offer.nodes
+          .filter((node) => node.action)
+          .map((node) => [node.id, node] as const) ?? [],
+      );
+      const plannedOffer = offerSchema.parse({
+        id: randomUUID(),
+        nodes: result.scene.next.options.map((option) => {
+          const candidate = candidates.get(option.id);
+          if (!candidate?.action) {
+            throw new StoryError('invalid');
+          }
+          return {
+            id: option.id,
+            parent: null,
+            label: option.label,
+            description: option.intention,
+            action: candidate.action,
+          };
+        }),
+      });
       const passageId = await insertContinuationPassage(tx, {
         storyId: current.id, sequence: current.revision + 1, transitionId: resolution.operationId,
         sourceGenerationId: id, responseSource: null,
@@ -67,6 +97,10 @@ export async function publishStorytellerResult(
       });
       await publishStorytellerNotes(tx, { storyId: current.id, generationId: id, passageId,
         revision: current.revision + 1, sourcePart: 'current', notes: current.continuityNotes });
+      await tx
+        .update(campaign)
+        .set({ offer: plannedOffer })
+        .where(eq(campaign.storyId, current.id));
       await advanceStoryView(tx, { storyId: current.id, revision: current.revision + 1, viewVersion: current.viewVersion + 1 });
       await setPublication(tx, id, 'published');
       return;

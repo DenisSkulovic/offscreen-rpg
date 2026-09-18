@@ -38,6 +38,80 @@ function opening() {
   });
 }
 
+function consequence() {
+  const base = opening();
+  const passage = {
+    id: randomUUID(),
+    sequence: 2,
+    content: {
+      version: 1 as const,
+      title: 'After the attempt',
+      paragraphs: ['The committed result is now visible.'],
+    },
+    response: null,
+  };
+  return prepareStorytellerTask({
+    task: 'consequence',
+    source: {
+      storyId: randomUUID(),
+      narrativeRevision: 2,
+      passageId: passage.id,
+    },
+    profile: base.profile,
+    execution: base.execution,
+    context: {
+      ...base.context,
+      current: passage,
+      evidence: [passage],
+      selected: {
+        id: 'inspect',
+        label: 'Inspect the clue',
+        intention: 'Inspect the clue carefully.',
+      },
+      resolution: {
+        character: {
+          name: 'A strange observer',
+          scores: {
+            strength: 10,
+            dexterity: 10,
+            constitution: 10,
+            intelligence: 12,
+            wisdom: 12,
+            charisma: 10,
+          },
+          proficientSkills: [],
+          proficiencyBonus: 2,
+          hp: 5,
+          maxHp: 5,
+          facts: [],
+          quantities: [],
+        },
+        tick: 0,
+        offer: {
+          id: randomUUID(),
+          nodes: [
+            {
+              id: 'inspect',
+              parent: null,
+              label: 'Inspect',
+              description: 'Inspect what changed.',
+              action: { kind: 'attempt', definition: 'inspect' },
+            },
+            {
+              id: 'withdraw',
+              parent: null,
+              label: 'Withdraw',
+              description: 'Step away from the situation.',
+              action: { kind: 'attempt', definition: 'withdraw' },
+            },
+          ],
+        },
+        receipts: [],
+      },
+    },
+  });
+}
+
 test('profiles are data; captured task is isolated and task-specific', () => {
   const task = opening();
   const copy = { ...task.profile, id: 'third-style', name: 'Third style' };
@@ -97,6 +171,35 @@ test('offered agency checks reject duplicates, endings and fabricated/future evi
       ],
     }),
   );
+});
+
+test('consequence planning selects admitted actions without gaining mechanical authority', () => {
+  const task = consequence();
+  const result = scriptedStorytellerResult(task);
+  assert.equal(result.scene.version, 3);
+  if (result.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    result.scene.next.options.map((option) => option.id),
+    ['withdraw'],
+  );
+
+  const fabricated = structuredClone(result);
+  if (fabricated.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  fabricated.scene.next.options[0]!.id = 'invented-mechanic';
+  assert.throws(() => validateStorytellerResult(task, fabricated));
+
+  const duplicate = structuredClone(result);
+  if (duplicate.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  duplicate.scene.next.options.push({
+    ...duplicate.scene.next.options[0]!,
+  });
+  assert.throws(() => validateStorytellerResult(task, duplicate));
 });
 
 test('continuity updates preserve provenance and fail without mutating their base', () => {

@@ -1,6 +1,6 @@
 # Situation-dependent options and meaningful agency
 
-Status: Connected authored slice implemented; broader feature acceptance remains partial. Checks not run. See the shared repair checkpoint.
+Status: Contextual immediate-option publication implemented through the storyteller generation path; broader agent tools and non-immediate processes remain partial. Checks not run. See the shared repair checkpoint.
 Approval: On 2026-09-18 the owner authorized implementation of all four features and delegated the D&D baseline choice. Use SRD 5.2.1 (revised fifth edition), with explicitly authored activity extensions.
 
 ## Intended outcome
@@ -14,6 +14,8 @@ In a town, choose work, trade, study, explore or rest; inspect a prepared submen
 ## Scope and boundaries
 
 Opportunity context, typed mechanical leaf actions, finite prepared category menus, commitment/risk labels and zero/one/many-choice handling. No unlimited reroll-options button, combat simulator or guarantee that a structural validator understands all fictional tactics. Unsupported activities must not masquerade as implemented mechanics.
+
+The first generated slice is deliberately narrower. After a committed immediate consequence, the storyteller may select zero to six actions from the server-admitted mechanical candidates and rewrite their labels/intentions for the current situation. Publication persists that selected offer; later submission still resolves the captured authoritative action definition. The storyteller cannot invent IDs, effects, checks or long-running process plans. Travel, work-like contribution and waits remain blocked by the activity-process redesign.
 
 ## Acceptance
 
@@ -33,4 +35,3 @@ The [shared architecture repair plan](../2026-09-18--14-49--dnd-checks-and-visib
 - [Storyteller customization](../../storyteller-settings.md)
 - [Rules and activities](../../technical/rules-and-activities.md)
 - [Settings and clock](../../technical/story-settings.md)
-

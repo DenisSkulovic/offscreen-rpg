@@ -47,7 +47,9 @@ The migration history is squashed to one current baseline. The intermediate sche
 
 Six pure clock tests passed through `node --test packages/server/test/tick-clock.test.mjs` (about 0.35 seconds inside Node). No application build, typecheck, lint or integration/browser playthrough was run. A Node source-module detection warning remains. Earlier broader test evidence above applies to earlier code, not this patch.
 
-Next: isolate durable narration preparation, implement definition/application tags, then the [bounded DM planning agent and generated choice loop](features/2026-09-18--14-49--contextual-option-agency/PLAN.md). Optional calendar presentation, full combat, new fact admission and resuming interrupted plans are still unfinished. Do not treat moving fixtures into data or reaching a prompt as proof of generic generated play.
+The immediate mechanical loop now lets the storyteller select and present a contextual subset of server-admitted actions after each committed consequence. Publication persists the fresh offer, while later selection resolves the captured authoritative action definition. The focused storyteller test passes 6/6; server typechecking still reports two existing exact-optional provenance errors in `story-command-policy.ts`. This does not yet add the bounded evidence/rule-inspection tool runner or authorize generated long-running processes.
+
+Next: isolate durable narration preparation, implement definition/application tags, then extend the [bounded DM planning agent](features/2026-09-18--14-49--contextual-option-agency/PLAN.md) only where captured essentials are insufficient. Optional calendar presentation, full combat, new fact admission and resuming interrupted plans are still unfinished. Do not treat moving fixtures into data or reaching a prompt as proof of generic generated play.
 
 ## Current focus and next gate
 
@@ -62,4 +64,3 @@ The later real playthrough must score profile adherence, intention fidelity, opt
 The full Chamber laboratory, multiplayer, notifications, calendar presentation, richer interruptions and entity state and hosted onboarding remain separate product work. A coherent small solo game does not require detailed population simulation, interactive 3D maps or an agent per NPC. New complexity should earn its place through observed failures in the playable loop.
 
 No live model calls occurred during this implementation. Provider spend is $0; cumulative OpenRouter account usage has not been verified. Local scripted testing remains the default.
-

@@ -72,11 +72,20 @@ export function scriptedStorytellerResult(
     if (!resolution || !task.context.current) {
       throw new Error('Missing committed consequence');
     }
+    const candidates = resolution.offer.nodes.filter((node) => node.action);
+    const alternatives = candidates.filter(
+      (node) => node.id !== task.context.selected?.id,
+    );
+    const selected = (alternatives.length ? alternatives : candidates).slice(0, 3);
     return validateStorytellerResult(task, {
       version: 1,
       scene: { version: 3, content: task.context.current.content, next: {
-        kind: 'opportunities', state: resolution.offer.nodes.length ? 'available' : 'held',
-        options: resolution.offer.nodes.filter((node) => node.action).map((node) => ({ id: node.id, label: node.label, intention: node.description })),
+        kind: 'opportunities', state: selected.length ? 'available' : 'held',
+        options: selected.map((node) => ({
+          id: node.id,
+          label: node.label,
+          intention: node.description,
+        })),
       } },
       currentNotes: [], arrivalNotes: [],
     });
