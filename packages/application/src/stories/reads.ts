@@ -21,8 +21,10 @@ import {
 } from '@offscreen/db/story-schema';
 import { and, desc, eq, lt, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { createHash } from 'node:crypto';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
+import { disabledReadCache, type ReadCacheOptions } from '../cache/read-cache';
 
 type OwnedStory = Readonly<{
   ownerId: string;
@@ -77,7 +79,69 @@ function listStoryStatus(row: {
   return row.interaction ? 'A choice awaits' : 'Concluded';
 }
 
-export function createStoryReads(database: Database) {
+const snapshotCacheContract = 'story-snapshot.v1';
+const snapshotCacheTtlSeconds = 30;
+const snapshotCacheMaximumBytes = 512 * 1024;
+
+function snapshotCacheKey(ownerId: string, storyId: string, identity: unknown) {
+  const digest = createHash('sha256')
+    .update(JSON.stringify({ ownerId, storyId, identity }))
+    .digest('hex');
+  return `${snapshotCacheContract}:${digest}`;
+}
+
+function cacheErrorKind(error: unknown) {
+  return error instanceof Error && error.name ? error.name : 'UnknownError';
+}
+
+export function createStoryReads(
+  database: Database,
+  options: ReadCacheOptions = {},
+) {
+  const cache = options.cache ?? disabledReadCache;
+
+  async function snapshotIdentity({ ownerId, storyId }: OwnedStory) {
+    const [row] = await database.db
+      .select({
+        viewVersion: story.viewVersion,
+        resolutionState: generation.state,
+        resolutionVersion: generation.statusRevision,
+        failureCode: generation.failureCode,
+        publicationState: storytellerPublication.state,
+        publicationFailure: storytellerPublication.failureCode,
+        usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
+      })
+      .from(story)
+      .innerJoin(
+        storyPassage,
+        and(
+          eq(storyPassage.storyId, story.id),
+          eq(storyPassage.sequence, story.revision),
+        ),
+      )
+      .leftJoin(
+        storyResolution,
+        and(
+          eq(storyResolution.storyId, story.id),
+          eq(storyResolution.basePassageId, storyPassage.id),
+          eq(storyResolution.baseRevision, story.revision),
+        ),
+      )
+      .leftJoin(generation, eq(generation.id, storyResolution.generationId))
+      .leftJoin(
+        storytellerPublication,
+        eq(storytellerPublication.generationId, generation.id),
+      )
+      .where(
+        and(
+          eq(story.id, parseStoryIdentifier(storyId)),
+          eq(story.ownerId, ownerId),
+        ),
+      );
+    if (!row) throw new StoryError('not_found');
+    return row;
+  }
+
   return {
     async listStories({
       ownerId,
@@ -149,7 +213,20 @@ export function createStoryReads(database: Database) {
       });
     },
     async readSnapshot({ ownerId, storyId }: OwnedStory) {
-      return database.db.transaction(
+      const identity = await snapshotIdentity({ ownerId, storyId });
+      const key = snapshotCacheKey(ownerId, storyId, identity);
+      try {
+        const cached = await cache.get(key);
+        if (cached !== null) return storySnapshotSchema.parse(cached);
+      } catch (error) {
+        options.onCacheIncident?.({
+          operation: 'get',
+          projection: 'story-snapshot',
+          errorKind: cacheErrorKind(error),
+        });
+      }
+      let builtIdentity: unknown;
+      const snapshot = await database.db.transaction(
         async (tx) => {
           const [row] = await tx
             .select({
@@ -208,6 +285,15 @@ export function createStoryReads(database: Database) {
           if (!row) {
             throw new StoryError('not_found');
           }
+          builtIdentity = {
+            viewVersion: row.viewVersion,
+            resolutionState: row.resolutionState,
+            resolutionVersion: row.resolutionVersion,
+            failureCode: row.failureCode,
+            publicationState: row.publicationState,
+            publicationFailure: row.publicationFailure,
+            usage: row.usage,
+          };
           return storySnapshotSchema.parse({
             campaign:
               (await readCampaign(tx, ownerId, storyId)) ??
@@ -298,6 +384,23 @@ export function createStoryReads(database: Database) {
         },
         { isolationLevel: 'repeatable read', accessMode: 'read only' },
       );
+      // Store under the identity represented by the built snapshot, not the
+      // preflight identity. A concurrent commit can therefore create a miss,
+      // never make an old projection addressable as the new one.
+      const builtKey = snapshotCacheKey(ownerId, storyId, builtIdentity);
+      try {
+        await cache.set(builtKey, snapshot, {
+          ttlSeconds: snapshotCacheTtlSeconds,
+          maxBytes: snapshotCacheMaximumBytes,
+        });
+      } catch (error) {
+        options.onCacheIncident?.({
+          operation: 'set',
+          projection: 'story-snapshot',
+          errorKind: cacheErrorKind(error),
+        });
+      }
+      return snapshot;
     },
 
     async readHistory({ ownerId, storyId, before }: ReadStoryHistory) {

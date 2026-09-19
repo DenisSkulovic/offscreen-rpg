@@ -36,6 +36,7 @@
     "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",
     "@offscreen/application": "workspace:*",
+    "@offscreen/cache": "workspace:*",
     "better-auth": "1.7.5",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",

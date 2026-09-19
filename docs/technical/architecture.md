@@ -82,7 +82,7 @@ PostgreSQL fits memberships, ownership, deadlines, ordered chronology and atomic
 
 Drizzle is recommended because this design needs visible SQL, constraints and locking. Prisma is a viable alternative if its development experience is preferred; neither removes the need to understand transactions. Use generated SQL migrations that are reviewed before application, not automatic schema pushing in production. [Drizzle transactions](https://orm.drizzle.team/docs/transactions), [migrations](https://orm.drizzle.team/docs/migrations).
 
-Redis is optional for measured cache, distributed rate-limit or live fan-out needs. It is not part of the minimum execution stack. Kafka and separate document, graph or vector databases have no demonstrated first-version requirement.
+Redis is optional for measured read-cache, distributed rate-limit or live fan-out needs. It is never application authority and is not part of the minimum execution stack. Cacheable projections use the owner-scoped, version-addressed cache-aside contract in [Persistence and caching](persistence-and-caching.md); commands and transactional workers always recheck PostgreSQL. Kafka and separate document, graph or vector databases have no demonstrated first-version requirement.
 
 ## What handles events and background work
 

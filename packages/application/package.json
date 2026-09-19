@@ -30,6 +30,10 @@
     "./runtime-logging": {
       "types": "./dist/runtime-logging/index.d.ts",
       "default": "./dist/runtime-logging/index.js"
+    },
+    "./cache": {
+      "types": "./dist/cache/index.d.ts",
+      "default": "./dist/cache/index.js"
     }
   },
   "scripts": {

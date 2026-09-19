@@ -1,0 +1,26 @@
+{
+  "name": "@offscreen/cache",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@offscreen/application": "workspace:*",
+    "redis": "5.8.2",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@offscreen/config": "workspace:*",
+    "@types/node": "22.20.3",
+    "typescript": "5.9.3"
+  }
+}

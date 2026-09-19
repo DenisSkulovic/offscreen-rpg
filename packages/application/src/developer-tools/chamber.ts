@@ -16,14 +16,18 @@ import {
   playableOpeningStorySource,
   StoryError,
 } from '../stories/index';
+import type { ReadCacheOptions } from '../cache/read-cache';
 
 export { listChamberScenarios };
 
 // API composition currently uses this wrapper for normal story routes too.
 // Do not infer developer-only authorization from this directory's name.
 // See ../../README.md, Other entrances and misleading names.
-export function createChamber(database: Database) {
-  const stories = createStories(database);
+export function createChamber(
+  database: Database,
+  options: ReadCacheOptions = {},
+) {
+  const stories = createStories(database, options);
   const inspector = createChamberInspector(database);
 
   async function ownedSource(identity: { ownerId: string; storyId: string }) {

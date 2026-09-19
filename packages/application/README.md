@@ -2,6 +2,10 @@
 
 This package owns use cases, transactions and coordination. The API and Activity worker compose its public exports from [package.json](package.json). Pure rules belong in `@offscreen/game`; task preparation and output validation belong in `@offscreen/storyteller`. Start with one flow below rather than reading every module.
 
+## Persistence and read caching
+
+Drizzle access stays in the domain operation that owns the transaction; there is intentionally no generic repository per table. `stories/reads.ts` builds the public snapshot under repeatable-read isolation. Its optional cache dependency is the small port in `src/cache`: it can store only an already-authorized, runtime-validated projection under an owner-scoped projection identity. The Redis implementation and connection lifecycle live in `@offscreen/cache`, outside this package. Commands, locks, timers, private plans and accounting authority never read Redis. See [persistence and caching](../../docs/technical/persistence-and-caching.md).
+
 ## Opening and Start
 
 1. [Scripted openings facade](src/generations/scripted-openings.ts) dispatches profiled drafts to [Storyteller openings](src/storyteller/openings.ts); the separate unprofiled rehearsal has its own generation kind.

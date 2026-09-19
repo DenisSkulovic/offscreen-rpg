@@ -36,18 +36,30 @@ import { createChamber } from '@offscreen/application/developer-tools';
 import { STORIES, StoriesController } from './modules/stories/controller.js';
 import { ChamberToolsController } from './modules/stories/chamber-tools-controller.js';
 import { createQaJourneys } from '@offscreen/application/developer-tools';
+import type { CacheIncident, ReadCache } from '@offscreen/application/cache';
 import {
   QA_JOURNEYS,
   QaJourneysController,
 } from './modules/stories/qa-journeys-controller.js';
 
 const DATABASE = Symbol('DATABASE');
+const CACHE_CLOSE = Symbol('CACHE_CLOSE');
 
 @Injectable()
 class DatabaseLifecycle {
   constructor(@Inject(DATABASE) private readonly database: Database) {}
   onApplicationShutdown() {
     return this.database.close();
+  }
+}
+
+@Injectable()
+class CacheLifecycle {
+  constructor(
+    @Inject(CACHE_CLOSE) private readonly closeCache: () => Promise<void>,
+  ) {}
+  onApplicationShutdown() {
+    return this.closeCache();
   }
 }
 
@@ -75,6 +87,9 @@ class AppModule {}
 export type CreateAppOptions = Readonly<{
   developerTools?: boolean;
   storytellerExecution?: ExecutionPolicy;
+  readCache?: ReadCache;
+  closeCache?: () => Promise<void>;
+  onCacheIncident?: (incident: CacheIncident) => void;
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -104,7 +119,12 @@ export async function createApp(
       providers: [
         IdentityService,
         DatabaseLifecycle,
+        CacheLifecycle,
         { provide: DATABASE, useValue: database },
+        {
+          provide: CACHE_CLOSE,
+          useValue: options.closeCache ?? (async () => {}),
+        },
         { provide: AUTH, useValue: auth },
         { provide: DRAFTS, useValue: createDrafts(database) },
         {
@@ -114,7 +134,15 @@ export async function createApp(
             options.storytellerExecution,
           ),
         },
-        { provide: STORIES, useValue: createChamber(database) },
+        {
+          provide: STORIES,
+          useValue: createChamber(database, {
+            ...(options.readCache ? { cache: options.readCache } : {}),
+            ...(options.onCacheIncident
+              ? { onCacheIncident: options.onCacheIncident }
+              : {}),
+          }),
+        },
         {
           provide: QA_JOURNEYS,
           useValue: createQaJourneys(

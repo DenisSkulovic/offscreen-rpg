@@ -893,6 +893,73 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     nonAssertions: ['This case does not exercise real provider outages.'],
   }),
   defineCase({
+    id: 'story-snapshot-cache-fallback',
+    version: 1,
+    name: 'Story snapshot cache consistency',
+    purpose:
+      'Confirm that optional Redis acceleration never becomes story authority or exposes a stale current projection.',
+    risk: 'A cache hit could otherwise hide committed gameplay, cross ownership boundaries, or make Redis availability a gameplay dependency.',
+    costClass: 'offline',
+    availability: { state: 'available' },
+    prerequisites: [
+      'The local PostgreSQL and Redis services are running.',
+      'The API is configured with the loopback REDIS_URL.',
+      'An owned playable story exists.',
+    ],
+    initialScenario: null,
+    drivers: ['manual-chamber'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'populate',
+        name: 'Populate an unchanged snapshot',
+        importance: 'major',
+        preconditions: ['The story is readable and Redis is healthy.'],
+        action: 'Open and reload the same unchanged story twice.',
+        observableExpectation: 'Both reads show the same current state.',
+        authoritativeExpectation:
+          'Ownership is checked in PostgreSQL before the version-addressed cached projection is eligible.',
+      }),
+      stage({
+        id: 'change',
+        name: 'Commit through the cached view',
+        importance: 'poc-blocker',
+        preconditions: ['The unchanged snapshot was read repeatedly.'],
+        action: 'Commit one available action and reload the story.',
+        observableExpectation:
+          'The committed passage, offer, activity, or receipt appears immediately.',
+        authoritativeExpectation:
+          'The changed projection identity cannot address the previous cached value; no delete message is required for correctness.',
+      }),
+      stage({
+        id: 'outage',
+        name: 'Lose optional Redis',
+        importance: 'major',
+        preconditions: ['The changed snapshot is visible.'],
+        action: 'Stop Redis and reload the story again.',
+        observableExpectation:
+          'The same current story remains readable, with at most a normal database-read delay.',
+        authoritativeExpectation:
+          'The API falls back to PostgreSQL and emits a safe cache warning without logging cached content.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'runtime-log',
+        description:
+          'A bounded cache-fallback event containing operation/projection/error kind and no player content.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Restart Redis and use a fresh story or key prefix before repeating the case.',
+    nonAssertions: [
+      'This case does not establish a production cache hit rate or latency benefit.',
+      'It does not authorize caching commands, sessions, private plans, timers, or accounting admission.',
+    ],
+  }),
+  defineCase({
     id: 'conservative-live-quality-probe',
     version: 1,
     name: 'Conservative live quality probe',

@@ -17,6 +17,7 @@ import { createStoryReads } from './reads';
 import { createStoryResolution } from './resolution';
 import { createStoryStart } from './start';
 import { createStoryTiming } from './timing';
+import type { ReadCacheOptions } from '../cache/read-cache';
 
 export {
   controlledIntervalTopic,
@@ -24,8 +25,11 @@ export {
   intervalWakeTopic,
 } from './topics';
 
-export function createStories(database: Database) {
-  const reads = createStoryReads(database);
+export function createStories(
+  database: Database,
+  options: ReadCacheOptions = {},
+) {
+  const reads = createStoryReads(database, options);
   const initializeStory = createStoryInitialization(database);
   const startPlayableCandidate = createStoryStart(database);
   const continuation = createStoryContinuation(database);
