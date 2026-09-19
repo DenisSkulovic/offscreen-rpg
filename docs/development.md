@@ -34,20 +34,26 @@ pnpm infra:up
 pnpm infra:down
 ```
 
-Docker Desktop is convenient on Windows but is not a project dependency. If
-its WSL socket bridge repeatedly fails, verify outbound connectivity inside the
-distribution before reinstalling containers. This workstation uses WSL
-mirrored networking with DNS tunnelling and Docker Engine/Compose installed
-directly in Ubuntu. Keep the distribution alive while services run and invoke
-`docker compose up -d --wait` from the repository's `/mnt/c/...` path. The
-application depends on the published loopback ports, not on Docker Desktop.
-`wsl --update` confirms that the installed Store WSL is current, and its kernel,
-DNS and outbound HTTPS are healthy; reinstalling or upgrading WSL is therefore
-not the default response to the Docker Desktop socket-bridge failure.
+Docker Desktop with its WSL 2 backend is the verified Windows path. A previous
+startup failure was not a broken WSL installation or container data: stale
+Windows AF_UNIX reparse points prevented Docker from renaming
+`%LOCALAPPDATA%\Docker\run\sailor-ingest.sock` and
+`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`. If the backend reports that
+either socket "cannot be accessed by the system," quit every Docker Desktop
+process, rename both transient parent directories in the same stopped state,
+and restart Docker Desktop. It recreates them. Do not reinstall Docker or WSL,
+reset container data, or clean only one directory first; the first failed
+restart creates another socket that becomes stale before the second repair.
+
+`wsl --update` confirms that this workstation's Store WSL is current, and its
+kernel, DNS and outbound HTTPS are healthy. Docker Engine and Compose are also
+installed directly in `Ubuntu-24.04` as a recovery option, but do not run both
+engines' project stacks simultaneously because they publish the same loopback
+ports. Docker Desktop remains the normal development runtime.
 
 Compose defines application PostgreSQL on localhost:5432 and Temporal on localhost:7233, with its UI on localhost:8233. Named volumes preserve their data when stopped. `infra:down` retains those volumes. The PostgreSQL database/user are `offscreen`; the checked-in password `local-development-only` is only for this loopback-bound development service. The API admits requests in PostgreSQL; the application worker relays their outbox notices and executes scripted preview workflows in Temporal.
 
-Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Engine inside WSL 2. After installing Docker, reopen terminals so the CLI is available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
+Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
 
 Use host application processes and Compose dependencies first. Kubernetes comes after a working containerized story slice, when a deployment can demonstrate something useful. The production images and cluster manifests will be built against those actual processes.
 
