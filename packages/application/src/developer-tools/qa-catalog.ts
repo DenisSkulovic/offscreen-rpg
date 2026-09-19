@@ -591,10 +591,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     availability: {
       state: 'planned',
       reason:
-        'The strict report task and durable hook/history projection exist, but task dispatch and source-bound historical publication are not implemented yet.',
+        'Report dispatch and source-bound publication exist, but the Chamber cannot yet deterministically delay/release report delivery or compare it with a controlling scene.',
     },
     prerequisites: [
-      'U2b report-task dispatch and historical publication are implemented on the existing strict report-only task and durable hook.',
       'The Chamber can delay, fail, retry, and inspect report and controlling-scene hooks independently.',
     ],
     initialScenario: 'beacon-watch.v1',

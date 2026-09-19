@@ -1,11 +1,7 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import {
-  campaign,
-  gameActivity,
-  gameActivityReport,
-} from '@offscreen/db/campaign-schema';
+import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
   activityBoundaryBlockText,
   activityProgressSchema,
@@ -40,6 +36,7 @@ import {
 } from './persistence';
 import { requestConsequenceNarration } from './narration';
 import { projectCampaignClock } from './clock';
+import { requestActivityReport } from './reports';
 
 export const campaignActivityTopic = 'campaign.activity.v1';
 
@@ -318,7 +315,7 @@ export async function settleActivity(
   }
   const nonControllingCompletion =
     nextState === 'complete' && plan.action.completionFollowUp !== 'scene';
-  await refreshOffer(
+  const refreshedOffer = await refreshOffer(
     tx,
     nextCampaign,
     current.revision + 1,
@@ -343,16 +340,16 @@ export async function settleActivity(
     viewVersion: current.viewVersion + 1,
   };
   if (nextState === 'complete' && plan.action.completionFollowUp === 'report') {
-    await tx.insert(gameActivityReport).values({
-      id: randomUUID(),
-      storyId: current.id,
-      activityId: activity.id,
-      activityRevision: nextActivity.revision,
-      sourcePassageId: passageId,
-      sourceTick: nextCampaignTick,
+    await requestActivityReport(tx, {
+      current: nextStory,
+      state: { ...nextCampaign, offer: refreshedOffer },
+      activity: nextActivity,
+      passageId,
       label: plan.action.label,
+      intention: plan.action.description,
       factualSummary:
         lines.at(-1) ?? `${plan.action.label} completed as admitted.`,
+      completionEffects: plan.action.completion.effects,
     });
   }
   if (nextState !== 'running' && !nonControllingCompletion) {

@@ -210,7 +210,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
               'The organism can no longer remain contracted under the admitted conditions.',
           },
           occurrence: { kind: 'unbounded' },
-          completionFollowUp: 'quiet',
+          completionFollowUp: 'report',
           checks: [],
           completion: {
             text: 'The disturbance passes while the organism remains contracted.',

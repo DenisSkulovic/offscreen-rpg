@@ -13,6 +13,7 @@ import {
   campaignConsequence,
   gameActionReceipt,
   gameActivity,
+  gameActivityReport,
   gameOffer,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
@@ -649,6 +650,11 @@ test(
             });
             assert.equal(completed.campaign?.tick, 10);
             assert.equal(completed.campaign?.rolls.length, 0);
+            assert.equal(completed.campaign?.activityReports.length, 1);
+            assert.equal(
+              completed.campaign?.activityReports[0]?.state,
+              'generating',
+            );
             assert.equal(
               completed.campaign?.character?.facts.find(
                 (fact) => fact.id === 'exposed',
@@ -671,7 +677,44 @@ test(
               ['completed', 'started'],
             );
 
-            let repeatSnapshot = duplicate;
+            const [reportHook] = await database.db
+              .select()
+              .from(gameActivityReport)
+              .where(eq(gameActivityReport.activityId, activityId));
+            const reportGenerationId = requireDefined(
+              reportHook?.generationId,
+              'Expected a report generation bound to the completed wait',
+            );
+            const sourceRevision = duplicate.revision;
+            const sourceViewVersion = duplicate.viewVersion;
+            const sourcePassageId = duplicate.current.id;
+            const sourceOfferId = duplicate.campaign?.offer?.id;
+            await runtime.complete(reportGenerationId);
+            const reported = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(reported.revision, sourceRevision);
+            assert.equal(reported.viewVersion, sourceViewVersion + 1);
+            assert.equal(reported.current.id, sourcePassageId);
+            assert.equal(reported.campaign?.offer?.id, sourceOfferId);
+            assert.equal(
+              reported.campaign?.activityReports[0]?.state,
+              'published',
+            );
+            assert.equal(
+              reported.campaign?.activityReports[0]?.report?.paragraphs[0],
+              'The disturbance passes while the organism remains contracted.',
+            );
+            await runtime.complete(reportGenerationId);
+            const replayedReport = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(replayedReport.viewVersion, reported.viewVersion);
+            assert.equal(replayedReport.revision, reported.revision);
+
+            let repeatSnapshot = replayedReport;
             const repeatedIds: string[] = [];
             for (let cycle = 0; cycle < 2; cycle++) {
               const repeatOffer = requireDefined(
@@ -740,6 +783,73 @@ test(
             assert.deepEqual(occurrenceState?.activityOccurrences, [
               { scopeKey: 'microbe-gradient-samples', completed: 2 },
             ]);
+          },
+        );
+        await t.test(
+          'failed optional reporting preserves the factual result and current authority',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['wait-contracted'],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const activityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the reportable wait activity',
+            );
+            await storyService.advanceCampaignActivity(activityId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const [hook] = await database.db
+              .select()
+              .from(gameActivityReport)
+              .where(eq(gameActivityReport.activityId, activityId));
+            const generationId = requireDefined(
+              hook?.generationId,
+              'Expected a bound report generation',
+            );
+            const failingRuntime = createStorytellerRuntime(database, {
+              scriptedSource: (task) =>
+                task.task === 'report' ? {} : scriptedStorytellerResult(task),
+            });
+            await failingRuntime.complete(generationId);
+            const unavailable = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(unavailable.revision, completed.revision);
+            assert.equal(unavailable.viewVersion, completed.viewVersion + 1);
+            assert.equal(unavailable.current.id, completed.current.id);
+            assert.equal(
+              unavailable.campaign?.activityReports[0]?.state,
+              'unavailable',
+            );
+            assert.equal(
+              unavailable.campaign?.activityReports[0]?.factualSummary,
+              'The disturbance passes while the organism remains contracted.',
+            );
+            assert.equal(
+              unavailable.campaign?.activityReports[0]?.report,
+              null,
+            );
           },
         );
         await t.test(

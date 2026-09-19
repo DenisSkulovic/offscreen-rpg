@@ -1,5 +1,5 @@
 {
-  "id": "3965ad97-2da4-4921-9188-1190e3e75aa2",
+  "id": "cae8cc6e-e16c-4e21-bd30-a1da1e0cf2dd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1105,6 +1105,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "source_revision": {
+          "name": "source_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "source_tick": {
           "name": "source_tick",
           "type": "bigint",
@@ -1183,10 +1189,43 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "game_activity_report_source_passage_id_story_passage_id_fk": {
+          "name": "game_activity_report_source_passage_id_story_passage_id_fk",
+          "tableFrom": "game_activity_report",
+          "tableTo": "story_passage",
+          "columnsFrom": [
+            "source_passage_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "game_activity_report_generation_id_generation_id_fk": {
+          "name": "game_activity_report_generation_id_generation_id_fk",
+          "tableFrom": "game_activity_report",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "game_activity_report_generation_id_unique": {
+          "name": "game_activity_report_generation_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "generation_id"
+          ]
+        },
         "game_activity_report_hook": {
           "name": "game_activity_report_hook",
           "nullsNotDistinct": false,

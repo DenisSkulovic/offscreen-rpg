@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  gameActivity,
+  gameActivityReport,
+} from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
@@ -24,6 +28,7 @@ import {
   lockOwnedStory,
   insertContinuationPassage,
   advanceStoryView,
+  incrementStoryViewVersion,
 } from '../stories/persistence';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
@@ -41,16 +46,43 @@ export async function publishStorytellerResult(
       .select()
       .from(generation)
       .where(and(eq(generation.id, id), eq(generation.kind, storytellerKind)));
-    if (!record || record.state !== 'succeeded') {
+    if (!record) {
       return;
     }
     const task = storytellerTaskSchema.parse(record.input);
-    const result = validateStorytellerResult(task, record.output);
-    if ('report' in result) {
-      // Historical publication is added with the durable report hook. Until
-      // then no report task is admitted, and it must never fall into scene code.
-      throw new StoryError('invalid');
+    if (record.state !== 'succeeded') {
+      if (task.task === 'report' && record.state === 'failed') {
+        const current = await lockOwnedStory(tx, {
+          storyId: task.source.storyId,
+          ownerId: record.ownerId,
+        });
+        const changed = await tx
+          .update(gameActivityReport)
+          .set({ state: 'blocked' })
+          .where(
+            and(
+              eq(gameActivityReport.id, task.source.hookId),
+              eq(gameActivityReport.generationId, id),
+              eq(gameActivityReport.state, 'generating'),
+            ),
+          )
+          .returning({ id: gameActivityReport.id });
+        if (changed.length) {
+          await incrementStoryViewVersion(tx, {
+            storyId: current.id,
+            viewVersion: current.viewVersion + 1,
+          });
+        }
+        await setPublication(
+          tx,
+          id,
+          'blocked',
+          record.failureCode ?? 'generation_failed',
+        );
+      }
+      return;
     }
+    const result = validateStorytellerResult(task, record.output);
     if (task.task === 'opening') {
       await setPublication(tx, id, 'published');
       return;
@@ -65,6 +97,46 @@ export async function publishStorytellerResult(
       .where(eq(storytellerPublication.generationId, id));
     if (publication?.state === 'published' || publication?.state === 'stale') {
       return;
+    }
+    if (task.task === 'report') {
+      if (!('report' in result)) {
+        throw new StoryError('invalid');
+      }
+      const [hook] = await tx
+        .select()
+        .from(gameActivityReport)
+        .where(eq(gameActivityReport.id, task.source.hookId))
+        .for('update');
+      if (
+        !hook ||
+        hook.storyId !== current.id ||
+        hook.generationId !== id ||
+        hook.sourcePassageId !== task.source.passageId ||
+        hook.sourceRevision !== task.source.narrativeRevision
+      ) {
+        throw new StoryError('invalid');
+      }
+      if (hook.state === 'published') {
+        await setPublication(tx, id, 'published');
+        return;
+      }
+      await tx
+        .update(gameActivityReport)
+        .set({
+          state: 'published',
+          report: result.report,
+          publishedAt: new Date(),
+        })
+        .where(eq(gameActivityReport.id, hook.id));
+      await incrementStoryViewVersion(tx, {
+        storyId: current.id,
+        viewVersion: current.viewVersion + 1,
+      });
+      await setPublication(tx, id, 'published');
+      return;
+    }
+    if ('report' in result) {
+      throw new StoryError('invalid');
     }
     if (current.revision !== task.source.narrativeRevision) {
       await setPublication(tx, id, 'stale');

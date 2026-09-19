@@ -10,8 +10,9 @@ import {
   primaryKey,
   unique,
 } from 'drizzle-orm/pg-core';
-import { story } from './stories';
+import { story, storyPassage } from './stories';
 import { user } from './auth';
+import { generation } from './generations';
 
 export const campaign = pgTable('campaign', {
   storyId: uuid('story_id')
@@ -129,12 +130,17 @@ export const gameActivityReport = pgTable(
       .notNull()
       .references(() => gameActivity.id),
     activityRevision: integer('activity_revision').notNull(),
-    sourcePassageId: uuid('source_passage_id').notNull(),
+    sourcePassageId: uuid('source_passage_id')
+      .notNull()
+      .references(() => storyPassage.id, { onDelete: 'cascade' }),
+    sourceRevision: integer('source_revision').notNull(),
     sourceTick: bigint('source_tick', { mode: 'number' }).notNull(),
     label: text('label').notNull(),
     factualSummary: text('factual_summary').notNull(),
     state: text('state').notNull().default('pending'),
-    generationId: uuid('generation_id'),
+    generationId: uuid('generation_id')
+      .unique()
+      .references(() => generation.id, { onDelete: 'restrict' }),
     report: jsonb('report').$type<unknown>(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
