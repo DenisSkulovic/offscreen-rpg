@@ -187,7 +187,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'immediate-mechanical-dm-loop',
-    version: 2,
+    version: 3,
     name: 'Immediate mechanical DM loop',
     purpose:
       'Exercise generated options, admitted private plans, visible d20 consequences, and three committed rounds.',
@@ -243,9 +243,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         preconditions: ['An offer-local plan is available.'],
         action: 'Select one option and wait for its consequence.',
         observableExpectation:
-          'The player sees the check, consequence, and a fresh choice.',
+          'The committed outcome remains visible while preparation is pending; then the player sees its consequence and a fresh choice.',
         authoritativeExpectation:
-          'One resolution receipt and its effects commit exactly once.',
+          'One resolution receipt and its effects commit exactly once. Before generation admission, its intent-owned hold prevents clock drift; preparation retry cannot repeat mechanics.',
       }),
       stage({
         id: 'resolve-round-two',

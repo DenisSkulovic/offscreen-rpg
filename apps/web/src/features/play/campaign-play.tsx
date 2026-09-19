@@ -406,6 +406,13 @@ export function CampaignPlay({
                 {receipt.state}
               </p>
               <p>{receipt.text}</p>
+              {receipt.state === 'pending' ? (
+                <p role="status">
+                  The outcome is committed. Storyteller preparation has not
+                  produced a generation yet, so time remains held and retrying
+                  preparation cannot repeat the action, roll, or effects.
+                </p>
+              ) : null}
               {receipt.declarations.map((declaration) => (
                 <p key={declaration.fact.id}>
                   Established {declaration.fact.id}:{' '}

@@ -337,6 +337,72 @@ test(
           },
         );
         await t.test(
+          'failed preparation preserves the committed outcome and intent-owned clock hold',
+          async () => {
+            const started = await mechanicalCandidate();
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected a generated mechanical offer',
+            );
+            const action = requireDefined(
+              offer.nodes[0],
+              'Expected an admitted mechanical action',
+            );
+            const operationId = randomUUID();
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId,
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [action.id],
+              },
+            });
+            const [beforeFailure] = await database.db
+              .select({ clock: campaignTable.clock, holds: campaignTable.holds })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.deepEqual(beforeFailure?.holds, [
+              {
+                kind: 'storyteller-intent',
+                operationId,
+                reason: 'required-turn',
+              },
+            ]);
+
+            // Make the saved receipt stale before its worker prepares a task.
+            // The preparation transaction must fail without losing the already
+            // committed mechanics or opening a clock-projection gap.
+            await database.db
+              .update(story)
+              .set({ revision: started.snapshot.revision + 1 })
+              .where(eq(story.id, started.storyId));
+            await assert.rejects(
+              storyService.prepareCampaignConsequence(operationId),
+              /lost its story revision fence/,
+            );
+
+            const [receipt] = await database.db
+              .select({
+                generationId: gameActionReceipt.generationId,
+                outcome: gameActionReceipt.outcome,
+                effects: gameActionReceipt.effects,
+              })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, operationId));
+            const [afterFailure] = await database.db
+              .select({ clock: campaignTable.clock, holds: campaignTable.holds })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.equal(receipt?.generationId, null);
+            assert.ok(receipt?.outcome);
+            assert.ok(receipt?.effects);
+            assert.deepEqual(afterFailure?.clock, beforeFailure?.clock);
+            assert.deepEqual(afterFailure?.holds, beforeFailure?.holds);
+          },
+        );
+        await t.test(
           'failed required narration holds time until the same generation is retried',
           async () => {
             const started = await mechanicalCandidate();

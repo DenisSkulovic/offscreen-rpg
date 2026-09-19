@@ -1,6 +1,6 @@
 # Deliberate action time and bounded progression
 
-Status: Agreed product direction; technical design prepared, runtime unimplemented.
+Status: T1 explicit clock permission and durable preparation holds are implemented. T2 finite action duration and T3 bounded overlap remain.
 Approval: The owner requested deliberate time investment, time-bearing story choices, held decisions and careful handling of model latency on 2026-09-19. Five seconds, thirty minutes and timed defaults are illustrations rather than mandatory global values. Codex is preparing design here; no runtime rewrite is included in this pass.
 
 ## Intended outcome
