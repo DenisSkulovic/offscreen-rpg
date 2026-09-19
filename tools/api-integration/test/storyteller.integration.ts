@@ -574,6 +574,50 @@ test(
             assert.equal(duplicate.revision, completed.revision);
             assert.equal(duplicate.campaign?.tick, 10);
             assert.equal(duplicate.campaign?.rolls.length, 0);
+
+            let repeatSnapshot = duplicate;
+            const repeatedIds: string[] = [];
+            for (let cycle = 0; cycle < 2; cycle++) {
+              const repeatOffer = requireDefined(
+                repeatSnapshot.campaign?.offer,
+                'Expected the repeatable sampling opportunity',
+              );
+              assert.deepEqual(
+                repeatOffer.nodes.map((node) => node.id),
+                ['sample-gradient-cycle'],
+              );
+              await stories.campaignAction({
+                ownerId,
+                storyId: started.storyId,
+                operationId: randomUUID(),
+                body: {
+                  expectedRevision: repeatSnapshot.revision,
+                  offerId: repeatOffer.id,
+                  path: ['sample-gradient-cycle'],
+                },
+              });
+              const admittedRepeat = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              const repeatedId = requireDefined(
+                admittedRepeat.campaign?.activity?.id,
+                'Expected a fresh repeat activity',
+              );
+              repeatedIds.push(repeatedId);
+              await storyService.advanceCampaignActivity(repeatedId);
+              repeatSnapshot = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(
+                repeatSnapshot.campaign?.activity?.state,
+                'complete',
+              );
+            }
+            assert.notEqual(repeatedIds[0], repeatedIds[1]);
+            assert.equal(repeatSnapshot.campaign?.tick, 14);
+            assert.equal(repeatSnapshot.campaign?.rolls.length, 0);
           },
         );
         await t.test(

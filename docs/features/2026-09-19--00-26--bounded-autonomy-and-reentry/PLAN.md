@@ -88,7 +88,7 @@ Split into these serial bounded slices; commit/push each coherent result. This f
 
 #### U2a — Quiet settlement and factual continuation
 
-Status: in progress with S2. A captured activity now selects `quiet` or `scene` completion follow-up. Quiet completion appends its factual mechanical passage, creates no consequence/generation intent and reprojects the remaining authorized activity plans. General repeat and independent-selection evidence remains before exit.
+Status: implemented for the bounded standalone proof with S2. A captured activity selects `quiet` or `scene` completion follow-up. Quiet completion appends its factual mechanical passage, creates no consequence/generation intent and reprojects remaining authorized plans. The nonhuman fixture independently selects and completes the same repeatable routine twice as distinct instances with zero generation tasks. S2 still owns finite scoped occurrence semantics before the joint route advances to U2b.
 
 - Dependencies: A1, S1 and A2. Execute with S2 so no-task completion produces the correct next authored offer rather than a dead end or engine-invented menu.
 - Capture a validated effective boundary policy on accepted work; default/entry replacement is explicit, never an accidental merge. Add typed boundary/hook identity and a factual-only path that does not create `campaignConsequence`, generation or provider work merely to finish.
@@ -149,8 +149,8 @@ Status: in progress with S2. A captured activity now selects `quiet` or `scene` 
 
 ## Current checkpoint
 
-- Current phase: U2a/S2 is in progress. The quiet B→authorized A handoff is implemented; bounded repeatable independent selection is next, then U2b. First proof still holds at interactions without unattended decisions; later fallback phases remain distinct.
+- Current phase: bounded U2a standalone quiet settlement is implemented; finish S2's scoped occurrence/consumption boundary, then proceed to U2b. First proof still holds at interactions without unattended decisions; later fallback phases remain distinct.
 - Implemented boundary: completion follow-up is captured on the activity definition. Quiet completion commits factual passage/effects and a freshly fenced offer from remaining prepared authorization with no `campaignConsequence`; controlling completion retains the existing recoverable scene path. Switching work rebinds retained exact-instance resume authority atomically.
-- Verification: affected builds, 22/22 game tests and 29/29 Storyteller tests pass. The disposable-database focused integration passes 11/11 through PostgreSQL, Temporal and browser creation; its A→B→A branch now settles B through normal controls/worker operation, asserts no narration intent and resumes A from the fresh offer. Repeatable ordinary-life work is not yet proven.
+- Verification: affected builds, 22/22 game tests and 29/29 Storyteller tests pass. The disposable-database focused integration passes 11/11 through PostgreSQL, Temporal and browser creation; it proves real quiet B→A resumption plus two independently selected repeat cycles with fresh activity identities, monotonic ticks, no rolls and no narration intent.
 - Open decisions: delegated fallback categories, notification transport and broader risk vocabulary before their later phases. Selected first-proof bounds/hold/report policy are in the solo contract; they no longer block the nearest offline slice.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

@@ -218,6 +218,41 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
         },
       },
     },
+    {
+      version: 1,
+      key: 'sample-gradient-cycle',
+      label: 'Sample the gradient briefly',
+      intention:
+        'Hold position for a two-tick sampling interval without committing to movement.',
+      risk: null,
+      evidence: [],
+      requires: [],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        reuse: 'repeatable',
+        action: {
+          id: 'sample-gradient-cycle',
+          label: 'Sample the gradient briefly',
+          description:
+            'Hold position through one bounded environmental sampling interval.',
+          requires: [],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Sampling interval',
+            requiredTicks: 2,
+          },
+          completionFollowUp: 'quiet',
+          checks: [],
+          completion: {
+            text: 'One sampling interval passes without changing position.',
+            effects: [],
+          },
+        },
+      },
+    },
   ];
 }
 

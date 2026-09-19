@@ -41,7 +41,7 @@ Exit: authored interactive authority is persisted and observable; every scene sa
 
 Dependencies: S1, activity A2, autonomy U2a. Implement this and U2a together under one owner/commit-sized slice because quiet settlement and the next available authored offer must agree.
 
-Status: in progress. The first checkpoint persists remaining private process/resume plans in versioned situation authorization, consumes one-shot selections, atomically rebinds an exact resume when switching work, and reprojects mechanically eligible remnants after a quiet completion. Repeatable definitions, occurrence scope and broader continuous invalidation remain in this phase.
+Status: in progress. Versioned authorization now retains private process/resume plans, consumes one-shot selections, keeps explicitly repeatable definitions, atomically rebinds an exact resume when switching work, and reprojects mechanically eligible remnants after quiet completion. The integration proves two repeat cycles create distinct instances without rolls/effects. Finite findings/occurrence scope and broader continuous invalidation remain in this phase.
 
 - Persist reference/repeat/scope semantics and distinguish new instance from exact resume. Reproject after quiet receipts under the existing authorization, with fresh offer identity/state fencing and no generation task.
 - Recheck start conditions and current authorization under the same lock used for due settlement/admission. Continuous invalidation belongs to the activity boundary; removing a button alone is insufficient.
@@ -65,7 +65,7 @@ Exit: the gold session's authored scene/routine changes use task outputs and nor
 
 ## Current checkpoint
 
-- Current phase / next action: S1 and A2 are implemented; S2/U2a has a first quiet handoff checkpoint. Add bounded repeatable opportunity semantics and independent quiet selection next.
+- Current phase / next action: S1 and A2 are implemented; S2/U2a now has quiet handoff and repeatable independent selection. Finish scoped occurrence/consumption semantics before U2b.
 - Implemented boundary: every mechanical opening/consequence result explicitly says `none` or selects all process/resume action keys. Start and publication persist that authorization beside the exact offer; selection checks both under the story lock. Offer consumption clears it, and mechanical settlement publishes no inferred fallback menu.
 - Verification: affected packages build (including production web); 21/21 game and 29/29 Storyteller tests pass. After recreating `offscreen_auth_test` from the new baseline, the focused Storyteller integration passed 10/10 through PostgreSQL, Temporal and browser creation, covering explicit opening access, scene replacement and exact resume authority. This does not prove dormant repeat/reprojection, arbitrary-world preparation or human narrative quality.
 - Remaining gates: S2 still owns repeat/scope/consumption semantics and broader revalidation; S3 owns broader bounded preparation. The optional H1→H4 gold trace remains connected acceptance work rather than a claim of this infrastructure slice.

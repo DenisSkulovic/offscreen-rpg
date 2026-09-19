@@ -342,11 +342,11 @@ test('mechanical opening uses the same task contract for nonhuman agency', () =>
   }
   assert.deepEqual(
     result.scene.next.plans.map((plan) => plan.key),
-    ['follow-gradient', 'contract', 'wait-contracted'],
+    ['follow-gradient', 'contract', 'wait-contracted', 'sample-gradient-cycle'],
   );
   assert.deepEqual(result.scene.next.activityAccess, {
     kind: 'selected',
-    actionKeys: ['wait-contracted'],
+    actionKeys: ['wait-contracted', 'sample-gradient-cycle'],
   });
   assert.equal(
     JSON.stringify(result).includes('gary'),
