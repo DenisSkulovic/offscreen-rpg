@@ -18,6 +18,10 @@ import {
   compareOpenRouterRequests,
   usdToMicrousd,
 } from '../src/providers/openrouter';
+import {
+  createStorytellerRequestAudit,
+  formatStorytellerRequestAudit,
+} from '../src/providers/request-audit';
 
 function providerResources(route: string) {
   const source = [{ source: 'test', value: 100000 }];
@@ -996,4 +1000,50 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   );
   assert.equal(usdToMicrousd('1e-7'), 1n);
   assert.equal(usdToMicrousd('0.012345'), 12345n);
+});
+
+test('request audit reports exact multi-purpose structure without inventing tokens or spend', () => {
+  const narrative = opening();
+  const mechanical = mechanicalOpening();
+  const providerExecution = {
+    mode: 'provider' as const,
+    accountId: randomUUID(),
+    runId: randomUUID(),
+    dispatchReview: { mode: 'hold' as const },
+    policy: {
+      version: 'audit',
+      route: 'audit:offline',
+      model: 'audit/model-not-selected',
+      provider: 'Audit',
+      priceVersion: 'not-priced',
+      inputMicrousdPerMillion: '0',
+      outputMicrousdPerMillion: '0',
+      maxInputTokens: 100000,
+      maxOutputTokens: 2000,
+      timeoutMs: 1000,
+    },
+  };
+  const cases = [narrative, mechanical].map((task, index) => ({
+    id: index === 0 ? 'opening-narrative' : 'opening-mechanical',
+    task: prepareStorytellerTask({
+      ...task,
+      execution: providerExecution,
+      resources: providerResources(providerExecution.policy.route),
+    }),
+  }));
+  const audit = createStorytellerRequestAudit(cases);
+  assert.equal(audit.transportPerformed, false);
+  assert.equal(audit.providerChargeMicrousd, '0');
+  assert.deepEqual(
+    audit.cases.map((entry) => entry.purpose.id),
+    ['opening.narrative', 'opening.mechanical'],
+  );
+  assert.equal(audit.cases[0]?.estimatedInputTokens, null);
+  assert.equal(audit.cases[0]?.observedProviderCacheHitTokens, null);
+  assert.equal(audit.comparisons.length, 1);
+  assert.match(formatStorytellerRequestAudit(audit), /tokens\/cache: unknown/);
+  assert.throws(
+    () => createStorytellerRequestAudit([cases[0]!, cases[0]!]),
+    /case IDs must be unique/,
+  );
 });

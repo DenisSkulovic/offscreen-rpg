@@ -19,6 +19,10 @@
       "types": "./dist/src/providers/openrouter.d.ts",
       "default": "./dist/src/providers/openrouter.js"
     },
+    "./providers/request-audit": {
+      "types": "./dist/src/providers/request-audit.d.ts",
+      "default": "./dist/src/providers/request-audit.js"
+    },
     "./fixtures": {
       "types": "./dist/src/fixtures/index.d.ts",
       "default": "./dist/src/fixtures/index.js"

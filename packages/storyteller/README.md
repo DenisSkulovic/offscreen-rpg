@@ -20,6 +20,8 @@ This package prepares bounded tasks and validates their results. It does not own
 
 The OpenRouter adapter exposes one pure credential-free packet builder and structural inspector. Live transport serializes that same value, so dry-run bytes, hash, message/section contribution and output schema describe the actual body rather than a parallel preview. Token estimation deliberately remains unknown until a route-specific tokenizer is verified. Durable hold/release is owned by the active [provider dispatch review](../../docs/features/2026-09-19--22-58--provider-dispatch-review/PLAN.md); calling the inspector alone never authorizes or performs provider I/O.
 
+`providers/request-audit.ts` composes several already-captured tasks into one machine-readable structural manifest and a derived human summary. It records exact packet/schema/message bytes and hashes, loaded and omitted evidence, purpose contracts and adjacent common-prefix bytes. Unknown token counts and cache hits remain explicitly unknown. The composer is pure: fixture selection and private artifact storage belong to developer tooling, and an audit cannot release or dispatch a task.
+
 When a controlling scene blocks an accepted itinerary, `activitySituation.acceptedPlan` contains only the current blocked entry, not the whole queue. Its exact private plan is intentional: the Storyteller may hand that already-chosen commitment back as a fresh offer without reconstructing or broadening it. Publication still does not execute it; the player must select the newly authorized offer, and the application rechecks the plan horizon and ordinary mechanical eligibility before rebinding the durable entry.
 
 ## Implemented tasks and limits
