@@ -45,6 +45,7 @@ const campaignActivityViewSchema = z.strictObject({
     'paused',
     'encounter',
     'suspended',
+    'blocked',
     'complete',
     'abandoned',
   ]),

@@ -96,7 +96,7 @@ export async function refreshOffer(
           !retained ||
           retained.storyId !== state.storyId ||
           retained.revision !== resume.activityRevision ||
-          !['encounter', 'suspended'].includes(retained.state)
+          !['encounter', 'suspended', 'blocked'].includes(retained.state)
         ) {
           continue;
         }

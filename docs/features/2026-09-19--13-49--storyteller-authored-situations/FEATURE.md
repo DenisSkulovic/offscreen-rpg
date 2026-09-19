@@ -1,6 +1,6 @@
 # Storyteller-authored situations and reusable choices
 
-Status: Approved and partially implemented. Per-situation authority (S1) is complete; reusable quiet choices and exact retained resumes (S2) are in progress. Finite occurrence scope and broader continuous invalidation remain unfinished.
+Status: Approved and partially implemented. Per-situation authority (S1) and the bounded solo reusable-choice lifecycle (S2) are complete. Broader Storyteller preparation output (S3) remains unfinished.
 Approval: The owner explicitly selected Storyteller-authored choices, optional activity access and rapid/quiet pacing on 2026-09-19, then authorized offline implementation. No live inference is authorized.
 
 ## Intended outcome

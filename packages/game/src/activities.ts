@@ -58,6 +58,13 @@ export const activityOccurrencePolicySchema = z.discriminatedUnion('kind', [
     limit: z.number().int().positive().max(1000),
   }),
 ]);
+export const activityConditionPolicySchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('admission-only') }),
+  z.strictObject({
+    kind: z.literal('boundary'),
+    blockedText: z.string().min(1).max(500),
+  }),
+]);
 export const activityOccurrencesSchema = z
   .array(
     z.strictObject({
@@ -85,6 +92,7 @@ export const actionDefinitionSchema = z.strictObject({
   requires: z.array(factSchema).max(16),
   capacity: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   process: processDefinitionSchema,
+  conditionPolicy: activityConditionPolicySchema,
   occurrence: activityOccurrencePolicySchema,
   completionFollowUp: z.enum(['quiet', 'scene']),
   checks: z.array(scheduledCheckSchema).max(8),
@@ -173,6 +181,16 @@ export function actionAvailable(
       (fact) => fact.id === required.id && fact.value === required.value,
     ),
   );
+}
+
+export function activityBoundaryBlockText(
+  character: Character,
+  action: ActionDefinition,
+) {
+  if (action.conditionPolicy.kind !== 'boundary') return null;
+  return actionAvailable(character, action)
+    ? null
+    : action.conditionPolicy.blockedText;
 }
 
 /** Content cannot refer to state it never declared. */

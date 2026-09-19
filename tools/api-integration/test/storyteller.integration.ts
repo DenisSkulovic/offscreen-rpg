@@ -512,6 +512,84 @@ test(
           },
         );
         await t.test(
+          'boundary prerequisites block work before another attempt or reward',
+          async () => {
+            const started = await mechanicalCandidate('beacon-watch.v1');
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the beacon offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['restore-beacon'],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const activityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected admitted beacon work',
+            );
+            const character = requireDefined(
+              admitted.campaign?.character,
+              'Expected the beacon character',
+            );
+            await database.db
+              .update(campaignTable)
+              .set({
+                character: {
+                  ...character,
+                  facts: character.facts.map((fact) =>
+                    fact.id === 'repair-tools'
+                      ? { ...fact, value: false }
+                      : fact,
+                  ),
+                },
+              })
+              .where(eq(campaignTable.storyId, started.storyId));
+
+            assert.equal(
+              await storyService.advanceCampaignActivity(activityId),
+              null,
+            );
+            const blocked = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(blocked.campaign?.activity?.id, activityId);
+            assert.equal(blocked.campaign?.activity?.state, 'blocked');
+            assert.deepEqual(blocked.campaign?.activity?.progress, {
+              kind: 'contribution',
+              label: 'Beacon repair',
+              earned: 0,
+              required: 9,
+            });
+            assert.equal(blocked.campaign?.rolls.length, 0);
+            assert.equal(
+              blocked.campaign?.character?.quantities.find(
+                (quantity) => quantity.id === 'harbor-credit',
+              )?.value,
+              0,
+            );
+            assert.equal(
+              await storyService.advanceCampaignActivity(activityId),
+              null,
+            );
+            const blockedFollowUp = await database.db
+              .select({ operationId: campaignConsequence.operationId })
+              .from(campaignConsequence)
+              .where(eq(campaignConsequence.operationId, activityId));
+            assert.equal(blockedFollowUp.length, 1);
+          },
+        );
+        await t.test(
           'clock wait completes from eligible time without rolling or earning work points',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {

@@ -177,7 +177,9 @@ export async function readCampaign(
   const activityView = activity ? projectActivity(activity) : null;
   const commitments = activities
     .filter((candidate) =>
-      ['running', 'paused', 'encounter', 'suspended'].includes(candidate.state),
+      ['running', 'paused', 'encounter', 'suspended', 'blocked'].includes(
+        candidate.state,
+      ),
     )
     .map(projectActivity);
   return campaignViewSchema.parse({

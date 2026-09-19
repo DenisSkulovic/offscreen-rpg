@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  activityBoundaryBlockText,
   activityOccurrenceAvailable,
   contributeAtBoundary,
   estimatedCompletionBoundaryTick,
@@ -70,6 +71,7 @@ const plan = resolvedActivityPlanSchema.parse({
         failureText: 'The attempt consumes time without a sound repair.',
       },
     },
+    conditionPolicy: { kind: 'admission-only' },
     occurrence: { kind: 'unbounded' },
     completionFollowUp: 'scene',
     checks: [],
@@ -124,6 +126,37 @@ test('finite activity occurrences are spent only by terminal completions', () =>
   assert.throws(
     () => recordActivityOccurrence(occurrences, action),
     /limit already reached/,
+  );
+});
+
+test('only boundary-rechecked prerequisites block admitted work', () => {
+  const required = { id: 'tools-present', value: true };
+  const withoutTools = { ...character, facts: [{ ...required, value: false }] };
+  const boundaryAction = {
+    ...plan.action,
+    requires: [required],
+    conditionPolicy: {
+      kind: 'boundary',
+      blockedText: 'The work needs its tools.',
+    },
+  };
+  assert.equal(
+    activityBoundaryBlockText(withoutTools, boundaryAction),
+    'The work needs its tools.',
+  );
+  assert.equal(
+    activityBoundaryBlockText(withoutTools, {
+      ...boundaryAction,
+      conditionPolicy: { kind: 'admission-only' },
+    }),
+    null,
+  );
+  assert.equal(
+    activityBoundaryBlockText(
+      { ...character, facts: [required] },
+      boundaryAction,
+    ),
+    null,
   );
 });
 
@@ -202,6 +235,7 @@ test('clock wait completes at its eligible tick target without a roll or work po
         progressLabel: 'Protective interval',
         requiredTicks: 10,
       },
+      conditionPolicy: { kind: 'admission-only' },
       occurrence: { kind: 'unbounded' },
       completionFollowUp: 'quiet',
       checks: [],

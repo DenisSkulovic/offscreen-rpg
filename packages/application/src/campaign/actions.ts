@@ -158,7 +158,7 @@ export function createCampaignActions(database: Database) {
           !retained ||
           retained.storyId !== current.id ||
           retained.revision !== resume.activityRevision ||
-          !['encounter', 'suspended'].includes(retained.state)
+          !['encounter', 'suspended', 'blocked'].includes(retained.state)
         ) {
           throw new StoryError('conflict');
         }
@@ -209,12 +209,17 @@ export function createCampaignActions(database: Database) {
         // A new commitment takes the character's one advancing slot, but it does
         // not erase interrupted work. The retained row remains an explicit future
         // choice with the same identity, progress, rolls and captured terms.
-        const suspendedRevision = active ? active.revision + 1 : null;
+        let retainedRevision: number | null = null;
         if (active && ['encounter', 'paused'].includes(active.state)) {
+          retainedRevision = active.revision + 1;
           await tx
             .update(gameActivity)
             .set({ state: 'suspended', revision: active.revision + 1 })
             .where(eq(gameActivity.id, active.id));
+        } else if (active?.state === 'blocked') {
+          // Blocked work is already dormant. Keep its blocker and exact revision;
+          // starting another activity must not disguise it as voluntary suspension.
+          retainedRevision = active.revision;
         }
         const now = await readDatabaseClockMs(tx, current.id);
         const clockHeld = Boolean(
@@ -244,14 +249,14 @@ export function createCampaignActions(database: Database) {
               offerId: null,
               activityAccess: { kind: 'none' },
               preparedPlans:
-                active && suspendedRevision !== null
+                active && retainedRevision !== null
                   ? rebindPreparedResume(
                       consumePreparedActivityPlan(
                         authorization.preparedPlans,
                         definition,
                       ),
                       active.id,
-                      suspendedRevision,
+                      retainedRevision,
                     )
                   : consumePreparedActivityPlan(
                       authorization.preparedPlans,

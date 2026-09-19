@@ -228,6 +228,7 @@
                     "failureText": "The attempt consumes time without producing a sound repair."
                   }
                 },
+                "conditionPolicy": { "kind": "admission-only" },
                 "occurrence": { "kind": "unbounded" },
                 "completionFollowUp": "scene",
                 "checks": [

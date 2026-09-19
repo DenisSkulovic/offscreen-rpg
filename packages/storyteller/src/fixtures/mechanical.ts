@@ -204,6 +204,11 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
             progressLabel: 'Protective interval',
             requiredTicks: 10,
           },
+          conditionPolicy: {
+            kind: 'boundary',
+            blockedText:
+              'The organism can no longer remain contracted under the admitted conditions.',
+          },
           occurrence: { kind: 'unbounded' },
           completionFollowUp: 'quiet',
           checks: [],
@@ -245,6 +250,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
             progressLabel: 'Sampling interval',
             requiredTicks: 2,
           },
+          conditionPolicy: { kind: 'admission-only' },
           occurrence: {
             kind: 'limited',
             scopeKey: 'microbe-gradient-samples',
@@ -319,6 +325,11 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
               failureText:
                 'The attempt consumes time without producing a sound repair.',
             },
+          },
+          conditionPolicy: {
+            kind: 'boundary',
+            blockedText:
+              'The beacon repair cannot continue without the admitted damage and repair tools.',
           },
           occurrence: { kind: 'unbounded' },
           completionFollowUp: 'scene',
@@ -748,6 +759,11 @@ function beaconConsequence(
               failureText:
                 'The hurried attempt consumes time, but the exposed tools are not yet secure.',
             },
+          },
+          conditionPolicy: {
+            kind: 'boundary',
+            blockedText:
+              'Securing the tools cannot continue under the changed work-area conditions.',
           },
           occurrence: { kind: 'unbounded' },
           completionFollowUp: 'quiet',

@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
+  activityBoundaryBlockText,
   activityProgressSchema,
   nextBoundaryTick,
   processBoundaryDue,
@@ -85,7 +86,11 @@ export async function settleActivity(
   let completionPending = storedProgress.completionPending;
   let character = campaignCharacter(state);
   const lines: string[] = [];
-  if (completionPending) {
+  const initialBlockText = activityBoundaryBlockText(character, plan.action);
+  if (initialBlockText) {
+    nextState = 'blocked';
+    lines.push(initialBlockText);
+  } else if (completionPending) {
     character = applyOutcomeEffects(character, plan.action.completion.effects);
     lines.push(plan.action.completion.text);
     nextState = 'complete';
@@ -156,6 +161,16 @@ export async function settleActivity(
         effects: outcome.effects,
       });
       lines.push(outcome.text);
+      const boundaryBlockText = activityBoundaryBlockText(
+        character,
+        plan.action,
+      );
+      if (boundaryBlockText) {
+        nextState = 'blocked';
+        completionPending = processComplete;
+        lines.push(boundaryBlockText);
+        break;
+      }
       if (outcome.interrupts) {
         nextState = 'encounter';
         break;
@@ -179,7 +194,8 @@ export async function settleActivity(
   }
   const reachedBoundary =
     boundariesSettled !== activity.boundariesSettled ||
-    storedProgress.completionPending;
+    storedProgress.completionPending ||
+    nextState !== 'running';
   const backlogDue =
     nextState === 'running' &&
     nextBoundaryTick(plan, cursorTick) <= availableEffortTicks;
