@@ -38,7 +38,8 @@ export function CampaignPlay({
   onSnapshot: (story: StorySnapshot) => void;
 }) {
   const [path, setPath] = useState<string[]>([]);
-  const [successorPath, setSuccessorPath] = useState<string[] | null>(null);
+  const [successorPaths, setSuccessorPaths] = useState<string[][]>([]);
+  const [planHorizonTicks, setPlanHorizonTicks] = useState(60);
   const [pace, setPace] = useState('steady');
   const command = useCampaignCommand(story.id, onSnapshot);
   const activity = campaign.activity;
@@ -210,6 +211,10 @@ export function CampaignPlay({
               ? ` — ${acceptedPlan.blockedReason}`
               : ''}
           </p>
+          <p>
+            Accepted at tick {acceptedPlan.acceptedAtTick}; no successor starts
+            at or after tick {acceptedPlan.horizonTick}.
+          </p>
           <ol>
             {acceptedPlan.entries.map((entry) => (
               <li key={entry.id}>
@@ -281,7 +286,15 @@ export function CampaignPlay({
           {children.map((node) => (
             <article className="campaign-option" key={node.id}>
               <button
-                disabled={command.busy || command.retry}
+                disabled={
+                  command.busy ||
+                  command.retry ||
+                  (Boolean(node.action) &&
+                    successorPaths.some(
+                      (candidate) =>
+                        candidate.join('/') === [...path, node.id].join('/'),
+                    ))
+                }
                 onClick={() => {
                   if (!node.action) {
                     setPath([...path, node.id]);
@@ -291,12 +304,15 @@ export function CampaignPlay({
                     expectedRevision: story.revision,
                     offerId: campaign.offer?.id,
                     path: [...path, node.id],
-                    ...(successorPath
-                      ? { successorPaths: [successorPath] }
+                    ...(successorPaths.length
+                      ? {
+                          successorPaths,
+                          horizonTicks: planHorizonTicks,
+                        }
                       : {}),
                   });
                   setPath([]);
-                  setSuccessorPath(null);
+                  setSuccessorPaths([]);
                 }}
               >
                 {node.label}
@@ -309,20 +325,49 @@ export function CampaignPlay({
               ) : null}
               {node.action ? (
                 <button
-                  disabled={command.busy}
-                  onClick={() => setSuccessorPath([...path, node.id])}
+                  disabled={
+                    command.busy ||
+                    successorPaths.length >= 5 ||
+                    successorPaths.some(
+                      (candidate) =>
+                        candidate.join('/') === [...path, node.id].join('/'),
+                    )
+                  }
+                  onClick={() =>
+                    setSuccessorPaths((prior) => [...prior, [...path, node.id]])
+                  }
                 >
-                  Do this after another activity
+                  Add as a later activity
                 </button>
               ) : null}
             </article>
           ))}
-          {successorPath ? (
-            <p>
-              One follow-up is staged. Choose a different activity to start the
-              two-entry plan.{' '}
-              <button onClick={() => setSuccessorPath(null)}>Clear</button>
-            </p>
+          {successorPaths.length ? (
+            <div>
+              <p>
+                {successorPaths.length} later{' '}
+                {successorPaths.length === 1 ? 'activity' : 'activities'}{' '}
+                staged. Choose a different activity to start the plan.
+              </p>
+              <label>
+                Successor horizon in game ticks{' '}
+                <input
+                  type="number"
+                  min={1}
+                  max={10080}
+                  value={planHorizonTicks}
+                  onChange={(event) =>
+                    setPlanHorizonTicks(Number(event.target.value))
+                  }
+                />
+              </label>{' '}
+              <button
+                onClick={() => setSuccessorPaths((prior) => prior.slice(0, -1))}
+              >
+                Remove last
+              </button>{' '}
+              <button onClick={() => setSuccessorPaths([])}>Clear</button>
+            </div>
           ) : null}
         </div>
       ) : null}

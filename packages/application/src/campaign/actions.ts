@@ -151,6 +151,7 @@ export function createCampaignActions(database: Database) {
       ) {
         throw new StoryError('invalid');
       }
+      const acceptedHorizonTicks = parsed.data.horizonTicks;
       if (
         (definition.resolution.kind === 'process' ||
           definition.resolution.kind === 'resume') &&
@@ -279,6 +280,19 @@ export function createCampaignActions(database: Database) {
         );
         const projected = projectCampaignClock(state, now, clockHeld);
         const activityId = randomUUID();
+        let acceptedPlan = null;
+        if (acceptedSequence.length > 1) {
+          if (acceptedHorizonTicks === undefined) {
+            throw new StoryError('invalid');
+          }
+          acceptedPlan = createAcceptedActivityPlan({
+            offerId: offer.id,
+            plans: acceptedSequence,
+            firstActivityId: activityId,
+            acceptedAtTick: projected.clock.elapsedTicks,
+            horizonTicks: acceptedHorizonTicks,
+          });
+        }
         await tx.insert(gameActivity).values({
           id: activityId,
           storyId: current.id,
@@ -326,14 +340,7 @@ export function createCampaignActions(database: Database) {
                     ),
             },
             activeActivityId: activityId,
-            acceptedActivityPlan:
-              acceptedSequence.length > 1
-                ? createAcceptedActivityPlan({
-                    offerId: offer.id,
-                    plans: acceptedSequence,
-                    firstActivityId: activityId,
-                  })
-                : null,
+            acceptedActivityPlan: acceptedPlan,
             tick: projected.clock.elapsedTicks,
             clock: projected.clock,
             clockAnchorAt: new Date(now),

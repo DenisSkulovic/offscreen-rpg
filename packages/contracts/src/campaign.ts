@@ -124,8 +124,16 @@ export const campaignActivityReportSchema = z.strictObject({
 export const acceptedActivityPlanViewSchema = z.strictObject({
   id: z.uuid(),
   revision: z.number().int().nonnegative(),
-  state: z.enum(['active', 'blocked', 'complete', 'cancelled']),
+  state: z.enum([
+    'active',
+    'blocked',
+    'complete',
+    'cancelled',
+    'horizon-reached',
+  ]),
   cursor: z.number().int().nonnegative(),
+  acceptedAtTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  horizonTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   entries: z
     .array(
       z.strictObject({
@@ -195,16 +203,24 @@ export const settingsCommandSchema = z.strictObject({
   creative: creativeSettingsSchema,
   presetId: z.uuid().optional(),
 });
-export const actionCommandSchema = z.strictObject({
-  expectedRevision: z.number().int().positive(),
-  offerId: z.uuid(),
-  path: z.array(z.string().max(80)).min(1).max(3),
-  successorPaths: z
-    .array(z.array(z.string().max(80)).min(1).max(3))
-    .min(1)
-    .max(5)
-    .optional(),
-});
+export const actionCommandSchema = z
+  .strictObject({
+    expectedRevision: z.number().int().positive(),
+    offerId: z.uuid(),
+    path: z.array(z.string().max(80)).min(1).max(3),
+    successorPaths: z
+      .array(z.array(z.string().max(80)).min(1).max(3))
+      .min(1)
+      .max(5)
+      .optional(),
+    horizonTicks: z.number().int().positive().max(10080).optional(),
+  })
+  .refine(
+    (value) =>
+      (value.successorPaths === undefined) ===
+      (value.horizonTicks === undefined),
+    'Accepted successors require exactly one finite tick horizon',
+  );
 export const activityControlSchema = z
   .strictObject({
     activityId: z.uuid(),

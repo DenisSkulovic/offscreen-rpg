@@ -306,6 +306,47 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
         },
       },
     },
+    {
+      version: 1,
+      key: 'hold-pressure-cycle',
+      label: 'Hold through a pressure cycle',
+      intention:
+        'Remain in place through one two-tick pressure cycle without changing course.',
+      risk: null,
+      evidence: [],
+      requires: [{ id: 'exposed', value: true }],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        reuse: 'once',
+        action: {
+          id: 'hold-pressure-cycle',
+          label: 'Hold through a pressure cycle',
+          description:
+            'Remain in place through one bounded environmental pressure cycle.',
+          requires: [{ id: 'exposed', value: true }],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Pressure cycle',
+            requiredTicks: 2,
+          },
+          conditionPolicy: { kind: 'admission-only' },
+          occurrence: {
+            kind: 'limited',
+            scopeKey: 'microbe-pressure-cycle',
+            limit: 1,
+          },
+          completionFollowUp: 'quiet',
+          checks: [],
+          completion: {
+            text: 'The pressure cycle passes without dislodging the organism.',
+            effects: [],
+          },
+        },
+      },
+    },
   ];
 }
 

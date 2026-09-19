@@ -322,17 +322,31 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       }),
       stage({
         id: 'complete-chain',
-        name: 'Complete an accepted two-entry plan',
+        name: 'Complete an accepted finite plan',
         importance: 'poc-blocker',
         preconditions: [
-          'Sample the gradient briefly and Hold through a temperature cycle are both currently authorized.',
+          'Sample the gradient briefly plus the temperature and pressure cycles are currently authorized.',
         ],
         action:
-          'Stage Hold through a temperature cycle as the follow-up, start Sample the gradient briefly, and let both entries settle.',
+          'Stage both environmental cycles in order, set a horizon beyond six ticks, start Sample the gradient briefly, and let all entries settle.',
         observableExpectation:
-          'The plan shows sampling completing, the temperature-cycle successor starting automatically, and both entries finishing in order.',
+          'The plan shows three distinct entries starting and finishing in the accepted order before its displayed horizon.',
         authoritativeExpectation:
           'The accepted plan owns exactly one successor; current authorization and prerequisites are rechecked at the boundary, activity identities remain distinct, and no generation task chooses the successor.',
+      }),
+      stage({
+        id: 'stop-at-plan-horizon',
+        name: 'Stop successor admission at the plan horizon',
+        importance: 'poc-blocker',
+        preconditions: [
+          'Start a fresh microbe.v3 story and stage a successor with a one-tick horizon.',
+        ],
+        action:
+          'Start the two-tick sampling activity and inspect the plan after it completes.',
+        observableExpectation:
+          'The first entry completes, the plan says horizon reached, and its pending successor is cancelled without starting.',
+        authoritativeExpectation:
+          'The absolute horizon is captured at acceptance; completion may cross it, but no successor activity row, wake, roll, or reward is created at or beyond it.',
       }),
       stage({
         id: 'repeat-limit',
@@ -353,7 +367,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         name: 'Confirm quiet execution admitted no model work',
         importance: 'poc-blocker',
         preconditions: [
-          'The accepted two-entry plan and the second sampling cycle completed.',
+          'The accepted finite plan and the second sampling cycle completed.',
         ],
         action:
           'Inspect the Chamber task, consequence, roll, and provider-accounting records for this story.',
@@ -395,7 +409,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       {
         kind: 'activity-identities',
         description:
-          'Both accepted-plan activity IDs plus the second sampling ID, revisions, progress, ticks, and terminal states.',
+          'All three accepted-plan activity IDs plus the second sampling ID, revisions, progress, ticks, and terminal states.',
         required: true,
       },
       {

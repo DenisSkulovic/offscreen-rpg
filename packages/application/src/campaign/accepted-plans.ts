@@ -16,8 +16,16 @@ export const acceptedActivityPlanSchema = z.strictObject({
   version: z.literal(1),
   id: z.uuid(),
   revision: z.number().int().nonnegative(),
-  state: z.enum(['active', 'blocked', 'complete', 'cancelled']),
+  state: z.enum([
+    'active',
+    'blocked',
+    'complete',
+    'cancelled',
+    'horizon-reached',
+  ]),
   cursor: z.number().int().nonnegative(),
+  acceptedAtTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  horizonTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   sourceOfferId: z.uuid(),
   entries: z.array(acceptedPlanEntrySchema).min(2).max(6),
   blockedReason: z.string().trim().min(1).max(500).nullable(),
@@ -29,6 +37,8 @@ export function createAcceptedActivityPlan(args: {
   offerId: string;
   plans: z.infer<typeof immediateActionPlanSchema>[];
   firstActivityId: string;
+  acceptedAtTick: number;
+  horizonTicks: number;
 }): AcceptedActivityPlan {
   return acceptedActivityPlanSchema.parse({
     version: 1,
@@ -36,6 +46,8 @@ export function createAcceptedActivityPlan(args: {
     revision: 0,
     state: 'active',
     cursor: 0,
+    acceptedAtTick: args.acceptedAtTick,
+    horizonTick: args.acceptedAtTick + args.horizonTicks,
     sourceOfferId: args.offerId,
     entries: args.plans.map((plan, index) => ({
       id: randomUUID(),
@@ -58,6 +70,8 @@ export function projectAcceptedActivityPlan(plan: AcceptedActivityPlan | null) {
     revision: plan.revision,
     state: plan.state,
     cursor: plan.cursor,
+    acceptedAtTick: plan.acceptedAtTick,
+    horizonTick: plan.horizonTick,
     entries: plan.entries.map((entry) => ({
       id: entry.id,
       label: entry.plan.label,

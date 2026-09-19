@@ -108,6 +108,23 @@ async function settleAcceptedPlanBoundary(
       .where(eq(campaign.storyId, state.storyId));
     return { ...state, acceptedActivityPlan: finished, activeActivityId: null };
   }
+  if (state.tick >= accepted.horizonTick) {
+    const stopped = acceptedActivityPlanSchema.parse({
+      ...accepted,
+      revision: accepted.revision + 1,
+      state: 'horizon-reached',
+      cursor: nextCursor,
+      entries: completedEntries.map((entry, index) =>
+        index >= nextCursor ? { ...entry, state: 'cancelled' as const } : entry,
+      ),
+      blockedReason: `The accepted plan reached its tick ${accepted.horizonTick} horizon before the next activity could start.`,
+    });
+    await tx
+      .update(campaign)
+      .set({ acceptedActivityPlan: stopped, activeActivityId: null })
+      .where(eq(campaign.storyId, state.storyId));
+    return { ...state, acceptedActivityPlan: stopped, activeActivityId: null };
+  }
   const authorization = campaignSituationAuthorization(state);
   const prepared = authorization.preparedPlans.find(
     (plan) => plan.key === nextEntry.plan.key,

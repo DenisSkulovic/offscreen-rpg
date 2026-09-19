@@ -655,7 +655,7 @@ test(
           },
         );
         await t.test(
-          'accepted two-entry plan starts its authorized successor without generation',
+          'accepted finite plan starts each authorized successor without generation',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {
               kind: 'instant',
@@ -675,7 +675,11 @@ test(
                 expectedRevision: started.snapshot.revision,
                 offerId: offer.id,
                 path: ['sample-gradient-cycle'],
-                successorPaths: [['hold-temperature-cycle']],
+                successorPaths: [
+                  ['hold-temperature-cycle'],
+                  ['hold-pressure-cycle'],
+                ],
+                horizonTicks: 20,
               },
             });
             const admitted = await stories.read({
@@ -694,6 +698,7 @@ test(
               [
                 ['Sample the gradient briefly', 'running'],
                 ['Hold through a temperature cycle', 'pending'],
+                ['Hold through a pressure cycle', 'pending'],
               ],
             );
             await storyService.advanceCampaignActivity(firstActivityId);
@@ -715,9 +720,20 @@ test(
               [
                 ['complete', firstActivityId],
                 ['running', successorId],
+                ['pending', null],
               ],
             );
             await storyService.advanceCampaignActivity(successorId);
+            const advancedAgain = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const finalActivityId = requireDefined(
+              advancedAgain.campaign?.activity?.id,
+              'Expected the final accepted activity',
+            );
+            assert.notEqual(finalActivityId, successorId);
+            await storyService.advanceCampaignActivity(finalActivityId);
             const completed = await stories.read({
               ownerId,
               storyId: started.storyId,
@@ -730,7 +746,7 @@ test(
               completed.campaign?.acceptedActivityPlan?.entries.map(
                 (entry) => entry.state,
               ),
-              ['complete', 'complete'],
+              ['complete', 'complete', 'complete'],
             );
             assert.equal(completed.campaign?.rolls.length, 0);
             assert.equal(completed.campaign?.activityReports.length, 0);
@@ -738,6 +754,74 @@ test(
               .select({ count: orm.count() })
               .from(generation);
             assert.equal(generationCount?.count, generationCountBefore?.count);
+          },
+        );
+        await t.test(
+          'accepted horizon prevents a later activity from starting',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['sample-gradient-cycle'],
+                successorPaths: [['hold-temperature-cycle']],
+                horizonTicks: 1,
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const firstActivityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the first accepted activity',
+            );
+            const acceptedPlan = requireDefined(
+              admitted.campaign?.acceptedActivityPlan,
+              'Expected the accepted plan horizon',
+            );
+            assert.equal(
+              acceptedPlan.horizonTick,
+              acceptedPlan.acceptedAtTick + 1,
+            );
+            await storyService.advanceCampaignActivity(firstActivityId);
+            const stopped = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(
+              stopped.campaign?.acceptedActivityPlan?.state,
+              'horizon-reached',
+            );
+            assert.deepEqual(
+              stopped.campaign?.acceptedActivityPlan?.entries.map((entry) => [
+                entry.state,
+                entry.activityId,
+              ]),
+              [
+                ['complete', firstActivityId],
+                ['cancelled', null],
+              ],
+            );
+            assert.match(
+              stopped.campaign?.acceptedActivityPlan?.blockedReason ?? '',
+              /reached its tick .* horizon/,
+            );
+            const activities = await database.db
+              .select({ id: gameActivity.id })
+              .from(gameActivity)
+              .where(eq(gameActivity.storyId, started.storyId));
+            assert.deepEqual(activities, [{ id: firstActivityId }]);
           },
         );
         await t.test(
@@ -759,6 +843,7 @@ test(
                 offerId: offer.id,
                 path: ['wait-contracted'],
                 successorPaths: [['hold-temperature-cycle']],
+                horizonTicks: 20,
               },
             });
             const admitted = await stories.read({
@@ -825,6 +910,7 @@ test(
                 offerId: offer.id,
                 path: ['sample-gradient-cycle'],
                 successorPaths: [['hold-temperature-cycle']],
+                horizonTicks: 20,
               },
             });
             const admitted = await stories.read({
