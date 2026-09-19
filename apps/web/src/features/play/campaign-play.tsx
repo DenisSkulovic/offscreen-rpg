@@ -331,6 +331,15 @@ export function CampaignPlay({
                 {node.label}
               </button>
               <p className="campaign-option-intention">{node.description}</p>
+              {node.action ? (
+                <p>
+                  Time:{' '}
+                  {node.action.timing === 'process'
+                    ? 'extended'
+                    : 'instant (temporary POC limit)'}
+                  .
+                </p>
+              ) : null}
               {node.risk ? (
                 <p className="campaign-option-risk">
                   <strong>Apparent risk:</strong> {node.risk}

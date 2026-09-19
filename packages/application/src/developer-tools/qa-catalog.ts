@@ -187,7 +187,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'immediate-mechanical-dm-loop',
-    version: 3,
+    version: 4,
     name: 'Immediate mechanical DM loop',
     purpose:
       'Exercise generated options, admitted private plans, visible d20 consequences, and three committed rounds.',
@@ -218,9 +218,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         preconditions: ['A reviewed mechanical opening exists.'],
         action: 'Start the selected scenario variant.',
         observableExpectation:
-          'The opening presents feasible, distinct choices.',
+          'The opening presents feasible, distinct choices and labels each as instant or extended.',
         authoritativeExpectation:
-          'A committed passage owns the current offer and private admitted plans.',
+          'A committed passage owns the current offer and private admitted plans; public timing is derived from those plans rather than omitted or inferred from prose.',
       }),
       stage({
         id: 'inspect-offer',

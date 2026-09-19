@@ -635,7 +635,7 @@ test(
                       label: encounterPlan.label,
                       description: encounterPlan.intention,
                       risk: encounterPlan.risk,
-                      action: { kind: 'attempt' },
+                      action: { kind: 'attempt', timing: 'instant' },
                     },
                   ],
                 },

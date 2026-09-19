@@ -24,7 +24,7 @@ Exit: all existing progression entry points require explicit accepted execution;
 
 ## T2 — Finite action duration through the existing clock
 
-Status: follows T1. Outcome: dialogue and other bounded actions consume admitted time and settle once, with honest sequential narration initially.
+Status: active. Public offer timing is now mandatory and derived from admitted private resolution: current automatic/check actions explicitly disclose `instant`, process/resume actions disclose `process`, and the player view labels the instant branch as a temporary POC limit. This removes missing-means-zero ambiguity without falsely claiming duration execution. Next persist and schedule the finite-action boundary. Outcome: dialogue and other bounded actions consume admitted time and settle once, with honest sequential narration initially.
 
 Owners: game action/timing schemas and resolution policy; Storyteller task/output validation and fixtures; application action admission, execution settlement, receipts, follow-up and snapshot projection; DB baseline; worker wake bindings; public offers and play controls. Extend the existing advancing slot to discriminate finite action/activity; do not introduce parallel clocks or make fake contribution points for dialogue.
 
@@ -56,7 +56,7 @@ Acceptance: two-second and thirty-second fake-provider completion for the same f
 
 ## Current checkpoint
 
-- Phase: T1 complete; T2 finite actions are next. Clock projection requires an explicit accepted activity identity; new activity admission passes no prior execution and reanchors from the settled frontier; read estimates require the active pointer. Required narration installs an operation-owned hold with its durable request and atomically transfers it to the admitted generation, then the existing publication path transfers it to the decision. Accepted-plan horizon evidence already proves terminal successor suppression. A failed pre-generation preparation transaction retains the committed receipt, unchanged clock and exact intent hold, and the player projection explains its pending state. Calendar/world-time K1/K2 remains after T2 and before overlap acceptance for timed stories.
+- Phase: T1 complete; T2 active. Offers and the player surface now expose an explicit `instant` versus `process` classification produced from the admitted private plan. The next slice adds positive finite duration to immediate plans and moves dice/effects/receipt settlement behind a durable clock boundary; no click-time clock jump. Calendar/world-time K1/K2 remains after T2 and before overlap acceptance for timed stories.
 - Reviewed base: `657e476`, clean working tree before this implementation slice. No schema change or database reset is required for the eligibility gate.
 - Evidence: source trace of every `projectCampaignClock` caller, due-time projection and action/activity consequence admission; contracts, application and integration packages compile. Focused integration covers operation-owned intent before generation transfer across three consequences, failed required generation recovery, horizon stop and pre-generation preparation failure without repeated mechanics or clock drift. This is deterministic lifecycle evidence, not manual rhythm/timing evidence; T2 will make the deliberate-time QA journey available.
 - Remaining limits: general combat scheduling, shared-world clocks and timed default actions remain separate work. T3 is a real change to pending versus committed evidence and cannot be reduced to hiding an already-committed result in the UI.

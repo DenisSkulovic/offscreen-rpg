@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const gameActionSchema = z.strictObject({
   kind: z.literal('attempt'),
+  timing: z.enum(['instant', 'process']),
 });
 export type GameAction = z.infer<typeof gameActionSchema>;
 

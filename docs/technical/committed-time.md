@@ -33,6 +33,8 @@ Holding is an independent reason to stop accepted work; lack of an execution is 
 
 ## Every authored option declares time semantics
 
+Public mechanical offers now carry an explicit timing classification. Existing immediate automatic/check actions say `instant`, while process/resume choices say `process`; the play surface exposes that distinction and labels instant resolution as a temporary POC limit. This removes the earlier ambiguous missing-value contract. T2 must replace ordinary instant Storyteller actions with admitted positive durations and a durable execution boundary; the classification alone does not make them timed.
+
 Time and resolution are separate dimensions. An automatic outcome can take time; a skill check does not specify a duration; a contribution process has an estimated duration rather than a fixed completion guarantee. Admission validates time along with effects, prerequisites and current situation authority.
 
 The next schema should distinguish a fixed positive action duration, an activity-owned progress rule, and an explicit supported zero-time operation. Missing duration cannot default to zero. Zero time is appropriate for application controls and specifically supported instantaneous rules; ordinary dialogue, looking around, eating and combat attempts cannot become free merely because their result is atomic. The Storyteller proposes duration within supported content/rule bounds. The application rejects missing or unsupported timing rather than silently inventing a default five seconds for every option. UI grouping/navigation is not an in-world action.

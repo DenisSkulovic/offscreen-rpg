@@ -239,7 +239,14 @@ export async function publishStorytellerResult(
             label: plan.label,
             description: plan.intention,
             risk: plan.risk,
-            action: { kind: 'attempt' },
+            action: {
+              kind: 'attempt',
+              timing:
+                plan.resolution.kind === 'process' ||
+                plan.resolution.kind === 'resume'
+                  ? 'process'
+                  : 'instant',
+            },
           };
         }),
       });
