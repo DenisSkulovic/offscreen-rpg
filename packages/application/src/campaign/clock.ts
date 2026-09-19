@@ -6,6 +6,10 @@ import {
 } from '@offscreen/game/time';
 import type { CampaignRecord } from './persistence';
 
+export type CampaignClockEligibility =
+  | { kind: 'accepted-activity'; activityId: string }
+  | { kind: 'none' };
+
 /**
  * Project the one campaign clock. Activity effort is derived from whole world
  * ticks while that activity owns the advancing slot; the fractional remainder
@@ -14,14 +18,20 @@ import type { CampaignRecord } from './persistence';
 export function projectCampaignClock(
   state: CampaignRecord,
   now: number,
+  eligibility: CampaignClockEligibility,
   held: boolean,
   instantTargetTick = state.tick,
 ): { clock: TickProgress; pace: Pace } {
   const pace = paceSchema.parse(state.clockPace);
+  const acceptedActivityOwnsClock =
+    eligibility.kind === 'accepted-activity' &&
+    state.activeActivityId === eligibility.activityId;
   const clock = earnedTicks({
     progress: tickProgressSchema.parse(state.clock),
     anchorAt: state.clockAnchorAt,
-    state: held ? 'held' : 'running',
+    // A missing hold is not permission to advance. The caller must identify
+    // the accepted execution that owns the campaign's single advancing slot.
+    state: !held && acceptedActivityOwnsClock ? 'running' : 'held',
     pace,
     now,
     maximumTicks:

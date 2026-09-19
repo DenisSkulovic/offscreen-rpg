@@ -160,7 +160,9 @@ export async function readCampaign(
       resolvedTicks: plan.resolvedThroughTick,
       settingsRevision: plan.settingsRevision,
       dueAt:
-        candidate.state === 'running' && holds.length === 0
+        candidate.state === 'running' &&
+        candidate.id === state.activeActivityId &&
+        holds.length === 0
           ? new Date(
               state.clockAnchorAt.getTime() +
                 realMsUntilTick(
@@ -179,6 +181,7 @@ export async function readCampaign(
           : null,
       estimatedCompletionAt:
         candidate.state === 'running' &&
+        candidate.id === state.activeActivityId &&
         holds.length === 0 &&
         estimatedCompletionTick !== null
           ? new Date(

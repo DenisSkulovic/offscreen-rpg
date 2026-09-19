@@ -105,7 +105,15 @@ export async function holdCampaignForStoryteller(
     )
   )
     return state;
-  const projected = projectCampaignClock(state, now, holds.length > 0).clock;
+  // Required narration begins after its mechanical source boundary. Do not
+  // infer permission from a dangling activity pointer while installing the
+  // hold; the settlement operation has already anchored accepted progress.
+  const projected = projectCampaignClock(
+    state,
+    now,
+    { kind: 'none' },
+    holds.length > 0,
+  ).clock;
   const nextHolds = campaignHoldsSchema.parse([
     ...holds,
     { kind: 'storyteller', generationId, reason: 'required-turn' },

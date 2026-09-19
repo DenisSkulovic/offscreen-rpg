@@ -1,6 +1,6 @@
 # Deliberate execution, action time and Storyteller readiness
 
-Status: prepared design from the owner's 2026-09-19 clarification. It replaces freely advancing idle time and implicitly timeless dialogue in the target solo POC. Runtime at `1d8c814` still has both gaps. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units; the [implementation feature](../features/2026-09-19--22-13--deliberate-action-time/PLAN.md) owns delivery. This document owns execution permission and its relationship to narration.
+Status: implementation active from the owner's 2026-09-19 clarification. Runtime clock projection now requires an explicit accepted activity identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. Terminal/horizon clamping and intent-owned preparation holds remain T1 work, while immediate dialogue is still timeless pending T2. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units; the [implementation feature](../features/2026-09-19--22-13--deliberate-action-time/PLAN.md) owns delivery. This document owns execution permission and its relationship to narration.
 
 ## Units and responsibility
 

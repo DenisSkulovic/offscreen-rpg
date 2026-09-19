@@ -289,7 +289,14 @@ export function createCampaignActions(database: Database) {
         const clockHeld =
           campaignClockHeld(selectedState) ||
           Boolean(active && ['encounter', 'paused'].includes(active.state));
-        const projected = projectCampaignClock(selectedState, now, clockHeld);
+        // Selection of new work starts at the current settled frontier. Idle
+        // wall time and dormant commitments cannot be donated to a new job.
+        const projected = projectCampaignClock(
+          selectedState,
+          now,
+          { kind: 'none' },
+          clockHeld,
+        );
         const activityId = randomUUID();
         let acceptedPlan = null;
         if (acceptedSequence.length > 1) {

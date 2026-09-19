@@ -4,7 +4,7 @@ Simulation time is measured in ticks. A tick is a fixed simulation unit within a
 
 Every offered in-world action declares its time semantics. Conversation, observation and combat attempts consume their admitted fictional duration even when the presentation is a rapid sequence of choices. Extended activities declare supported progress rules and cadences; productive attempts can earn points, while a literal wait needs no contribution check. Different checks can be due at different boundaries. The runtime may batch quiet ticks or wake at the next meaningful boundary, preserving ordered consequences and interruptions. A check is not required every real second.
 
-The owner clarified deliberate time investment on 2026-09-19. This is the maintained target; short timed actions and the elimination of idle clock drift are **not implemented**. The [committed-time contract](technical/committed-time.md) and its prepared feature own the correction.
+The owner clarified deliberate time investment on 2026-09-19. This is the maintained target. Campaign-clock projection now requires the identity of the accepted activity, so empty time cannot accrue merely because no hold exists or become a head start for newly selected work. Terminal/horizon clamping and intent-owned preparation holds remain in T1; short timed actions remain T2. The [committed-time contract](technical/committed-time.md) and its active feature own the correction.
 
 ## Pace
 

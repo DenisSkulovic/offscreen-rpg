@@ -5,7 +5,7 @@ Execution scope: the owner's time/choice clarification selects the product direc
 
 ## T1 — Explicit permission for clock advancement
 
-Status: ready, nearest slice. Depends on current campaign clock/holds; does not depend on storage/memory work.
+Status: active. The explicit activity-identity gate and idle-start reanchor are implemented; terminal/horizon clamping and intent-owned preparation holds remain. Depends on current campaign clock/holds; does not depend on storage/memory work.
 Outcome: an idle campaign cannot drift, and a durable preparation intent closes the command-to-worker gap. Existing activities still advance under accepted terms.
 
 Owners: game `time.ts`; application `campaign/clock.ts`, `activities.ts`, `holds.ts`, `actions.ts`, `narration.ts`, `controls.ts`, `settings.ts`, `accepted-plans.ts`, `reads.ts`; Storyteller publication; campaign schema/contracts and minimal play status. Inspect these callers before changing signatures; absence of a hold must no longer imply permission to run.
@@ -56,8 +56,8 @@ Acceptance: two-second and thirty-second fake-provider completion for the same f
 
 ## Current checkpoint
 
-- Phase: design prepared; exact next action is T1 clock-eligibility and intent-owned preparation holds. Read the owning contract, then trace all clock callers before editing. Calendar/world-time K1/K2 is the prepared integration after T2 and before overlap acceptance for timed stories.
-- Reviewed base: `1d8c814`, clean working tree before this documentation pass. No implementation changes or schema resets in this pass.
-- Evidence: source review of current action admission, tick arithmetic, campaign projection/holds, consequence preparation/publication and feature dependencies. Current immediate actions have no duration field; unheld projection can accrue idle time. No runtime checks run; planned traces are not verification.
+- Phase: T1 active. Clock projection requires an explicit accepted activity identity; new activity admission passes no prior execution and reanchors from the settled frontier; read estimates require the active pointer. Exact next action is clamping terminal/horizon stops, then moving the required-turn hold to the durable preparation intent before generation admission. Calendar/world-time K1/K2 remains after T2 and before overlap acceptance for timed stories.
+- Reviewed base: `657e476`, clean working tree before this implementation slice. No schema change or database reset is required for the eligibility gate.
+- Evidence: source trace of every `projectCampaignClock` caller and the due-time projection. A focused TypeScript build is the intended narrow check; no runtime/manual evidence yet, so the QA case remains unavailable.
 - Remaining limits: general combat scheduling, shared-world clocks and timed default actions remain separate work. T3 is a real change to pending versus committed evidence and cannot be reduced to hiding an already-committed result in the UI.
 - Spend: $0 application-provider calls; cumulative account usage unverified.

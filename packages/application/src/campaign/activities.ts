@@ -248,6 +248,7 @@ export async function settleActivity(
   const { clock, pace } = projectCampaignClock(
     state,
     now,
+    { kind: 'accepted-activity', activityId: activity.id },
     campaignClockHeld(state),
     instantTargetTick,
   );
@@ -578,6 +579,10 @@ export function createCampaignActivities(database: Database) {
         const { clock: progress, pace } = projectCampaignClock(
           settled.state,
           now,
+          {
+            kind: 'accepted-activity',
+            activityId: settled.activity.id,
+          },
           campaignClockHeld(settled.state),
         );
         const nextWorldBoundary = worldTickForEffortBoundary({
