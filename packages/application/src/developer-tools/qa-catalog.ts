@@ -698,7 +698,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The story visibly holds with a retryable blocker, then publishes the recovered scene without repeating the committed action.',
         authoritativeExpectation:
-          'One independently owned Storyteller hold survives failure; retry retains its generation identity, valid publication releases it, and no successor, held-time catch-up, duplicate receipt, extra reward, or response deadline appears.',
+          'One independently owned Storyteller hold survives failure; retry retains its generation identity, valid publication transfers ownership to the exact offered decision, selection clears that hold, and no successor, held-time catch-up, duplicate receipt, extra reward, or response deadline appears.',
       }),
     ],
     evidenceRequirements: [

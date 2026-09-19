@@ -161,11 +161,18 @@ export const campaignViewSchema = z.strictObject({
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   holds: z.array(
-    z.strictObject({
-      kind: z.literal('storyteller'),
-      generationId: z.uuid(),
-      reason: z.literal('required-turn'),
-    }),
+    z.discriminatedUnion('kind', [
+      z.strictObject({
+        kind: z.literal('storyteller'),
+        generationId: z.uuid(),
+        reason: z.literal('required-turn'),
+      }),
+      z.strictObject({
+        kind: z.literal('decision'),
+        offerId: z.uuid(),
+        reason: z.literal('player-choice'),
+      }),
+    ]),
   ),
   offer: offerSchema.nullable(),
   activityAccess: activityAccessSchema,

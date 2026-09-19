@@ -41,7 +41,7 @@ import {
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
 import { projectCampaignClock } from './clock';
-import { campaignClockHeld } from './holds';
+import { campaignClockHeld, consumeCampaignDecisionHold } from './holds';
 import {
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
@@ -155,6 +155,13 @@ export function createCampaignActions(database: Database) {
       ) {
         throw new StoryError('invalid');
       }
+      const selectionNow = await readDatabaseClockMs(tx, current.id);
+      const selectedState = await consumeCampaignDecisionHold(
+        tx,
+        state,
+        offer.id,
+        selectionNow,
+      );
       const acceptedHorizonTicks = parsed.data.horizonTicks;
       if (
         (definition.resolution.kind === 'process' ||
@@ -205,7 +212,7 @@ export function createCampaignActions(database: Database) {
         ) {
           throw new StoryError('conflict');
         }
-        const now = await readDatabaseClockMs(tx, current.id);
+        const now = selectionNow;
         await tx
           .update(gameActivity)
           .set({
@@ -278,11 +285,11 @@ export function createCampaignActions(database: Database) {
           // starting another activity must not disguise it as voluntary suspension.
           retainedRevision = active.revision;
         }
-        const now = await readDatabaseClockMs(tx, current.id);
+        const now = selectionNow;
         const clockHeld =
-          campaignClockHeld(state) ||
+          campaignClockHeld(selectedState) ||
           Boolean(active && ['encounter', 'paused'].includes(active.state));
-        const projected = projectCampaignClock(state, now, clockHeld);
+        const projected = projectCampaignClock(selectedState, now, clockHeld);
         const activityId = randomUUID();
         let acceptedPlan = null;
         if (acceptedSequence.length > 1) {

@@ -116,6 +116,15 @@ export async function initializeCampaign(
     clock: wholeTicks(0),
     clockAnchorAt: new Date(now),
     clockPace: settings.pace,
+    holds: opportunities
+      ? [
+          {
+            kind: 'decision' as const,
+            offerId: opportunities.offer.id,
+            reason: 'player-choice' as const,
+          },
+        ]
+      : [],
     offer: opportunities?.offer ?? null,
     situationAuthorization: authorizeSituation(
       opportunities?.plans ?? [],

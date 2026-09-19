@@ -65,7 +65,9 @@ export function CampaignPlay({
       </p>
       {campaign.holds.length > 0 ? (
         <p role="status">
-          Campaign time is held while the Storyteller prepares a required scene.
+          {campaign.holds.some((hold) => hold.kind === 'storyteller')
+            ? 'Campaign time is held while the Storyteller prepares a required scene.'
+            : 'Campaign time is held while your choice is open.'}{' '}
           Existing activity progress is preserved and held wall time will not
           become catch-up progress.
         </p>

@@ -235,6 +235,13 @@ test(
             let snapshot = started.snapshot;
             assert.equal(snapshot.revision, 1);
             assert.equal(snapshot.campaign?.offer?.nodes[0]?.id, 'take-cover');
+            assert.deepEqual(snapshot.campaign?.holds, [
+              {
+                kind: 'decision',
+                offerId: snapshot.campaign?.offer?.id,
+                reason: 'player-choice',
+              },
+            ]);
 
             for (let round = 0; round < 3; round++) {
               const campaign = requireDefined(
@@ -299,7 +306,13 @@ test(
                 storyId: started.storyId,
               });
               assert.equal(snapshot.revision, round + 2);
-              assert.deepEqual(snapshot.campaign?.holds, []);
+              assert.deepEqual(snapshot.campaign?.holds, [
+                {
+                  kind: 'decision',
+                  offerId: snapshot.campaign?.offer?.id,
+                  reason: 'player-choice',
+                },
+              ]);
               assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
               assert.equal(
                 snapshot.campaign?.actionReceipts[0]?.state,
@@ -393,7 +406,13 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.deepEqual(recovered.campaign?.holds, []);
+            assert.deepEqual(recovered.campaign?.holds, [
+              {
+                kind: 'decision',
+                offerId: recovered.campaign?.offer?.id,
+                reason: 'player-choice',
+              },
+            ]);
             assert.equal(recovered.resolution, null);
             assert.equal(
               recovered.campaign?.actionReceipts[0]?.state,

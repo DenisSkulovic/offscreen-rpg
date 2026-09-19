@@ -36,7 +36,7 @@ import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
-import { releaseCampaignStorytellerHold } from '../campaign/holds';
+import { transitionStorytellerHoldToDecision } from '../campaign/holds';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -286,10 +286,11 @@ export async function publishStorytellerResult(
           ),
         })
         .where(eq(campaign.storyId, current.id));
-      await releaseCampaignStorytellerHold(
+      await transitionStorytellerHoldToDecision(
         tx,
         campaignState,
         id,
+        plannedOffer.id,
         await readDatabaseClockMs(tx, current.id),
       );
       await advanceStoryView(tx, {

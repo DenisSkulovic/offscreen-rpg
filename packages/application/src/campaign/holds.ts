@@ -1,28 +1,93 @@
 import { eq } from 'drizzle-orm';
-import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
-import { enqueue, type Transaction } from '../outbox/index';
+import { campaign } from '@offscreen/db/campaign-schema';
+import type { Transaction } from '../outbox/index';
 import { projectCampaignClock } from './clock';
 import type { CampaignRecord } from './persistence';
-import { campaignActivityTopic } from './topics';
 
-export const campaignHoldSchema = z.strictObject({
-  kind: z.literal('storyteller'),
-  generationId: z.uuid(),
-  reason: z.literal('required-turn'),
-});
+export const campaignHoldSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('storyteller'),
+    generationId: z.uuid(),
+    reason: z.literal('required-turn'),
+  }),
+  z.strictObject({
+    kind: z.literal('decision'),
+    offerId: z.uuid(),
+    reason: z.literal('player-choice'),
+  }),
+]);
 export const campaignHoldsSchema = z
   .array(campaignHoldSchema)
   .max(20)
   .refine(
     (holds) =>
-      new Set(holds.map((hold) => hold.generationId)).size === holds.length,
+      new Set(
+        holds.map((hold) =>
+          hold.kind === 'storyteller'
+            ? `storyteller:${hold.generationId}`
+            : `decision:${hold.offerId}`,
+        ),
+      ).size === holds.length,
     'Campaign hold owners must be unique',
+  )
+  .refine(
+    (holds) => holds.filter((hold) => hold.kind === 'decision').length <= 1,
+    'The solo campaign supports one unresolved player decision',
   );
 
 export function campaignClockHeld(state: CampaignRecord) {
   return campaignHoldsSchema.parse(state.holds).length > 0;
+}
+
+/** Publication transfers the freeze from model work to the offered player choice. */
+export async function transitionStorytellerHoldToDecision(
+  tx: Transaction,
+  state: CampaignRecord,
+  generationId: string,
+  offerId: string,
+  now: number,
+) {
+  const holds = campaignHoldsSchema.parse(state.holds);
+  if (
+    !holds.some(
+      (hold) =>
+        hold.kind === 'storyteller' && hold.generationId === generationId,
+    )
+  ) {
+    return state;
+  }
+  const nextHolds = campaignHoldsSchema.parse([
+    ...holds.filter(
+      (hold) =>
+        !(hold.kind === 'storyteller' && hold.generationId === generationId),
+    ),
+    { kind: 'decision', offerId, reason: 'player-choice' },
+  ]);
+  await tx
+    .update(campaign)
+    .set({ clockAnchorAt: new Date(now), holds: nextHolds })
+    .where(eq(campaign.storyId, state.storyId));
+  return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
+}
+
+/** A validated selection consumes only the decision hold for its exact offer. */
+export async function consumeCampaignDecisionHold(
+  tx: Transaction,
+  state: CampaignRecord,
+  offerId: string,
+  now: number,
+) {
+  const holds = campaignHoldsSchema.parse(state.holds);
+  const nextHolds = holds.filter(
+    (hold) => !(hold.kind === 'decision' && hold.offerId === offerId),
+  );
+  if (nextHolds.length === holds.length) return state;
+  await tx
+    .update(campaign)
+    .set({ clockAnchorAt: new Date(now), holds: nextHolds })
+    .where(eq(campaign.storyId, state.storyId));
+  return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
 }
 
 /** Freeze at database time without discarding already-earned clock progress. */
@@ -33,7 +98,13 @@ export async function holdCampaignForStoryteller(
   now: number,
 ) {
   const holds = campaignHoldsSchema.parse(state.holds);
-  if (holds.some((hold) => hold.generationId === generationId)) return state;
+  if (
+    holds.some(
+      (hold) =>
+        hold.kind === 'storyteller' && hold.generationId === generationId,
+    )
+  )
+    return state;
   const projected = projectCampaignClock(state, now, holds.length > 0).clock;
   const nextHolds = campaignHoldsSchema.parse([
     ...holds,
@@ -49,34 +120,4 @@ export async function holdCampaignForStoryteller(
     clockAnchorAt: new Date(now),
     holds: nextHolds,
   };
-}
-
-/** Clearing one owner never clears another hold and never earns held wall time. */
-export async function releaseCampaignStorytellerHold(
-  tx: Transaction,
-  state: CampaignRecord,
-  generationId: string,
-  now: number,
-) {
-  const holds = campaignHoldsSchema.parse(state.holds);
-  if (!holds.some((hold) => hold.generationId === generationId)) return state;
-  const nextHolds = holds.filter((hold) => hold.generationId !== generationId);
-  await tx
-    .update(campaign)
-    .set({ clockAnchorAt: new Date(now), holds: nextHolds })
-    .where(eq(campaign.storyId, state.storyId));
-  if (nextHolds.length === 0 && state.activeActivityId) {
-    const [activity] = await tx
-      .select({ state: gameActivity.state })
-      .from(gameActivity)
-      .where(eq(gameActivity.id, state.activeActivityId));
-    if (activity?.state === 'running') {
-      await enqueue(tx, {
-        id: randomUUID(),
-        operationId: state.activeActivityId,
-        topic: campaignActivityTopic,
-      });
-    }
-  }
-  return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
 }
