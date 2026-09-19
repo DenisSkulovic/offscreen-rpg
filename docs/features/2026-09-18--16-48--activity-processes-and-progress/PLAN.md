@@ -77,7 +77,7 @@ Mechanical progress/completion records authoritative receipts independently of p
 
 ### Persistence, targets and recovery
 
-Prepared local opportunities follow the [owning technical contract](../../technical/rules-and-activities.md#prepared-local-opportunities-proposed) and now have a dedicated implementation owner: [Storyteller-authored situations](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md). This activity feature supplies work/rule/clock eligibility, not a second catalogue or situation permission layer. LO-02/03/04 and the nonhuman contrast LO-05 remain acceptance constraints.
+Prepared local opportunities follow the implemented [owning technical contract](../../technical/rules-and-activities.md#prepared-local-opportunities). This activity feature supplies work/rule/clock eligibility, not a second catalogue or situation permission layer. LO-02/03/04 and the nonhuman contrast LO-05 remain acceptance constraints.
 
 Use campaign/story locks for initial serialization. Actor state, targets, claims, work, effects and outbox participate in the same transaction. Cross-story activities/transfers are excluded. Enforce story-scoped references, positive claim units, unique participation/role identities and revision fences. Check aggregate allocations under pool locks; uniqueness alone cannot protect divisible capacity.
 
@@ -142,7 +142,7 @@ Status: implemented in September 2026. The rule/lifecycle portion is complete; q
 - Dependencies: A1; execute after situation S1 in the handoff route so every exposed choice already has explicit authority.
 - Add a strict clock-wait rule alongside contribution: positive finite tick target, rule-specific progress/view and one terminal boundary. No fake work points or compulsory dice for waiting. Extract cohesive validation/next-boundary/settlement/projection dispatch within existing packages, not a plugin framework.
 - Extend the common boundary result enough for completion, interruption and pending completion; application code remains owner of persistence/outbox. Existing contribution semantics/receipts stay intact.
-- Emit supported boundary identity/cause/effects; [autonomy U2a/U2b](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns follow-up policy and tasks. [Situations S2](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md) owns authorized quiet offer reuse.
+- Emit supported boundary identity/cause/effects; [autonomy U2a/U2b](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns follow-up policy and tasks. The [prepared-local-opportunity contract](../../technical/rules-and-activities.md#prepared-local-opportunities) owns authorized quiet offer reuse.
 - Acceptance: W completes after ten eligible ticks without rolls/work points; A still requires earned contribution; pause and duplicate completion preserve exact once-only effects. The same rule envelope accepts nonhuman content without mandatory calendar/quantities.
 - Exit: contribution and genuine wait are two supported rules sharing one authoritative clock/lifecycle boundary. Quiet/no-task, reports and chains are delivered in the subsequent named slices, not silently claimed here. Broad repeating/traversal/cooperative variants remain later work.
 

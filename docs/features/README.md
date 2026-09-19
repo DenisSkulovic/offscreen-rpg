@@ -30,12 +30,12 @@ Calendar depth stays optional: the prepared K1/K2 scope supports a day count or 
 | Order | Exact slice | Deliverable / boundary |
 | --- | --- | --- |
 | 1 | [Activity A1](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#1--stable-identity-and-correct-clock-nearest-implementation-phase) — implemented | Exact-instance resume, campaign clock and pending completion are implemented; full real BC-04 integration/browser evidence remains for the connected slice |
-| 2 | [Situations S1](2026-09-19--13-49--storyteller-authored-situations/PLAN.md#s1--current-situation-authority-and-scene-only-pacing) — implemented | Explicit authored choices/activity access per scene; no inventory-derived or inherited menu |
+| 2 | [Situation authority](../technical/rules-and-activities.md#prepared-local-opportunities) — implemented | Explicit authored choices/activity access per scene; no inventory-derived or inherited menu |
 | 3 | [Activity A2](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#2--quiet-routines-and-selective-scenes) — implemented | Genuine wait alongside contribution; common typed boundary, no fake work points |
-| 4 | [Situations S2](2026-09-19--13-49--storyteller-authored-situations/PLAN.md#s2--dormant-reuse-and-revalidation) + [Autonomy U2a](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2a--quiet-settlement-and-factual-continuation) — implemented | Quiet handoff, independent finite repeat and boundary revalidation |
+| 4 | [Prepared opportunities](../technical/rules-and-activities.md#prepared-local-opportunities) + [Autonomy U2a](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2a--quiet-settlement-and-factual-continuation) — implemented | Quiet handoff, independent finite repeat and boundary revalidation |
 | 5 | [Activity A2b](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#2b--durable-activity-history-and-correlated-diagnostics-next-observability-slice) — implemented core | Player-safe lifecycle ledger/history and structured correlated runtime diagnostics; deterministic Chamber controls remain QA work |
 | 6 | [Autonomy U2b](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2b--historical-reports-and-controlling-scenes) — implemented core | Optional source-bound report versus controlling scene, including late publication and failure semantics; deterministic Chamber controls remain |
-| 7 | [Situations S3](2026-09-19--13-49--storyteller-authored-situations/PLAN.md#s3--bounded-preparation-and-explicit-handoff) — implemented core | Typed retained-work context and exact return-to-work proposal, with normal publication revalidation; broader authored definitions remain later work |
+| 7 | [Exact situation handoff](../technical/rules-and-activities.md#prepared-local-opportunities) — implemented | Typed retained-work context, strict supported process proposals and exact return-to-work publication revalidation |
 | 8 | [Autonomy U2c](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2c--finite-accepted-chains) — bounded linear slice implemented | Two-to-six-entry player-accepted sequence with one successor owner, pending cancellation, tick horizon and explicit scene re-entry |
 | 9 | [Earned-loop integration](2026-09-19--00-26--earned-time-playable-loop/PLAN.md) + bounded [agency](2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md)/[return](2026-09-19--00-26--inhabitable-play-and-return/PLAN.md) work | Real gold-session path, changed failure choices and legible return/recovery; minimal UI changes, then owner review |
 
@@ -47,10 +47,9 @@ Stop for a material product/cost change or an unresolved authority boundary. Rou
 
 ## Current design priority
 
-1. [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owns work/rules/clock; A1 and A2 are the bounded foundation slices above, not the entire broad participation design.
-2. [Storyteller-authored situations and reusable choices](2026-09-19--13-49--storyteller-authored-situations/FEATURE.md) — S1, bounded solo S2 and S3's core exact handoff are complete: per-situation authorship, quiet reusable choices, finite story-scoped repetition, boundary blocking and Storyteller-selected exact retained resumes now work. Broader prepared-definition generation remains later S3 work. This is an authority layer, not a second engine/queue.
+- [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owns work/rules/clock; A1 and A2 are the bounded foundation slices above, not the entire broad participation design.
 
-The activity foundation now also owns the former multiple-suspended-commitments slice. Its checkpoint retains the unproved A -> B -> same A settlement, chronology, capacity and terminal-lifecycle acceptance, so there is one activity implementation route rather than two overlapping folders.
+The activity foundation also owns the former multiple-suspended-commitments slice. Its checkpoint retains the unproved A -> B -> same A settlement, chronology, capacity and terminal-lifecycle acceptance, so there is one activity implementation route rather than two overlapping folders. Implemented situation authority now lives in the permanent rules-and-activities contract rather than another active feature.
 
 ## Experience-first POC recalibration
 

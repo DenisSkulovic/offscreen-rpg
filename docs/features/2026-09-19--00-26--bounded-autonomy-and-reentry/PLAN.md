@@ -6,7 +6,7 @@ Implementation owner: the coding model in this thread after the owner switches i
 
 ## Dependencies and sequencing
 
-The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) supplies A1 clock/identity and A2 genuine wait boundaries. [Authored situations](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md) supplies S1 authority and S2 quiet choice reuse. U2a and S2 are one inseparable quiet-choice slice; U2b adds reports/scenes; U2c adds the finite queue after standalone play works. Follow the [feature index route](../README.md), not parallel implementations of the same callback. Existing narrative deadlines are not authority for mechanical absence. No notification provider is needed.
+The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) supplies A1 clock/identity and A2 genuine wait boundaries. The implemented [prepared-local-opportunity contract](../../technical/rules-and-activities.md#prepared-local-opportunities) supplies situation authority and quiet choice reuse. U2b adds reports/scenes; U2c adds the finite queue after standalone play works. Follow the [feature index route](../README.md), not parallel implementations of the same callback. Existing narrative deadlines are not authority for mechanical absence. No notification provider is needed.
 
 ## Proposed queue and event contract
 
