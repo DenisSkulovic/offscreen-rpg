@@ -6,6 +6,8 @@ Implementation owner: Codex for the current bounded slice; owner review remains 
 
 ## Phases
 
+The [SpongeBob technical session](../../technical/playthroughs/spongebob.md) now provides the concrete current-versus-target transcript for owner calibration. SB-02 identifies the unchanged-menu failure branch, SB-03/04 the state-shaped success path, and SB-05 the quiet endpoint that currently holds instead of continuing daily life. The [request breakdown](../../technical/playthroughs/storyteller.md) makes input, option authority and token assumptions inspectable. These samples are authored offline, not generated-model taste evidence.
+
 ### Phase 1 — Agree the taste contract
 
 - Outcome: the owner can recognize good, mediocre and unacceptable turns from concrete examples.
@@ -40,8 +42,8 @@ Implementation owner: Codex for the current bounded slice; owner review remains 
 
 ## Current checkpoint
 
-- Current phase and exact next action: phases 2 and 3 now have persisted production-path and visual evidence; next begin phase 4 owner review of specificity, agency, restraint, consequence fidelity and genre fit.
-- Base/reviewed Git revision and relevant changes: phase 2 was pushed as `5bed48b`, public intention/risk projection as `891a012`, and persisted integration evidence as `5116833`; the current slice adds a repeatable authenticated visual-review command and removes raw engine facts from the primary play path.
-- Actual checks/results for this revision; checks not run: game build and 16 tests pass; contracts/application builds, web typecheck and API integration TypeScript build pass. The focused PostgreSQL/Temporal Storyteller integration passes 9/9. `pnpm chamber:review` builds and completes the mechanical opening/live flow, capturing 1440×1000 and 390×844 full-page evidence; both layouts were inspected after the presentation fix.
-- Unresolved findings/blockers: state-responsive offline proposals, public projection, persistence and responsive presentation are structurally demonstrated, but owner taste review has not established enjoyable play. The opening-review page is intentionally tool-like, and consequence prose still mirrors the committed receipt in one paragraph.
+- Current phase and exact next action: phases 2/3 have earlier persisted/visual evidence; phase 4 owner taste review is outstanding. Use SB-01 through SB-05 to review actual options and failure consequences before more prompt or UI work.
+- Reviewed source: `f77ed42`; this pass adds documentation only. Earlier implementation/evidence revisions are `5bed48b`, `891a012` and `5116833`; no fresh runtime claim is made by the atlas.
+- Verification: current pass used source/design inspection; no builds/tests or provider calls. Earlier game tests, focused 9/9 Storyteller integration and wide/narrow authenticated review established structural behavior, not enjoyment or current live-model quality.
+- Unresolved findings: the current failed Gary reassurance has no mechanical effects and returns the opening-plan family when facts remain unchanged; the advertised deeper alarm is not a durable state change. The resolved-parcel branch returns no plans and is not yet a continuing-life handoff. Preserve meaningful changed approaches and a valid quiet path; don't fix either by forcing drama or merely renaming the same check. Owner taste review remains outstanding.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

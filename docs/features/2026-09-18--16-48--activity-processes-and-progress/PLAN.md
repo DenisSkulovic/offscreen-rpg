@@ -87,6 +87,8 @@ Storyteller activity parameters cannot create new capabilities, resource pools o
 
 ## Benchmark trace
 
+Use the permanent [execution atlas](../../technical/playthroughs/README.md) for concrete player text, dice and receipt timelines. [BC-04](../../technical/playthroughs/beacon.md#bc-04-b-actually-advances-before-a-resumes--partly-current-target-chronology) is the exact phase-1 A → B → A target; [NH-03](../../technical/playthroughs/nonhuman.md#nh-03-interruption-switch-and-return) is its nonhuman contrast. [BC-06](../../technical/playthroughs/beacon.md#bc-06-collisions-and-controls) exposes contribution-goal/event collision handling: reaching the numeric goal is not yet proof of committed completion effects. Preserve an explicit ordering and an honest pending-completion state when implementing the lifecycle. These are design traces, not newly passing tests.
+
 | Probe | Boundary exercised | Scope |
 | --- | --- | --- |
 | Beacon with two workers and a replacement | Shared progress, actor-specific work, roles and targets/claims | Connected cooperative fixture |
@@ -154,8 +156,8 @@ A giant optional-field activity object admits nonsense combinations; use typed r
 
 ## Current checkpoint
 
-- Current phase: configurable activity/chain design, including quiet, narrated and interactive boundary follow-ups; runtime unchanged. Next: identity/clock foundation when agreed, followed by the chain/follow-up proof with autonomy. Broad cooperation must not delay that experience. Locations, durations and specific itinerary remain illustrative.
-- Reviewed revision: `bfa8284`; runtime findings trace unchanged implementation from `1ef5a81`. This feature owns process mechanics; autonomy owns chains, configurable follow-ups and absence permission. Retained commitments remain incomplete.
-- Verification: source and focused test inspection only; no builds/tests run. The chronology defect is a source trace, not a new runtime reproduction. Existing integration coverage is narrower than prior summaries implied.
+- Current phase: owner-requested technical playthrough design is documented in the execution atlas; runtime unchanged. Next implementation dependency: exact-instance/shared-clock foundation using BC-04, followed by the [small connected POC](../../technical/playthroughs/poc.md) and joint chain/follow-up proof when scope is agreed. Do not implement every atlas scenario or delay the experience behind broad cooperation.
+- Reviewed revision: `f77ed42`. This feature owns process mechanics; autonomy owns chains, configurable follow-ups and absence permission. The worked four-attempt repair plus five-tick B sequence reaches world tick 25 without rewinding; current code does not yet prove it. Retained commitments remain incomplete.
+- Verification: source/design inspection only; no builds/tests/runtime session or provider calls. Exact dice/timing in the atlas are illustrative fixture inputs. Existing integration coverage remains narrower than the full target flow.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.

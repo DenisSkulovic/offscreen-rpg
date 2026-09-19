@@ -2,6 +2,8 @@
 
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.
 
+For concrete request packets, current-versus-proposed tools, per-call token envelopes and branch-specific gameplay ledgers, see the [Storyteller walkthrough](playthroughs/storyteller.md). Those offline estimates are not measured usage or permission to enable inference; this document owns the shared accounting/context contract.
+
 ## Current development allowance
 
 The user allocated $10 of OpenRouter credit on 2026-09-17 to last at least one month. This is a shared total across development and live evaluation, not a per-session allowance. Prefer no-LLM tests; deliberate live checks should use dirt-cheap models with bounded context, output and attempts. The deposit is not a verified current balance. Do not automatically replenish it or reset the allowance after a calendar boundary.

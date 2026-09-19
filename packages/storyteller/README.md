@@ -14,7 +14,7 @@ This package prepares bounded tasks and validates their results. It does not own
 | Validate output | [tasks/index.ts](src/tasks/index.ts), `validateStorytellerResult` | Task version, opportunity IDs, continuity evidence and result constraints |
 | Commit the result | Application [storyteller/publication.ts](../application/src/storyteller/publication.ts) | Current-story fence and atomic publication; outside this package |
 
-`contextInputSchema` is the captured internal artifact. `contextPayload` is the provider-facing projection; they are intentionally different. Database identities and complete historical rows stay outside the provider payload, while bounded evidence receives passage handles. Inspect both before changing context or asserting what the model can see.
+`contextInputSchema` is the captured internal artifact. `contextPayload` is the provider-facing projection; they are intentionally different. Narrative evidence receives passage handles and mechanical opening identity is omitted, but `resolution` currently passes through its captured structure, including receipt identities. Do not assume the projection strips every internal ID. Inspect the exact request before changing context or asserting what the model can see. The [worked request and tool/cost walkthrough](../../docs/technical/playthroughs/storyteller.md) explains this boundary with a concrete failed-check scene and distinguishes current one-shot tasks from proposed exploration/report-only contracts.
 
 ## Implemented tasks and limits
 

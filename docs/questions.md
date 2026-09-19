@@ -22,4 +22,6 @@ The first [scripted testing chamber](technical/delivery-and-validation.md#script
 
 ## Refine through the first experience
 
+Use the [technical playthrough atlas](technical/playthroughs/README.md), especially its [owner calibration questions](technical/playthroughs/poc.md#owner-calibration-what-to-ask-after-reading-or-playing), to resolve the choices above against concrete sessions. Exact fixture times, rolls, chains and absence policies are not silently selected global defaults. In particular, review whether a held event gives satisfying overnight play, whether long waits create value rather than merely lock content, and how goal-reaching work behaves when an interrupt occurs at the same boundary ([BC-06](technical/playthroughs/beacon.md#bc-06-collisions-and-controls)).
+
 Exact storyteller copy, initial example premises, image frequency and the placement of sign-in can be tested without postponing the whole technical design. The owner confirmed that storytellers are data over generic runtime behavior; the particular two sample styles are not an architectural decision. The implemented profile/runtime, continuity and local solo POC boundaries are described in the permanent storyteller and technical documents. Reusable custom storytellers and separate simultaneous party adventures do not need to be designed now.

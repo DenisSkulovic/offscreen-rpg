@@ -2,6 +2,8 @@
 
 This is a map of implemented code, not the target architecture. Read [progress](../progress.md) for current gaps, then choose one route below. Follow imports only when that route's responsibility crosses a boundary. Do not load every linked document.
 
+To understand the intended gameplay before following code, use the [execution atlas](../technical/playthroughs/README.md). Its worked traces distinguish current source behavior from proposed rules and connect acceptance steps to owning feature phases.
+
 ## Find the owner
 
 | Question | Start here | Go deeper only when needed |

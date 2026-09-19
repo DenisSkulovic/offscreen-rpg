@@ -2,6 +2,8 @@
 
 This walkthrough makes the intended experience tangible. Characters, wording, durations and outcomes are illustrative. They do not require goblin mechanics, apple mechanics or separate software concepts called nodes and events. Unsettled behavior is identified where it affects the experience.
 
+The [gameplay execution atlas](technical/playthroughs/README.md) is the technical companion: concrete scenes/options, exact worked dice and timing, activity interruptions/chains, Storyteller context/tools and illustrative token ledgers for every benchmark below, plus SpongeBob and the beacon fixtures. Read these high-level examples for the feeling, then the corresponding trace to examine authority and implementation gaps. The [proposed connected POC](technical/playthroughs/poc.md) selects a small proof without making every example a release requirement.
+
 ## 1. Arrive and create
 
 A visitor sees an example of a character's life interrupted by a choice. They select “New story,” sign in through OAuth and reach creation. A returning player instead finds their existing stories and the same creation action. An empty account should not require navigating an empty dashboard first.

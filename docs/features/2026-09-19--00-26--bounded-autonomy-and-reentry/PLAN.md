@@ -10,6 +10,8 @@ The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/
 
 ## Proposed queue and event contract
 
+Concrete acceptance anchors are now in the [execution atlas](../../technical/playthroughs/README.md): [BM-02/03](../../technical/playthroughs/batman.md#bm-02-rest-then-revalidate-patrol) for quiet offscreen work, [BM-04/05](../../technical/playthroughs/batman.md#bm-04-the-event-branch-at-the-sixth-hour) for candidate-versus-hazard admission and absence permission, and [RM-03/04/06](../../technical/playthroughs/red-mountain.md#rm-03-cancellation-in-the-middle-is-not-rewind) for cancellation, late reports and exactly one successor. Implement the smaller [connected POC](../../technical/playthroughs/poc.md), not literal Gotham or a full travel system, to prove these contracts first.
+
 ### Configurable boundary follow-ups
 
 Activity completion commits mechanics; it does not prescribe the next player experience. Represent the trigger, presentation and continuation separately. A boundary policy selects a supported trigger (start, committed milestone, outcome including failure, or a due activity-relative/story tick), optional grounded conditions, and compatible follow-ups. In the first slice support completion and a selected entry milestone; other trigger kinds are extension points, not implied runtime capabilities.
@@ -118,8 +120,8 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ## Current checkpoint
 
-- Current phase: design refined for configurable follow-ups and activity chains, following the owner's Red Mountain itinerary example. Quiet execution is one configuration; completion narration and selected milestone scenes remain valid. Next: implement the bounded chain/follow-up proof after clock correction when scope is agreed.
-- Reviewed revision: `bfa8284`; documentation-only changes. Current unconditional narration requires a configurable boundary policy, not removal of consequence narration. Report-only generation is a proposed new task contract; no runtime support claimed.
-- Verification: source/design inspection; no tests, builds or provider calls. Batman/Seyda Neen durations and day-long scheduling remain brainstorming, not fixed requirements.
+- Current phase: technical playthrough design now supplies complete quiet/event Batman branches and the Red Mountain itinerary with cancellation/late-report variants. Next: bounded chain/follow-up proof after activity clock correction when scope is agreed. Use the small repair → wait fixture proposed in the atlas; its exact content is not yet approved implementation scope.
+- Reviewed revision: `f77ed42`; documentation-only work. Current unconditional narration requires configurable boundary treatment, not removal of narration. Report-only generation and general event/world proposal admission remain missing contracts; a consequence task cannot simply be relabeled as either.
+- Verification: source/design inspection; no tests, builds, runtime session or provider calls. Token envelopes are offline planning estimates, not measured usage. Durations and day-long scheduling remain fixture choices, not universal requirements.
 - Open decisions: initial bounds/risk vocabulary and proposed solo hold policy. Fallback categories precede delegated scene decisions; a notification channel does not block offline acceptance.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.
