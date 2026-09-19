@@ -47,6 +47,7 @@ const content = immediateActionContentSchema.parse({
       requires: [{ id: 'exposed', value: true }],
       resolution: {
         kind: 'automatic',
+        durationTicks: 5,
         outcome: { text: 'The microbe contracts.', effects: [] },
       },
     },
@@ -60,7 +61,10 @@ test('public offer contains no private resolution mechanics', () => {
     character,
     busy: false,
   });
-  assert.deepEqual(offer.nodes[0]?.action, { kind: 'attempt' });
+  assert.deepEqual(offer.nodes[0]?.action, {
+    kind: 'attempt',
+    timing: 'instant',
+  });
   assert.equal(
     offer.nodes[0]?.description,
     'Contract away from the disturbance.',
@@ -89,11 +93,22 @@ test('immediate resolution returns one authoritative automatic outcome', () => {
   assert.equal(resolved.text, 'The microbe contracts.');
 });
 
+test('bounded action duration is explicit rather than inferred as zero', () => {
+  const missingDuration = structuredClone(content.plans[0]);
+  delete missingDuration.resolution.durationTicks;
+  assert.equal(immediateActionContentSchema.safeParse({
+    version: 1,
+    id: 'missing-duration',
+    plans: [missingDuration],
+  }).success, false);
+});
+
 test('immediate resolution selects one checked branch and applies it once', () => {
   const plan = {
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
+      durationTicks: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Sense a gradient',
@@ -137,6 +152,7 @@ test('story fact declaration is explicit, durable and separate from character fa
         evidence: ['p1'],
         resolution: {
           kind: 'automatic',
+          durationTicks: 5,
           outcome: {
             text: 'The promise becomes established.',
             effects: [],
@@ -169,6 +185,7 @@ test('proposal validation rejects unsupported or duplicate story declarations', 
     evidence: ['p1'],
     resolution: {
       kind: 'automatic',
+      durationTicks: 5,
       outcome: {
         text: 'A claim is proposed.',
         effects: [],
@@ -268,7 +285,10 @@ test('resume intentions remain opaque and cannot settle as immediate actions', (
     character,
     busy: false,
   });
-  assert.deepEqual(opportunities.offer.nodes[0]?.action, { kind: 'attempt' });
+  assert.deepEqual(opportunities.offer.nodes[0]?.action, {
+    kind: 'attempt',
+    timing: 'process',
+  });
   assert.equal(
     validateImmediateActionProposal({
       proposal: resume,
@@ -411,6 +431,7 @@ test('proposal validation rejects ungrounded situational modifiers', () => {
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
+      durationTicks: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Sense a gradient',
@@ -440,6 +461,7 @@ test('current form constrains abilities and skills without changing the D&D rule
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
+      durationTicks: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Push a physical barrier',

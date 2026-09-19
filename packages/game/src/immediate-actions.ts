@@ -57,9 +57,14 @@ export const immediateActionPlanSchema = z.strictObject({
     .max(16)
     .default([]),
   resolution: z.discriminatedUnion('kind', [
-    z.strictObject({ kind: z.literal('automatic'), outcome: outcomeSchema }),
+    z.strictObject({
+      kind: z.literal('automatic'),
+      durationTicks: z.number().int().positive().max(10080),
+      outcome: outcomeSchema,
+    }),
     z.strictObject({
       kind: z.literal('check'),
+      durationTicks: z.number().int().positive().max(10080),
       check: checkPlanSchema,
       difficultyBasis: z.string().min(1).max(300),
       success: outcomeSchema,

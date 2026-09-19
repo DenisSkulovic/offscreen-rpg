@@ -57,6 +57,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
+        durationTicks: 5,
         outcome: outcome(
           'You slip behind the sofa without approaching the window.',
           [{ kind: 'fact.set.v1', fact: { id: 'under-cover', value: true } }],
@@ -75,6 +76,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
+        durationTicks: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Calm Gary',
@@ -108,6 +110,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
+        durationTicks: 5,
         outcome: outcome(
           'You stay by the doorway while Gary points both eyestalks toward the window.',
         ),
@@ -140,6 +143,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
+        durationTicks: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Sense the gradient',
@@ -173,6 +177,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
+        durationTicks: 5,
         outcome: outcome(
           'The organism contracts away from the strongest disturbance.',
         ),
@@ -605,6 +610,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
+          durationTicks: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Draw the parcel closer safely',
@@ -645,6 +651,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
+          durationTicks: 5,
           outcome: outcome(
             'You leave the parcel outside and keep the window closed.',
             [],
@@ -673,6 +680,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
+          durationTicks: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Identify the disturbance',
@@ -712,6 +720,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
+          durationTicks: 5,
           outcome: outcome(
             'You leave the sofa and join Gary beside the window.',
             [
@@ -741,6 +750,7 @@ function pineappleConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'check',
+        durationTicks: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Identify the disturbance',
@@ -806,6 +816,7 @@ function beaconConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
+          durationTicks: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Read and challenge the approaching stranger',
@@ -845,6 +856,7 @@ function beaconConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
+          durationTicks: 5,
           outcome: outcome(
             'You bar the door until the stranger returns to the boat.',
             [
@@ -984,6 +996,7 @@ function microbeConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
+          durationTicks: 5,
           outcome: outcome(
             'The organism remains sheltered while the surrounding gradient shifts.',
           ),
@@ -1004,6 +1017,7 @@ function microbeConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'check',
+        durationTicks: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Sense the surviving gradient',
@@ -1037,6 +1051,7 @@ function microbeConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
+        durationTicks: 5,
         outcome: outcome(
           'The organism contracts, conserving itself without reaching shelter.',
         ),
