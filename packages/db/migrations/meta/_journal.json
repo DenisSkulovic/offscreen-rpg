@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1789818246465,
-      "tag": "0000_zippy_jane_foster",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1789821188875,
-      "tag": "0001_warm_tarantula",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1789825048883,
-      "tag": "0002_shallow_bulldozer",
+      "when": 1789825506461,
+      "tag": "0000_real_gertrude_yorkes",
       "breakpoints": true
     }
   ]

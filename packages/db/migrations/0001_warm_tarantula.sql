@@ -1,1 +1,0 @@
-ALTER TABLE "campaign" ADD COLUMN "activity_occurrences" jsonb DEFAULT '[]'::jsonb NOT NULL;
