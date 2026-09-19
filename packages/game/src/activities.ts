@@ -50,6 +50,29 @@ const clockWaitProcessSchema = z.strictObject({
   progressLabel: z.string().min(1).max(120),
   requiredTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 });
+export const activityOccurrencePolicySchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('unbounded') }),
+  z.strictObject({
+    kind: z.literal('limited'),
+    scopeKey: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+    limit: z.number().int().positive().max(1000),
+  }),
+]);
+export const activityOccurrencesSchema = z
+  .array(
+    z.strictObject({
+      scopeKey: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+      completed: z.number().int().nonnegative().max(1000),
+    }),
+  )
+  .max(64)
+  .refine(
+    (occurrences) =>
+      new Set(occurrences.map((occurrence) => occurrence.scopeKey)).size ===
+      occurrences.length,
+    'Duplicate activity occurrence scope',
+  );
+export type ActivityOccurrences = z.infer<typeof activityOccurrencesSchema>;
 export const processDefinitionSchema = z.discriminatedUnion('kind', [
   contributionProcessSchema,
   clockWaitProcessSchema,
@@ -62,6 +85,7 @@ export const actionDefinitionSchema = z.strictObject({
   requires: z.array(factSchema).max(16),
   capacity: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   process: processDefinitionSchema,
+  occurrence: activityOccurrencePolicySchema,
   completionFollowUp: z.enum(['quiet', 'scene']),
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
@@ -103,6 +127,42 @@ export const actionContentSchema = z
   });
 export type ActionContent = z.infer<typeof actionContentSchema>;
 export type ActionDefinition = z.infer<typeof actionDefinitionSchema>;
+
+export function activityOccurrenceAvailable(
+  occurrences: ActivityOccurrences,
+  action: ActionDefinition,
+) {
+  if (action.occurrence.kind === 'unbounded') return true;
+  const policy = action.occurrence;
+  const completed =
+    occurrences.find((occurrence) => occurrence.scopeKey === policy.scopeKey)
+      ?.completed ?? 0;
+  return completed < policy.limit;
+}
+
+/** Records a terminal completion; starting, suspending and abandoning never spend it. */
+export function recordActivityOccurrence(
+  occurrences: ActivityOccurrences,
+  action: ActionDefinition,
+): ActivityOccurrences {
+  if (action.occurrence.kind === 'unbounded') return occurrences;
+  const policy = action.occurrence;
+  if (!activityOccurrenceAvailable(occurrences, action)) {
+    throw new Error('Activity occurrence limit already reached');
+  }
+  const existing = occurrences.find(
+    (occurrence) => occurrence.scopeKey === policy.scopeKey,
+  );
+  return activityOccurrencesSchema.parse(
+    existing
+      ? occurrences.map((occurrence) =>
+          occurrence.scopeKey === policy.scopeKey
+            ? { ...occurrence, completed: occurrence.completed + 1 }
+            : occurrence,
+        )
+      : [...occurrences, { scopeKey: policy.scopeKey, completed: 1 }],
+  );
+}
 
 export function actionAvailable(
   character: Character,

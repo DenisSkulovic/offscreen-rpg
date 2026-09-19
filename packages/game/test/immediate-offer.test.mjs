@@ -334,6 +334,7 @@ test('extended activity access is explicit and cannot omit or invent a plan', ()
             failureText: 'Time passes without progress.',
           },
         },
+        occurrence: { kind: 'unbounded' },
         completionFollowUp: 'quiet',
         checks: [],
         completion: { text: 'The work is complete.', effects: [] },

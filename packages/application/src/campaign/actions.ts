@@ -35,6 +35,7 @@ import {
   campaignSituationAuthorization,
   requireCampaign,
   loadOfferPlan,
+  processOccurrenceAvailable,
 } from './persistence';
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
@@ -202,6 +203,9 @@ export function createCampaignActions(database: Database) {
         return;
       }
       if (definition.resolution.kind === 'process') {
+        if (!(await processOccurrenceAvailable(tx, state, definition))) {
+          throw new StoryError('conflict');
+        }
         // A new commitment takes the character's one advancing slot, but it does
         // not erase interrupted work. The retained row remains an explicit future
         // choice with the same identity, progress, rolls and captured terms.

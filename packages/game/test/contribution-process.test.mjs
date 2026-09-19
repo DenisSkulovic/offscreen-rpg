@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  activityOccurrenceAvailable,
   contributeAtBoundary,
   estimatedCompletionBoundaryTick,
   nextBoundaryTick,
   processBoundaryDue,
   processProgressAtEffortTick,
   resolvedActivityPlanSchema,
+  recordActivityOccurrence,
   settleProcessBoundary,
   worldTickForEffortBoundary,
 } from '../dist/src/activities.js';
@@ -68,6 +70,7 @@ const plan = resolvedActivityPlanSchema.parse({
         failureText: 'The attempt consumes time without a sound repair.',
       },
     },
+    occurrence: { kind: 'unbounded' },
     completionFollowUp: 'scene',
     checks: [],
     completion: { text: 'The beacon works again.', effects: [] },
@@ -96,6 +99,32 @@ test('ability checks determine contribution while time only schedules attempts',
   const final = contributeAtBoundary(plan, progress, character, () => 20);
   assert.deepEqual(final.progress, { kind: 'contribution.v1', earned: 10 });
   assert.equal(final.complete, true);
+});
+
+test('finite activity occurrences are spent only by terminal completions', () => {
+  const action = {
+    ...plan.action,
+    occurrence: {
+      kind: 'limited',
+      scopeKey: 'beacon-restoration-attempts',
+      limit: 2,
+    },
+  };
+  let occurrences = [];
+  assert.equal(activityOccurrenceAvailable(occurrences, action), true);
+
+  occurrences = recordActivityOccurrence(occurrences, action);
+  assert.deepEqual(occurrences, [
+    { scopeKey: 'beacon-restoration-attempts', completed: 1 },
+  ]);
+  assert.equal(activityOccurrenceAvailable(occurrences, action), true);
+
+  occurrences = recordActivityOccurrence(occurrences, action);
+  assert.equal(activityOccurrenceAvailable(occurrences, action), false);
+  assert.throws(
+    () => recordActivityOccurrence(occurrences, action),
+    /limit already reached/,
+  );
 });
 
 test('a check cadence can wake earlier without becoming productive progress', () => {
@@ -173,6 +202,7 @@ test('clock wait completes at its eligible tick target without a roll or work po
         progressLabel: 'Protective interval',
         requiredTicks: 10,
       },
+      occurrence: { kind: 'unbounded' },
       completionFollowUp: 'quiet',
       checks: [],
       completion: { text: 'The disturbance passes.', effects: [] },

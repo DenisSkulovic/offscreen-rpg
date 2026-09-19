@@ -20,6 +20,10 @@ export const campaign = pgTable('campaign', {
   locked: integer('locked').notNull().default(0),
   character: jsonb('character').$type<unknown>(),
   storyFacts: jsonb('story_facts').notNull().default([]).$type<unknown>(),
+  activityOccurrences: jsonb('activity_occurrences')
+    .notNull()
+    .default([])
+    .$type<unknown>(),
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
   tick: bigint('tick', { mode: 'number' }).notNull(),

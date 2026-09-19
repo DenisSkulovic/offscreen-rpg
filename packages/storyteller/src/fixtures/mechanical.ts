@@ -204,6 +204,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
             progressLabel: 'Protective interval',
             requiredTicks: 10,
           },
+          occurrence: { kind: 'unbounded' },
           completionFollowUp: 'quiet',
           checks: [],
           completion: {
@@ -243,6 +244,11 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
             kind: 'clock-wait.v1',
             progressLabel: 'Sampling interval',
             requiredTicks: 2,
+          },
+          occurrence: {
+            kind: 'limited',
+            scopeKey: 'microbe-gradient-samples',
+            limit: 2,
           },
           completionFollowUp: 'quiet',
           checks: [],
@@ -314,6 +320,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
                 'The attempt consumes time without producing a sound repair.',
             },
           },
+          occurrence: { kind: 'unbounded' },
           completionFollowUp: 'scene',
           checks: [
             {
@@ -742,6 +749,7 @@ function beaconConsequence(
                 'The hurried attempt consumes time, but the exposed tools are not yet secure.',
             },
           },
+          occurrence: { kind: 'unbounded' },
           completionFollowUp: 'quiet',
           checks: [],
           completion: {

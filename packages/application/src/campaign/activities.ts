@@ -8,6 +8,7 @@ import {
   processBoundaryDue,
   processProgressAtEffortTick,
   resolvedActivityPlanSchema,
+  recordActivityOccurrence,
   settleProcessBoundary,
   worldTickForEffortBoundary,
 } from '@offscreen/game/activities';
@@ -26,6 +27,7 @@ import {
   recordRoll,
   refreshOffer,
   appendMechanicalPassage,
+  campaignActivityOccurrences,
   type ActivityRecord,
   type CampaignRecord,
 } from './persistence';
@@ -195,6 +197,13 @@ export async function settleActivity(
   const nextCampaignTick = caughtUpRunning
     ? nextClock.elapsedTicks
     : worldCursor;
+  const activityOccurrences =
+    nextState === 'complete'
+      ? recordActivityOccurrence(
+          campaignActivityOccurrences(state),
+          plan.action,
+        )
+      : campaignActivityOccurrences(state);
   const retainedProgress = {
     effortTicks: nextEffortTicks,
     process: processProgress,
@@ -225,6 +234,7 @@ export async function settleActivity(
     tick: nextCampaignTick,
     clock: nextClock,
     clockAnchorAt: new Date(now),
+    activityOccurrences,
   };
   await tx
     .update(campaign)
@@ -233,6 +243,7 @@ export async function settleActivity(
       tick: nextCampaign.tick,
       clock: nextClock,
       clockAnchorAt: new Date(now),
+      activityOccurrences,
     })
     .where(eq(campaign.storyId, current.id));
   if (!reachedBoundary) {

@@ -618,6 +618,19 @@ test(
             assert.notEqual(repeatedIds[0], repeatedIds[1]);
             assert.equal(repeatSnapshot.campaign?.tick, 14);
             assert.equal(repeatSnapshot.campaign?.rolls.length, 0);
+            assert.deepEqual(
+              repeatSnapshot.campaign?.offer?.nodes.map((node) => node.id),
+              [],
+            );
+            const [occurrenceState] = await database.db
+              .select({
+                activityOccurrences: campaignTable.activityOccurrences,
+              })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.deepEqual(occurrenceState?.activityOccurrences, [
+              { scopeKey: 'microbe-gradient-samples', completed: 2 },
+            ]);
           },
         );
         await t.test(

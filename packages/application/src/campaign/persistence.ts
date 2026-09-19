@@ -19,6 +19,11 @@ import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
 import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
+import {
+  activityOccurrenceAvailable,
+  activityOccurrencesSchema,
+  resolvedActivityPlanSchema,
+} from '@offscreen/game/activities';
 import type { Transaction } from '../outbox/index';
 import {
   advanceStoryView,
@@ -69,6 +74,12 @@ export async function refreshOffer(
           campaignStoryFacts(state),
           plan,
         )
+      ) {
+        continue;
+      }
+      if (
+        plan.resolution.kind === 'process' &&
+        !(await processOccurrenceAvailable(tx, state, plan))
       ) {
         continue;
       }
@@ -131,6 +142,49 @@ export async function refreshOffer(
     })
     .where(eq(campaign.storyId, state.storyId));
   return offer;
+}
+
+export function campaignActivityOccurrences(state: CampaignRecord) {
+  return activityOccurrencesSchema.parse(state.activityOccurrences);
+}
+
+/**
+ * Finite scope is campaign history, not offer history. An unfinished instance
+ * reserves its limited scope so switching work cannot create a duplicate.
+ */
+export async function processOccurrenceAvailable(
+  tx: Transaction,
+  state: CampaignRecord,
+  plan: ImmediateActionPlan,
+) {
+  if (plan.resolution.kind !== 'process') return true;
+  const action = plan.resolution.action;
+  if (
+    !activityOccurrenceAvailable(campaignActivityOccurrences(state), action)
+  ) {
+    return false;
+  }
+  if (action.occurrence.kind === 'unbounded') return true;
+  const policy = action.occurrence;
+  const activities = await tx
+    .select({ plan: gameActivity.plan, state: gameActivity.state })
+    .from(gameActivity)
+    .where(eq(gameActivity.storyId, state.storyId));
+  return !activities.some((candidate) => {
+    if (
+      ['complete', 'failed', 'expired', 'invalidated', 'abandoned'].includes(
+        candidate.state,
+      )
+    ) {
+      return false;
+    }
+    const parsed = resolvedActivityPlanSchema.safeParse(candidate.plan);
+    return (
+      parsed.success &&
+      parsed.data.action.occurrence.kind === 'limited' &&
+      parsed.data.action.occurrence.scopeKey === policy.scopeKey
+    );
+  });
 }
 
 export async function saveOfferPlans(

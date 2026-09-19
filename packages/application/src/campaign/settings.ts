@@ -110,6 +110,7 @@ export async function initializeCampaign(
     character,
     content,
     storyFacts,
+    activityOccurrences: [],
     location: null,
     tick: 0,
     clock: wholeTicks(0),
