@@ -86,7 +86,7 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 ## Current checkpoint
 
 - Phase: B1 complete/B2 implementing. Effective-policy admission, task envelopes, rich attempt audit, sanitized inspection, durable window allocations, operation-wide aggregate ceilings, fail-closed dispatch-time authority recheck and player-safe limiting reasons are implemented. Exact next action: independent game hold/recovery. Do not enable provider execution. Storage C1/C2 remains independently ready.
-- Slice base: `0955730`; limiting-reason contract/projection/presentation changes are uncommitted.
+- Slice base: `c092ae5`; worktree was clean after the limiting-reason slice.
 - Verification: contracts, application, web and API-integration workspaces compile; the focused failed-resolution probe confirms stable blocker and retry projection for the free scripted path. Paid blocker presentation is structurally compiled but not browser-tested. No live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

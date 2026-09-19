@@ -21,6 +21,18 @@ pnpm dev
 
 Open http://localhost:3000. The API listens on `127.0.0.1:3001`; `/api` is proxied through the web server. Entering the application sends anonymous users to GitHub sign-in and signed-in users to their saved drafts. The web, API and worker watch their own source changes; rebuild shared packages and restart after changing shared package code. Stop the task with Ctrl+C. No model credentials or paid calls are involved.
 
+Repository-local maintenance shortcuts keep repeated Windows and disposable-database steps consistent:
+
+```sh
+pnpm repo:brief
+pnpm infra -- ps
+pnpm db:baseline
+pnpm db:reset:test
+pnpm test:focus -- storyteller "fake provider accounting"
+```
+
+The focused test command accepts the suites listed by `pnpm test:focus -- --help`, rebuilds before using compiled output, removes provider credentials/live opt-in from the child environment and recreates only `offscreen_auth_test`. These are opt-in maintenance/check commands; they do not replace source review, commit or push.
+
 API, worker and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. Deployment ingress/proxy configuration remains separate work.
 
 The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPACE` (`default`) and `TEMPORAL_TASK_QUEUE` (`offscreen-local`). Run it separately with `pnpm --filter @offscreen/worker start` after building if not using `pnpm dev`. Requests remain saved while it is stopped. The preview page checks status briefly, then offers reloading; closing it does not cancel work. These plaintext local connection settings are not a hosted deployment configuration.
