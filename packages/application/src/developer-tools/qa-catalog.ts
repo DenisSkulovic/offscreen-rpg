@@ -296,7 +296,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     version: 1,
     name: 'Quiet activity lifecycle',
     purpose:
-      'Manually verify genuine clock waiting, finite accepted continuation, horizon/cancellation/blocking stops, finite repeatable work, and reload-safe activity identity without model work.',
+      'Manually verify genuine clock waiting, finite accepted continuation, horizon/cancellation/blocking stops, explicit scene re-entry, finite repeatable work, and reload-safe activity identity.',
     risk: 'Routine play may secretly roll, generate narration, duplicate instances, replay a finite opportunity, or lose authority after reload.',
     costClass: 'offline',
     availability: { state: 'available' },
@@ -403,13 +403,27 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         authoritativeExpectation:
           'The wait clears exposed before successor admission; revalidation creates no second activity or wake and records a durable blocked reason.',
       }),
+      stage({
+        id: 'reenter-after-scene',
+        name: 'Require an explicit handoff after a scene',
+        importance: 'poc-blocker',
+        preconditions: [
+          'Start a fresh beacon-watch.v1 story and stage Keep the harbor watch after Observe the harbor shift.',
+        ],
+        action:
+          'Let the observation reach its scene, inspect the stopped plan, publish the scripted scene, then explicitly select Keep the harbor watch.',
+        observableExpectation:
+          'The queued watch stays blocked while the scene is pending and after its offer appears; only selecting that offered watch starts it.',
+        authoritativeExpectation:
+          'The Storyteller receives only the exact pending private entry, publication grants fresh situation authority without creating an activity, and the player command rebinds the same plan entry before it completes quietly.',
+      }),
     ],
     evidenceRequirements: [
       stateEvidence,
       {
         kind: 'activity-identities',
         description:
-          'All three accepted-plan activity IDs plus the second sampling ID, revisions, progress, ticks, and terminal states.',
+          'Accepted-plan activity IDs plus the second sampling and beacon handoff IDs, revisions, progress, ticks, and terminal states.',
         required: true,
       },
       {
@@ -429,7 +443,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       'Start a fresh microbe.v3 story and QA run. Do not edit or reuse occurrence history from an earlier run.',
     nonAssertions: [
       'This fixture proves generic contracts with authored content, not biological realism or arbitrary-world Storyteller intelligence.',
-      'It does not prove arbitrary-length itineraries, chain editing/cancellation, interruption recovery, or generated report quality.',
+      'It does not prove arbitrary-length itineraries, arbitrary chain editing, interruption recovery, or generated report quality.',
     ],
   }),
   defineCase({

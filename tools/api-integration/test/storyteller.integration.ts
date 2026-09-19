@@ -757,6 +757,128 @@ test(
           },
         );
         await t.test(
+          'scene handoff requires explicit player re-entry into an accepted plan',
+          async () => {
+            const started = await mechanicalCandidate('beacon-watch.v1', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the beacon opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['observe-harbor-shift'],
+                successorPaths: [['keep-harbor-watch']],
+                horizonTicks: 20,
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const firstActivityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the observation activity',
+            );
+            await storyService.advanceCampaignActivity(firstActivityId);
+            const awaitingScene = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(awaitingScene.campaign?.activity, null);
+            assert.equal(
+              awaitingScene.campaign?.acceptedActivityPlan?.state,
+              'blocked',
+            );
+            assert.deepEqual(
+              awaitingScene.campaign?.acceptedActivityPlan?.entries.map(
+                (entry) => [entry.state, entry.activityId],
+              ),
+              [
+                ['complete', firstActivityId],
+                ['blocked', null],
+              ],
+            );
+
+            const [captured] = await database.db
+              .select({ input: generation.input })
+              .from(generation)
+              .where(eq(generation.id, firstActivityId));
+            const task = storytellerTaskSchema.parse(captured?.input);
+            assert.equal(
+              task.context.activitySituation?.acceptedPlan?.nextEntry.plan.key,
+              'keep-harbor-watch',
+            );
+            await runtime.complete(firstActivityId);
+            const handedBack = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const handoffOffer = requireDefined(
+              handedBack.campaign?.offer,
+              'Expected an explicit Storyteller handoff offer',
+            );
+            assert.deepEqual(
+              handoffOffer.nodes.map((node) => node.id),
+              ['keep-harbor-watch'],
+            );
+            assert.equal(handedBack.campaign?.activity, null);
+            assert.equal(
+              handedBack.campaign?.acceptedActivityPlan?.state,
+              'blocked',
+            );
+
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: handedBack.revision,
+                offerId: handoffOffer.id,
+                path: ['keep-harbor-watch'],
+              },
+            });
+            const reentered = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const successorId = requireDefined(
+              reentered.campaign?.activity?.id,
+              'Expected the explicitly selected successor',
+            );
+            assert.equal(
+              reentered.campaign?.acceptedActivityPlan?.state,
+              'active',
+            );
+            assert.deepEqual(
+              reentered.campaign?.acceptedActivityPlan?.entries.map((entry) => [
+                entry.state,
+                entry.activityId,
+              ]),
+              [
+                ['complete', firstActivityId],
+                ['running', successorId],
+              ],
+            );
+            await storyService.advanceCampaignActivity(successorId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(
+              completed.campaign?.acceptedActivityPlan?.state,
+              'complete',
+            );
+            assert.equal(completed.campaign?.activityReports.length, 0);
+          },
+        );
+        await t.test(
           'accepted horizon prevents a later activity from starting',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {

@@ -16,6 +16,8 @@ This package prepares bounded tasks and validates their results. It does not own
 
 `contextInputSchema` is the captured internal artifact. `contextPayload` is the provider-facing projection; they are intentionally different. Narrative evidence receives passage handles and mechanical opening identity is omitted, but `resolution` currently passes through its captured structure, including receipt identities. Do not assume the projection strips every internal ID. Inspect the exact request before changing context or asserting what the model can see. The [worked request and tool/cost walkthrough](../../docs/technical/playthroughs/storyteller.md) explains this boundary with a concrete failed-check scene and distinguishes current one-shot tasks from proposed exploration/report-only contracts.
 
+When a controlling scene blocks an accepted itinerary, `activitySituation.acceptedPlan` contains only the current blocked entry, not the whole queue. Its exact private plan is intentional: the Storyteller may hand that already-chosen commitment back as a fresh offer without reconstructing or broadening it. Publication still does not execute it; the player must select the newly authorized offer, and the application rechecks the plan horizon and ordinary mechanical eligibility before rebinding the durable entry.
+
 ## Implemented tasks and limits
 
 - **Opening:** prepares a reviewable beginning. A mechanical opening proposes fresh private plans from the captured character/story-fact seed; validation rejects unsupported or currently unavailable plans before review.

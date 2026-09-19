@@ -14,6 +14,7 @@ import {
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
+import { readAcceptedActivityPlan } from '../campaign/accepted-plans';
 
 function projectActivityProgress(plan: unknown, progress: unknown) {
   const resolved = resolvedActivityPlanSchema.parse(plan);
@@ -138,12 +139,28 @@ export async function loadStorytellerContext(
         .from(gameActivity)
         .where(eq(gameActivity.storyId, input.storyId))
     : [];
+  const acceptedPlan = settingsRow
+    ? readAcceptedActivityPlan(settingsRow.acceptedActivityPlan)
+    : null;
+  const blockedEntry = acceptedPlan?.entries[acceptedPlan.cursor];
+  const acceptedHandoff =
+    acceptedPlan?.state === 'blocked' &&
+    blockedEntry?.state === 'blocked' &&
+    blockedEntry.activityId === null
+      ? {
+          id: acceptedPlan.id,
+          revision: acceptedPlan.revision,
+          horizonTick: acceptedPlan.horizonTick,
+          nextEntry: { id: blockedEntry.id, plan: blockedEntry.plan },
+        }
+      : undefined;
   const activitySituation = settingsRow
     ? {
         activityAccess: situationAuthorizationSchema.parse(
           settingsRow.situationAuthorization,
         ).activityAccess,
         activeActivityId: settingsRow.activeActivityId,
+        ...(acceptedHandoff ? { acceptedPlan: acceptedHandoff } : {}),
         commitments: commitments.flatMap((record) => {
           if (
             ![

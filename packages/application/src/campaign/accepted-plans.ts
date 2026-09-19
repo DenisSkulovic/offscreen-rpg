@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 
@@ -61,6 +62,47 @@ export function createAcceptedActivityPlan(args: {
 
 export function readAcceptedActivityPlan(value: unknown) {
   return value === null ? null : acceptedActivityPlanSchema.parse(value);
+}
+
+/**
+ * Rebind a scene-blocked itinerary only when the player selects the exact
+ * private plan that was queued. Storyteller publication merely makes that
+ * choice available again; it never restarts unattended work by itself.
+ */
+export function reenterAcceptedActivityPlan(args: {
+  value: unknown;
+  selectedPlan: z.infer<typeof immediateActionPlanSchema>;
+  activityId: string;
+  currentTick: number;
+}) {
+  const accepted = readAcceptedActivityPlan(args.value);
+  if (
+    !accepted ||
+    accepted.state !== 'blocked' ||
+    args.currentTick >= accepted.horizonTick
+  ) {
+    return null;
+  }
+  const entry = accepted.entries[accepted.cursor];
+  if (
+    !entry ||
+    entry.state !== 'blocked' ||
+    entry.activityId !== null ||
+    !isDeepStrictEqual(entry.plan, args.selectedPlan)
+  ) {
+    return null;
+  }
+  return acceptedActivityPlanSchema.parse({
+    ...accepted,
+    revision: accepted.revision + 1,
+    state: 'active',
+    entries: accepted.entries.map((candidate, index) =>
+      index === accepted.cursor
+        ? { ...candidate, state: 'running', activityId: args.activityId }
+        : candidate,
+    ),
+    blockedReason: null,
+  });
 }
 
 export function projectAcceptedActivityPlan(plan: AcceptedActivityPlan | null) {

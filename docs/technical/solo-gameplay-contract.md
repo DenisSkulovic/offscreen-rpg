@@ -1,6 +1,6 @@
 # Connected solo gameplay: implementation contract
 
-Status: maintained implementation contract. Its clock correction, authored quiet reuse, historical-report boundary and first durable two-entry accepted chain are implemented; explicit chain horizons/editing/cancellation, broader world preparation and delegated decisions remain proposed. No live inference, deployment or multiplayer behavior is authorized here.
+Status: maintained implementation contract. Its clock correction, authored quiet reuse, historical-report boundary, bounded accepted chains, horizon/pending cancellation and explicit post-scene re-entry are implemented; broader chain editing, world preparation and delegated decisions remain proposed. No live inference, deployment or multiplayer behavior is authorized here.
 
 Read the [gold session](playthroughs/harbor-session.md) alongside this contract. [Rules and activities](rules-and-activities.md) owns action/choice authority; [ticks](ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
 

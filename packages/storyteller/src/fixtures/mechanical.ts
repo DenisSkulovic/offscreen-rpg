@@ -361,6 +361,87 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
   return [
     {
       version: 1,
+      key: 'observe-harbor-shift',
+      label: 'Observe the harbor shift',
+      intention:
+        'Watch the harbor for two ticks before deciding how to use the rest of the watch.',
+      risk: null,
+      evidence: [],
+      requires: [{ id: 'location', value: 'harbor-beacon' }],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        reuse: 'once',
+        action: {
+          id: 'observe-harbor-shift',
+          label: 'Observe the harbor shift',
+          description:
+            'Watch the harbor through one bounded change of conditions.',
+          requires: [{ id: 'location', value: 'harbor-beacon' }],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Harbor observation',
+            requiredTicks: 2,
+          },
+          conditionPolicy: { kind: 'admission-only' },
+          occurrence: {
+            kind: 'limited',
+            scopeKey: 'beacon-harbor-observations',
+            limit: 1,
+          },
+          completionFollowUp: 'scene',
+          checks: [],
+          completion: {
+            text: 'The harbor shift passes under careful observation.',
+            effects: [],
+          },
+        },
+      },
+    },
+    {
+      version: 1,
+      key: 'keep-harbor-watch',
+      label: 'Keep the harbor watch',
+      intention:
+        'Continue watching the landing for two more ticks without beginning repairs.',
+      risk: null,
+      evidence: [],
+      requires: [{ id: 'location', value: 'harbor-beacon' }],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        reuse: 'once',
+        action: {
+          id: 'keep-harbor-watch',
+          label: 'Keep the harbor watch',
+          description: 'Maintain a bounded watch over the harbor landing.',
+          requires: [{ id: 'location', value: 'harbor-beacon' }],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Harbor watch',
+            requiredTicks: 2,
+          },
+          conditionPolicy: { kind: 'admission-only' },
+          occurrence: {
+            kind: 'limited',
+            scopeKey: 'beacon-harbor-watches',
+            limit: 1,
+          },
+          completionFollowUp: 'quiet',
+          checks: [],
+          completion: {
+            text: 'The additional harbor watch ends without incident.',
+            effects: [],
+          },
+        },
+      },
+    },
+    {
+      version: 1,
       key: 'restore-beacon',
       label: 'Begin restoring the beacon',
       intention:
@@ -698,6 +779,14 @@ function beaconConsequence(
   const character = resolution.character;
   if (factValue(character.facts, 'location') !== 'harbor-beacon') {
     return null;
+  }
+  // A scene can explicitly hand the next accepted commitment back to the
+  // player. Returning the exact private plan is deliberate: publication only
+  // authorizes the choice; the application still requires a player command
+  // before it rebinds and resumes the accepted itinerary.
+  const acceptedSuccessor = activitySituation?.acceptedPlan?.nextEntry.plan;
+  if (acceptedSuccessor) {
+    return [acceptedSuccessor];
   }
   if (factValue(character.facts, 'beacon-damaged') !== true) {
     return [];

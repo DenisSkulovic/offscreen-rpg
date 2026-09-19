@@ -41,7 +41,10 @@ import {
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
 import { projectCampaignClock } from './clock';
-import { createAcceptedActivityPlan } from './accepted-plans';
+import {
+  createAcceptedActivityPlan,
+  reenterAcceptedActivityPlan,
+} from './accepted-plans';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -291,6 +294,13 @@ export function createCampaignActions(database: Database) {
             firstActivityId: activityId,
             acceptedAtTick: projected.clock.elapsedTicks,
             horizonTicks: acceptedHorizonTicks,
+          });
+        } else {
+          acceptedPlan = reenterAcceptedActivityPlan({
+            value: state.acceptedActivityPlan,
+            selectedPlan: definition,
+            activityId,
+            currentTick: projected.clock.elapsedTicks,
           });
         }
         await tx.insert(gameActivity).values({

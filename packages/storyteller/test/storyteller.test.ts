@@ -376,11 +376,23 @@ test('mechanical opening uses the same task contract for nonhuman agency', () =>
   }
   assert.deepEqual(
     result.scene.next.plans.map((plan) => plan.key),
-    ['follow-gradient', 'contract', 'wait-contracted', 'sample-gradient-cycle'],
+    [
+      'follow-gradient',
+      'contract',
+      'wait-contracted',
+      'sample-gradient-cycle',
+      'hold-temperature-cycle',
+      'hold-pressure-cycle',
+    ],
   );
   assert.deepEqual(result.scene.next.activityAccess, {
     kind: 'selected',
-    actionKeys: ['wait-contracted', 'sample-gradient-cycle'],
+    actionKeys: [
+      'wait-contracted',
+      'sample-gradient-cycle',
+      'hold-temperature-cycle',
+      'hold-pressure-cycle',
+    ],
   });
   assert.equal(
     JSON.stringify(result).includes('gary'),
@@ -395,7 +407,9 @@ test('mechanical opening can offer a durable contribution process', () => {
   if (result.scene.next.kind !== 'action-plans') {
     throw new Error('Expected mechanical opening plans');
   }
-  const [plan] = result.scene.next.plans;
+  const plan = result.scene.next.plans.find(
+    (candidate) => candidate.key === 'restore-beacon',
+  );
   assert.equal(plan?.key, 'restore-beacon');
   assert.equal(plan?.resolution.kind, 'process');
   if (plan?.resolution.kind !== 'process') {

@@ -1,5 +1,8 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
-import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
+import {
+  immediateActionPlanSchema,
+  storyFactDeclarationsSchema,
+} from '@offscreen/game/immediate-actions';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { offerSchema } from '@offscreen/game/offers';
@@ -28,6 +31,20 @@ export const contextInputSchema = z.strictObject({
     .strictObject({
       activityAccess: activityAccessSchema,
       activeActivityId: z.uuid().nullable(),
+      acceptedPlan: z
+        .strictObject({
+          id: z.uuid(),
+          revision: z.number().int().nonnegative(),
+          horizonTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+          nextEntry: z.strictObject({
+            id: z.uuid(),
+            plan: immediateActionPlanSchema.refine(
+              (plan) => plan.resolution.kind === 'process',
+              'Accepted plan entries must be extended activities',
+            ),
+          }),
+        })
+        .optional(),
       commitments: z
         .array(
           z.strictObject({
