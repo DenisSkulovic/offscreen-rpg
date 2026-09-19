@@ -7,7 +7,7 @@ Dependencies: QA journey/run contracts, trace completeness, existing persistent 
 
 ## Phase 1 — Evaluation-run contract and preflight
 
-Define captured case/model/route/pricing/limit policy, worst-case reservation, balance/accounting snapshot and preflight failures. Add a dry-run mode that proves every check without dispatch.
+Define captured case/model/route/pricing/limit policy, worst-case reservation, balance/accounting snapshot and preflight failures. Reuse the [provider dispatch review](../2026-09-19--22-58--provider-dispatch-review/PLAN.md) to build, hold and inspect the exact packet without dispatch.
 
 Exit: an ineligible run explains exactly why it cannot start.
 

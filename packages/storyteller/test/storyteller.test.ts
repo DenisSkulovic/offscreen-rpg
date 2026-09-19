@@ -14,6 +14,7 @@ import { applyContinuityPatch } from '../src/context/continuity';
 import { boundStorytellerContext } from '../src/context';
 import {
   createOpenRouterProvider,
+  inspectOpenRouterRequest,
   usdToMicrousd,
 } from '../src/providers/openrouter';
 
@@ -901,6 +902,14 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     execution: providerExecution,
     resources: providerResources(providerExecution.policy.route),
   });
+  const inspection = inspectOpenRouterRequest(providerTask);
+  assert.equal(inspection.body.model, 'test/model');
+  assert.deepEqual(inspection.body.provider.only, ['Test']);
+  assert.equal(inspection.body.provider.allow_fallbacks, false);
+  assert.match(inspection.sha256, /^[a-f0-9]{64}$/);
+  assert.ok(inspection.serializedBytes > inspection.outputSchemaBytes);
+  assert.equal(inspection.estimatedInputTokens, null);
+  assert.ok(inspection.userSections.some((section) => section.key === 'task'));
   let calls = 0;
   const provider = createOpenRouterProvider({
     enabled: true,

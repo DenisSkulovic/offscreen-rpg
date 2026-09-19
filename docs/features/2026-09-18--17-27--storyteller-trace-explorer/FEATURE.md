@@ -1,6 +1,6 @@
 # Storyteller trace explorer
 
-Status: Proposed for owner review. Design only.
+Status: Agreed observability direction. Packet inspection begins in the provider-dispatch review feature; the unified Chamber timeline remains unimplemented.
 
 ## Intended outcome
 
@@ -32,6 +32,7 @@ For each operation, retain safe inspectable forms of:
 - profile/settings/rules/execution-policy revisions;
 - context manifest, included evidence handles and omission counts;
 - exact captured provider request after secret removal;
+- pre-dispatch review state, exact packet hash and release/reject/supersede decision;
 - model route, bounds and pricing identity;
 - per-round lifecycle and latency;
 - tool name, validated arguments, result or structured failure;

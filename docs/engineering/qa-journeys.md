@@ -19,6 +19,7 @@ The catalogue contains:
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.
+- exact provider-packet dry run and dispatch review, structurally implemented at the adapter boundary but not yet available until its durable hold/release record and Chamber controls land.
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
