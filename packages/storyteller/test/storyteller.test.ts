@@ -49,6 +49,23 @@ function consequence(
       value: boolean | string;
       declaredBy: string;
     }>;
+    activitySituation?: {
+      activityAccess: { kind: 'none' };
+      activeActivityId: string;
+      commitments: Array<{
+        activityId: string;
+        actionId: string;
+        revision: number;
+        state: 'encounter';
+        label: string;
+        progress: {
+          kind: 'contribution';
+          label: string;
+          earned: number;
+          required: number;
+        };
+      }>;
+    };
   } = {},
 ) {
   const base = opening();
@@ -73,6 +90,9 @@ function consequence(
     execution: base.execution,
     context: {
       ...base.context,
+      ...(options.activitySituation
+        ? { activitySituation: options.activitySituation }
+        : {}),
       current: passage,
       evidence: [passage],
       selected: {
@@ -608,6 +628,7 @@ test('offline consequence plans change with committed pineapple state', () => {
 });
 
 test('beacon interruption plans resolve danger before offering process resumption', () => {
+  const retainedActivityId = randomUUID();
   const interrupted = scriptedStorytellerResult(
     consequence({
       facts: [
@@ -634,6 +655,25 @@ test('beacon interruption plans resolve danger before offering process resumptio
         { id: 'repair-tools', value: true },
         { id: 'stranger-at-beacon', value: false },
       ],
+      activitySituation: {
+        activityAccess: { kind: 'none' },
+        activeActivityId: retainedActivityId,
+        commitments: [
+          {
+            activityId: retainedActivityId,
+            actionId: 'restore-beacon',
+            revision: 3,
+            state: 'encounter',
+            label: 'Restore the beacon',
+            progress: {
+              kind: 'contribution',
+              label: 'Beacon repair',
+              earned: 3,
+              required: 9,
+            },
+          },
+        ],
+      },
     }),
   );
   if (cleared.scene.version !== 3) {
@@ -648,6 +688,8 @@ test('beacon interruption plans resolve danger before offering process resumptio
   assert.deepEqual(resume?.resolution, {
     kind: 'resume',
     activityActionId: 'restore-beacon',
+    activityId: retainedActivityId,
+    activityRevision: 3,
   });
   assert.equal(diversion?.resolution.kind, 'process');
   if (diversion?.resolution.kind === 'process') {

@@ -55,6 +55,8 @@ Exit: dormant player-directed local play works under the same author/rule author
 
 Dependencies: S2 and autonomy U2b's scene/report separation. This phase extends prepared content through task proposals; it does not enable paid inference.
 
+Status: core exact-handoff path implemented for the scripted POC. Scene preparation receives bounded retained-work evidence and may propose an exact activity identity/revision; normal proposal validation and publication remain the authority. Broader model-authored definition creation and the nonhuman preparation matrix remain later S3 work, not prerequisites for the first finite accepted chain.
+
 - Allow bounded new/revised supported definitions and explicit selected references in opening/scene proposals; validate against declared state, supported effect/target vocabulary and exact rule versions. Unsupported world declarations hold rather than becoming prose-only mechanics.
 - Extend context with active/retained progress, current authorization, relevant definitions, trigger receipts and pending handoff. Reuse the existing context cap and evidence provenance; no hidden full-world dump.
 - Keep generated/report-only contracts disjoint. A historical report cannot carry any selection or world mutation. Scene-only output may deliberately keep activity access closed across multiple turns.
@@ -65,9 +67,9 @@ Exit: the gold session's authored scene/routine changes use task outputs and nor
 
 ## Current checkpoint
 
-- Current phase / next action: S1, A2, bounded S2/U2a and core U2b report-versus-scene separation are implemented. S3 is active: task context now carries bounded current activity access plus exact active/retained identity, revision, lifecycle and public progress. Next extend validated preparation output for supported definitions and explicit return/chain handoff.
+- Current phase / next action: S1, A2, bounded S2/U2a, core U2b and the bounded S3 exact-handoff path are implemented. The scripted Storyteller now chooses an exact retained activity identity/revision from typed captured context; publication revalidates it instead of trusting an action name. Next implement U2c's smallest finite player-accepted two-entry chain.
 - Implemented boundary: prerequisites explicitly select admission-only or boundary rechecking. A failed boundary recheck blocks the exact instance before another attempt/reward, preserves progress, requests its configured scene follow-up and requires newly authored exact-resume permission after recovery. The nonhuman nutrient-loss trace is the primary constraint and the tool-dependent beacon is the conventional contrast; a false recoverable condition never implies irreversible invalidation.
 - Implemented boundary: every mechanical opening/consequence result explicitly says `none` or selects all process/resume action keys. Start and publication persist that authorization beside the exact offer; selection checks both under the story lock. Offer consumption clears it, and mechanical settlement publishes no inferred fallback menu.
-- Verification: affected packages build, 30/30 Storyteller unit tests pass, and the full PostgreSQL/Temporal/browser Storyteller suite passes 13/13. Its beacon interruption path asserts that the captured consequence task receives the exact encounter activity identity, revision and 3/9 public contribution progress.
-- Remaining gates: S3 owns broader bounded preparation, and U2b owns report-versus-scene delivery. Irrecoverable target invalidation and actor/site occurrence scopes wait for their actual identity models. The optional H1→H4 gold trace remains connected acceptance work rather than a claim of human narrative quality.
+- Verification: affected packages build, 30/30 Storyteller unit tests pass, and the full PostgreSQL/Temporal/browser Storyteller suite passes 13/13. Its beacon interruption path asserts both captured 3/9 progress and the saved private resume plan's exact activity identity/revision.
+- Remaining gates: U2c owns finite accepted chains. Broader S3 definition proposals, irrecoverable target invalidation and actor/site occurrence scopes wait for their actual identity models. The optional H1→H4 gold trace remains connected acceptance work rather than a claim of human narrative quality.
 - Spend: $0 provider calls; cumulative OpenRouter usage unverified.

@@ -611,6 +611,7 @@ function pineappleConsequence(
 function beaconConsequence(
   resolution: NonNullable<StorytellerTask['context']['resolution']>,
   evidence: string,
+  activitySituation: StorytellerTask['context']['activitySituation'],
 ) {
   const character = resolution.character;
   if (factValue(character.facts, 'location') !== 'harbor-beacon') {
@@ -686,27 +687,38 @@ function beaconConsequence(
       },
     ];
   }
+  const retainedRepair = activitySituation?.commitments.find(
+    (commitment) =>
+      commitment.actionId === 'restore-beacon' &&
+      ['encounter', 'suspended', 'blocked'].includes(commitment.state),
+  );
   return [
-    {
-      version: 1,
-      key: 'resume-beacon-repair',
-      label: 'Return to the beacon repair',
-      intention:
-        'Resume the suspended repair from its last sound contribution.',
-      risk: 'Further failed attempts still consume time, and another interruption remains possible.',
-      evidence: [evidence],
-      requires: [
-        { id: 'beacon-damaged', value: true },
-        { id: 'repair-tools', value: true },
-        { id: 'stranger-at-beacon', value: false },
-      ],
-      requiresStory: [],
-      requiresQuantities: [],
-      resolution: {
-        kind: 'resume',
-        activityActionId: 'restore-beacon',
-      },
-    },
+    ...(retainedRepair
+      ? [
+          {
+            version: 1,
+            key: 'resume-beacon-repair',
+            label: 'Return to the beacon repair',
+            intention:
+              'Resume the suspended repair from its last sound contribution.',
+            risk: 'Further failed attempts still consume time, and another interruption remains possible.',
+            evidence: [evidence],
+            requires: [
+              { id: 'beacon-damaged', value: true },
+              { id: 'repair-tools', value: true },
+              { id: 'stranger-at-beacon', value: false },
+            ],
+            requiresStory: [],
+            requiresQuantities: [],
+            resolution: {
+              kind: 'resume',
+              activityActionId: 'restore-beacon',
+              activityId: retainedRepair.activityId,
+              activityRevision: retainedRepair.revision,
+            },
+          } as const,
+        ]
+      : []),
     {
       version: 1,
       key: 'secure-repair-tools',
@@ -870,7 +882,7 @@ export function scriptedMechanicalConsequence(task: StorytellerTask) {
   const evidence = `p${current.sequence}`;
   const plans =
     pineappleConsequence(resolution, evidence) ??
-    beaconConsequence(resolution, evidence) ??
+    beaconConsequence(resolution, evidence, task.context.activitySituation) ??
     microbeConsequence(resolution, evidence) ??
     [];
   const prior = resolution.receipts.at(-1);

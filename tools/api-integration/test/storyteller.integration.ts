@@ -440,6 +440,27 @@ test(
               kind: 'selected',
               actionKeys: ['resume-beacon-repair', 'secure-repair-tools'],
             });
+            const [savedResumeOffer] = await database.db
+              .select({ plans: gameOffer.plans })
+              .from(gameOffer)
+              .where(eq(gameOffer.id, resumeOffer.id));
+            const savedPlans = savedResumeOffer?.plans as Array<{
+              key?: string;
+              resolution?: {
+                kind?: string;
+                activityId?: string;
+                activityRevision?: number;
+              };
+            }>;
+            const savedResume = savedPlans.find(
+              (candidate) => candidate.key === 'resume-beacon-repair',
+            );
+            assert.deepEqual(savedResume?.resolution, {
+              kind: 'resume',
+              activityActionId: 'restore-beacon',
+              activityId,
+              activityRevision: 0,
+            });
 
             await stories.campaignAction({
               ownerId,
