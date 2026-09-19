@@ -44,6 +44,8 @@ Report-only completion is distinct from quiet completion and a controlling scene
 
 [Execution](src/storyteller/execution.ts) owns scripted/provider dispatch and saved results. [Budget](src/storyteller/budget.ts) owns financial reservations and settlement. [Runtime](src/storyteller/runtime.ts) coordinates execution followed by publication; [recovery](src/storyteller/recovery.ts) handles explicit retry. A saved successful generation and an unpublished story are different states. Publication retry must not repeat dice or a successful provider request. Ambiguous provider dispatch must retain uncertainty rather than being blindly retried.
 
+[Usage policy](src/storyteller/usage-policy.ts) exports the pure server-side entitlement resolver. Schemas, intersection policy and synthetic profiles are separate modules behind that entry point. Platform authority, account entitlement and lower restrictions intersect by allowlist and strictest numeric ceiling; recovery becomes explicit if any layer requires it. The resolver records limit provenance and window definitions but does not yet select a policy during task capture or debit a window. Synthetic free/paid/on-demand profiles are offline fixtures, not product offers. The conservative development profile is disabled by construction.
+
 The worker's [dispatch table](../../apps/worker/src/outbox/dispatch.ts) and [Activity bindings](../../apps/worker/src/activities/index.ts) connect outbox topics to these operations. Temporal payloads identify saved work; they are not alternate sources of story state.
 
 ## Other entrances and misleading names

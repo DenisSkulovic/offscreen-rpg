@@ -12,14 +12,14 @@ Inspected at base `2565214`: `tasks/policy.ts` bounds a serialized request plus 
 
 World-independent trace: a quiet patrol tick makes no model request; a rapid grounded conversation uses one shot; a returning acquaintance can use bounded evidence discovery; a microbe's changed environment uses the same envelope without NPC/location assumptions. Caps regulate software work, not fictional time or literary divisions.
 
-## B1 — Effective usage profiles, captured recipes and preflight (ready)
+## B1 — Effective usage profiles, captured recipes and preflight (implementing)
 
 Outcome: an offline task explains precisely what it may load, call and spend, or why it cannot start.
-Dependencies: existing task capture/provider policy only. Status: ready; exact next implementation slice.
+Dependencies: existing task capture/provider policy only. Status: B1a implemented; B1b ready as the exact next slice.
 
 Owners: `packages/storyteller/src/tasks/policy.ts`, `tasks/index.ts`, `tasks/opening.ts`, `context/index.ts`; application `storyteller/context.ts`, `execution.ts`, `records.ts`, plus a focused usage-policy resolver/configuration module. Account entitlement selection belongs to application authorization, not creative profiles. Use typed server-owned profile fixtures initially; no billing SDK or generic policy engine.
 
-First bounded sub-slice B1a: define versioned entitlement, lower user/story caps, window definitions, funding mode and effective-policy schemas from [usage policy](../../technical/usage-policy.md). Implement a pure strictest-limit/allowlist resolver with cross-field validation, explicit denial reasons and provenance. Capture fake free/two paid/on-demand profiles to demonstrate differing 20k/50k-style context caps without choosing commercial promises. Add the disabled-by-default conservative development preset. Unauthorized client profile/grant changes fail; zero/missing values cannot become unlimited. Exit: offline resolution/preflight evidence, with no schema migration or provider dispatch needed. Commit/push before the next sub-slice.
+First bounded sub-slice B1a is implemented: versioned entitlement/restriction/window schemas, funding/recovery modes, strictest-limit and allowlist intersection, explicit denials/limit provenance, synthetic free/two paid/on-demand profiles and a disabled conservative development preset. The resolver is pure application policy; it cannot dispatch or persist provider work. Focused offline evidence covers lower limits, route/funding non-escalation, contradictory/unlimited rejection and disabled development policy. No commercial entitlement selection is connected yet.
 
 Then B1b connects the resolved policy to existing captured tasks:
 
@@ -81,8 +81,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: prepared; exact next action B1a pure effective-profile resolver and conservative offline preset, then B1b capture/preflight. B2a/B2b enforce accounting, windows and game holds before live calls. Storage C1/C2 remains independently ready.
-- Base: `de09cf0`; documentation only in this preparation.
-- Verification: relevant policy/provider/accounting source inspected; no runtime tests or provider calls.
+- Phase: B1a implemented. Exact next action B1b: select server-owned effective policy during task admission, capture its versions/recipe/envelope with the immutable task, and reject complete-request overflow before dispatch. Do not enable provider execution. B2a/B2b follow for accounting, windows and game holds. Storage C1/C2 remains independently ready.
+- Slice base: `321944b`; B1a is committed with this checkpoint and has no expected uncommitted follow-up.
+- Verification: `@offscreen/application` and `@offscreen/api-integration` builds pass; focused `usage-policy.test.js` passes 4/4. Tests use pure fixtures and no provider path. No database/browser checks or live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

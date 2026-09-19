@@ -1,6 +1,6 @@
 # Bounded Storyteller effort and cost
 
-Status: Prepared for implementation; no runtime changes yet.
+Status: Implementing. B1a pure policy composition is implemented; task capture, enforcement, windows and holds remain.
 Direction: on 2026-09-19 the owner required serious protection against context, tool, reasoning and orchestration bloat, then configurable account profiles, usage windows and conservative pause/recovery before paid evaluation. This handoff constrains the prepared canonical-memory work. Live inference, paid services and runtime subagents remain disabled.
 
 ## Intended outcome

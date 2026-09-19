@@ -1,6 +1,6 @@
 # Account usage policy, windows and recovery
 
-Status: prepared implementation contract, not implemented entitlements or billing. The [bounded-cost feature](../features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) owns delivery. [Context and cost](context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
+Status: B1a implements the pure schemas, strictest-limit/allowlist resolver, provenance and synthetic profiles. Task capture, account selection, durable window debits, holds and billing remain prepared work. The [bounded-cost feature](../features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) owns delivery. [Context and cost](context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
 
 ## Distinct authorities
 
