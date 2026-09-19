@@ -182,6 +182,15 @@ export const campaignViewSchema = z.strictObject({
   offer: offerSchema.nullable(),
   activityAccess: activityAccessSchema,
   activity: campaignActivityViewSchema.nullable(),
+  actionExecution: z
+    .strictObject({
+      operationId: z.uuid(),
+      label: z.string().min(1).max(200),
+      startTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+      targetTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      dueAt: z.iso.datetime().nullable(),
+    })
+    .nullable(),
   // This is a compact set of unfinished promises, not a universal task list.
   // `activity` remains the one identity allowed to advance right now.
   commitments: z.array(campaignActivityViewSchema).max(20),

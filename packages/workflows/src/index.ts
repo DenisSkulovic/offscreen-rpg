@@ -95,6 +95,10 @@ const { advanceCampaignActivity } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
 });
+const { advanceCampaignAction } = proxyActivities<CampaignActivities>({
+  startToCloseTimeout: '30 seconds',
+  retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
+});
 const { prepareCampaignConsequence } = proxyActivities<CampaignActivities>({
   startToCloseTimeout: '30 seconds',
   retry: { initialInterval: '1 second', maximumInterval: '30 seconds' },
@@ -102,6 +106,13 @@ const { prepareCampaignConsequence } = proxyActivities<CampaignActivities>({
 export async function campaignActivityV1(id: string): Promise<void> {
   while (true) {
     const remaining = await advanceCampaignActivity(id);
+    if (remaining === null) return;
+    await sleep(Math.max(1, remaining));
+  }
+}
+export async function campaignActionV1(id: string): Promise<void> {
+  while (true) {
+    const remaining = await advanceCampaignAction(id);
     if (remaining === null) return;
     await sleep(Math.max(1, remaining));
   }

@@ -4,6 +4,7 @@ import {
   campaign,
   campaignSettings,
   gameActionReceipt,
+  gameActionExecution,
   gameActivity,
   gameActivityEvent,
   gameActivityReport,
@@ -30,6 +31,7 @@ import {
 } from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
+import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   projectAcceptedActivityPlan,
   readAcceptedActivityPlan,
@@ -77,6 +79,14 @@ export async function readCampaign(
   const activity = activities.find(
     (candidate) => candidate.id === state.activeActivityId,
   );
+  const [actionExecution] = state.activeActionOperationId
+    ? await db
+        .select()
+        .from(gameActionExecution)
+        .where(
+          eq(gameActionExecution.operationId, state.activeActionOperationId),
+        )
+    : [];
   const rolls = await db
     .select()
     .from(gameRoll)
@@ -222,6 +232,28 @@ export async function readCampaign(
       state.situationAuthorization,
     ).activityAccess,
     activity: activityView,
+    actionExecution: actionExecution
+      ? (() => {
+          const plan = immediateActionPlanSchema.parse(actionExecution.plan);
+          return {
+            operationId: actionExecution.operationId,
+            label: plan.label,
+            startTick: actionExecution.startTick,
+            targetTick: actionExecution.targetTick,
+            dueAt:
+              holds.length === 0
+                ? new Date(
+                    state.clockAnchorAt.getTime() +
+                      realMsUntilTick(
+                        tickProgressSchema.parse(state.clock),
+                        actionExecution.targetTick,
+                        paceSchema.parse(state.clockPace),
+                      ),
+                  ).toISOString()
+                : null,
+          };
+        })()
+      : null,
     commitments,
     activityEvents: activityEvents.map((event) => ({
       id: event.id,

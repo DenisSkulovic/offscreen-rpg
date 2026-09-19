@@ -244,8 +244,11 @@ export async function publishStorytellerResult(
               timing:
                 plan.resolution.kind === 'process' ||
                 plan.resolution.kind === 'resume'
-                  ? 'process'
-                  : 'instant',
+                  ? { kind: 'process' }
+                  : {
+                      kind: 'finite',
+                      ticks: plan.resolution.durationTicks,
+                    },
             },
           };
         }),

@@ -67,13 +67,24 @@ export function CampaignPlay({
         <p role="status">
           {campaign.holds.some(
             (hold) =>
-              hold.kind === 'storyteller-intent' ||
-              hold.kind === 'storyteller',
+              hold.kind === 'storyteller-intent' || hold.kind === 'storyteller',
           )
             ? 'Campaign time is held while the Storyteller prepares a required scene.'
             : 'Campaign time is held while your choice is open.'}{' '}
           Existing activity progress is preserved and held wall time will not
           become catch-up progress.
+        </p>
+      ) : null}
+      {campaign.actionExecution ? (
+        <p role="status">
+          <strong>{campaign.actionExecution.label}</strong> is in progress from
+          tick {campaign.actionExecution.startTick} to tick{' '}
+          {campaign.actionExecution.targetTick}.
+          {campaign.actionExecution.dueAt
+            ? ` Expected around ${new Date(campaign.actionExecution.dueAt).toLocaleTimeString()}.`
+            : ' Campaign time is currently held.'}
+          {' '}The outcome, roll and effects are not committed before that
+          boundary.
         </p>
       ) : null}
       <details>
@@ -334,9 +345,9 @@ export function CampaignPlay({
               {node.action ? (
                 <p>
                   Time:{' '}
-                  {node.action.timing === 'process'
+                  {node.action.timing.kind === 'process'
                     ? 'extended'
-                    : 'instant (temporary POC limit)'}
+                    : `${node.action.timing.ticks} tick${node.action.timing.ticks === 1 ? '' : 's'}`}
                   .
                 </p>
               ) : null}

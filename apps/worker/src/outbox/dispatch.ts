@@ -4,12 +4,15 @@ import {
   storytellerWorkflowId,
   campaignActivityWorkflowType,
   campaignActivityWorkflowId,
+  campaignActionWorkflowType,
+  campaignActionWorkflowId,
   campaignConsequenceWorkflowType,
   campaignConsequenceWorkflowId,
 } from '@offscreen/workflows/contracts';
 import type { Client, Connection } from '@temporalio/client';
 import { WorkflowExecutionAlreadyStartedError } from '@temporalio/client';
 import {
+  campaignActionTopic,
   campaignConsequenceTopic,
   controlledIntervalTopic,
   decisionDeadlineTopic,
@@ -43,6 +46,11 @@ type WakeNotice = {
 };
 
 const noticeDispatch = {
+  [campaignActionTopic]: {
+    kind: 'start',
+    workflowType: campaignActionWorkflowType,
+    workflowId: campaignActionWorkflowId,
+  },
   'campaign.activity.v1': {
     kind: 'start',
     workflowType: campaignActivityWorkflowType,
@@ -85,6 +93,7 @@ const noticeDispatch = {
 } as const satisfies Record<string, StartNotice | WakeNotice>;
 
 export const dispatchedNoticeTopics = [
+  campaignActionTopic,
   'campaign.activity.v1',
   campaignConsequenceTopic,
   storytellerTopic,

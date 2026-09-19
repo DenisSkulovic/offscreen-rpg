@@ -1,5 +1,6 @@
 import { createCampaignSettings } from '../campaign/settings';
 import { createCampaignActions } from '../campaign/actions';
+import { createCampaignActionExecutions } from '../campaign/action-executions';
 import { createCampaignControls } from '../campaign/controls';
 import { createCampaignActivities } from '../campaign/activities';
 import { createAcceptedPlanControls } from '../campaign/accepted-plan-controls';
@@ -24,6 +25,7 @@ export {
   decisionDeadlineTopic,
   intervalWakeTopic,
 } from './topics';
+export { campaignActionTopic } from '../campaign/topics';
 
 export function createStories(
   database: Database,
@@ -41,6 +43,7 @@ export function createStories(
     campaignControl: createCampaignControls(database),
     acceptedPlanControl: createAcceptedPlanControls(database),
     advanceCampaignActivity: createCampaignActivities(database).advance,
+    advanceCampaignAction: createCampaignActionExecutions(database).advance,
     prepareCampaignConsequence: createConsequenceNarration(database),
     list(args: { ownerId: string; before?: string }) {
       return reads.listStories(args);

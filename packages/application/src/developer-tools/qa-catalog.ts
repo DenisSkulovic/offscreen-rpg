@@ -187,8 +187,8 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'immediate-mechanical-dm-loop',
-    version: 4,
-    name: 'Immediate mechanical DM loop',
+    version: 5,
+    name: 'Timed mechanical DM loop',
     purpose:
       'Exercise generated options, admitted private plans, visible d20 consequences, and three committed rounds.',
     risk: 'The POC may narrate choices without mechanics governing outcomes or without durable player agency.',
@@ -218,7 +218,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         preconditions: ['A reviewed mechanical opening exists.'],
         action: 'Start the selected scenario variant.',
         observableExpectation:
-          'The opening presents feasible, distinct choices and labels each as instant or extended.',
+          'The opening presents feasible, distinct choices and labels each with a finite tick duration or as extended work.',
         authoritativeExpectation:
           'A committed passage owns the current offer and private admitted plans; public timing is derived from those plans rather than omitted or inferred from prose.',
       }),
@@ -243,9 +243,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         preconditions: ['An offer-local plan is available.'],
         action: 'Select one option and wait for its consequence.',
         observableExpectation:
-          'The committed outcome remains visible while preparation is pending; then the player sees its consequence and a fresh choice.',
+          'The accepted execution remains visible until its target tick; only then does the committed outcome appear while narration preparation is pending, followed by a fresh choice.',
         authoritativeExpectation:
-          'One resolution receipt and its effects commit exactly once. Before generation admission, its intent-owned hold prevents clock drift; preparation retry cannot repeat mechanics.',
+          'The admitted execution owns the campaign clock, then one resolution receipt and its effects commit exactly once at its target tick. Narration latency adds no ticks; preparation retry cannot repeat mechanics.',
       }),
       stage({
         id: 'resolve-round-two',
@@ -1010,7 +1010,8 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         required: true,
       },
     ],
-    resetPolicy: 'Use a fresh generation for every packet or decision rehearsal.',
+    resetPolicy:
+      'Use a fresh generation for every packet or decision rehearsal.',
     nonAssertions: [
       'Byte counts do not establish tokenizer output or provider cache hits.',
       'This offline rejection case does not authorize release to a live provider.',

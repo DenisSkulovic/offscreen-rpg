@@ -59,6 +59,13 @@ export function createWorkerActivities(collaborators: {
         mapStoryActivityError(error, 'IntervalStateError');
       }
     },
+    async advanceCampaignAction(id) {
+      try {
+        return await stories.advanceCampaignAction(id);
+      } catch (error) {
+        mapStoryActivityError(error, 'IntervalStateError');
+      }
+    },
     async prepareCampaignConsequence(id) {
       try {
         await stories.prepareCampaignConsequence(id);

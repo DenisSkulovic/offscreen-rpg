@@ -71,7 +71,8 @@ CREATE TABLE "campaign" (
 	"holds" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"offer" jsonb,
 	"situation_authorization" jsonb NOT NULL,
-	"active_activity_id" uuid
+	"active_activity_id" uuid,
+	"active_action_operation_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "campaign_command" (
@@ -99,6 +100,24 @@ CREATE TABLE "campaign_settings" (
 	"profile" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "campaign_settings_story_id_revision_pk" PRIMARY KEY("story_id","revision")
+);
+--> statement-breakpoint
+CREATE TABLE "game_action_execution" (
+	"operation_id" uuid PRIMARY KEY NOT NULL,
+	"story_id" uuid NOT NULL,
+	"offer_id" uuid NOT NULL,
+	"action_key" text NOT NULL,
+	"base_revision" integer NOT NULL,
+	"offer" jsonb NOT NULL,
+	"plan" jsonb NOT NULL,
+	"start_tick" bigint NOT NULL,
+	"target_tick" bigint NOT NULL,
+	"state" text DEFAULT 'running' NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"settled_at" timestamp (3) with time zone,
+	CONSTRAINT "game_action_execution_offer" UNIQUE("story_id","offer_id"),
+	CONSTRAINT "game_action_execution_state" CHECK ("game_action_execution"."state" in ('running', 'settled')),
+	CONSTRAINT "game_action_execution_ticks" CHECK ("game_action_execution"."start_tick" >= 0 and "game_action_execution"."target_tick" > "game_action_execution"."start_tick")
 );
 --> statement-breakpoint
 CREATE TABLE "game_action_receipt" (
@@ -541,6 +560,7 @@ ALTER TABLE "campaign" ADD CONSTRAINT "campaign_story_id_story_id_fk" FOREIGN KE
 ALTER TABLE "campaign_command" ADD CONSTRAINT "campaign_command_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_consequence" ADD CONSTRAINT "campaign_consequence_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_action_execution" ADD CONSTRAINT "game_action_execution_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_receipt" ADD CONSTRAINT "game_action_receipt_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity" ADD CONSTRAINT "game_activity_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity_event" ADD CONSTRAINT "game_activity_event_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

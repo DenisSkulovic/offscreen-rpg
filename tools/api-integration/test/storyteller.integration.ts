@@ -232,7 +232,12 @@ test(
         await t.test(
           'mechanical opening and three consequences reshape plans from committed state',
           async () => {
-            const started = await mechanicalCandidate();
+            const started = await mechanicalCandidate(
+              'pineapple-mechanics.v4',
+              {
+                kind: 'instant',
+              },
+            );
             let snapshot = started.snapshot;
             assert.equal(snapshot.revision, 1);
             assert.equal(snapshot.campaign?.offer?.nodes[0]?.id, 'take-cover');
@@ -269,12 +274,28 @@ test(
                   path: [action.id],
                 },
               });
+              const admitted = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(admitted.revision, snapshot.revision);
+              assert.equal(admitted.campaign?.offer, null);
+              assert.equal(
+                admitted.campaign?.actionExecution?.operationId,
+                operationId,
+              );
+              assert.equal(admitted.campaign?.actionReceipts.length, round);
+              assert.deepEqual(admitted.campaign?.holds, []);
+
+              assert.equal(
+                await storyService.advanceCampaignAction(operationId),
+                null,
+              );
               const committed = await stories.read({
                 ownerId,
                 storyId: started.storyId,
               });
-              assert.equal(committed.revision, snapshot.revision);
-              assert.equal(committed.campaign?.offer, null);
+              assert.equal(committed.campaign?.actionExecution, null);
               assert.equal(
                 committed.campaign?.actionReceipts[0]?.id,
                 operationId,
@@ -360,7 +381,10 @@ test(
               },
             });
             const [beforeFailure] = await database.db
-              .select({ clock: campaignTable.clock, holds: campaignTable.holds })
+              .select({
+                clock: campaignTable.clock,
+                holds: campaignTable.holds,
+              })
               .from(campaignTable)
               .where(eq(campaignTable.storyId, started.storyId));
             assert.deepEqual(beforeFailure?.holds, [
@@ -392,7 +416,10 @@ test(
               .from(gameActionReceipt)
               .where(eq(gameActionReceipt.operationId, operationId));
             const [afterFailure] = await database.db
-              .select({ clock: campaignTable.clock, holds: campaignTable.holds })
+              .select({
+                clock: campaignTable.clock,
+                holds: campaignTable.holds,
+              })
               .from(campaignTable)
               .where(eq(campaignTable.storyId, started.storyId));
             assert.equal(receipt?.generationId, null);

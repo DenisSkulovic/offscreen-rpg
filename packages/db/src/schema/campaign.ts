@@ -9,7 +9,9 @@ import {
   timestamp,
   primaryKey,
   unique,
+  check,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { story, storyPassage } from './stories';
 import { user } from './auth';
 import { generation } from './generations';
@@ -44,6 +46,7 @@ export const campaign = pgTable('campaign', {
     .notNull()
     .$type<unknown>(),
   activeActivityId: uuid('active_activity_id'),
+  activeActionOperationId: uuid('active_action_operation_id'),
 });
 export const campaignSettings = pgTable(
   'campaign_settings',
@@ -219,6 +222,38 @@ export const gameActionReceipt = pgTable(
   },
   // Consuming an offer permits exactly one receipt even across distinct commands.
   (t) => [unique('game_action_receipt_offer').on(t.storyId, t.offerId)],
+);
+export const gameActionExecution = pgTable(
+  'game_action_execution',
+  {
+    operationId: uuid('operation_id').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    offerId: uuid('offer_id').notNull(),
+    actionKey: text('action_key').notNull(),
+    baseRevision: integer('base_revision').notNull(),
+    offer: jsonb('offer').notNull().$type<unknown>(),
+    plan: jsonb('plan').notNull().$type<unknown>(),
+    startTick: bigint('start_tick', { mode: 'number' }).notNull(),
+    targetTick: bigint('target_tick', { mode: 'number' }).notNull(),
+    state: text('state').notNull().default('running'),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    settledAt: timestamp('settled_at', { withTimezone: true, precision: 3 }),
+  },
+  (t) => [
+    unique('game_action_execution_offer').on(t.storyId, t.offerId),
+    check(
+      'game_action_execution_state',
+      sql`${t.state} in ('running', 'settled')`,
+    ),
+    check(
+      'game_action_execution_ticks',
+      sql`${t.startTick} >= 0 and ${t.targetTick} > ${t.startTick}`,
+    ),
+  ],
 );
 export const storytellerPreset = pgTable('storyteller_preset', {
   id: uuid('id').primaryKey(),

@@ -11,7 +11,7 @@ Cases are versioned TypeScript data validated by `@offscreen/contracts/qa`. A ca
 The catalogue contains:
 
 - offline player entry, available for local execution;
-- immediate mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
+- timed mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
 - quiet activity lifecycle, available for deterministic manual verification of clock waiting, finite accepted continuation and its horizon/cancellation/blocking stops, finite repetition and zero-call execution;
 - activity interruption/blocking, visible but planned until deterministic Chamber controls make the lifecycle reproducible without database edits;
 - activity history and diagnostics, visible but planned until the durable event ledger, structured logger, and deterministic failure controls exist;
@@ -23,7 +23,7 @@ The catalogue contains:
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
-The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate now requires an accepted activity identity, prevents idle wall time from becoming a head start for new work, and holds a required turn under its durable intent before worker admission. The existing mechanical-loop integration case asserts intent-to-generation ownership, but the full deliberate-time case is not yet exposed in the runnable catalogue. Add/version cases with deterministic controls before marking them available. Current immediate-loop cases still prove zero-time behavior only.
+The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop now proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. Rate/pause/restart and slow-narration variants still need dedicated catalogue stages before the full checklist is claimed.
 
 The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#planned-qa-evidence) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. It is prepared documentation only. K1/K2 adds the corresponding versioned catalogue cases and deterministic controls; no dates or seasonal effects are claimed runnable yet.
 

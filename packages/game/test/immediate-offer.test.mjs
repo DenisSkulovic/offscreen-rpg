@@ -63,7 +63,7 @@ test('public offer contains no private resolution mechanics', () => {
   });
   assert.deepEqual(offer.nodes[0]?.action, {
     kind: 'attempt',
-    timing: 'instant',
+    timing: { kind: 'finite', ticks: 5 },
   });
   assert.equal(
     offer.nodes[0]?.description,
@@ -96,11 +96,14 @@ test('immediate resolution returns one authoritative automatic outcome', () => {
 test('bounded action duration is explicit rather than inferred as zero', () => {
   const missingDuration = structuredClone(content.plans[0]);
   delete missingDuration.resolution.durationTicks;
-  assert.equal(immediateActionContentSchema.safeParse({
-    version: 1,
-    id: 'missing-duration',
-    plans: [missingDuration],
-  }).success, false);
+  assert.equal(
+    immediateActionContentSchema.safeParse({
+      version: 1,
+      id: 'missing-duration',
+      plans: [missingDuration],
+    }).success,
+    false,
+  );
 });
 
 test('immediate resolution selects one checked branch and applies it once', () => {
@@ -287,7 +290,7 @@ test('resume intentions remain opaque and cannot settle as immediate actions', (
   });
   assert.deepEqual(opportunities.offer.nodes[0]?.action, {
     kind: 'attempt',
-    timing: 'process',
+    timing: { kind: 'process' },
   });
   assert.equal(
     validateImmediateActionProposal({

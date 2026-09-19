@@ -28,11 +28,14 @@ export interface StorytellerActivities {
 }
 export interface CampaignActivities {
   advanceCampaignActivity(id: string): Promise<number | null>;
+  advanceCampaignAction(id: string): Promise<number | null>;
   prepareCampaignConsequence(id: string): Promise<void>;
 }
 export const campaignActivityWorkflowType = 'campaignActivityV1';
 export const campaignActivityWorkflowId = (id: string) =>
   `campaign-activity/${id}`;
+export const campaignActionWorkflowType = 'campaignActionV1';
+export const campaignActionWorkflowId = (id: string) => `campaign-action/${id}`;
 export const campaignConsequenceWorkflowType = 'campaignConsequenceV1';
 export const campaignConsequenceWorkflowId = (id: string) =>
   `campaign-consequence/${id}`;

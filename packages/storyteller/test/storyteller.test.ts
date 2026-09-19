@@ -209,14 +209,20 @@ function consequence(
               parent: null,
               label: 'Inspect',
               description: 'Inspect what changed.',
-              action: { kind: 'attempt', timing: 'instant' },
+              action: {
+                kind: 'attempt',
+                timing: { kind: 'finite', ticks: 5 },
+              },
             },
             {
               id: 'withdraw',
               parent: null,
               label: 'Withdraw',
               description: 'Step away from the situation.',
-              action: { kind: 'attempt', timing: 'instant' },
+              action: {
+                kind: 'attempt',
+                timing: { kind: 'finite', ticks: 5 },
+              },
             },
           ],
         },
@@ -916,7 +922,11 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
   assert.match(inspection.outputSchemaSha256, /^[a-f0-9]{64}$/);
-  assert.ok(inspection.messages.every((message) => /^[a-f0-9]{64}$/.test(message.sha256)));
+  assert.ok(
+    inspection.messages.every((message) =>
+      /^[a-f0-9]{64}$/.test(message.sha256),
+    ),
+  );
   const comparison = compareOpenRouterRequests(inspection, inspection);
   assert.equal(comparison.samePacket, true);
   assert.equal(comparison.sameOutputSchema, true);

@@ -8,6 +8,7 @@ import type { CampaignRecord } from './persistence';
 
 export type CampaignClockEligibility =
   | { kind: 'accepted-activity'; activityId: string }
+  | { kind: 'accepted-action'; operationId: string }
   | { kind: 'none' };
 
 /**
@@ -26,16 +27,24 @@ export function projectCampaignClock(
   const acceptedActivityOwnsClock =
     eligibility.kind === 'accepted-activity' &&
     state.activeActivityId === eligibility.activityId;
+  const acceptedActionOwnsClock =
+    eligibility.kind === 'accepted-action' &&
+    state.activeActionOperationId === eligibility.operationId;
   const clock = earnedTicks({
     progress: tickProgressSchema.parse(state.clock),
     anchorAt: state.clockAnchorAt,
     // A missing hold is not permission to advance. The caller must identify
     // the accepted execution that owns the campaign's single advancing slot.
-    state: !held && acceptedActivityOwnsClock ? 'running' : 'held',
+    state:
+      !held && (acceptedActivityOwnsClock || acceptedActionOwnsClock)
+        ? 'running'
+        : 'held',
     pace,
     now,
     maximumTicks:
-      pace.kind === 'instant' ? instantTargetTick : Number.MAX_SAFE_INTEGER,
+      eligibility.kind === 'accepted-action' || pace.kind === 'instant'
+        ? instantTargetTick
+        : Number.MAX_SAFE_INTEGER,
   });
   if (clock.elapsedTicks < state.tick) {
     throw new Error('Campaign clock is behind its settled frontier');

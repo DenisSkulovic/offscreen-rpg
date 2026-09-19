@@ -51,6 +51,7 @@
             "requires": [{ "id": "gary-alert", "value": true }],
             "resolution": {
               "kind": "check",
+              "durationTicks": 5,
               "check": {
                 "rule": "srd-5.2.1-subset.v1",
                 "purpose": "Calm Gary",
@@ -90,6 +91,7 @@
             ],
             "resolution": {
               "kind": "automatic",
+              "durationTicks": 5,
               "outcome": {
                 "text": "You take cover behind the furniture.",
                 "effects": [
@@ -111,6 +113,7 @@
             "requires": [{ "id": "under-cover", "value": true }],
             "resolution": {
               "kind": "check",
+              "durationTicks": 5,
               "check": {
                 "rule": "srd-5.2.1-subset.v1",
                 "purpose": "Read Gary’s warning",
@@ -335,6 +338,7 @@
             ],
             "resolution": {
               "kind": "check",
+              "durationTicks": 5,
               "check": {
                 "rule": "srd-5.2.1-subset.v1",
                 "purpose": "Sense the gradient",
@@ -371,6 +375,7 @@
             "requires": [{ "id": "exposed", "value": true }],
             "resolution": {
               "kind": "automatic",
+              "durationTicks": 5,
               "outcome": {
                 "text": "The organism contracts away from the strongest disturbance.",
                 "effects": []

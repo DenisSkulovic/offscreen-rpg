@@ -1,11 +1,11 @@
-import { randomInt, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { storyResolution } from '@offscreen/db/story-schema';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignConsequence,
-  gameActionReceipt,
+  gameActionExecution,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { actionCommandSchema } from '@offscreen/contracts/campaign';
@@ -13,7 +13,6 @@ import {
   consumePreparedActivityPlan,
   immediateActionAvailable,
   rebindPreparedResume,
-  resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
 import {
@@ -38,14 +37,10 @@ import {
   processOccurrenceAvailable,
   recordActivityEvent,
 } from './persistence';
-import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
+import { scheduleActionExecution } from './action-executions';
 import { projectCampaignClock } from './clock';
-import {
-  campaignClockHeld,
-  consumeCampaignDecisionHold,
-  holdCampaignForStorytellerIntent,
-} from './holds';
+import { campaignClockHeld, consumeCampaignDecisionHold } from './holds';
 import {
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
@@ -181,6 +176,9 @@ export function createCampaignActions(database: Database) {
             .from(gameActivity)
             .where(eq(gameActivity.id, state.activeActivityId))
         : [];
+      if (state.activeActionOperationId) {
+        throw new StoryError('conflict');
+      }
       if (
         active &&
         (active.state === 'running' ||
@@ -383,14 +381,9 @@ export function createCampaignActions(database: Database) {
         await scheduleActivity(tx, activityId);
         return;
       }
-      const resolved = resolveImmediateAction(
-        campaignCharacter(state),
-        campaignStoryFacts(state),
-        definition,
-        args.operationId,
-        () => randomInt(1, 21),
-      );
-      await tx.insert(gameActionReceipt).values({
+      const startTick = selectedState.tick;
+      const targetTick = startTick + definition.resolution.durationTicks;
+      await tx.insert(gameActionExecution).values({
         operationId: args.operationId,
         storyId: current.id,
         offerId: offer.id,
@@ -398,19 +391,12 @@ export function createCampaignActions(database: Database) {
         baseRevision: current.revision,
         offer,
         plan: definition,
-        label: definition.label,
-        intention: definition.intention,
-        outcome: resolved.outcome,
-        outcomeText: resolved.text,
-        effects: resolved.effects,
-        declarations: resolved.declarations,
-        roll: resolved.roll,
+        startTick,
+        targetTick,
       });
       await tx
         .update(campaign)
         .set({
-          character: resolved.character,
-          storyFacts: resolved.storyFacts,
           offer: null,
           situationAuthorization: {
             version: 2,
@@ -422,16 +408,16 @@ export function createCampaignActions(database: Database) {
           // commitment. Keep its identity attached so subsequent narration can
           // offer a resume of the exact durable work and retained progress.
           activeActivityId: active?.state === 'encounter' ? active.id : null,
+          activeActionOperationId: args.operationId,
+          clockAnchorAt: new Date(selectionNow),
         })
         .where(eq(campaign.storyId, current.id));
+      await incrementStoryViewVersion(tx, {
+        storyId: current.id,
+        viewVersion: current.viewVersion + 1,
+      });
       await saveCommand(tx, current.id, args.operationId, request);
-      await holdCampaignForStorytellerIntent(
-        tx,
-        selectedState,
-        args.operationId,
-        selectionNow,
-      );
-      await requestActionNarration(tx, args.operationId);
+      await scheduleActionExecution(tx, args.operationId);
     });
   };
 }
