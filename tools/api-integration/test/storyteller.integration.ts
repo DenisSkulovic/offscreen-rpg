@@ -323,6 +323,20 @@ test(
             await database.db
               .update(campaignTable)
               .set({
+                character: {
+                  ...requireDefined(
+                    snapshot.campaign?.character,
+                    'Expected the beacon character',
+                  ),
+                  facts: requireDefined(
+                    snapshot.campaign?.character,
+                    'Expected the beacon character',
+                  ).facts.map((fact) =>
+                    fact.id === 'stranger-at-beacon'
+                      ? { ...fact, value: true }
+                      : fact,
+                  ),
+                },
                 offer: {
                   id: encounterOfferId,
                   nodes: [

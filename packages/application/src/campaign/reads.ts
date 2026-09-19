@@ -85,11 +85,14 @@ export async function readCampaign(
       desc(gameActionReceipt.operationId),
     )
     .limit(20);
-  const character = characterSchema.parse(state.character);
   function projectActivity(candidate: (typeof activities)[number]) {
     const plan = resolvedActivityPlanSchema.parse(candidate.plan);
     const pace = paceSchema.parse(candidate.pace);
     const progress = activityProgressSchema.parse(candidate.progress);
+    // Campaign rows also back narrative-only stories. A character becomes
+    // mandatory only when projecting a mechanical commitment whose estimate
+    // depends on their captured capabilities.
+    const character = characterSchema.parse(state.character);
     const estimatedCompletionTick = estimatedCompletionBoundaryTick(
       plan,
       progress.process,
