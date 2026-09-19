@@ -1,12 +1,12 @@
 # Bounded autonomy and re-entry plan
 
 Feature: [Bounded autonomy and re-entry](FEATURE.md)
-Execution scope: proposal only; no implementation, notification integration or provider call is authorized.
-Implementation owner: Cursor by default; reviewer: Codex.
+Execution scope: implementation-readiness design now; start bounded offline slices only after the owner's requested model switch/continuation. Later fallback/notification scope is not implied. No provider call is authorized.
+Implementation owner: the coding model in this thread after the owner switches it; no automatic dispatch/model switch.
 
 ## Dependencies and sequencing
 
-The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) supplies authoritative progress and fixes clock ownership first. Its phase 2 and the minimal queue/event slice here are one connected delivery: quiet rest/work → permitted next routine → optional scene. Do this before broad cooperation. Existing narrative deadlines are reusable infrastructure, not automatic authority for mechanical absence. No external notification provider is needed.
+The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) supplies A1 clock/identity and A2 genuine wait boundaries. [Authored situations](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md) supplies S1 authority and S2 quiet choice reuse. U2a and S2 are one inseparable quiet-choice slice; U2b adds reports/scenes; U2c adds the finite queue after standalone play works. Follow the [feature index route](../README.md), not parallel implementations of the same callback. Existing narrative deadlines are not authority for mechanical absence. No notification provider is needed.
 
 ## Proposed queue and event contract
 
@@ -74,6 +74,8 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ### Phase 1 — Agree the autonomy promise
 
+For the first offline proof, use the [solo contract defaults](../../technical/solo-gameplay-contract.md#what-is-decided-for-the-first-proof): hold on required interaction, no response deadline or autonomous choice, explicit accepted finite work and independent spend authority. This removes fallback vocabulary as a prerequisite for U2a/U2b/U2c; it does not complete the later delegated-decision product.
+
 - Outcome: player-facing policy and three concrete decisions—safe delegation, disallowed high risk and no-longer-valid fallback.
 - Owners: time/autonomy, player experience and story creation.
 - Work: choose the initial vocabulary, deadline semantics, pause interaction and always-hold categories.
@@ -82,11 +84,34 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ### Phase 2 — Bounded quiet plan and one escalation
 
-- Outcome: a small accepted activity chain demonstrates quiet continuation, selected completion narration and a recoverable interactive scene through the same policy boundary.
-- Owners: queue persistence/application admission, activity settlement, game occurrence policy, Storyteller task/publication and compact current/return projection.
-- Work: implement the minimal contract above with activity foundation phase 2. Capture completion/milestone hooks, factual/report-only/interactive follow-ups and single-owner chain continuation. Start with hold-on-interaction, a finite horizon and known scripted terms; no generic graph language or automatic replanning required.
-- Evidence: same completion quietly advances in one configuration, narrates while advancing in another, and holds for a decision in another. A selected itinerary milestone narrates without an encounter; late report remains historical; rejected scene cannot advance the chain. Real transitions, retry deduplication and simultaneous event/milestone arbitration preserve one successor, rewards and event exposure. Optional report failure and required-scene failure have distinct declared behavior.
-- Exit: the owner can follow time-earned results and the routine-to-scene transition without a dashboard or a live-model bill.
+Split into these serial bounded slices; commit/push each coherent result. This feature owns follow-up/queue orchestration, not situation choice authorship or process arithmetic.
+
+#### U2a — Quiet settlement and factual continuation
+
+- Dependencies: A1, S1 and A2. Execute with S2 so no-task completion produces the correct next authored offer rather than a dead end or engine-invented menu.
+- Capture a validated effective boundary policy on accepted work; default/entry replacement is explicit, never an accidental merge. Add typed boundary/hook identity and a factual-only path that does not create `campaignConsequence`, generation or provider work merely to finish.
+- Owning edits: application `campaign/activities.ts` and `narration.ts`, boundary policy schema/admission, persistence/contract projection and selected fixtures. Keep normal immediate consequences working through their existing task path until explicitly changed.
+- Expose pending/completed work and factual outcomes through normal reads; leave valid current situation authorization intact. New independent player starts are not backdated to old completion. No queue is required for this slice.
+- Acceptance: GS-05 B completion→fresh authorized A selection; LO-02 independent choice/repeat; no generation-task admission after preparation in the quiet branch, not merely a free scripted call. Compare no-task completion with the still-supported controlling consequence path.
+- Exit: model-free standalone ordinary life works without losing current authored choices or receipts.
+
+#### U2b — Historical reports and controlling scenes
+
+- Dependencies: U2a/S2. Use A2's typed boundaries and S1's explicit scene authorization. The [solo contract](../../technical/solo-gameplay-contract.md#boundary-follow-ups-and-task-contracts) fixes snapshot, deduplication and publication responsibilities.
+- Persist follow-up intents by source receipt+hook. Existing consequence uniqueness by narrative revision cannot represent multiple noncontrolling reports; preserve a single controlling intent separately. Reuse existing outbox/execution/accounting, not a second model worker or one agent per event.
+- Add a strict report-only task with prose output and no plans/effects/note patches. Attach publication to its historical receipt; do not append it as the new current passage or invalidate the current gameplay/offer fence. Respect source visibility and idempotent publication.
+- Required scene requests hold the campaign at the boundary, capture relevant progress/authorization/receipts and publish through S1's explicit next situation. The first proof uses the supported authored stranger hazard. General new-entity events are not claimed; optional candidate/no-development output can follow once supported by S3, under the same admission path.
+- Optional report default for the fixture is omit on failure with factual result retained; required scene failure stays held/recoverable. Preserve manual pause. No automatic provider retry, response timeout or fallback action.
+- Acceptance: GS-06 report arrives at 37 for completion 25 while W already ended; no credits/current menu change. Required scene failure stops work; duplicate hooks don't duplicate reports/rewards; simultaneous goal/event stays pending until eligible authored resume. Context overflow fails before inference.
+- Exit: report-versus-scene semantics are distinct in task schema, storage, publication, controls and projection, not only a prompt instruction.
+
+#### U2c — Finite accepted chains
+
+- Dependencies: U2b and situations S3. Implement at most six linear entries with explicit horizon/stop policy, current authored handoff, actor/target bindings and entry identity; no nested branches or automatic replanning.
+- Queue is sole successor owner. Boundary effect, entry consumption, start and wake commit atomically; revalidate current authority/resources every time. A changed interactive situation blocks the old queue until an explicit admitted handoff allows it again.
+- Separate cancel-pending from stop-current and campaign pause. Preserve completed entries/results and exact retained instances. Quotas/cooldown/finite findings do not reset on requeue.
+- Acceptance: repair→W quietly, optional report during W, required scene prevents W, late response cannot skip the scene, and failed next-entry eligibility leaves a readable blocked plan. RM-03/04/06 and BM-02/05 are contrasts; no travel/combat implementation is required to prove their shared boundary.
+- Exit: unattended accepted continuation works after player-directed quiet play has already been demonstrated. No implicit permission to make scene decisions.
 
 ### Phase 3 — Captured fallback contract
 
@@ -122,8 +147,8 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ## Current checkpoint
 
-- Current phase: technical playthrough design now supplies complete quiet/event Batman branches and the Red Mountain itinerary with cancellation/late-report variants. Next: bounded chain/follow-up proof after activity clock correction when scope is agreed. Use the small repair → wait fixture proposed in the atlas; its exact content is not yet approved implementation scope.
-- Reviewed revision: `f77ed42`; documentation-only work. Current unconditional narration requires configurable boundary treatment, not removal of narration. Report-only generation and general event/world proposal admission remain missing contracts; a consequence task cannot simply be relabeled as either.
+- Current phase: readiness handoff; after A1/S1/A2, implement U2a with S2, then U2b, then S3 and U2c in the feature-index order. First proof holds at interactions without unattended decisions; later fallback phases remain distinct. No runtime change made now.
+- Reviewed revision: `875f979`. Current unconditional narration lacks policy separation; current consequence records/publication cannot simply be reused as unbounded historical reports. The solo contract and gold session define the replacement boundaries and late-publication oracle.
 - Verification: source/design inspection; no tests, builds, runtime session or provider calls. Token envelopes are offline planning estimates, not measured usage. Durations and day-long scheduling remain fixture choices, not universal requirements.
-- Open decisions: initial bounds/risk vocabulary and proposed solo hold policy. Fallback categories precede delegated scene decisions; a notification channel does not block offline acceptance.
+- Open decisions: delegated fallback categories, notification transport and broader risk vocabulary before their later phases. Selected first-proof bounds/hold/report policy are in the solo contract; they no longer block the nearest offline slice.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

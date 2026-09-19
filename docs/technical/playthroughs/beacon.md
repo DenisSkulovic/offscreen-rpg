@@ -69,11 +69,11 @@ For the proposed report-only task and late-publication race, use [RM-04](red-mou
 
 ## BC-06: collisions and controls
 
-If the final contribution and stranger arrival both succeed at A cursor 20, today's order interrupts before applying completion. The work may have 9/9 contribution but no completion effects yet. That state must be represented honestly; “100%” is not sufficient evidence that the harbor credit exists. The redesigned lifecycle must preserve a specified collision policy and settle completion once when eligible, without accidentally requiring an unnecessary new contribution attempt. This is an acceptance question for the owning activity phase, not a silently chosen new order.
+If the final contribution and stranger arrival both succeed at A cursor 20, today's order interrupts before applying completion. The work may have 9/9 contribution but no completion effects yet. The [selected solo contract](../solo-gameplay-contract.md#equal-tick-resolution-and-goal-reaching-interruption) preserves contribution→occurrence→completion ordering: show completion pending, then settle it on explicit eligible resumption without another contribution/occurrence draw. “100%” is not evidence that harbor credit already exists. Target invalidation before resume follows its admitted rule instead of silently granting success. This is a proposed fix, not current runtime evidence.
 
 Additional target branches:
 
-- Pause halfway to an attempt: retain the admitted fractional effort; paused wall time earns nothing. If partial effort is intentionally lossy for another rule, expose that captured policy.
+- Pause halfway to an attempt: retain the campaign's exact rational clock remainder and the work's eligible whole-tick effort under the new quantized clock contract; paused wall time earns nothing. Do not duplicate the fraction across A and B. Other loss policies must be captured explicitly.
 - Cancel B before it completes: no completion effect merely because most of its time elapsed. A can still be retained; choosing A is a separate admitted action.
 - Abandon A: terminal instance, history and spent effort remain. Starting a new repair must follow the declared world-progress policy, not resume an abandoned row by mistake.
 - Tools disappear while A is suspended: resume blocks or offers a new admitted method. A clever paragraph cannot satisfy missing eligibility.

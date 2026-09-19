@@ -1,6 +1,6 @@
 # Tick and tag contracts
 
-Status: tick correction implemented with pure arithmetic checks; application integration unverified. Tag correction pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
+Status: exact tick arithmetic implemented; per-activity application chronology still needs the [shared-clock correction](solo-gameplay-contract.md#clock-correction-the-nearest-implementation-boundary), including world receipts across A → B → A. Tag correction pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
 
 ## Simulation clock
 
@@ -16,7 +16,7 @@ Settle earned progress at the old rate before changing pace. Preserve the fracti
 
 This pre-POC codebase supports one current clock contract. Prototype millisecond/hour schemas, decoders and data transitions are deleted instead of carried forward. Development databases may be reset when this schema changes. Never add a universal one-tick-equals-one-second assumption as a substitute for content-owned presentation.
 
-Action content version 2 and activity plan version 3 are the only supported mechanical formats. Their version fields fence malformed or stale local data; they do not imply maintained backward compatibility.
+Supported mechanical formats are the current strict schemas in `packages/game/src/activities.ts` and `immediate-actions.ts`; version fields fence malformed or stale local data, not maintained backward compatibility. The next clock/identity slice replaces disposable prototype formats rather than maintaining older versions.
 
 New pace data is `{kind: 'rate', ticks, realMs}` or `{kind: 'instant'}`. Persist earned whole ticks plus a reduced rational tick remainder (decimal integer strings), independently of the resolved-boundary cursor. Integer arithmetic preserves that remainder across any supported rate changes. If a control encounters a backlog beyond one batch, commit that batch, continue catch-up and return a conflict/refresh instead of acknowledging an unapplied control. No speed change can discard that backlog or grant completion effects ahead of it. Only an actual interruption discards earned progress beyond its boundary. Real scheduler wakes may be capped for platform timer limits without capping simulation duration.
 

@@ -8,6 +8,8 @@ Implementation owner: Codex for the current bounded slice; owner review remains 
 
 The [SpongeBob technical session](../../technical/playthroughs/spongebob.md) now provides the concrete current-versus-target transcript for owner calibration. SB-02 identifies the unchanged-menu failure branch, SB-03/04 the state-shaped success path, and SB-05 the quiet endpoint that currently holds instead of continuing daily life. The [request breakdown](../../technical/playthroughs/storyteller.md) makes input, option authority and token assumptions inspectable. These samples are authored offline, not generated-model taste evidence.
 
+For the coding handoff, contribute bounded fixture repairs to the [gold-session integration](../../technical/playthroughs/harbor-session.md), after the feature-index foundation/authority slices. Use an explicit already-declared attempted-approach fact when a failed unchanged attempt must stop being offered; validate its precondition/effect through normal plans. Do not cure repetition by renaming the same roll, add time to every reply, or replace empty menus with engine-invented activities. The new gold dialogue has a concrete failed-inspection/withdrawal branch and no implicit return to work.
+
 ### Phase 1 — Agree the taste contract
 
 - Outcome: the owner can recognize good, mediocre and unacceptable turns from concrete examples.
@@ -42,7 +44,7 @@ The [SpongeBob technical session](../../technical/playthroughs/spongebob.md) now
 
 ## Current checkpoint
 
-- Current phase and exact next action: phases 2/3 have earlier persisted/visual evidence; phase 4 owner taste review is outstanding. Use SB-01 through SB-05 to review actual options and failure consequences before more prompt or UI work.
+- Current phase and exact next action: structural evidence exists; taste review remains outstanding. Follow the feature-index route and make the bounded failure/menu fixture repairs during gold-session integration, then review SB/GS with the owner. Do not block the selected clock/authority implementation on another abstract taste discussion or launch a broad prompt/UI rewrite.
 - Reviewed source: `f77ed42`; this pass adds documentation only. Earlier implementation/evidence revisions are `5bed48b`, `891a012` and `5116833`; no fresh runtime claim is made by the atlas.
 - Verification: current pass used source/design inspection; no builds/tests or provider calls. Earlier game tests, focused 9/9 Storyteller integration and wide/narrow authenticated review established structural behavior, not enjoyment or current live-model quality.
 - Unresolved findings: the current failed Gary reassurance has no mechanical effects and returns the opening-plan family when facts remain unchanged; the advertised deeper alarm is not a durable state change. The resolved-parcel branch returns no plans and is not yet a continuing-life handoff. Preserve meaningful changed approaches and a valid quiet path; don't fix either by forcing drama or merely renaming the same check. Owner taste review remains outstanding.

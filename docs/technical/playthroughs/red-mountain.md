@@ -70,7 +70,7 @@ In the interactive variant, possible options are “Rest here,” “Continue ti
 
 Alternate T4 boundary at tick 720: after 60/180 units, an occurrence receipt requests a supported road encounter. The chain holds before entering later work. A scene offers a detour, retreat, or a supported resolution. Draws belong to whichever plan is actually selected, not to all three imagined outcomes.
 
-A detour may change remaining route terms only through an admitted revision with a visible effect on progress/estimate. It cannot retain the old arrival deadline and quietly teleport the character over a longer route. Successful resolution can resume the same remaining route if still valid; failure may block it. No parent timer at tick 840 may force arrival regardless.
+A detour may change remaining route terms only through an admitted revision with a visible effect on progress/estimate. It cannot retain the old arrival deadline and quietly teleport the character over a longer route. Successful resolution can resume the same remaining route only through an explicit Storyteller-authorized handoff plus still-valid player permission; a resolved scene alone is insufficient. Failure may block it. No parent timer at tick 840 may force arrival regardless.
 
 If the encounter is still unresolved when the player returns tomorrow, the factual recap says where/when work stopped. It does not fast-forward the rest of the itinerary because a day passed on the wall clock. Other-world/multiplayer clocks need their own policy; the first solo hold does not solve them.
 

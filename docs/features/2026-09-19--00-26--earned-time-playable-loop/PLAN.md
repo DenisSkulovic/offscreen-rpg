@@ -6,11 +6,11 @@ Implementation owner: Codex for the current bounded slices.
 
 ## Dependencies and sequencing
 
+The [ordered coding route](../README.md) now divides the delivery among activity A1/A2, authored situations S1/S2/S3 and autonomy U2a/U2b/U2c. This feature owns the connected [GS-01–07 session](../../technical/playthroughs/harbor-session.md), not a duplicate implementation of their schemas/scheduler. Use the [solo contract](../../technical/solo-gameplay-contract.md) for settled timing/authority/publication defaults.
+
 The [connected POC selection](../../technical/playthroughs/poc.md) now describes the proposed session and alternate replays. Use [BC-01 through BC-06](../../technical/playthroughs/beacon.md) for exact contributions, current instant-wait mismatch, real B settlement and chronology; use [NH-02/03](../../technical/playthroughs/nonhuman.md#nh-02-accumulate-energy-over-environmental-cycles--target) as the contrasting future process. These are technical acceptance fixtures, not evidence that the browser session already works or authorization for all represented mechanics.
 
-The owner's later routine/scene clarification makes the next experience proof a quiet admitted sequence with optional event escalation. After activity identity/clock correction, follow [activity foundation phase 2](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) with [bounded autonomy](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md). Ordinary completion must not require narration. The beacon remains evidence for earned contribution; it is not the complete contract for quiet life, and broad cooperation should not delay the first no-generation sequence.
-
-Approve the player flow first, then approve only the contribution/runtime subset needed from [activity processes](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md). Do not wait for traversal, every process family or long-story memory. The existing immediate receipt/DM-turn boundary is reused rather than replaced. Prove the interruption with a present player first; absence-time choice is owned by [bounded autonomy and re-entry](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) and must not be implied by the process runtime.
+The owner-selected direction requires ordinary completion without compulsory narration, authored local selection and explicit scene handoff. The route above supplies those in bounded slices before broader cooperation, traversal or memory work. The existing immediate receipt/DM-turn boundary is reused rather than replaced. First hold for the player's scene response; delegated absence-time choices remain a later autonomy feature and must not be implied by the process runtime. This design turn does not begin coding; await the owner's model switch and continuation.
 
 ## Phases
 
@@ -56,10 +56,10 @@ Approve the player flow first, then approve only the contribution/runtime subset
 
 ## Current checkpoint
 
-- Current phase: contribution and interruption mechanics exist; connected experience acceptance remains incomplete. The owner's new [activity foundation design](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) takes priority for the next implementation direction.
-- Reviewed source: `f77ed42`. Starting another process retains interrupted/paused work. Immediate responses preserve the interrupted identity, and resume currently finds one row by action-definition identity. The atlas's exact BC-04 world-tick timeline remains a target, not a recorded run.
+- Current phase: connected gold session is fully specified as the offline integration target, including rapid/quiet branches, exact state/roll/task ledger and failure controls. Start coding with activity A1 from the feature-index route; this feature integrates the delivered slices rather than rebuilding them.
+- Reviewed source: `875f979`. Retention exists, but exact-instance resume/clock correction and authored situation lifecycle are unfinished. GS/BC timelines are targets, not recorded sessions.
 - Earlier evidence: game/Storyteller tests, builds and focused integration passed. The A → B → A test directly marks B complete and restores an old offer, so it does not demonstrate real diversion settlement or chronological correctness. No new tests/builds ran for this design pass.
 - Remaining work: exact instance resume, shared-clock correction, enforced participation/capacity and lifecycle semantics under the foundation plan, then actual elapsed-time/browser acceptance and a contrasting nonhuman flow. The source-traced campaign clock regression remains unfixed.
 - Keep the distinction between implementation, scripted evidence and owner taste; neither this feature nor retained commitments is complete. Waiting/traversal are proposed foundation phases, not existing semantics.
-- Next: use the atlas's proposed short session to review the expanded product/technical defaults, then implement the foundation's first coherent phase when agreed. Correct the fixture option that promises waiting but resolves instantly; narration must not counterfeit elapsed time. No runtime change or new test was made by the atlas design pass.
+- Next: after the owner's model switch/continuation, implement the named slices, then assemble GS using normal commands/settlement and readable return state. Do not use the old instant “bar the door until he leaves” option as a wait proof; either model only its immediate barrier effect or provide an actual supported wait. No runtime change or new test was made by this readiness pass.
 - Provider spend: no provider calls ($0); cumulative OpenRouter usage unverified.

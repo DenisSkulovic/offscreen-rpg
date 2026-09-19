@@ -3,6 +3,8 @@
 Status: Expanded design proposal following the owner's 2026-09-19 brainstorming about quiet activities and selective Storyteller events. Preparation does not authorize implementation, notifications or live inference.
 Approval: Design work requested; exact queue, risk, horizon and response policies remain proposed.
 
+The [solo integration contract](../../technical/solo-gameplay-contract.md) selects a bounded first offline tranche: finite chains of at most six entries, explicit tick horizon, and required-scene hold without response timeout or autonomous fallback. Those implementation defaults do not approve the broader delegated-decision proposal below. Follow the [coding route](../README.md), not every phase end-to-end before trying ordinary play.
+
 ## Intended outcome
 
 Let a character's life continue within understood permissions when the browser is closed. A bounded sequence of player-selected routines can progress without generation, while a meaningful event may bring in the Storyteller, request attention and eventually use a permitted captured fallback. Returning distinguishes routine results, delegated choices and what remains influenceable.

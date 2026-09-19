@@ -4,6 +4,8 @@ This is a map of implemented code, not the target architecture. Read [progress](
 
 To understand the intended gameplay before following code, use the [execution atlas](../technical/playthroughs/README.md). Its worked traces distinguish current source behavior from proposed rules and connect acceptance steps to owning feature phases.
 
+For the next coding tranche, the [feature route](../features/README.md) points to a bounded file map per slice. Start with A1 rather than every outstanding feature. The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+
 ## Find the owner
 
 | Question | Start here | Go deeper only when needed |

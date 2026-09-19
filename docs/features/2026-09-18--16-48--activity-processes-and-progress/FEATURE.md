@@ -115,6 +115,8 @@ The view should answer: what am I doing, who is helping, what remains, what coul
 
 ## Scope and staged delivery
 
+The [Storyteller-authored situations feature](../2026-09-19--13-49--storyteller-authored-situations/FEATURE.md) owns definition selection/current authorization across immediate and extended play. This feature supplies work, clock and mechanical eligibility; autonomy supplies boundary follow-ups and accepted chains. The [ordered handoff](../README.md) and [solo integration contract](../../technical/solo-gameplay-contract.md) replace the formerly oversized phase-two delivery with bounded named slices while preserving the broader acceptance below.
+
 [PLAN.md](PLAN.md) starts with identity/clock correctness, then proves quiet routine progression and selective event escalation together with the autonomy feature. Cooperation/capacity, richer loss policies and additional process families follow that playable proof. Each phase includes enough presentation to experience its result; do not require the whole activity framework before showing a meaningful quiet interval.
 
 The cooperative proof uses relevant authored actors under explicit solo-campaign authority. Human multiplayer negotiation, independent scenes, autonomous NPC job search/priorities, full combat, arbitrary dependency graphs, universal maps/physics, open scripting and simulated populations remain separate features.

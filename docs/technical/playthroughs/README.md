@@ -8,6 +8,8 @@ The center of the game is a **life with persistent consequences**, not a stream 
 
 ## Read in this order
 
+For the coding handoff, start with the [gold harbor session](harbor-session.md), [connected solo contract](../solo-gameplay-contract.md) and [ordered feature route](../../features/README.md). They resolve cross-component implementation seams and define the first connected proof. The individual benchmark traces below remain contrasting constraints, not a demand to implement all worlds before playing.
+
 1. [Execution language](execution-language.md): what a scene, offer, activity, roll and pause actually mean in these traces.
 2. [SpongeBob](spongebob.md): a minute-by-minute active session, including a failed check, different options and proposed quiet work. Closest look at what the player actually reads.
 3. [Beacon](beacon.md): exact dice, contributions, interruption, B then A, and the chronology defect that must be fixed.

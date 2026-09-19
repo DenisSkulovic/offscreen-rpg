@@ -3,11 +3,13 @@
 Feature: [Multiple suspended commitments](FEATURE.md)
 Execution scope: approved as the next offline architecture change; begin in the next work session. No provider call is authorized.
 
+Current execution order is the [feature-index handoff](../README.md), starting with activity A1. The historical phase labels below describe this feature's unfinished acceptance, not a competing code path. Exact instance/clock ownership belongs to the foundation; authored resume permission belongs to the situations feature. Keep this folder until those dependencies and its remaining lifecycle/capacity acceptance are actually delivered.
+
 ## Phase 1 — Separate persistence concepts
 
 - Replace the single-pointer assumption with a durable campaign commitment collection plus an explicit currently running identity.
 - Define lifecycle states and legal transitions: running, suspended, encounter, blocked, invalidated, abandoned and complete.
-- Preserve existing activity IDs and version-4 process plans where possible; this is a lifecycle correction, not permission for a universal job system.
+- Preserve stable work identity/history semantics in the design, not obsolete prototype formats. A1 intentionally replaces per-activity clock authority; reset disposable saves/schema rather than maintain version-4 compatibility.
 - Reset the disposable pre-POC database baseline if the schema changes.
 - Exit: multiple unfinished activities can coexist without more than one receiving advancement.
 

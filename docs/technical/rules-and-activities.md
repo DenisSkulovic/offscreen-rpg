@@ -50,7 +50,7 @@ Contrasting authored examples enter through the same preview, private-plan looku
 
 ## Prepared local opportunities (proposed)
 
-Status: owner-described direction, not current runtime support. Current `composeOpportunities` filters supplied plans, and a saved `game_offer` fences one scene-local selection. That is useful admission machinery, but it is not a durable source of repeatable local activities. The [activity feature](../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) owns implementation; [bounded autonomy](../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns accepted queues and follow-up policy. [Local-life trace](playthroughs/local-opportunities.md) owns the worked example.
+Status: owner-described direction, not current runtime support. Current `composeOpportunities` filters supplied plans, and a saved `game_offer` fences one scene-local selection. That is useful admission machinery, but not durable repeatable local activity authority. The [authored situations feature](../features/2026-09-19--13-49--storyteller-authored-situations/PLAN.md) owns this selection/preparation/publication lifecycle; activity foundation owns work/clock/rules and autonomy owns queues/follow-ups. The [solo integration contract](solo-gameplay-contract.md) fixes their seams; [local-life trace](playthroughs/local-opportunities.md) owns the example.
 
 ### Definitions, availability and offers are different
 

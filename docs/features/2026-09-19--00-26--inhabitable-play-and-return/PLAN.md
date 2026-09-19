@@ -6,6 +6,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Phases
 
+First coding tranche is bounded by the [gold session](../../technical/playthroughs/harbor-session.md) and [solo contract's recovery table](../../technical/solo-gameplay-contract.md#commands-recovery-and-what-the-player-sees). Reuse existing UI components; distinguish current choices, working, manually paused, decision-held, preparation-failed and historical report states. Show “completion pending” separately from a reward. Add only the projection/controls required to understand those states; no aesthetic redesign, generated art or large trace dashboard before this flow works. The broader phases below remain subsequent feature scope.
+
 ### Phase 1 — Experience storyboard
 
 - Outcome: agreed screen-by-screen states for rapid play, active process, return after interruption and generation failure.
@@ -48,8 +50,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Current checkpoint
 
-- Current phase and exact next action: produce the low-fidelity storyboard after the gold earned-time flow is selected.
-- Base/reviewed Git revision and relevant changes: based on `8ad4e30`; the reorientation portfolio changes documentation only.
-- Actual checks/results for this revision; checks not run: current opening and play components, snapshot fields and product presentation docs inspected; no UI runtime check run because local Docker infrastructure is unavailable.
+- Current phase and exact next action: the gold flow and state/recovery table now supply the first functional storyboard. Contribute minimal projection/reentry UI during the feature-index route and final connected session; visual polish remains deferred.
+- Base/reviewed Git revision: readiness documents based on `875f979`; no UI code changed in this pass.
+- Verification: documentation/source-boundary inspection; no current browser/runtime verification. Do not treat an old Docker failure as a current blocker; consult development instructions only if actually starting infrastructure.
 - Unresolved findings/blockers: the current play screen mixes scene, facts, receipts, settings and activity diagnostics without an agreed player-first hierarchy.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

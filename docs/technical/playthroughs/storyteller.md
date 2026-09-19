@@ -2,6 +2,8 @@
 
 This is the model-side companion to every trace. Current implementation is source-grounded at `f77ed42`; target exploration and report-only behavior are proposals. All text and token examples below are authored offline. They are not measured model output, pricing quotes or permission to enable inference.
 
+The readiness [solo contract](../solo-gameplay-contract.md#boundary-follow-ups-and-task-contracts) now fixes the first task/publication boundaries; the [gold session ledger](harbor-session.md#gs-07-outcome-return-and-exact-ledger) counts a connected path. Historical reports have no plans, effects or note patches; interactive publication explicitly supplies current activity authorization. Definition/package preparation may enlarge the old envelopes and must be measured from actual captured requests later, without live inference merely to count tokens.
+
 ## The current call, without the agent mystique
 
 The application loads committed state; [context assembly](../../../packages/storyteller/src/context/index.ts) bounds it; [task preparation](../../../packages/storyteller/src/tasks/index.ts) captures the exact request and output schema. The task also pins a creative profile and execution policy. The current model gets system/user messages and a structured output contract. It gets **no callable tools** and no authority to roll dice, run SQL, advance time or commit effects.

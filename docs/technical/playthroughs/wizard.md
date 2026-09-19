@@ -78,7 +78,7 @@ Pause also needs scope: the first solo campaign can freeze everything relevant, 
 
 ## WZ-07: return and continue toward the house
 
-Once escape/reversion is admitted, the restored character's capabilities and current position determine the next offers. A recap can say “You waited for forty minutes before your companion took the apple,” drawn from receipts, with no model required. The interrupted journey resumes only if its terms and current route position still make sense; being carried elsewhere may require a revised journey, not restoring the old cursor blindly.
+Once escape/reversion is admitted, the Storyteller selects the next offers using the restored capabilities and current position; those facts do not generate a menu on their own. A recap can say “You waited for forty minutes before your companion took the apple,” drawn from receipts, with no model required. The interrupted journey resumes only through an explicit authorized handoff and valid terms/current position. Being carried elsewhere may require a revised journey, not restoring the old cursor blindly.
 
 One nominal branch with opening, goblin event, transformation consequence, bite event and one resolved response costs O + 2E + 2D: 26k–52k input, 4.6k–10k output under the planning envelopes, excluding exploration/retries. Waiting adds Q. The companion branch replaces the bite branch rather than being billed on top of it in every session.
 

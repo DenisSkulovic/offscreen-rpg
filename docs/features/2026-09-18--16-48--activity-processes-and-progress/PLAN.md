@@ -1,12 +1,12 @@
 # Activity foundation design and implementation plan
 
 Feature: [Activities, participation and world-defined progress](FEATURE.md).
-Execution scope: architecture/design authorized on 2026-09-19; expanded product proposal ready for review, not bulk implementation authorization. Earlier contribution work remains implemented. No live inference authorized.
-Implementation owner: Cursor by default; Codex design/review unless assigned implementation.
+Execution scope: readiness/design now; A1/A2 have a bounded handoff awaiting the owner's model switch and continuation. The broader participation proposal retains its review boundary. Earlier contribution work remains implemented. No live inference authorized.
+Implementation owner: the coding model in this thread after the owner's switch/instruction; do not dispatch an agent automatically.
 
 ## Inspected baseline
 
-Reviewed source at `1ef5a81`. No runtime repair is claimed by this design pass.
+Reviewed source at `875f979`. No runtime repair is claimed by this design pass.
 
 | Location | Current behavior and consequence |
 | --- | --- |
@@ -61,11 +61,13 @@ Claims declare their lifetime: participant effort/tool use normally releases on 
 
 ### Clock, deadlines and narration
 
+The [connected solo contract](../../technical/solo-gameplay-contract.md#clock-correction-the-nearest-implementation-boundary) fixes the initial implementation defaults and transaction order. It owns how this clock composes with current-situation authority and follow-ups; use it instead of improvising those seams while coding.
+
 Promote exact clock anchor/rate/fraction to the campaign's simulation domain. Separate projected world time from the committed-through cursor. Instances record their settlement and eligible working intervals/cadence. Never reconstruct current world time from a resumed instance's original start plus productive elapsed time.
 
 Under the story lock, settle due boundaries globally before commands change membership, pace or facts. Initial scope is one solo scene/domain. A campaign scheduler selects the earliest relevant boundary across work, autonomous changes and deadlines. Wake payloads are hints fenced by generation and authoritative state.
 
-Proposed equal-tick order: previously due condition changes and hard expiry first; then productive attempts in stable instance/role order, applying each result before the next revalidation. Completion follows its attempt's effects/predicate. Default deadline semantics are exclusive: work at the expiry tick is too late. An inclusive option must be supported and captured. Commands at that tick observe already-due effects. Delivery order must not decide ownership/rewards.
+Equal-tick order for the initial proof: due condition changes/hard expiry, productive attempt, due occurrence schedules in authored order until interruption, then completion if not interrupted/blocked. Goal reached during an interrupt is completion-pending; explicit eligible resume settles completion once with no new contribution/occurrence draw. Future multi-actor settlement adds stable instance/role ordering. Default future deadline semantics are exclusive: work at the expiry tick is too late. An inclusive option needs explicit support. Commands observe already-due effects; delivery order must not decide rewards.
 
 Bound settlement batches and persist catch-up. A control is acknowledged only after required preceding work is settled. Instant pace advances one next boundary group and returns, including for endless processes. Deterministic quiet spans can batch only with equivalent results; distinct stochastic attempts stay distinct unless a rule defines a valid aggregate.
 
@@ -75,7 +77,7 @@ Mechanical progress/completion records authoritative receipts independently of p
 
 ### Persistence, targets and recovery
 
-Prepared local opportunities follow the [owning technical contract](../../technical/rules-and-activities.md#prepared-local-opportunities-proposed). The existing scene offer remains consumable; a separate scoped source lets the application compose new eligible offers without generation. Keep definition, availability, instance and queue permission distinct. [LO-02/03/04](../../technical/playthroughs/local-opportunities.md) supplies the exact dormant-play, wake and contextual-censorship acceptance; the microbe/abstract contrast in LO-05 prevents making geography or human necessities mandatory.
+Prepared local opportunities follow the [owning technical contract](../../technical/rules-and-activities.md#prepared-local-opportunities-proposed) and now have a dedicated implementation owner: [Storyteller-authored situations](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md). This activity feature supplies work/rule/clock eligibility, not a second catalogue or situation permission layer. LO-02/03/04 and the nonhuman contrast LO-05 remain acceptance constraints.
 
 Use campaign/story locks for initial serialization. Actor state, targets, claims, work, effects and outbox participate in the same transaction. Cross-story activities/transfers are excluded. Enforce story-scoped references, positive claim units, unique participation/role identities and revision fences. Check aggregate allocations under pool locks; uniqueness alone cannot protect divisible capacity.
 
@@ -108,23 +110,40 @@ Universal invariants: authority, identity, ordered time, grounded inputs, typed 
 
 ### 1 — Stable identity and correct clock (nearest implementation phase)
 
+Execution label **A1** in the [handoff route](../README.md). Scope is ready for the owner's post-switch implementation instruction; no implementation in the current design turn.
+
 - Outcome: real A → B → A settlement preserves earned progress and monotonic chronology; same-definition instances can be selected precisely.
-- Dependencies: review proposed product direction, then update owning product/technical specifications before runtime edits. Read application actions, activities, controls, reads, persistence; game clock/rules; campaign schema; worker scheduling; focused integration.
+- Dependencies: use the existing owner-selected product direction and solo integration contract; wait for the implementation instruction, not another broad redesign. Read application actions, activities, controls, reads, persistence; game clock/rules; campaign schema; worker scheduling; focused integration. Any newly discovered material product change still needs review before code.
 - Edits: exact instance/revision in resume plans, validators and fixtures; campaign clock anchor/rate/fraction and committed cursor; instance cadence/working intervals; control/settlement ordering; affected baseline/contracts. Remove obsolete time reconstruction, not just clamp it with a maximum.
 - Keep one advancing participant temporarily as an explicit phase limit. Preserve immediate actions, private plans, earned progress and receipts. On resumption, handle an already-satisfied completion predicate after interruption without requiring another productive roll.
 - Optional evidence: real B settlement and freshly published resume offer replace direct database injection; settle resumed A and assert monotonic world/receipt ticks. Add same-definition instances, stale commands/wakes and fractional pause/pace retention. Scripted generation only.
 - Exit: coherent identity/time foundation, updated limits and pushed checkpoint. This phase does not complete the broader feature.
 
+Read/modify map for A1:
+
+| Owner | Bounded change / invariant |
+| --- | --- |
+| `packages/game/src/time.ts`, `activities.ts` | Reuse exact rational arithmetic; campaign tick quantization and retained whole-tick effort follow the solo contract. Separate next work boundary from world receipt position; recognize pending completion without another roll. |
+| `packages/db/src/schema/campaign.ts`, disposable baseline | Campaign owns clock anchor/rate/remainder/frontier and domain holds. Instance keeps identity, work effort/progress and boundary sequence; remove old per-instance time authority. One advancing pointer is an explicit phase limit. Reset prototypes, no compatibility shim. |
+| Application `campaign/actions.ts` | Exact instance/revision resume; settle due work before switching. Failure leaves old participation unchanged apart from independently due history. Reanchor working interval at current world position, not original start. |
+| Application `campaign/activities.ts` | World-tick receipts; bounded catch-up; event stops at its real boundary. Preserve contribution/occurrence order and completion-pending result. No `Math.max` patch for backward time. |
+| Application `campaign/controls.ts`, `settings.ts` | Campaign pause and pace settle under old terms first, retain one rational remainder, preserve independent holds. Existing activity-pause endpoint/UI must be made explicit about domain scope; do not silently conflate suspension with campaign pause. |
+| Application `campaign/reads.ts`, persistence, contracts | Project campaign time/work/known holds consistently without mutating on reads. Current `story.revision` remains a passage sequence, not a free world counter. |
+| Worker bindings/outbox and relevant workflow | Wake the authoritative campaign/work operation; stale messages never reactivate an old pointer or recalculate time independently. |
+| `tools/api-integration/test/storyteller.integration.ts` and focused game tests | Optional evidence must replace B-completed/offer-restored SQL shortcuts with real commands/settlement. Do not claim an untouched old passing test proves the new chronology. |
+
+Concrete A1 oracle: BC-04 world ticks 10→15→20→25, retained A progress, fractional campaign pause/resume, duplicate wake, exact same-definition instance selection, and goal-reaching interruption resumed without an extra attempt. Choose a small safe source/diff review and, when useful, focused offline checks under verification policy; no broad rebuild or live call is required by this plan.
+
 ### 2 — Quiet routines and selective scenes
 
-- Depends on phase 1. Outcome: an extended activity completes and the next permitted entry starts without a generation task; the player can also independently select/repeat eligible prepared local work without generation. Another run escalates exactly once into a meaningful scene. Use the existing solo actor and scope, not broad cooperation as a prerequisite.
-- Owners: game clock-condition and bounded recurring-rule semantics; application settlement/reporting; Storyteller event admission; autonomy's queue/permission contracts; compact play view. Extract rule dispatch when introducing the second rule. A timer-shaped contribution counter is not a valid rest/wait implementation.
-- Split mechanical completion from configurable follow-up: report-only narration, quiet continuation and interactive preparation are distinct. Support a finite authored chain with selected completion/milestone hooks and explicit horizon/stop conditions; revalidate each transition. An event captures committed evidence and controls incompatible progression. Use one continuation owner and the existing generation/publication path with explicit report-versus-scene contracts and offline sources.
-- Add one small authored, versioned local opportunity package through the same admission boundary intended for future generated packages. Project fresh offers after quiet outcomes only from the still-current Storyteller-authorized selection; recheck its revision, scope and actor/resource conditions at start. Every new interactive publication must explicitly set/carry selected opportunities or allow no routine starts; no inventory-derived choices or implicit old-menu restoration. Exercise continuous invalidation on one supported state change. Keep runtime definition generation and broad world creation in later scope; do not make consumed offers replayable.
-- Evidence: no-event completion/transition with zero task admissions and zero provider calls; occurrence without extra productivity rolls; restart/reload/pace changes preserve checks and queue cursor; one event prevents later work until resolved; unavailable generation is legible. Use deterministic fixtures to show both quiet and event branches, then one bounded wall-clock rehearsal.
-- Additional acceptance: within a continuing authored quiet selection, player finishes A, selects B and repeats a genuinely repeatable opportunity with zero task admissions. A changed scope/scene condition rejects stale starts before effects; restoring a condition cannot add a choice outside the current selection. In a three-turn rapid scene sequence, holding an apple and resolving one threat never inserts eating/sleep/travel, resumes A or starts a queued entry unless explicitly authorized. A later authored handoff can reopen selected activities. Reselecting cannot reset findings/cooldowns or rewards. A hardwired chain alone proves neither rhythm.
-- Contrast: the same completion under a narration-and-continue policy; selected arrival narration without a random event; an interactive arrival holds instead. Assert late reports do not change current choices, repeated hooks do not duplicate rewards/successors, and concurrent event/milestone triggers respect the controlling hold.
-- Exit: player can leave, return to earned results and understand an interruption. Implement the quiet sequence and minimal queue/event contract as one coherent cross-feature slice; do not duplicate queue ownership in this feature. Broader delegated choices follow the autonomy phases.
+Execution label **A2**. This phase owns rule diversity and typed boundary emission, not all scene/queue work.
+
+- Dependencies: A1; execute after situation S1 in the handoff route so every exposed choice already has explicit authority.
+- Add a strict clock-wait rule alongside contribution: positive finite tick target, rule-specific progress/view and one terminal boundary. No fake work points or compulsory dice for waiting. Extract cohesive validation/next-boundary/settlement/projection dispatch within existing packages, not a plugin framework.
+- Extend the common boundary result enough for completion, interruption and pending completion; application code remains owner of persistence/outbox. Existing contribution semantics/receipts stay intact.
+- Emit supported boundary identity/cause/effects; [autonomy U2a/U2b](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns follow-up policy and tasks. [Situations S2](../2026-09-19--13-49--storyteller-authored-situations/PLAN.md) owns authorized quiet offer reuse.
+- Acceptance: W completes after ten eligible ticks without rolls/work points; A still requires earned contribution; pause and duplicate completion preserve exact once-only effects. The same rule envelope accepts nonhuman content without mandatory calendar/quantities.
+- Exit: contribution and genuine wait are two supported rules sharing one authoritative clock/lifecycle boundary. Quiet/no-task, reports and chains are delivered in the subsequent named slices, not silently claimed here. Broad repeating/traversal/cooperative variants remain later work.
 
 ### 3 — Work, actors, roles and claims
 
@@ -142,7 +161,7 @@ Universal invariants: authority, identity, ordered time, grounded inputs, typed 
 
 ### 5 — Additional process rules
 
-- Depends on phase 4. Reuse the clock/recurring-rule protocol introduced in phase 2. Add minimal traversal over declared place/connection identities and bounded autonomous staged transformation. Do not rebuild rule dispatch or introduce a second scheduler.
+- Depends on phase 4. Reuse the rule dispatch/boundaries introduced in A2 and existing contribution recurrence; add new recurring semantics only where a selected rule needs them. Add minimal traversal over declared place/connection identities and bounded autonomous staged transformation. Do not rebuild rule dispatch or introduce a second scheduler.
 - Owners: game rules, relevant target/effect vocabulary, estimates/projections and fixtures. No grid/pathfinder/general physiology. Immediate actions retain direct receipts.
 - Evidence: world wait versus active attendance; diversion preserves position while time advances; microbe transforms without a worker or equipment. All share authority/recovery.
 - Exit: new rules do not introduce a second scheduler or species branches.
@@ -160,8 +179,8 @@ A giant optional-field activity object admits nonsense combinations; use typed r
 
 ## Current checkpoint
 
-- Current phase: design corrected to explicit Storyteller authorship of every situation's choices and activity access. Dormant reuse is valid only within continuing authorization; rapid consecutive scenes need no routine access. Runtime unchanged. Next dependency remains exact-instance/shared-clock foundation using BC-04, then phase 2's authored-selection and joint follow-up/chain proof. The [small connected POC](../../technical/playthroughs/poc.md) now requires both quiet reselection and a scene-only run.
-- Reviewed baseline: `bd04686`; this pass changes documentation, not runtime. This feature owns work and authorization-filtered eligibility; autonomy owns accepted chains/follow-ups, never an independent source of options. Retained commitments, reusable local packages and chronology correction remain incomplete.
+- Current phase: implementation-ready A1 handoff; wait for the owner's model switch/continuation, then correct exact-instance/shared chronology using BC-04 and the bounded file map above. A2 now owns genuine wait/rule boundaries only. Situation authorization and follow-ups/queues have separate named owners; follow the feature index route rather than implementing the old oversized phase as one patch.
+- Reviewed baseline: `875f979`; documentation only. The [solo contract](../../technical/solo-gameplay-contract.md) selects tick quantization, collision order, independent holds and publication boundaries; [gold session](../../technical/playthroughs/harbor-session.md) is the connected target. Runtime work remains incomplete.
 - Verification: source/design inspection only; no builds/tests/runtime session or provider calls. Exact dice/timing in the atlas are illustrative fixture inputs. Existing integration coverage remains narrower than the full target flow.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.
