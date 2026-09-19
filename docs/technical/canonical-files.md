@@ -101,6 +101,8 @@ Capture the exact bundle revision in every task. Load the entry and relevant sec
 
 ## Agent working cycle
 
+The [bounded-cost contract](context-and-cost.md#bounded-work-not-an-open-ended-agent) governs this cycle. A document library is not an instruction to explore it on every turn. Use task-specific context and a small tool set; bounded metadata/sections first, no recursive library loading, no model call just to choose tools. Directory/section reads consume the same task-wide read/byte allowance as memory search. Compact role-specific records link to intact original prose instead of duplicating it. Maintenance thresholds do not authorize paid jobs. These controls are prepared requirements, not implemented runtime behavior.
+
 1. Capture the campaign's state/receipt fence, committed document-root revision, selected Storyteller bundle and viewer knowledge scope. Narrative sequence alone is insufficient while quiet work changes mechanics.
 2. Load bounded orientation, current exact state and the relevant current scene. Returning identities and open commitments supply automatic historical leads, even if the model does not think to search.
 3. Let the Storyteller list a permitted directory, search a topic, read sections and follow backlinks. Expose logical document operations through the bounded exploration protocol specified by the memory feature; no unrestricted shell or bucket credentials are necessary.

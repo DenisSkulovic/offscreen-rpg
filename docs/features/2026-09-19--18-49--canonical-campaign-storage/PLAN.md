@@ -10,6 +10,7 @@ Implementation owner: the coding agent assigned the next implementation turn; on
 - [Concepts](../../concepts.md) is authoritative. Published source unit = passage; memory segmentation is a storage policy. No chapters or required scene-ending operation.
 - [Canonical files](../../technical/canonical-files.md) owns the data contract: immutable objects, an immutable manifest, and a transactional published-root reference. Narrative bodies migrate to files; mechanical ledger state remains transactional.
 - Start with shared ignored local `data/` storage, configured explicitly for API/worker. Keep the adapter replaceable. No bucket provisioning or embedding selection is needed for C1.
+- [Bounded-cost recipes](../2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) constrain model-visible document reads and creative bundle assembly. Storage C1/C2 remains independently implementable; files do not authorize automatic summarization or recursive agent exploration.
 - Extend the single baseline migration and reset disposable saves per repository lifecycle rules. Remove replaced write paths rather than introduce permanent dual writes.
 
 ## C1 — Local document store and admitted revisions

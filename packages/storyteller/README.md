@@ -38,4 +38,6 @@ The present notes are also an always-loaded working set: each source passage is 
 
 ## Working safely and economically
 
+Prepared [bounded-cost work](../../docs/features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) adds task-specific recipes and whole-operation limits before memory exploration. Current `tasks/policy.ts` reserves configured input/output maxima; it does not yet model explicit reasoning/cache-write pricing or cumulative multi-round consumption. The provider captures total charge but not a detailed token/cache breakdown. Do not mistake the current request byte cap or no-fallback setting for complete economic coverage. Keep budget authority in the existing application ledger, and memory round execution in its owning feature.
+
 Live calls remain disabled under [spending rules](../../.agents/rules/spending.md). The provider adapter exists but a stored credential is not permission to dispatch. The existing [Storyteller test](test/storyteller.test.ts) uses injected fake transport; tests under `test/` consume compiled output. Read [verification policy](../../.agents/rules/verification.md) before choosing checks. Package commands and exports are listed in [package.json](package.json).

@@ -10,10 +10,11 @@ Implementation is active under the owner's instruction. Follow this route one co
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
 
-Current prepared work: read [concepts](../concepts.md), then [canonical files](../technical/canonical-files.md). Implement [canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md), starting C1, then [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) after storage C2. These are implementation features, not another proposal-review gate. The storage runtime is unchanged so far; the harbor/return flow remains the acceptance anchor.
+Current prepared work: read [concepts](../concepts.md) and the [bounded-cost contract](../technical/context-and-cost.md#bounded-work-not-an-open-ended-agent). Start [bounded-cost B1](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md), then B2 shared enforcement. [Canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md) C1/C2 remains independently ready, followed by [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md). Memory Phase 3 cannot precede B1/B2; cost B3 integrates with memory rather than creating a second runner. These are implementation features, not another proposal-review gate. Runtime is unchanged by this preparation; the harbor/return flow remains the acceptance anchor.
 
 | Feature | Phases | Ownership |
 | --- | --- | --- |
+| [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1 recipes/preflight → B2 durable envelope → B3 memory integration → B4 cost-quality evidence | Cumulative work/spending, small task-specific context/tools, safe stop/defer behavior |
 | [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |
 | [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | 1 context/provenance → 2 memory documents → 3 exploration → 4 return rehearsal; 5 local hybrid search once the corpus exists | Extraction, summaries, discovery and evidence-grounded turns |
 

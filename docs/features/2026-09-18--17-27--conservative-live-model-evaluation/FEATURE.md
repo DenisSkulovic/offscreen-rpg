@@ -20,6 +20,7 @@ All must pass immediately before dispatch:
 - trace storage and redaction preflight succeeds;
 - no unresolved uncertain attempt or unexplained balance change exists;
 - scripted dry run of the same case completes structurally.
+- [Bounded-cost B1/B2](../2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) captures and enforces the operation envelope, reasoning semantics, retransmitted input and worst applicable cold/cache-write charge; any maintenance also has an admitted allocation.
 
 A stored API key, selected model or previously authorized run does not satisfy these preconditions for another experiment.
 

@@ -3,7 +3,7 @@
 Feature: [Conservative live-model evaluation](FEATURE.md)
 Status: Proposed. No live provider call is authorized.
 
-Dependencies: QA journey/run contracts, trace completeness, existing persistent budget controls, and a playable task path worth evaluating.
+Dependencies: QA journey/run contracts, trace completeness, existing persistent budget controls extended by [bounded-cost B1/B2](../2026-09-19--19-08--bounded-storyteller-cost/PLAN.md), and a playable task path worth evaluating. Reuse its captured recipes/operation ledger and provider semantics rather than implement competing controls in the launcher.
 
 ## Phase 1 — Evaluation-run contract and preflight
 

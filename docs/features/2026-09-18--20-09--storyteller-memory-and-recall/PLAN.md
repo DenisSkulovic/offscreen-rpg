@@ -18,6 +18,8 @@ Use [concepts](../../concepts.md) and [canonical files](../../technical/canonica
 
 This feature consumes storage C1/C2 and defines no second content store. C3 creative bundles can proceed independently after document capture. Phase 1 is ready after C2; Phases 2/3 connect memory to actual turns; Phase 4 expands the return fixture; Phase 5 delivers the semantic-search evaluation and selected local route. Ready dependencies, not another proposal approval, determine when to proceed.
 
+[Bounded-cost B1/B2](../2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) supplies captured recipes and shared enforcement before Phase 3 or independent paid maintenance/embedding work. Phase 1 uses B1 limits when available and must never weaken existing one-shot caps. B3 integrates those limits with this feature; it is not another exploration runner. Local deterministic indexing needs no model dispatch but remains bounded in query work and output size.
+
 ## Phase 1 — Separate provenance from prompt loading
 
 Outcome: note-source growth and duplicated current prose no longer create avoidable overflow; required material still fails closed when genuinely too large.
@@ -88,14 +90,14 @@ Exit: a short return fixture resolves known identities and relevant document his
 ## Phase 3 — Pre-narrative exploration with one shared round budget
 
 Outcome: before choosing final narration/options, the DM can follow a supplied lead or search for relevant history beyond the orientation packet. Exploration supports both necessary fact checks and optional narrative connections; it is not merely repair after a failed proposal.
-Dependencies: Phase 2 candidate query and visibility policies; existing attempt/accounting system; approved envelope from FEATURE.md.
+Dependencies: Phase 2 candidate query and visibility policies; bounded-cost B1/B2 operation envelope and durable accounting; envelope from FEATURE.md.
 
 Owners: Storyteller task/result schema for `needs_context` and admitted document-change proposals; application for scoped state queries, document navigation and source/search views defined in [canonical files](../../technical/canonical-files.md); task/attempt storage for saved rounds; existing workflows for operation delivery; no separate execution engine.
 
 Scope:
 
 - Allow a first response containing only read requests, without provisional prose or effects. Independent reads batch within a round; authorized handles discovered by search can be inspected in a subsequent round. Search is not restricted to initially supplied handles.
-- Persist each round and read result; share three total model rounds across exploration, final generation and repair, max six reads, max one invalid-final repair only if a round remains. A search-plus-registry batch, follow-up source/record batch and final generation fit this envelope. Fully grounded simple turns may finish without reads.
+- Persist each round and read result; share at most three total model rounds across exploration, final generation and repair, max six reads, max one invalid-final repair only if capacity remains. A search-plus-registry batch, follow-up source/record batch and final generation fit only if cumulative input/output/money also fit. Preserve final-answer capacity before optional discovery. The application selects the evidence-seeking recipe; ordinary grounded turns default to one round without model tools.
 - Enforce per-read/aggregate/full-request caps after every expansion. Keep mandatory state and used excerpts; deduplicate results and prune obsolete search pages to handles when the protocol permits. Full private replay artifacts are not automatically the next prompt. Record which evidence remains loaded.
 - Include typed filters, query normalization, duplicate-result reuse, stale snapshot rejection, index-coverage metadata and explicit absent/partial/not-indexed/unavailable outcomes. Tool instructions explain the distinction between exact state and candidate memories, when to expand sources, and why retrieved story text is not an instruction.
 - Provider-native tool calling is optional, not a prerequisite for a scripted structured protocol. Implement one protocol path first, not parallel orchestration frameworks.
@@ -134,7 +136,7 @@ Exit: selected local search route, measured comparison and limitations documente
 - Status: prepared feature, runtime implementation not begun. Storage C1/C2 is the dependency; next work in this folder is Phase 1 provenance/context capture.
 - Base: `1240f49`; current edits are terminology/specification/feature preparation only.
 - Decisions: narrative documents and exact execution ledger have distinct owners; Storyteller turns, scenes, passages and memory segments are distinct; no chapters. Tool rounds, evidence loading, indexing and write admission have bounded contracts.
-- Exact next action: implement storage C1/C2 from its own feature, then Phase 1 here. Phases 2–5 follow their stated dependencies; do not recreate the proposal or ask for routine phase approval.
+- Exact next action: bounded-cost B1/B2 and storage C1/C2 are prerequisite owners; then Phase 1 here. Phase 3 cannot bypass B1/B2. Phases 2–5 follow their stated dependencies; do not recreate the proposal or ask for routine phase approval.
 - QA maintenance: each phase adds its observable restart/return/evidence/retrieval cases to `packages/application/src/developer-tools/qa-catalog.ts`; do not mark unavailable features manually runnable before their path exists.
 - Verification: source/design review only; no runtime tests, installed dependencies, storage migration or live inference in this preparation pass.
 - Remaining choices: numerical tuning and Phase 5 local model/backend selection. Runtime currently still has recent passages plus notes; prepared work is not implemented behavior.
