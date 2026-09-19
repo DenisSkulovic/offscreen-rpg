@@ -1,10 +1,50 @@
-import { campaign, campaignSettings } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  campaignSettings,
+  gameActivity,
+} from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { and, desc, eq, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import type { Transaction } from '../outbox/index';
+import {
+  activityProgressSchema,
+  resolvedActivityPlanSchema,
+} from '@offscreen/game/activities';
+import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
+
+function projectActivityProgress(plan: unknown, progress: unknown) {
+  const resolved = resolvedActivityPlanSchema.parse(plan);
+  const stored = activityProgressSchema.parse(progress).process;
+  if (resolved.action.process.kind === 'contribution.v1') {
+    if (stored.kind !== 'contribution.v1') {
+      throw new Error('Stored activity progress does not match its rule');
+    }
+    return {
+      action: resolved.action,
+      progress: {
+        kind: 'contribution' as const,
+        label: resolved.action.process.progressLabel,
+        earned: stored.earned,
+        required: resolved.action.process.requiredContribution,
+      },
+    };
+  }
+  if (stored.kind !== 'clock-wait.v1') {
+    throw new Error('Stored activity progress does not match its rule');
+  }
+  return {
+    action: resolved.action,
+    progress: {
+      kind: 'wait' as const,
+      label: resolved.action.process.progressLabel,
+      elapsedTicks: stored.elapsedTicks,
+      requiredTicks: resolved.action.process.requiredTicks,
+    },
+  };
+}
 
 /** Called inside admission while holding the story lock. No uncommitted future is evidence. */
 export async function loadStorytellerContext(
@@ -74,14 +114,68 @@ export async function loadStorytellerContext(
     })
     .from(storyItem)
     .where(eq(storyItem.storyId, input.storyId));
-  const [settingsRow] = await tx.select().from(campaign).where(eq(campaign.storyId, input.storyId));
-  const [captured] = settingsRow ? await tx.select({ settings: campaignSettings.settings })
-    .from(campaignSettings)
-    .where(and(eq(campaignSettings.storyId, input.storyId), eq(campaignSettings.revision, settingsRow.settingsRevision))) : [];
+  const [settingsRow] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, input.storyId));
+  const [captured] = settingsRow
+    ? await tx
+        .select({ settings: campaignSettings.settings })
+        .from(campaignSettings)
+        .where(
+          and(
+            eq(campaignSettings.storyId, input.storyId),
+            eq(campaignSettings.revision, settingsRow.settingsRevision),
+          ),
+        )
+    : [];
   if (settingsRow && !captured) {
     throw new Error('Missing captured campaign settings');
   }
+  const commitments = settingsRow
+    ? await tx
+        .select()
+        .from(gameActivity)
+        .where(eq(gameActivity.storyId, input.storyId))
+    : [];
+  const activitySituation = settingsRow
+    ? {
+        activityAccess: situationAuthorizationSchema.parse(
+          settingsRow.situationAuthorization,
+        ).activityAccess,
+        activeActivityId: settingsRow.activeActivityId,
+        commitments: commitments.flatMap((record) => {
+          if (
+            ![
+              'running',
+              'paused',
+              'suspended',
+              'blocked',
+              'encounter',
+              'completion-pending',
+            ].includes(record.state)
+          ) {
+            return [];
+          }
+          const projected = projectActivityProgress(
+            record.plan,
+            record.progress,
+          );
+          return [
+            {
+              activityId: record.id,
+              actionId: projected.action.id,
+              revision: record.revision,
+              state: record.state,
+              label: projected.action.label,
+              progress: projected.progress,
+            },
+          ];
+        }),
+      }
+    : undefined;
   return contextInputSchema.parse({
+    ...(activitySituation ? { activitySituation } : {}),
     ...(captured ? { campaignSettings: captured.settings } : {}),
     premise: input.premise,
     current,

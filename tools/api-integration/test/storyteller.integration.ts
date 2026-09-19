@@ -394,6 +394,35 @@ test(
               .from(gameActionReceipt)
               .where(eq(gameActionReceipt.operationId, encounterOperationId));
             assert.ok(receipt?.generationId);
+            const [capturedTask] = await database.db
+              .select({ input: generation.input })
+              .from(generation)
+              .where(eq(generation.id, receipt.generationId));
+            const task = storytellerTaskSchema.parse(capturedTask?.input);
+            assert.equal(task.task, 'consequence');
+            assert.equal(
+              task.context.activitySituation?.activeActivityId,
+              activityId,
+            );
+            assert.deepEqual(
+              task.context.activitySituation?.commitments.map((commitment) => ({
+                id: commitment.activityId,
+                state: commitment.state,
+                progress: commitment.progress,
+              })),
+              [
+                {
+                  id: activityId,
+                  state: 'encounter',
+                  progress: {
+                    kind: 'contribution',
+                    label: 'Beacon repair',
+                    earned: 3,
+                    required: 9,
+                  },
+                },
+              ],
+            );
             await runtime.complete(receipt.generationId);
             const afterNarration = await stories.read({
               ownerId,

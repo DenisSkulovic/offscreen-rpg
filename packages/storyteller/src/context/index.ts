@@ -10,6 +10,7 @@ import {
   passageContentSchema,
   storyItemsSchema,
 } from '@offscreen/contracts/stories';
+import { activityAccessSchema } from '@offscreen/game/immediate-actions';
 import { premiseContentSchema } from './premise';
 import { continuityNotesSchema } from './continuity';
 
@@ -23,6 +24,44 @@ export const evidencePassageSchema = z.strictObject({
   response: z.string().max(2000).nullable(),
 });
 export const contextInputSchema = z.strictObject({
+  activitySituation: z
+    .strictObject({
+      activityAccess: activityAccessSchema,
+      activeActivityId: z.uuid().nullable(),
+      commitments: z
+        .array(
+          z.strictObject({
+            activityId: z.uuid(),
+            actionId: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+            revision: z.number().int().nonnegative(),
+            state: z.enum([
+              'running',
+              'paused',
+              'suspended',
+              'blocked',
+              'encounter',
+              'completion-pending',
+            ]),
+            label: z.string().min(1).max(200),
+            progress: z.discriminatedUnion('kind', [
+              z.strictObject({
+                kind: z.literal('contribution'),
+                label: z.string().min(1).max(120),
+                earned: z.number().int().nonnegative(),
+                required: z.number().int().positive(),
+              }),
+              z.strictObject({
+                kind: z.literal('wait'),
+                label: z.string().min(1).max(120),
+                elapsedTicks: z.number().int().nonnegative(),
+                requiredTicks: z.number().int().positive(),
+              }),
+            ]),
+          }),
+        )
+        .max(20),
+    })
+    .optional(),
   mechanicalOpening: z
     .strictObject({
       id: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/),
@@ -76,6 +115,9 @@ export function contextPayload(context: StorytellerContext) {
     return `p${passage.sequence}`;
   };
   return {
+    ...(context.activitySituation
+      ? { activitySituation: context.activitySituation }
+      : {}),
     ...(context.mechanicalOpening
       ? {
           mechanicalOpening: {
