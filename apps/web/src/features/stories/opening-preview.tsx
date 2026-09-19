@@ -11,6 +11,10 @@ import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { paceOptions } from '@/src/features/play/campaign-play';
+import {
+  dispatchReviewResponseSchema,
+  type DispatchReviewView,
+} from '@offscreen/contracts/chamber';
 
 export function OpeningPreviewPanel({
   draft,
@@ -34,6 +38,8 @@ export function OpeningPreviewPanel({
   const [contentId, setContentId] = useState(initial?.contentId ?? '');
   const [locked, setLocked] = useState(false);
   const [pace, setPace] = useState('steady');
+  const [dispatchReview, setDispatchReview] =
+    useState<DispatchReviewView | null>(null);
   useEffect(() => {
     const parsed = z
       .uuid()
@@ -73,6 +79,19 @@ export function OpeningPreviewPanel({
             return;
           }
           setPreview(result.preview);
+          if (result.preview?.mode === 'provider') {
+            const reviewResponse = await fetch(
+              `/api/chamber-tools/generations/${result.preview.id}/dispatch-review`,
+              { cache: 'no-store', signal: controller.signal },
+            );
+            if (reviewResponse.ok) {
+              const captured = dispatchReviewResponseSchema.parse(
+                await reviewResponse.json(),
+              ).review;
+              setDispatchReview(captured);
+              if (captured.state === 'awaiting-review') return;
+            }
+          }
           if (
             !result.preview ||
             !['pending', 'running'].includes(result.preview.state)
@@ -327,6 +346,29 @@ export function OpeningPreviewPanel({
           {preview.state === 'failed' && <p>The previous request failed.</p>}
         </section>
       )}
+      {dispatchReview ? (
+        <section aria-label="Held provider request">
+          <h2>Held before provider dispatch</h2>
+          <p>
+            No provider request, reservation, or model charge has occurred. This
+            immutable packet is waiting for developer review.
+          </p>
+          <dl>
+            <dt>State</dt>
+            <dd>{dispatchReview.state}</dd>
+            <dt>Packet SHA-256</dt>
+            <dd><code>{dispatchReview.packetSha256}</code></dd>
+          </dl>
+          <details>
+            <summary>Structural inspection</summary>
+            <pre>{JSON.stringify(dispatchReview.inspection, null, 2)}</pre>
+          </details>
+          <details>
+            <summary>Exact credential-free provider body</summary>
+            <pre>{JSON.stringify(dispatchReview.packet, null, 2)}</pre>
+          </details>
+        </section>
+      ) : null}
       {canStart && preview?.storyteller ? (
         <fieldset disabled={starting || pending}>
           <legend>Campaign rules</legend>

@@ -1,5 +1,6 @@
 import { StorytellersController } from './modules/drafts/storytellers-controller.js';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
+import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import type { z } from 'zod';
 import type {
   qaEnvironmentSchema,
@@ -87,6 +88,7 @@ class AppModule {}
 export type CreateAppOptions = Readonly<{
   developerTools?: boolean;
   storytellerExecution?: ExecutionPolicy;
+  storytellerUsagePolicy?: EffectiveUsagePolicy | null;
   readCache?: ReadCache;
   closeCache?: () => Promise<void>;
   onCacheIncident?: (incident: CacheIncident) => void;
@@ -129,10 +131,11 @@ export async function createApp(
         { provide: DRAFTS, useValue: createDrafts(database) },
         {
           provide: OPENINGS,
-          useValue: createScriptedOpenings(
-            database,
-            options.storytellerExecution,
-          ),
+            useValue: createScriptedOpenings(
+              database,
+              options.storytellerExecution,
+              options.storytellerUsagePolicy,
+            ),
         },
         {
           provide: STORIES,

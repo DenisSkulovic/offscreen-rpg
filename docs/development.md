@@ -143,6 +143,8 @@ Choose a named scenario from the catalog (stable `chamber.vN` IDs remain the sto
 
 The command does not read `.env.openrouter`, never constructs the live provider adapter and makes no model calls. It is a developer launcher, not public visitor onboarding or the planned live-story POC. Build scripts and tests likewise do not enable inference.
 
+Run `pnpm chamber:packet` for the separate held-packet mode. Create and save a normal story draft, then generate its opening candidate. The normal opening path assembles the immutable Storyteller task and exact OpenRouter-shaped JSON body, but a mandatory durable hold stops execution before funding reservation, provider construction or network I/O. The opening page exposes the hash, structural byte inspection and credential-free packet through a developer-only endpoint. This mode deliberately uses `dry-run/model-not-selected` with zero placeholder prices: it is for inspecting prompt composition, schema and context boundaries, not evidence that a commercial model or price was selected. It does not read `.env.openrouter`, and no release control is exposed.
+
 ## Profiled storyteller rehearsal
 
 Run `pnpm chamber` for the authenticated local launcher, then navigate to `/stories`. Create a draft, select either storyteller, and use a premise such as “I am SpongeBob waking in the pineapple with Gary.” Save, review/generate the opening and Start. Choose offered actions, pause/resume the 20-second quick-play journey, read saved passages and reopen through the Stories list. This is an authored offline rehearsal; arbitrary premises are not improvised. Storyteller profiles are JSON in `packages/storyteller/src/profiles/definitions/`, separate from rehearsal scenes.

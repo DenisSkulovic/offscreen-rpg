@@ -7,6 +7,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
+import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { createOpenings } from './openings';
 import {
   playablePresentation,
@@ -14,6 +15,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { enqueue } from '../outbox/index';
 import { validId, GenerationError } from './service';
+import { createDispatchReviewControls } from '../storyteller/dispatch-review';
 export { OpeningInputError } from '@offscreen/storyteller/tasks';
 
 // Versioned, deterministic sample. Keep this kind stable for recovery of admitted work.
@@ -59,8 +61,10 @@ export const scriptedOpeningPresentation = {
 export function createScriptedOpenings(
   database: Database,
   execution: ExecutionPolicy = offlineExecution,
+  usagePolicy?: EffectiveUsagePolicy | null,
 ) {
-  const profiled = createStorytellerOpenings(database, execution);
+  const profiled = createStorytellerOpenings(database, execution, usagePolicy);
+  const dispatchReviews = createDispatchReviewControls(database);
   const operations = createOpenings(database, kind, (tx, id) =>
     enqueue(tx, { id, operationId: id, topic: scriptedOpeningTopic }),
   );
@@ -87,6 +91,10 @@ export function createScriptedOpenings(
     };
   };
   return {
+    /** Raw provider material is exposed only through a developer-tools adapter. */
+    dispatchReview(ownerId: string, generationId: string) {
+      return dispatchReviews.read(ownerId, generationId);
+    },
     catalogue() {
       return profiled.catalogue();
     },

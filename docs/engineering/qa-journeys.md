@@ -19,7 +19,7 @@ The catalogue contains:
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.
-- exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. The private inspector can read the active resolution's exact packet and structural evidence; the case remains unavailable for manual QA until release/reject controls land.
+- exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` can now exercise an actual pre-story opening and inspect the raw credential-free packet while release remains unavailable. The formal QA case remains unavailable until its guided evidence capture and reject/rebuild controls land.
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
@@ -58,6 +58,8 @@ The API is mounted only when `developerTools` is enabled. The production story A
 Launch `pnpm chamber` and open `/chamber`. The QA workspace lists every journey and explains why unavailable work is blocked. It stores the last run UUID in local browser storage so a reload resumes the durable database record. Operators can record stage observations, artifact references and anchored ratings, finalize early as inconclusive or defective, then export a standalone evidence bundle. Starting again clears only the local pointer; it never deletes or rewrites the prior run.
 
 Run `pnpm chamber:review` for a headless, authenticated visual pass over the mechanical pineapple opening and first live scene. It writes wide and narrow full-page screenshots to the temporary `offscreen-rpg-review` directory reported by the command. The images are disposable evidence and are not committed; the flow uses the normal API, worker and persistence boundaries with offline fixtures only.
+
+Run `pnpm chamber:packet` for manual opening-prompt inspection. Verify the page says `awaiting-review`, reports the immutable SHA-256 and displays both structural contribution data and the exact provider body. Confirm there is no release control, no attempt/accounting row and no provider request. Review system instructions, Storyteller-specific guidance, premise/current facts, output schema and per-section bytes before proposing prompt changes; a small packet is not automatically a sufficient packet, and a large schema is not automatically narrative noise.
 
 The same case IDs, stage IDs and commands support browser automation. Automation should record structural evidence only. Human-judgment stages remain for an operator even when surrounding navigation and state assertions are automated.
 

@@ -12,7 +12,10 @@
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
+    "@offscreen/application": "workspace:*",
+    "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/storyteller": "workspace:*",
     "@offscreen/web": "workspace:*",
     "@offscreen/worker": "workspace:*",
     "better-auth": "1.7.5",

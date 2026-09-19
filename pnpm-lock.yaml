@@ -363,9 +363,18 @@ importers:
       '@offscreen/api':
         specifier: workspace:*
         version: link:../../apps/api
+      '@offscreen/application':
+        specifier: workspace:*
+        version: link:../../packages/application
+      '@offscreen/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/storyteller':
+        specifier: workspace:*
+        version: link:../../packages/storyteller
       '@offscreen/web':
         specifier: workspace:*
         version: link:../../apps/web

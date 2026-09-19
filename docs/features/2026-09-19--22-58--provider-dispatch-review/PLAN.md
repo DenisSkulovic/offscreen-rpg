@@ -17,7 +17,7 @@ Exit: restart and duplicate delivery cannot bypass a hold; release of stale/rebu
 
 ## D3 — Chamber packet laboratory
 
-Status: active. The existing private story inspector now renders review state/hash/timestamps, structural inspection and the exact credential-free body for the active resolution. Add dedicated provenance/contribution presentation, stable diagnostics, rebuild/reject/release controls and packet-to-packet diff. Keep raw content collapsed and exclude secrets. Integrate a dry-run QA journey whose accounting is verified zero.
+Status: active. The existing private story inspector renders review evidence for active resolutions. Chamber also provisions opening generation with a deliberately unpriced, model-unselected provider route in mandatory hold mode and exposes the pre-story packet through a developer-only endpoint on the ordinary opening-preview journey. Add dedicated provenance/contribution presentation, stable diagnostics, rebuild/reject/release controls and packet-to-packet diff. Keep raw content collapsed and exclude secrets. Integrate a dry-run QA journey whose accounting is verified zero.
 
 Exit: a developer can improve a packet through inspect → change → rebuild → compare without provider I/O.
 
@@ -29,7 +29,8 @@ Exit: one eventual charged call yields a complete decision-quality evidence bund
 
 ## Current checkpoint
 
-- Phase: D1 complete; D2 core complete. Exact packet artifacts persist before accounting, held worker delivery cannot publish or reserve, and release/reject/supersede decisions are durable and hash-scoped. The focused fake-provider integration passes: awaiting review causes zero attempts/calls, then one explicit release permits exactly one dispatch through existing accounting.
-- Next: expose release/reject through developer-only Chamber routes with conspicuous exact-packet confirmation and add freshness/blocker diagnostics. Read-only packet evidence is already present in the private story inspector; ordinary product routes must not gain these controls.
+- Phase: D1 complete; D2 core complete; D3 opening laboratory usable. `pnpm chamber:packet` exercised a genuine premise/profile opening through the production preparation and worker boundaries. It persisted `awaiting-review` before reservation/attempt/provider construction and exported the developer-only packet. First evidence: 7,097 serialized bytes, including 1,647 system-message bytes, 1,358 user-message bytes and 3,663 output-schema bytes; application-model spend remained $0.
+- Inspection findings: the profile contributes 1,045 useful bytes; empty opening context is small. The generic opening schema unnecessarily includes arrival-note machinery and note evidence requirements that cannot be satisfied from a first passage. More importantly, arbitrary-premise openings can offer narrative choices but cannot author the richer activity/action-plan opportunity contract currently limited to authored mechanical seeds. The base prompt correctly withholds mechanical authority and does not need a copied or externally referenced D&D rulebook, but it underspecifies the game's deliberate-time/activity rhythm.
+- Next: create an opening-specific result contract that removes inapplicable arrival/evidence machinery, then decide how generated openings author mechanically admissible opportunities without granting the model authority to invent rules. Compare the rebuilt packet hash and byte contributions before considering reject/release controls. Do not expose release until a priced route, funding preflight and explicit one-call authorization are deliberately configured.
 - Dependencies: existing immutable Storyteller task, B1/B2 authority/accounting and developer-only Chamber. D2 must reuse `budget.reserve/dispatch`; it cannot create a parallel money path.
 - Spend: no provider calls are authorized or required; expected application-model spend is $0.
