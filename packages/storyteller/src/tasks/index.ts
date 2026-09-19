@@ -87,8 +87,34 @@ export const storytellerOutputSchema = z.union([
   storytellerReportResultSchema,
 ]);
 // Provider guidance and local parsing share the same task-specific structural contract.
+const openingProviderResultSchema = z.strictObject({
+  version: z.literal(1),
+  scene: playableProposalSchema,
+});
+const mechanicalOpeningProviderResultSchema = z.strictObject({
+  version: z.literal(1),
+  scene: mechanicalOpeningSceneSchema,
+});
+function parseOpeningProviderResult(
+  output: unknown,
+  schema:
+    | typeof openingProviderResultSchema
+    | typeof mechanicalOpeningProviderResultSchema,
+) {
+  const stored = storytellerResultSchema.safeParse(output);
+  if (stored.success) {
+    if (stored.data.currentNotes.length || stored.data.arrivalNotes.length) {
+      throw new Error('Opening cannot write continuity notes');
+    }
+    return schema.parse({
+      version: stored.data.version,
+      scene: stored.data.scene,
+    });
+  }
+  return schema.parse(output);
+}
 const resultSchemas = {
-  opening: storytellerResultSchema.extend({ scene: playableProposalSchema }),
+  opening: openingProviderResultSchema,
   continuation: storytellerResultSchema.extend({
     scene: continuationResultSchema,
   }),
@@ -98,10 +124,6 @@ const resultSchemas = {
   }),
   report: storytellerReportResultSchema,
 };
-const mechanicalOpeningResultSchema = storytellerResultSchema.extend({
-  scene: mechanicalOpeningSceneSchema,
-  arrivalNotes: continuityPatchSchema.max(0),
-});
 const common = {
   inputVersion: z.literal(5),
   promptVersion: z.literal('storyteller.v1'),
@@ -184,8 +206,8 @@ Follow the task-specific opportunity contract. Labels must honestly communicate 
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
 Do not change typed possessions, grant rewards, invent authoritative effects, clocks, real deadlines or executable content.
-Return plain-text prose, no HTML. Use concise readable passages.
-Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
+Return plain-text prose, no HTML. Use concise readable passages.`;
+const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
 passage handles or current/arrival. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
 Arrival is a private future: its prose, knowledge and note changes are not true until the interval completes.`;
@@ -217,7 +239,10 @@ function requestFor(
   }
   return {
     messages: [
-      { role: 'system' as const, content: `${rules}\n${taskRules}` },
+      {
+        role: 'system' as const,
+        content: `${rules}${input.task === 'opening' || input.task === 'report' ? '' : `\n${continuityRules}`}\n${taskRules}`,
+      },
       {
         role: 'user' as const,
         content: JSON.stringify({
@@ -237,7 +262,7 @@ function requestFor(
     ] as const,
     outputSchema: z.toJSONSchema(
       input.task === 'opening' && context.mechanicalOpening
-        ? mechanicalOpeningResultSchema
+        ? mechanicalOpeningProviderResultSchema
         : resultSchemas[input.task],
     ),
   };
@@ -316,20 +341,23 @@ export function validateStorytellerResult(
   task: StorytellerTask,
   output: unknown,
 ): StorytellerOutput {
-  const result = (
-    task.task === 'opening' && task.context.mechanicalOpening
-      ? mechanicalOpeningResultSchema
-      : resultSchemas[task.task]
-  ).parse(output);
   if (task.task === 'report') {
-    if (!('report' in result)) {
-      throw new Error('Invalid historical report');
-    }
-    return result;
+    return storytellerReportResultSchema.parse(output);
   }
-  if (!('scene' in result)) {
-    throw new Error('Scene task returned a historical report');
-  }
+  // An opening has no earlier passage handles or private arrival. Normalize the
+  // lean provider contract into the stable stored result used by publication.
+  const result: StorytellerResult = task.task === 'opening'
+    ? storytellerResultSchema.parse({
+          ...(task.context.mechanicalOpening
+            ? parseOpeningProviderResult(
+                output,
+                mechanicalOpeningProviderResultSchema,
+              )
+            : parseOpeningProviderResult(output, openingProviderResultSchema)),
+          currentNotes: [],
+          arrivalNotes: [],
+        })
+    : storytellerResultSchema.parse(resultSchemas[task.task].parse(output));
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
     const keys =

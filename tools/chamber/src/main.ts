@@ -16,8 +16,8 @@ import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
 import { resolveEffectiveUsagePolicy } from '@offscreen/application/storyteller';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import { latestOpeningSchema } from '@offscreen/contracts/openings';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
+import { draftSchema } from '@offscreen/contracts/drafts';
 import { authOptions, createAuth } from '@offscreen/api/auth';
 import { stopChamberResources } from './stop.js';
 
@@ -263,6 +263,82 @@ try {
     },
     () => {},
   );
+  if (packetReview) {
+    const cookie = sessionCookiesFromLogin(
+      login.headers.get('cookie'),
+      origin,
+    )
+      .map(({ name, value }) => `${name}=${value}`)
+      .join('; ');
+    const apiOrigin = 'http://127.0.0.1:3001';
+    const draftId = crypto.randomUUID();
+    const generationId = crypto.randomUUID();
+    const request = async (path: string, init?: RequestInit) => {
+      const response = await fetch(`${apiOrigin}${path}`, {
+        ...init,
+        headers: {
+          cookie,
+          origin,
+          ...(init?.body ? { 'content-type': 'application/json' } : {}),
+          ...init?.headers,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Packet-review API failed: ${response.status} ${path}`);
+      }
+      return response.json();
+    };
+    const draft = draftSchema.parse(
+      await request(`/api/drafts/${draftId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          expectedRevision: 0,
+          storyteller: { id: 'quiet-eerie-mystery', revision: 1 },
+          title: '',
+          premise:
+            'I am a newly arrived prisoner in Seyda Neen. I have little money, no local standing, and want to reach Balmora without the world waiting passively for me.',
+          storytellingDirection: '',
+        }),
+      }),
+    );
+    await request(`/api/drafts/${draftId}/openings/${generationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ expectedRevision: draft.revision }),
+    });
+    let captured: unknown;
+    for (let read = 0; read < 30; read++) {
+      const response = await fetch(
+        `${apiOrigin}/api/chamber-tools/generations/${generationId}/dispatch-review`,
+        { headers: { cookie, origin } },
+      );
+      if (response.ok) {
+        captured = dispatchReviewResponseSchema.parse(await response.json());
+        break;
+      }
+      await delay(200);
+    }
+    if (!captured) throw new Error('Held packet was not captured');
+    const accounting = await database.db.$client.query(
+      'SELECT (SELECT count(*) FROM storyteller_attempt WHERE generation_id = $1) AS attempts, (SELECT count(*) FROM storyteller_dispatch_review WHERE generation_id = $1 AND state = $2) AS held',
+      [generationId, 'awaiting-review'],
+    );
+    if (
+      accounting.rows[0]?.attempts !== '0' ||
+      accounting.rows[0]?.held !== '1'
+    ) {
+      throw new Error('Held packet unexpectedly reached provider accounting');
+    }
+    const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-packet-review');
+    await mkdir(evidenceDirectory, { recursive: true });
+    const evidencePath = join(evidenceDirectory, 'opening-request.json');
+    await writeFile(evidencePath, `${JSON.stringify(captured, null, 2)}\n`, {
+      encoding: 'utf8',
+      flag: 'w',
+    });
+    console.log(
+      `API-only held opening packet saved to ${evidencePath}. Verified: awaiting review, zero provider attempts. Model spend: $0; no browser, provider call or reservation.`,
+    );
+  } else {
   web = spawn(
     process.execPath,
     [
@@ -319,52 +395,7 @@ try {
   await page.goto(`${origin}/chamber`);
   await page.getByRole('button', { name: 'Start scripted chamber' }).waitFor();
   await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
-  if (packetReview) {
-    await page.goto(`${origin}/stories/new`);
-    await page
-      .getByLabel('Choose your storyteller')
-      .selectOption('quiet-eerie-mystery/1');
-    await page
-      .getByLabel('Who are you, and where does this begin?')
-      .fill(
-        'I am a newly arrived prisoner in Seyda Neen. I have little money, no local standing, and want to reach Balmora without the world waiting passively for me.',
-      );
-    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-    await page
-      .getByRole('link', { name: 'Review opening candidate' })
-      .click();
-    await page
-      .getByRole('button', { name: 'Generate opening candidate', exact: true })
-      .click();
-    await page
-      .getByRole('heading', { name: 'Held before provider dispatch' })
-      .waitFor({ timeout: 30000 });
-    const draftId = new URL(page.url()).pathname.split('/')[2];
-    if (!draftId) throw new Error('Missing packet-review draft identity');
-    const latest = latestOpeningSchema.parse(
-      await context.request
-        .get(`${origin}/api/drafts/${draftId}/openings/latest`)
-        .then((response) => response.json()),
-    );
-    if (!latest.preview) throw new Error('Missing held opening');
-    const captured = dispatchReviewResponseSchema.parse(
-      await context.request
-        .get(
-          `${origin}/api/chamber-tools/generations/${latest.preview.id}/dispatch-review`,
-        )
-        .then((response) => response.json()),
-    );
-    const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-packet-review');
-    await mkdir(evidenceDirectory, { recursive: true });
-    const evidencePath = join(evidenceDirectory, 'opening-request.json');
-    await writeFile(evidencePath, `${JSON.stringify(captured, null, 2)}\n`, {
-      encoding: 'utf8',
-      flag: 'w',
-    });
-    console.log(
-      `Held opening packet saved to ${evidencePath}. Browser remains open for inspection. Model spend: $0; no provider calls, reservations or attempts.`,
-    );
-  } else if (review) {
+  if (review) {
     const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
     await mkdir(evidenceDirectory, { recursive: true });
     await page.goto(`${origin}/stories/new`);
@@ -470,6 +501,7 @@ try {
         }
       }),
     ]);
+  }
   }
 } finally {
   await stop();

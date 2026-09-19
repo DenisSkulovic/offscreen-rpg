@@ -38,6 +38,8 @@ Name every new feature folder `YYYY-MM-DD--HH-mm--feature-name`, using the repos
 
 Checks are optional throughout the current POC lifecycle. Default to fast, coherent vertical implementation slices without routine verification commands; do not chase green results or polish minor issues ahead of a connected playable experience. Follow [Verification](verification.md), which overrides stricter check requirements in plans or engineering guidance. Keep this policy until the owner explicitly changes it.
 
+For backend development during the pre-POC/POC stage, prefer application operations, authenticated HTTP endpoints and direct artifact/state inspection. Do not launch or visually drive the web UI merely to exercise backend behavior; browser and screenshot work is reserved for explicitly requested UI work or deliberate human-experience QA. If an important backend journey is inconvenient without the UI, improve its endpoint/test harness instead of making browser automation the default.
+
 ## Roles, handoffs and cost
 
 The owner's preferred division is Codex for investigation, product/technical design and review; Cursor for bulk coding and refactoring. Prepare actionable phases instead of starting a large implementation pass in Codex without being asked. Do not launch another task, agent or subscription/model switch automatically.
