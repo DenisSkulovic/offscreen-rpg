@@ -29,7 +29,7 @@ import { rollSchema } from '@offscreen/game/checks';
 import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
-import { holdCampaignForStoryteller } from './holds';
+import { transitionStorytellerIntentToGeneration } from './holds';
 
 export const campaignConsequenceTopic = 'campaign.consequence.v1';
 
@@ -165,9 +165,10 @@ async function admitActionNarration(
       operationId: receipt.operationId,
     },
   });
-  await holdCampaignForStoryteller(
+  await transitionStorytellerIntentToGeneration(
     tx,
     state,
+    receipt.operationId,
     generationId,
     await readDatabaseClockMs(tx, current.id),
   );
@@ -263,9 +264,10 @@ async function admitConsequenceNarration(
       operationId: receipt.operationId,
     },
   });
-  await holdCampaignForStoryteller(
+  await transitionStorytellerIntentToGeneration(
     tx,
     state,
+    receipt.operationId,
     id,
     await readDatabaseClockMs(tx, current.id),
   );

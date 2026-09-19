@@ -50,7 +50,10 @@ import {
   acceptedActivityPlanSchema,
   readAcceptedActivityPlan,
 } from './accepted-plans';
-import { campaignClockHeld } from './holds';
+import {
+  campaignClockHeld,
+  holdCampaignForStorytellerIntent,
+} from './holds';
 import { campaignActivityTopic } from './topics';
 
 export { campaignActivityTopic } from './topics';
@@ -531,6 +534,12 @@ export async function settleActivity(
     );
   }
   if (nextState !== 'running' && !nonControllingCompletion) {
+    settledCampaign = await holdCampaignForStorytellerIntent(
+      tx,
+      settledCampaign,
+      activity.id,
+      now,
+    );
     await requestConsequenceNarration(tx, nextStory, {
       passageId,
       operationId: activity.id,

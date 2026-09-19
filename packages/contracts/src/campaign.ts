@@ -163,6 +163,11 @@ export const campaignViewSchema = z.strictObject({
   holds: z.array(
     z.discriminatedUnion('kind', [
       z.strictObject({
+        kind: z.literal('storyteller-intent'),
+        operationId: z.uuid(),
+        reason: z.literal('required-turn'),
+      }),
+      z.strictObject({
         kind: z.literal('storyteller'),
         generationId: z.uuid(),
         reason: z.literal('required-turn'),

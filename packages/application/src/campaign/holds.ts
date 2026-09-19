@@ -7,6 +7,11 @@ import type { CampaignRecord } from './persistence';
 
 export const campaignHoldSchema = z.discriminatedUnion('kind', [
   z.strictObject({
+    kind: z.literal('storyteller-intent'),
+    operationId: z.uuid(),
+    reason: z.literal('required-turn'),
+  }),
+  z.strictObject({
     kind: z.literal('storyteller'),
     generationId: z.uuid(),
     reason: z.literal('required-turn'),
@@ -24,9 +29,11 @@ export const campaignHoldsSchema = z
     (holds) =>
       new Set(
         holds.map((hold) =>
-          hold.kind === 'storyteller'
-            ? `storyteller:${hold.generationId}`
-            : `decision:${hold.offerId}`,
+          hold.kind === 'storyteller-intent'
+            ? `storyteller-intent:${hold.operationId}`
+            : hold.kind === 'storyteller'
+              ? `storyteller:${hold.generationId}`
+              : `decision:${hold.offerId}`,
         ),
       ).size === holds.length,
     'Campaign hold owners must be unique',
@@ -38,6 +45,82 @@ export const campaignHoldsSchema = z
 
 export function campaignClockHeld(state: CampaignRecord) {
   return campaignHoldsSchema.parse(state.holds).length > 0;
+}
+
+/**
+ * Own the required-turn freeze in the transaction that creates its durable
+ * preparation request. The worker later transfers this exact owner to a
+ * generation; it never creates the first hold asynchronously.
+ */
+export async function holdCampaignForStorytellerIntent(
+  tx: Transaction,
+  state: CampaignRecord,
+  operationId: string,
+  now: number,
+) {
+  const holds = campaignHoldsSchema.parse(state.holds);
+  if (
+    holds.some(
+      (hold) =>
+        hold.kind === 'storyteller-intent' &&
+        hold.operationId === operationId,
+    )
+  ) {
+    return state;
+  }
+  const projected = projectCampaignClock(
+    state,
+    now,
+    { kind: 'none' },
+    holds.length > 0,
+  ).clock;
+  const nextHolds = campaignHoldsSchema.parse([
+    ...holds,
+    { kind: 'storyteller-intent', operationId, reason: 'required-turn' },
+  ]);
+  await tx
+    .update(campaign)
+    .set({ clock: projected, clockAnchorAt: new Date(now), holds: nextHolds })
+    .where(eq(campaign.storyId, state.storyId));
+  return {
+    ...state,
+    clock: projected,
+    clockAnchorAt: new Date(now),
+    holds: nextHolds,
+  };
+}
+
+/** Transfer a saved preparation intent to the exact admitted generation. */
+export async function transitionStorytellerIntentToGeneration(
+  tx: Transaction,
+  state: CampaignRecord,
+  operationId: string,
+  generationId: string,
+  now: number,
+) {
+  const holds = campaignHoldsSchema.parse(state.holds);
+  const ownsIntent = holds.some(
+    (hold) =>
+      hold.kind === 'storyteller-intent' && hold.operationId === operationId,
+  );
+  if (!ownsIntent) {
+    throw new Error('Required Storyteller intent does not own the campaign hold');
+  }
+  const nextHolds = campaignHoldsSchema.parse([
+    ...holds.filter(
+      (hold) =>
+        !(
+          hold.kind === 'storyteller-intent' &&
+          hold.operationId === operationId
+        ),
+    ),
+    { kind: 'storyteller', generationId, reason: 'required-turn' },
+  ]);
+  await tx
+    .update(campaign)
+    .set({ clockAnchorAt: new Date(now), holds: nextHolds })
+    .where(eq(campaign.storyId, state.storyId));
+  return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
 }
 
 /** Publication transfers the freeze from model work to the offered player choice. */
@@ -88,44 +171,4 @@ export async function consumeCampaignDecisionHold(
     .set({ clockAnchorAt: new Date(now), holds: nextHolds })
     .where(eq(campaign.storyId, state.storyId));
   return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
-}
-
-/** Freeze at database time without discarding already-earned clock progress. */
-export async function holdCampaignForStoryteller(
-  tx: Transaction,
-  state: CampaignRecord,
-  generationId: string,
-  now: number,
-) {
-  const holds = campaignHoldsSchema.parse(state.holds);
-  if (
-    holds.some(
-      (hold) =>
-        hold.kind === 'storyteller' && hold.generationId === generationId,
-    )
-  )
-    return state;
-  // Required narration begins after its mechanical source boundary. Do not
-  // infer permission from a dangling activity pointer while installing the
-  // hold; the settlement operation has already anchored accepted progress.
-  const projected = projectCampaignClock(
-    state,
-    now,
-    { kind: 'none' },
-    holds.length > 0,
-  ).clock;
-  const nextHolds = campaignHoldsSchema.parse([
-    ...holds,
-    { kind: 'storyteller', generationId, reason: 'required-turn' },
-  ]);
-  await tx
-    .update(campaign)
-    .set({ clock: projected, clockAnchorAt: new Date(now), holds: nextHolds })
-    .where(eq(campaign.storyId, state.storyId));
-  return {
-    ...state,
-    clock: projected,
-    clockAnchorAt: new Date(now),
-    holds: nextHolds,
-  };
 }

@@ -61,6 +61,7 @@ The worker's [dispatch table](../../apps/worker/src/outbox/dispatch.ts) and [Act
 - Narrative option resolution enters [stories/resolution](src/stories/resolution.ts), while mechanical selection enters `campaign/actions.ts`. Trace the endpoint before assuming they share one adjudication path.
 - Narrative prepared waits in [stories/timing](src/stories/timing.ts) and mechanical processes in `campaign/activities.ts` are distinct paths. A narrative wait reaches an already prepared passage. A mechanical clock-wait rule applies admitted completion effects after eligible simulation ticks, while contribution completes only from rule-owned earned progress. Do not collapse these into a generic duration.
 - Campaign-clock projection requires an explicit accepted execution identity. An absent hold is not permission to advance, and a stale/dormant activity pointer cannot expose a due time or donate idle wall time when new work starts.
+- A required mechanical Storyteller turn is frozen by its durable action/activity operation in the transaction that requests preparation. Worker admission transfers that hold to the exact generation; it never creates the initial freeze after an asynchronous gap.
 - QA cases in [qa-catalog](src/developer-tools/qa-catalog.ts) are instructions/evidence requirements; [qa-journeys](src/developer-tools/qa-journeys.ts) stores manual run records. They are not a fleet of automatic QA agents.
 
 ## Contracts and continuation point

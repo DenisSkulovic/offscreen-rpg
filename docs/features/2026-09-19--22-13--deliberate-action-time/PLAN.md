@@ -5,7 +5,7 @@ Execution scope: the owner's time/choice clarification selects the product direc
 
 ## T1 — Explicit permission for clock advancement
 
-Status: active. The explicit activity-identity gate and idle-start reanchor are implemented; terminal/horizon clamping and intent-owned preparation holds remain. Depends on current campaign clock/holds; does not depend on storage/memory work.
+Status: active. The explicit activity-identity gate, idle-start reanchor and durable intent → generation → decision hold ownership are implemented. Terminal/horizon evidence and visible preparation-failure projection remain. Depends on current campaign clock/holds; does not depend on storage/memory work.
 Outcome: an idle campaign cannot drift, and a durable preparation intent closes the command-to-worker gap. Existing activities still advance under accepted terms.
 
 Owners: game `time.ts`; application `campaign/clock.ts`, `activities.ts`, `holds.ts`, `actions.ts`, `narration.ts`, `controls.ts`, `settings.ts`, `accepted-plans.ts`, `reads.ts`; Storyteller publication; campaign schema/contracts and minimal play status. Inspect these callers before changing signatures; absence of a hold must no longer imply permission to run.
@@ -56,8 +56,8 @@ Acceptance: two-second and thirty-second fake-provider completion for the same f
 
 ## Current checkpoint
 
-- Phase: T1 active. Clock projection requires an explicit accepted activity identity; new activity admission passes no prior execution and reanchors from the settled frontier; read estimates require the active pointer. Exact next action is clamping terminal/horizon stops, then moving the required-turn hold to the durable preparation intent before generation admission. Calendar/world-time K1/K2 remains after T2 and before overlap acceptance for timed stories.
+- Phase: T1 active. Clock projection requires an explicit accepted activity identity; new activity admission passes no prior execution and reanchors from the settled frontier; read estimates require the active pointer. Required narration installs an operation-owned hold with its durable request and atomically transfers it to the admitted generation, then the existing publication path transfers it to the decision. Exact next action is focused terminal/horizon and preparation-failure evidence, followed by T2 finite actions. Calendar/world-time K1/K2 remains after T2 and before overlap acceptance for timed stories.
 - Reviewed base: `657e476`, clean working tree before this implementation slice. No schema change or database reset is required for the eligibility gate.
-- Evidence: source trace of every `projectCampaignClock` caller and the due-time projection. A focused TypeScript build is the intended narrow check; no runtime/manual evidence yet, so the QA case remains unavailable.
+- Evidence: source trace of every `projectCampaignClock` caller, due-time projection and action/activity consequence admission; contracts, application and integration packages compile. The focused scripted mechanical-loop case passes and asserts operation-owned intent before generation transfer across three consequences. This is deterministic lifecycle evidence, not manual rhythm/timing evidence; the deliberate-time QA journey remains unavailable.
 - Remaining limits: general combat scheduling, shared-world clocks and timed default actions remain separate work. T3 is a real change to pending versus committed evidence and cannot be reduced to hiding an already-committed result in the UI.
 - Spend: $0 application-provider calls; cumulative account usage unverified.

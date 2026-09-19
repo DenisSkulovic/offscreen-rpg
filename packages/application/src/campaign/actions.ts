@@ -41,7 +41,11 @@ import {
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
 import { projectCampaignClock } from './clock';
-import { campaignClockHeld, consumeCampaignDecisionHold } from './holds';
+import {
+  campaignClockHeld,
+  consumeCampaignDecisionHold,
+  holdCampaignForStorytellerIntent,
+} from './holds';
 import {
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
@@ -421,6 +425,12 @@ export function createCampaignActions(database: Database) {
         })
         .where(eq(campaign.storyId, current.id));
       await saveCommand(tx, current.id, args.operationId, request);
+      await holdCampaignForStorytellerIntent(
+        tx,
+        selectedState,
+        args.operationId,
+        selectionNow,
+      );
       await requestActionNarration(tx, args.operationId);
     });
   };

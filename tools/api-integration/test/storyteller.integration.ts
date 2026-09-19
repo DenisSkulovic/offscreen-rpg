@@ -282,6 +282,13 @@ test(
                 committed.campaign?.actionReceipts[0]?.state,
                 'pending',
               );
+              assert.deepEqual(committed.campaign?.holds, [
+                {
+                  kind: 'storyteller-intent',
+                  operationId,
+                  reason: 'required-turn',
+                },
+              ]);
 
               await storyService.prepareCampaignConsequence(operationId);
               const [receipt] = await database.db
