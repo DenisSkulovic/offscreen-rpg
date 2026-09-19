@@ -282,12 +282,24 @@ test(
                 .from(gameActionReceipt)
                 .where(eq(gameActionReceipt.operationId, operationId));
               assert.ok(receipt?.generationId);
+              const held = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.deepEqual(held.campaign?.holds, [
+                {
+                  kind: 'storyteller',
+                  generationId: receipt.generationId,
+                  reason: 'required-turn',
+                },
+              ]);
               await runtime.complete(receipt.generationId);
               snapshot = await stories.read({
                 ownerId,
                 storyId: started.storyId,
               });
               assert.equal(snapshot.revision, round + 2);
+              assert.deepEqual(snapshot.campaign?.holds, []);
               assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
               assert.equal(
                 snapshot.campaign?.actionReceipts[0]?.state,

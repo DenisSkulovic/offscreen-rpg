@@ -34,6 +34,7 @@ import {
   projectAcceptedActivityPlan,
   readAcceptedActivityPlan,
 } from './accepted-plans';
+import { campaignHoldsSchema } from './holds';
 
 function actionReceiptState(
   generationId: string | null,
@@ -68,6 +69,7 @@ export async function readCampaign(
     return null;
   }
   const state = row.campaign;
+  const holds = campaignHoldsSchema.parse(state.holds);
   const activities = await db
     .select()
     .from(gameActivity)
@@ -158,7 +160,7 @@ export async function readCampaign(
       resolvedTicks: plan.resolvedThroughTick,
       settingsRevision: plan.settingsRevision,
       dueAt:
-        candidate.state === 'running'
+        candidate.state === 'running' && holds.length === 0
           ? new Date(
               state.clockAnchorAt.getTime() +
                 realMsUntilTick(
@@ -176,7 +178,9 @@ export async function readCampaign(
             ).toISOString()
           : null,
       estimatedCompletionAt:
-        candidate.state === 'running' && estimatedCompletionTick !== null
+        candidate.state === 'running' &&
+        holds.length === 0 &&
+        estimatedCompletionTick !== null
           ? new Date(
               state.clockAnchorAt.getTime() +
                 realMsUntilTick(
@@ -209,6 +213,7 @@ export async function readCampaign(
     storyFacts: state.storyFacts,
     location: state.location,
     tick: state.tick,
+    holds,
     offer: state.offer,
     activityAccess: situationAuthorizationSchema.parse(
       state.situationAuthorization,

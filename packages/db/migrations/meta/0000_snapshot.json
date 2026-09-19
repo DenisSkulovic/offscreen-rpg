@@ -1,5 +1,5 @@
 {
-  "id": "3e9bf5c6-9534-471c-94c3-ea371762258a",
+  "id": "3f28ec42-1a2d-4fd0-b8b1-2c63158bb7d4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -509,6 +509,13 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
+        },
+        "holds": {
+          "name": "holds",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
         },
         "offer": {
           "name": "offer",

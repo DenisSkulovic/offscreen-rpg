@@ -29,12 +29,14 @@ import {
   insertContinuationPassage,
   advanceStoryView,
   incrementStoryViewVersion,
+  readDatabaseClockMs,
 } from '../stories/persistence';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
+import { releaseCampaignStorytellerHold } from '../campaign/holds';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -150,6 +152,13 @@ export async function publishStorytellerResult(
       throw new StoryError('invalid');
     }
     if (task.task === 'consequence') {
+      const [campaignState] = await tx
+        .select()
+        .from(campaign)
+        .where(eq(campaign.storyId, current.id));
+      if (!campaignState) {
+        throw new StoryError('invalid');
+      }
       if (
         result.scene.version !== 3 ||
         result.scene.next.kind !== 'action-plans'
@@ -277,6 +286,12 @@ export async function publishStorytellerResult(
           ),
         })
         .where(eq(campaign.storyId, current.id));
+      await releaseCampaignStorytellerHold(
+        tx,
+        campaignState,
+        id,
+        await readDatabaseClockMs(tx, current.id),
+      );
       await advanceStoryView(tx, {
         storyId: current.id,
         revision: current.revision + 1,

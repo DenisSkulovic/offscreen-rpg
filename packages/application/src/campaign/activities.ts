@@ -50,8 +50,10 @@ import {
   acceptedActivityPlanSchema,
   readAcceptedActivityPlan,
 } from './accepted-plans';
+import { campaignClockHeld } from './holds';
+import { campaignActivityTopic } from './topics';
 
-export const campaignActivityTopic = 'campaign.activity.v1';
+export { campaignActivityTopic } from './topics';
 
 function transitionEventKind(state: string): ActivityEventKind | null {
   switch (state) {
@@ -246,7 +248,7 @@ export async function settleActivity(
   const { clock, pace } = projectCampaignClock(
     state,
     now,
-    false,
+    campaignClockHeld(state),
     instantTargetTick,
   );
   const availableWorldTicks = clock.elapsedTicks - state.tick;
@@ -576,7 +578,7 @@ export function createCampaignActivities(database: Database) {
         const { clock: progress, pace } = projectCampaignClock(
           settled.state,
           now,
-          false,
+          campaignClockHeld(settled.state),
         );
         const nextWorldBoundary = worldTickForEffortBoundary({
           campaignTick: settled.state.tick,

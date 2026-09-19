@@ -63,6 +63,13 @@ export function CampaignPlay({
           ? 'This situation permits selected extended activities.'
           : 'No extended activities are available in this situation.'}
       </p>
+      {campaign.holds.length > 0 ? (
+        <p role="status">
+          Campaign time is held while the Storyteller prepares a required scene.
+          Existing activity progress is preserved and held wall time will not
+          become catch-up progress.
+        </p>
+      ) : null}
       <details>
         <summary>Character state and rules</summary>
         {/* These values are invaluable when checking deterministic authority,

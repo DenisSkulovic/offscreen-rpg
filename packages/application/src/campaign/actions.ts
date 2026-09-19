@@ -41,6 +41,7 @@ import {
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
 import { projectCampaignClock } from './clock';
+import { campaignClockHeld } from './holds';
 import {
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
@@ -278,9 +279,9 @@ export function createCampaignActions(database: Database) {
           retainedRevision = active.revision;
         }
         const now = await readDatabaseClockMs(tx, current.id);
-        const clockHeld = Boolean(
-          active && ['encounter', 'paused'].includes(active.state),
-        );
+        const clockHeld =
+          campaignClockHeld(state) ||
+          Boolean(active && ['encounter', 'paused'].includes(active.state));
         const projected = projectCampaignClock(state, now, clockHeld);
         const activityId = randomUUID();
         let acceptedPlan = null;

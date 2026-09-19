@@ -36,6 +36,9 @@ export const campaign = pgTable('campaign', {
     precision: 3,
   }).notNull(),
   clockPace: jsonb('clock_pace').notNull().$type<unknown>(),
+  // Independently owned domain reasons freeze the campaign clock. Activity
+  // pause/encounter state remains separate and cannot clear these holds.
+  holds: jsonb('holds').notNull().default([]).$type<unknown>(),
   offer: jsonb('offer').$type<unknown>(),
   situationAuthorization: jsonb('situation_authorization')
     .notNull()

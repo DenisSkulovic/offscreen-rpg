@@ -16,7 +16,11 @@ import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import type { Transaction } from '../outbox/index';
 import type { StoryRecord } from '../stories/persistence';
-import { lockStoryById } from '../stories/persistence';
+import {
+  incrementStoryViewVersion,
+  lockStoryById,
+  readDatabaseClockMs,
+} from '../stories/persistence';
 import { loadStorytellerContext } from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
@@ -25,6 +29,7 @@ import { rollSchema } from '@offscreen/game/checks';
 import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
+import { holdCampaignForStoryteller } from './holds';
 
 export const campaignConsequenceTopic = 'campaign.consequence.v1';
 
@@ -160,6 +165,12 @@ async function admitActionNarration(
       operationId: receipt.operationId,
     },
   });
+  await holdCampaignForStoryteller(
+    tx,
+    state,
+    generationId,
+    await readDatabaseClockMs(tx, current.id),
+  );
   return generationId;
 }
 
@@ -252,6 +263,12 @@ async function admitConsequenceNarration(
       operationId: receipt.operationId,
     },
   });
+  await holdCampaignForStoryteller(
+    tx,
+    state,
+    id,
+    await readDatabaseClockMs(tx, current.id),
+  );
   return id;
 }
 
@@ -279,6 +296,10 @@ export function createConsequenceNarration(database: Database) {
           .update(gameActionReceipt)
           .set({ generationId })
           .where(eq(gameActionReceipt.operationId, operationId));
+        await incrementStoryViewVersion(tx, {
+          storyId: current.id,
+          viewVersion: current.viewVersion + 1,
+        });
         return;
       }
       const [intent] = await tx
@@ -301,6 +322,10 @@ export function createConsequenceNarration(database: Database) {
         .update(campaignConsequence)
         .set({ generationId })
         .where(eq(campaignConsequence.operationId, operationId));
+      await incrementStoryViewVersion(tx, {
+        storyId: current.id,
+        viewVersion: current.viewVersion + 1,
+      });
     });
   };
 }

@@ -698,7 +698,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The story visibly holds instead of continuing routine work or pretending the event vanished.',
         authoritativeExpectation:
-          'One recoverable scene intent owns the boundary; no successor, extra reward, or response deadline publishes before valid options.',
+          'One independently owned Storyteller hold freezes the campaign clock; no successor, held-time catch-up, extra reward, or response deadline publishes before valid options, and a manual activity pause remains independent.',
       }),
     ],
     evidenceRequirements: [

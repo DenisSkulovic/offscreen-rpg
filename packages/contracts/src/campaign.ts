@@ -160,6 +160,13 @@ export const campaignViewSchema = z.strictObject({
   storyFacts: storyFactsSchema,
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  holds: z.array(
+    z.strictObject({
+      kind: z.literal('storyteller'),
+      generationId: z.uuid(),
+      reason: z.literal('required-turn'),
+    }),
+  ),
   offer: offerSchema.nullable(),
   activityAccess: activityAccessSchema,
   activity: campaignActivityViewSchema.nullable(),
