@@ -30,6 +30,8 @@ The campaign owns the exact real-time anchor, pace, fractional remainder and mon
 
 Player-meaningful lifecycle changes append `game_activity_event` rows inside the same transaction as activity authority. A database ordinal gives events a total order; activity/cause/kind uniqueness fences command and worker replay. Campaign reads project the newest 100 safe events independently of current commitments, and the play surface renders that history separately, so completion does not erase it. The ledger currently covers start, suspension-by-switch, exact resume, manual pause/resume, blocking, interruption, completion-pending and completion.
 
+Report-only completion is distinct from quiet completion and a controlling scene. It stores one hook for the exact completed activity revision, source passage and tick; campaign reads expose its factual fallback and eventual prose without changing the current passage, offer or situation authorization. Dispatch and historical publication remain the next U2b step.
+
 [Runtime logging](src/runtime-logging/index.ts) is the shared API/worker process-diagnostic boundary. It accepts only curated safe fields and writes one JSON record per incident. These logs diagnose delivery and runtime failures; they never replace durable activity history or carry arbitrary exception messages, SQL, provider payloads or player prose.
 
 [Campaign persistence](src/campaign/persistence.ts) owns offer/plan storage; [campaign reads](src/campaign/reads.ts) projects player-visible state. The pure admission diagnostics live in `packages/game/src/immediate-actions.ts`, not in these persistence helpers.

@@ -1,7 +1,11 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  gameActivity,
+  gameActivityReport,
+} from '@offscreen/db/campaign-schema';
 import {
   activityBoundaryBlockText,
   activityProgressSchema,
@@ -312,9 +316,14 @@ export async function settleActivity(
   if (!reachedBoundary) {
     return { activity: nextActivity, current, state: nextCampaign };
   }
-  const quietCompletion =
-    nextState === 'complete' && plan.action.completionFollowUp === 'quiet';
-  await refreshOffer(tx, nextCampaign, current.revision + 1, quietCompletion);
+  const nonControllingCompletion =
+    nextState === 'complete' && plan.action.completionFollowUp !== 'scene';
+  await refreshOffer(
+    tx,
+    nextCampaign,
+    current.revision + 1,
+    nonControllingCompletion,
+  );
   // Receipts retain every roll. Keep the player-facing summary within passage bounds.
   const paragraphs = lines.slice(-8);
   if (lines.length > 8) {
@@ -333,7 +342,20 @@ export async function settleActivity(
     revision: current.revision + 1,
     viewVersion: current.viewVersion + 1,
   };
-  if (nextState !== 'running' && !quietCompletion) {
+  if (nextState === 'complete' && plan.action.completionFollowUp === 'report') {
+    await tx.insert(gameActivityReport).values({
+      id: randomUUID(),
+      storyId: current.id,
+      activityId: activity.id,
+      activityRevision: nextActivity.revision,
+      sourcePassageId: passageId,
+      sourceTick: nextCampaignTick,
+      label: plan.action.label,
+      factualSummary:
+        lines.at(-1) ?? `${plan.action.label} completed as admitted.`,
+    });
+  }
+  if (nextState !== 'running' && !nonControllingCompletion) {
     await requestConsequenceNarration(tx, nextStory, {
       passageId,
       operationId: activity.id,

@@ -94,7 +94,9 @@ export const actionDefinitionSchema = z.strictObject({
   process: processDefinitionSchema,
   conditionPolicy: activityConditionPolicySchema,
   occurrence: activityOccurrencePolicySchema,
-  completionFollowUp: z.enum(['quiet', 'scene']),
+  // A report preserves current gameplay authority and narrates only this
+  // committed result; a scene may replace authority with a new interaction.
+  completionFollowUp: z.enum(['quiet', 'report', 'scene']),
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
 });

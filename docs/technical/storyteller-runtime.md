@@ -32,7 +32,7 @@ Scripted sources are explicitly pure and may be recomputed after an interrupted 
 
 An explicit recovery receipt retries the same admitted intention. Failed attempts with settled or confirmed-unsent usage may get a new attempt under the same run allowance. Blocked publication retries the saved result. Unknown usage offers read-only refresh and requires operator reconciliation. Retry notices have their own workflow identity while referencing the original generation. Old `opening.playable.scripted.v1` and `continuation.playable.scripted.v1` histories retain their decoders and meaning.
 
-Report execution deliberately reuses this generation/accounting path, including the pure scripted source. Gameplay does not yet create report tasks, persist receipt+hook follow-up identity or attach returned prose to historical receipts. The ordinary scene publisher fails closed if handed a report, so adding the output contract cannot accidentally replace the current passage or menu. Those storage and historical-projection boundaries are the next U2b slice.
+Report execution deliberately reuses this generation/accounting path, including the pure scripted source. Activity completion can now capture report-only policy, persist a hook bound to the exact activity revision/source passage/tick, and project its factual fallback separately from the current scene. Gameplay does not yet dispatch a report task or attach returned prose to that hook. The ordinary scene publisher fails closed if handed a report, so adding the output contract cannot accidentally replace the current passage or menu. Task dispatch and source-bound historical publication are the next U2b slice.
 
 ## Provider and budget boundary
 

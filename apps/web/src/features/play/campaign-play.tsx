@@ -215,6 +215,24 @@ export function CampaignPlay({
           ))}
         </details>
       ) : null}
+      {campaign.activityReports.length ? (
+        <details open>
+          <summary>Reports from earlier activity</summary>
+          {campaign.activityReports.map((entry) => (
+            <article key={entry.id}>
+              <p>
+                <strong>{entry.report?.title ?? entry.label}</strong> · tick{' '}
+                {entry.sourceTick} · {entry.state}
+              </p>
+              {(entry.report?.paragraphs ?? [entry.factualSummary]).map(
+                (paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ),
+              )}
+            </article>
+          ))}
+        </details>
+      ) : null}
       {nodes.length ? (
         <div aria-label="Contextual options">
           <h2>What would you like to do?</h2>

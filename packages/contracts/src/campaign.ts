@@ -102,6 +102,25 @@ export const campaignActivityEventSchema = z.strictObject({
   createdAt: z.iso.datetime(),
 });
 
+export const campaignActivityReportSchema = z.strictObject({
+  id: z.uuid(),
+  activityId: z.uuid(),
+  activityRevision: z.number().int().nonnegative(),
+  sourceTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  label: z.string().trim().min(1).max(200),
+  factualSummary: z.string().trim().min(1).max(1000),
+  state: z.enum(['pending', 'generating', 'published', 'unavailable']),
+  report: z
+    .strictObject({
+      version: z.literal(1),
+      title: z.string().min(1).max(160),
+      paragraphs: z.array(z.string().min(1).max(6000)).min(1).max(10),
+    })
+    .nullable(),
+  createdAt: z.iso.datetime(),
+  publishedAt: z.iso.datetime().nullable(),
+});
+
 export const campaignViewSchema = z.strictObject({
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
@@ -115,6 +134,7 @@ export const campaignViewSchema = z.strictObject({
   // `activity` remains the one identity allowed to advance right now.
   commitments: z.array(campaignActivityViewSchema).max(20),
   activityEvents: z.array(campaignActivityEventSchema).max(100),
+  activityReports: z.array(campaignActivityReportSchema).max(50),
   rolls: z
     .array(
       z.strictObject({

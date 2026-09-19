@@ -6,6 +6,7 @@ import {
   gameActionReceipt,
   gameActivity,
   gameActivityEvent,
+  gameActivityReport,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
@@ -82,6 +83,15 @@ export async function readCampaign(
     .where(eq(gameActivityEvent.storyId, storyId))
     .orderBy(desc(gameActivityEvent.ordinal))
     .limit(100);
+  const activityReports = await db
+    .select()
+    .from(gameActivityReport)
+    .where(eq(gameActivityReport.storyId, storyId))
+    .orderBy(
+      desc(gameActivityReport.sourceTick),
+      desc(gameActivityReport.createdAt),
+    )
+    .limit(50);
   const actionReceipts = await db
     .select({
       receipt: gameActionReceipt,
@@ -211,6 +221,25 @@ export async function readCampaign(
       label: event.label,
       summary: event.summary,
       createdAt: event.createdAt.toISOString(),
+    })),
+    activityReports: activityReports.map((report) => ({
+      id: report.id,
+      activityId: report.activityId,
+      activityRevision: report.activityRevision,
+      sourceTick: report.sourceTick,
+      label: report.label,
+      factualSummary: report.factualSummary,
+      state:
+        report.state === 'published'
+          ? 'published'
+          : report.state === 'blocked' || report.state === 'omitted'
+            ? 'unavailable'
+            : report.generationId
+              ? 'generating'
+              : 'pending',
+      report: report.report,
+      createdAt: report.createdAt.toISOString(),
+      publishedAt: report.publishedAt?.toISOString() ?? null,
     })),
     rolls: rolls.map((roll) => ({
       id: roll.id,
