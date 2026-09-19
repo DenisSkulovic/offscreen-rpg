@@ -22,6 +22,7 @@ import { generation } from '@offscreen/db/generation-schema';
 import { gameActivityReport } from '@offscreen/db/campaign-schema';
 import {
   storytellerAttempt,
+  storytellerDispatchReview,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import {
@@ -201,9 +202,25 @@ export function createChamberInspector(database: Database) {
           generationState: generation.state,
           generationInput: generation.input,
           generationOutput: generation.output,
+          dispatchReviewRevision: storytellerDispatchReview.revision,
+          dispatchReviewMode: storytellerDispatchReview.mode,
+          dispatchReviewState: storytellerDispatchReview.state,
+          dispatchReviewPacketSha256:
+            storytellerDispatchReview.packetSha256,
+          dispatchReviewPacket: storytellerDispatchReview.packet,
+          dispatchReviewInspection: storytellerDispatchReview.inspection,
+          dispatchReviewPreparedAt: storytellerDispatchReview.preparedAt,
+          dispatchReviewReviewedAt: storytellerDispatchReview.reviewedAt,
         })
         .from(storyResolution)
         .innerJoin(generation, eq(generation.id, storyResolution.generationId))
+        .leftJoin(
+          storytellerDispatchReview,
+          eq(
+            storytellerDispatchReview.generationId,
+            storyResolution.generationId,
+          ),
+        )
         .where(
           and(
             eq(storyResolution.storyId, id),
@@ -419,6 +436,29 @@ export function createChamberInspector(database: Database) {
                 proposal: continuationProposal.success
                   ? continuationProposal.data
                   : null,
+                dispatchReview:
+                  activeResolution.dispatchReviewState === null
+                    ? null
+                    : {
+                        revision:
+                          activeResolution.dispatchReviewRevision ??
+                          invariantMissing('dispatch review revision'),
+                        mode:
+                          activeResolution.dispatchReviewMode ??
+                          invariantMissing('dispatch review mode'),
+                        state: activeResolution.dispatchReviewState,
+                        packetSha256:
+                          activeResolution.dispatchReviewPacketSha256 ??
+                          invariantMissing('dispatch review packet hash'),
+                        packet: activeResolution.dispatchReviewPacket,
+                        inspection: activeResolution.dispatchReviewInspection,
+                        preparedAt: timestampIso(
+                          activeResolution.dispatchReviewPreparedAt,
+                        ) ?? invariantMissing('dispatch review preparation time'),
+                        reviewedAt: timestampIso(
+                          activeResolution.dispatchReviewReviewedAt,
+                        ),
+                      },
               },
       });
     },

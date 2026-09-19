@@ -230,6 +230,24 @@ export const chamberInspectorSchema = z.strictObject({
       selectedOptionId: z.string().nullable(),
       selectedIntention: z.string().nullable(),
       proposal: z.unknown().nullable(),
+      dispatchReview: z
+        .strictObject({
+          revision: z.number().int().nonnegative(),
+          mode: z.enum(['hold', 'observe', 'off']),
+          state: z.enum([
+            'awaiting-review',
+            'not-held',
+            'released',
+            'rejected',
+            'superseded',
+          ]),
+          packetSha256: z.string().regex(/^[0-9a-f]{64}$/),
+          packet: z.unknown(),
+          inspection: z.unknown(),
+          preparedAt: isoDateTime,
+          reviewedAt: isoDateTime.nullable(),
+        })
+        .nullable(),
     })
     .nullable(),
 });

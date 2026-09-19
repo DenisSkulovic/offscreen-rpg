@@ -132,6 +132,48 @@ export function ChamberInspectorPanel(args: {
             ) : (
               <p>No provider attempts are attributable to this story.</p>
             )}
+            {inspection.resolution?.dispatchReview ? (
+              <details open>
+                <summary>Provider packet review</summary>
+                <p>
+                  Private developer evidence. Preparing and inspecting this
+                  packet does not reserve funds or contact the provider.
+                </p>
+                <dl>
+                  <Field
+                    label="State"
+                    value={inspection.resolution.dispatchReview.state}
+                  />
+                  <Field
+                    label="Mode / revision"
+                    value={`${inspection.resolution.dispatchReview.mode} / ${inspection.resolution.dispatchReview.revision}`}
+                  />
+                  <Field
+                    label="Packet SHA-256"
+                    value={inspection.resolution.dispatchReview.packetSha256}
+                  />
+                  <Field
+                    label="Prepared"
+                    value={inspection.resolution.dispatchReview.preparedAt}
+                  />
+                  <Field
+                    label="Reviewed"
+                    value={
+                      inspection.resolution.dispatchReview.reviewedAt ??
+                      'Not reviewed'
+                    }
+                  />
+                  <dt>Structural inspection</dt>
+                  <JsonValue
+                    value={inspection.resolution.dispatchReview.inspection}
+                  />
+                  <dt>Exact credential-free request body</dt>
+                  <JsonValue
+                    value={inspection.resolution.dispatchReview.packet}
+                  />
+                </dl>
+              </details>
+            ) : null}
             <h2>Current passage</h2>
             <dl>
               <Field label="Passage ID" value={inspection.current.passageId} />

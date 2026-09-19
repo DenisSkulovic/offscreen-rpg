@@ -17,7 +17,7 @@ Exit: restart and duplicate delivery cannot bypass a hold; release of stale/rebu
 
 ## D3 — Chamber packet laboratory
 
-Add a private summary/raw view, provenance and contribution panels, stable diagnostics, rebuild/reject/release controls and packet-to-packet diff. Keep raw content collapsed and exclude secrets. Integrate a dry-run QA journey whose accounting is verified zero.
+Status: active. The existing private story inspector now renders review state/hash/timestamps, structural inspection and the exact credential-free body for the active resolution. Add dedicated provenance/contribution presentation, stable diagnostics, rebuild/reject/release controls and packet-to-packet diff. Keep raw content collapsed and exclude secrets. Integrate a dry-run QA journey whose accounting is verified zero.
 
 Exit: a developer can improve a packet through inspect → change → rebuild → compare without provider I/O.
 
@@ -30,6 +30,6 @@ Exit: one eventual charged call yields a complete decision-quality evidence bund
 ## Current checkpoint
 
 - Phase: D1 complete; D2 core complete. Exact packet artifacts persist before accounting, held worker delivery cannot publish or reserve, and release/reject/supersede decisions are durable and hash-scoped. The focused fake-provider integration passes: awaiting review causes zero attempts/calls, then one explicit release permits exactly one dispatch through existing accounting.
-- Next: expose private read/release/reject operations through developer-only Chamber routes and add clear freshness/blocker diagnostics, then build the D3 packet laboratory. Ordinary product routes must not gain these controls.
+- Next: expose release/reject through developer-only Chamber routes with conspicuous exact-packet confirmation and add freshness/blocker diagnostics. Read-only packet evidence is already present in the private story inspector; ordinary product routes must not gain these controls.
 - Dependencies: existing immutable Storyteller task, B1/B2 authority/accounting and developer-only Chamber. D2 must reuse `budget.reserve/dispatch`; it cannot create a parallel money path.
 - Spend: no provider calls are authorized or required; expected application-model spend is $0.
