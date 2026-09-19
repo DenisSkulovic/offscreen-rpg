@@ -11,7 +11,10 @@ Cases are versioned TypeScript data validated by `@offscreen/contracts/qa`. A ca
 The catalogue contains:
 
 - offline player entry, available for local execution;
-- immediate mechanical DM loop, visible but planned until that loop exists;
+- immediate mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
+- quiet activity lifecycle, available for deterministic manual verification of clock waiting, finite repetition and zero-call execution;
+- activity interruption/blocking, visible but planned until deterministic Chamber controls make the lifecycle reproducible without database edits;
+- historical report versus controlling scene, visible but planned until U2b implements separate task/storage/publication semantics;
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.

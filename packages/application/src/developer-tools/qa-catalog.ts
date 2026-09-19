@@ -187,29 +187,29 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'immediate-mechanical-dm-loop',
-    version: 1,
+    version: 2,
     name: 'Immediate mechanical DM loop',
     purpose:
       'Exercise generated options, admitted private plans, visible d20 consequences, and three committed rounds.',
     risk: 'The POC may narrate choices without mechanics governing outcomes or without durable player agency.',
     costClass: 'offline',
-    availability: {
-      state: 'planned',
-      reason: 'The playable DM adjudication loop has not been implemented yet.',
-    },
+    availability: { state: 'available' },
     prerequisites: [
-      'The playable DM adjudication loop is implemented.',
-      'A deterministic offline planning executor is available.',
+      'Launch the local Chamber with PostgreSQL and Temporal available.',
+      'Use the pineapple-mechanics.v4 scenario and deterministic offline planning executor.',
+      'Do not load or enable a provider route.',
     ],
     initialScenario: null,
     drivers: ['manual-chamber', 'browser-automation'],
-    variants: mechanicalContentCatalogue().map((entry) => ({
-      id: entry.id,
-      name: entry.name,
-      description: entry.description,
-      availability: { state: 'available' as const },
-      prerequisites: [],
-    })),
+    variants: mechanicalContentCatalogue()
+      .filter((entry) => entry.id === 'pineapple-mechanics.v4')
+      .map((entry) => ({
+        id: entry.id,
+        name: entry.name,
+        description: entry.description,
+        availability: { state: 'available' as const },
+        prerequisites: [],
+      })),
     stages: [
       stage({
         id: 'start',
@@ -289,6 +289,299 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       'Start a new story and QA run from the same captured fixture seed.',
     nonAssertions: [
       'This case does not require long-running activities, a general combat engine, or live inference.',
+    ],
+  }),
+  defineCase({
+    id: 'quiet-activity-lifecycle',
+    version: 1,
+    name: 'Quiet activity lifecycle',
+    purpose:
+      'Manually verify genuine clock waiting, factual quiet completion, finite repeatable work, and reload-safe activity identity without model work.',
+    risk: 'Routine play may secretly roll, generate narration, duplicate instances, replay a finite opportunity, or lose authority after reload.',
+    costClass: 'offline',
+    availability: { state: 'available' },
+    prerequisites: [
+      'Launch the local Chamber with PostgreSQL and Temporal available.',
+      'Use the microbe.v3 mechanical scenario and an offline scripted Storyteller.',
+      'Do not load or enable a provider route.',
+    ],
+    initialScenario: 'microbe.v3',
+    drivers: ['manual-chamber', 'browser-automation'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'start-microbe',
+        name: 'Start the nonhuman mechanical story',
+        importance: 'poc-blocker',
+        preconditions: ['A reviewed microbe.v3 opening exists.'],
+        action: 'Start the story and inspect its current activity choices.',
+        observableExpectation:
+          'The organism receives only the activities explicitly authorized for this situation.',
+        authoritativeExpectation:
+          'The current offer and private situation authorization name the same process keys; no human, job, currency, or anatomy requirement is introduced.',
+      }),
+      stage({
+        id: 'complete-wait',
+        name: 'Complete a genuine clock wait',
+        importance: 'poc-blocker',
+        preconditions: ['Remain contracted is currently authorized.'],
+        action:
+          'Select Remain contracted, use the declared pace controls, and wait for completion.',
+        observableExpectation:
+          'The protective interval advances to 10/10 ticks and completes with a factual result.',
+        authoritativeExpectation:
+          'The wait uses elapsed eligible ticks, creates no d20 roll or work contribution, applies its completion effect once, and admits no consequence-generation intent.',
+      }),
+      stage({
+        id: 'repeat-first',
+        name: 'Complete the first finite sampling cycle',
+        importance: 'major',
+        preconditions: ['Sample the gradient briefly remains authorized.'],
+        action:
+          'Select the sampling activity and complete its two-tick interval.',
+        observableExpectation:
+          'A fresh sampling instance completes quietly and the choice remains available once more.',
+        authoritativeExpectation:
+          'The activity has a fresh identity, the story-scoped occurrence count becomes one, and no roll, reward, or generation task is created.',
+      }),
+      stage({
+        id: 'repeat-limit',
+        name: 'Reach the finite occurrence limit',
+        importance: 'poc-blocker',
+        preconditions: ['One sampling completion is recorded.'],
+        action:
+          'Complete a second sampling cycle, reload the story, and inspect the resulting offer and commitments.',
+        observableExpectation:
+          'The second instance remains visible in history, but a third sampling choice is absent after reload.',
+        authoritativeExpectation:
+          'Two distinct activity identities exist, the occurrence count is exactly two, campaign time is monotonic, and fresh offer projection cannot reset the limit.',
+      }),
+      stage({
+        id: 'inspect-zero-call',
+        name: 'Confirm quiet execution admitted no model work',
+        importance: 'poc-blocker',
+        preconditions: ['The wait and both sampling cycles completed.'],
+        action:
+          'Inspect the Chamber task, consequence, roll, and provider-accounting records for this story.',
+        observableExpectation:
+          'The chronology contains factual activity outcomes without generated literary interludes.',
+        authoritativeExpectation:
+          'There are zero activity rolls, zero consequence intents for the quiet completions, zero provider calls, and zero charge.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'activity-identities',
+        description:
+          'Wait and both sampling activity IDs, revisions, progress, ticks, and terminal states.',
+        required: true,
+      },
+      {
+        kind: 'occurrence-history',
+        description:
+          'The persisted finite scope/count plus the final offer showing no third sampling action.',
+        required: true,
+      },
+      {
+        kind: 'zero-call-evidence',
+        description:
+          'Roll, consequence, generation, provider-call, and charge counts for the quiet sequence.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Start a fresh microbe.v3 story and QA run. Do not edit or reuse occurrence history from an earlier run.',
+    nonAssertions: [
+      'This fixture proves generic contracts with authored content, not biological realism or arbitrary-world Storyteller intelligence.',
+      'It does not prove activity interruption, blocking, chains, or generated reports.',
+    ],
+  }),
+  defineCase({
+    id: 'activity-interruption-and-blocking',
+    version: 1,
+    name: 'Activity interruption, blocking, and exact resumption',
+    purpose:
+      'Verify that changed requirements stop work without erasing progress and that A-to-B-to-A returns to the exact retained instance.',
+    risk: 'A changed world may keep rewarding invalid work, silently restart it, rewind time, or disguise a blocker as voluntary suspension.',
+    costClass: 'offline',
+    availability: {
+      state: 'planned',
+      reason:
+        'The mechanics exist, but Chamber lacks deterministic controls for the stranger interruption and repair-tool loss needed for confident manual reproduction.',
+    },
+    prerequisites: [
+      'Add developer-only deterministic controls for the beacon interruption and required-tool loss.',
+      'Expose activity identities, revisions, blockers, rolls, rewards, and current authorization in Chamber inspection.',
+    ],
+    initialScenario: 'beacon-watch.v1',
+    drivers: ['manual-chamber', 'browser-automation'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'earn-progress',
+        name: 'Earn partial beacon progress',
+        importance: 'poc-blocker',
+        preconditions: ['The beacon repair is explicitly authorized.'],
+        action:
+          'Start the repair and settle one controlled successful attempt.',
+        observableExpectation:
+          'Partial repair progress is visible and no completion reward is paid.',
+        authoritativeExpectation:
+          'One retained activity identity owns the contribution receipt and progress; harbor credit remains zero.',
+      }),
+      stage({
+        id: 'block-before-boundary',
+        name: 'Remove a boundary prerequisite',
+        importance: 'poc-blocker',
+        preconditions: ['Repair is running with incomplete progress.'],
+        action:
+          'Use the deterministic control to remove required repair-tool access, then settle the next wake.',
+        observableExpectation:
+          'The same activity becomes blocked and explains that work cannot continue.',
+        authoritativeExpectation:
+          'No additional roll, contribution, reward, or occurrence completion is recorded; duplicate wake-up is harmless.',
+      }),
+      stage({
+        id: 'authorize-resume',
+        name: 'Restore conditions without silently restarting',
+        importance: 'poc-blocker',
+        preconditions: ['The exact repair is blocked.'],
+        action:
+          'Restore the required condition, confirm work stays dormant, then publish and select an exact resume intention.',
+        observableExpectation:
+          'Restoring tools alone does not restart work; the current scene must explicitly offer resumption.',
+        authoritativeExpectation:
+          'Resume matches the same activity ID and revision, rechecks prerequisites, and preserves prior progress.',
+      }),
+      stage({
+        id: 'switch-and-return',
+        name: 'Complete B and return to A',
+        importance: 'poc-blocker',
+        preconditions: ['The controlled stranger interruption is available.'],
+        action:
+          'Interrupt repair A, select and complete tool-securing B, then select the freshly projected A resume.',
+        observableExpectation:
+          'B completes quietly and A returns with its earlier progress rather than restarting.',
+        authoritativeExpectation:
+          'A and B have distinct identities, world ticks remain monotonic, B creates no narration intent, and only A resumes.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'activity-lifecycle',
+        description:
+          'A/B identities, revisions, states, progress, blocker, ticks, rolls, and terminal effects.',
+        required: true,
+      },
+      {
+        kind: 'authorization-history',
+        description:
+          'Offer and exact-resume identities before interruption, after blocking, and after B completion.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Use a fresh beacon-watch.v1 story for each run; deterministic controls must be recorded as QA evidence.',
+    nonAssertions: [
+      'Direct database edits are not acceptable evidence for this manual case.',
+      'This does not claim multiplayer capacity allocation or irreversible target invalidation.',
+    ],
+  }),
+  defineCase({
+    id: 'historical-report-vs-scene',
+    version: 1,
+    name: 'Historical report versus controlling scene',
+    purpose:
+      'Prove that delayed report-only narration cannot replace current gameplay while a required scene can deliberately hold it.',
+    risk: 'Late prose may overwrite the current offer, duplicate rewards, or let routine work advance through an unresolved controlling event.',
+    costClass: 'offline',
+    availability: {
+      state: 'planned',
+      reason:
+        'U2b report-only task storage and historical publication are not implemented yet.',
+    },
+    prerequisites: [
+      'U2b strict report-only tasks and historical publication are implemented.',
+      'The Chamber can delay, fail, retry, and inspect report and controlling-scene hooks independently.',
+    ],
+    initialScenario: 'beacon-watch.v1',
+    drivers: ['manual-chamber', 'browser-automation'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'commit-report-source',
+        name: 'Commit a reportable activity boundary',
+        importance: 'poc-blocker',
+        preconditions: [
+          'Beacon completion is configured with an optional historical report.',
+        ],
+        action:
+          'Complete the beacon repair and capture its boundary receipt and report hook.',
+        observableExpectation:
+          'The factual completion and reward are visible immediately; literary reporting may still be pending.',
+        authoritativeExpectation:
+          'Mechanics, report intent, and stable hook identity commit once without making the report current authority.',
+      }),
+      stage({
+        id: 'advance-past-report',
+        name: 'Advance gameplay while reporting is pending',
+        importance: 'poc-blocker',
+        preconditions: ['The optional report has not published.'],
+        action:
+          'Select and finish the authorized wait before releasing the report.',
+        observableExpectation:
+          'Current play proceeds independently of the optional report.',
+        authoritativeExpectation:
+          'The wait owns the later ticks/current state; the report retains the earlier completion tick and receipt.',
+      }),
+      stage({
+        id: 'publish-late-report',
+        name: 'Publish the delayed historical report',
+        importance: 'poc-blocker',
+        preconditions: ['Gameplay has advanced beyond the report source.'],
+        action: 'Release and publish the saved report result, then reload.',
+        observableExpectation:
+          'The report reads as earlier history and does not replace the current scene or choices.',
+        authoritativeExpectation:
+          'Current revision, offer, facts, rewards, and tick remain unchanged; duplicate publication creates no second report.',
+      }),
+      stage({
+        id: 'contrast-required-scene',
+        name: 'Contrast a required controlling scene',
+        importance: 'poc-blocker',
+        preconditions: [
+          'A fresh story can trigger the supported stranger hazard.',
+        ],
+        action:
+          'Trigger the controlling scene, delay or fail preparation, and attempt incompatible progression.',
+        observableExpectation:
+          'The story visibly holds instead of continuing routine work or pretending the event vanished.',
+        authoritativeExpectation:
+          'One recoverable scene intent owns the boundary; no successor, extra reward, or response deadline publishes before valid options.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'follow-up-hooks',
+        description:
+          'Source receipts, hook identities, task/publication states, source ticks, and controlling classification.',
+        required: true,
+      },
+      {
+        kind: 'before-after-current-state',
+        description:
+          'Current story revision, offer, tick, facts, rewards, and passage identity before and after late report publication.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Use separate fresh stories for the optional-report and required-scene variants; never reuse hook identities.',
+    nonAssertions: [
+      'A scripted report proves authority and delivery semantics, not live prose quality.',
+      'This case does not authorize provider calls, automatic fallback choices, or notification delivery.',
     ],
   }),
   defineCase({
