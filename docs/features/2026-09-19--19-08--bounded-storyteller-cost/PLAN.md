@@ -6,23 +6,27 @@ Implementation owner: the assigned coding agent, one owner per slice. Commit/pus
 
 ## Sequencing and current evidence
 
-Start B1 before implementing exploration. It can run before canonical storage C1/C2 and has no storage dependency. B2 supplies enforcement before memory Phase 3 or any independent paid maintenance/embedding route. B3 connects memory Phase 1–3 and storage C3 recipes; B4 joins the connected return/quiet-play rehearsal. Do not require the entire library/search system to deliver B1/B2.
+Start B1 with profile resolution, then captured recipes, before implementing exploration. It can run before canonical storage C1/C2 and has no storage dependency. B2 supplies window/envelope enforcement and game holds before live evaluation, memory Phase 3 or any independent paid maintenance/embedding route. B3 connects memory Phase 1–3 and storage C3 recipes; B4 joins the connected return/quiet-play rehearsal. Do not require the entire library/search system or a payment processor to deliver B1/B2. The first one-shot paid smoke test needs offline evidence for its full selected safety path, not every optional memory feature; no paid call is authorized here.
 
 Inspected at base `2565214`: `tasks/policy.ts` bounds a serialized request plus framing and reserves configured input/output maxima. The schema has no reasoning/cache-write/tool pricing categories. `providers/openrouter.ts` pins provider/no-fallback and sends `max_tokens`, but does not capture explicit reasoning control or token/cache breakdown. Application `budget.ts` atomically reserves account/run money and admitted attempts, stops globally on uncertainty/overcharge, and retains uncertain reservations. These are useful foundations, not the proposed operation-wide policy. Current execution is one-shot. Do not remove the conservative bounds while adding richer accounting.
 
 World-independent trace: a quiet patrol tick makes no model request; a rapid grounded conversation uses one shot; a returning acquaintance can use bounded evidence discovery; a microbe's changed environment uses the same envelope without NPC/location assumptions. Caps regulate software work, not fictional time or literary divisions.
 
-## B1 — Captured recipes and whole-operation preflight (ready)
+## B1 — Effective usage profiles, captured recipes and preflight (ready)
 
 Outcome: an offline task explains precisely what it may load, call and spend, or why it cannot start.
 Dependencies: existing task capture/provider policy only. Status: ready; exact next implementation slice.
 
-Owners: `packages/storyteller/src/tasks/policy.ts`, `tasks/index.ts`, `tasks/opening.ts`, `context/index.ts`; application `storyteller/context.ts`, `execution.ts`, `records.ts`. Use one small recipe module beside task policy if separation helps. No general plugin registry.
+Owners: `packages/storyteller/src/tasks/policy.ts`, `tasks/index.ts`, `tasks/opening.ts`, `context/index.ts`; application `storyteller/context.ts`, `execution.ts`, `records.ts`, plus a focused usage-policy resolver/configuration module. Account entitlement selection belongs to application authorization, not creative profiles. Use typed server-owned profile fixtures initially; no billing SDK or generic policy engine.
+
+First bounded sub-slice B1a: define versioned entitlement, lower user/story caps, window definitions, funding mode and effective-policy schemas from [usage policy](../../technical/usage-policy.md). Implement a pure strictest-limit/allowlist resolver with cross-field validation, explicit denial reasons and provenance. Capture fake free/two paid/on-demand profiles to demonstrate differing 20k/50k-style context caps without choosing commercial promises. Add the disabled-by-default conservative development preset. Unauthorized client profile/grant changes fail; zero/missing values cannot become unlimited. Exit: offline resolution/preflight evidence, with no schema migration or provider dispatch needed. Commit/push before the next sub-slice.
+
+Then B1b connects the resolved policy to existing captured tasks:
 
 Bounded changes:
 
 1. Capture versioned task recipe and effort-envelope schemas. Ordinary/report one-shot and evidence-seeking at most three rounds/six reads are distinct ceilings; no automatic escalation after failure. Pure deterministic selection uses task purpose and captured evidence cues. Preserve current one-shot execution until memory Phase 3 exists.
-2. Add whole-operation byte/token/output/deadline/microusd fields and a preflight result with section sizes, required overflow and reserved final-request capacity. Recipe limits cannot exceed route/run/account authority. Money is supplied by explicitly funded runs, never inferred from an API key or deposit note.
+2. Add whole-operation byte/token/output/deadline/microusd fields and a preflight result with section sizes, required overflow and reserved final-request capacity. Recipe limits cannot exceed effective account/story/route/run authority; snapshots retain profile and window-definition versions. Money is supplied by explicitly funded runs, never inferred from an API key, tier or deposit note.
 3. Normalize route capabilities/prices: input, applicable cache writes, billable completion/reasoning overlap, tool/embedding fees if supported, context capacity and provider-enforced output semantics. Unknown billable categories make a route ineligible. No new route/model selected here.
 4. Serialize existing ordinary, report and opening fixtures to measure schema/instruction/state cost and assess the initial tuning candidates in the permanent contract. Do not claim byte counts are model-token counts. Keep conservative framing/reservation until a route-specific tokenizer is validated. If a target is incompatible, document the exact required overhead and reduce duplication or hold; no automatic widening.
 5. Add bounded diagnostics by recipe/section and a future QA entry specification. No private context or model reasoning text in ordinary logs.
@@ -35,13 +39,19 @@ Exit: named frozen envelopes and dry-run evidence, no provider dispatch; B2 can 
 
 Outcome: every dispatch and side job consumes admitted capacity without escaping its originating operation.
 Dependencies: B1. Status: queued.
-Owners: application `storyteller/budget.ts`, `execution.ts`, `records.ts`; `packages/db/src/schema/storyteller.ts` and single baseline migration; `packages/storyteller/src/providers/openrouter.ts`; workflow bindings only as needed for delivery.
+Owners: application `storyteller/budget.ts`, `execution.ts`, `records.ts`; `packages/db/src/schema/storyteller.ts` and single baseline migration; `packages/storyteller/src/providers/openrouter.ts`. B2b also touches existing campaign hold/clock operations, public status contracts, API/snapshot projection, minimal play recovery controls and workflow wake-up bindings. Follow their current owners rather than duplicate a clock or scheduler.
+
+Deliver as two coherent slices: B2a operation/attempt accounting and normalized provider usage; B2b account windows, policy transitions and game hold/recovery. Both are required before a live run. Keep one baseline migration and reset disposable data, no migration chain.
 
 Extend the existing ledger with operation-envelope identity, aggregate consumption and allocations, not another ledger. Reserve operation money once, subdivide for attempts and settle/release known unused capacity without double-counting. Retain uncertain dispatched allocation and stop paid admission; deadlines/cancellation cannot erase liability. Consistent lock ordering covers concurrent attempts and background work. A retry receipt cannot reset aggregate limits. Preserve current global uncertainty/overcharge stop.
 
 Map captured route reasoning controls to supported wire parameters; normalize returned usage/cache/reasoning metadata, preserving unavailable as unknown. Validate actual provider/model when observable. Reserve the greater applicable cold/cache-write price and other supported fees; cache hits release savings only after settlement. Unknown usage/cost keeps conservative reservations. Add bounded purpose/frequency allocation for optional background work; no autonomous summary agent.
 
 Acceptance/optional probes: injected transport for cache miss/write surcharge, reasoning-only truncated output, repeated repair, concurrent last allowance, crash after dispatch and saved-result replay. No duplicate mechanics or paid redispatch on uncertain delivery. Test tools remain fake; no live route validation implied.
+
+B2b bounded work: persist versioned account grants/lower overrides and fixed/rolling window debits/reservations on the existing accounting boundary. Use server timestamps, intersect all scopes atomically, retain outstanding allocations across reset and attribute late usage to original dispatch. Recheck entitlement at dispatch; tier changes cannot reset usage or rewrite requests. Pin funding identity; reject implicit on-demand overage. Expose limiting reason/remaining/eligible time and independent usage hold. Default recovery is explicit Resume; optional auto-resume is a captured, revocable permission and remains forbidden for development live calls. Reuse clock reanchoring so held real time earns nothing. Wake-ups are durable, deduplicated, version-fenced and concurrency-bounded, not polling or fresh paid retries.
+
+B2b QA: fixed-boundary and rolling recovery; window expires with an uncertain attempt; concurrent stories contend for the last allowance; grant downgrade/revocation before dispatch; no credit from tier toggling; required context permanently too large; optional report deferred without freezing unrelated work; manual pause survives reset; no held-time catch-up; recovery remains blocked by lifetime funding; many ready tasks cannot burst beyond concurrency/window limits. Use injected time/usage and fake providers.
 
 Exit: existing one-shot dispatch uses the envelope; future round/maintenance callers cannot bypass it. Update QA catalogue with actually runnable evidence.
 
@@ -63,7 +73,7 @@ Outcome: owner can see whether each kind of gameplay merits its resource cost.
 Dependencies: B2/B3 and memory's connected turn; no full dashboard required. Status: queued.
 Owners: Chamber inspector, `packages/application/src/developer-tools/qa-catalog.ts`, existing trace/usage artifacts and conservative live-evaluation handoff.
 
-Maintain manual QA for no-call quiet play, bounded fast dialogue, old-detail recall, report/maintenance deferral, caps across reload, unknown billing stop and malformed-output costs. Compare one shot, deterministic recall plus one shot, bounded exploration on the same snapshots. Report input retransmission, output/reasoning, reads, cached/write tokens when known, spend by purpose, total per accepted turn and uncertainty; record all-failure cases honestly. Include mock-cost bursts of rapid turns and competing background jobs, not only one successful request.
+Maintain manual QA for no-call quiet play, bounded fast dialogue, old-detail recall, report/maintenance deferral, profile/window enforcement and reset recovery, caps across reload, unknown billing stop and malformed-output costs. Compare one shot, deterministic recall plus one shot, bounded exploration on the same snapshots. Report effective limits and their sources, input retransmission, output/reasoning, reads, cached/write tokens when known, spend by purpose, total per accepted turn and uncertainty; record all-failure cases honestly. Include mock-cost bursts of rapid turns and competing background jobs, not only one successful request.
 
 Offline results establish limits and orchestration, not prose/recall quality. A later explicitly authorized tiny live evaluation chooses a current compatible model and human-reviewed case; no automatic critic, fallback or subagent experiment. Keep GPU hosting and delegation out of scope unless separate evidence justifies them.
 
@@ -71,8 +81,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: prepared; begin B1 captured recipes/envelope and offline request-size evidence before memory exploration. Storage C1/C2 remains independently ready.
-- Base: `2565214`; documentation only in this preparation.
+- Phase: prepared; exact next action B1a pure effective-profile resolver and conservative offline preset, then B1b capture/preflight. B2a/B2b enforce accounting, windows and game holds before live calls. Storage C1/C2 remains independently ready.
+- Base: `de09cf0`; documentation only in this preparation.
 - Verification: relevant policy/provider/accounting source inspected; no runtime tests or provider calls.
-- Open choices: numerical tuning from captured fixtures and future authorized route selection; neither authorizes spending or a larger architecture.
+- Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

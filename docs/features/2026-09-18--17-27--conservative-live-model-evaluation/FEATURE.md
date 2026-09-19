@@ -32,7 +32,7 @@ Run the entire case with the scripted agent. Confirm task/tool/publication trace
 
 ### Gate 1 — Single structured response
 
-One model, one captured pineapple planning task, one request unless the task deliberately requests an allowlisted validation tool. Inspect parsing, instruction following, action validity, latency, token usage and exact charge. Stop for review.
+One model, one captured case that fits the conservative envelope, one request and no tools. Prefer the pineapple case if its exact packet fits; otherwise use a smaller meaningful case without weakening required truth or raising the cap. Inspect parsing, instruction following, action validity, latency, token usage and exact charge. Stop for review.
 
 ### Gate 2 — One short playable loop
 
@@ -48,18 +48,9 @@ Only when a concrete weakness justifies it, run the same captured case with one 
 
 ## Initial conservative envelope
 
-The first proposed live authorization should be no larger than:
+The [conservative development preset](../../technical/usage-policy.md#conservative-development-preset-and-first-paid-gate) is authoritative: one request, at most 8,000 input tokens and 1,024 total generated tokens, at most USD 0.01, no tools/retry/fallback/background work or automatic recovery. All platform, account, story, window and funding constraints also apply. Implement B1 and both B2 accounting/window-hold slices and exercise the selected path offline before dispatch.
 
-- one model;
-- one QA case;
-- one sample;
-- at most six provider requests total, including agent rounds;
-- at most 40,000 input tokens and 6,000 output tokens across the run;
-- a hard run cap of USD 0.05 expressed as 50,000 microusd;
-- no concurrent live runs;
-- no automatic retry or fallback.
-
-These are ceilings, not spending targets or standing authorization. At run creation, calculate a worst-case reservation from freshly verified pricing. Lower the token/request limits when the selected model makes the envelope unnecessarily large. If worst-case cost does not fit the cap and remaining allowance, the run cannot start.
+These are ceilings, not spending targets or standing authorization. At run creation, calculate a worst-case reservation from freshly verified pricing. If required context or cost cannot fit, the run cannot start. A later Gate 2/3 run needs its own explicit aggregate authorization; the first successful request does not expand this allowance. No payment processor or finished commercial tier catalogue is required for a safe developer-funded test.
 
 ## Model selection
 

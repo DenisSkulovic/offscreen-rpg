@@ -31,7 +31,7 @@ Exit: the owner can decide whether to stop, make one targeted change or authoriz
 
 ## First-run proposal
 
-After dependencies are implemented, propose exactly one current cheap model and one pineapple Gate 1 case. Verify pricing and remaining allowance at that time. Present the concrete worst-case reservation for owner authorization. Do not preselect a model in this design document because availability and pricing change.
+After dependencies are implemented, propose exactly one current compatible cheap model and one Gate 1 case within the [conservative preset](../../technical/usage-policy.md#conservative-development-preset-and-first-paid-gate). Prefer pineapple if its complete packet fits; otherwise choose a smaller meaningful case, never increase limits automatically. Verify pricing, window eligibility and remaining allowance at that time. Present the concrete worst-case reservation for owner authorization. Do not preselect a model because availability and pricing change. A first-run success does not authorize Gate 2 or recurring usage.
 
 ## Current checkpoint
 

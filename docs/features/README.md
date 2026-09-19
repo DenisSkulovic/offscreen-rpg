@@ -14,7 +14,7 @@ Current prepared work: read [concepts](../concepts.md) and the [bounded-cost con
 
 | Feature | Phases | Ownership |
 | --- | --- | --- |
-| [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1 recipes/preflight → B2 durable envelope → B3 memory integration → B4 cost-quality evidence | Cumulative work/spending, small task-specific context/tools, safe stop/defer behavior |
+| [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1a effective profiles → B1b recipes/preflight → B2a accounting/B2b windows and holds → B3 memory integration → B4 evidence | Configurable account/tier/context/model limits, cumulative work/spending, safe pause/reset recovery |
 | [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |
 | [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | 1 context/provenance → 2 memory documents → 3 exploration → 4 return rehearsal; 5 local hybrid search once the corpus exists | Extraction, summaries, discovery and evidence-grounded turns |
 

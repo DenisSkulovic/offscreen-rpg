@@ -4,6 +4,8 @@ The cost objective is a coherent story within an explicit allowance. We cannot p
 
 For concrete request packets, current-versus-proposed tools, per-call token envelopes and branch-specific gameplay ledgers, see the [Storyteller walkthrough](playthroughs/storyteller.md). Those offline estimates are not measured usage or permission to enable inference; this document owns the shared accounting/context contract.
 
+[Usage policy](usage-policy.md) owns configurable account/tier entitlements, lower player/story limits, fixed/rolling usage windows, on-demand consent and pause/recovery. Provider capacity is only an upper capability bound: effective application context/output limits can be much lower. The conservative development preset there is stricter than the general offline recipe tuning candidates below.
+
 ## Current development allowance
 
 The user allocated $10 of OpenRouter credit on 2026-09-17 to last at least one month. This is a shared total across development and live evaluation, not a per-session allowance. Prefer no-LLM tests; deliberate live checks should use dirt-cheap models with bounded context, output and attempts. The deposit is not a verified current balance. Do not automatically replenish it or reset the allowance after a calendar boundary.

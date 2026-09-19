@@ -65,13 +65,13 @@ The current live phase identifies a quiet interval, a decision awaiting input or
 | Condition | Visible behavior and recovery |
 | --- | --- |
 | Manual pause | No progression; authorized resume preserves remaining time and any independent blocker. |
-| Insufficient generation allowance | Show the limit/reason; permit a valid saved continuation or hold. A recovery command rechecks funding before more generation. |
+| Insufficient generation allowance | Show the binding window/funding limit and eligible time when known; preserve saved results or hold required progression. Explicit Resume rechecks every limit; no implicit on-demand charge. |
 | Invalid output or exhausted provider retries | Keep the committed situation. Offer bounded retry where authorized; do not reapply the last effect. |
 | Unresolved external billing outcome | Show generation held; retain its reservation until reconciled. Ordinary retry cannot bypass it. |
 | Missing participant policy or no permitted autonomous response | Hold the affected resolution and identify what input/authority is needed. |
 | Delayed processing/service unavailable | A received command remains pending; do not mislabel it as completed or as a player's manual pause. |
 
-Entering a progression blocker preserves remaining time through the same timing rules as a hold. Recommended first behavior is explicit resume/retry after a material blocker clears, so a story does not unexpectedly restart hours after the player left; whether to offer automatic recovery remains a product choice. Reading a story, choosing to pause and checking operation status must not themselves need inference budget.
+Entering a progression blocker preserves remaining time through the same timing rules as a hold. The prepared [usage policy](usage-policy.md#hold-and-recovery-semantics) selects explicit Resume after usage recovery by default; separately opted-in automatic recovery still rechecks all authority and cannot clear manual pause or uncertainty. No held-time catch-up work is awarded. A usage-window reset changes eligibility, not lifetime funding or the accepted intention. Reading a story, choosing to pause and checking operation status must not themselves need inference budget. These window/recovery controls remain unimplemented.
 
 If a decision was sealed before generation failed, retry the same frozen resolution. If a product action permits changing that intention instead, explicitly abandon the resolution, fence its attempts and issue a new decision/version; do not mutate a sealed input behind a retry button.
 
