@@ -371,101 +371,10 @@ test(
               afterNarration.campaign?.offer,
               'Expected the fixture storyteller to offer the retained work',
             );
-            assert.equal(resumeOffer.nodes[0]?.id, 'resume-beacon-repair');
-
-            const [storedResumeOffer] = await database.db
-              .select({ plans: gameOffer.plans })
-              .from(gameOffer)
-              .where(eq(gameOffer.id, resumeOffer.id));
-            const resumePlan = requireDefined(
-              (storedResumeOffer?.plans as unknown[])[0],
-              'Expected a stored resume plan',
+            assert.deepEqual(
+              resumeOffer.nodes.map((node) => node.id),
+              ['resume-beacon-repair', 'secure-repair-tools'],
             );
-            const [storedOpeningOffer] = await database.db
-              .select({ plans: gameOffer.plans })
-              .from(gameOffer)
-              .where(eq(gameOffer.id, offer.id));
-            const openingPlan = requireDefined(
-              (
-                storedOpeningOffer?.plans as Array<{
-                  version: number;
-                  key: string;
-                  label: string;
-                  intention: string;
-                  risk: string | null;
-                  evidence: string[];
-                  requires: unknown[];
-                  requiresStory: unknown[];
-                  requiresQuantities: unknown[];
-                  resolution: {
-                    kind: string;
-                    action?: Record<string, unknown>;
-                  };
-                }>
-              )[0],
-              'Expected a stored process plan',
-            );
-            assert.equal(openingPlan.resolution.kind, 'process');
-            if (
-              openingPlan.resolution.kind !== 'process' ||
-              !openingPlan.resolution.action
-            ) {
-              throw new Error('Expected beacon process definition');
-            }
-            const originalAction = openingPlan.resolution.action as {
-              process: Record<string, unknown>;
-              [key: string]: unknown;
-            };
-            const diversionPlan = {
-              ...openingPlan,
-              key: 'secure-repair-tools',
-              label: 'Secure the repair tools',
-              intention:
-                'Pause the beacon repair long enough to secure the exposed tools.',
-              resolution: {
-                kind: 'process',
-                action: {
-                  ...originalAction,
-                  id: 'secure-repair-tools',
-                  label: 'Secure the repair tools',
-                  description:
-                    'Move and secure the tools before returning to the beacon.',
-                  process: {
-                    ...originalAction.process,
-                    progressLabel: 'Tools secured',
-                    requiredContribution: 3,
-                  },
-                  checks: [],
-                  completion: {
-                    text: 'The repair tools are secured.',
-                    effects: [],
-                  },
-                },
-              },
-            };
-            await database.db
-              .update(gameOffer)
-              .set({ plans: [resumePlan, diversionPlan] })
-              .where(eq(gameOffer.id, resumeOffer.id));
-            await database.db
-              .update(campaignTable)
-              .set({
-                offer: {
-                  ...resumeOffer,
-                  nodes: [
-                    ...resumeOffer.nodes,
-                    {
-                      id: diversionPlan.key,
-                      parent: null,
-                      label: diversionPlan.label,
-                      description: diversionPlan.intention,
-                      risk: diversionPlan.risk,
-                      action: { kind: 'attempt' },
-                    },
-                  ],
-                },
-              })
-              .where(eq(campaignTable.storyId, started.storyId));
 
             await stories.campaignAction({
               ownerId,
@@ -474,7 +383,7 @@ test(
               body: {
                 expectedRevision: afterNarration.revision,
                 offerId: resumeOffer.id,
-                path: [diversionPlan.key],
+                path: ['secure-repair-tools'],
               },
             });
             const commitments = await database.db

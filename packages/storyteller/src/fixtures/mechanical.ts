@@ -597,6 +597,66 @@ function beaconConsequence(
         activityActionId: 'restore-beacon',
       },
     },
+    {
+      version: 1,
+      key: 'secure-repair-tools',
+      label: 'Secure the repair tools',
+      intention:
+        'Leave the interrupted mechanism long enough to move and secure the exposed tools.',
+      risk: 'The beacon repair remains suspended until you deliberately return to it.',
+      evidence: [evidence],
+      requires: [
+        { id: 'beacon-damaged', value: true },
+        { id: 'repair-tools', value: true },
+        { id: 'stranger-at-beacon', value: false },
+      ],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        action: {
+          id: 'secure-repair-tools',
+          label: 'Secure the repair tools',
+          description:
+            'Move and secure the tools before returning to the interrupted beacon repair.',
+          requires: [
+            { id: 'beacon-damaged', value: true },
+            { id: 'repair-tools', value: true },
+            { id: 'stranger-at-beacon', value: false },
+          ],
+          capacity: 'primary',
+          process: {
+            kind: 'contribution.v1',
+            progressLabel: 'Tools secured',
+            requiredContribution: 3,
+            everyTicks: 5,
+            attempt: {
+              check: {
+                rule: 'srd-5.2.1-subset.v1',
+                purpose: 'Secure the exposed repair tools',
+                skill: null,
+                ability: 'intelligence',
+                dc: 8,
+                advantage: false,
+                disadvantage: false,
+                modifiers: [{ source: 'repair tools', value: 2 }],
+              },
+              successContribution: 3,
+              failureContribution: 0,
+              successText:
+                'The tools are moved, checked and secured against the weather.',
+              failureText:
+                'The hurried attempt consumes time, but the exposed tools are not yet secure.',
+            },
+          },
+          checks: [],
+          completion: {
+            text: 'The repair tools are secured and ready for the beacon work to continue.',
+            effects: [],
+          },
+        },
+      },
+    },
   ];
 }
 

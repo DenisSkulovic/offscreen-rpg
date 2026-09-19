@@ -307,7 +307,10 @@ export function validateStorytellerResult(
         evidenceHandles,
       });
       if (validation.kind === 'rejected') {
-        throw new Error(`Invalid action plan: ${validation.issues[0]?.code}`);
+        const first = validation.issues[0];
+        throw new Error(
+          `Invalid action plan: ${first?.code ?? 'unknown'} at ${first?.path || '<root>'}: ${first?.message ?? 'no diagnostic'}`,
+        );
       }
       if (
         !immediateActionAvailable(

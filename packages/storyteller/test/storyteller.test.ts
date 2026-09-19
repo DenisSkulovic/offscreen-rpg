@@ -600,12 +600,21 @@ test('beacon interruption plans resolve danger before offering process resumptio
   if (cleared.scene.version !== 3) {
     throw new Error('Expected consequence scene');
   }
-  const [resume] = cleared.scene.next.plans;
+  assert.deepEqual(
+    cleared.scene.next.plans.map((plan) => plan.key),
+    ['resume-beacon-repair', 'secure-repair-tools'],
+  );
+  const [resume, diversion] = cleared.scene.next.plans;
   assert.equal(resume?.key, 'resume-beacon-repair');
   assert.deepEqual(resume?.resolution, {
     kind: 'resume',
     activityActionId: 'restore-beacon',
   });
+  assert.equal(diversion?.resolution.kind, 'process');
+  if (diversion?.resolution.kind === 'process') {
+    assert.equal(diversion.resolution.action.capacity, 'primary');
+    assert.equal(diversion.resolution.action.process.requiredContribution, 3);
+  }
 });
 
 test('continuity updates preserve provenance and fail without mutating their base', () => {
