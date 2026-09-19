@@ -8,13 +8,37 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import type { StorytellerProvider } from '@offscreen/storyteller/providers/openrouter';
+import {
+  effectiveUsagePolicySchema,
+  type EffectiveUsagePolicy,
+} from '@offscreen/contracts/usage-policy';
+import { isDeepStrictEqual } from 'node:util';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
   scriptedSource?: (task: StorytellerTask) => unknown | Promise<unknown>;
   realDurationMs?: (gameDurationMs: number) => number;
+  /** Resolves current server authority immediately before transport. */
+  dispatchAuthority?: (input: {
+    generationId: string;
+    ownerId: string;
+    task: StorytellerTask;
+  }) => EffectiveUsagePolicy | null | Promise<EffectiveUsagePolicy | null>;
 };
+
+function retainsCapturedAuthority(
+  task: StorytellerTask,
+  current: EffectiveUsagePolicy | null,
+) {
+  if (task.resources.authority.kind !== 'effective-usage-policy' || !current) {
+    return false;
+  }
+  return isDeepStrictEqual(
+    task.resources.authority.policy,
+    effectiveUsagePolicySchema.parse(current),
+  );
+}
 
 export function createStorytellerExecution(
   database: Database,
@@ -116,13 +140,30 @@ export function createStorytellerExecution(
         await saveOutcome(record.id, attemptId, { state: 'uncertain' });
         return;
       }
-      if (!(await budget.dispatch(attemptId, task.execution))) {
+      let authorityGranted = false;
+      try {
+        authorityGranted = retainsCapturedAuthority(
+          task,
+          (await options.dispatchAuthority?.({
+            generationId: record.id,
+            ownerId: record.ownerId,
+            task,
+          })) ?? null,
+        );
+      } catch {
+        // Resolver failure is denial. It must not turn into an uncertain call.
+      }
+      if (
+        !(await budget.dispatch(attemptId, task.execution, authorityGranted))
+      ) {
         // A racing delivery could already have dispatched. Inspect, never assume no charge.
         const stateNow = await budget.attemptState(attemptId);
         if (stateNow === 'unsent') {
           await saveOutcome(record.id, attemptId, {
             state: 'failed',
-            failureCode: 'budget_unavailable',
+            failureCode: authorityGranted
+              ? 'budget_unavailable'
+              : 'authority_unavailable',
           });
         }
         return;

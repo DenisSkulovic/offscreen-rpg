@@ -325,7 +325,11 @@ export function createStorytellerBudget(database: Database) {
         return 'reserved' as const;
       });
     },
-    async dispatch(id: string, execution: ProviderExecution) {
+    async dispatch(
+      id: string,
+      execution: ProviderExecution,
+      authorityGranted: boolean,
+    ) {
       return database.db.transaction(async (tx) => {
         const { account, allowance } = await lockAllowance(tx, execution);
         const [record] = await tx
@@ -349,7 +353,12 @@ export function createStorytellerBudget(database: Database) {
           .from(attempt)
           .where(eq(attempt.state, 'uncertain'))
           .limit(1);
-        if (account.stopped || !allowance.enabled || unknown) {
+        if (
+          !authorityGranted ||
+          account.stopped ||
+          !allowance.enabled ||
+          unknown
+        ) {
           await tx
             .update(attempt)
             .set({

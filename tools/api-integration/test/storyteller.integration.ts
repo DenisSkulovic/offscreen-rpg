@@ -1748,8 +1748,8 @@ test(
               (await budget.inspect(accountId)).reservedMicrousd,
               102n,
             );
-            assert.equal(await budget.dispatch(winner, execution), true);
-            assert.equal(await budget.dispatch(winner, execution), false);
+            assert.equal(await budget.dispatch(winner, execution, true), true);
+            assert.equal(await budget.dispatch(winner, execution, true), false);
             const settlement = {
               id: winner,
               execution,
@@ -1837,6 +1837,10 @@ test(
             );
             let calls = 0;
             const source = createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
               provider: async (task) => {
                 calls++;
                 return {
@@ -1855,6 +1859,32 @@ test(
               storyteller: { id: 'absurd-action-comedy', revision: 1 },
               expectedRevision: 0,
             });
+            const deniedId = randomUUID();
+            await profiled.request(ownerId, draftId, deniedId, 1);
+            await createStorytellerRuntime(database, {
+              provider: async (task) => {
+                calls++;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('must-not-dispatch'),
+                };
+              },
+            }).complete(deniedId);
+            assert.equal(calls, 0);
+            const [deniedAttempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, deniedId));
+            const [deniedOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, deniedId));
+            assert.equal(deniedAttempt?.state, 'unsent');
+            assert.equal(deniedOperation?.state, 'open');
+            assert.equal(deniedOperation?.reservedRounds, 0);
+            assert.equal(deniedOperation?.reservedMicrousd, 0n);
             const id = randomUUID();
             await profiled.request(ownerId, draftId, id, 1);
             await source.complete(id);
@@ -1903,6 +1933,10 @@ test(
             const uncertainId = randomUUID();
             await profiled.request(ownerId, draftId, uncertainId, 1);
             const uncertain = createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
               provider: async () => {
                 calls++;
                 return {
