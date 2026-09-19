@@ -1,5 +1,7 @@
 # How a story could unfold
 
+Use [Gameplay and Storyteller concepts](concepts.md) for the domain vocabulary. The Storyteller prepares a **turn**; the player receives narration and, when interaction is needed, a **decision point**. Multiple turns can share a scene and the same game-clock tick. Activities occupy eligible time. No chapters, literary boundaries or fixed turn durations are implied.
+
 The working approach is one generic progression flow. Walking, noticing a tower, making an agreement, spending an afternoon somewhere and meeting a stranger can all become moments in the same chronology. We do not need a dedicated software system for each verb. This overview connects the product; the [playthrough](playthroughs.md) shows it from the players' perspective.
 
 ## From intention to continuation

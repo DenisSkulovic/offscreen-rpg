@@ -2,20 +2,25 @@
 
 Read with the [atlas legend](README.md#how-to-read-a-claim). Reusable authority belongs to [rules and activities](../rules-and-activities.md), [execution](../execution.md) and the activity/autonomy plans, not to the invented field names in these examples.
 
+The authoritative vocabulary is [Gameplay and Storyteller concepts](../../concepts.md). A Storyteller turn prepares the next playable situation; a decision point is the player's opportunity to respond; a scene can span many such exchanges. Passage is a publication record. None is a chapter or fixed time unit.
+
 ## The things the player experiences
 
 | Thing | Example | Technical meaning |
 | --- | --- | --- |
-| Scene / passage | Gary guards the window | Published narrative tied to committed chronology. “Node” need not be a second engine concept. |
+| Scene | Gary guards the window throughout a conversation | Current dramatic/perceptual context; may span several turns and decisions |
+| Storyteller turn | Narrate Gary's answer and prepare the next choices | One bounded logical operation; may use multiple model rounds before publication |
+| Passage | The published account of Gary's answer | Recorded narration tied to committed chronology; does not automatically begin a new scene |
+| Decision point | The player can choose what to do about Gary's answer | A current authored offer requiring selection; no literary or clock boundary |
 | Offer | Talk Gary down / take cover | Public intentions and risks, backed by private admitted plans. Selecting a label is not submitting arbitrary effects. |
 | Immediate action | Take cover now | Automatic outcome or supported check; receipt/effects without an activity or tick advance. |
 | Activity | Repair, patrol, travel | Durable work over eligible simulated time. The rule determines progress, not the text label or displayed ETA. |
 | Boundary | Repair attempt due at tick 5 | A meaningful settlement position. No row, timer or model request is required for every intermediate tick. |
 | Event | A stranger reaches the landing | A committed development and, when required, a new interaction. Not synonymous with every failed roll. |
-| Report | “The gate was reached at dusk” | Explanation of committed history. It need not create choices, rewards or a hold. Generated report-only tasks are proposed. |
+| Report | “The gate was reached at dusk” | Explanation of committed history. The implemented report-only path does not create current choices, rewards or a hold. |
 | Chain | Travel → sleep → travel | Bounded accepted successor intentions with revalidated starts. Not one giant activity with duplicated rewards. |
 
-The current runtime has immediate actions and a contribution activity; many other rows describe the target. Narrative-only prepared intervals also exist, but are not proof that authoritative travel, work or inventory transfer exists.
+The current runtime has immediate actions, contribution and wait activities, reports and bounded accepted chains. Broader activity families and document retrieval remain feature work. Narrative-only prepared intervals also exist, but are not proof of authoritative travel mechanics.
 
 ## Three axes that must not collapse into one
 
@@ -64,7 +69,7 @@ The current per-activity cursor is not the intended owner of world chronology. W
 2. The player submits an opaque offer/choice reference, expected state and command identity. The application authenticates and rechecks current authority, eligibility and resources.
 3. The rules resolve an automatic action or make the needed server-side draws. An activity start instead captures accepted terms and begins at zero earned progress.
 4. The transaction commits the receipt, supported effects, consumed offer and any outbox work. A model is not inside that transaction.
-5. Only when the captured follow-up calls for it is a Storyteller task prepared. Current mechanical consequences request this unconditionally; configurability remains proposed.
+5. Only when the captured follow-up calls for it is a Storyteller task prepared. Activity completion supports quiet, historical report and controlling-turn policies; quiet work needs no turn.
 6. Generation and publication are separate. Publication rechecks the source/offer/world fence and admission. A valid but obsolete scene is not authoritative.
 
 Preparation may produce a future scene, but reading its output does not make a villain exist or advance travel. Conversely, when a rule has already committed a hazard, lack of prose or budget cannot erase it. Recovery must retain the real receipt.

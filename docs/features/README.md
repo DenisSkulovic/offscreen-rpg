@@ -10,7 +10,14 @@ Implementation is active under the owner's instruction. Follow this route one co
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
 
-Current architecture steering: the owner requested serious canonical-file design before resuming the next gameplay slice. Read the [campaign document proposal](2026-09-18--20-09--storyteller-memory-and-recall/CANONICAL-FILES.md) and its [Phase 0 handoff](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md#phase-0--canonical-document-storage-and-publication). This is a proposed change to narrative storage ownership and POC memory scope; the runtime remains unchanged. Keep the playable harbor/return flow as its acceptance anchor.
+Current prepared work: read [concepts](../concepts.md), then [canonical files](../technical/canonical-files.md). Implement [canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md), starting C1, then [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) after storage C2. These are implementation features, not another proposal-review gate. The storage runtime is unchanged so far; the harbor/return flow remains the acceptance anchor.
+
+| Feature | Phases | Ownership |
+| --- | --- | --- |
+| [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |
+| [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | 1 context/provenance → 2 memory documents → 3 exploration → 4 return rehearsal; 5 local hybrid search once the corpus exists | Extraction, summaries, discovery and evidence-grounded turns |
+
+No chapters, chapter navigation or chapter-bound generation. A scene may span many Storyteller turns; a memory segment is only a bounded source range.
 
 | Order | Exact slice | Deliverable / boundary |
 | --- | --- | --- |
@@ -24,7 +31,7 @@ Current architecture steering: the owner requested serious canonical-file design
 | 8 | [Autonomy U2c](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2c--finite-accepted-chains) — bounded linear slice implemented | Two-to-six-entry player-accepted sequence with one successor owner, pending cancellation, tick horizon and explicit scene re-entry |
 | 9 | [Earned-loop integration](2026-09-19--00-26--earned-time-playable-loop/PLAN.md) + bounded [agency](2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md)/[return](2026-09-19--00-26--inhabitable-play-and-return/PLAN.md) work | Real gold-session path, changed failure choices and legible return/recovery; minimal UI changes, then owner review |
 
-Do not run all feature plans end-to-end in their directory order. The activity foundation's broad cooperation/loss/traversal phases and autonomy's fallback phases come **after** this connected proof. General premise setup, rich trace UI and live evaluation remain separate gates. Canonical documents and a bounded memory return now belong in the proposed POC scope; larger longevity experiments extend that same path. A short scripted POC does not complete or replace those ambitions.
+Do not run all feature plans end-to-end in their directory order. The activity foundation's broad cooperation/loss/traversal phases and autonomy's fallback phases come **after** this connected proof. General premise setup, rich trace UI and live evaluation remain separate gates. Canonical documents and a bounded memory return now belong in the prepared POC scope; larger longevity experiments extend that same path. A short scripted POC does not complete or replace those ambitions.
 
 Stop for a material product/cost change or an unresolved authority boundary. Routine implementation details within the selected phase do not need repeated approval once the owner starts coding. Checks are optional under repository policy; distinguish source review, executed offline behavior and owner taste. No passing test can authorize provider spend.
 
@@ -48,7 +55,7 @@ Experience owners:
 4. [Inhabitable play and return](2026-09-19--00-26--inhabitable-play-and-return/FEATURE.md) — make the current scene, ongoing life, return recap and recovery states feel like a game rather than an inspector.
 5. [Premise to playable campaign](2026-09-19--00-26--premise-to-playable-campaign/FEATURE.md) — after the play contracts are convincing, replace developer-authored mechanical seeds with reviewed setup proposals for radically different premises.
 
-The [gold session](../technical/playthroughs/harbor-session.md) supplies the mixed-rhythm flow; the solo contract selects a first hold-on-interaction policy. Owner taste and later player-owned creation decisions remain explicit gates. The canonical-file proposal uses that short/earned loop plus a return scene to demonstrate a remembering Storyteller; its document infrastructure must serve a visible gameplay result.
+The [gold session](../technical/playthroughs/harbor-session.md) supplies the mixed-rhythm flow; the solo contract selects a first hold-on-interaction policy. Owner taste and later player-owned creation decisions remain explicit gates. The canonical-file feature uses that short/earned loop plus a return scene to demonstrate a remembering Storyteller; its document infrastructure must serve a visible gameplay result.
 
 ## POC evaluation sequence
 
@@ -66,6 +73,6 @@ The immediate DM loop is paused at an experience-review boundary. Its safety/aut
 1. [Playable DM adjudication loop](2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) — implemented authority spine awaiting meaningful-agency and runtime acceptance.
 2. [Editable storyteller settings](2026-09-18--14-49--editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
 3. [Activity foundation](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — current design priority above; its existing folder now owns the broader activity/participation proposal.
-4. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — draft canonical-file architecture: versioned narrative library and Storyteller bundles, separate exact execution ledger, bounded exploration, admitted document updates and searchable sources. Phase 0 starts local file storage; the POC target is a playable return after discarding conversational context.
+4. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — prepared implementation: source-bounded memories, context selection, admitted updates, exploration and searchable sources. Depends on [canonical storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md), which separately owns file persistence and creative bundles.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

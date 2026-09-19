@@ -85,7 +85,7 @@ This fact boundary is deliberately smaller than an entity system. It supports â€
 
 ## The bounded DM turn
 
-The DM turn is a distinct task type, not an always-running personality process. It receives the current scene, selected prior intention, committed receipts, character capabilities, current facts, storyteller settings, bounded evidence and the supported immediate-action contract. It returns consequence narration and the private plans behind the next public options together.
+A DM turn means a [Storyteller turn](../../concepts.md): the bounded operation that prepares the next playable situation. Existing opening/consequence tasks implement that responsibility; the term does not require a new runner or a new scene per response. It receives current context, selected prior intention, committed receipts, character capabilities, current facts, storyteller settings, bounded evidence and the supported action contract. It returns narration and the private plans behind current possibilities together, including an explicit held result where appropriate.
 
 The first POC captures that small authority snapshot directly. Application code validates every returned plan and may make one bounded repair request with structured diagnostics. The saved original request, rejected output, diagnostics and repair remain inspectable. A second invalid result holds the story explicitly.
 

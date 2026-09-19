@@ -94,9 +94,9 @@ Keep modest identity and episode references for encountered people when later re
 
 ## Context and cost
 
-The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original scenes, chapter summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without that conversation. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
+The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original passages, source-bounded summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without that conversation. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
 
-The proposed [canonical-file contract](features/2026-09-18--20-09--storyteller-memory-and-recall/CANONICAL-FILES.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. The store and retrieval loop are not implemented yet.
+The [canonical-file implementation contract](technical/canonical-files.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. The store and retrieval loop are not implemented yet.
 
 As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request. Durable facts and quantities should not depend exclusively on a lossy summary. A small context can still preserve the spear's owner or the promise made at the mill.
 

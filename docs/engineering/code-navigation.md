@@ -28,6 +28,8 @@ The [architecture specification](../technical/architecture.md) also describes in
 
 ## Terms that otherwise send readers to the wrong file
 
+[Concepts](../concepts.md) owns domain vocabulary. In particular, a Storyteller turn, contextual scene, publication passage and model round are different things. Existing `result.scene` is an output envelope, not proof of a scene lifecycle. The game has no chapter concept.
+
 | Term | Meaning here |
 | --- | --- |
 | Storyteller profile | Creative content/settings captured by a task; not an agent or a model route |
@@ -36,7 +38,7 @@ The [architecture specification](../technical/architecture.md) also describes in
 | Publication | Separate decision to apply a saved result to the still-current story; successful generation alone is insufficient |
 | Offer | Public choices plus separately persisted private plans under an offer identity |
 | Immediate action | Admitted automatic outcome or ability check; resolved directly into one durable action receipt without advancing time |
-| Activity | Persisted contribution process with independent clock/progress values; shared work, participation, other process rules and clock ownership are under redesign |
+| Activity | Persisted commitment with contribution or wait progress under the campaign clock; broader participation/process families remain feature work |
 | Passage / arrival | Committed narrative versus a prepared future slice; arrival is not current evidence before publication |
 | Chamber | Both local tooling and, currently, a wrapper used by ordinary story routes; inspect wiring rather than assuming everything with this name is developer-only |
 

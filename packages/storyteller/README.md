@@ -2,6 +2,8 @@
 
 This package prepares bounded tasks and validates their results. It does not own database transactions, story publication, dice execution or durable retries. Those live in the [application package](../application/README.md). A profile is creative data; it is not a running agent.
 
+[Concepts](../../docs/concepts.md) distinguishes a **Storyteller turn** (prepare the next playable situation), a **model round** (one request/response), a **passage** (published narration) and a **scene** (context that can span several turns). `result.scene` is the existing output-envelope name; it does not open a new scene lifecycle. Historical report tasks have a different output contract and do not create a decision point. Canonical file/summary boundaries must not introduce chapters or time advancement.
+
 ## Follow one request
 
 | Stage | Owner | What to inspect |

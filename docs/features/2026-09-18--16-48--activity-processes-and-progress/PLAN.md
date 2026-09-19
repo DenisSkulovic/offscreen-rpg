@@ -186,7 +186,7 @@ Status: implemented in September 2026. The rule/lifecycle portion is complete; q
 
 ## Alternatives and limits
 
-A giant optional-field activity object admits nonsense combinations; use typed rule/policy composition. A class per profession/species requires engine edits for settings; use declared capabilities/targets/methods. Arbitrary generated scripts make validation/replay unpredictable; reject unsupported semantics. A full entity-component world simulator adds scope before proving a better scene; start with relevant actors/targets. The single advancing pointer remains a temporary solo-proof limit, with removal in phase 3. Immediate actions share authority without becoming activities; events/chapters are not process families.
+A giant optional-field activity object admits nonsense combinations; use typed rule/policy composition. A class per profession/species requires engine edits for settings; use declared capabilities/targets/methods. Arbitrary generated scripts make validation/replay unpredictable; reject unsupported semantics. A full entity-component world simulator adds scope before proving a better scene; start with relevant actors/targets. The single advancing pointer remains a temporary solo-proof limit, with removal in phase 3. Immediate actions share authority without becoming activities; events and Storyteller turns are not process families. Use [concepts](../../concepts.md), which excludes chapters from the game model.
 
 ## Current checkpoint
 

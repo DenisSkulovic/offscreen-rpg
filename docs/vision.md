@@ -62,7 +62,7 @@ Risk matters for the same reason. The storyteller must not protect accumulated p
 
 Real waiting is not mandatory friction. Immediate events remain immediate. A reply in an active conversation should not acquire an artificial hour-long timer. Picking up an object beside the character need not take fifteen minutes merely because the game supports long-running activities. Duration should come from what is happening in the fiction, the campaign's selected pace and supported rules.
 
-The important distinction is between **instant narration** and **earned progression**. An ordinary chat interface can invent the next chapter immediately; Offscreen RPG should preserve the cost, elapsed time, state and uncertainty between intention and outcome.
+The important distinction is between **instant narration** and **earned progression**. An ordinary chat interface can declare a journey completed immediately; Offscreen RPG should preserve the cost, elapsed time, state and uncertainty between intention and outcome.
 
 The game should therefore make unfinished activity visible. A player can know that their character is travelling, working, recovering or waiting without receiving fresh prose every minute. Relevant developments can interrupt that activity. If nothing meaningful happens, the activity can finish quietly and commit its result.
 
@@ -76,7 +76,7 @@ Ordinary life is not limited to following a prepared itinerary. The Storyteller 
 
 The Storyteller also directs the moment-to-moment rhythm within campaign preferences and mechanical authority. A rapid run of narration and choices with no activity menu is as fundamental as hours-long offscreen travel. The game must support either without forcing an alternation, inserting fake waits into immediate exchanges, or reopening routines after every resolved event. See [Storyteller-directed pace](gameplay.md#storyteller-directed-pace).
 
-Here, activity means a commitment extended over time. Immediate dialogue choices or individual attempts remain actions even when they share the same mechanical policies. A chapter is a way to organize history, not a scheduling unit. The same fiction can change resolution detail: an ordinary patrol uses an admitted routine, while a consequential encounter opens a scene and resolves specific actions. Both use the same authoritative character and world state.
+Here, activity means a commitment extended over time. Immediate dialogue choices or individual attempts remain actions even when they share the same mechanical policies. A Storyteller turn prepares the next narration and authored possibilities; many turns can develop the same scene rapidly. There are no chapters in the game model. The same fiction can change resolution detail: an ordinary patrol uses an admitted routine, while a consequential encounter develops through specific decisions. Both use the same authoritative character and world state. [Concepts](concepts.md) defines these boundaries.
 
 The owner proposed planning rest followed by patrol as an illustration of unattended life. The direction is bounded player-selected intentions, not a mandatory daily timetable, eight-hour sleep rule or universal routine planner. Preparation may involve the Storyteller; executing known routine rules and permitted transitions should need no inference. Spending authority for a new scene is separate from permission to continue routine work. The queue, event-selection and absence policies remain proposals in [bounded autonomy](features/2026-09-19--00-26--bounded-autonomy-and-reentry/FEATURE.md).
 

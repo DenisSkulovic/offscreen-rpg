@@ -43,7 +43,7 @@ Keep three permissions separate: execution of accepted routine terms, delegated 
 
 The proposed first solo interactive-event policy holds the scene's clock at the escalation boundary while content is prepared and during the declared response opportunity. Report-only narration need not hold it. The response allowance begins when valid options publish, not when a background request starts. A serious event can therefore stop the remaining overnight plan; that tradeoff must be visible. Continuing danger, human multiplayer and broad unsupervised combat are separate choices.
 
-Events are selected, not compulsory. Independent occurrence cadence and campaign-scoped cooldown/repetition rules prevent every work check becoming drama. A useful scene may be an ordinary relationship, discovery or opportunity, not only a threat. An event may resolve back into the routine or lead into several active scenes; it need not create a chapter or immediately resume queued work.
+Events are selected, not compulsory. Independent occurrence cadence and campaign-scoped cooldown/repetition rules prevent every work check becoming drama. A useful interaction may concern an ordinary relationship, discovery or opportunity, not only a threat. An event may resolve back into the routine or lead into several Storyteller turns within the same scene; it does not automatically resume queued work. See [concepts](../../concepts.md).
 
 ## Scope and boundaries
 

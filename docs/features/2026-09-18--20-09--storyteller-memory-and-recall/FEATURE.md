@@ -1,8 +1,10 @@
 # Storyteller memory and situated recall
 
-Status: Draft technical proposal. The owner requested durable memory and pre-narrative exploration on 2026-09-18, then canonical files, searchable knowledge and reduced database content ownership on 2026-09-19. Those product directions are explicit. The [canonical-file design](CANONICAL-FILES.md) defines the proposed ownership/publication boundary and brings a connected document workspace into POC scope; it is not implemented, and no hosted storage or inference is enabled by this proposal.
+Status: Prepared for implementation; not implemented. The owner requested durable memory/exploration and canonical files, then explicitly requested implementation feature files on 2026-09-19. [Canonical storage](../2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) owns persistence and creative bundles; this feature owns extraction, context selection, retrieval, exploration and admitted memory updates. The shared contract is [canonical files](../../technical/canonical-files.md). No paid services or live inference are enabled.
 
 ## Intended outcome
+
+Follow [concepts](../../concepts.md): a scene can span many Storyteller turns; a passage records published narration; a memory segment is only a bounded source range. Existing episodic-memory terminology means this derived memory, not an episode of gameplay. No chapters or mandatory narrative arcs.
 
 A continuing life can accumulate places, people, possessions, promises and experiences without either replaying its entire history into every prompt or forgetting whichever detail leaves a recent-message window. Each DM invocation receives a small, task-specific working set, knows what relevant evidence is available, and can request bounded additional evidence. A versioned campaign document library and the committed execution ledger remember the life; the model's conversation is disposable. Canonical documents own narrative knowledge, while exact mechanical state retains transactional authority.
 
@@ -53,7 +55,7 @@ In the microbe contrast, a previously encountered chemical environment and persi
 | Chronology and receipts | Original published prose, accepted choices and mechanical results | Durable primary evidence. Retrieved selectively and never replaced by summaries |
 | Working prompt | Instructions and selected projections from the above | Disposable task input; not the store of truth |
 
-These are responsibilities, not seven services or seven new table families. Narrative identities, episodes and threads become linked versioned documents; source passages remain recoverable originals. The execution ledger retains exact character state and item ownership. Directory/search metadata can be indexed in a database without making it the canonical owner of document bodies. See [file ownership](CANONICAL-FILES.md#one-owner-per-kind-of-truth).
+These are responsibilities, not seven services or seven new table families. Narrative identities, episodes and threads become linked versioned documents; source passages remain recoverable originals. The execution ledger retains exact character state and item ownership. Directory/search metadata can be indexed in a database without making it the canonical owner of document bodies. See [file ownership](../../technical/canonical-files.md#one-owner-per-kind-of-truth).
 
 ### Identity, claims and knowledge
 
@@ -101,8 +103,8 @@ Do not simply remove `boundStorytellerContext`'s evidence checks. Change the con
 
 Keep summaries about bounded source episodes, not one constantly rewritten autobiography.
 
-- An episode covers a committed scene or a contiguous segment of a long scene. A new beat does not automatically require a new scene; a conversation lasting 200 turns still needs segment boundaries.
-- Proposed initial segment trigger: scene closure, or 12 passages / 24 KiB of new raw prose since the last segment, whichever happens first. These are tuning values for offline evaluation, not game rules or proof that a provider call will fit.
+- A memory segment covers a bounded contiguous source range. One scene can require several such segments; a conversation lasting 200 turns continues normally across their storage boundaries.
+- Initial segment trigger: a useful context change, or 12 passages / 24 KiB of new raw prose since the last segment, whichever happens first. This is a memory-maintenance boundary; it cannot require scene closure, pause gameplay or introduce a new decision. These are tuning values for offline evaluation, not game rules or proof that a provider call will fit.
 - An episode card contains source range/hash, primary place, durable participants/items, important decisions, changed-state references, unresolved links and a few distinctive relational/sensory anchors. Preserve why something mattered, not only resource deltas.
 - Mechanical deltas and identities are derived from admitted records. Narrative interpretations are proposed by the DM and labelled derived. No hidden personality rewrite or global numerical friendship score is required.
 - Proposed cards are validated and become eligible only after their covered sources commit. A summary closing the previous scene cannot cite a prepared arrival.
@@ -162,7 +164,7 @@ The target DM lifecycle is **orient → explore if useful → compose final turn
 | `inspect_memory` | Returned episode/identity/thread handle and requested view | Current card at the captured state or an episode synopsis with provenance |
 | `read_source` | Permitted source handle and bounded paragraph/range selector | Exact committed excerpt or receipt, its sequence/time and continuation metadata |
 
-These may be represented by a provider-neutral structured `needs_context` result and application-dispatched reads rather than vendor tool calling. Their schemas are task-specific. The [document workspace](CANONICAL-FILES.md#agent-working-cycle) adds bounded directory/section navigation over the same records, without arbitrary SQL, host filesystem or cross-story access. Document edits are proposals with expected revisions, admitted separately from reads.
+These may be represented by a provider-neutral structured `needs_context` result and application-dispatched reads rather than vendor tool calling. Their schemas are task-specific. The [document workspace](../../technical/canonical-files.md#agent-working-cycle) adds bounded directory/section navigation over the same records, without arbitrary SQL, host filesystem or cross-story access. Document edits are proposals with expected revisions, admitted separately from reads.
 
 Proposed execution envelope: zero to two exploration rounds followed by one final generation, within three model rounds and six total read operations per DM turn. Recall and schema/admission repair share the same total; do not multiply a three-round agent by a separate repair allowance. At most one repair after invalid final output, only if a round remains. A `needs_context` round is not a failed attempt and cannot publish prose or effects. The first response may request reads without drafting any story; exploratory candidates are private and do not precommit narrative events.
 
@@ -186,7 +188,7 @@ Use different retrieval paths for different questions:
 
 The DM asks a scoped `search_memory` question; application code owns whether available lexical, semantic or hybrid retrieval serves it. Advertise which modes are actually enabled. Semantic similarity suggests candidates, never truth, ownership, identity equality, chronology or relevance by itself. Resolve candidates back to committed sources and check newer authoritative state before use. The same distinction applies to automatically generated hints.
 
-Semantic/hybrid retrieval is in the proposed POC evaluation scope, alongside exact paths, identity links and lexical search. Establish the lexical baseline for comparison, not as a reason to defer canonical files. Evaluate a disposable PostgreSQL/pgvector index or a dedicated search service behind the same document contract; neither owns canonical prose. Engine selection must preserve version, knowledge and source filters. See [search design](CANONICAL-FILES.md#search-belongs-in-the-poc).
+Semantic/hybrid retrieval is in the prepared POC scope, alongside exact paths, identity links and lexical search. Establish the lexical baseline for comparison, not as a reason to defer canonical files. Evaluate a disposable PostgreSQL/pgvector index or a dedicated search service behind the same document contract; neither owns canonical prose. Engine selection must preserve version, knowledge and source filters. See [search design](../../technical/canonical-files.md#search-belongs-in-the-poc).
 
 Before enabling embeddings, specify chunk granularity, embedding model/version, source hash, story/visibility/time filtering, rebuild/deletion behavior and incremental index coverage. Embed only eligible committed source/summary versions, not prepared branches or every repeated prompt. Query embedding and backfill charges also count as inference; no hidden paid call inside an apparently read-only tool. Explicitly authorize the model/data destination and cost. When semantic search is disabled or lagging, report that and preserve lexical/raw-source access.
 
@@ -227,7 +229,7 @@ Keep this inspection accessible through existing artifact/QA facilities. Do not 
 
 ## 8. Persistence and update ownership
 
-Use a canonical document library for lore, identities, chapters, narrative threads and Storyteller guidance. Preserve exact transactional ownership for mechanical state, decisions, publication fences and spending. The [canonical-file design](CANONICAL-FILES.md) owns the file layout, metadata, semantic-search contract, extraction rules, storage publication/recovery and export semantics; do not implement a competing content schema here.
+Use a canonical document library for lore, identities, source-bounded memories, narrative threads and Storyteller guidance. Preserve exact transactional ownership for mechanical state, decisions, publication fences and spending. The [canonical-file contract](../../technical/canonical-files.md) owns the file layout, metadata, semantic-search contract, extraction rules, storage publication/recovery and export semantics; do not implement a competing content schema here.
 
 The first local adapter stores immutable objects under ignored runtime data. A committed manifest names their logical paths and versions. Publication selects the manifest root atomically with related execution changes after object staging succeeds. Search/backlinks are rebuildable projections with explicit coverage. A bucket adapter can replace local storage without changing Storyteller tools. A temporary view of SQL sources is labelled a projection, followed by an explicit ownership transfer of narrative bodies; merely adding an export button does not complete file ownership.
 
@@ -258,7 +260,7 @@ Use a fixture with 200 scenes, 40 locations, 120 recurring identities, 60 conseq
 | Multi-hop discovery within bounds | Search reveals a new permitted handle, next round inspects it, final round composes; hints do not fence discovery to their initial IDs |
 | Scoped counts and incomplete pages | Exact/lower-bound/unknown distinguished; hidden records do not leak via totals; quantities never inferred from search counts |
 | Semantic paraphrase with misleading neighbor | Relevant episode retrieved when enabled; similar but contradictory/unrelated material is not promoted to truth |
-| Dense chapter with few scenes | Large participant/event density exercises budgets even before the history has many chapters |
+| Dense conversation with few turns | Large participant/event density exercises budgets without inventing literary partitions |
 | Disposable conversation and index | A new invocation reconstructs useful context from canonical documents plus exact state; rebuilding the index loses no narrative content |
 | Document publication and export | A conflicting multi-file update cannot partially publish; a knowledge export preserves original evidence and does not pretend to replace the executable save ledger |
 | Storyteller bundle revised | New tasks use the selected bundle revision; captured tasks retain their exact guidance and source versions |
@@ -270,13 +272,13 @@ After offline acceptance and separately authorized funding, evaluate a small gro
 
 ## Decisions and exclusions
 
-Recommended design decisions: fresh per-task context; stored versus loaded memory separation; source-backed bounded episodes; automatic identity/scene recall first; small read-only recall second; receipt authority; one shared attempt/repair allowance; no automatic spending or model switching.
+Implementation decisions: fresh per-task context; stored versus loaded memory separation; source-backed bounded episodes; automatic identity/scene recall first; small read-only recall second; receipt authority; one shared attempt/repair allowance; no automatic spending or model switching.
 
-Implementation scope and ordering are specified as a concrete proposal in PLAN.md. Record counts, budget allocation, segment thresholds and recall ceilings remain tuning defaults. The owner requested canonical-file thinking and pre-narrative exploration; this pass designs them without migrating runtime storage. Semantic retrieval belongs in the POC evaluation, with backend/model selection and any paid provisioning still explicit. Rich secret-world simulation, adversarial NPC beliefs, autonomous memory agents, full maps, image generation and whole-lifetime resummarization remain outside this feature.
+Implementation scope and dependencies are defined in PLAN.md. Counts, budget allocation, segment thresholds and recall ceilings are versioned initial tuning values. Implement within the prepared local/offline scope without reopening routine phase approval. Backend/model selection is an explicit Phase 5 deliverable; paid provisioning remains outside this scope. Rich secret-world simulation, adversarial NPC beliefs, autonomous memory agents, full maps, images and whole-lifetime resummarization are outside this feature.
 
 ## Owning specifications and research
 
-Product: [continuity](../../continuity-and-consequences.md), [vision](../../vision.md), [benchmarks](../../playthroughs.md). Technical: [context and cost](../../technical/context-and-cost.md), [runtime](../../technical/storyteller-runtime.md), [data](../../technical/data.md). This proposal owns the unapproved extension; after agreement, fold its stable contracts into those specifications.
+Product: [continuity](../../continuity-and-consequences.md), [vision](../../vision.md), [benchmarks](../../playthroughs.md). Technical: [context and cost](../../technical/context-and-cost.md), [runtime](../../technical/storyteller-runtime.md), [data](../../technical/data.md). These documents own permanent contracts; this folder owns unfinished implementation and acceptance. Fold completed behavior and actual evidence into the permanent owners, then remove the feature folder when its scope is delivered.
 
 Research informs the design, not a claimed benchmark result for this game:
 
