@@ -22,6 +22,8 @@ Every relevant diagnostic record carries available correlation identities:
 
 Structured application logs use the same identities and stable event names. Human prose belongs in diagnostic messages/artifacts, not in the event-name field.
 
+Activity lifecycle events are linked inputs to a trace, not generic log messages. The trace may correlate an activity event with its command, boundary, rolls, outbox delivery and resulting state, but it cannot replace the durable player-facing activity ledger.
+
 ## Captured artifacts
 
 For each operation, retain safe inspectable forms of:
@@ -80,6 +82,8 @@ Default views summarize. Raw JSON is available behind deliberate expansion so or
 ## Logs and storage
 
 Use structured local logs for process/runtime incidents and persisted trace artifacts for durable inspection. Do not depend on terminal scrollback. The first implementation stays local and database-backed, with optional OpenTelemetry-compatible emission later. Langfuse or another hosted platform is not required for the POC and must not receive data without a separate privacy/cost decision.
+
+Every emitted runtime record has a stable event name, severity and relevant correlation IDs. Expected stale commands or domain rejections remain typed outcomes rather than stack-trace errors. Retryable infrastructure failures include the retained operation/notice identity, while warnings identify degraded or suspicious conditions that do not yet invalidate authority. Logging calls accept structured safe fields; callers do not interpolate arbitrary requests, SQL errors, provider bodies or secrets into messages.
 
 Trace writes participate in the correct lifecycle boundary:
 

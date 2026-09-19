@@ -490,6 +490,98 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
   }),
   defineCase({
+    id: 'activity-history-and-diagnostics',
+    version: 1,
+    name: 'Activity history and diagnostics',
+    purpose:
+      'Prove that committed activity lifecycles remain understandable after reload and runtime failures carry actionable correlation without becoming gameplay authority.',
+    risk: 'Completed work may disappear, retries may duplicate history, hidden mechanics may leak, or generic errors may make failed background work impossible to diagnose.',
+    costClass: 'offline',
+    availability: {
+      state: 'planned',
+      reason:
+        'The activity-event ledger and structured runtime logger are not implemented yet.',
+    },
+    prerequisites: [
+      'Persist and project player-safe activity lifecycle events.',
+      'Add deterministic duplicate-delivery and retryable-worker-failure controls with captured structured diagnostics.',
+    ],
+    initialScenario: 'beacon-watch.v1',
+    drivers: ['manual-chamber', 'browser-automation'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'record-lifecycle',
+        name: 'Record one exact lifecycle',
+        importance: 'poc-blocker',
+        preconditions: ['Beacon repair is explicitly authorized.'],
+        action:
+          'Start repair, pause and resume it, trigger the controlled interruption, switch to B, and return to A.',
+        observableExpectation:
+          'Activity history explains the ordered transitions using recognizable labels and reasons.',
+        authoritativeExpectation:
+          'Events retain exact activity IDs, revisions, world ticks and stable causes under the same commits as their state changes.',
+      }),
+      stage({
+        id: 'retain-terminal-history',
+        name: 'Retain terminal work after reload',
+        importance: 'poc-blocker',
+        preconditions: ['At least one activity has completed.'],
+        action:
+          'Reload after completion and inspect activity history separately from current commitments.',
+        observableExpectation:
+          'Completed work remains readable even though it is no longer an active commitment.',
+        authoritativeExpectation:
+          'The terminal event links permitted roll/effect evidence without exposing private plans, secret DCs, or undiscovered facts.',
+      }),
+      stage({
+        id: 'replay-without-duplicates',
+        name: 'Replay delivery without duplicate events',
+        importance: 'poc-blocker',
+        preconditions: ['A recorded boundary or control command exists.'],
+        action:
+          'Redeliver the same command and worker notice, then reload history.',
+        observableExpectation:
+          'No lifecycle entry or mechanical outcome appears twice.',
+        authoritativeExpectation:
+          'Stable cause identities fence duplicate events, rolls, effects, and terminal outcomes.',
+      }),
+      stage({
+        id: 'inspect-runtime-failure',
+        name: 'Inspect a correlated runtime failure',
+        importance: 'major',
+        preconditions: ['A deterministic retryable worker failure is enabled.'],
+        action:
+          'Trigger one failed delivery and inspect the captured diagnostic before retrying successfully.',
+        observableExpectation:
+          'Gameplay history does not claim a fictional failure; retry later continues from committed state.',
+        authoritativeExpectation:
+          'One structured error names the stable event and safe story/activity/operation/notice identities without secrets or arbitrary payloads.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'activity-event-ledger',
+        description:
+          'Ordered public-safe lifecycle events with exact instance, revision, tick, cause, and permitted evidence links.',
+        required: true,
+      },
+      {
+        kind: 'structured-runtime-diagnostics',
+        description:
+          'Stable event name, severity, timestamp and safe correlation identities for the injected retryable failure and recovery.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Use a fresh beacon-watch.v1 story; retain the injected failure identity and do not use direct database edits as lifecycle evidence.',
+    nonAssertions: [
+      'This does not establish production telemetry, analytics, distributed tracing, or hosted log retention.',
+      'Runtime logs are diagnostic evidence, not authority for activity state or rewards.',
+    ],
+  }),
+  defineCase({
     id: 'historical-report-vs-scene',
     version: 2,
     name: 'Historical report versus controlling scene',

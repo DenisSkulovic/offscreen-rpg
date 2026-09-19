@@ -146,6 +146,16 @@ Status: implemented in September 2026. The rule/lifecycle portion is complete; q
 - Acceptance: W completes after ten eligible ticks without rolls/work points; A still requires earned contribution; pause and duplicate completion preserve exact once-only effects. The same rule envelope accepts nonhuman content without mandatory calendar/quantities.
 - Exit: contribution and genuine wait are two supported rules sharing one authoritative clock/lifecycle boundary. Quiet/no-task, reports and chains are delivered in the subsequent named slices, not silently claimed here. Broad repeating/traversal/cooperative variants remain later work.
 
+### 2b — Durable activity history and correlated diagnostics (next observability slice)
+
+- Outcome: the player and Chamber can reconstruct one exact activity lifecycle after reload, while operators receive useful structured warnings/errors without treating logs as game authority.
+- Dependencies: A1/A2 lifecycle identities and current transaction boundaries. This can proceed independently of cooperation and must cover U2b/U2c activity transitions as those slices are added.
+- Add an append-only activity-event table and strict event/detail contract. Write events inside the same story-lock transaction as starts, controls, switches, boundary transitions and terminal effects. Fence replay by stable cause identity plus event kind; do not log no-op scheduler polling.
+- Project bounded newest-first player-safe activity history separately from current commitments. Include exact instance, world tick, revision, safe reason, and permitted links/summaries for rolls/effects. Completed instances remain discoverable; private plans, secret DCs and undiscovered blockers do not.
+- Introduce one small structured runtime logger boundary for API/worker application incidents with stable event names, severity and correlation fields. Replace generic activity/outbox worker errors first. Preserve sanitized Temporal failures and never serialize arbitrary errors, requests, SQL or provider content.
+- QA: start → pause → resume; A → B → A; block and completion-pending; quiet completion; duplicate command/outbox delivery; reload. Assert one ordered event sequence, terminal history retention, redaction and correlation. Inject one retryable worker failure and verify an actionable error record without changing gameplay history.
+- Exit: activity history is durable and readable; expected domain outcomes, warnings and operational errors are distinguishable; the remaining trace explorer may enrich cross-system artifacts without inventing a second activity ledger.
+
 ### 3 — Work, actors, roles and claims
 
 - Depends on phases 1–2. Separate participants from work, persist relevant actors/pools/claims, and replace advancing-pointer authority with a bounded active set and earliest-boundary scheduler. Implement independent contribution, assistance and atomic leave/reassign/switch.
@@ -180,9 +190,9 @@ A giant optional-field activity object admits nonsense combinations; use typed r
 
 ## Current checkpoint
 
-- Current phase: A1 and A2 are implemented. Campaign storage owns clock anchor/pace/remainder/frontier; activity storage owns effort, typed rule progress and pending completion. Resume publication binds exact instance/revision and selection fences it. The next connected slice is situations S2 plus autonomy U2a, not the broad cooperation phase.
-- Implemented boundary: version-6 plans use a strict contribution-or-clock-wait process union. Shared dispatch owns initial progress, next boundary, settlement, completion estimate and projection. Ten eligible wait ticks complete without a d20/work points; contribution remains roll-earned. The nonhuman microbe fixture exercises the wait through ordinary Storyteller authorization and campaign admission.
-- Verification: affected packages and production web build; 22/22 game and 29/29 Storyteller tests pass. After recreating the disposable database, the focused integration passes 11/11 through PostgreSQL, Temporal and browser creation. It proves wait completion at tick 10, zero rolls and duplicate completion no-op. Its A→B→A branch still uses direct B completion and explicit test-only offer rebinding, so it is not claimed as real BC-04 settlement evidence.
-- Known boundary: completion still admits consequence narration. Zero-task completion, factual continuation and independently repeated authored routines belong to S2/U2a. One advancing activity remains the explicit limit.
+- Current phase: A1, A2 and bounded S2/U2a are implemented. Before broad cooperation, implement phase 2b's durable activity lifecycle ledger and correlated diagnostics alongside U2b storage work so new follow-up transitions are observable from their first version.
+- Implemented boundary: version-6 plans use a strict contribution-or-clock-wait process union. Shared dispatch owns initial progress, next boundary, settlement, completion estimate and projection. Quiet completion, finite story-scoped occurrence and exact A→B→A resumption exist, but there is no unified durable lifecycle-event projection; completed rows, rolls, passages and generic process errors must currently be inspected separately.
+- Verification: current focused evidence is recorded in `docs/progress.md`. This checkpoint is a source audit/design correction only; no activity ledger or structured runtime logger has been implemented or executed yet.
+- Known boundary: one advancing activity remains the explicit limit. The player-facing ledger and operational diagnostic stream are separate responsibilities; neither may become a universal event-sourcing rewrite or expose private plans/hidden checks.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.

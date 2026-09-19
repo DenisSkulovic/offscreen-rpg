@@ -44,6 +44,7 @@ In a contrasting story, an abstract consciousness allocates two declared attenti
 | World clock | Simulation ordering and elapsed time, independent of productive progress |
 | Process rule | Meaning of progress, due boundaries, completion and estimates |
 | Consequence | Committed effects and their recipients; narration subsequently explains them |
+| Activity event | Durable, ordered lifecycle fact for player history and mechanical audit; distinct from prose and runtime logging |
 
 These are responsibilities, not a table or base class per noun. Immediate actions share admission, capability, cost and effect policies without becoming activities or creating long-running process records. Reserve activity for something extended in time; the generic admission/effect layer can support both.
 
@@ -96,6 +97,8 @@ Unsupported mechanics produce a useful hold or a supported approach. Do not turn
 
 The view should answer: what am I doing, who is helping, what remains, what could interrupt it, and can I leave or return? Show relevant commitments and known blockers. Estimates disclose their assumptions and can be unknown. Keep the scene central; a colony-management dashboard and UI redesign are outside this task.
 
+The history should also answer what happened while the player was away: which exact activity started, accumulated work, paused or switched, why it stopped, what checks/effects mattered, and whether it completed. Preserve typed lifecycle events after completed activities disappear from the compact commitments view. This is separate from developer diagnostics: structured runtime logs explain execution and retry incidents using correlation IDs, while the activity ledger explains committed game history in safe player language.
+
 ## Acceptance
 
 - Actual A → B → same A settlement preserves valid work and monotonic chronology; old offers/wake-ups cannot award extra progress.
@@ -107,6 +110,7 @@ The view should answer: what am I doing, who is helping, what remains, what coul
 - Waiting needs no work points. Suspended work can expire or decay; campaign pause follows its declared scope.
 - Failure, expiry, invalidation, reset and abandonment have legible outcomes and no accidental completion rewards.
 - Races between completion, leave and timeout, duplicate delivery and stale narration yield one coherent history.
+- Reloaded activity history shows one ordered lifecycle for each exact instance, including terminal work, with no duplicate events from command/workflow replay and no leakage of hidden mechanics.
 - Map-free traversal and small/abstract examples share authority/lifecycle without mandatory anatomy, equipment or economy.
 - Connected offline rehearsal demonstrates participation, blockers and earned consequences. Owner taste and later live evaluation separately establish storytelling quality.
 - A quiet routine can finish and transition to a permitted next routine with zero generation task admissions, including consequence narration. A distinct event path records one escalation, preserves committed work and prevents the queue bypassing the decision.

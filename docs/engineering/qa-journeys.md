@@ -14,6 +14,7 @@ The catalogue contains:
 - immediate mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
 - quiet activity lifecycle, available for deterministic manual verification of clock waiting, finite repetition and zero-call execution;
 - activity interruption/blocking, visible but planned until deterministic Chamber controls make the lifecycle reproducible without database edits;
+- activity history and diagnostics, visible but planned until the durable event ledger, structured logger, and deterministic failure controls exist;
 - historical report versus controlling scene, visible but planned; its strict task contract exists, while U2b storage/publication semantics do not;
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;

@@ -32,6 +32,8 @@ Show an expandable roll record alongside the relevant outcome: purpose, tick or 
 
 Hidden encounters must not reveal future threats through a public roll log. Show permitted completed checks and redact secret DCs/modifiers where they disclose unknown facts; retain the full record privately. Repeated quiet checks may be grouped for presentation while preserving their individual records.
 
+Activity history is durable game history, not terminal logging. Starting, pausing, switching, resuming, blocking, interruption, pending completion, completion, abandonment and rule-defined failure each record an ordered typed event when they occur. The player-facing view uses safe summaries and links permitted rolls/effects without exposing private plans, secret checks or future threats. Duplicate commands and scheduler delivery do not create duplicate events. Completed activities remain inspectable after they leave the active commitments view.
+
 ## The range of available actions
 
 Choice breadth follows actual opportunity: available time, proximity, mobility, equipment, knowledge, commitments and immediate threats. It is not a fixed option count or a difficulty slider. Danger often narrows possibilities, but a dangerous scene can still offer several tactics; low HP alone does not prove escape, negotiation or environmental action is impossible.
