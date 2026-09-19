@@ -519,7 +519,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 6);
+    assert.equal(task.inputVersion, 7);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,

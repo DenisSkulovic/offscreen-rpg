@@ -9,10 +9,7 @@ import {
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { enqueue, type Transaction } from '../outbox/index';
-import type {
-  IntervalControl,
-  StoryContinuation,
-} from './command-policy';
+import type { IntervalControl, StoryContinuation } from './command-policy';
 import { StoryError } from './errors';
 import {
   controlledIntervalTopic,
@@ -233,6 +230,23 @@ export async function advanceStoryView(
   await tx
     .update(story)
     .set({ revision: args.revision, viewVersion: args.viewVersion })
+    .where(eq(story.id, args.storyId));
+}
+
+/** Replace only at a committed publication boundary; earlier passages remain history. */
+export async function restartActiveSceneAtPassage(
+  tx: Transaction,
+  args: { storyId: string; sequence: number; passageId: string },
+) {
+  await tx
+    .update(story)
+    .set({
+      activeSceneScope: {
+        version: 'active-scene-anchor.v1',
+        fromSequence: args.sequence,
+        requiredPassageIds: [args.passageId],
+      },
+    })
     .where(eq(story.id, args.storyId));
 }
 

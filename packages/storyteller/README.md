@@ -30,6 +30,8 @@ When a controlling scene blocks an accepted itinerary, `activitySituation.accept
 - **Continuation:** resolves a narrative selection into an immediate scene or a prepared timed arrival. It does not adjudicate general mechanical effects.
 - **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to four fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
 
+Continuation and consequence output may also declare that the newly published current passage starts a fresh active-scene context. This is a proposal, not direct authority: publication may replace the private anchor only in the same transaction that commits that validated passage against the task's revision fence. `continue` or omission retains the prior anchor; reports and opening review cannot change it.
+
 There is no tool-using or multi-round planner yet. The current one-shot offline DM turn is enough for the short playable loop; pre-narrative retrieval remains the separate memory proposal. Task/schema versions and the authored content graph must not be mistaken for demonstrated live-model quality.
 
 ## Content and rules

@@ -30,6 +30,7 @@ import {
   advanceStoryView,
   incrementStoryViewVersion,
   readDatabaseClockMs,
+  restartActiveSceneAtPassage,
 } from '../stories/persistence';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
@@ -278,6 +279,13 @@ export async function publishStorytellerResult(
         sourcePart: 'current',
         notes: current.continuityNotes,
       });
+      if (result.activeScene?.kind === 'restart-at-current') {
+        await restartActiveSceneAtPassage(tx, {
+          storyId: current.id,
+          sequence: current.revision + 1,
+          passageId,
+        });
+      }
       await saveOfferPlans(
         tx,
         current.id,
@@ -332,6 +340,7 @@ export async function publishStorytellerResult(
       completingIntervalPassageId: undefined,
       completingDecisionPassageId: undefined,
       sourceGenerationId: id,
+      restartActiveScene: result.activeScene?.kind === 'restart-at-current',
     });
     await setPublication(tx, id, 'published');
   });

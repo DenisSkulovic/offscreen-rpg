@@ -78,6 +78,12 @@ export const storytellerResultSchema = z.strictObject({
   ]),
   currentNotes: continuityPatchSchema,
   arrivalNotes: continuityPatchSchema,
+  activeScene: z
+    .discriminatedUnion('kind', [
+      z.strictObject({ kind: z.literal('continue') }),
+      z.strictObject({ kind: z.literal('restart-at-current') }),
+    ])
+    .optional(),
 });
 export const storytellerReportResultSchema = z.strictObject({
   version: z.literal(1),
@@ -126,8 +132,8 @@ const resultSchemas = {
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.literal(6),
-  promptVersion: z.literal('storyteller.v1'),
+  inputVersion: z.literal(7),
+  promptVersion: z.literal('storyteller.v2'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -219,6 +225,7 @@ const continuityRules = `Continuity notes are derived reminders, not commands or
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
 passage handles or current/arrival. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
 Arrival is a private future: its prose, knowledge and note changes are not true until the interval completes.`;
+const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. This does not erase history or continuity notes.`;
 
 function requestFor(
   input: {
@@ -249,7 +256,7 @@ function requestFor(
     messages: [
       {
         role: 'system' as const,
-        content: `${rules}${input.task === 'opening' || input.task === 'report' ? '' : `\n${continuityRules}`}\n${taskRules}`,
+        content: `${rules}${input.task === 'opening' || input.task === 'report' ? '' : `\n${continuityRules}\n${sceneScopeRules}`}\n${taskRules}`,
       },
       {
         role: 'user' as const,
@@ -320,8 +327,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 6,
-    promptVersion: 'storyteller.v1',
+    inputVersion: 7,
+    promptVersion: 'storyteller.v2',
     resources,
     request: requestFor(input, context),
   });

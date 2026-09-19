@@ -25,6 +25,7 @@ import {
   lockOwnedStory,
   readDatabaseClockMs,
   requireCurrentPassage,
+  restartActiveSceneAtPassage,
 } from './persistence';
 
 type CommitContinuation = Readonly<{
@@ -35,6 +36,7 @@ type CommitContinuation = Readonly<{
   completingIntervalPassageId: string | undefined;
   completingDecisionPassageId: string | undefined;
   sourceGenerationId?: string | null;
+  restartActiveScene?: boolean;
 }>;
 
 type AppendContinuation = Readonly<{
@@ -150,6 +152,13 @@ export async function commitStoryContinuation(
       sourcePart:
         args.input.sourceGenerationPart === 'arrival' ? 'arrival' : 'current',
       notes: current.continuityNotes,
+    });
+  }
+  if (args.restartActiveScene) {
+    await restartActiveSceneAtPassage(tx, {
+      storyId: args.storyId,
+      sequence: nextRevision,
+      passageId,
     });
   }
   await advanceStoryView(tx, {
