@@ -36,7 +36,7 @@ Exit: connected offline timed choices, receipts, waits and held next decisions. 
 
 ## T3 — Safe overlapping preparation and readable recovery
 
-Status: follows T2; required for the finite-action overlap acceptance, not a general speculative agent runner.
+Status: follows T2; required for the finite-action overlap acceptance, not a general speculative agent runner. [Calendar/world-time K1/K2](../2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md) supplies date interpretation and world obligations; integrate K2 before claiming overlap safe in time-limited plots. T1/T2 do not depend on elaborate calendar features.
 Outcome: eligible closed finite actions can prepare a single next turn during their real wait; early/late results respect the same time contract.
 
 Owners: pure overlap eligibility, durable pending resolution/task schemas, execution settlement, Storyteller admission/context/publication/recovery, snapshot/cache freshness, Chamber failure controls and QA catalogue. [The contract](../../technical/committed-time.md#safe-overlap-for-a-bounded-atomic-action) fixes the ownership: frozen private result and projected state; current mechanics only at completion; publication only against the matching settled receipt. Current consequence packets promise committed evidence and cannot simply be reused for pending evidence.
@@ -56,7 +56,7 @@ Acceptance: two-second and thirty-second fake-provider completion for the same f
 
 ## Current checkpoint
 
-- Phase: design prepared; exact next action is T1 clock-eligibility and intent-owned preparation holds. Read the owning contract, then trace all clock callers before editing.
+- Phase: design prepared; exact next action is T1 clock-eligibility and intent-owned preparation holds. Read the owning contract, then trace all clock callers before editing. Calendar/world-time K1/K2 is the prepared integration after T2 and before overlap acceptance for timed stories.
 - Reviewed base: `1d8c814`, clean working tree before this documentation pass. No implementation changes or schema resets in this pass.
 - Evidence: source review of current action admission, tick arithmetic, campaign projection/holds, consequence preparation/publication and feature dependencies. Current immediate actions have no duration field; unheld projection can accrue idle time. No runtime checks run; planned traces are not verification.
 - Remaining limits: general combat scheduling, shared-world clocks and timed default actions remain separate work. T3 is a real change to pending versus committed evidence and cannot be reduced to hiding an already-committed result in the UI.

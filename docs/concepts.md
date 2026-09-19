@@ -22,6 +22,8 @@ The next player decision can lead to another Storyteller turn. Several turns can
 | Offer | The concrete authorized choices and their private admitted plans | A reusable activity offer can survive through fresh projections without a new Storyteller turn |
 | Action | The player's selected intention resolved by supported rules with explicit time semantics | Atomic resolution does not imply zero fictional duration; starting/resuming an activity commits its work rule |
 | Execution | A durable accepted action or active activity that authorizes a bounded span of progression | Shared clock authority, not a second clock or a table required for each action family |
+| Calendar | A defined interpretation of simulation positions as days, dates and optional era labels | Does not advance time or cause seasons merely by displaying a date; optional for a campaign |
+| World obligation | An admitted scheduled condition change or development at a simulation boundary | Joins shared execution settlement; no independent permission to advance the clock |
 | Activity | A durable commitment extended over eligible game time | Progress follows its admitted rules: contribution, literal waiting, or another supported process |
 | Event | A committed development in the world, such as someone arriving | May prompt a Storyteller turn; not every turn requires a new event |
 | Report | An account of an already committed result | Does not create current choices or take control of ongoing activity |

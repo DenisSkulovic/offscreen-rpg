@@ -24,6 +24,8 @@ Availability is data, but the server also enforces the boundary. It opens only c
 
 The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) is prepared coverage for the next progression change: timed conversation, no idle drift, early/late narration, pause, restart and exact retry. These cases are not yet in the runnable catalogue. Add/version them with their owning implementation phase and expose deterministic controls before marking them available. Current immediate-loop cases prove zero-time behavior only.
 
+The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#planned-qa-evidence) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. It is prepared documentation only. K1/K2 adds the corresponding versioned catalogue cases and deterministic controls; no dates or seasonal effects are claimed runnable yet.
+
 ## Run lifecycle
 
 The Chamber launcher captures the Git commit, dirty-tree state and non-secret local environment identity. The client supplies the case/version, variant, driver and known scenario/profile/settings identities. The server snapshots the complete case definition into the run, fixes execution to offline, and initializes provider accounting to verified zero use.

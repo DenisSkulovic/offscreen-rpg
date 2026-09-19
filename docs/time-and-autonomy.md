@@ -32,6 +32,18 @@ Choosing is followed by performing the action and presenting its result. Reading
 
 For example, a supported rest interval can advance toward its next needs check while the screen remains unchanged. The check may produce a routine consequence or require a decision. This example does not establish a universal hunger meter or a subsystem for every activity. Arbitrary model-invented routines still need a supported resolution policy or fresh interpretation; quiet-story settings alone cannot make them free.
 
+## Calendars, seasons and story deadlines
+
+Calendar detail is a per-campaign choice. A story can use only elapsed cycles, a defined day count such as “Day 47,” or a named calendar with custom month lengths and an era. None requires a 24-hour day, an Earth year, a planet, or astronomical simulation. Where “day” or “month” affects an accepted action, its definition must exist; prose alone cannot supply executable time units. Calendar rules label simulation positions and translate authored dates into them. Pace only changes the real wait.
+
+Calendar labels and world behavior are separate. Displaying a winter date does not automatically freeze a river or reduce food. A supported scheduled transition can establish winter conditions, change known route eligibility or request a controlling scene. The same rule system can schedule a festival, siege or approaching catastrophe. Stories that need none of those effects pay no maintenance cost for them. Irregular seasons may follow explicit story conditions or scheduled transitions without repeating annually.
+
+A firm promise such as “the invasion begins in two months” needs a recorded origin, calendar interpretation and due simulation position. Two calendar months need not equal sixty days. A prophecy, estimate or unreliable NPC claim may remain uncertain; it must not silently become an exact countdown. Known deadlines can be shown to the player, while hidden developments retain their information boundary.
+
+These deadlines follow deliberate time. Reading, manual pause and model latency do not consume the preparation period; accepted dialogue, travel and training do. Finishing a long activity cannot jump over a due event. A future date alone never starts the world clock or chooses a waiting activity for the player. Real-world expiring events are a distinct policy outside the current solo design.
+
+The [calendar and scheduled-world contract](technical/calendars-and-world-time.md) prepares a bounded implementation: ordinal or simple custom dates, plus consequential scheduled boundaries. Complex astronomy, arbitrary calendar programs and a full climate simulation are unnecessary for this POC. This design is not implemented yet.
+
 ## Travel duration and progress
 
 Travel expectations must follow established spatial facts, movement conditions and character capabilities rather than a fresh unconstrained estimate in each passage. Fictional travel duration and the player's real waiting time remain separate: changing presentation pace does not change world distances or physical movement capabilities.

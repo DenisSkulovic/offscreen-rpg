@@ -10,7 +10,7 @@ Keep three separate contracts:
 
 - Simulation: tick position, due tick, action duration, check cadence and interruption boundaries.
 - Scheduling: a captured positive rational rate of ticks per real-time duration, real timestamp anchors, pause/hold state and retained fractional tick progress. Milliseconds are legitimate here because this measures the player's actual wait.
-- Presentation: optional content-owned mappings and labels for fictional calendars or scales. Without a mapping, display ticks. Never infer an hour from species, prose or an action name.
+- Calendar/duration interpretation: optional content-owned fixed units or date rules and an epoch. Custom months are not a fixed multiplier. Without a definition, display elapsed ticks/cycles. Never infer an hour from species, prose or an action name. [Calendars and world time](calendars-and-world-time.md) owns conversion; consequential seasons/deadlines are separate admitted world obligations.
 
 Progression additionally requires accepted execution. No active commitment means no projection from elapsed wall time, even with an empty hold list. One-second countdown refreshes may display progress but grant no additional checks or time. See the committed-time contract for boundary caps and preparation latency.
 

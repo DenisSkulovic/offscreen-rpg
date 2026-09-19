@@ -4,7 +4,7 @@ Status: prepared design from the owner's 2026-09-19 clarification. It replaces f
 
 ## Units and responsibility
 
-Use the existing simulation tick and rational pace contract. A campaign's fictional scale is fixed independently of speed. If content supplies calendar units, persist a versioned exact positive mapping at campaign creation; otherwise display simulation ticks. Never recover that mapping from prose. For a human-scale fixture, one simulation tick can represent one fictional second; that is a fixture choice, not universal anatomy or calendar policy.
+Use the existing simulation tick and rational pace contract. A campaign's fictional scale is fixed independently of speed. Defined fixed duration units have exact positive mappings; calendar dates/months require a captured definition and epoch, not necessarily a constant multiplier. The [calendar contract](calendars-and-world-time.md) owns optional ordinal/custom dates and world deadlines. Otherwise display elapsed simulation units. Never recover executable units from prose. For a human-scale fixture, one simulation tick can represent one fictional second; that is a fixture choice, not universal anatomy or calendar policy.
 
 Pace answers how many simulation ticks advance per eligible real duration. With one fictional second per simulation tick and pace 360 ticks per real second, an action lasting 1,800 ticks consumes thirty fictional minutes and five active real seconds. Doubling pace makes the same action take 2.5 real seconds; it still advances 1,800 ticks and has the same rule boundaries. Thirty fictional minutes is appropriate for a careful search, not automatically a quick glance. A ten-second glance is a different admitted duration. Numerical examples are not universal defaults.
 
@@ -60,7 +60,7 @@ The task contract explicitly identifies pending evidence and the frozen projecte
 
 No caller may count the pending resolution as inventory, historical fact, earned work or canonical source. Capture it in durable execution/task storage for crash recovery, and promote references to the settled receipt only after commit. Logs may include identities/status but never disclose pending outcomes. A stale result is blocked and available for explicit bounded recovery, never silently rewritten into the new situation.
 
-The first implementation may deliver sequential finite actions first, then add this explicitly gated overlap phase. Do not claim the feature's latency behavior complete at the sequential milestone. If the short action shares due world rules, route through ordered settlement and start generation after the actual receipt; do not disable those rules merely to permit overlap.
+The first implementation may deliver sequential finite actions first, then add this explicitly gated overlap phase. Do not claim the feature's latency behavior complete at the sequential milestone. If the short action shares due world rules, route through ordered settlement and start generation after the actual receipt; do not disable those rules merely to permit overlap. [Scheduled-world K2](../features/2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md#k2--world-obligations-in-ordered-execution) supplies campaign-level boundaries for timed plots. A player's inability to cancel an atomic action does not prevent a due world event from interrupting it.
 
 ### Failure, pause and delivery
 

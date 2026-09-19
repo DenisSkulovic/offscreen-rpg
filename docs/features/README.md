@@ -15,11 +15,14 @@ Nearest prepared work: [deliberate action time T1](2026-09-19--22-13--deliberate
 | Feature | Phases | Ownership |
 | --- | --- | --- |
 | [Deliberate action time](2026-09-19--22-13--deliberate-action-time/FEATURE.md) | T1 accepted-execution clock → T2 finite actions → T3 safe overlapping preparation | No idle drift, time-bearing story selections, independent execution/narration readiness |
+| [Calendars and world deadlines](2026-09-19--22-29--calendars-and-world-deadlines/FEATURE.md) | K1 bounded date definitions → K2 shared world boundaries | Optional ordinal/custom dates, exact timed plots and consequential season transitions; K2 integrates after T2, before timed-plot T3 acceptance |
 | [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1a effective profiles → B1b recipes/preflight → B2a accounting/B2b windows and holds → B3 memory integration → B4 evidence | Configurable account/tier/context/model limits, cumulative work/spending, safe pause/reset recovery |
 | [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |
 | [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | 1 context/provenance → 2 memory documents → 3 exploration → 4 return rehearsal; 5 local hybrid search once the corpus exists | Extraction, summaries, discovery and evidence-grounded turns |
 
 No chapters, chapter navigation or chapter-bound generation. A scene may span many Storyteller turns; a memory segment is only a bounded source range.
+
+Calendar depth stays optional: the prepared K1/K2 scope supports a day count or simple custom dates and finite due world events. It does not require astronomy, leap/intercalation programs, a climate simulation or historical era reconstruction. Deadlines consume the same accepted-action time as the rest of the campaign and cannot independently tick an idle world.
 
 | Order | Exact slice | Deliverable / boundary |
 | --- | --- | --- |
