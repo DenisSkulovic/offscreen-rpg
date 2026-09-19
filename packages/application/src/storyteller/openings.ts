@@ -7,7 +7,6 @@ import {
   storytellerSummary,
 } from '@offscreen/storyteller/profiles';
 import {
-  prepareStorytellerTask,
   mechanicalOpeningSceneSchema,
   storytellerTaskSchema,
   storytellerResultSchema,
@@ -30,10 +29,13 @@ import {
   mechanicalContentCatalogue,
   mechanicalOpening,
 } from '../campaign/fixtures/mechanical-content';
+import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
+import { prepareAdmittedStorytellerTask } from './task-admission';
 
 export function createStorytellerOpenings(
   database: Database,
   execution: ExecutionPolicy = offlineExecution,
+  usagePolicy?: EffectiveUsagePolicy | null,
 ) {
   async function read(ownerId: string, id: string) {
     const [row] = await database.db
@@ -202,25 +204,30 @@ export function createStorytellerOpenings(
           throw new GenerationError('busy');
         }
         const seed = contentId ? mechanicalOpening(contentId) : undefined;
-        const task = prepareStorytellerTask({
-          task: 'opening',
-          source: { draftId, draftRevision: draft.revision },
-          profile: storytellerCatalogue.resolve(draft.storyteller),
-          execution,
-          context: {
-            ...(seed ? { mechanicalOpening: { ...seed, storyFacts: [] } } : {}),
-            premise: {
-              title: seed?.opening.title ?? draft.title,
-              premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,
-              storytellingDirection: draft.storytellingDirection,
+        const task = prepareAdmittedStorytellerTask(
+          {
+            task: 'opening',
+            source: { draftId, draftRevision: draft.revision },
+            profile: storytellerCatalogue.resolve(draft.storyteller),
+            execution,
+            context: {
+              ...(seed
+                ? { mechanicalOpening: { ...seed, storyFacts: [] } }
+                : {}),
+              premise: {
+                title: seed?.opening.title ?? draft.title,
+                premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,
+                storytellingDirection: draft.storytellingDirection,
+              },
+              current: null,
+              selected: null,
+              items: [],
+              notes: [],
+              evidence: [],
             },
-            current: null,
-            selected: null,
-            items: [],
-            notes: [],
-            evidence: [],
           },
-        });
+          usagePolicy,
+        );
         await insertStorytellerTask(tx, { id, ownerId, task });
         await tx
           .insert(draftOpening)

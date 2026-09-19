@@ -11,7 +11,6 @@ import {
 import { playablePresentation } from '@offscreen/storyteller/tasks';
 import {
   publishedStorytellerSlice,
-  prepareStorytellerTask,
   storytellerTaskSchema,
 } from '@offscreen/storyteller/tasks';
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
@@ -30,6 +29,8 @@ import {
   type lockOwnedStory,
 } from '../stories/persistence';
 import { StoryError } from '../stories/errors';
+import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { prepareAdmittedStorytellerTask } from './task-admission';
 
 export async function admitStorytellerResolution(
   tx: Transaction,
@@ -41,7 +42,10 @@ export async function admitStorytellerResolution(
   },
 ) {
   const { current, operationId, expectedRevision } = input;
-  const [mechanics] = await tx.select().from(campaign).where(eq(campaign.storyId, current.id));
+  const [mechanics] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, current.id));
   // Mechanical intentions enter through campaign actions; consequence narration
   // shares this runtime but cannot bypass the admitted plan or reroll its results.
   if (mechanics?.character) throw new StoryError('conflict');
@@ -141,18 +145,23 @@ export async function admitStorytellerResolution(
     notes: current.continuityNotes,
     selected,
   });
-  const task = prepareStorytellerTask({
-    task: 'continuation',
-    source: {
-      storyId: current.id,
-      narrativeRevision: current.revision,
-      passageId: active.id,
-      interactionId: offer.id,
+  const task = prepareAdmittedStorytellerTask(
+    {
+      task: 'continuation',
+      source: {
+        storyId: current.id,
+        narrativeRevision: current.revision,
+        passageId: active.id,
+        interactionId: offer.id,
+      },
+      profile: storytellerProfileSchema.parse(current.storyteller),
+      execution: executionPolicySchema.parse(current.execution),
+      context,
     },
-    profile: storytellerProfileSchema.parse(current.storyteller),
-    execution: executionPolicySchema.parse(current.execution),
-    context,
-  });
+    current.usagePolicy === null
+      ? null
+      : effectiveUsagePolicySchema.parse(current.usagePolicy),
+  );
   await insertStorytellerTask(tx, {
     id: operationId,
     ownerId: current.ownerId,

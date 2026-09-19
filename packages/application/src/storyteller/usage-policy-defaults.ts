@@ -1,7 +1,7 @@
 import {
   usageEntitlementProfileSchema,
   type UsageLimits,
-} from './usage-policy-schema';
+} from '@offscreen/contracts/usage-policy';
 
 export const baselineUsageLimits: UsageLimits = {
   maxInputTokensPerRequest: 100_000,

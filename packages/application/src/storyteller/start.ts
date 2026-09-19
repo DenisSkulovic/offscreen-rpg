@@ -102,6 +102,10 @@ export async function startStorytellerCandidate(
       premise: task.context.premise,
       storyteller: task.profile,
       execution: task.execution,
+      usagePolicy:
+        task.resources.authority.kind === 'effective-usage-policy'
+          ? task.resources.authority.policy
+          : null,
       items: [],
       ...presentation,
     },

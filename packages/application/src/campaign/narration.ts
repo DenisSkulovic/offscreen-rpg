@@ -11,7 +11,6 @@ import {
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
-import { prepareStorytellerTask } from '@offscreen/storyteller/tasks';
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import { contextInputSchema } from '@offscreen/storyteller/context';
@@ -24,6 +23,8 @@ import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { rollSchema } from '@offscreen/game/checks';
 import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
+import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
 
 export const campaignConsequenceTopic = 'campaign.consequence.v1';
 
@@ -105,37 +106,43 @@ async function admitActionNarration(
       intention: receipt.intention,
     },
   });
-  const task = prepareStorytellerTask({
-    task: 'consequence',
-    source: {
-      storyId: current.id,
-      narrativeRevision: current.revision,
-      passageId: passage.id,
-    },
-    profile: storytellerProfileSchema.parse(current.storyteller),
-    execution: executionPolicySchema.parse(current.execution),
-    context: contextInputSchema.parse({
-      ...context,
-      resolution: {
-        character: characterSchema.parse(state.character),
-        storyFacts: storyFactsSchema.parse(state.storyFacts),
-        tick: state.tick,
-        offer: offerSchema.parse(receipt.offer),
-        receipts: [
-          {
-            id: receipt.operationId,
-            outcome: receipt.outcome,
-            text: receipt.outcomeText,
-            roll: receipt.roll === null ? null : rollSchema.parse(receipt.roll),
-            effects: outcomeEffectsSchema.parse(receipt.effects),
-            declarations: storyFactDeclarationsSchema.parse(
-              receipt.declarations,
-            ),
-          },
-        ],
+  const task = prepareAdmittedStorytellerTask(
+    {
+      task: 'consequence',
+      source: {
+        storyId: current.id,
+        narrativeRevision: current.revision,
+        passageId: passage.id,
       },
-    }),
-  });
+      profile: storytellerProfileSchema.parse(current.storyteller),
+      execution: executionPolicySchema.parse(current.execution),
+      context: contextInputSchema.parse({
+        ...context,
+        resolution: {
+          character: characterSchema.parse(state.character),
+          storyFacts: storyFactsSchema.parse(state.storyFacts),
+          tick: state.tick,
+          offer: offerSchema.parse(receipt.offer),
+          receipts: [
+            {
+              id: receipt.operationId,
+              outcome: receipt.outcome,
+              text: receipt.outcomeText,
+              roll:
+                receipt.roll === null ? null : rollSchema.parse(receipt.roll),
+              effects: outcomeEffectsSchema.parse(receipt.effects),
+              declarations: storyFactDeclarationsSchema.parse(
+                receipt.declarations,
+              ),
+            },
+          ],
+        },
+      }),
+    },
+    current.usagePolicy === null
+      ? null
+      : effectiveUsagePolicySchema.parse(current.usagePolicy),
+  );
   const generationId = randomUUID();
   await insertStorytellerTask(tx, {
     id: generationId,
@@ -202,31 +209,36 @@ async function admitConsequenceNarration(
       intention: receipt.intention,
     },
   });
-  const task = prepareStorytellerTask({
-    task: 'consequence',
-    source: {
-      storyId: current.id,
-      narrativeRevision: current.revision,
-      passageId: receipt.passageId,
-    },
-    profile: storytellerProfileSchema.parse(current.storyteller),
-    execution: executionPolicySchema.parse(current.execution),
-    context: contextInputSchema.parse({
-      ...context,
-      resolution: {
-        character: characterSchema.parse(state.character),
-        storyFacts: storyFactsSchema.parse(state.storyFacts),
-        tick: state.tick,
-        offer: offerSchema.parse(state.offer),
-        receipts: rolls.map((roll) => ({
-          id: roll.id,
-          roll: roll.result,
-          effects: roll.effects,
-          declarations: [],
-        })),
+  const task = prepareAdmittedStorytellerTask(
+    {
+      task: 'consequence',
+      source: {
+        storyId: current.id,
+        narrativeRevision: current.revision,
+        passageId: receipt.passageId,
       },
-    }),
-  });
+      profile: storytellerProfileSchema.parse(current.storyteller),
+      execution: executionPolicySchema.parse(current.execution),
+      context: contextInputSchema.parse({
+        ...context,
+        resolution: {
+          character: characterSchema.parse(state.character),
+          storyFacts: storyFactsSchema.parse(state.storyFacts),
+          tick: state.tick,
+          offer: offerSchema.parse(state.offer),
+          receipts: rolls.map((roll) => ({
+            id: roll.id,
+            roll: roll.result,
+            effects: roll.effects,
+            declarations: [],
+          })),
+        },
+      }),
+    },
+    current.usagePolicy === null
+      ? null
+      : effectiveUsagePolicySchema.parse(current.usagePolicy),
+  );
   const id = randomUUID();
   await insertStorytellerTask(tx, { id, ownerId: current.ownerId, task });
   await tx.insert(storyResolution).values({

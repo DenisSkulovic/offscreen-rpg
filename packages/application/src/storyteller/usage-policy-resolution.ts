@@ -7,7 +7,7 @@ import {
   usagePolicyRestrictionSchema,
   type UsageLimits,
   type EffectiveUsagePolicy,
-} from './usage-policy-schema';
+} from '@offscreen/contracts/usage-policy';
 
 type LimitSource = {
   source: string;

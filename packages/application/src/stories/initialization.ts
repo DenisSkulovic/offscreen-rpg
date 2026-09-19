@@ -38,6 +38,7 @@ export async function initializeStoryInTransaction(
       premise: input.premise ?? null,
       storyteller: input.storyteller ?? null,
       execution: input.execution ?? null,
+      usagePolicy: input.usagePolicy ?? null,
       continuityNotes: input.storyteller ? [] : null,
     })
     .onConflictDoNothing()
@@ -51,16 +52,29 @@ export async function initializeStoryInTransaction(
     if (!priorStory || priorStory.ownerId !== ownerId) {
       throw new StoryError('not_found');
     }
-    const [creationSettings] = await tx.select({ profile: campaignSettings.profile })
+    const [creationSettings] = await tx
+      .select({ profile: campaignSettings.profile })
       .from(campaignSettings)
-      .where(and(eq(campaignSettings.storyId, storyId), eq(campaignSettings.revision, 1)));
+      .where(
+        and(
+          eq(campaignSettings.storyId, storyId),
+          eq(campaignSettings.revision, 1),
+        ),
+      );
     if (
       priorStory.source !== input.source ||
       !isDeepStrictEqual(
         creationSettings?.profile ?? priorStory.storyteller ?? null,
         input.storyteller ?? null,
       ) ||
-      !isDeepStrictEqual(priorStory.execution ?? null, input.execution ?? null)
+      !isDeepStrictEqual(
+        priorStory.execution ?? null,
+        input.execution ?? null,
+      ) ||
+      !isDeepStrictEqual(
+        priorStory.usagePolicy ?? null,
+        input.usagePolicy ?? null,
+      )
     ) {
       throw new StoryError('conflict');
     }

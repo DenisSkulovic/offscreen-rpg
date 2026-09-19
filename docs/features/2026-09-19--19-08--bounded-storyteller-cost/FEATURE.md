@@ -1,6 +1,6 @@
 # Bounded Storyteller effort and cost
 
-Status: Implementing. Pure policy composition, task recipe/envelope capture and rich attempt-level cost attribution/reconciliation are implemented; effective-policy admission, operation/window enforcement, inspection and holds remain.
+Status: Implementing. Pure policy composition, effective-policy task admission, task recipe/envelope capture, rich attempt-level cost attribution/reconciliation and sanitized inspection are implemented; operation/window enforcement and holds remain.
 Direction: on 2026-09-19 the owner required serious protection against context, tool, reasoning and orchestration bloat, then configurable account profiles, usage windows and conservative pause/recovery before paid evaluation. This handoff constrains the prepared canonical-memory work. Live inference, paid services and runtime subagents remain disabled.
 
 ## Intended outcome

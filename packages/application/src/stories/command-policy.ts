@@ -18,6 +18,7 @@ import {
 import type { storyPassage } from '@offscreen/db/story-schema';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
+import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
 
 const hasCompleteGenerationProvenance = (value: {
@@ -25,29 +26,38 @@ const hasCompleteGenerationProvenance = (value: {
   sourceGenerationPart?: string | null | undefined;
 }) => Boolean(value.sourceGenerationId) === Boolean(value.sourceGenerationPart);
 
-export const initialStorySchema = z.strictObject({
-  source: z.string().min(1).max(100),
-  storyteller: storytellerProfileSchema.nullable().optional(),
-  execution: executionPolicySchema.nullable().optional(),
-  sourceGenerationId: z.uuid().nullable().optional(),
-  sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
-  premise: premiseContentSchema.nullable().optional(),
-  items: storyItemsSchema.default([]),
-  content: passageContentSchema,
-  interaction: interactionSpecificationSchema.nullable(),
-}).refine(hasCompleteGenerationProvenance, { message: 'Generation provenance must include identity and part' });
+export const initialStorySchema = z
+  .strictObject({
+    source: z.string().min(1).max(100),
+    storyteller: storytellerProfileSchema.nullable().optional(),
+    execution: executionPolicySchema.nullable().optional(),
+    usagePolicy: effectiveUsagePolicySchema.nullable().optional(),
+    sourceGenerationId: z.uuid().nullable().optional(),
+    sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
+    premise: premiseContentSchema.nullable().optional(),
+    items: storyItemsSchema.default([]),
+    content: passageContentSchema,
+    interaction: interactionSpecificationSchema.nullable(),
+  })
+  .refine(hasCompleteGenerationProvenance, {
+    message: 'Generation provenance must include identity and part',
+  });
 
-export const continuationSchema = z.strictObject({
-  expectedRevision: z.number().int().positive().max(2147483646),
-  effects: z.array(itemTransferSchema).max(20).default([]),
-  content: passageContentSchema,
-  interaction: interactionSpecificationSchema.nullable(),
-  response: interactionSubmissionSchema.nullable().default(null),
-  wait: waitPlanSchema.nullable().default(null),
-  decision: decisionPlanSchema.nullable().default(null),
-  sourceGenerationId: z.uuid().nullable().optional(),
-  sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
-}).refine(hasCompleteGenerationProvenance, { message: 'Generation provenance must include identity and part' });
+export const continuationSchema = z
+  .strictObject({
+    expectedRevision: z.number().int().positive().max(2147483646),
+    effects: z.array(itemTransferSchema).max(20).default([]),
+    content: passageContentSchema,
+    interaction: interactionSpecificationSchema.nullable(),
+    response: interactionSubmissionSchema.nullable().default(null),
+    wait: waitPlanSchema.nullable().default(null),
+    decision: decisionPlanSchema.nullable().default(null),
+    sourceGenerationId: z.uuid().nullable().optional(),
+    sourceGenerationPart: generationSourcePartSchema.nullable().optional(),
+  })
+  .refine(hasCompleteGenerationProvenance, {
+    message: 'Generation provenance must include identity and part',
+  });
 
 export type InitialStory = z.infer<typeof initialStorySchema>;
 export type StoryContinuation = z.infer<typeof continuationSchema>;

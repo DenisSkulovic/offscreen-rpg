@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import type { ExecutionPolicy } from './policy';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 
 export const storytellerTaskResourcesSchema = z.strictObject({
-  version: z.literal('storyteller-resources.v1'),
+  version: z.literal('storyteller-resources.v2'),
   recipe: z.strictObject({
     version: z.literal('single-turn.v1'),
     maxModelRounds: z.literal(1),
@@ -26,9 +27,8 @@ export const storytellerTaskResourcesSchema = z.strictObject({
       version: z.literal('offline-rehearsal.v1'),
     }),
     z.strictObject({
-      kind: z.literal('execution-policy'),
-      policyVersion: z.string().min(1).max(80),
-      priceVersion: z.string().min(1).max(100),
+      kind: z.literal('effective-usage-policy'),
+      policy: effectiveUsagePolicySchema,
     }),
   ]),
 });
@@ -44,22 +44,13 @@ const oneShotRecipe = {
   automaticEscalation: false,
 } as const;
 
-function maximumCharge(policy: Extract<ExecutionPolicy, { mode: 'provider' }>) {
-  const amount =
-    BigInt(policy.policy.maxInputTokens) *
-      BigInt(policy.policy.inputMicrousdPerMillion) +
-    BigInt(policy.policy.maxOutputTokens) *
-      BigInt(policy.policy.outputMicrousdPerMillion);
-  return ((amount + 999_999n) / 1_000_000n).toString();
-}
-
-/** Transitional capture from the already server-owned execution policy. */
+/** Offline rehearsal is free; provider work needs application-level authority. */
 export function resourcesForExecution(
   execution: ExecutionPolicy,
 ): StorytellerTaskResources {
   if (execution.mode === 'scripted') {
     return storytellerTaskResourcesSchema.parse({
-      version: 'storyteller-resources.v1',
+      version: 'storyteller-resources.v2',
       recipe: oneShotRecipe,
       envelope: {
         maxSerializedRequestBytes: 48 * 1024,
@@ -72,26 +63,7 @@ export function resourcesForExecution(
       authority: { kind: 'offline', version: execution.version },
     });
   }
-  return storytellerTaskResourcesSchema.parse({
-    version: 'storyteller-resources.v1',
-    recipe: oneShotRecipe,
-    envelope: {
-      maxSerializedRequestBytes: Math.min(
-        48 * 1024,
-        execution.policy.maxInputTokens * 4,
-      ),
-      maxInputTokens: execution.policy.maxInputTokens,
-      maxGeneratedTokens: execution.policy.maxOutputTokens,
-      maxReasoningTokens: 0,
-      maxMicrousd: maximumCharge(execution),
-      deadlineMs: execution.policy.timeoutMs,
-    },
-    authority: {
-      kind: 'execution-policy',
-      policyVersion: execution.policy.version,
-      priceVersion: execution.policy.priceVersion,
-    },
-  });
+  throw new Error('effective_usage_policy_required');
 }
 
 /** Prevents a captured envelope from granting more than its execution route. */
@@ -109,7 +81,8 @@ export function validateResourcesForExecution(
     return;
   }
   if (
-    resources.authority.kind === 'offline' ||
+    resources.authority.kind !== 'effective-usage-policy' ||
+    resources.authority.policy.route !== execution.policy.route ||
     resources.envelope.maxInputTokens > execution.policy.maxInputTokens ||
     resources.envelope.maxGeneratedTokens > execution.policy.maxOutputTokens ||
     resources.envelope.deadlineMs > execution.policy.timeoutMs

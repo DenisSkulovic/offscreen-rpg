@@ -4,12 +4,66 @@ import {
   conservativeDevelopmentUsagePolicy,
   effectiveUsagePolicySchema,
   resolveEffectiveUsagePolicy,
+  resourcesForEffectiveUsagePolicy,
   usageEntitlementProfileSchema,
 } from '@offscreen/application/storyteller';
 import {
   syntheticPlatformUsagePolicy,
   syntheticUsageProfiles,
 } from '@offscreen/application/developer-tools';
+import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
+
+test('task admission intersects entitlement, provider and price ceilings', () => {
+  const resolved = resolveEffectiveUsagePolicy({
+    platform: syntheticPlatformUsagePolicy,
+    entitlement: syntheticUsageProfiles.standard,
+    requestedRoute: 'fake:economy',
+    requestedFundingMode: 'prepaid',
+  });
+  assert.equal(resolved.kind, 'allowed');
+  if (resolved.kind !== 'allowed')
+    throw new Error('policy unexpectedly denied');
+  const execution: Extract<ExecutionPolicy, { mode: 'provider' }> = {
+    mode: 'provider',
+    accountId: '00000000-0000-4000-8000-000000000001',
+    runId: '00000000-0000-4000-8000-000000000002',
+    policy: {
+      version: 'test',
+      route: 'fake:economy',
+      model: 'fake/model',
+      provider: 'fake',
+      priceVersion: 'test',
+      inputMicrousdPerMillion: '1000',
+      outputMicrousdPerMillion: '2000',
+      maxInputTokens: 10_000,
+      maxOutputTokens: 700,
+      timeoutMs: 5_000,
+    },
+  };
+  const resources = resourcesForEffectiveUsagePolicy(
+    execution,
+    resolved.policy,
+  );
+  assert.equal(resources.envelope.maxInputTokens, 10_000);
+  assert.equal(resources.envelope.maxGeneratedTokens, 700);
+  assert.equal(resources.envelope.maxReasoningTokens, 700);
+  assert.equal(resources.envelope.maxMicrousd, '12');
+  assert.deepEqual(resources.authority, {
+    kind: 'effective-usage-policy',
+    policy: resolved.policy,
+  });
+  assert.throws(
+    () =>
+      resourcesForEffectiveUsagePolicy(
+        {
+          ...execution,
+          policy: { ...execution.policy, route: 'fake:premium' },
+        },
+        resolved.policy,
+      ),
+    /storyteller_route_not_authorized/,
+  );
+});
 
 test('effective usage takes strict limits and route intersections', () => {
   const result = resolveEffectiveUsagePolicy({

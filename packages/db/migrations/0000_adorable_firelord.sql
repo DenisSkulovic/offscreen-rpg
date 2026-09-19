@@ -292,6 +292,7 @@ CREATE TABLE "story" (
 	"premise" jsonb,
 	"storyteller" jsonb,
 	"execution" jsonb,
+	"usage_policy" jsonb,
 	"continuity_notes" jsonb,
 	"revision" integer DEFAULT 1 NOT NULL,
 	"view_version" integer DEFAULT 1 NOT NULL,

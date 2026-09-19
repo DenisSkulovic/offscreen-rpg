@@ -38,6 +38,7 @@ function taskAttribution(task: StorytellerTask) {
     profileId: task.profile.id,
     profileRevision: task.profile.revision,
     source: task.source,
+    usageAuthority: task.resources.authority,
   };
 }
 
@@ -58,17 +59,22 @@ function calculatedCharge(
   return (amount + 999_999n) / 1_000_000n;
 }
 
-function estimatedCharge(execution: ProviderExecution, requestBytes: number) {
+function estimatedCharge(
+  execution: ProviderExecution,
+  requestBytes: number,
+  resources: StorytellerTask['resources'],
+) {
   // A tokenizer token represents at least one encoded byte. This is a useful
   // labelled input upper bound, not provider metering or a route tokenizer.
   const estimatedInputTokens = Math.min(
     execution.policy.maxInputTokens,
+    resources.envelope.maxInputTokens,
     requestBytes,
   );
   const amount =
     BigInt(estimatedInputTokens) *
       BigInt(execution.policy.inputMicrousdPerMillion) +
-    BigInt(execution.policy.maxOutputTokens) *
+    BigInt(resources.envelope.maxGeneratedTokens) *
       BigInt(execution.policy.outputMicrousdPerMillion);
   return {
     inputTokens: estimatedInputTokens,
@@ -117,6 +123,8 @@ export function createStorytellerBudget(database: Database) {
           task.request,
           execution.policy,
           task.resources.envelope.maxSerializedRequestBytes,
+          task.resources.envelope.maxInputTokens,
+          task.resources.envelope.maxGeneratedTokens,
         );
       } catch {
         throw new StorytellerBudgetError('context_too_large');
@@ -167,7 +175,11 @@ export function createStorytellerBudget(database: Database) {
         }
         const attribution = taskAttribution(task);
         const requestBytes = serializedRequestBytes(task.request);
-        const estimate = estimatedCharge(execution, requestBytes);
+        const estimate = estimatedCharge(
+          execution,
+          requestBytes,
+          task.resources,
+        );
         await tx.insert(attempt).values({
           id: input.id,
           generationId: input.generationId,

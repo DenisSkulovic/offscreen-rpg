@@ -103,7 +103,7 @@ const mechanicalOpeningResultSchema = storytellerResultSchema.extend({
   arrivalNotes: continuityPatchSchema.max(0),
 });
 const common = {
-  inputVersion: z.literal(4),
+  inputVersion: z.literal(5),
   promptVersion: z.literal('storyteller.v1'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -273,7 +273,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 4,
+    inputVersion: 5,
     promptVersion: 'storyteller.v1',
     resources,
     request: requestFor(input, context),

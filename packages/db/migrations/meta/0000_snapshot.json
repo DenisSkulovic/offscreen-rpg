@@ -1,5 +1,5 @@
 {
-  "id": "fefb6c9e-9935-4dfc-af0f-23468b0c9a9a",
+  "id": "220a1a74-a3fd-4e65-b28f-0c3081c5c8d1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2123,6 +2123,12 @@
         },
         "execution": {
           "name": "execution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usage_policy": {
+          "name": "usage_policy",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false

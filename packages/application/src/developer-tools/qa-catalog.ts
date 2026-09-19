@@ -926,7 +926,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The operator can see the exact maximum exposure before dispatch.',
         authoritativeExpectation:
-          'A durable run allowance and model-policy identity authorize only this probe.',
+          'A durable run allowance, effective account/story policy snapshot, matching route identity, and narrowed task envelope authorize only this probe.',
       }),
       stage({
         id: 'dispatch',

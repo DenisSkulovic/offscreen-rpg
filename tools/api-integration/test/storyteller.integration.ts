@@ -26,14 +26,15 @@ import { createDrafts } from '@offscreen/application/drafts';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createStorytellerOpenings } from '@offscreen/application/storyteller';
 import { createStorytellerRuntime } from '@offscreen/application/storyteller';
-import { createStorytellerBudget } from '@offscreen/application/storyteller';
+import {
+  createStorytellerBudget,
+  resolveEffectiveUsagePolicy,
+  resourcesForEffectiveUsagePolicy,
+} from '@offscreen/application/storyteller';
 import { createChamber } from '@offscreen/application/developer-tools';
 import { createStories } from '@offscreen/application/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
-import {
-  resourcesForExecution,
-  storytellerTaskSchema,
-} from '@offscreen/storyteller/tasks';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
@@ -59,6 +60,43 @@ const fakeTelemetry = (providerId: string) => ({
   reportedModel: 'fake/model',
   finishReason: 'stop',
 });
+
+function testUsagePolicy(route: string) {
+  const profile = {
+    schemaVersion: 1 as const,
+    id: 'test-provider',
+    revision: 1,
+    enabled: true,
+    allowedRoutes: [route],
+    defaultRoute: route,
+    fundingModes: ['prepaid' as const],
+    recovery: 'explicit-resume' as const,
+    limits: {
+      maxInputTokensPerRequest: 100000,
+      maxSerializedBytesPerRequest: 400000,
+      maxGeneratedTokensPerRequest: 2000,
+      maxReasoningTokensPerRequest: 0,
+      maxInputTokensPerOperation: 100000,
+      maxGeneratedTokensPerOperation: 2000,
+      maxModelRoundsPerOperation: 1,
+      maxReadsPerOperation: 0,
+      maxRetainedReadBytes: 0,
+      maxMicrousdPerOperation: '1000000',
+      maxInFlightDispatches: 1,
+      maxBackgroundJobsPerWindow: 0,
+    },
+    windows: [],
+  };
+  const result = resolveEffectiveUsagePolicy({
+    platform: profile,
+    entitlement: profile,
+    requestedRoute: route,
+    requestedFundingMode: 'prepaid',
+  });
+  assert.equal(result.kind, 'allowed');
+  if (result.kind !== 'allowed') throw new Error('test policy denied');
+  return result.policy;
+}
 
 // All sources and provider responses in this suite are local. No credentials are read.
 test(
@@ -1611,6 +1649,7 @@ test(
               runId,
               policy: {
                 version: 'fake',
+                route: 'fake:economy',
                 model: 'fake/model',
                 provider: 'fake',
                 priceVersion: 'concurrency-test',
@@ -1640,7 +1679,10 @@ test(
                   task: {
                     ...sourceTask,
                     execution,
-                    resources: resourcesForExecution(execution),
+                    resources: resourcesForEffectiveUsagePolicy(
+                      execution,
+                      testUsagePolicy(execution.policy.route),
+                    ),
                   },
                 }),
               ),
@@ -1700,6 +1742,7 @@ test(
               runId,
               policy: {
                 version: 'fake',
+                route: 'fake:economy',
                 model: 'fake/model',
                 provider: 'fake',
                 priceVersion: 'test-only',
@@ -1710,7 +1753,11 @@ test(
                 timeoutMs: 1000,
               },
             };
-            const profiled = createStorytellerOpenings(database, execution);
+            const profiled = createStorytellerOpenings(
+              database,
+              execution,
+              testUsagePolicy(execution.policy.route),
+            );
             let calls = 0;
             const source = createStorytellerRuntime(database, {
               provider: async (task) => {

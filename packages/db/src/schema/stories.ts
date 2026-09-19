@@ -23,6 +23,7 @@ export const story = pgTable(
     premise: jsonb('premise').$type<unknown>(),
     storyteller: jsonb('storyteller').$type<unknown>(),
     execution: jsonb('execution').$type<unknown>(),
+    usagePolicy: jsonb('usage_policy').$type<unknown>(),
     continuityNotes: jsonb('continuity_notes').$type<unknown>(),
     revision: integer('revision').notNull().default(1),
     viewVersion: integer('view_version').notNull().default(1),

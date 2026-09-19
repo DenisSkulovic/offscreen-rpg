@@ -7,7 +7,6 @@ import {
 } from '../src/profiles';
 import {
   prepareStorytellerTask,
-  resourcesForExecution,
   validateStorytellerResult,
 } from '../src/tasks';
 import { scriptedStorytellerResult } from '../src/fixtures';
@@ -17,6 +16,69 @@ import {
   createOpenRouterProvider,
   usdToMicrousd,
 } from '../src/providers/openrouter';
+
+function providerResources(route: string) {
+  const source = [{ source: 'test', value: 100000 }];
+  return {
+    version: 'storyteller-resources.v2' as const,
+    recipe: {
+      version: 'single-turn.v1' as const,
+      maxModelRounds: 1 as const,
+      maxReads: 0 as const,
+      tools: 'disabled' as const,
+      automaticEscalation: false as const,
+    },
+    envelope: {
+      maxSerializedRequestBytes: 48000,
+      maxInputTokens: 100000,
+      maxGeneratedTokens: 2000,
+      maxReasoningTokens: 0,
+      maxMicrousd: '54',
+      deadlineMs: 1000,
+    },
+    authority: {
+      kind: 'effective-usage-policy' as const,
+      policy: {
+        schemaVersion: 1 as const,
+        platform: { id: 'test', revision: 1 },
+        profile: { id: 'test', revision: 1 },
+        route,
+        fundingMode: 'prepaid' as const,
+        recovery: 'explicit-resume' as const,
+        limits: {
+          maxInputTokensPerRequest: 100000,
+          maxSerializedBytesPerRequest: 48000,
+          maxGeneratedTokensPerRequest: 2000,
+          maxReasoningTokensPerRequest: 0,
+          maxInputTokensPerOperation: 100000,
+          maxGeneratedTokensPerOperation: 2000,
+          maxModelRoundsPerOperation: 1,
+          maxReadsPerOperation: 0,
+          maxRetainedReadBytes: 0,
+          maxMicrousdPerOperation: '54',
+          maxInFlightDispatches: 1,
+          maxBackgroundJobsPerWindow: 0,
+        },
+        limitSources: {
+          maxInputTokensPerRequest: source,
+          maxSerializedBytesPerRequest: source,
+          maxGeneratedTokensPerRequest: source,
+          maxReasoningTokensPerRequest: [{ source: 'test', value: 0 }],
+          maxInputTokensPerOperation: source,
+          maxGeneratedTokensPerOperation: source,
+          maxModelRoundsPerOperation: source,
+          maxReadsPerOperation: [{ source: 'test', value: 0 }],
+          maxRetainedReadBytes: [{ source: 'test', value: 0 }],
+          maxMicrousdPerOperation: [{ source: 'test', value: '54' }],
+          maxInFlightDispatches: source,
+          maxBackgroundJobsPerWindow: [{ source: 'test', value: 0 }],
+        },
+        windows: [],
+        restrictions: [],
+      },
+    },
+  };
+}
 
 function opening() {
   return prepareStorytellerTask({
@@ -445,7 +507,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 4);
+    assert.equal(task.inputVersion, 5);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -823,6 +885,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     runId: randomUUID(),
     policy: {
       version: 'test',
+      route: 'test:economy',
       model: 'test/model',
       provider: 'Test',
       priceVersion: 'invented-test',
@@ -836,7 +899,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   const providerTask = prepareStorytellerTask({
     ...task,
     execution: providerExecution,
-    resources: resourcesForExecution(providerExecution),
+    resources: providerResources(providerExecution.policy.route),
   });
   let calls = 0;
   const provider = createOpenRouterProvider({
