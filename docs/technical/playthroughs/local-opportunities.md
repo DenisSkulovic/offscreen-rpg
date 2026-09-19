@@ -19,7 +19,7 @@ This prose alone grants nothing. Its corresponding admitted opportunities might 
 | Listen discreetly for rumors | Access, supported sensing/stealth method and captured risk | Reveal one eligible prepared rumor or learn nothing | Being noticed, a selected lead, or another supported event |
 | Sleep in the available bed | Permission, access and an admitted safe-rest condition | Clock-based rest under this ruleset | Only its selected hooks; sleep does not require periodic narration |
 
-No one starts merely because their button exists. The player did not accept an overnight plan. The local opportunity set is a source of valid choices, not a command queue and not a universal menu shared by all places.
+No one starts merely because their button exists. The player did not accept an overnight plan. This is the Storyteller's explicit selection for this situation, not a command queue or an engine-generated list of everything mechanically possible. Even if the character owns an apple, “Eat apple” is absent unless the Storyteller includes it. A different situation can select none of these activities.
 
 The Storyteller becomes dormant: no scheduled model poll, no call on opening the menu, no new task just to render facts or decide whether those conditions still hold.
 
@@ -54,7 +54,7 @@ Event branch: at tick 240, settle the final check and record the candidate once.
 
 The wake packet supplies these receipts, R1's claim status, relevant history, the current local package and revisions, active/retained work and supported capabilities. A proposed event might be an NPC challenging the listener about their interest. It cannot treat R1 as confirmed or retroactively say a failed information check succeeded.
 
-After the admitted scene and player response, update only the affected opportunities/state. Maybe discreet listening is temporarily ineligible because the character has attracted attention; fishing may still be available after the controlling scene resolves. The game can go dormant again. Not every wake means a fight, and not every opportunity must be regenerated after one changes.
+After the admitted scene and player response, the Storyteller explicitly supplies the next situation's choices and activity authorization. It might carry forward fishing but exclude discreet listening, or offer only the next scene's intentions. The engine must not restore the previous tavern menu simply because the response completed. If the Storyteller reauthorizes a quiet selection, the game can become dormant again without regenerating every definition. Not every wake means a fight or a compulsory return to routine play.
 
 ## LO-04: a dramatic situation closes ordinary opportunities
 
@@ -62,15 +62,17 @@ Separate Red Mountain fixture: entry into a declared confrontation phase establi
 
 - A stale previously visible sleep/travel command is rejected before a draw, debit or activity start.
 - A continuously required safe-rest condition changing interrupts incompatible ongoing rest at the admitted boundary; hiding the button alone would leave the exploit running.
-- A supported action that opens a route can restore an already-prepared departure opportunity without generation. If the destination/path has never been established, new preparation is a separate requirement.
-- A retreat or shelter option can exist when supported; “the plot wants a confrontation” is not by itself a rule that silently deletes all alternatives.
+- A supported action that opens a route can restore departure without generation only when that conditional choice is already in the current Storyteller-authored selection. Mechanical access alone never creates a travel button. If the destination/path has never been established, new preparation is also required.
+- A retreat or shelter option can exist when the Storyteller offers it and the rules support it. The Storyteller can instead present a focused sequence with no routine access, without pretending that every omitted activity is physically impossible.
 - Campaign pause/authorized stop remain controls, not story opportunities that the model may censor away. No sleep in this fixture does not mean sleep is impossible everywhere called Red Mountain.
 
-The important idea is contextual curation, not arbitrary railroading. Public explanations can say “No safe place to rest here” or “The exits are sealed” when known, without revealing undiscovered causes. Resolving the controlling situation removes its relevant restrictions, not every other hold.
+The important idea is a deliberately authored interaction, not automatic exposure of all physical possibilities. Public explanations can say “No safe place to rest here” or “The exits are sealed” when actually established; do not fabricate such facts to explain a focused menu. Resolving a decision removes its hold, not every other hold and not the Storyteller's current choice boundary.
+
+For example, one rapid branch can run: the chamber shudders → choose to shield an ally or investigate the mechanism → resolve the supported immediate action → the next scene reveals the consequence and offers a fresh decision → another immediate response → another scene. Each scene explicitly authorizes no routine starts. An apple remains in inventory throughout but produces no eating button; clearing one threat does not make sleep appear. These turns add no artificial activity wait, while model preparation latency remains real. Only a later Storyteller-authored transition offers a respite or travel. The opposite branch can explicitly offer the extended journey from Vivec toward Gnisis, governed by its real work/time terms rather than rapid-scene timing. Both rhythms belong to the same game.
 
 ## LO-05: nonhuman contrast and cost
 
-A microbe's current environment could offer absorption, migration or protective contraction. Loss of a declared nutrient-access condition disables absorption; gaining access can restore it without the Storyteller. An abstract consciousness's connection phase can do the same without geography. These use the same opportunity/eligibility boundary, not a mandatory village, bed or job board.
+A microbe's Storyteller-authored selection could offer absorption, migration or protective contraction. Loss of nutrient access disables the selected absorption option; regaining access can restore it only while that same authorization remains valid. A new threat scene may offer only immediate reactions even if nutrients remain. An abstract consciousness's connection phase can do the same without geography. These use the same authored-choice/eligibility boundary, not a mandatory village, bed or job board.
 
 After preparation, LO-02 and the quiet LO-03 branch admit **zero generation tasks and zero provider calls**, even though the player makes several fresh choices. Event branch adds an E-shaped preparation and, if one response requires narration, D; budget nominally 11k–22k input and 1.9k–4.2k output under the [planning envelopes](storyteller.md#illustrative-token-envelopes). Initial package generation must be counted separately: its schema/content may exceed the existing opening envelope and has not been tokenized or implemented. Prepared text disclosure is not generated dialogue; genuinely novel exchanges incur their own calls.
 
