@@ -63,6 +63,9 @@ CREATE TABLE "campaign" (
 	"content" jsonb,
 	"location" text,
 	"tick" bigint NOT NULL,
+	"clock" jsonb NOT NULL,
+	"clock_anchor_at" timestamp (3) with time zone NOT NULL,
+	"clock_pace" jsonb NOT NULL,
 	"offer" jsonb,
 	"active_activity_id" uuid
 );
@@ -121,9 +124,7 @@ CREATE TABLE "game_activity" (
 	"state" text NOT NULL,
 	"boundaries_settled" integer DEFAULT 0 NOT NULL,
 	"revision" integer DEFAULT 0 NOT NULL,
-	"progress" jsonb NOT NULL,
-	"anchor_at" timestamp (3) with time zone NOT NULL,
-	"pace" jsonb NOT NULL
+	"progress" jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "game_offer" (

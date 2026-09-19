@@ -69,10 +69,19 @@ export const immediateActionPlanSchema = z.strictObject({
       kind: z.literal('process'),
       action: actionDefinitionSchema,
     }),
-    z.strictObject({
-      kind: z.literal('resume'),
-      activityActionId: actionKeySchema,
-    }),
+    z
+      .strictObject({
+        kind: z.literal('resume'),
+        activityActionId: actionKeySchema,
+        activityId: z.uuid().optional(),
+        activityRevision: z.number().int().nonnegative().optional(),
+      })
+      .refine(
+        (resume) =>
+          (resume.activityId === undefined) ===
+          (resume.activityRevision === undefined),
+        'Resume identity and revision must be supplied together',
+      ),
   ]),
 });
 export type ImmediateActionPlan = z.infer<typeof immediateActionPlanSchema>;

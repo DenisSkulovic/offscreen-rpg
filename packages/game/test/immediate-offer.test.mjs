@@ -284,6 +284,15 @@ test('resume intentions remain opaque and cannot settle as immediate actions', (
       ),
     /process lifecycle/,
   );
+  const halfBound = structuredClone(resume);
+  halfBound.resolution.activityId = '45469315-a0ca-4a89-b25d-d74a8e7250c8';
+  assert.throws(() =>
+    immediateActionContentSchema.parse({
+      version: 1,
+      id: 'invalid-resume-test',
+      plans: [halfBound],
+    }),
+  );
 });
 
 test('proposal validation returns bounded diagnostics without applying mechanics', () => {

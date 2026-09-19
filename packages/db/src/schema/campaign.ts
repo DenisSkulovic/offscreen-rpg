@@ -23,6 +23,12 @@ export const campaign = pgTable('campaign', {
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
   tick: bigint('tick', { mode: 'number' }).notNull(),
+  clock: jsonb('clock').notNull().$type<unknown>(),
+  clockAnchorAt: timestamp('clock_anchor_at', {
+    withTimezone: true,
+    precision: 3,
+  }).notNull(),
+  clockPace: jsonb('clock_pace').notNull().$type<unknown>(),
   offer: jsonb('offer').$type<unknown>(),
   activeActivityId: uuid('active_activity_id'),
 });
@@ -77,11 +83,6 @@ export const gameActivity = pgTable('game_activity', {
   boundariesSettled: integer('boundaries_settled').notNull().default(0),
   revision: integer('revision').notNull().default(0),
   progress: jsonb('progress').notNull().$type<unknown>(),
-  anchorAt: timestamp('anchor_at', {
-    withTimezone: true,
-    precision: 3,
-  }).notNull(),
-  pace: jsonb('pace').notNull().$type<unknown>(),
 });
 export const gameRoll = pgTable(
   'game_roll',

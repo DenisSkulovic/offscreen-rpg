@@ -47,6 +47,7 @@ const campaignActivityViewSchema = z.strictObject({
   ]),
   boundariesSettled: z.number().int().nonnegative(),
   revision: z.number().int(),
+  completionPending: z.boolean(),
   progress: z.strictObject({
     label: z.string().min(1).max(120),
     earned: z.number().int().nonnegative(),

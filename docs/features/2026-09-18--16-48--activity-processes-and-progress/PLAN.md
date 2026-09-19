@@ -1,12 +1,12 @@
 # Activity foundation design and implementation plan
 
 Feature: [Activities, participation and world-defined progress](FEATURE.md).
-Execution scope: readiness/design now; A1/A2 have a bounded handoff awaiting the owner's model switch and continuation. The broader participation proposal retains its review boundary. Earlier contribution work remains implemented. No live inference authorized.
-Implementation owner: the coding model in this thread after the owner's switch/instruction; do not dispatch an agent automatically.
+Execution scope: A1 implemented under the owner's continuation; A2 remains the next bounded activity slice after situations S1. The broader participation proposal retains its review boundary. No live inference authorized.
+Implementation owner: the coding model in this thread; do not dispatch an agent automatically.
 
 ## Inspected baseline
 
-Reviewed source at `875f979`. No runtime repair is claimed by this design pass.
+Reviewed and implemented from `09f1fe2`. Runtime evidence remains bounded as recorded in the checkpoint.
 
 | Location | Current behavior and consequence |
 | --- | --- |
@@ -110,7 +110,7 @@ Universal invariants: authority, identity, ordered time, grounded inputs, typed 
 
 ### 1 — Stable identity and correct clock (nearest implementation phase)
 
-Execution label **A1** in the [handoff route](../README.md). Scope is ready for the owner's post-switch implementation instruction; no implementation in the current design turn.
+Execution label **A1** in the [handoff route](../README.md). Implemented; the checkpoint distinguishes source behavior from persisted integration evidence.
 
 - Outcome: real A → B → A settlement preserves earned progress and monotonic chronology; same-definition instances can be selected precisely.
 - Dependencies: use the existing owner-selected product direction and solo integration contract; wait for the implementation instruction, not another broad redesign. Read application actions, activities, controls, reads, persistence; game clock/rules; campaign schema; worker scheduling; focused integration. Any newly discovered material product change still needs review before code.
@@ -179,8 +179,8 @@ A giant optional-field activity object admits nonsense combinations; use typed r
 
 ## Current checkpoint
 
-- Current phase: implementation-ready A1 handoff; wait for the owner's model switch/continuation, then correct exact-instance/shared chronology using BC-04 and the bounded file map above. A2 now owns genuine wait/rule boundaries only. Situation authorization and follow-ups/queues have separate named owners; follow the feature index route rather than implementing the old oversized phase as one patch.
-- Reviewed baseline: `875f979`; documentation only. The [solo contract](../../technical/solo-gameplay-contract.md) selects tick quantization, collision order, independent holds and publication boundaries; [gold session](../../technical/playthroughs/harbor-session.md) is the connected target. Runtime work remains incomplete.
-- Verification: source/design inspection only; no builds/tests/runtime session or provider calls. Exact dice/timing in the atlas are illustrative fixture inputs. Existing integration coverage remains narrower than the full target flow.
+- Current phase: A1 implemented; next route slice is situations S1, followed by A2. Campaign storage owns clock anchor/pace/remainder/frontier; activity storage owns effort/progress/pending completion. Resume publication binds exact instance/revision and selection fences it. Prototype baseline/schema and plan formats were reset rather than compatibility-layered.
+- Implemented from baseline `09f1fe2`. World receipt mapping uses current campaign tick plus remaining local effort, so the BC-04 oracle maps 15→20→25. A goal-reaching interrupt remains pending and eligible resumption completes without a new draw. One advancing activity remains the explicit limit.
+- Verification: affected package builds/typechecks and 20/20 game tests passed, including retained-effort world mapping and resume binding shape. After recreating the disposable test database from the new baseline, the focused scripted Storyteller integration completed through PostgreSQL, Temporal and its browser stage. Its A→B→A branch still uses direct B completion and explicit test-only offer rebinding, so it is not claimed as real BC-04 settlement evidence.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.

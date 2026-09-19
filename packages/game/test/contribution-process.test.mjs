@@ -5,6 +5,7 @@ import {
   estimatedCompletionBoundaryTick,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
+  worldTickForEffortBoundary,
 } from '../dist/src/activities.js';
 
 const character = {
@@ -35,7 +36,7 @@ const character = {
 };
 
 const plan = resolvedActivityPlanSchema.parse({
-  version: 4,
+  version: 5,
   action: {
     id: 'restore-beacon',
     label: 'Restore the signal beacon',
@@ -67,7 +68,6 @@ const plan = resolvedActivityPlanSchema.parse({
     checks: [],
     completion: { text: 'The beacon works again.', effects: [] },
   },
-  startTick: 0,
   settingsRevision: 1,
   resolvedThroughTick: 0,
 });
@@ -126,4 +126,31 @@ test('a check cadence can wake earlier without becoming productive progress', ()
   assert.equal(nextBoundaryTick(withCheck, 0), 2);
   assert.equal(nextBoundaryTick(withCheck, 2), 4);
   assert.equal(nextBoundaryTick(withCheck, 4), 5);
+});
+
+test('retained effort maps to the current campaign clock after other work', () => {
+  assert.equal(
+    worldTickForEffortBoundary({
+      campaignTick: 15,
+      retainedEffortTicks: 10,
+      boundaryEffortTick: 15,
+    }),
+    20,
+  );
+  assert.equal(
+    worldTickForEffortBoundary({
+      campaignTick: 20,
+      retainedEffortTicks: 15,
+      boundaryEffortTick: 20,
+    }),
+    25,
+  );
+  assert.equal(
+    worldTickForEffortBoundary({
+      campaignTick: 200,
+      retainedEffortTicks: 200,
+      boundaryEffortTick: 125,
+    }),
+    125,
+  );
 });

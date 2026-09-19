@@ -1,6 +1,6 @@
 # Tick and tag contracts
 
-Status: exact tick arithmetic implemented; per-activity application chronology still needs the [shared-clock correction](solo-gameplay-contract.md#clock-correction-the-nearest-implementation-boundary), including world receipts across A → B → A. Tag correction pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
+Status: exact arithmetic and the campaign-owned application clock are implemented. Activity receipts now map retained effort onto monotonic world ticks across A → B → A; persisted/runtime acceptance remains narrower than the full connected session. Tag correction pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy this contract.
 
 ## Simulation clock
 

@@ -4,15 +4,15 @@ Significant changes use one folder containing FEATURE.md (agreed intent) and PLA
 
 Maintain links to active feature folders here. Remove finished entries after useful content has been integrated into the permanent product and technical docs. This is not a backlog of brainstorming or a release history.
 
-## Coding handoff: start here after the owner switches models
+## Coding route
 
-The current turn is design only. The owner will switch this thread to a cheaper model and request implementation; do not switch models, launch another agent, enable providers or start coding on their behalf now. Once continued, follow this route one coherent slice at a time and commit/push before the next. Existing unrelated unfinished features remain unfinished.
+Implementation is active under the owner's instruction. Follow this route one coherent slice at a time and commit/push before the next. Do not launch another agent, enable providers or broaden into unrelated unfinished features.
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
 
 | Order | Exact slice | Deliverable / boundary |
 | --- | --- | --- |
-| 1 | [Activity A1](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#1--stable-identity-and-correct-clock-nearest-implementation-phase) | Exact-instance resume and world clock; real BC-04 B settlement, no rewind or extra goal-reaching attempt |
+| 1 | [Activity A1](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#1--stable-identity-and-correct-clock-nearest-implementation-phase) — implemented | Exact-instance resume, campaign clock and pending completion are implemented; full real BC-04 integration/browser evidence remains for the connected slice |
 | 2 | [Situations S1](2026-09-19--13-49--storyteller-authored-situations/PLAN.md#s1--current-situation-authority-and-scene-only-pacing) | Explicit authored choices/activity access per scene; no inventory-derived or inherited menu |
 | 3 | [Activity A2](2026-09-18--16-48--activity-processes-and-progress/PLAN.md#2--quiet-routines-and-selective-scenes) | Genuine wait alongside contribution; common typed boundary, no fake work points |
 | 4 | [Situations S2](2026-09-19--13-49--storyteller-authored-situations/PLAN.md#s2--dormant-reuse-and-revalidation) + [Autonomy U2a](2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#u2a--quiet-settlement-and-factual-continuation) | One joint slice: quiet settlement plus independently selected/repeated authored activities; zero new generation tasks |

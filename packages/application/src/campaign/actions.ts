@@ -24,7 +24,7 @@ import {
   readDatabaseClockMs,
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import { commandReceipt, loadCampaignSettings, saveCommand } from './settings';
+import { commandReceipt, saveCommand } from './settings';
 import {
   campaignCharacter,
   campaignStoryFacts,
@@ -34,7 +34,7 @@ import {
 } from './persistence';
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
-import { wholeTicks } from '@offscreen/game/time';
+import { projectCampaignClock } from './clock';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -127,26 +127,29 @@ export function createCampaignActions(database: Database) {
       }
       if (definition.resolution.kind === 'resume') {
         const resume = definition.resolution;
-        const candidates = (
-          await tx
-            .select()
-            .from(gameActivity)
-            .where(eq(gameActivity.storyId, current.id))
-        ).filter((activity) => {
-          if (!['encounter', 'suspended'].includes(activity.state)) {
-            return false;
-          }
-          const plan = resolvedActivityPlanSchema.parse(activity.plan);
-          return plan.action.id === resume.activityActionId;
-        });
-        // Action-definition identity is sufficient for the first authored proof,
-        // but never guess when two retained instances could satisfy the offer.
-        const retained = candidates[0];
-        if (candidates.length !== 1 || !retained) {
+        if (
+          resume.activityId === undefined ||
+          resume.activityRevision === undefined
+        ) {
+          throw new StoryError('conflict');
+        }
+        const [retained] = await tx
+          .select()
+          .from(gameActivity)
+          .where(eq(gameActivity.id, resume.activityId));
+        if (
+          !retained ||
+          retained.storyId !== current.id ||
+          retained.revision !== resume.activityRevision ||
+          !['encounter', 'suspended'].includes(retained.state)
+        ) {
           throw new StoryError('conflict');
         }
         const activePlan = resolvedActivityPlanSchema.parse(retained.plan);
-        if (!actionAvailable(campaignCharacter(state), activePlan.action)) {
+        if (
+          activePlan.action.id !== resume.activityActionId ||
+          !actionAvailable(campaignCharacter(state), activePlan.action)
+        ) {
           throw new StoryError('conflict');
         }
         const now = await readDatabaseClockMs(tx, current.id);
@@ -154,13 +157,16 @@ export function createCampaignActions(database: Database) {
           .update(gameActivity)
           .set({
             state: 'running',
-            anchorAt: new Date(now),
             revision: retained.revision + 1,
           })
           .where(eq(gameActivity.id, retained.id));
         await tx
           .update(campaign)
-          .set({ offer: null, activeActivityId: retained.id })
+          .set({
+            offer: null,
+            activeActivityId: retained.id,
+            clockAnchorAt: new Date(now),
+          })
           .where(eq(campaign.storyId, current.id));
         await incrementStoryViewVersion(tx, {
           storyId: current.id,
@@ -180,35 +186,38 @@ export function createCampaignActions(database: Database) {
             .set({ state: 'suspended', revision: active.revision + 1 })
             .where(eq(gameActivity.id, active.id));
         }
-        const activityId = randomUUID();
         const now = await readDatabaseClockMs(tx, current.id);
-        const { settings } = await loadCampaignSettings(
-          tx,
-          current.id,
-          state.settingsRevision,
+        const clockHeld = Boolean(
+          active && ['encounter', 'paused'].includes(active.state),
         );
+        const projected = projectCampaignClock(state, now, clockHeld);
+        const activityId = randomUUID();
         await tx.insert(gameActivity).values({
           id: activityId,
           storyId: current.id,
           plan: {
-            version: 4,
+            version: 5,
             action: definition.resolution.action,
-            startTick: state.tick,
             settingsRevision: state.settingsRevision,
             resolvedThroughTick: 0,
           },
           state: 'running',
           boundariesSettled: 0,
           progress: {
-            clock: wholeTicks(0),
+            effortTicks: 0,
             process: { kind: 'contribution.v1', earned: 0 },
+            completionPending: false,
           },
-          anchorAt: new Date(now),
-          pace: settings.pace,
         });
         await tx
           .update(campaign)
-          .set({ offer: null, activeActivityId: activityId })
+          .set({
+            offer: null,
+            activeActivityId: activityId,
+            tick: projected.clock.elapsedTicks,
+            clock: projected.clock,
+            clockAnchorAt: new Date(now),
+          })
           .where(eq(campaign.storyId, current.id));
         await incrementStoryViewVersion(tx, {
           storyId: current.id,

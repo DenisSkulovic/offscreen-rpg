@@ -1,5 +1,5 @@
 {
-  "id": "99152383-b8c4-4b81-b7ad-10d7610f50ea",
+  "id": "eba1d0d7-d3d6-45fe-b91b-4986b71be88e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -479,6 +479,24 @@
           "primaryKey": false,
           "notNull": true
         },
+        "clock": {
+          "name": "clock",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clock_anchor_at": {
+          "name": "clock_anchor_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clock_pace": {
+          "name": "clock_pace",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "offer": {
           "name": "offer",
           "type": "jsonb",
@@ -873,8 +891,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "completed": {
-          "name": "completed",
+        "boundaries_settled": {
+          "name": "boundaries_settled",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -889,18 +907,6 @@
         },
         "progress": {
           "name": "progress",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "anchor_at": {
-          "name": "anchor_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pace": {
-          "name": "pace",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true

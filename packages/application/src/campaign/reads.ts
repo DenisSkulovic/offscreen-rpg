@@ -19,8 +19,13 @@ import {
   estimatedCompletionBoundaryTick,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
+  worldTickForEffortBoundary,
 } from '@offscreen/game/activities';
-import { paceSchema, realMsUntilTick } from '@offscreen/game/time';
+import {
+  paceSchema,
+  realMsUntilTick,
+  tickProgressSchema,
+} from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
 
 function actionReceiptState(
@@ -87,7 +92,8 @@ export async function readCampaign(
     .limit(20);
   function projectActivity(candidate: (typeof activities)[number]) {
     const plan = resolvedActivityPlanSchema.parse(candidate.plan);
-    const pace = paceSchema.parse(candidate.pace);
+    const pace = paceSchema.parse(state.clockPace);
+    const clock = tickProgressSchema.parse(state.clock);
     const progress = activityProgressSchema.parse(candidate.progress);
     // Campaign rows also back narrative-only stories. A character becomes
     // mandatory only when projecting a mechanical commitment whose estimate
@@ -103,6 +109,7 @@ export async function readCampaign(
       label: plan.action.label,
       state: candidate.state,
       boundariesSettled: candidate.boundariesSettled,
+      completionPending: progress.completionPending,
       progress: {
         label: plan.action.process.progressLabel,
         earned: progress.process.earned,
@@ -114,10 +121,17 @@ export async function readCampaign(
       dueAt:
         candidate.state === 'running'
           ? new Date(
-              candidate.anchorAt.getTime() +
+              state.clockAnchorAt.getTime() +
                 realMsUntilTick(
-                  progress.clock,
-                  nextBoundaryTick(plan, plan.resolvedThroughTick),
+                  clock,
+                  worldTickForEffortBoundary({
+                    campaignTick: state.tick,
+                    retainedEffortTicks: progress.effortTicks,
+                    boundaryEffortTick: nextBoundaryTick(
+                      plan,
+                      plan.resolvedThroughTick,
+                    ),
+                  }),
                   pace,
                 ),
             ).toISOString()
@@ -125,8 +139,19 @@ export async function readCampaign(
       estimatedCompletionAt:
         candidate.state === 'running' && estimatedCompletionTick !== null
           ? new Date(
-              candidate.anchorAt.getTime() +
-                realMsUntilTick(progress.clock, estimatedCompletionTick, pace),
+              state.clockAnchorAt.getTime() +
+                realMsUntilTick(
+                  clock,
+                  worldTickForEffortBoundary({
+                    campaignTick: state.tick,
+                    retainedEffortTicks: progress.effortTicks,
+                    boundaryEffortTick: Math.max(
+                      estimatedCompletionTick,
+                      progress.effortTicks,
+                    ),
+                  }),
+                  pace,
+                ),
             ).toISOString()
           : null,
     };

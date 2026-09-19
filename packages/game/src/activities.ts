@@ -7,7 +7,6 @@ import {
 } from './checks';
 import { outcomeEffectsSchema } from './effects';
 import { factSchema, type Character } from './state';
-import { tickProgressSchema } from './time';
 
 const outcomeSchema = z.strictObject({
   text: z.string().min(1).max(1000),
@@ -75,7 +74,8 @@ export const actionContentSchema = z
       if (action.checks.some((check) => check.id === 'process-contribution')) {
         context.addIssue({
           code: 'custom',
-          message: 'Scheduled check identity is reserved by the process runtime',
+          message:
+            'Scheduled check identity is reserved by the process runtime',
         });
       }
       if (
@@ -162,9 +162,8 @@ export function validateContentState(
 }
 
 export const resolvedActivityPlanSchema = z.strictObject({
-  version: z.literal(4),
+  version: z.literal(5),
   action: actionDefinitionSchema,
-  startTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   settingsRevision: z.number().int().positive(),
   resolvedThroughTick: z.number().int().nonnegative().default(0),
 });
@@ -176,8 +175,9 @@ export const contributionProgressSchema = z.strictObject({
 });
 export type ContributionProgress = z.infer<typeof contributionProgressSchema>;
 export const activityProgressSchema = z.strictObject({
-  clock: tickProgressSchema,
+  effortTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   process: contributionProgressSchema,
+  completionPending: z.boolean().default(false),
 });
 export type ActivityProgress = z.infer<typeof activityProgressSchema>;
 
@@ -291,4 +291,18 @@ export function nextBoundaryTick(
     }
   }
   return Number(next);
+}
+
+/** Map a local effort boundary onto the campaign timeline, including backlog. */
+export function worldTickForEffortBoundary(input: {
+  campaignTick: number;
+  retainedEffortTicks: number;
+  boundaryEffortTick: number;
+}) {
+  const worldTick =
+    input.campaignTick + (input.boundaryEffortTick - input.retainedEffortTicks);
+  if (!Number.isSafeInteger(worldTick) || worldTick < 0) {
+    throw new Error('Campaign tick is outside the supported range');
+  }
+  return worldTick;
 }

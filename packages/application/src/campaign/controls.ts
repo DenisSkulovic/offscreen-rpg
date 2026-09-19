@@ -18,8 +18,9 @@ import {
   activityProgressSchema,
   nextBoundaryTick,
   resolvedActivityPlanSchema,
+  worldTickForEffortBoundary,
 } from '@offscreen/game/activities';
-import { earnedTicks, paceSchema } from '@offscreen/game/time';
+import { paceSchema, tickProgressSchema } from '@offscreen/game/time';
 import { StoryError } from '../stories/errors';
 
 export function createCampaignControls(database: Database) {
@@ -65,24 +66,20 @@ export function createCampaignControls(database: Database) {
         await saveCommand(tx, current.id, args.operationId, request);
         return;
       }
-      const oldPace = paceSchema.parse(settled.activity.pace);
+      const oldPace = paceSchema.parse(settled.state.clockPace);
       const plan = resolvedActivityPlanSchema.parse(settled.activity.plan);
       const storedProgress = activityProgressSchema.parse(
         settled.activity.progress,
       );
-      const clock = earnedTicks({
-        ...settled.activity,
-        progress: storedProgress.clock,
-        pace: oldPace,
-        now,
-        maximumTicks:
-          oldPace.kind === 'instant'
-            ? nextBoundaryTick(plan, plan.resolvedThroughTick)
-            : Number.MAX_SAFE_INTEGER,
+      const nextWorldBoundary = worldTickForEffortBoundary({
+        campaignTick: settled.state.tick,
+        retainedEffortTicks: storedProgress.effortTicks,
+        boundaryEffortTick: nextBoundaryTick(plan, plan.resolvedThroughTick),
       });
       if (
         settled.activity.state === 'running' &&
-        nextBoundaryTick(plan, plan.resolvedThroughTick) <= clock.elapsedTicks
+        nextWorldBoundary <=
+          tickProgressSchema.parse(settled.state.clock).elapsedTicks
       ) {
         // Commit the batch and continue catch-up before accepting a control.
         // Throwing inside this transaction would undo the progress just made.
@@ -99,12 +96,16 @@ export function createCampaignControls(database: Database) {
         .update(gameActivity)
         .set({
           state: nextState,
-          progress: { ...storedProgress, clock },
-          anchorAt: new Date(now),
-          pace: parsed.data.pace ?? oldPace,
           revision: settled.activity.revision + 1,
         })
         .where(eq(gameActivity.id, activity.id));
+      await tx
+        .update(campaign)
+        .set({
+          clockAnchorAt: new Date(now),
+          clockPace: parsed.data.pace ?? oldPace,
+        })
+        .where(eq(campaign.storyId, current.id));
       if (parsed.data.pace) {
         const previous = await loadCampaignSettings(
           tx,

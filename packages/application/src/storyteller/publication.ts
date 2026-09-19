@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { campaign } from '@offscreen/db/campaign-schema';
+import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
@@ -28,6 +28,7 @@ import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
+import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -104,7 +105,43 @@ export async function publishStorytellerResult(
         ) {
           throw new StoryError('invalid');
         }
-        selectedPlans.push(validation.plan);
+        let admittedPlan = validation.plan;
+        if (admittedPlan.resolution.kind === 'resume') {
+          const resume = admittedPlan.resolution;
+          const retained = (
+            await tx
+              .select()
+              .from(gameActivity)
+              .where(eq(gameActivity.storyId, current.id))
+          ).filter((candidate) => {
+            if (!['encounter', 'suspended'].includes(candidate.state)) {
+              return false;
+            }
+            if (
+              resolvedActivityPlanSchema.parse(candidate.plan).action.id ===
+              resume.activityActionId
+            ) {
+              return (
+                resume.activityId === undefined ||
+                (candidate.id === resume.activityId &&
+                  candidate.revision === resume.activityRevision)
+              );
+            }
+            return false;
+          });
+          if (retained.length !== 1 || !retained[0]) {
+            throw new StoryError('invalid');
+          }
+          admittedPlan = {
+            ...admittedPlan,
+            resolution: {
+              ...admittedPlan.resolution,
+              activityId: retained[0].id,
+              activityRevision: retained[0].revision,
+            },
+          };
+        }
+        selectedPlans.push(admittedPlan);
       }
       const plannedOffer = offerSchema.parse({
         id: randomUUID(),

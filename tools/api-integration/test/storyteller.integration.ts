@@ -267,7 +267,7 @@ test(
               version?: unknown;
               action?: { id?: unknown };
             };
-            assert.equal(plan.version, 4);
+            assert.equal(plan.version, 5);
             assert.equal(plan.action?.id, 'restore-beacon');
 
             const activityId = requireDefined(
@@ -311,11 +311,9 @@ test(
                 state: 'encounter',
                 boundariesSettled: 1,
                 progress: {
-                  clock: {
-                    elapsedTicks: 5,
-                    remainder: { numerator: '0', denominator: '1' },
-                  },
+                  effortTicks: 5,
                   process: { kind: 'contribution.v1', earned: 3 },
+                  completionPending: false,
                 },
                 plan: { ...plan, resolvedThroughTick: 5 },
               })
@@ -416,9 +414,47 @@ test(
               .update(gameActivity)
               .set({ state: 'complete' })
               .where(eq(gameActivity.id, diversion.id));
+            const [retainedAfterSwitch] = await database.db
+              .select({ revision: gameActivity.revision })
+              .from(gameActivity)
+              .where(eq(gameActivity.id, activityId));
+            const [storedResumeOffer] = await database.db
+              .select({ plans: gameOffer.plans })
+              .from(gameOffer)
+              .where(eq(gameOffer.id, resumeOffer.id));
+            const reboundOffer = { ...resumeOffer, id: randomUUID() };
+            const reboundPlans = (
+              requireDefined(
+                storedResumeOffer?.plans,
+                'Expected private resume plans',
+              ) as Array<{
+                key: string;
+                resolution: Record<string, unknown>;
+              }>
+            ).map((storedPlan) =>
+              storedPlan.key === 'resume-beacon-repair'
+                ? {
+                    ...storedPlan,
+                    resolution: {
+                      ...storedPlan.resolution,
+                      activityId,
+                      activityRevision: requireDefined(
+                        retainedAfterSwitch?.revision,
+                        'Expected retained activity revision',
+                      ),
+                    },
+                  }
+                : storedPlan,
+            );
+            await database.db.insert(gameOffer).values({
+              id: reboundOffer.id,
+              storyId: started.storyId,
+              narrativeRevision: afterNarration.revision,
+              plans: reboundPlans,
+            });
             await database.db
               .update(campaignTable)
-              .set({ offer: resumeOffer })
+              .set({ offer: reboundOffer })
               .where(eq(campaignTable.storyId, started.storyId));
 
             await stories.campaignAction({
@@ -427,7 +463,7 @@ test(
               operationId: randomUUID(),
               body: {
                 expectedRevision: afterNarration.revision,
-                offerId: resumeOffer.id,
+                offerId: reboundOffer.id,
                 path: ['resume-beacon-repair'],
               },
             });

@@ -25,6 +25,7 @@ import { type Transaction } from '../outbox/index';
 import {
   lockOwnedStory,
   incrementStoryViewVersion,
+  readDatabaseClockMs,
   type StoryRecord,
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
@@ -37,6 +38,7 @@ import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { randomUUID } from 'node:crypto';
 import { saveOfferPlans } from './persistence';
+import { wholeTicks } from '@offscreen/game/time';
 
 export function initialCreative(profile: StorytellerProfile): CreativeSettings {
   return {
@@ -89,6 +91,7 @@ export async function initializeCampaign(
           busy: false,
         })
       : null;
+  const now = await readDatabaseClockMs(tx, storyId);
   await tx.insert(campaign).values({
     storyId,
     settingsRevision: 1,
@@ -98,6 +101,9 @@ export async function initializeCampaign(
     storyFacts,
     location: null,
     tick: 0,
+    clock: wholeTicks(0),
+    clockAnchorAt: new Date(now),
+    clockPace: settings.pace,
     offer: opportunities?.offer ?? null,
   });
   if (opportunities) {
