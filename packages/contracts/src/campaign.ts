@@ -72,6 +72,36 @@ const campaignActivityViewSchema = z.strictObject({
   settingsRevision: z.number().int(),
 });
 
+export const campaignActivityEventKindSchema = z.enum([
+  'started',
+  'paused',
+  'resumed',
+  'suspended',
+  'blocked',
+  'interrupted',
+  'completion-pending',
+  'completed',
+  'abandoned',
+  'failed',
+  'expired',
+  'invalidated',
+]);
+export type CampaignActivityEventKind = z.infer<
+  typeof campaignActivityEventKindSchema
+>;
+
+export const campaignActivityEventSchema = z.strictObject({
+  id: z.uuid(),
+  ordinal: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  activityId: z.uuid(),
+  activityRevision: z.number().int().nonnegative(),
+  tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  kind: campaignActivityEventKindSchema,
+  label: z.string().trim().min(1).max(200),
+  summary: z.string().trim().min(1).max(1000),
+  createdAt: z.iso.datetime(),
+});
+
 export const campaignViewSchema = z.strictObject({
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
@@ -84,6 +114,7 @@ export const campaignViewSchema = z.strictObject({
   // This is a compact set of unfinished promises, not a universal task list.
   // `activity` remains the one identity allowed to advance right now.
   commitments: z.array(campaignActivityViewSchema).max(20),
+  activityEvents: z.array(campaignActivityEventSchema).max(100),
   rolls: z
     .array(
       z.strictObject({

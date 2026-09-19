@@ -36,6 +36,7 @@ import {
   requireCampaign,
   loadOfferPlan,
   processOccurrenceAvailable,
+  recordActivityEvent,
 } from './persistence';
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
@@ -177,6 +178,16 @@ export function createCampaignActions(database: Database) {
             revision: retained.revision + 1,
           })
           .where(eq(gameActivity.id, retained.id));
+        await recordActivityEvent(tx, {
+          storyId: current.id,
+          activityId: retained.id,
+          activityRevision: retained.revision + 1,
+          tick: state.tick,
+          kind: 'resumed',
+          causeKey: `command:${args.operationId}`,
+          label: activePlan.action.label,
+          summary: `${activePlan.action.label} resumed with its saved progress.`,
+        });
         await tx
           .update(campaign)
           .set({
@@ -212,10 +223,21 @@ export function createCampaignActions(database: Database) {
         let retainedRevision: number | null = null;
         if (active && ['encounter', 'paused'].includes(active.state)) {
           retainedRevision = active.revision + 1;
+          const retainedPlan = resolvedActivityPlanSchema.parse(active.plan);
           await tx
             .update(gameActivity)
             .set({ state: 'suspended', revision: active.revision + 1 })
             .where(eq(gameActivity.id, active.id));
+          await recordActivityEvent(tx, {
+            storyId: current.id,
+            activityId: active.id,
+            activityRevision: active.revision + 1,
+            tick: state.tick,
+            kind: 'suspended',
+            causeKey: `command:${args.operationId}`,
+            label: retainedPlan.action.label,
+            summary: `${retainedPlan.action.label} was suspended while other work began.`,
+          });
         } else if (active?.state === 'blocked') {
           // Blocked work is already dormant. Keep its blocker and exact revision;
           // starting another activity must not disguise it as voluntary suspension.
@@ -239,6 +261,16 @@ export function createCampaignActions(database: Database) {
           state: 'running',
           boundariesSettled: 0,
           progress: initialActivityProgress(definition.resolution.action),
+        });
+        await recordActivityEvent(tx, {
+          storyId: current.id,
+          activityId,
+          activityRevision: 0,
+          tick: projected.clock.elapsedTicks,
+          kind: 'started',
+          causeKey: `command:${args.operationId}`,
+          label: definition.resolution.action.label,
+          summary: `${definition.resolution.action.label} started.`,
         });
         await tx
           .update(campaign)

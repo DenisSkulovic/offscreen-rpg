@@ -5,6 +5,7 @@ import {
   jsonb,
   text,
   bigint,
+  bigserial,
   timestamp,
   primaryKey,
   unique,
@@ -91,6 +92,32 @@ export const gameActivity = pgTable('game_activity', {
   revision: integer('revision').notNull().default(0),
   progress: jsonb('progress').notNull().$type<unknown>(),
 });
+export const gameActivityEvent = pgTable(
+  'game_activity_event',
+  {
+    id: uuid('id').primaryKey(),
+    ordinal: bigserial('ordinal', { mode: 'number' }).notNull(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    activityId: uuid('activity_id')
+      .notNull()
+      .references(() => gameActivity.id),
+    activityRevision: integer('activity_revision').notNull(),
+    tick: bigint('tick', { mode: 'number' }).notNull(),
+    kind: text('kind').notNull(),
+    causeKey: text('cause_key').notNull(),
+    label: text('label').notNull(),
+    summary: text('summary').notNull(),
+    details: jsonb('details').notNull().default({}).$type<unknown>(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('game_activity_event_cause').on(t.activityId, t.causeKey, t.kind),
+  ],
+);
 export const gameRoll = pgTable(
   'game_roll',
   {

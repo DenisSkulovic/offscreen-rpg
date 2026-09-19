@@ -29,6 +29,8 @@ import {
   refreshOffer,
   appendMechanicalPassage,
   campaignActivityOccurrences,
+  recordActivityEvent,
+  type ActivityEventKind,
   type ActivityRecord,
   type CampaignRecord,
 } from './persistence';
@@ -36,6 +38,24 @@ import { requestConsequenceNarration } from './narration';
 import { projectCampaignClock } from './clock';
 
 export const campaignActivityTopic = 'campaign.activity.v1';
+
+function transitionEventKind(state: string): ActivityEventKind | null {
+  switch (state) {
+    case 'blocked':
+      return 'blocked';
+    case 'encounter':
+      return 'interrupted';
+    case 'complete':
+      return 'completed';
+    case 'abandoned':
+    case 'failed':
+    case 'expired':
+    case 'invalidated':
+      return state;
+    default:
+      return null;
+  }
+}
 export async function scheduleActivity(tx: Transaction, activityId: string) {
   await enqueue(tx, {
     id: randomUUID(),
@@ -244,6 +264,33 @@ export async function settleActivity(
       revision: nextActivity.revision,
     })
     .where(eq(gameActivity.id, activity.id));
+  const transitionKind =
+    activity.state === nextState ? null : transitionEventKind(nextState);
+  const boundaryCause = `boundary:${boundariesSettled}:revision:${nextActivity.revision}`;
+  if (transitionKind) {
+    await recordActivityEvent(tx, {
+      storyId: current.id,
+      activityId: activity.id,
+      activityRevision: nextActivity.revision,
+      tick: nextCampaignTick,
+      kind: transitionKind,
+      causeKey: boundaryCause,
+      label: plan.action.label,
+      summary: lines.at(-1) ?? `${plan.action.label} became ${nextState}.`,
+    });
+  }
+  if (!storedProgress.completionPending && completionPending) {
+    await recordActivityEvent(tx, {
+      storyId: current.id,
+      activityId: activity.id,
+      activityRevision: nextActivity.revision,
+      tick: nextCampaignTick,
+      kind: 'completion-pending',
+      causeKey: boundaryCause,
+      label: plan.action.label,
+      summary: `${plan.action.label} reached its goal, but completion is waiting for the interruption or blocker to be resolved.`,
+    });
+  }
   const nextCampaign = {
     ...state,
     character,

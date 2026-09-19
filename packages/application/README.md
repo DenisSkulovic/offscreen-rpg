@@ -28,6 +28,8 @@ An encounter-state activity retains its identity and progress across immediate r
 
 The campaign owns the exact real-time anchor, pace, fractional remainder and monotonic world frontier. An activity owns only eligible whole-tick effort, rule progress and pending completion. This prevents A's old anchor from rewinding world receipts after B advances. A goal-reaching attempt interrupted at the same boundary records completion pending; explicit eligible resumption applies completion once without another contribution or occurrence draw. Explicit abandonment, enforced capacity claims and broader lifecycle work remain in the [activity foundation plan](../../docs/features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md).
 
+Player-meaningful lifecycle changes append `game_activity_event` rows inside the same transaction as activity authority. A database ordinal gives events a total order; activity/cause/kind uniqueness fences command and worker replay. Campaign reads project the newest 100 safe events independently of current commitments, so completion does not erase history. The ledger currently covers start, suspension-by-switch, exact resume, manual pause/resume, blocking, interruption, completion-pending and completion. Runtime diagnostics and the player-facing history presentation remain the next A2b checkpoint.
+
 [Campaign persistence](src/campaign/persistence.ts) owns offer/plan storage; [campaign reads](src/campaign/reads.ts) projects player-visible state. The pure admission diagnostics live in `packages/game/src/immediate-actions.ts`, not in these persistence helpers.
 
 ## Execution, failure and retry

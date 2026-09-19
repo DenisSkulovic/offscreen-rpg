@@ -5,6 +5,7 @@ import {
   campaignSettings,
   gameActionReceipt,
   gameActivity,
+  gameActivityEvent,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
@@ -74,6 +75,12 @@ export async function readCampaign(
     .from(gameRoll)
     .where(eq(gameRoll.storyId, storyId))
     .orderBy(desc(gameRoll.tick), desc(gameRoll.id))
+    .limit(100);
+  const activityEvents = await db
+    .select()
+    .from(gameActivityEvent)
+    .where(eq(gameActivityEvent.storyId, storyId))
+    .orderBy(desc(gameActivityEvent.ordinal))
     .limit(100);
   const actionReceipts = await db
     .select({
@@ -194,6 +201,17 @@ export async function readCampaign(
     ).activityAccess,
     activity: activityView,
     commitments,
+    activityEvents: activityEvents.map((event) => ({
+      id: event.id,
+      ordinal: event.ordinal,
+      activityId: event.activityId,
+      activityRevision: event.activityRevision,
+      tick: event.tick,
+      kind: event.kind,
+      label: event.label,
+      summary: event.summary,
+      createdAt: event.createdAt.toISOString(),
+    })),
     rolls: rolls.map((roll) => ({
       id: roll.id,
       segment: roll.segment,

@@ -1,11 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
+import type { CampaignActivityEventKind } from '@offscreen/contracts/campaign';
 import {
   campaign,
   gameOffer,
   gameRoll,
   gameActivity,
+  gameActivityEvent,
 } from '@offscreen/db/campaign-schema';
 import {
   immediateActionContentSchema,
@@ -34,6 +37,7 @@ import { StoryError } from '../stories/errors';
 
 export type CampaignRecord = typeof campaign.$inferSelect;
 export type ActivityRecord = typeof gameActivity.$inferSelect;
+export type ActivityEventKind = CampaignActivityEventKind;
 export async function requireCampaign(tx: Transaction, storyId: string) {
   const [state] = await tx
     .select()
@@ -57,6 +61,52 @@ export async function recordRoll(
   },
 ) {
   await tx.insert(gameRoll).values({ id: randomUUID(), ...args });
+}
+
+/**
+ * Appends player-meaningful history inside the transaction that changes the
+ * activity. The cause fence makes command and worker replay invisible.
+ */
+export async function recordActivityEvent(
+  tx: Transaction,
+  args: {
+    storyId: string;
+    activityId: string;
+    activityRevision: number;
+    tick: number;
+    kind: ActivityEventKind;
+    causeKey: string;
+    label: string;
+    summary: string;
+    details?: unknown;
+  },
+) {
+  const details = args.details ?? {};
+  await tx
+    .insert(gameActivityEvent)
+    .values({ id: randomUUID(), ...args, details })
+    .onConflictDoNothing();
+  const [saved] = await tx
+    .select()
+    .from(gameActivityEvent)
+    .where(
+      and(
+        eq(gameActivityEvent.activityId, args.activityId),
+        eq(gameActivityEvent.causeKey, args.causeKey),
+        eq(gameActivityEvent.kind, args.kind),
+      ),
+    );
+  if (
+    !saved ||
+    saved.storyId !== args.storyId ||
+    saved.activityRevision !== args.activityRevision ||
+    saved.tick !== args.tick ||
+    saved.label !== args.label ||
+    saved.summary !== args.summary ||
+    !isDeepStrictEqual(saved.details, details)
+  ) {
+    throw new Error('Activity event identity conflict');
+  }
 }
 export async function refreshOffer(
   tx: Transaction,

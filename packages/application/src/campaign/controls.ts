@@ -11,7 +11,7 @@ import {
   readDatabaseClockMs,
   incrementStoryViewVersion,
 } from '../stories/persistence';
-import { requireCampaign } from './persistence';
+import { recordActivityEvent, requireCampaign } from './persistence';
 import { commandReceipt, saveCommand, loadCampaignSettings } from './settings';
 import { settleActivity, scheduleActivity } from './activities';
 import {
@@ -99,6 +99,21 @@ export function createCampaignControls(database: Database) {
           revision: settled.activity.revision + 1,
         })
         .where(eq(gameActivity.id, activity.id));
+      if (parsed.data.action === 'pause' || parsed.data.action === 'resume') {
+        await recordActivityEvent(tx, {
+          storyId: current.id,
+          activityId: activity.id,
+          activityRevision: settled.activity.revision + 1,
+          tick: settled.state.tick,
+          kind: parsed.data.action === 'pause' ? 'paused' : 'resumed',
+          causeKey: `command:${args.operationId}`,
+          label: plan.action.label,
+          summary:
+            parsed.data.action === 'pause'
+              ? `${plan.action.label} paused.`
+              : `${plan.action.label} resumed.`,
+        });
+      }
       await tx
         .update(campaign)
         .set({

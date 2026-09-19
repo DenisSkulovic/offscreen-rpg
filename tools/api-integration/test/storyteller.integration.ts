@@ -572,6 +572,10 @@ test(
               required: 9,
             });
             assert.equal(blocked.campaign?.rolls.length, 0);
+            assert.deepEqual(
+              blocked.campaign?.activityEvents.map((event) => event.kind),
+              ['blocked', 'started'],
+            );
             assert.equal(
               blocked.campaign?.character?.quantities.find(
                 (quantity) => quantity.id === 'harbor-credit',
@@ -587,6 +591,16 @@ test(
               .from(campaignConsequence)
               .where(eq(campaignConsequence.operationId, activityId));
             assert.equal(blockedFollowUp.length, 1);
+            const blockedAfterReplay = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.deepEqual(
+              blockedAfterReplay.campaign?.activityEvents.map(
+                (event) => event.kind,
+              ),
+              ['blocked', 'started'],
+            );
           },
         );
         await t.test(
@@ -652,6 +666,10 @@ test(
             assert.equal(duplicate.revision, completed.revision);
             assert.equal(duplicate.campaign?.tick, 10);
             assert.equal(duplicate.campaign?.rolls.length, 0);
+            assert.deepEqual(
+              duplicate.campaign?.activityEvents.map((event) => event.kind),
+              ['completed', 'started'],
+            );
 
             let repeatSnapshot = duplicate;
             const repeatedIds: string[] = [];
@@ -699,6 +717,19 @@ test(
             assert.deepEqual(
               repeatSnapshot.campaign?.offer?.nodes.map((node) => node.id),
               [],
+            );
+            assert.deepEqual(
+              repeatSnapshot.campaign?.activityEvents.map(
+                (event) => event.kind,
+              ),
+              [
+                'completed',
+                'started',
+                'completed',
+                'started',
+                'completed',
+                'started',
+              ],
             );
             const [occurrenceState] = await database.db
               .select({

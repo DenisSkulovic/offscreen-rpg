@@ -15,6 +15,13 @@
       "when": 1789821188875,
       "tag": "0001_warm_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789825048883,
+      "tag": "0002_shallow_bulldozer",
+      "breakpoints": true
     }
   ]
 }
