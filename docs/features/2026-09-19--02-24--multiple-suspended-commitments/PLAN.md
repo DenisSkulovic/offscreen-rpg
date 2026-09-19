@@ -44,3 +44,6 @@ Execution scope: approved as the next offline architecture change; begin in the 
 - Preserve: opaque offers, private plans, earned contribution, exact clock arithmetic, idempotent commands, revision fencing and exactly-once effects.
 - Do not begin with UI redesign or generalized process families.
 - Provider spend: $0 authorized; cumulative OpenRouter usage remains unverified.
+- Implementation checkpoint: `game_activity` is now used as the retained collection, `activeActivityId` is only the advancing identity, starting B suspends an encounter/paused A, and resume searches for one eligible retained instance before repointing the campaign. The play projection exposes unfinished commitments and the browser labels them as non-advancing work.
+- The integration specification now covers an immediate encounter response followed by A -> B -> same A with retained contribution. Full workspace typecheck/build and game tests pass. Runtime execution is still required: Docker Desktop currently crashes while handling `AppData/Local/Docker/run/sailor-ingest.sock`.
+- Next: restore the disposable local Docker runtime, execute the focused integration, replace the test-only B admission with an authored playable beacon option, then perform the browser rehearsal. Do not start another feature before this evidence exists.

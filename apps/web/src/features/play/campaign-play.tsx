@@ -45,6 +45,9 @@ export function CampaignPlay({
   const parent = path.at(-1) ?? null;
   const children = nodes.filter((node) => node.parent === parent);
   const active = activity && ['running', 'paused'].includes(activity.state);
+  const retainedCommitments = campaign.commitments.filter(
+    (commitment) => commitment.id !== activity?.id,
+  );
   return (
     <section aria-label="Character and activities">
       <p>
@@ -165,6 +168,25 @@ export function CampaignPlay({
             </>
           ) : null}
         </div>
+      ) : null}
+      {retainedCommitments.length ? (
+        <details open>
+          <summary>Work you can return to</summary>
+          {/* Retained commitments are story promises, not generic background
+              jobs. Keep their identity and earned progress legible without
+              turning the scene into a project-management dashboard. */}
+          {retainedCommitments.map((commitment) => (
+            <article key={commitment.id}>
+              <p>
+                <strong>{commitment.label}</strong> · {commitment.state}
+              </p>
+              <p>
+                {commitment.progress.label}: {commitment.progress.earned}/
+                {commitment.progress.required}. Time is not advancing this work.
+              </p>
+            </article>
+          ))}
+        </details>
       ) : null}
       {nodes.length ? (
         <div aria-label="Contextual options">

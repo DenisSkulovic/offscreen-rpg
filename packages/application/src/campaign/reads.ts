@@ -56,17 +56,13 @@ export async function readCampaign(
     return null;
   }
   const state = row.campaign;
-  const [activity] = state.activeActivityId
-    ? await db
-        .select()
-        .from(gameActivity)
-        .where(
-          and(
-            eq(gameActivity.id, state.activeActivityId),
-            eq(gameActivity.storyId, storyId),
-          ),
-        )
-    : [];
+  const activities = await db
+    .select()
+    .from(gameActivity)
+    .where(eq(gameActivity.storyId, storyId));
+  const activity = activities.find(
+    (candidate) => candidate.id === state.activeActivityId,
+  );
   const rolls = await db
     .select()
     .from(gameRoll)
@@ -89,34 +85,33 @@ export async function readCampaign(
       desc(gameActionReceipt.operationId),
     )
     .limit(20);
-  let activityView = null;
-  if (activity) {
-    const plan = resolvedActivityPlanSchema.parse(activity.plan);
-    const pace = paceSchema.parse(activity.pace);
-    const progress = activityProgressSchema.parse(activity.progress);
-    const character = characterSchema.parse(state.character);
+  const character = characterSchema.parse(state.character);
+  function projectActivity(candidate: (typeof activities)[number]) {
+    const plan = resolvedActivityPlanSchema.parse(candidate.plan);
+    const pace = paceSchema.parse(candidate.pace);
+    const progress = activityProgressSchema.parse(candidate.progress);
     const estimatedCompletionTick = estimatedCompletionBoundaryTick(
       plan,
       progress.process,
       character,
     );
-    activityView = {
-      id: activity.id,
+    return {
+      id: candidate.id,
       label: plan.action.label,
-      state: activity.state,
-      boundariesSettled: activity.boundariesSettled,
+      state: candidate.state,
+      boundariesSettled: candidate.boundariesSettled,
       progress: {
         label: plan.action.process.progressLabel,
         earned: progress.process.earned,
         required: plan.action.process.requiredContribution,
       },
-      revision: activity.revision,
+      revision: candidate.revision,
       resolvedTicks: plan.resolvedThroughTick,
       settingsRevision: plan.settingsRevision,
       dueAt:
-        activity.state === 'running'
+        candidate.state === 'running'
           ? new Date(
-              activity.anchorAt.getTime() +
+              candidate.anchorAt.getTime() +
                 realMsUntilTick(
                   progress.clock,
                   nextBoundaryTick(plan, plan.resolvedThroughTick),
@@ -125,14 +120,20 @@ export async function readCampaign(
             ).toISOString()
           : null,
       estimatedCompletionAt:
-        activity.state === 'running' && estimatedCompletionTick !== null
+        candidate.state === 'running' && estimatedCompletionTick !== null
           ? new Date(
-              activity.anchorAt.getTime() +
+              candidate.anchorAt.getTime() +
                 realMsUntilTick(progress.clock, estimatedCompletionTick, pace),
             ).toISOString()
           : null,
     };
   }
+  const activityView = activity ? projectActivity(activity) : null;
+  const commitments = activities
+    .filter((candidate) =>
+      ['running', 'paused', 'encounter', 'suspended'].includes(candidate.state),
+    )
+    .map(projectActivity);
   return campaignViewSchema.parse({
     settings: campaignSettingsSchema.parse(row.settings),
     character: state.character,
@@ -141,6 +142,7 @@ export async function readCampaign(
     tick: state.tick,
     offer: state.offer,
     activity: activityView,
+    commitments,
     rolls: rolls.map((roll) => ({
       id: roll.id,
       segment: roll.segment,

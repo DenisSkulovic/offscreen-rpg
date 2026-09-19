@@ -117,18 +117,36 @@ export function createCampaignActions(database: Database) {
             .from(gameActivity)
             .where(eq(gameActivity.id, state.activeActivityId))
         : [];
-      if (active && ['running', 'paused'].includes(active.state)) {
+      if (
+        active &&
+        (active.state === 'running' ||
+          (active.state === 'paused' &&
+            definition.resolution.kind !== 'process'))
+      ) {
         throw new StoryError('conflict');
       }
       if (definition.resolution.kind === 'resume') {
-        if (!active || active.state !== 'encounter') {
+        const resume = definition.resolution;
+        const candidates = (
+          await tx
+            .select()
+            .from(gameActivity)
+            .where(eq(gameActivity.storyId, current.id))
+        ).filter((activity) => {
+          if (!['encounter', 'suspended'].includes(activity.state)) {
+            return false;
+          }
+          const plan = resolvedActivityPlanSchema.parse(activity.plan);
+          return plan.action.id === resume.activityActionId;
+        });
+        // Action-definition identity is sufficient for the first authored proof,
+        // but never guess when two retained instances could satisfy the offer.
+        const retained = candidates[0];
+        if (candidates.length !== 1 || !retained) {
           throw new StoryError('conflict');
         }
-        const activePlan = resolvedActivityPlanSchema.parse(active.plan);
-        if (
-          activePlan.action.id !== definition.resolution.activityActionId ||
-          !actionAvailable(campaignCharacter(state), activePlan.action)
-        ) {
+        const activePlan = resolvedActivityPlanSchema.parse(retained.plan);
+        if (!actionAvailable(campaignCharacter(state), activePlan.action)) {
           throw new StoryError('conflict');
         }
         const now = await readDatabaseClockMs(tx, current.id);
@@ -137,29 +155,29 @@ export function createCampaignActions(database: Database) {
           .set({
             state: 'running',
             anchorAt: new Date(now),
-            revision: active.revision + 1,
+            revision: retained.revision + 1,
           })
-          .where(eq(gameActivity.id, active.id));
+          .where(eq(gameActivity.id, retained.id));
         await tx
           .update(campaign)
-          .set({ offer: null })
+          .set({ offer: null, activeActivityId: retained.id })
           .where(eq(campaign.storyId, current.id));
         await incrementStoryViewVersion(tx, {
           storyId: current.id,
           viewVersion: current.viewVersion + 1,
         });
         await saveCommand(tx, current.id, args.operationId, request);
-        await scheduleActivity(tx, active.id);
+        await scheduleActivity(tx, retained.id);
         return;
       }
       if (definition.resolution.kind === 'process') {
-        // Starting a different commitment supersedes interrupted work. Immediate
-        // encounter responses do not: they leave the old progress suspended until
-        // a later admitted resume (or future explicit abandonment) decision.
-        if (active?.state === 'encounter') {
+        // A new commitment takes the character's one advancing slot, but it does
+        // not erase interrupted work. The retained row remains an explicit future
+        // choice with the same identity, progress, rolls and captured terms.
+        if (active && ['encounter', 'paused'].includes(active.state)) {
           await tx
             .update(gameActivity)
-            .set({ state: 'abandoned', revision: active.revision + 1 })
+            .set({ state: 'suspended', revision: active.revision + 1 })
             .where(eq(gameActivity.id, active.id));
         }
         const activityId = randomUUID();

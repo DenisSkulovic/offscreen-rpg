@@ -34,6 +34,30 @@ export const campaignSettingsSchema = z.strictObject({
 });
 export type CampaignSettings = z.infer<typeof campaignSettingsSchema>;
 
+const campaignActivityViewSchema = z.strictObject({
+  id: z.uuid(),
+  label: z.string(),
+  state: z.enum([
+    'running',
+    'paused',
+    'encounter',
+    'suspended',
+    'complete',
+    'abandoned',
+  ]),
+  boundariesSettled: z.number().int().nonnegative(),
+  revision: z.number().int(),
+  progress: z.strictObject({
+    label: z.string().min(1).max(120),
+    earned: z.number().int().nonnegative(),
+    required: z.number().int().positive(),
+  }),
+  dueAt: z.iso.datetime().nullable(),
+  estimatedCompletionAt: z.iso.datetime().nullable(),
+  resolvedTicks: z.number().int().nonnegative(),
+  settingsRevision: z.number().int(),
+});
+
 export const campaignViewSchema = z.strictObject({
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
@@ -41,30 +65,10 @@ export const campaignViewSchema = z.strictObject({
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   offer: offerSchema.nullable(),
-  activity: z
-    .strictObject({
-      id: z.uuid(),
-      label: z.string(),
-      state: z.enum([
-        'running',
-        'paused',
-        'encounter',
-        'complete',
-        'abandoned',
-      ]),
-      boundariesSettled: z.number().int().nonnegative(),
-      revision: z.number().int(),
-      progress: z.strictObject({
-        label: z.string().min(1).max(120),
-        earned: z.number().int().nonnegative(),
-        required: z.number().int().positive(),
-      }),
-      dueAt: z.iso.datetime().nullable(),
-      estimatedCompletionAt: z.iso.datetime().nullable(),
-      resolvedTicks: z.number().int().nonnegative(),
-      settingsRevision: z.number().int(),
-    })
-    .nullable(),
+  activity: campaignActivityViewSchema.nullable(),
+  // This is a compact set of unfinished promises, not a universal task list.
+  // `activity` remains the one identity allowed to advance right now.
+  commitments: z.array(campaignActivityViewSchema).max(20),
   rolls: z
     .array(
       z.strictObject({

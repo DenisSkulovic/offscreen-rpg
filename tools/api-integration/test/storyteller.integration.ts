@@ -373,6 +373,131 @@ test(
             );
             assert.equal(resumeOffer.nodes[0]?.id, 'resume-beacon-repair');
 
+            const [storedResumeOffer] = await database.db
+              .select({ plans: gameOffer.plans })
+              .from(gameOffer)
+              .where(eq(gameOffer.id, resumeOffer.id));
+            const resumePlan = requireDefined(
+              (storedResumeOffer?.plans as unknown[])[0],
+              'Expected a stored resume plan',
+            );
+            const [storedOpeningOffer] = await database.db
+              .select({ plans: gameOffer.plans })
+              .from(gameOffer)
+              .where(eq(gameOffer.id, offer.id));
+            const openingPlan = requireDefined(
+              (
+                storedOpeningOffer?.plans as Array<{
+                  version: number;
+                  key: string;
+                  label: string;
+                  intention: string;
+                  risk: string | null;
+                  evidence: string[];
+                  requires: unknown[];
+                  requiresStory: unknown[];
+                  requiresQuantities: unknown[];
+                  resolution: {
+                    kind: string;
+                    action?: Record<string, unknown>;
+                  };
+                }>
+              )[0],
+              'Expected a stored process plan',
+            );
+            assert.equal(openingPlan.resolution.kind, 'process');
+            if (
+              openingPlan.resolution.kind !== 'process' ||
+              !openingPlan.resolution.action
+            ) {
+              throw new Error('Expected beacon process definition');
+            }
+            const originalAction = openingPlan.resolution.action as {
+              process: Record<string, unknown>;
+              [key: string]: unknown;
+            };
+            const diversionPlan = {
+              ...openingPlan,
+              key: 'secure-repair-tools',
+              label: 'Secure the repair tools',
+              intention:
+                'Pause the beacon repair long enough to secure the exposed tools.',
+              resolution: {
+                kind: 'process',
+                action: {
+                  ...originalAction,
+                  id: 'secure-repair-tools',
+                  label: 'Secure the repair tools',
+                  description:
+                    'Move and secure the tools before returning to the beacon.',
+                  process: {
+                    ...originalAction.process,
+                    progressLabel: 'Tools secured',
+                    requiredContribution: 3,
+                  },
+                  checks: [],
+                  completion: {
+                    text: 'The repair tools are secured.',
+                    effects: [],
+                  },
+                },
+              },
+            };
+            await database.db
+              .update(gameOffer)
+              .set({ plans: [resumePlan, diversionPlan] })
+              .where(eq(gameOffer.id, resumeOffer.id));
+            await database.db
+              .update(campaignTable)
+              .set({
+                offer: {
+                  ...resumeOffer,
+                  nodes: [
+                    ...resumeOffer.nodes,
+                    {
+                      id: diversionPlan.key,
+                      parent: null,
+                      label: diversionPlan.label,
+                      description: diversionPlan.intention,
+                      risk: diversionPlan.risk,
+                      action: { kind: 'attempt' },
+                    },
+                  ],
+                },
+              })
+              .where(eq(campaignTable.storyId, started.storyId));
+
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: afterNarration.revision,
+                offerId: resumeOffer.id,
+                path: [diversionPlan.key],
+              },
+            });
+            const commitments = await database.db
+              .select({ id: gameActivity.id, state: gameActivity.state })
+              .from(gameActivity)
+              .where(eq(gameActivity.storyId, started.storyId));
+            assert.deepEqual(
+              commitments.map((commitment) => commitment.state).sort(),
+              ['running', 'suspended'],
+            );
+            const diversion = requireDefined(
+              commitments.find((commitment) => commitment.id !== activityId),
+              'Expected a second activity identity',
+            );
+            await database.db
+              .update(gameActivity)
+              .set({ state: 'complete' })
+              .where(eq(gameActivity.id, diversion.id));
+            await database.db
+              .update(campaignTable)
+              .set({ offer: resumeOffer })
+              .where(eq(campaignTable.storyId, started.storyId));
+
             await stories.campaignAction({
               ownerId,
               storyId: started.storyId,
@@ -397,7 +522,7 @@ test(
                   .from(gameActivity)
                   .where(eq(gameActivity.storyId, started.storyId))
               ).length,
-              1,
+              2,
             );
           },
         );
