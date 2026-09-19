@@ -5,6 +5,7 @@ import {
   campaignSettings,
   gameActionReceipt,
   gameActionExecution,
+  gameActionExecutionEvent,
   gameActivity,
   gameActivityEvent,
   gameActivityReport,
@@ -92,6 +93,12 @@ export async function readCampaign(
     .from(gameRoll)
     .where(eq(gameRoll.storyId, storyId))
     .orderBy(desc(gameRoll.tick), desc(gameRoll.id))
+    .limit(100);
+  const actionExecutionEvents = await db
+    .select()
+    .from(gameActionExecutionEvent)
+    .where(eq(gameActionExecutionEvent.storyId, storyId))
+    .orderBy(desc(gameActionExecutionEvent.ordinal))
     .limit(100);
   const activityEvents = await db
     .select()
@@ -240,8 +247,10 @@ export async function readCampaign(
             label: plan.label,
             startTick: actionExecution.startTick,
             targetTick: actionExecution.targetTick,
+            state: actionExecution.state,
+            revision: actionExecution.revision,
             dueAt:
-              holds.length === 0
+              actionExecution.state === 'running' && holds.length === 0
                 ? new Date(
                     state.clockAnchorAt.getTime() +
                       realMsUntilTick(
@@ -254,6 +263,16 @@ export async function readCampaign(
           };
         })()
       : null,
+    actionExecutionEvents: actionExecutionEvents.map((event) => ({
+      id: event.id,
+      ordinal: event.ordinal,
+      executionId: event.executionId,
+      executionRevision: event.executionRevision,
+      tick: event.tick,
+      kind: event.kind,
+      label: event.label,
+      createdAt: event.createdAt.toISOString(),
+    })),
     commitments,
     activityEvents: activityEvents.map((event) => ({
       id: event.id,

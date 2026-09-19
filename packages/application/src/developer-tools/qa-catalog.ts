@@ -187,7 +187,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'immediate-mechanical-dm-loop',
-    version: 5,
+    version: 6,
     name: 'Timed mechanical DM loop',
     purpose:
       'Exercise generated options, admitted private plans, visible d20 consequences, and three committed rounds.',
@@ -246,6 +246,18 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
           'The accepted execution remains visible until its target tick; only then does the committed outcome appear while narration preparation is pending, followed by a fresh choice.',
         authoritativeExpectation:
           'The admitted execution owns the campaign clock, then one resolution receipt and its effects commit exactly once at its target tick. Narration latency adds no ticks; preparation retry cannot repeat mechanics.',
+      }),
+      stage({
+        id: 'control-finite-action',
+        name: 'Pause and retime a finite action',
+        importance: 'major',
+        preconditions: ['A finite action execution is running.'],
+        action:
+          'Pause it before its target, leave it paused, change its remaining-time speed, then resume it.',
+        observableExpectation:
+          'Paused time earns nothing; the displayed target is unchanged, the due estimate follows the selected speed, and the action later settles normally.',
+        authoritativeExpectation:
+          'Start, pause, pace change, resume and settlement are distinct durable revisions. A stale worker wake cannot settle the paused execution, and no control duplicates its eventual roll or effects.',
       }),
       stage({
         id: 'resolve-round-two',

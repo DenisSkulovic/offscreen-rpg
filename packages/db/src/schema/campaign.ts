@@ -238,6 +238,7 @@ export const gameActionExecution = pgTable(
     startTick: bigint('start_tick', { mode: 'number' }).notNull(),
     targetTick: bigint('target_tick', { mode: 'number' }).notNull(),
     state: text('state').notNull().default('running'),
+    revision: integer('revision').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),
@@ -247,11 +248,41 @@ export const gameActionExecution = pgTable(
     unique('game_action_execution_offer').on(t.storyId, t.offerId),
     check(
       'game_action_execution_state',
-      sql`${t.state} in ('running', 'settled')`,
+      sql`${t.state} in ('running', 'paused', 'settled')`,
     ),
     check(
       'game_action_execution_ticks',
       sql`${t.startTick} >= 0 and ${t.targetTick} > ${t.startTick}`,
+    ),
+  ],
+);
+export const gameActionExecutionEvent = pgTable(
+  'game_action_execution_event',
+  {
+    id: uuid('id').primaryKey(),
+    ordinal: bigserial('ordinal', { mode: 'number' }).notNull(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    executionId: uuid('execution_id')
+      .notNull()
+      .references(() => gameActionExecution.operationId),
+    executionRevision: integer('execution_revision').notNull(),
+    tick: bigint('tick', { mode: 'number' }).notNull(),
+    kind: text('kind').notNull(),
+    label: text('label').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('game_action_execution_event_revision').on(
+      t.executionId,
+      t.executionRevision,
+    ),
+    check(
+      'game_action_execution_event_kind',
+      sql`${t.kind} in ('started', 'paused', 'resumed', 'pace-changed', 'settled')`,
     ),
   ],
 );

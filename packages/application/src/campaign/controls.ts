@@ -1,10 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import {
-  campaign,
-  campaignSettings,
-  gameActivity,
-} from '@offscreen/db/campaign-schema';
+import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import { activityControlSchema } from '@offscreen/contracts/campaign';
 import {
   lockOwnedStory,
@@ -12,7 +8,11 @@ import {
   incrementStoryViewVersion,
 } from '../stories/persistence';
 import { recordActivityEvent, requireCampaign } from './persistence';
-import { commandReceipt, saveCommand, loadCampaignSettings } from './settings';
+import {
+  commandReceipt,
+  saveCommand,
+  recordCampaignPaceChange,
+} from './settings';
 import { settleActivity, scheduleActivity } from './activities';
 import {
   activityProgressSchema,
@@ -122,26 +122,7 @@ export function createCampaignControls(database: Database) {
         })
         .where(eq(campaign.storyId, current.id));
       if (parsed.data.pace) {
-        const previous = await loadCampaignSettings(
-          tx,
-          current.id,
-          state.settingsRevision,
-        );
-        const revision = state.settingsRevision + 1;
-        await tx.insert(campaignSettings).values({
-          storyId: current.id,
-          revision,
-          profile: previous.profile,
-          settings: {
-            ...previous.settings,
-            revision,
-            pace: parsed.data.pace,
-          },
-        });
-        await tx
-          .update(campaign)
-          .set({ settingsRevision: revision })
-          .where(eq(campaign.storyId, current.id));
+        await recordCampaignPaceChange(tx, state, parsed.data.pace);
       }
       await incrementStoryViewVersion(tx, {
         storyId: current.id,

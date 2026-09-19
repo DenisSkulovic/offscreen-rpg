@@ -113,11 +113,26 @@ CREATE TABLE "game_action_execution" (
 	"start_tick" bigint NOT NULL,
 	"target_tick" bigint NOT NULL,
 	"state" text DEFAULT 'running' NOT NULL,
+	"revision" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"settled_at" timestamp (3) with time zone,
 	CONSTRAINT "game_action_execution_offer" UNIQUE("story_id","offer_id"),
-	CONSTRAINT "game_action_execution_state" CHECK ("game_action_execution"."state" in ('running', 'settled')),
+	CONSTRAINT "game_action_execution_state" CHECK ("game_action_execution"."state" in ('running', 'paused', 'settled')),
 	CONSTRAINT "game_action_execution_ticks" CHECK ("game_action_execution"."start_tick" >= 0 and "game_action_execution"."target_tick" > "game_action_execution"."start_tick")
+);
+--> statement-breakpoint
+CREATE TABLE "game_action_execution_event" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"ordinal" bigserial NOT NULL,
+	"story_id" uuid NOT NULL,
+	"execution_id" uuid NOT NULL,
+	"execution_revision" integer NOT NULL,
+	"tick" bigint NOT NULL,
+	"kind" text NOT NULL,
+	"label" text NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "game_action_execution_event_revision" UNIQUE("execution_id","execution_revision"),
+	CONSTRAINT "game_action_execution_event_kind" CHECK ("game_action_execution_event"."kind" in ('started', 'paused', 'resumed', 'pace-changed', 'settled'))
 );
 --> statement-breakpoint
 CREATE TABLE "game_action_receipt" (
@@ -561,6 +576,8 @@ ALTER TABLE "campaign_command" ADD CONSTRAINT "campaign_command_story_id_story_i
 ALTER TABLE "campaign_consequence" ADD CONSTRAINT "campaign_consequence_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_execution" ADD CONSTRAINT "game_action_execution_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_action_execution_event" ADD CONSTRAINT "game_action_execution_event_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_action_execution_event" ADD CONSTRAINT "game_action_execution_event_execution_id_game_action_execution_operation_id_fk" FOREIGN KEY ("execution_id") REFERENCES "public"."game_action_execution"("operation_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_receipt" ADD CONSTRAINT "game_action_receipt_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity" ADD CONSTRAINT "game_activity_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_activity_event" ADD CONSTRAINT "game_activity_event_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

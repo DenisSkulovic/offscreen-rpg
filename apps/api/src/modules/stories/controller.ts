@@ -126,6 +126,23 @@ export class StoriesController {
       return this.stories.read({ ownerId, storyId });
     });
   }
+  @Put(':id/action-execution-controls/:operationId')
+  actionExecutionControl(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.actionExecutionControl({
+        ownerId,
+        storyId,
+        operationId,
+        body,
+      });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
   @Put(':id/accepted-plan-controls/:operationId')
   acceptedPlanControl(
     @Req() request: Request,

@@ -232,12 +232,7 @@ test(
         await t.test(
           'mechanical opening and three consequences reshape plans from committed state',
           async () => {
-            const started = await mechanicalCandidate(
-              'pineapple-mechanics.v4',
-              {
-                kind: 'instant',
-              },
-            );
+            const started = await mechanicalCandidate();
             let snapshot = started.snapshot;
             assert.equal(snapshot.revision, 1);
             assert.equal(snapshot.campaign?.offer?.nodes[0]?.id, 'take-cover');
@@ -286,6 +281,50 @@ test(
               );
               assert.equal(admitted.campaign?.actionReceipts.length, round);
               assert.deepEqual(admitted.campaign?.holds, []);
+
+              if (round === 0) {
+                await stories.actionExecutionControl({
+                  ownerId,
+                  storyId: started.storyId,
+                  operationId: randomUUID(),
+                  body: {
+                    executionId: operationId,
+                    expectedRevision: 0,
+                    action: 'pause',
+                  },
+                });
+                assert.equal(
+                  await storyService.advanceCampaignAction(operationId),
+                  null,
+                );
+                const paused = await stories.read({
+                  ownerId,
+                  storyId: started.storyId,
+                });
+                assert.equal(paused.campaign?.actionExecution?.state, 'paused');
+                assert.equal(paused.campaign?.actionReceipts.length, 0);
+                await stories.actionExecutionControl({
+                  ownerId,
+                  storyId: started.storyId,
+                  operationId: randomUUID(),
+                  body: {
+                    executionId: operationId,
+                    expectedRevision: 1,
+                    action: 'pace',
+                    pace: { kind: 'instant' },
+                  },
+                });
+                await stories.actionExecutionControl({
+                  ownerId,
+                  storyId: started.storyId,
+                  operationId: randomUUID(),
+                  body: {
+                    executionId: operationId,
+                    expectedRevision: 2,
+                    action: 'resume',
+                  },
+                });
+              }
 
               assert.equal(
                 await storyService.advanceCampaignAction(operationId),
@@ -605,6 +644,7 @@ test(
               requiresQuantities: [],
               resolution: {
                 kind: 'automatic' as const,
+                durationTicks: 5,
                 outcome: {
                   text: 'You bar the door until the stranger returns to the boat.',
                   effects: [
@@ -662,7 +702,10 @@ test(
                       label: encounterPlan.label,
                       description: encounterPlan.intention,
                       risk: encounterPlan.risk,
-                      action: { kind: 'attempt', timing: 'instant' },
+                      action: {
+                        kind: 'attempt',
+                        timing: { kind: 'finite', ticks: 5 },
+                      },
                     },
                   ],
                 },
@@ -691,6 +734,33 @@ test(
               .from(campaignTable)
               .where(eq(campaignTable.storyId, started.storyId));
             assert.equal(afterResponse?.activeActivityId, activityId);
+
+            await stories.actionExecutionControl({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                executionId: encounterOperationId,
+                expectedRevision: 0,
+                action: 'pace',
+                pace: { kind: 'instant' },
+              },
+            });
+            assert.equal(
+              await storyService.advanceCampaignAction(encounterOperationId),
+              null,
+            );
+            const afterTimedResponse = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(afterTimedResponse.campaign?.tick, campaign.tick + 5);
+            assert.deepEqual(afterTimedResponse.campaign?.activity?.progress, {
+              kind: 'contribution',
+              label: 'Beacon repair',
+              earned: 3,
+              required: 9,
+            });
 
             await storyService.prepareCampaignConsequence(encounterOperationId);
             const [receipt] = await database.db

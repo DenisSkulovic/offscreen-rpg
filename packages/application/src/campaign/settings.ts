@@ -42,7 +42,7 @@ import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { randomUUID } from 'node:crypto';
 import { saveOfferPlans } from './persistence';
-import { wholeTicks } from '@offscreen/game/time';
+import { wholeTicks, type Pace } from '@offscreen/game/time';
 
 export function initialCreative(profile: StorytellerProfile): CreativeSettings {
   return {
@@ -165,6 +165,31 @@ export async function loadCampaignSettings(
     settings: campaignSettingsSchema.parse(row.settings),
     profile: storytellerProfileSchema.parse(row.profile),
   };
+}
+
+/** Captures a pace change as immutable campaign settings history. */
+export async function recordCampaignPaceChange(
+  tx: Transaction,
+  state: typeof campaign.$inferSelect,
+  pace: Pace,
+) {
+  const previous = await loadCampaignSettings(
+    tx,
+    state.storyId,
+    state.settingsRevision,
+  );
+  const revision = state.settingsRevision + 1;
+  await tx.insert(campaignSettings).values({
+    storyId: state.storyId,
+    revision,
+    profile: previous.profile,
+    settings: { ...previous.settings, revision, pace },
+  });
+  await tx
+    .update(campaign)
+    .set({ settingsRevision: revision })
+    .where(eq(campaign.storyId, state.storyId));
+  return revision;
 }
 
 export function compileCreative(

@@ -43,6 +43,7 @@ export function CampaignPlay({
   const [pace, setPace] = useState('steady');
   const command = useCampaignCommand(story.id, onSnapshot);
   const activity = campaign.activity;
+  const actionExecution = campaign.actionExecution;
   const acceptedPlan = campaign.acceptedActivityPlan;
   const nodes = story.resolution ? [] : (campaign.offer?.nodes ?? []);
   const parent = path.at(-1) ?? null;
@@ -75,17 +76,62 @@ export function CampaignPlay({
           become catch-up progress.
         </p>
       ) : null}
-      {campaign.actionExecution ? (
-        <p role="status">
-          <strong>{campaign.actionExecution.label}</strong> is in progress from
-          tick {campaign.actionExecution.startTick} to tick{' '}
-          {campaign.actionExecution.targetTick}.
-          {campaign.actionExecution.dueAt
-            ? ` Expected around ${new Date(campaign.actionExecution.dueAt).toLocaleTimeString()}.`
-            : ' Campaign time is currently held.'}
-          {' '}The outcome, roll and effects are not committed before that
-          boundary.
-        </p>
+      {actionExecution ? (
+        <div role="status">
+          <p>
+            <strong>{actionExecution.label}</strong> is {actionExecution.state}{' '}
+            from tick {actionExecution.startTick} to tick{' '}
+            {actionExecution.targetTick}.
+            {actionExecution.dueAt
+              ? ` Expected around ${new Date(actionExecution.dueAt).toLocaleTimeString()}.`
+              : ' Campaign time is currently held.'}{' '}
+            The outcome, roll and effects are not committed before that
+            boundary.
+          </p>
+          <button
+            disabled={command.busy || command.retry}
+            onClick={() =>
+              void command.send('action-execution-controls', {
+                executionId: actionExecution.operationId,
+                expectedRevision: actionExecution.revision,
+                action: actionExecution.state === 'paused' ? 'resume' : 'pause',
+              })
+            }
+          >
+            {actionExecution.state === 'paused' ? 'Resume' : 'Pause'}
+          </button>
+          {!campaign.settings.locked ? (
+            <>
+              <label>
+                Speed for this action{' '}
+                <select
+                  value={pace}
+                  onChange={(event) => setPace(event.target.value)}
+                >
+                  {paceOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                disabled={command.busy || command.retry}
+                onClick={() =>
+                  void command.send('action-execution-controls', {
+                    executionId: actionExecution.operationId,
+                    expectedRevision: actionExecution.revision,
+                    action: 'pace',
+                    pace: paceOptions.find((option) => option.value === pace)
+                      ?.pace,
+                  })
+                }
+              >
+                Apply speed
+              </button>
+            </>
+          ) : null}
+        </div>
       ) : null}
       <details>
         <summary>Character state and rules</summary>
@@ -275,6 +321,16 @@ export function CampaignPlay({
               </p>
               <p>{event.summary}</p>
             </article>
+          ))}
+        </details>
+      ) : null}
+      {campaign.actionExecutionEvents.length ? (
+        <details>
+          <summary>Timed action history (latest 100)</summary>
+          {campaign.actionExecutionEvents.map((event) => (
+            <p key={event.id}>
+              <strong>{event.label}</strong> · {event.kind} · tick {event.tick}
+            </p>
           ))}
         </details>
       ) : null}

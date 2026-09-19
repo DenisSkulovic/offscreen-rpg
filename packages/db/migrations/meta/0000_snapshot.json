@@ -1,5 +1,5 @@
 {
-  "id": "534cf90d-0dcc-4dd5-8276-fa7b7729e0a1",
+  "id": "513498c5-bca5-4f22-8fd1-5698ec02e887",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -827,6 +827,13 @@
           "notNull": true,
           "default": "'running'"
         },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -872,11 +879,120 @@
       "checkConstraints": {
         "game_action_execution_state": {
           "name": "game_action_execution_state",
-          "value": "\"game_action_execution\".\"state\" in ('running', 'settled')"
+          "value": "\"game_action_execution\".\"state\" in ('running', 'paused', 'settled')"
         },
         "game_action_execution_ticks": {
           "name": "game_action_execution_ticks",
           "value": "\"game_action_execution\".\"start_tick\" >= 0 and \"game_action_execution\".\"target_tick\" > \"game_action_execution\".\"start_tick\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.game_action_execution_event": {
+      "name": "game_action_execution_event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "bigserial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execution_id": {
+          "name": "execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "execution_revision": {
+          "name": "execution_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tick": {
+          "name": "tick",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "game_action_execution_event_story_id_story_id_fk": {
+          "name": "game_action_execution_event_story_id_story_id_fk",
+          "tableFrom": "game_action_execution_event",
+          "tableTo": "story",
+          "columnsFrom": [
+            "story_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "game_action_execution_event_execution_id_game_action_execution_operation_id_fk": {
+          "name": "game_action_execution_event_execution_id_game_action_execution_operation_id_fk",
+          "tableFrom": "game_action_execution_event",
+          "tableTo": "game_action_execution",
+          "columnsFrom": [
+            "execution_id"
+          ],
+          "columnsTo": [
+            "operation_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "game_action_execution_event_revision": {
+          "name": "game_action_execution_event_revision",
+          "nullsNotDistinct": false,
+          "columns": [
+            "execution_id",
+            "execution_revision"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "game_action_execution_event_kind": {
+          "name": "game_action_execution_event_kind",
+          "value": "\"game_action_execution_event\".\"kind\" in ('started', 'paused', 'resumed', 'pace-changed', 'settled')"
         }
       },
       "isRLSEnabled": false

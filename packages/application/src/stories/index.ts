@@ -1,6 +1,7 @@
 import { createCampaignSettings } from '../campaign/settings';
 import { createCampaignActions } from '../campaign/actions';
 import { createCampaignActionExecutions } from '../campaign/action-executions';
+import { createActionExecutionControls } from '../campaign/action-execution-controls';
 import { createCampaignControls } from '../campaign/controls';
 import { createCampaignActivities } from '../campaign/activities';
 import { createAcceptedPlanControls } from '../campaign/accepted-plan-controls';
@@ -40,6 +41,7 @@ export function createStories(
   return {
     campaignSettings: createCampaignSettings(database),
     campaignAction: createCampaignActions(database),
+    actionExecutionControl: createActionExecutionControls(database),
     campaignControl: createCampaignControls(database),
     acceptedPlanControl: createAcceptedPlanControls(database),
     advanceCampaignActivity: createCampaignActivities(database).advance,

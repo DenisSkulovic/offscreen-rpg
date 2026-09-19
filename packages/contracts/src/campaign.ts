@@ -188,9 +188,31 @@ export const campaignViewSchema = z.strictObject({
       label: z.string().min(1).max(200),
       startTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
       targetTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      state: z.enum(['running', 'paused']),
+      revision: z.number().int().nonnegative(),
       dueAt: z.iso.datetime().nullable(),
     })
     .nullable(),
+  actionExecutionEvents: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        ordinal: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+        executionId: z.uuid(),
+        executionRevision: z.number().int().nonnegative(),
+        tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        kind: z.enum([
+          'started',
+          'paused',
+          'resumed',
+          'pace-changed',
+          'settled',
+        ]),
+        label: z.string().min(1).max(200),
+        createdAt: z.iso.datetime(),
+      }),
+    )
+    .max(100),
   // This is a compact set of unfinished promises, not a universal task list.
   // `activity` remains the one identity allowed to advance right now.
   commitments: z.array(campaignActivityViewSchema).max(20),
@@ -252,6 +274,14 @@ export const actionCommandSchema = z
 export const activityControlSchema = z
   .strictObject({
     activityId: z.uuid(),
+    expectedRevision: z.number().int().nonnegative(),
+    action: z.enum(['pause', 'resume', 'pace']),
+    pace: paceSchema.optional(),
+  })
+  .refine((value) => (value.action === 'pace') === (value.pace !== undefined));
+export const actionExecutionControlSchema = z
+  .strictObject({
+    executionId: z.uuid(),
     expectedRevision: z.number().int().nonnegative(),
     action: z.enum(['pause', 'resume', 'pace']),
     pace: paceSchema.optional(),

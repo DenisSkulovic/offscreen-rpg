@@ -12,9 +12,9 @@ export type CampaignClockEligibility =
   | { kind: 'none' };
 
 /**
- * Project the one campaign clock. Activity effort is derived from whole world
- * ticks while that activity owns the advancing slot; the fractional remainder
- * never belongs to an activity and therefore cannot be duplicated on a switch.
+ * Project the one campaign clock. Exactly one accepted activity or finite
+ * action may own advancement. The fractional remainder belongs to the world
+ * clock, not an execution, so pause/switch/resume cannot duplicate it.
  */
 export function projectCampaignClock(
   state: CampaignRecord,

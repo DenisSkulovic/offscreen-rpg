@@ -38,7 +38,10 @@ import {
   recordActivityEvent,
 } from './persistence';
 import { scheduleActivity } from './activities';
-import { scheduleActionExecution } from './action-executions';
+import {
+  recordActionExecutionEvent,
+  scheduleActionExecution,
+} from './action-executions';
 import { projectCampaignClock } from './clock';
 import { campaignClockHeld, consumeCampaignDecisionHold } from './holds';
 import {
@@ -393,6 +396,14 @@ export function createCampaignActions(database: Database) {
         plan: definition,
         startTick,
         targetTick,
+      });
+      await recordActionExecutionEvent(tx, {
+        storyId: current.id,
+        executionId: args.operationId,
+        executionRevision: 0,
+        tick: startTick,
+        kind: 'started',
+        label: definition.label,
       });
       await tx
         .update(campaign)
