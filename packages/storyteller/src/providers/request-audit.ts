@@ -7,6 +7,10 @@ import {
 export type StorytellerRequestAuditCase = Readonly<{
   id: string;
   task: StorytellerTask;
+  evidenceExpectations?: Readonly<{
+    requiredHandles: readonly string[];
+    forbiddenHandles: readonly string[];
+  }>;
 }>;
 
 function sourceRevision(task: StorytellerTask) {
@@ -29,8 +33,13 @@ export function createStorytellerRequestAudit(
   if (new Set(ids).size !== ids.length) {
     throw new Error('Storyteller request audit case IDs must be unique');
   }
-  const inspected = cases.map(({ id, task }) => {
+  const inspected = cases.map(({ id, task, evidenceExpectations }) => {
     const inspection = inspectOpenRouterRequest(task);
+    const loadedHandles = task.context.evidence.map(
+      (passage) => `p${passage.sequence}`,
+    );
+    const requiredHandles = evidenceExpectations?.requiredHandles ?? [];
+    const forbiddenHandles = evidenceExpectations?.forbiddenHandles ?? [];
     return {
       id,
       source: sourceRevision(task),
@@ -49,14 +58,22 @@ export function createStorytellerRequestAudit(
         userSections: inspection.userSections,
       },
       evidence: {
-        loadedHandles: task.context.evidence.map(
-          (passage) => `p${passage.sequence}`,
-        ),
+        loadedHandles,
         omittedSequences: task.contextManifest.omittedSequences,
         omissionReason:
           task.contextManifest.omittedSequences.length > 0
             ? 'outside-bounded-selection'
             : null,
+        expectations: {
+          requiredHandles,
+          forbiddenHandles,
+          missingRequiredHandles: requiredHandles.filter(
+            (handle) => !loadedHandles.includes(handle),
+          ),
+          loadedForbiddenHandles: forbiddenHandles.filter((handle) =>
+            loadedHandles.includes(handle),
+          ),
+        },
       },
       estimatedInputTokens: inspection.estimatedInputTokens,
       observedProviderCacheHitTokens: null,
@@ -97,6 +114,7 @@ export function formatStorytellerRequestAudit(audit: StorytellerRequestAudit) {
       `  versions: task ${entry.taskInputVersion}, prompt ${entry.promptVersion}, context ${entry.contextPolicyVersion}`,
       `  bytes: packet ${entry.packet.serializedBytes}, request ${entry.packet.capturedRequestBytes}, schema ${entry.packet.outputSchemaBytes}`,
       `  evidence: ${entry.evidence.loadedHandles.join(', ') || 'none'}; omitted: ${entry.evidence.omittedSequences.join(', ') || 'none'}`,
+      `  coverage: missing required ${entry.evidence.expectations.missingRequiredHandles.join(', ') || 'none'}; loaded forbidden ${entry.evidence.expectations.loadedForbiddenHandles.join(', ') || 'none'}`,
       `  tokens/cache: unknown / unknown`,
     );
   }

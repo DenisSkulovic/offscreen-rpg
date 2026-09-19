@@ -5,7 +5,7 @@ Execution scope: prepared for the owner's next coding turn. Backend and offline 
 
 ## R1 — Request-purpose inventory and reproducible packet audit
 
-Status: next ready phase. No canonical-storage dependency; use existing task snapshots and local fixtures.
+Status: implemented; pending only the later batched command/test execution. No canonical-storage dependency.
 
 Outcome: one command captures comparable packets for every implemented purpose, with explicit task/template/context identities and zero provider transport. This is the immediate continuation of the held-opening work, before larger gameplay development resumes.
 
@@ -62,7 +62,7 @@ Exit: deterministic assembly preserves useful common material across rapid turns
 - Base reviewed: `3c58776`. R1 is active. The typed request-purpose inventory and pure exact-packet comparison are implemented for narrative/mechanical openings, continuation, consequence and report without changing persisted task identity.
 - Implemented evidence: request inspection now reports purpose, input/output contract, prompt fragments, prompt/context-policy versions, message/schema hashes and exact UTF-8 common-prefix bytes. Unknown token and observed cache-hit values remain null rather than inferred from byte counts. The focused Storyteller build and all 30 tests pass.
 - API probe structure: the normal HTTP/worker opening probe is now a cohesive backend module; it still uses authenticated admission and durable review, asserts one held review and zero provider attempts, and writes generation-scoped evidence without overwriting an earlier run. The Chamber launcher only owns environment lifecycle.
-- Exact next action: add the chronological fifteen-turn confrontation and nonhuman variation with independent expected/forbidden evidence, then expose the known six-optional-passage loss as a failing R2 oracle. The five-purpose fixture command, case/profile selection, fresh JSON/readable artifacts and QA catalogue entry are implemented.
+- Exact next action: begin R2 from the audit oracle: introduce admitted active-scene scope and load its declared range without silently truncating required evidence. The command now includes chronological fifteen-turn confrontation and nonhuman cases with independent required/forbidden evidence; both are expected to expose the current six-optional-passage loss until R2 changes selection.
 - Known gaps: six optional recent passages, duplicated current prose, mandatory raw note sources, no admitted active-scene scope, no tool/multi-round runtime. Opening-note removal needs semantic review before optimizing further.
-- Verification: the existing focused Storyteller build and 30 tests passed at the prior checkpoint. The audit composer and deterministic five-purpose fixtures pass Storyteller typecheck; the command and added unit case have not been executed because both require a fresh build reserved for the later batched verification pass. Existing successful opening probe still does not prove multi-purpose HTTP capture or fifteen-turn continuity.
+- Verification: the existing focused Storyteller build and 30 tests passed at the prior checkpoint. The audit composer, deterministic request fixtures and long-scene oracles pass focused Storyteller typecheck. The command and added unit case remain unexecuted because both require a fresh build reserved for the later batched verification pass. Authored captures do not prove multi-purpose HTTP gameplay.
 - Model spend: $0 application-provider spend; cumulative account usage unverified.

@@ -7,6 +7,8 @@ export const requestAuditCaseIds = [
   'scene-continuation',
   'activity-consequence',
   'history-report',
+  'continuity-fifteen-turn',
+  'continuity-nonhuman',
 ] as const;
 export type RequestAuditCaseId = (typeof requestAuditCaseIds)[number];
 
@@ -257,9 +259,100 @@ export function createRequestAuditFixtureCases(input: {
         resources,
         context: { ...baseContext, resolution },
       }),
+    'continuity-fifteen-turn': () => longContinuityCase(profile, false),
+    'continuity-nonhuman': () => longContinuityCase(profile, true),
   } satisfies Record<
     RequestAuditCaseId,
     () => ReturnType<typeof prepareStorytellerTask>
   >;
-  return selected.map((id) => ({ id, task: tasks[id]() }));
+  return selected.map((id) => {
+    const task = tasks[id]();
+    if (!id.startsWith('continuity-')) return { id, task };
+    return {
+      id,
+      task,
+      evidenceExpectations: {
+        // The first clue and holder change are independently required by the
+        // fixture, not inferred from what the current selector retained.
+        requiredHandles: ['p1', 'p6', 'p10', 'p15'],
+        forbiddenHandles: ['p16'],
+      },
+    };
+  });
+}
+
+function longContinuityCase(
+  profile: ReturnType<typeof storytellerCatalogue.resolve>,
+  nonhuman: boolean,
+) {
+  const evidence = Array.from({ length: 15 }, (_, index) => {
+    const sequence = index + 1;
+    const humanMoments: Record<number, string> = {
+      1: 'The stranger hides a blade and falsely claims the beacon is abandoned.',
+      6: 'Mara drops the brass key; the stranger picks it up.',
+      10: 'The stranger still holds the key while blocking the western stair.',
+      15: 'Mara keeps her distance and looks for a route away from the unresolved threat.',
+    };
+    const microbeMoments: Record<number, string> = {
+      1: 'A neighboring cell masks a toxin pulse beneath an ordinary nutrient signal.',
+      6: 'The membrane releases its stored vesicle; the neighboring cell absorbs it.',
+      10: 'The neighboring cell retains the vesicle while occluding the safer gradient.',
+      15: 'The organism holds position and probes for escape from the unresolved chemical threat.',
+    };
+    return {
+      id: `00000000-0000-4000-8000-${String(100 + sequence).padStart(12, '0')}`,
+      sequence,
+      content: {
+        version: 1 as const,
+        title: nonhuman ? `Signal ${sequence}` : `Exchange ${sequence}`,
+        paragraphs: [
+          (nonhuman ? microbeMoments : humanMoments)[sequence] ??
+            (nonhuman
+              ? `The cells exchange another bounded environmental signal ${sequence}.`
+              : `Mara and the stranger reposition during exchange ${sequence}.`),
+        ],
+      },
+      response: nonhuman
+        ? `React to signal ${sequence}.`
+        : `Respond during exchange ${sequence}.`,
+    };
+  });
+  const latest = evidence.at(-1)!;
+  return prepareStorytellerTask({
+    task: 'continuation',
+    source: {
+      storyId: nonhuman
+        ? '00000000-0000-4000-8000-000000000041'
+        : '00000000-0000-4000-8000-000000000040',
+      narrativeRevision: 15,
+      passageId: latest.id,
+      interactionId: nonhuman
+        ? '00000000-0000-4000-8000-000000000043'
+        : '00000000-0000-4000-8000-000000000042',
+    },
+    profile,
+    execution,
+    resources,
+    context: {
+      ...baseContext,
+      premise: nonhuman
+        ? {
+            title: 'Gradient colony',
+            premise:
+              'A microorganism navigates competing chemical signals in a hostile colony.',
+            storytellingDirection:
+              'Describe nonverbal cellular interaction without human dialogue assumptions.',
+          }
+        : baseContext.premise,
+      current: latest,
+      evidence,
+      selected: {
+        id: 'continue-under-threat',
+        label: nonhuman ? 'Probe the gradient' : 'Find an exit',
+        intention: nonhuman
+          ? 'Probe for a safe chemical gradient without surrendering position.'
+          : 'Find an exit while keeping distance from the concealed weapon.',
+      },
+    },
+  });
 }

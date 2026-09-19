@@ -995,7 +995,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         action:
           'Run pnpm storyteller:packet-audit and retain the reported manifest and readable comparison paths.',
         observableExpectation:
-          'Five cases identify narrative/mechanical opening, continuation, consequence and report contracts with exact structural sizes and hashes.',
+          'Five purpose cases plus human and nonhuman fifteen-turn continuity cases identify exact structural sizes, hashes and evidence coverage.',
         authoritativeExpectation:
           'The manifest states that transport was not performed, charge is zero, and token/cache fields remain unknown.',
       }),
@@ -1007,7 +1007,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         action:
           'Compare loaded/omitted evidence, user sections, output schemas and adjacent message-prefix bytes.',
         observableExpectation:
-          'Purpose-specific differences and current context loss are understandable without reading raw provider code.',
+          'Purpose-specific differences and the missing early clue/holder-change continuity are understandable without reading raw provider code.',
         authoritativeExpectation:
           'The report derives from the machine-readable manifest and makes no token, billing or cache-hit claim from byte counts.',
       }),
