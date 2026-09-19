@@ -11,7 +11,7 @@ Exit: every required field has one owner and an explicit inspector mapping.
 
 ## Phase 2 — Durable agent-step evidence
 
-Implement the operation/round/tool-step persistence required by the playable DM agent. Save each round/tool result before advancing. Record validation diagnostics and accounting certainty. This phase is coordinated with Phase 3 of the playable DM loop, not a parallel executor.
+Implement operation/round/tool-step persistence around the existing Storyteller task executor. Save each round/tool result before advancing. Record validation diagnostics and accounting certainty. This is observability around the [runtime contract](../../technical/storyteller-runtime.md), not a parallel executor.
 
 Exit: restart can resume from persisted steps and the inspector can reconstruct their order.
 

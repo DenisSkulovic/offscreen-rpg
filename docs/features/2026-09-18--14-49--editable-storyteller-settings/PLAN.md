@@ -18,4 +18,4 @@ Optional evidence: saved-revision/retry example, pending-generation switch and s
 
 ## Current checkpoint
 
-Coordinate task-specific setting compilation with the proposed [playable DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md). The current settings feature remains partial. Provider spend is $0; cumulative usage is unverified.
+Task-specific setting compilation uses the implemented [Storyteller runtime](../../technical/storyteller-runtime.md) and immutable task capture. The current settings feature remains partial. Provider spend is $0; cumulative usage is unverified.

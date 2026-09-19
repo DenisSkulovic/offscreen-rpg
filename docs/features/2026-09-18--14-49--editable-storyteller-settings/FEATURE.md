@@ -25,7 +25,7 @@ Versioned settings commands, preset application, private saved custom presets, c
 
 ## Decisions still needed
 
-The proposed [playable DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) owns generated immediate adjudication. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
+The implemented [game rules](../../game-rules.md) own generated immediate adjudication. SRD 5.2.1 is selected; this is a subset, not a claim of full compatibility. Broader combat, autonomy and shared-world policies are outside these features.
 
 ## Owning specifications
 

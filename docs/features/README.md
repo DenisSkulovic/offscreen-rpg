@@ -80,9 +80,8 @@ The manual-first [QA journey system](../engineering/qa-journeys.md) is implement
 
 The immediate DM loop is paused at an experience-review boundary. Its safety/authority spine remains useful, but generic three-round persistence is not sufficient acceptance. Checks remain optional, and no live spending is authorized.
 
-1. [Playable DM adjudication loop](2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) — implemented authority spine awaiting meaningful-agency and runtime acceptance.
-2. [Editable storyteller settings](2026-09-18--14-49--editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
-3. [Activity foundation](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — current design priority above; its existing folder now owns the broader activity/participation proposal.
-4. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — prepared implementation: source-bounded memories, context selection, admitted updates, exploration and searchable sources. Depends on [canonical storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md), which separately owns file persistence and creative bundles.
+1. [Editable storyteller settings](2026-09-18--14-49--editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
+2. [Activity foundation](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — current design priority above; its existing folder now owns the broader activity/participation proposal.
+3. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — prepared implementation: source-bounded memories, context selection, admitted updates, exploration and searchable sources. Depends on [canonical storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md), which separately owns file persistence and creative bundles.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

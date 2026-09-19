@@ -58,4 +58,4 @@ The acceptance rubric is not application authority. Human preference cannot make
 
 ## Owning specifications
 
-[Vision](../../vision.md), [gameplay](../../gameplay.md), [game rules](../../game-rules.md), [storytelling](../../storytelling.md), [player experience](../../player-experience.md), and the existing [playable DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md). Live calls remain governed by [conservative evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md).
+[Vision](../../vision.md), [gameplay](../../gameplay.md), [game rules](../../game-rules.md), [storytelling](../../storytelling.md), [player experience](../../player-experience.md), and the implemented [Storyteller runtime](../../technical/storyteller-runtime.md). Live calls remain governed by [conservative evaluation](../2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md).

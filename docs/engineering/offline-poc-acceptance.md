@@ -14,7 +14,7 @@ The next dependency order is:
 4. Connect reviewed opening, three selection/resolution/planning rounds and held/recovery states to the browser. Use saved rolls and effects in narration.
 5. Perform the manual matrix below, retain failures and fix the failures that block this loop. Only then propose a separately authorized tiny real-model experiment.
 
-The owning implementation plan is [Playable DM loop](../features/2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md). [Trace explorer](../features/2026-09-18--17-27--storyteller-trace-explorer/PLAN.md) supplies evidence for that runner; it must not create another executor. Rich comparison UI can follow a working inspectable loop. Activity progress, general combat, full tag customization and population simulation must not delay immediate play. Their known limitations remain explicit.
+The implemented authority contract lives in [game rules](../game-rules.md) and the [Storyteller runtime](../technical/storyteller-runtime.md). [Agency and taste](../features/2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md) owns the remaining human quality review. [Trace explorer](../features/2026-09-18--17-27--storyteller-trace-explorer/PLAN.md) supplies evidence for that runner; it must not create another executor. Rich comparison UI can follow a working inspectable loop. Activity progress, general combat, full tag customization and population simulation must not delay immediate play. Their known limitations remain explicit.
 
 ## Responsibility and context contract
 
