@@ -61,6 +61,7 @@ CREATE TABLE "campaign" (
 	"character" jsonb,
 	"story_facts" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"activity_occurrences" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"accepted_activity_plan" jsonb,
 	"content" jsonb,
 	"location" text,
 	"tick" bigint NOT NULL,

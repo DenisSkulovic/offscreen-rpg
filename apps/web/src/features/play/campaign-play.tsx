@@ -38,6 +38,7 @@ export function CampaignPlay({
   onSnapshot: (story: StorySnapshot) => void;
 }) {
   const [path, setPath] = useState<string[]>([]);
+  const [successorPath, setSuccessorPath] = useState<string[] | null>(null);
   const [pace, setPace] = useState('steady');
   const command = useCampaignCommand(story.id, onSnapshot);
   const activity = campaign.activity;
@@ -199,6 +200,24 @@ export function CampaignPlay({
           ))}
         </details>
       ) : null}
+      {campaign.acceptedActivityPlan ? (
+        <details open>
+          <summary>Accepted activity plan</summary>
+          <p>
+            {campaign.acceptedActivityPlan.state}
+            {campaign.acceptedActivityPlan.blockedReason
+              ? ` — ${campaign.acceptedActivityPlan.blockedReason}`
+              : ''}
+          </p>
+          <ol>
+            {campaign.acceptedActivityPlan.entries.map((entry) => (
+              <li key={entry.id}>
+                {entry.label} · {entry.state}
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : null}
       {campaign.activityEvents.length ? (
         <details>
           <summary>Activity history (latest 100)</summary>
@@ -257,8 +276,12 @@ export function CampaignPlay({
                     expectedRevision: story.revision,
                     offerId: campaign.offer?.id,
                     path: [...path, node.id],
+                    ...(successorPath
+                      ? { successorPaths: [successorPath] }
+                      : {}),
                   });
                   setPath([]);
+                  setSuccessorPath(null);
                 }}
               >
                 {node.label}
@@ -269,8 +292,23 @@ export function CampaignPlay({
                   <strong>Apparent risk:</strong> {node.risk}
                 </p>
               ) : null}
+              {node.action ? (
+                <button
+                  disabled={command.busy}
+                  onClick={() => setSuccessorPath([...path, node.id])}
+                >
+                  Do this after another activity
+                </button>
+              ) : null}
             </article>
           ))}
+          {successorPath ? (
+            <p>
+              One follow-up is staged. Choose a different activity to start the
+              two-entry plan.{' '}
+              <button onClick={() => setSuccessorPath(null)}>Clear</button>
+            </p>
+          ) : null}
         </div>
       ) : null}
       {!story.resolution && !active && !nodes.length ? (

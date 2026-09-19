@@ -12,10 +12,10 @@ The catalogue contains:
 
 - offline player entry, available for local execution;
 - immediate mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
-- quiet activity lifecycle, available for deterministic manual verification of clock waiting, finite repetition and zero-call execution;
+- quiet activity lifecycle, available for deterministic manual verification of clock waiting, accepted two-entry continuation, finite repetition and zero-call execution;
 - activity interruption/blocking, visible but planned until deterministic Chamber controls make the lifecycle reproducible without database edits;
 - activity history and diagnostics, visible but planned until the durable event ledger, structured logger, and deterministic failure controls exist;
-- historical report versus controlling scene, visible but planned; its strict task contract exists, while U2b storage/publication semantics do not;
+- historical report versus controlling scene, visible but planned until deterministic delay/release/failure controls make the implemented source-bound publication path reproducible by hand;
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.

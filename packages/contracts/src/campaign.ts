@@ -121,6 +121,31 @@ export const campaignActivityReportSchema = z.strictObject({
   publishedAt: z.iso.datetime().nullable(),
 });
 
+export const acceptedActivityPlanViewSchema = z.strictObject({
+  id: z.uuid(),
+  revision: z.number().int().nonnegative(),
+  state: z.enum(['active', 'blocked', 'complete', 'cancelled']),
+  cursor: z.number().int().nonnegative(),
+  entries: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        label: z.string().trim().min(1).max(200),
+        state: z.enum([
+          'pending',
+          'running',
+          'complete',
+          'blocked',
+          'cancelled',
+        ]),
+        activityId: z.uuid().nullable(),
+      }),
+    )
+    .min(2)
+    .max(6),
+  blockedReason: z.string().trim().min(1).max(500).nullable(),
+});
+
 export const campaignViewSchema = z.strictObject({
   settings: campaignSettingsSchema,
   character: characterSchema.nullable(),
@@ -135,6 +160,7 @@ export const campaignViewSchema = z.strictObject({
   commitments: z.array(campaignActivityViewSchema).max(20),
   activityEvents: z.array(campaignActivityEventSchema).max(100),
   activityReports: z.array(campaignActivityReportSchema).max(50),
+  acceptedActivityPlan: acceptedActivityPlanViewSchema.nullable(),
   rolls: z
     .array(
       z.strictObject({
@@ -173,6 +199,11 @@ export const actionCommandSchema = z.strictObject({
   expectedRevision: z.number().int().positive(),
   offerId: z.uuid(),
   path: z.array(z.string().max(80)).min(1).max(3),
+  successorPaths: z
+    .array(z.array(z.string().max(80)).min(1).max(3))
+    .min(1)
+    .max(5)
+    .optional(),
 });
 export const activityControlSchema = z
   .strictObject({

@@ -26,6 +26,7 @@ export const campaign = pgTable('campaign', {
     .notNull()
     .default([])
     .$type<unknown>(),
+  acceptedActivityPlan: jsonb('accepted_activity_plan').$type<unknown>(),
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
   tick: bigint('tick', { mode: 'number' }).notNull(),

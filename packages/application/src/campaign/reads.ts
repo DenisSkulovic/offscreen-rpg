@@ -30,6 +30,10 @@ import {
 } from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
+import {
+  projectAcceptedActivityPlan,
+  readAcceptedActivityPlan,
+} from './accepted-plans';
 
 function actionReceiptState(
   generationId: string | null,
@@ -241,6 +245,9 @@ export async function readCampaign(
       createdAt: report.createdAt.toISOString(),
       publishedAt: report.publishedAt?.toISOString() ?? null,
     })),
+    acceptedActivityPlan: projectAcceptedActivityPlan(
+      readAcceptedActivityPlan(state.acceptedActivityPlan),
+    ),
     rolls: rolls.map((roll) => ({
       id: roll.id,
       segment: roll.segment,

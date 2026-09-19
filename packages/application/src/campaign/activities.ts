@@ -1,10 +1,12 @@
 import { randomInt, randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
   activityBoundaryBlockText,
   activityProgressSchema,
+  initialActivityProgress,
   nextBoundaryTick,
   processBoundaryDue,
   processProgressAtEffortTick,
@@ -16,6 +18,10 @@ import {
 import { resolveCheckResolution } from '@offscreen/game/checks';
 import { applyOutcomeEffects } from '@offscreen/game/effects';
 import { realMsUntilTick, wholeTicks } from '@offscreen/game/time';
+import {
+  consumePreparedActivityPlan,
+  immediateActionAvailable,
+} from '@offscreen/game/immediate-actions';
 import { enqueue, type Transaction } from '../outbox/index';
 import {
   lockStoryById,
@@ -25,11 +31,14 @@ import {
 import {
   requireCampaign,
   campaignCharacter,
+  campaignStoryFacts,
+  campaignSituationAuthorization,
   recordRoll,
   refreshOffer,
   appendMechanicalPassage,
   campaignActivityOccurrences,
   recordActivityEvent,
+  processOccurrenceAvailable,
   type ActivityEventKind,
   type ActivityRecord,
   type CampaignRecord,
@@ -37,6 +46,10 @@ import {
 import { requestConsequenceNarration } from './narration';
 import { projectCampaignClock } from './clock';
 import { requestActivityReport } from './reports';
+import {
+  acceptedActivityPlanSchema,
+  readAcceptedActivityPlan,
+} from './accepted-plans';
 
 export const campaignActivityTopic = 'campaign.activity.v1';
 
@@ -63,6 +76,133 @@ export async function scheduleActivity(tx: Transaction, activityId: string) {
     operationId: activityId,
     topic: campaignActivityTopic,
   });
+}
+
+async function settleAcceptedPlanBoundary(
+  tx: Transaction,
+  state: CampaignRecord,
+  completedActivity: ActivityRecord,
+) {
+  const accepted = readAcceptedActivityPlan(state.acceptedActivityPlan);
+  if (!accepted || accepted.state !== 'active') return state;
+  const currentEntry = accepted.entries[accepted.cursor];
+  if (currentEntry?.activityId !== completedActivity.id) return state;
+  const completedEntries = accepted.entries.map((entry, index) =>
+    index === accepted.cursor
+      ? { ...entry, state: 'complete' as const }
+      : entry,
+  );
+  const nextCursor = accepted.cursor + 1;
+  const nextEntry = completedEntries[nextCursor];
+  if (!nextEntry) {
+    const finished = acceptedActivityPlanSchema.parse({
+      ...accepted,
+      revision: accepted.revision + 1,
+      state: 'complete',
+      cursor: nextCursor,
+      entries: completedEntries,
+    });
+    await tx
+      .update(campaign)
+      .set({ acceptedActivityPlan: finished, activeActivityId: null })
+      .where(eq(campaign.storyId, state.storyId));
+    return { ...state, acceptedActivityPlan: finished, activeActivityId: null };
+  }
+  const authorization = campaignSituationAuthorization(state);
+  const prepared = authorization.preparedPlans.find(
+    (plan) => plan.key === nextEntry.plan.key,
+  );
+  const stillAuthorized =
+    authorization.activityAccess.kind === 'selected' &&
+    authorization.activityAccess.actionKeys.includes(nextEntry.plan.key);
+  const eligible =
+    prepared?.resolution.kind === 'process' &&
+    isDeepStrictEqual(prepared, nextEntry.plan) &&
+    stillAuthorized &&
+    immediateActionAvailable(
+      campaignCharacter(state),
+      campaignStoryFacts(state),
+      prepared,
+    ) &&
+    (await processOccurrenceAvailable(tx, state, prepared));
+  if (!eligible || !prepared || prepared.resolution.kind !== 'process') {
+    const blocked = acceptedActivityPlanSchema.parse({
+      ...accepted,
+      revision: accepted.revision + 1,
+      state: 'blocked',
+      cursor: nextCursor,
+      entries: completedEntries.map((entry, index) =>
+        index === nextCursor ? { ...entry, state: 'blocked' as const } : entry,
+      ),
+      blockedReason:
+        'The next activity is no longer authorized or mechanically eligible in the current situation.',
+    });
+    await tx
+      .update(campaign)
+      .set({ acceptedActivityPlan: blocked, activeActivityId: null })
+      .where(eq(campaign.storyId, state.storyId));
+    return { ...state, acceptedActivityPlan: blocked, activeActivityId: null };
+  }
+  const activityId = randomUUID();
+  await tx.insert(gameActivity).values({
+    id: activityId,
+    storyId: state.storyId,
+    plan: {
+      version: 6,
+      action: prepared.resolution.action,
+      settingsRevision: state.settingsRevision,
+      resolvedThroughTick: 0,
+    },
+    state: 'running',
+    boundariesSettled: 0,
+    progress: initialActivityProgress(prepared.resolution.action),
+  });
+  await recordActivityEvent(tx, {
+    storyId: state.storyId,
+    activityId,
+    activityRevision: 0,
+    tick: state.tick,
+    kind: 'started',
+    causeKey: `accepted-plan:${accepted.id}:entry:${nextEntry.id}`,
+    label: prepared.label,
+    summary: `${prepared.label} started from the accepted activity plan.`,
+  });
+  const advanced = acceptedActivityPlanSchema.parse({
+    ...accepted,
+    revision: accepted.revision + 1,
+    cursor: nextCursor,
+    entries: completedEntries.map((entry, index) =>
+      index === nextCursor
+        ? { ...entry, state: 'running' as const, activityId }
+        : entry,
+    ),
+  });
+  const nextAuthorization = {
+    ...authorization,
+    offerId: null,
+    activityAccess: { kind: 'none' as const },
+    preparedPlans: consumePreparedActivityPlan(
+      authorization.preparedPlans,
+      prepared,
+    ),
+  };
+  await tx
+    .update(campaign)
+    .set({
+      acceptedActivityPlan: advanced,
+      activeActivityId: activityId,
+      offer: null,
+      situationAuthorization: nextAuthorization,
+    })
+    .where(eq(campaign.storyId, state.storyId));
+  await scheduleActivity(tx, activityId);
+  return {
+    ...state,
+    acceptedActivityPlan: advanced,
+    activeActivityId: activityId,
+    offer: null,
+    situationAuthorization: nextAuthorization,
+  };
 }
 
 /** Called under the story lock. Mechanical state and its follow-up intent commit together. */
@@ -339,10 +479,17 @@ export async function settleActivity(
     revision: current.revision + 1,
     viewVersion: current.viewVersion + 1,
   };
+  let settledCampaign: CampaignRecord = {
+    ...nextCampaign,
+    offer: refreshedOffer,
+  };
   if (nextState === 'complete' && plan.action.completionFollowUp === 'report') {
+    // Freeze the completed boundary before a queued successor consumes the
+    // refreshed offer. A late report describes its source moment, not whatever
+    // activity happens to be current when prose publication finishes.
     await requestActivityReport(tx, {
       current: nextStory,
-      state: { ...nextCampaign, offer: refreshedOffer },
+      state: settledCampaign,
       activity: nextActivity,
       passageId,
       label: plan.action.label,
@@ -351,6 +498,17 @@ export async function settleActivity(
         lines.at(-1) ?? `${plan.action.label} completed as admitted.`,
       completionEffects: plan.action.completion.effects,
     });
+  }
+  if (nextState === 'complete') {
+    // The refreshed offer is the current Storyteller-authored handoff. A queued
+    // successor may consume it, but the old acceptance cannot bypass a scene
+    // hold or stale prerequisites merely because its predecessor completed.
+    const refreshedCampaign = await requireCampaign(tx, current.id);
+    settledCampaign = await settleAcceptedPlanBoundary(
+      tx,
+      refreshedCampaign,
+      nextActivity,
+    );
   }
   if (nextState !== 'running' && !nonControllingCompletion) {
     await requestConsequenceNarration(tx, nextStory, {
@@ -362,7 +520,7 @@ export async function settleActivity(
       intention: plan.action.description,
     });
   }
-  return { activity: nextActivity, state: nextCampaign, current: nextStory };
+  return { activity: nextActivity, state: settledCampaign, current: nextStory };
 }
 
 export function createCampaignActivities(database: Database) {

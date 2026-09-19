@@ -41,6 +41,7 @@ import {
 import { requestActionNarration } from './narration';
 import { scheduleActivity } from './activities';
 import { projectCampaignClock } from './clock';
+import { createAcceptedActivityPlan } from './accepted-plans';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -120,6 +121,35 @@ export function createCampaignActions(database: Database) {
         )
       ) {
         throw new StoryError('conflict');
+      }
+      const acceptedSequence = [definition];
+      for (const successorPath of parsed.data.successorPaths ?? []) {
+        const successorSelection = selectOfferAction(offer, successorPath);
+        if (successorSelection.state !== 'selected') {
+          throw new StoryError('invalid');
+        }
+        const successor = await loadOfferPlan(tx, {
+          storyId: current.id,
+          offerId: offer.id,
+          narrativeRevision: current.revision,
+          actionKey: successorSelection.actionKey,
+        });
+        if (
+          !successor ||
+          successor.resolution.kind !== 'process' ||
+          authorization.activityAccess.kind !== 'selected' ||
+          !authorization.activityAccess.actionKeys.includes(successor.key) ||
+          acceptedSequence.some((entry) => entry.key === successor.key)
+        ) {
+          throw new StoryError('conflict');
+        }
+        acceptedSequence.push(successor);
+      }
+      if (
+        acceptedSequence.length > 1 &&
+        definition.resolution.kind !== 'process'
+      ) {
+        throw new StoryError('invalid');
       }
       if (
         (definition.resolution.kind === 'process' ||
@@ -296,6 +326,14 @@ export function createCampaignActions(database: Database) {
                     ),
             },
             activeActivityId: activityId,
+            acceptedActivityPlan:
+              acceptedSequence.length > 1
+                ? createAcceptedActivityPlan({
+                    offerId: offer.id,
+                    plans: acceptedSequence,
+                    firstActivityId: activityId,
+                  })
+                : null,
             tick: projected.clock.elapsedTicks,
             clock: projected.clock,
             clockAnchorAt: new Date(now),

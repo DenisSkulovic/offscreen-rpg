@@ -296,7 +296,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     version: 1,
     name: 'Quiet activity lifecycle',
     purpose:
-      'Manually verify genuine clock waiting, factual quiet completion, finite repeatable work, and reload-safe activity identity without model work.',
+      'Manually verify genuine clock waiting, an accepted two-entry continuation, factual quiet completion, finite repeatable work, and reload-safe activity identity without model work.',
     risk: 'Routine play may secretly roll, generate narration, duplicate instances, replay a finite opportunity, or lose authority after reload.',
     costClass: 'offline',
     availability: { state: 'available' },
@@ -321,34 +321,26 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
           'The current offer and private situation authorization name the same process keys; no human, job, currency, or anatomy requirement is introduced.',
       }),
       stage({
-        id: 'complete-wait',
-        name: 'Complete a genuine clock wait',
+        id: 'complete-chain',
+        name: 'Complete an accepted two-entry plan',
         importance: 'poc-blocker',
-        preconditions: ['Remain contracted is currently authorized.'],
+        preconditions: [
+          'Sample the gradient briefly and Hold through a temperature cycle are both currently authorized.',
+        ],
         action:
-          'Select Remain contracted, use the declared pace controls, and wait for completion.',
+          'Stage Hold through a temperature cycle as the follow-up, start Sample the gradient briefly, and let both entries settle.',
         observableExpectation:
-          'The protective interval advances to 10/10 ticks and completes with a factual result.',
+          'The plan shows sampling completing, the temperature-cycle successor starting automatically, and both entries finishing in order.',
         authoritativeExpectation:
-          'The wait uses elapsed eligible ticks, creates no d20 roll or work contribution, applies its completion effect once, and admits no consequence-generation intent.',
-      }),
-      stage({
-        id: 'repeat-first',
-        name: 'Complete the first finite sampling cycle',
-        importance: 'major',
-        preconditions: ['Sample the gradient briefly remains authorized.'],
-        action:
-          'Select the sampling activity and complete its two-tick interval.',
-        observableExpectation:
-          'A fresh sampling instance completes quietly and the choice remains available once more.',
-        authoritativeExpectation:
-          'The activity has a fresh identity, the story-scoped occurrence count becomes one, and no roll, reward, or generation task is created.',
+          'The accepted plan owns exactly one successor; current authorization and prerequisites are rechecked at the boundary, activity identities remain distinct, and no generation task chooses the successor.',
       }),
       stage({
         id: 'repeat-limit',
         name: 'Reach the finite occurrence limit',
         importance: 'poc-blocker',
-        preconditions: ['One sampling completion is recorded.'],
+        preconditions: [
+          'The accepted plan completed its first sampling cycle and the choice remains authorized once more.',
+        ],
         action:
           'Complete a second sampling cycle, reload the story, and inspect the resulting offer and commitments.',
         observableExpectation:
@@ -360,7 +352,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         id: 'inspect-zero-call',
         name: 'Confirm quiet execution admitted no model work',
         importance: 'poc-blocker',
-        preconditions: ['The wait and both sampling cycles completed.'],
+        preconditions: [
+          'The accepted two-entry plan and the second sampling cycle completed.',
+        ],
         action:
           'Inspect the Chamber task, consequence, roll, and provider-accounting records for this story.',
         observableExpectation:
@@ -374,7 +368,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       {
         kind: 'activity-identities',
         description:
-          'Wait and both sampling activity IDs, revisions, progress, ticks, and terminal states.',
+          'Both accepted-plan activity IDs plus the second sampling ID, revisions, progress, ticks, and terminal states.',
         required: true,
       },
       {
@@ -394,7 +388,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       'Start a fresh microbe.v3 story and QA run. Do not edit or reuse occurrence history from an earlier run.',
     nonAssertions: [
       'This fixture proves generic contracts with authored content, not biological realism or arbitrary-world Storyteller intelligence.',
-      'It does not prove activity interruption, blocking, chains, or generated reports.',
+      'It does not prove arbitrary-length itineraries, chain editing/cancellation, interruption recovery, or generated report quality.',
     ],
   }),
   defineCase({

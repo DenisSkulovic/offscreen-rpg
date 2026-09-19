@@ -655,6 +655,92 @@ test(
           },
         );
         await t.test(
+          'accepted two-entry plan starts its authorized successor without generation',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const [generationCountBefore] = await database.db
+              .select({ count: orm.count() })
+              .from(generation);
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['sample-gradient-cycle'],
+                successorPaths: [['hold-temperature-cycle']],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const firstActivityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the first accepted activity',
+            );
+            assert.deepEqual(
+              admitted.campaign?.acceptedActivityPlan?.entries.map((entry) => [
+                entry.label,
+                entry.state,
+              ]),
+              [
+                ['Sample the gradient briefly', 'running'],
+                ['Hold through a temperature cycle', 'pending'],
+              ],
+            );
+            await storyService.advanceCampaignActivity(firstActivityId);
+            const advanced = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const successorId = requireDefined(
+              advanced.campaign?.activity?.id,
+              'Expected the accepted successor activity',
+            );
+            assert.notEqual(successorId, firstActivityId);
+            assert.equal(advanced.campaign?.activity?.state, 'running');
+            assert.deepEqual(
+              advanced.campaign?.acceptedActivityPlan?.entries.map((entry) => [
+                entry.state,
+                entry.activityId,
+              ]),
+              [
+                ['complete', firstActivityId],
+                ['running', successorId],
+              ],
+            );
+            await storyService.advanceCampaignActivity(successorId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(
+              completed.campaign?.acceptedActivityPlan?.state,
+              'complete',
+            );
+            assert.deepEqual(
+              completed.campaign?.acceptedActivityPlan?.entries.map(
+                (entry) => entry.state,
+              ),
+              ['complete', 'complete'],
+            );
+            assert.equal(completed.campaign?.rolls.length, 0);
+            assert.equal(completed.campaign?.activityReports.length, 0);
+            const [generationCount] = await database.db
+              .select({ count: orm.count() })
+              .from(generation);
+            assert.equal(generationCount?.count, generationCountBefore?.count);
+          },
+        );
+        await t.test(
           'clock wait completes from eligible time without rolling or earning work points',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {

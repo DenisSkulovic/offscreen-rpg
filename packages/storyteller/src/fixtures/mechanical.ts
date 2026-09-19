@@ -265,6 +265,47 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
         },
       },
     },
+    {
+      version: 1,
+      key: 'hold-temperature-cycle',
+      label: 'Hold through a temperature cycle',
+      intention:
+        'Remain in place through one two-tick temperature cycle without changing course.',
+      risk: null,
+      evidence: [],
+      requires: [{ id: 'exposed', value: true }],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        reuse: 'once',
+        action: {
+          id: 'hold-temperature-cycle',
+          label: 'Hold through a temperature cycle',
+          description:
+            'Remain in place through one bounded environmental temperature cycle.',
+          requires: [{ id: 'exposed', value: true }],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Temperature cycle',
+            requiredTicks: 2,
+          },
+          conditionPolicy: { kind: 'admission-only' },
+          occurrence: {
+            kind: 'limited',
+            scopeKey: 'microbe-temperature-cycle',
+            limit: 1,
+          },
+          completionFollowUp: 'quiet',
+          checks: [],
+          completion: {
+            text: 'The temperature cycle passes without dislodging the organism.',
+            effects: [],
+          },
+        },
+      },
+    },
   ];
 }
 

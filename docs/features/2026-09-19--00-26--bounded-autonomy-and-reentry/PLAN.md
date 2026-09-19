@@ -109,6 +109,8 @@ Status: implemented for the bounded standalone proof with S2. A captured activit
 
 #### U2c — Finite accepted chains
 
+Status: first vertical slice implemented. A player can accept two distinct process plans from one current authored offer. The durable plan owns successor admission; a quiet/report boundary freezes its result, reprojects authority, and atomically starts the exact still-authorized successor or records a readable blocked plan. Six-entry authoring, explicit horizon, cancellation/editing and scene-to-chain re-entry remain.
+
 - Dependencies: U2b and situations S3. Implement at most six linear entries with explicit horizon/stop policy, current authored handoff, actor/target bindings and entry identity; no nested branches or automatic replanning.
 - Queue is sole successor owner. Boundary effect, entry consumption, start and wake commit atomically; revalidate current authority/resources every time. A changed interactive situation blocks the old queue until an explicit admitted handoff allows it again.
 - Separate cancel-pending from stop-current and campaign pause. Preserve completed entries/results and exact retained instances. Quotas/cooldown/finite findings do not reset on requeue.
@@ -149,8 +151,8 @@ Status: implemented for the bounded standalone proof with S2. A captured activit
 
 ## Current checkpoint
 
-- Current phase: bounded U2a/S2 and the core U2b historical-report path are implemented. Next add deterministic Chamber delay/release/failure controls for manual U2b evidence, then begin finite chain U2c. First proof still holds at interactions without unattended decisions; later fallback phases remain distinct.
-- Implemented boundary: completion follow-up distinguishes quiet, report-only and controlling-scene behavior. Report completion preserves current authorization, freezes exact boundary evidence into a strict task and stores a source-bound hook. Successful prose and terminal generation failure update only historical presentation and `viewVersion`; duplicate publication is inert. Uncertain execution remains recoverable rather than being silently omitted.
-- Verification: affected package builds pass. The full PostgreSQL/Temporal/browser Storyteller suite passes 13/13, including report generation/publication, unchanged gameplay revision/current passage/offer, duplicate publication, factual fallback on invalid output, independent later activity and clean source-history removal. No manual browser report run has occurred.
+- Current phase: U2a, core U2b and U2c's first two-entry vertical slice are implemented. Next add explicit pending-plan cancellation and a deterministic blocked-successor probe before expanding authoring toward six entries/horizons. First proof still holds at interactions without unattended decisions; later fallback phases remain distinct.
+- Implemented boundary: the accepted plan stores exact authored process terms and entry identities. At completion, report evidence freezes before current continuation changes; the queue alone consumes one successor after fresh authorization, exact-term, prerequisite and occurrence checks. Failure leaves the plan blocked and visible rather than inventing replacement work. Scene authorization cannot be bypassed.
+- Verification: affected application/web/integration builds pass. A focused PostgreSQL test proves wait→sampling succession, distinct activity identities, terminal plan state and zero rolls. The earlier full PostgreSQL/Temporal/browser Storyteller suite remains 13/13; the full suite with this new case has not been rerun after the report-capture ordering fix. No manual browser chain run has occurred.
 - Open decisions: delegated fallback categories, notification transport and broader risk vocabulary before their later phases. Selected first-proof bounds/hold/report policy are in the solo contract; they no longer block the nearest offline slice.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

@@ -1,5 +1,5 @@
 {
-  "id": "cae8cc6e-e16c-4e21-bd30-a1da1e0cf2dd",
+  "id": "5066430a-cfb5-40e2-8a71-8c8a10cf9453",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -467,6 +467,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::jsonb"
+        },
+        "accepted_activity_plan": {
+          "name": "accepted_activity_plan",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "content": {
           "name": "content",
