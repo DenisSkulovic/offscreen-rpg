@@ -316,6 +316,92 @@ test(
           },
         );
         await t.test(
+          'failed required narration holds time until the same generation is retried',
+          async () => {
+            const started = await mechanicalCandidate();
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected a generated mechanical offer',
+            );
+            const action = requireDefined(
+              offer.nodes[0],
+              'Expected an admitted mechanical action',
+            );
+            const operationId = randomUUID();
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId,
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [action.id],
+              },
+            });
+            await storyService.prepareCampaignConsequence(operationId);
+            const [receipt] = await database.db
+              .select({ generationId: gameActionReceipt.generationId })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, operationId));
+            const generationId = requireDefined(
+              receipt?.generationId,
+              'Expected required narration identity',
+            );
+            const invalidRuntime = createStorytellerRuntime(database, {
+              scriptedSource: () => ({}),
+              realDurationMs: () => 1000,
+            });
+
+            await invalidRuntime.complete(generationId);
+            const failed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.deepEqual(failed.campaign?.holds, [
+              { kind: 'storyteller', generationId, reason: 'required-turn' },
+            ]);
+            assert.deepEqual(failed.resolution?.blocker, {
+              kind: 'generation',
+              recovery: 'retry',
+            });
+
+            const [heldState] = await database.db
+              .select({ clock: campaignTable.clock })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.ok(heldState);
+            // Simulate a long offline interval while the required scene is blocked.
+            // Release must re-anchor, not project this deliberately ancient anchor.
+            await database.db
+              .update(campaignTable)
+              .set({ clockAnchorAt: new Date('2000-01-01T00:00:00.000Z') })
+              .where(eq(campaignTable.storyId, started.storyId));
+
+            await storyService.retryResolution({
+              ownerId,
+              storyId: started.storyId,
+              retryId: randomUUID(),
+            });
+            await runtime.complete(generationId);
+            const [releasedState] = await database.db
+              .select({ clock: campaignTable.clock })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.deepEqual(releasedState?.clock, heldState.clock);
+
+            const recovered = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.deepEqual(recovered.campaign?.holds, []);
+            assert.equal(recovered.resolution, null);
+            assert.equal(
+              recovered.campaign?.actionReceipts[0]?.state,
+              'published',
+            );
+          },
+        );
+        await t.test(
           'selecting earned work admits a durable process without paying its reward',
           async () => {
             const started = await mechanicalCandidate('beacon-watch.v1');

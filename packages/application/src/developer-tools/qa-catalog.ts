@@ -694,11 +694,11 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
           'A fresh story can trigger the supported stranger hazard.',
         ],
         action:
-          'Trigger the controlling scene, delay or fail preparation, and attempt incompatible progression.',
+          'Trigger the controlling scene, fail its offline generation, leave it blocked across an artificial time jump, then explicitly retry the same generation.',
         observableExpectation:
-          'The story visibly holds instead of continuing routine work or pretending the event vanished.',
+          'The story visibly holds with a retryable blocker, then publishes the recovered scene without repeating the committed action.',
         authoritativeExpectation:
-          'One independently owned Storyteller hold freezes the campaign clock; no successor, held-time catch-up, extra reward, or response deadline publishes before valid options, and a manual activity pause remains independent.',
+          'One independently owned Storyteller hold survives failure; retry retains its generation identity, valid publication releases it, and no successor, held-time catch-up, duplicate receipt, extra reward, or response deadline appears.',
       }),
     ],
     evidenceRequirements: [

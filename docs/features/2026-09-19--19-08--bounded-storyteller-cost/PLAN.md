@@ -85,8 +85,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1 complete/B2 implementing. Enforcement through safe blocker projection is implemented; the first durable system-hold slice covers required mechanical consequence generation/publication without conflating activity pause or settings lock. Exact next action: failed/retried hold recovery evidence and the ordinary campaign-decision hold boundary. Do not enable provider execution. Storage C1/C2 remains independently ready.
-- Slice base before the durable campaign-hold commit: `7a77ae0`; implementation is the next commit on `main`.
-- Verification: the regenerated baseline applies, all affected dependency builds pass, and the focused three-round mechanical loop proves each required generation projects one hold and valid publication clears it. Paid failure/retry remains unexercised; no live calls.
+- Phase: B1 complete/B2 implementing. Enforcement through safe blocker projection is implemented; durable required mechanical consequence holds now cover success and explicit offline failure/retry without conflating activity pause or settings lock. Exact next action: define and implement the ordinary campaign-decision hold boundary. Do not enable provider execution. Storage C1/C2 remains independently ready.
+- Recovery slice base: `d83216b`; its implementation is the next commit on `main`.
+- Verification: the focused offline recovery path proves invalid generation retains its independently owned hold, projects a retryable blocker, retries the same generation, publishes once, releases only after valid publication, and discards an injected held interval rather than awarding catch-up progress. All affected dependency builds and the regenerated test baseline pass. Paid failure/retry remains intentionally unexercised; no live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.
