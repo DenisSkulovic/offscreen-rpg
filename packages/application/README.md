@@ -6,7 +6,7 @@ This package owns use cases, transactions and coordination. The API and Activity
 
 Campaign commands and timer wakes enter purpose-specific operations under the story lock. Mechanical policy describes the resulting authoritative state, durable lifecycle fact and typed follow-up intents; the operation persists those parts in one transaction. `campaign/follow-up-intents.ts` is the exhaustive adapter from those intents to durable application work such as a Storyteller hold plus transactional-outbox notice. It is deliberately not a general event bus.
 
-Start finite-action settlement at `campaign/action-execution-transition.ts` for the due/waiting and resolution decision, then `campaign/action-executions.ts` for atomic persistence. Timers only wake the latter by operation ID. They do not own mechanical or narration policy. Activities still contain their older inline coordination until the active event-oriented transition feature migrates that path.
+Start finite-action settlement at `campaign/action-execution-transition.ts` for the due/waiting and resolution decision, then `campaign/action-executions.ts` for atomic persistence. Activity mechanics remain process-specific in `campaign/activities.ts`; `campaign/activity-follow-up-policy.ts` separately decides whether a completed boundary requests no prose, a source-frozen historical report or a controlling consequence scene. Timers only wake these operations by execution ID. They do not own mechanical or narration policy.
 
 ## Persistence and read caching
 

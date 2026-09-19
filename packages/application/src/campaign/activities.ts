@@ -43,18 +43,18 @@ import {
   type ActivityRecord,
   type CampaignRecord,
 } from './persistence';
-import { requestConsequenceNarration } from './narration';
 import { projectCampaignClock } from './clock';
-import { requestActivityReport } from './reports';
 import {
   acceptedActivityPlanSchema,
   readAcceptedActivityPlan,
 } from './accepted-plans';
-import {
-  campaignClockHeld,
-  holdCampaignForStorytellerIntent,
-} from './holds';
+import { campaignClockHeld } from './holds';
 import { campaignActivityTopic } from './topics';
+import {
+  activityCompletionIsNonControlling,
+  planActivityBoundaryFollowUps,
+} from './activity-follow-up-policy';
+import { applyCampaignFollowUpIntents } from './follow-up-intents';
 
 export { campaignActivityTopic } from './topics';
 
@@ -476,8 +476,10 @@ export async function settleActivity(
   if (!reachedBoundary) {
     return { activity: nextActivity, current, state: nextCampaign };
   }
-  const nonControllingCompletion =
-    nextState === 'complete' && plan.action.completionFollowUp !== 'scene';
+  const nonControllingCompletion = activityCompletionIsNonControlling(
+    nextState,
+    plan.action.completionFollowUp,
+  );
   const refreshedOffer = await refreshOffer(
     tx,
     nextCampaign,
@@ -506,22 +508,28 @@ export async function settleActivity(
     ...nextCampaign,
     offer: refreshedOffer,
   };
-  if (nextState === 'complete' && plan.action.completionFollowUp === 'report') {
-    // Freeze the completed boundary before a queued successor consumes the
-    // refreshed offer. A late report describes its source moment, not whatever
-    // activity happens to be current when prose publication finishes.
-    await requestActivityReport(tx, {
-      current: nextStory,
-      state: settledCampaign,
-      activity: nextActivity,
-      passageId,
-      label: plan.action.label,
-      intention: plan.action.description,
-      factualSummary:
-        lines.at(-1) ?? `${plan.action.label} completed as admitted.`,
-      completionEffects: plan.action.completion.effects,
-    });
-  }
+  const followUps = planActivityBoundaryFollowUps({
+    nextState,
+    completionFollowUp: plan.action.completionFollowUp,
+    current: nextStory,
+    activity: nextActivity,
+    passageId,
+    afterSegment: activity.boundariesSettled,
+    throughSegment: boundariesSettled,
+    label: plan.action.label,
+    intention: plan.action.description,
+    factualSummary:
+      lines.at(-1) ?? `${plan.action.label} completed as admitted.`,
+    completionEffects: plan.action.completion.effects,
+  });
+  // Reports capture the completed source moment before a queued successor can
+  // consume its refreshed offer. They are historical, not controlling scenes.
+  settledCampaign = await applyCampaignFollowUpIntents(
+    tx,
+    settledCampaign,
+    followUps.beforeContinuation,
+    now,
+  );
   if (nextState === 'complete') {
     // The refreshed offer is the current Storyteller-authored handoff. A queued
     // successor may consume it, but the old acceptance cannot bypass a scene
@@ -533,22 +541,12 @@ export async function settleActivity(
       nextActivity,
     );
   }
-  if (nextState !== 'running' && !nonControllingCompletion) {
-    settledCampaign = await holdCampaignForStorytellerIntent(
-      tx,
-      settledCampaign,
-      activity.id,
-      now,
-    );
-    await requestConsequenceNarration(tx, nextStory, {
-      passageId,
-      operationId: activity.id,
-      afterSegment: activity.boundariesSettled,
-      throughSegment: boundariesSettled,
-      label: plan.action.label,
-      intention: plan.action.description,
-    });
-  }
+  settledCampaign = await applyCampaignFollowUpIntents(
+    tx,
+    settledCampaign,
+    followUps.afterContinuation,
+    now,
+  );
   return { activity: nextActivity, state: settledCampaign, current: nextStory };
 }
 

@@ -22,7 +22,7 @@ Implementation owner: Codex at the owner's request; reviewer: Codex diff review.
 - Invariants: quiet stays quiet; reports remain historical/non-controlling; scenes own the campaign hold; chains revalidate before continuation.
 - Checks: source trace of quiet/report/scene, interruption and retry paths; batched package checks only after the edits.
 - Exit: downstream behavior can change without adding another branch to mechanical progress calculation.
-- Status: pending E1.
+- Status: implemented; focused application typecheck passed.
 
 ### E3 — consolidation and fitness boundary
 
@@ -34,8 +34,8 @@ Implementation owner: Codex at the owner's request; reviewer: Codex diff review.
 
 ## Current checkpoint
 
-- Current phase and exact next action: E2; model activity quiet/report/scene outcomes as typed transition follow-ups without changing their distinct semantics.
-- Base/reviewed Git revision and relevant uncommitted changes: `f57759f`; E1 implementation and documents are pending commit.
-- Actual checks/results for this revision; checks not run: `pnpm --filter @offscreen/application typecheck` passed after the transition extraction. No runtime or broad suite was run under the POC verification policy.
-- Unresolved findings/blockers: none. E2 must keep mechanics and continuation decisions visible rather than moving the current branches wholesale into a generic handler.
+- Current phase and exact next action: E3; review the two demonstrated shapes for only stable shared lifecycle coordination, add a lightweight boundary safeguard if it pays for itself, then fold final documentation and remove this feature folder.
+- Base/reviewed Git revision and relevant uncommitted changes: E1 is committed/pushed at `af3a834`; E2 activity policy and adapter changes are pending commit.
+- Actual checks/results for this revision; checks not run: `pnpm --filter @offscreen/application typecheck` passed after both E1 and E2. No runtime or broad suite was run under the POC verification policy.
+- Unresolved findings/blockers: no blocker. Accepted-plan continuation remains synchronous domain coordination by design; it is not being disguised as an asynchronous event.
 - Provider spend and accounting certainty: no provider calls; $0 model spend. Cumulative OpenRouter usage/balance not verified.
