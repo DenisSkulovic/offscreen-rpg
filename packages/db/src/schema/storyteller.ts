@@ -183,6 +183,78 @@ export const storytellerAttempt = pgTable(
   ],
 );
 
+export const storytellerUsageAllocation = pgTable(
+  'storyteller_usage_allocation',
+  {
+    attemptId: uuid('attempt_id')
+      .notNull()
+      .references(() => storytellerAttempt.id, { onDelete: 'restrict' }),
+    windowId: text('window_id').notNull(),
+    windowVersion: integer('window_version').notNull(),
+    scope: text('scope').notNull().$type<'platform' | 'account' | 'story'>(),
+    scopeKey: text('scope_key').notNull(),
+    metric: text('metric')
+      .notNull()
+      .$type<
+        | 'requests'
+        | 'input_tokens'
+        | 'generated_tokens'
+        | 'microusd'
+        | 'background_jobs'
+      >(),
+    definition: jsonb('definition').notNull().$type<unknown>(),
+    state: text('state')
+      .notNull()
+      .$type<
+        'reserved' | 'dispatched' | 'settled' | 'uncertain' | 'released'
+      >(),
+    reserved: bigint('reserved', { mode: 'bigint' }).notNull(),
+    consumed: bigint('consumed', { mode: 'bigint' }),
+    periodStartsAt: timestamp('period_starts_at', {
+      withTimezone: true,
+      precision: 3,
+    }),
+    periodEndsAt: timestamp('period_ends_at', {
+      withTimezone: true,
+      precision: 3,
+    }),
+    attributedAt: timestamp('attributed_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    settledAt: timestamp('settled_at', { withTimezone: true, precision: 3 }),
+  },
+  (t) => [
+    unique('storyteller_usage_allocation_identity').on(
+      t.attemptId,
+      t.scope,
+      t.windowId,
+      t.windowVersion,
+    ),
+    index('storyteller_usage_allocation_window').on(
+      t.scope,
+      t.scopeKey,
+      t.windowId,
+      t.windowVersion,
+      t.attributedAt,
+    ),
+    check(
+      'storyteller_usage_allocation_state',
+      sql`${t.state} IN ('reserved','dispatched','settled','uncertain','released')`,
+    ),
+    check(
+      'storyteller_usage_allocation_amounts',
+      sql`${t.reserved} >= 0 AND (${t.consumed} IS NULL OR ${t.consumed} >= 0)`,
+    ),
+    check(
+      'storyteller_usage_allocation_settlement',
+      sql`(${t.state} IN ('settled','released')) = (${t.consumed} IS NOT NULL) AND (${t.state} IN ('settled','released')) = (${t.settledAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
 export const storytellerRetry = pgTable(
   'storyteller_retry',
   {

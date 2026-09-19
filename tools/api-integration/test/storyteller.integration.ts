@@ -21,6 +21,7 @@ import {
   storytellerAttempt,
   storytellerFunding,
   storytellerRun,
+  storytellerUsageAllocation,
 } from '@offscreen/db/storyteller-schema';
 import { createDrafts } from '@offscreen/application/drafts';
 import { createScriptedOpenings } from '@offscreen/application/generations';
@@ -61,7 +62,22 @@ const fakeTelemetry = (providerId: string) => ({
   finishReason: 'stop',
 });
 
-function testUsagePolicy(route: string) {
+function testUsagePolicy(
+  route: string,
+  windows: Array<{
+    id: string;
+    version: number;
+    scope: 'platform' | 'account' | 'story';
+    metric:
+      | 'requests'
+      | 'input_tokens'
+      | 'generated_tokens'
+      | 'microusd'
+      | 'background_jobs';
+    limit: string;
+    window: { kind: 'rolling'; durationSeconds: number };
+  }> = [],
+) {
   const profile = {
     schemaVersion: 1 as const,
     id: 'test-provider',
@@ -90,6 +106,17 @@ function testUsagePolicy(route: string) {
   const result = resolveEffectiveUsagePolicy({
     platform: profile,
     entitlement: profile,
+    restrictions: windows.length
+      ? [
+          {
+            schemaVersion: 1,
+            id: 'test-window',
+            revision: 1,
+            limits: {},
+            windows,
+          },
+        ]
+      : [],
     requestedRoute: route,
     requestedFundingMode: 'prepaid',
   });
@@ -1632,14 +1659,14 @@ test(
             const runId = randomUUID();
             await database.db.insert(storytellerFunding).values({
               id: accountId,
-              limitMicrousd: 150n,
+              limitMicrousd: 1000n,
               stopped: false,
               verifiedAt: new Date(),
             });
             await database.db.insert(storytellerRun).values({
               id: runId,
               accountId,
-              limitMicrousd: 150n,
+              limitMicrousd: 1000n,
               maxAttempts: 3,
               enabled: true,
             });
@@ -1681,7 +1708,16 @@ test(
                     execution,
                     resources: resourcesForEffectiveUsagePolicy(
                       execution,
-                      testUsagePolicy(execution.policy.route),
+                      testUsagePolicy(execution.policy.route, [
+                        {
+                          id: 'account-cost-burst',
+                          version: 1,
+                          scope: 'account',
+                          metric: 'microusd',
+                          limit: '150',
+                          window: { kind: 'rolling', durationSeconds: 3600 },
+                        },
+                      ]),
                     ),
                   },
                 }),
@@ -1691,6 +1727,11 @@ test(
               results.filter((result) => result.status === 'fulfilled').length,
               1,
             );
+            const allocations = await database.db
+              .select()
+              .from(storytellerUsageAllocation);
+            assert.equal(allocations.length, 1);
+            assert.equal(allocations[0]?.reserved, 102n);
             const winner =
               ids[results.findIndex((result) => result.status === 'fulfilled')];
             assert.ok(winner);
@@ -1708,6 +1749,11 @@ test(
             };
             await budget.settle(settlement);
             await budget.settle(settlement);
+            const [settledAllocation] = await database.db
+              .select()
+              .from(storytellerUsageAllocation);
+            assert.equal(settledAllocation?.state, 'settled');
+            assert.equal(settledAllocation?.consumed, 80n);
             assert.equal(
               (await budget.inspect(accountId)).settledMicrousd,
               80n,

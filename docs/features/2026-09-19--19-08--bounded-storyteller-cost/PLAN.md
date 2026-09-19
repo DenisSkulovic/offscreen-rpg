@@ -40,7 +40,7 @@ Exit: named frozen envelopes and dry-run evidence, no provider dispatch; B2 can 
 ## B2 — Durable shared enforcement and route accounting (implementing)
 
 Outcome: every dispatch and side job consumes admitted capacity without escaping its originating operation.
-Dependencies: B1. Status: B2a implementing; B2b queued.
+Dependencies: B1. Status: B2a implementing; B2b quota allocation implemented, holds/recovery queued.
 Owners: application `storyteller/budget.ts`, `execution.ts`, `records.ts`; `packages/db/src/schema/storyteller.ts` and single baseline migration; `packages/storyteller/src/providers/openrouter.ts`. B2b also touches existing campaign hold/clock operations, public status contracts, API/snapshot projection, minimal play recovery controls and workflow wake-up bindings. Follow their current owners rather than duplicate a clock or scheduler.
 
 Deliver as two coherent slices: B2a operation/attempt accounting and normalized provider usage; B2b account windows, policy transitions and game hold/recovery. Both are required before a live run. Keep one baseline migration and reset disposable data, no migration chain.
@@ -53,7 +53,7 @@ Current B2a checkpoint: the existing attempt row now captures rich attribution, 
 
 Acceptance/optional probes: injected transport for cache miss/write surcharge, reasoning-only truncated output, repeated repair, concurrent last allowance, crash after dispatch and saved-result replay. No duplicate mechanics or paid redispatch on uncertain delivery. Test tools remain fake; no live route validation implied.
 
-B2b bounded work: persist versioned account grants/lower overrides and fixed/rolling window debits/reservations on the existing accounting boundary. Use server timestamps, intersect all scopes atomically, retain outstanding allocations across reset and attribute late usage to original dispatch. Recheck entitlement at dispatch; tier changes cannot reset usage or rewrite requests. Pin funding identity; reject implicit on-demand overage. Expose limiting reason/remaining/eligible time and independent usage hold. Default recovery is explicit Resume; optional auto-resume is a captured, revocable permission and remains forbidden for development live calls. Reuse clock reanchoring so held real time earns nothing. Wake-ups are durable, deduplicated, version-fenced and concurrency-bounded, not polling or fresh paid retries.
+B2b quota checkpoint: each attempt now durably reserves every captured fixed/rolling request, input, generated, money and background-job window under the accounting lock and authoritative database clock. Unsent dispatch releases allocations, known settlement records actual usage, and uncertain work retains its conservative allocation across period boundaries. Story windows require a real story identity. Next, add operation-wide multi-attempt aggregation, dispatch-time entitlement recheck, limiting-reason projection and independent game hold/recovery. Tier changes cannot reset usage or rewrite requests. Pin funding identity; reject implicit on-demand overage. Default recovery is explicit Resume; optional auto-resume remains forbidden for development live calls. Reuse clock reanchoring so held real time earns nothing.
 
 B2b QA: fixed-boundary and rolling recovery; window expires with an uncertain attempt; concurrent stories contend for the last allowance; grant downgrade/revocation before dispatch; no credit from tier toggling; required context permanently too large; optional report deferred without freezing unrelated work; manual pause survives reset; no held-time catch-up; recovery remains blocked by lifetime funding; many ready tasks cannot burst beyond concurrency/window limits. Use injected time/usage and fake providers.
 
@@ -85,8 +85,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1b complete/B2a implementing. Effective-policy admission, recipe/envelope capture, complete-request byte preflight, rich attempt-level cost attribution/reconciliation and sanitized Chamber inspection are implemented. Exact next action: add durable operation/window allocations and game holds. Do not enable provider execution. Storage C1/C2 remains independently ready.
-- Slice base: `321944b`; B1a is committed and its package-boundary audit is complete. B1b is the next code slice.
-- Verification: `@offscreen/application` and `@offscreen/api-integration` builds pass; focused `usage-policy.test.js` passes 4/4. Tests use pure fixtures and no provider path. No database/browser checks or live calls.
+- Phase: B1 complete/B2 implementing. Effective-policy admission, task envelopes, rich attempt audit, sanitized inspection and durable window allocations are implemented. Exact next action: operation-wide multi-attempt aggregation and player-visible hold/recovery. Do not enable provider execution. Storage C1/C2 remains independently ready.
+- Slice base: `98bf6a7`; window allocation schema/application changes and regenerated baseline are uncommitted.
+- Verification: database, application and integration workspaces compile. Focused allocation runtime evidence is still pending; no browser or live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

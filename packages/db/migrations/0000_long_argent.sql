@@ -450,6 +450,27 @@ CREATE TABLE "storyteller_run" (
 	CONSTRAINT "storyteller_run_bounds" CHECK ("storyteller_run"."limit_microusd" >= 0 AND "storyteller_run"."settled_microusd" >= 0 AND "storyteller_run"."reserved_microusd" >= 0 AND "storyteller_run"."max_attempts" > 0 AND "storyteller_run"."admitted_attempts" BETWEEN 0 AND "storyteller_run"."max_attempts")
 );
 --> statement-breakpoint
+CREATE TABLE "storyteller_usage_allocation" (
+	"attempt_id" uuid NOT NULL,
+	"window_id" text NOT NULL,
+	"window_version" integer NOT NULL,
+	"scope" text NOT NULL,
+	"scope_key" text NOT NULL,
+	"metric" text NOT NULL,
+	"definition" jsonb NOT NULL,
+	"state" text NOT NULL,
+	"reserved" bigint NOT NULL,
+	"consumed" bigint,
+	"period_starts_at" timestamp (3) with time zone,
+	"period_ends_at" timestamp (3) with time zone,
+	"attributed_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"settled_at" timestamp (3) with time zone,
+	CONSTRAINT "storyteller_usage_allocation_identity" UNIQUE("attempt_id","scope","window_id","window_version"),
+	CONSTRAINT "storyteller_usage_allocation_state" CHECK ("storyteller_usage_allocation"."state" IN ('reserved','dispatched','settled','uncertain','released')),
+	CONSTRAINT "storyteller_usage_allocation_amounts" CHECK ("storyteller_usage_allocation"."reserved" >= 0 AND ("storyteller_usage_allocation"."consumed" IS NULL OR "storyteller_usage_allocation"."consumed" >= 0)),
+	CONSTRAINT "storyteller_usage_allocation_settlement" CHECK (("storyteller_usage_allocation"."state" IN ('settled','released')) = ("storyteller_usage_allocation"."consumed" IS NOT NULL) AND ("storyteller_usage_allocation"."state" IN ('settled','released')) = ("storyteller_usage_allocation"."settled_at" IS NOT NULL))
+);
+--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign" ADD CONSTRAINT "campaign_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -487,6 +508,7 @@ ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_run_id_sto
 ALTER TABLE "storyteller_publication" ADD CONSTRAINT "storyteller_publication_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_retry" ADD CONSTRAINT "storyteller_retry_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_run" ADD CONSTRAINT "storyteller_run_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_usage_allocation" ADD CONSTRAINT "storyteller_usage_allocation_attempt_id_storyteller_attempt_id_fk" FOREIGN KEY ("attempt_id") REFERENCES "public"."storyteller_attempt"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "account_provider_identity_unique" ON "account" USING btree ("provider_id","account_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
@@ -495,4 +517,5 @@ CREATE INDEX "story_draft_owner_created_idx" ON "story_draft" USING btree ("owne
 CREATE INDEX "outbox_pending" ON "outbox" USING btree ("available_at","id") WHERE "outbox"."delivered_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_account_created" ON "storyteller_attempt" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING btree ("story_id","created_at");--> statement-breakpoint
-CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");
+CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");--> statement-breakpoint
+CREATE INDEX "storyteller_usage_allocation_window" ON "storyteller_usage_allocation" USING btree ("scope","scope_key","window_id","window_version","attributed_at");

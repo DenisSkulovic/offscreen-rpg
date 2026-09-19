@@ -221,6 +221,10 @@ export async function withAppIntegration(
         );
         // Only the disposable integration owner's artifacts; production retains billing evidence.
         await database.db.$client.query(
+          'DELETE FROM storyteller_usage_allocation WHERE attempt_id IN (SELECT a.id FROM storyteller_attempt a JOIN generation g ON g.id = a.generation_id WHERE g.owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
           'DELETE FROM storyteller_attempt WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
           [user.id],
         );

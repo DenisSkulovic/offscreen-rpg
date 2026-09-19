@@ -19,11 +19,20 @@ import type {
 } from '@offscreen/storyteller/providers/openrouter';
 import { isDeepStrictEqual } from 'node:util';
 import type { Transaction } from '../outbox/index';
+import {
+  markUsageWindows,
+  reserveUsageWindows,
+  settleUsageWindows,
+  UsageWindowError,
+} from './window-accounting';
 
 export class StorytellerBudgetError extends Error {
   constructor(
     public readonly code:
-      'budget_unavailable' | 'usage_uncertain' | 'context_too_large',
+      | 'budget_unavailable'
+      | 'usage_uncertain'
+      | 'context_too_large'
+      | 'window_exhausted',
   ) {
     super(code);
   }
@@ -208,6 +217,23 @@ export function createStorytellerBudget(database: Database) {
           requestBytes,
           policy: execution.policy,
         });
+        if (task.resources.authority.kind !== 'effective-usage-policy') {
+          throw new StorytellerBudgetError('budget_unavailable');
+        }
+        try {
+          await reserveUsageWindows(tx, {
+            attemptId: input.id,
+            accountId: account.id,
+            task,
+            policy: task.resources.authority.policy,
+            reservedMicrousd: amount,
+          });
+        } catch (error) {
+          if (error instanceof UsageWindowError) {
+            throw new StorytellerBudgetError('window_exhausted');
+          }
+          throw error;
+        }
         await tx
           .update(funding)
           .set({ reservedMicrousd: account.reservedMicrousd + amount })
@@ -262,12 +288,14 @@ export function createStorytellerBudget(database: Database) {
                 allowance.reservedMicrousd - record.reservedMicrousd,
             })
             .where(eq(run.id, allowance.id));
+          await markUsageWindows(tx, record.id, 'released');
           return false;
         }
         await tx
           .update(attempt)
           .set({ state: 'dispatched', dispatchedAt: sql`clock_timestamp()` })
           .where(eq(attempt.id, id));
+        await markUsageWindows(tx, record.id, 'dispatched');
         return true;
       });
     },
@@ -296,6 +324,7 @@ export function createStorytellerBudget(database: Database) {
               eq(attempt.state, 'dispatched'),
             ),
           );
+        await markUsageWindows(tx, id, 'uncertain');
         await tx.update(funding).set({ stopped: true });
       });
     },
@@ -412,7 +441,15 @@ export function createStorytellerBudget(database: Database) {
               allowance.settledMicrousd + input.usage.reportedCostMicrousd,
           })
           .where(eq(run.id, allowance.id));
-        if (input.usage.reportedCostMicrousd > record.reservedMicrousd) {
+        const exceededUsageWindow = await settleUsageWindows(
+          tx,
+          record.id,
+          input.usage,
+        );
+        if (
+          input.usage.reportedCostMicrousd > record.reservedMicrousd ||
+          exceededUsageWindow
+        ) {
           await tx.update(funding).set({ stopped: true });
         }
       });

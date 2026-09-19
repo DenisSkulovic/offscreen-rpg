@@ -1,5 +1,5 @@
 {
-  "id": "220a1a74-a3fd-4e65-b28f-0c3081c5c8d1",
+  "id": "3d6b7d17-1542-4f90-af52-e9da53a7a4aa",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3252,6 +3252,182 @@
         "storyteller_run_bounds": {
           "name": "storyteller_run_bounds",
           "value": "\"storyteller_run\".\"limit_microusd\" >= 0 AND \"storyteller_run\".\"settled_microusd\" >= 0 AND \"storyteller_run\".\"reserved_microusd\" >= 0 AND \"storyteller_run\".\"max_attempts\" > 0 AND \"storyteller_run\".\"admitted_attempts\" BETWEEN 0 AND \"storyteller_run\".\"max_attempts\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.storyteller_usage_allocation": {
+      "name": "storyteller_usage_allocation",
+      "schema": "",
+      "columns": {
+        "attempt_id": {
+          "name": "attempt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "window_id": {
+          "name": "window_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "window_version": {
+          "name": "window_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scope_key": {
+          "name": "scope_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metric": {
+          "name": "metric",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved": {
+          "name": "reserved",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumed": {
+          "name": "consumed",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_starts_at": {
+          "name": "period_starts_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_ends_at": {
+          "name": "period_ends_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attributed_at": {
+          "name": "attributed_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "settled_at": {
+          "name": "settled_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "storyteller_usage_allocation_window": {
+          "name": "storyteller_usage_allocation_window",
+          "columns": [
+            {
+              "expression": "scope",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "scope_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "window_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "window_version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "attributed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "storyteller_usage_allocation_attempt_id_storyteller_attempt_id_fk": {
+          "name": "storyteller_usage_allocation_attempt_id_storyteller_attempt_id_fk",
+          "tableFrom": "storyteller_usage_allocation",
+          "tableTo": "storyteller_attempt",
+          "columnsFrom": [
+            "attempt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "storyteller_usage_allocation_identity": {
+          "name": "storyteller_usage_allocation_identity",
+          "nullsNotDistinct": false,
+          "columns": [
+            "attempt_id",
+            "scope",
+            "window_id",
+            "window_version"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "storyteller_usage_allocation_state": {
+          "name": "storyteller_usage_allocation_state",
+          "value": "\"storyteller_usage_allocation\".\"state\" IN ('reserved','dispatched','settled','uncertain','released')"
+        },
+        "storyteller_usage_allocation_amounts": {
+          "name": "storyteller_usage_allocation_amounts",
+          "value": "\"storyteller_usage_allocation\".\"reserved\" >= 0 AND (\"storyteller_usage_allocation\".\"consumed\" IS NULL OR \"storyteller_usage_allocation\".\"consumed\" >= 0)"
+        },
+        "storyteller_usage_allocation_settlement": {
+          "name": "storyteller_usage_allocation_settlement",
+          "value": "(\"storyteller_usage_allocation\".\"state\" IN ('settled','released')) = (\"storyteller_usage_allocation\".\"consumed\" IS NOT NULL) AND (\"storyteller_usage_allocation\".\"state\" IN ('settled','released')) = (\"storyteller_usage_allocation\".\"settled_at\" IS NOT NULL)"
         }
       },
       "isRLSEnabled": false
