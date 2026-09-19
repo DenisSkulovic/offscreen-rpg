@@ -67,6 +67,7 @@ CREATE TABLE "campaign" (
 	"clock_anchor_at" timestamp (3) with time zone NOT NULL,
 	"clock_pace" jsonb NOT NULL,
 	"offer" jsonb,
+	"situation_authorization" jsonb NOT NULL,
 	"active_activity_id" uuid
 );
 --> statement-breakpoint

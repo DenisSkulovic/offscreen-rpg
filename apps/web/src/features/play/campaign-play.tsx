@@ -55,6 +55,11 @@ export function CampaignPlay({
         {campaign.character?.maxHp}
         {campaign.location ? ` · ${campaign.location}` : ''}
       </p>
+      <p>
+        {campaign.activityAccess.kind === 'selected'
+          ? 'This situation permits selected extended activities.'
+          : 'No extended activities are available in this situation.'}
+      </p>
       <details>
         <summary>Character state and rules</summary>
         {/* These values are invaluable when checking deterministic authority,

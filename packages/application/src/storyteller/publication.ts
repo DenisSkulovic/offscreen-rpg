@@ -190,7 +190,14 @@ export async function publishStorytellerResult(
       );
       await tx
         .update(campaign)
-        .set({ offer: plannedOffer })
+        .set({
+          offer: plannedOffer,
+          situationAuthorization: {
+            version: 1,
+            offerId: plannedOffer.id,
+            activityAccess: result.scene.next.activityAccess,
+          },
+        })
         .where(eq(campaign.storyId, current.id));
       await advanceStoryView(tx, {
         storyId: current.id,

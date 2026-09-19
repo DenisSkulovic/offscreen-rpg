@@ -29,6 +29,7 @@ import {
   campaignCharacter,
   campaignStoryFacts,
   campaignOffer,
+  campaignSituationAuthorization,
   requireCampaign,
   loadOfferPlan,
 } from './persistence';
@@ -85,7 +86,11 @@ export function createCampaignActions(database: Database) {
       }
       const state = await requireCampaign(tx, current.id);
       const offer = campaignOffer(state);
+      const authorization = campaignSituationAuthorization(state);
       if (offer.id !== parsed.data.offerId) {
+        throw new StoryError('conflict');
+      }
+      if (authorization.offerId !== offer.id) {
         throw new StoryError('conflict');
       }
       const selection = selectOfferAction(offer, parsed.data.path);
@@ -108,6 +113,14 @@ export function createCampaignActions(database: Database) {
           campaignStoryFacts(state),
           definition,
         )
+      ) {
+        throw new StoryError('conflict');
+      }
+      if (
+        (definition.resolution.kind === 'process' ||
+          definition.resolution.kind === 'resume') &&
+        (authorization.activityAccess.kind !== 'selected' ||
+          !authorization.activityAccess.actionKeys.includes(definition.key))
       ) {
         throw new StoryError('conflict');
       }
@@ -164,6 +177,11 @@ export function createCampaignActions(database: Database) {
           .update(campaign)
           .set({
             offer: null,
+            situationAuthorization: {
+              version: 1,
+              offerId: null,
+              activityAccess: { kind: 'none' },
+            },
             activeActivityId: retained.id,
             clockAnchorAt: new Date(now),
           })
@@ -213,6 +231,11 @@ export function createCampaignActions(database: Database) {
           .update(campaign)
           .set({
             offer: null,
+            situationAuthorization: {
+              version: 1,
+              offerId: null,
+              activityAccess: { kind: 'none' },
+            },
             activeActivityId: activityId,
             tick: projected.clock.elapsedTicks,
             clock: projected.clock,
@@ -256,6 +279,11 @@ export function createCampaignActions(database: Database) {
           character: resolved.character,
           storyFacts: resolved.storyFacts,
           offer: null,
+          situationAuthorization: {
+            version: 1,
+            offerId: null,
+            activityAccess: { kind: 'none' },
+          },
           // An encounter action resolves the obstacle, not the interrupted
           // commitment. Keep its identity attached so subsequent narration can
           // offer a resume of the exact durable work and retained progress.

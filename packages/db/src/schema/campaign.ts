@@ -30,6 +30,9 @@ export const campaign = pgTable('campaign', {
   }).notNull(),
   clockPace: jsonb('clock_pace').notNull().$type<unknown>(),
   offer: jsonb('offer').$type<unknown>(),
+  situationAuthorization: jsonb('situation_authorization')
+    .notNull()
+    .$type<unknown>(),
   activeActivityId: uuid('active_activity_id'),
 });
 export const campaignSettings = pgTable(

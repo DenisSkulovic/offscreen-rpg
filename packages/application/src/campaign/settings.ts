@@ -32,7 +32,10 @@ import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import {
   immediateActionContentSchema,
   immediateActionPlanSchema,
+  activityAccessSchema,
+  validateActivityAccess,
   type ImmediateActionPlan,
+  type ActivityAccess,
 } from '@offscreen/game/immediate-actions';
 import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
@@ -60,6 +63,7 @@ export async function initializeCampaign(
     character: unknown;
     storyFacts?: unknown;
     plans: readonly ImmediateActionPlan[];
+    activityAccess: ActivityAccess;
   },
 ) {
   const settings = campaignSettingsSchema.parse({
@@ -91,6 +95,12 @@ export async function initializeCampaign(
           busy: false,
         })
       : null;
+  const activityAccess = seed
+    ? activityAccessSchema.parse(seed.activityAccess)
+    : { kind: 'none' as const };
+  if (opportunities) {
+    validateActivityAccess(opportunities.plans, activityAccess);
+  }
   const now = await readDatabaseClockMs(tx, storyId);
   await tx.insert(campaign).values({
     storyId,
@@ -105,6 +115,11 @@ export async function initializeCampaign(
     clockAnchorAt: new Date(now),
     clockPace: settings.pace,
     offer: opportunities?.offer ?? null,
+    situationAuthorization: {
+      version: 1,
+      offerId: opportunities?.offer.id ?? null,
+      activityAccess,
+    },
   });
   if (opportunities) {
     await saveOfferPlans(

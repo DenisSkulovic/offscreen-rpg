@@ -13,12 +13,12 @@ Mechanical opening preparation captures a character/story-fact seed, and the Sto
 
 ## Mechanical selection and consequence
 
-1. [Campaign actions](src/campaign/actions.ts) locks the owned story, handles command replay, checks revision/current offer, loads the offer-local private plan and rechecks prerequisites.
+1. [Campaign actions](src/campaign/actions.ts) locks the owned story, handles command replay, checks revision/current offer and its matching situation authorization, loads the offer-local private plan and rechecks prerequisites.
 2. The private plan decides the atomic branch. An immediate automatic/check plan saves the `game_action_receipt`, effects, consumed offer, command receipt and outbox follow-up. A contribution-process plan instead saves a zero-progress `game_activity`, captures pace/settings, consumes the offer and schedules the first boundary; it grants no completion effect and creates no immediate receipt. Both branches recheck prerequisites under the story lock.
 3. [Consequence admission](src/campaign/narration.ts) later locks that receipt and story, gathers committed context, and saves the Storyteller task in a separate transaction. The receipt covers automatic actions as well as checks; `game_roll` remains the cadence history for genuine elapsed activities.
-4. [Publication](src/storyteller/publication.ts) checks the source fence, independently revalidates the Storyteller's fresh private plans against captured state and evidence, then atomically publishes the saved narrative, public offer and private plans.
+4. [Publication](src/storyteller/publication.ts) checks the source fence, independently revalidates the Storyteller's fresh private plans against captured state and evidence, then atomically publishes the saved narrative, public offer, private plans and explicit process/resume access.
 
-A consumed offer blocks another mechanical selection before narration exists. Retrying preparation is safe because the receipt records its resulting generation before completion; preparation can fail repeatedly without rerolling or undoing the visible outcome.
+A consumed offer clears its situation authorization and blocks another mechanical selection before narration exists. Mechanical settlement may publish an empty interim offer, but it never reconstructs fictional options from inventory or old opening content. Retrying preparation is safe because the receipt records its resulting generation before completion; preparation can fail repeatedly without rerolling or undoing the visible outcome.
 
 The current `story.revision` is also the current passage sequence; it is not a freely incrementable mechanical-state counter. Historical report publication must not use ordinary current-passage publication with its stale checks simply removed. The proposed [solo integration contract](../../docs/technical/solo-gameplay-contract.md#a-minimum-state-ledger) separates those lifecycles; it is a coding handoff, not existing support for quiet offer reuse or late report-only tasks.
 

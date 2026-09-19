@@ -19,6 +19,20 @@ function outcome(
   return { text, effects, declarations };
 }
 
+function authoredActivityAccess(
+  plans: readonly { key: string; resolution: { kind: string } }[],
+) {
+  const actionKeys = plans
+    .filter(
+      (plan) =>
+        plan.resolution.kind === 'process' || plan.resolution.kind === 'resume',
+    )
+    .map((plan) => plan.key);
+  return actionKeys.length
+    ? ({ kind: 'selected', actionKeys } as const)
+    : ({ kind: 'none' } as const);
+}
+
 function pineappleOpeningPlans(character: MechanicalCharacter) {
   if (
     factValue(character.facts, 'location') !== 'pineapple' ||
@@ -291,6 +305,7 @@ export function scriptedMechanicalOpening(task: StorytellerTask) {
         kind: 'action-plans',
         state: plans.length ? 'available' : 'held',
         plans,
+        activityAccess: authoredActivityAccess(plans),
       },
     },
     currentNotes: [],
@@ -772,6 +787,7 @@ export function scriptedMechanicalConsequence(task: StorytellerTask) {
         kind: 'action-plans',
         state: plans.length ? 'available' : 'held',
         plans,
+        activityAccess: authoredActivityAccess(plans),
       },
     },
     currentNotes: [],

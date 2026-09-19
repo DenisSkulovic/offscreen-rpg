@@ -4,6 +4,7 @@ import {
   immediateActionContentSchema,
   immediateActionAvailable,
   resolveImmediateAction,
+  validateActivityAccess,
   validateImmediateActionProposal,
 } from '../dist/src/immediate-actions.js';
 import { composeOpportunities } from '../dist/src/opportunities.js';
@@ -292,6 +293,49 @@ test('resume intentions remain opaque and cannot settle as immediate actions', (
       id: 'invalid-resume-test',
       plans: [halfBound],
     }),
+  );
+});
+
+test('extended activity access is explicit and cannot omit or invent a plan', () => {
+  const process = {
+    ...structuredClone(content.plans[0]),
+    key: 'continue-over-time',
+    resolution: {
+      kind: 'process',
+      action: {
+        id: 'continue-over-time',
+        label: 'Continue over time',
+        description: 'Keep working under the admitted terms.',
+        requires: [],
+        capacity: 'primary',
+        process: {
+          kind: 'contribution.v1',
+          progressLabel: 'Progress',
+          requiredContribution: 1,
+          everyTicks: 1,
+          attempt: {
+            check: content.plans[0].resolution.check,
+            successContribution: 1,
+            failureContribution: 0,
+            successText: 'Progress is made.',
+            failureText: 'Time passes without progress.',
+          },
+        },
+        checks: [],
+        completion: { text: 'The work is complete.', effects: [] },
+      },
+    },
+  };
+  assert.throws(
+    () => validateActivityAccess([process], { kind: 'none' }),
+    /does not match/,
+  );
+  assert.deepEqual(
+    validateActivityAccess([process], {
+      kind: 'selected',
+      actionKeys: ['continue-over-time'],
+    }),
+    { kind: 'selected', actionKeys: ['continue-over-time'] },
   );
 });
 

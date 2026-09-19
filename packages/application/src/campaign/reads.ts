@@ -27,6 +27,7 @@ import {
   tickProgressSchema,
 } from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
+import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 
 function actionReceiptState(
   generationId: string | null,
@@ -169,6 +170,9 @@ export async function readCampaign(
     location: state.location,
     tick: state.tick,
     offer: state.offer,
+    activityAccess: situationAuthorizationSchema.parse(
+      state.situationAuthorization,
+    ).activityAccess,
     activity: activityView,
     commitments,
     rolls: rolls.map((roll) => ({

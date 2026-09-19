@@ -8,14 +8,13 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import {
-  immediateActionContentSchema,
   immediateActionPlanSchema,
+  situationAuthorizationSchema,
   type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
 import type { Roll } from '@offscreen/game/checks';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
-import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import type { Transaction } from '../outbox/index';
 import {
@@ -54,28 +53,28 @@ export async function recordRoll(
 export async function refreshOffer(
   tx: Transaction,
   state: CampaignRecord,
-  activityState: string | null,
+  _activityState: string | null,
   narrativeRevision: number,
 ): Promise<GameOffer> {
-  const opportunities = composeOpportunities({
+  // Mechanical boundaries do not author the next fictional menu. Until a
+  // Storyteller scene publishes an explicit replacement, routine access is none.
+  const offer = offerSchema.parse({
     id: randomUUID(),
-    content: immediateActionContentSchema.parse(state.content),
-    character: campaignCharacter(state),
-    storyFacts: campaignStoryFacts(state),
-    busy: activityState === 'running' || activityState === 'paused',
+    nodes: [],
   });
-  await saveOfferPlans(
-    tx,
-    state.storyId,
-    narrativeRevision,
-    opportunities.offer.id,
-    opportunities.plans,
-  );
+  await saveOfferPlans(tx, state.storyId, narrativeRevision, offer.id, []);
   await tx
     .update(campaign)
-    .set({ offer: opportunities.offer })
+    .set({
+      offer,
+      situationAuthorization: {
+        version: 1,
+        offerId: offer.id,
+        activityAccess: { kind: 'none' },
+      },
+    })
     .where(eq(campaign.storyId, state.storyId));
-  return opportunities.offer;
+  return offer;
 }
 
 export async function saveOfferPlans(
@@ -156,4 +155,7 @@ export function campaignStoryFacts(state: CampaignRecord) {
 }
 export function campaignOffer(state: CampaignRecord) {
   return offerSchema.parse(state.offer);
+}
+export function campaignSituationAuthorization(state: CampaignRecord) {
+  return situationAuthorizationSchema.parse(state.situationAuthorization);
 }

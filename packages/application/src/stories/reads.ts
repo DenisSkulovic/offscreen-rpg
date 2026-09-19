@@ -47,7 +47,6 @@ function parseHistoryCursor(before: unknown) {
   }
   return cursor.data;
 }
-
 function timestampIso(value: Date | null, field: string) {
   if (value === null) {
     throw new Error(`Stored story is missing ${field}`);
@@ -197,7 +196,7 @@ export function createStoryReads(database: Database) {
         throw new StoryError('not_found');
       }
       return storySnapshotSchema.parse({
-        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', ticks: 1, realMs: 1000 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, storyFacts: [], location: null, tick: 0, offer: null, activity: null, rolls: [], actionReceipts: [] } : null),
+        campaign: (await readCampaign(tx, ownerId, storyId)) ?? (row.storyteller ? { settings: { revision: 1, creative: initialCreative(storytellerProfileSchema.parse(row.storyteller)), pace: { kind: 'rate', ticks: 1, realMs: 1000 }, locked: false, rules: 'srd-5.2.1-subset.v1', risk: 'nonlethal' }, character: null, storyFacts: [], location: null, tick: 0, offer: null, activityAccess: { kind: 'none' }, activity: null, commitments: [], rolls: [], actionReceipts: [] } : null),
         id: row.id,
         storyteller:
           row.storyteller == null

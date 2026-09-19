@@ -139,6 +139,8 @@ export async function startStorytellerCandidate(
           character: task.context.mechanicalOpening.character,
           storyFacts: task.context.mechanicalOpening.storyFacts,
           plans: openingPlans,
+          activityAccess: mechanicalOpeningSceneSchema.parse(result.scene).next
+            .activityAccess,
         }
       : undefined,
   );

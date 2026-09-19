@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { rollSchema } from '@offscreen/game/checks';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
-import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
+import {
+  activityAccessSchema,
+  storyFactDeclarationsSchema,
+} from '@offscreen/game/immediate-actions';
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { paceSchema } from '@offscreen/game/time';
@@ -66,6 +69,7 @@ export const campaignViewSchema = z.strictObject({
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   offer: offerSchema.nullable(),
+  activityAccess: activityAccessSchema,
   activity: campaignActivityViewSchema.nullable(),
   // This is a compact set of unfinished promises, not a universal task list.
   // `activity` remains the one identity allowed to advance right now.

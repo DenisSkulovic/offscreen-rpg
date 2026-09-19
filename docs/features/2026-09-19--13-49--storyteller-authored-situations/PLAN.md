@@ -1,8 +1,8 @@
 # Implementation plan
 
 Feature: [Storyteller-authored situations and reusable choices](FEATURE.md).
-Execution scope: documentation/readiness now; await the owner's post-switch implementation instruction. Product direction is explicit; no new approval ritual is needed for each routine phase once that bounded implementation is requested. Live inference stays disabled.
-Implementation owner: the coding model in this thread after the owner switches it; do not dispatch another agent or alter model settings automatically.
+Execution scope: implementation is active one bounded slice at a time. Product direction is explicit; no new approval ritual is needed for each routine phase. Live inference stays disabled.
+Implementation owner: the coding model in this thread; do not dispatch another agent or alter model settings automatically.
 
 ## Dependencies and responsibility
 
@@ -11,6 +11,8 @@ Start after activity foundation A1 (identity/clock). S1 can use the existing con
 Avoid a dependency cycle: persist authored definitions/authorization first, using offline task content, without requiring a queue or a general world generator. Never ship an engine-generated fallback menu as a temporary substitute for authored permission.
 
 ## S1 — Current situation authority and scene-only pacing
+
+Status: implemented in September 2026. The first bounded representation selects exact process/resume action keys from the current immutable offer; durable reusable definitions, scope/repeat terms and quiet reprojection remain S2/S3 work.
 
 Outcome: an opening and three consequence scenes explicitly control routine access, with stale selections fenced. No new rule family or quiet completion required yet.
 
@@ -61,8 +63,8 @@ Exit: the gold session's authored scene/routine changes use task outputs and nor
 
 ## Current checkpoint
 
-- Current phase / next action: design ready; do not start here before activity A1. Then implement S1, following the bounded reads/edits above.
-- Reviewed base: `875f979`; this handoff changes documents only. Current runtime has scene-local private offers and one-shot tasks, not this authorization/package lifecycle.
-- Verification: source and design inspection only; no builds, tests, browser session, tokenization or provider requests in this design pass.
-- Remaining gates: actual production-path behavior and owner taste; no unresolved product question blocks the selected offline S1 scope. Arbitrary-world setup, long recall and multi-actor control remain separate.
+- Current phase / next action: S1 is implemented; return to activity A2 before attempting S2/U2a.
+- Implemented boundary: every mechanical opening/consequence result explicitly says `none` or selects all process/resume action keys. Start and publication persist that authorization beside the exact offer; selection checks both under the story lock. Offer consumption clears it, and mechanical settlement publishes no inferred fallback menu.
+- Verification: affected packages build (including production web); 21/21 game and 29/29 Storyteller tests pass. After recreating `offscreen_auth_test` from the new baseline, the focused Storyteller integration passed 10/10 through PostgreSQL, Temporal and browser creation, covering explicit opening access, scene replacement and exact resume authority. This does not prove dormant repeat/reprojection, arbitrary-world preparation or human narrative quality.
+- Remaining gates: S2 owns reusable definitions and quiet reprojection with A2/U2a; S3 owns broader bounded preparation. The optional H1→H4 gold trace remains connected acceptance work rather than a claim of this infrastructure slice.
 - Spend: $0 provider calls; cumulative OpenRouter usage unverified.

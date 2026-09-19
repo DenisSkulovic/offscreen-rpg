@@ -19,7 +19,9 @@ import {
 } from './playable-proposal';
 import {
   immediateActionAvailable,
+  activityAccessSchema,
   immediateActionPlanSchema,
+  validateActivityAccess,
   validateImmediateActionProposal,
 } from '@offscreen/game/immediate-actions';
 
@@ -27,11 +29,24 @@ export * from './opening';
 export * from './playable';
 export * from './policy';
 
-const actionPlanNextSchema = z.strictObject({
-  kind: z.literal('action-plans'),
-  state: z.enum(['available', 'held']),
-  plans: z.array(immediateActionPlanSchema).max(4),
-});
+const actionPlanNextSchema = z
+  .strictObject({
+    kind: z.literal('action-plans'),
+    state: z.enum(['available', 'held']),
+    plans: z.array(immediateActionPlanSchema).max(4),
+    activityAccess: activityAccessSchema,
+  })
+  .superRefine((next, context) => {
+    try {
+      validateActivityAccess(next.plans, next.activityAccess);
+    } catch (error) {
+      context.addIssue({
+        code: 'custom',
+        message:
+          error instanceof Error ? error.message : 'Invalid activity access',
+      });
+    }
+  });
 export const mechanicalOpeningSceneSchema = z.strictObject({
   version: z.literal(1),
   content: passageContentSchema,
@@ -142,10 +157,10 @@ function requestFor(
       : 'Create a version-2 continuation. Use choice for immediate exchanges or interval for meaningful fictional duration. Supply only gameDurationMs and one prepared arrival with choices.';
   if (input.task === 'consequence') {
     taskRules =
-      'Create a version-3 scene with next.kind action-plans. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects to the committed result. Propose zero to four fresh immediate-action.v1 plans grounded in supplied evidence and current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.';
+      'Create a version-3 scene with next.kind action-plans. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects to the committed result. Propose zero to four fresh immediate-action.v1 plans grounded in supplied evidence and current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.';
   } else if (context.mechanicalOpening) {
     taskRules =
-      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to four fresh immediate-action.v1 plans grounded in its character and story facts. Never roll or apply effects. Set state to available when at least one plan exists, otherwise held. No arrival notes.';
+      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to four fresh immediate-action.v1 plans grounded in its character and story facts. Never roll or apply effects. Explicitly set activityAccess to none or select every proposed process/resume key. Set state to available when at least one plan exists, otherwise held. No arrival notes.';
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';

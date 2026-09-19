@@ -1,5 +1,5 @@
 {
-  "id": "eba1d0d7-d3d6-45fe-b91b-4986b71be88e",
+  "id": "3cde0ee1-be93-418c-818e-a2b849c1b9bd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -502,6 +502,12 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "situation_authorization": {
+          "name": "situation_authorization",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         },
         "active_activity_id": {
           "name": "active_activity_id",

@@ -86,6 +86,51 @@ export const immediateActionPlanSchema = z.strictObject({
 });
 export type ImmediateActionPlan = z.infer<typeof immediateActionPlanSchema>;
 
+export const activityAccessSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('none') }),
+  z.strictObject({
+    kind: z.literal('selected'),
+    actionKeys: z
+      .array(actionKeySchema)
+      .min(1)
+      .max(6)
+      .refine((keys) => new Set(keys).size === keys.length),
+  }),
+]);
+export type ActivityAccess = z.infer<typeof activityAccessSchema>;
+
+export const situationAuthorizationSchema = z.strictObject({
+  version: z.literal(1),
+  offerId: z.uuid().nullable(),
+  activityAccess: activityAccessSchema,
+});
+
+/** Every extended-process plan must be deliberately authorized in this scene. */
+export function validateActivityAccess(
+  plans: readonly ImmediateActionPlan[],
+  access: ActivityAccess,
+) {
+  const extendedKeys = new Set(
+    plans
+      .filter(
+        (plan) =>
+          plan.resolution.kind === 'process' ||
+          plan.resolution.kind === 'resume',
+      )
+      .map((plan) => plan.key),
+  );
+  const selectedKeys = new Set(
+    access.kind === 'selected' ? access.actionKeys : [],
+  );
+  if (
+    extendedKeys.size !== selectedKeys.size ||
+    [...extendedKeys].some((key) => !selectedKeys.has(key))
+  ) {
+    throw new Error('Activity access does not match the authored plans');
+  }
+  return access;
+}
+
 function resolutionOutcomes(
   plan: ImmediateActionPlan,
 ): Array<readonly [string, ImmediateOutcome]> {

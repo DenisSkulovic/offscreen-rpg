@@ -224,6 +224,10 @@ test(
               offer.nodes[0],
               'Expected the beacon process action',
             );
+            assert.deepEqual(campaign.activityAccess, {
+              kind: 'selected',
+              actionKeys: ['restore-beacon'],
+            });
             const operationId = randomUUID();
 
             await stories.campaignAction({
@@ -348,6 +352,11 @@ test(
                     },
                   ],
                 },
+                situationAuthorization: {
+                  version: 1,
+                  offerId: encounterOfferId,
+                  activityAccess: { kind: 'none' },
+                },
               })
               .where(eq(campaignTable.storyId, started.storyId));
 
@@ -387,6 +396,10 @@ test(
               resumeOffer.nodes.map((node) => node.id),
               ['resume-beacon-repair', 'secure-repair-tools'],
             );
+            assert.deepEqual(afterNarration.campaign?.activityAccess, {
+              kind: 'selected',
+              actionKeys: ['resume-beacon-repair', 'secure-repair-tools'],
+            });
 
             await stories.campaignAction({
               ownerId,
@@ -454,7 +467,17 @@ test(
             });
             await database.db
               .update(campaignTable)
-              .set({ offer: reboundOffer })
+              .set({
+                offer: reboundOffer,
+                situationAuthorization: {
+                  version: 1,
+                  offerId: reboundOffer.id,
+                  activityAccess: {
+                    kind: 'selected',
+                    actionKeys: ['resume-beacon-repair', 'secure-repair-tools'],
+                  },
+                },
+              })
               .where(eq(campaignTable.storyId, started.storyId));
 
             await stories.campaignAction({
