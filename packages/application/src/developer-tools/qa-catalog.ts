@@ -500,10 +500,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     availability: {
       state: 'planned',
       reason:
-        'The activity-event ledger exists, but its dedicated history presentation, structured runtime logger, and deterministic failure controls are not implemented yet.',
+        'The durable history presentation and structured runtime logger exist, but deterministic failure controls required for repeatable manual evidence are not implemented yet.',
     },
     prerequisites: [
-      'Render the existing player-safe activity lifecycle projection in the Chamber/play experience.',
       'Add deterministic duplicate-delivery and retryable-worker-failure controls with captured structured diagnostics.',
     ],
     initialScenario: 'beacon-watch.v1',

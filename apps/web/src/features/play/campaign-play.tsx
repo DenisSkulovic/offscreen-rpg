@@ -199,6 +199,22 @@ export function CampaignPlay({
           ))}
         </details>
       ) : null}
+      {campaign.activityEvents.length ? (
+        <details>
+          <summary>Activity history (latest 100)</summary>
+          {/* This is durable player-safe history, not a reconstruction from
+              the current commitment or transient worker logs. */}
+          {campaign.activityEvents.map((event) => (
+            <article key={event.id}>
+              <p>
+                <strong>{event.label}</strong> · {event.kind} · tick{' '}
+                {event.tick}
+              </p>
+              <p>{event.summary}</p>
+            </article>
+          ))}
+        </details>
+      ) : null}
       {nodes.length ? (
         <div aria-label="Contextual options">
           <h2>What would you like to do?</h2>

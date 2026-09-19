@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { relayOne } from '../src/outbox/relay';
+import { OutboxRelayError, relayOne } from '../src/outbox/relay';
 
 test('a send with an uncertain acknowledgement retains the notice for the same operation', async () => {
   const notice = {
@@ -22,6 +22,14 @@ test('a send with an uncertain acknowledgement retains the notice for the same o
       starts.push(n.operationId);
       throw new Error('Acknowledgement lost after acceptance');
     }),
+    (error: unknown) => {
+      assert.ok(error instanceof OutboxRelayError);
+      assert.equal(error.noticeId, 'notice');
+      assert.equal(error.operationId, 'operation');
+      assert.equal(error.topic, 'topic');
+      assert.equal(error.message, 'Outbox notice delivery failed');
+      return true;
+    },
   );
   assert.equal(acknowledged, 0);
   await relayOne(outbox, ['topic'], async (n) => {

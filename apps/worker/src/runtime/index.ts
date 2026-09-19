@@ -25,7 +25,7 @@ import { relayOne, runRelay } from '../outbox/relay';
 export async function startRuntime(
   database: Database,
   config: WorkerConfig,
-  report: () => void,
+  report: (error: unknown) => void,
   storytellerOptions: StorytellerRuntimeOptions = {},
 ) {
   const connection = await Connection.connect({ address: config.address });

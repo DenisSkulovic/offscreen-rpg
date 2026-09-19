@@ -26,6 +26,10 @@
     "./storyteller": {
       "types": "./dist/storyteller/index.d.ts",
       "default": "./dist/storyteller/index.js"
+    },
+    "./runtime-logging": {
+      "types": "./dist/runtime-logging/index.d.ts",
+      "default": "./dist/runtime-logging/index.js"
     }
   },
   "scripts": {

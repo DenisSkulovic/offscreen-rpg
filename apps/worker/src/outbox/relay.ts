@@ -1,6 +1,18 @@
 import { setTimeout as delay } from 'node:timers/promises';
 import type { createOutbox, Notice } from '@offscreen/application/outbox';
 
+export class OutboxRelayError extends Error {
+  override readonly name = 'OutboxRelayError';
+
+  constructor(
+    readonly noticeId: string,
+    readonly operationId: string,
+    readonly topic: string,
+  ) {
+    super('Outbox notice delivery failed');
+  }
+}
+
 // No database lock spans delivery. Failed/uncertain sends leave the lease to
 // expire, and the next attempt must use the same external operation identity.
 export async function relayOne(
@@ -10,22 +22,28 @@ export async function relayOne(
 ) {
   const notice = await outbox.claim(topics);
   if (!notice) return false;
-  await send(notice);
-  await outbox.acknowledge(notice);
+  try {
+    await send(notice);
+    await outbox.acknowledge(notice);
+  } catch {
+    // Preserve only safe correlation. The underlying driver/Temporal error may
+    // contain endpoints or payload details and remains outside process logs.
+    throw new OutboxRelayError(notice.id, notice.operationId, notice.topic);
+  }
   return true;
 }
 
 export async function runRelay(
   step: () => Promise<boolean>,
   signal: AbortSignal,
-  report: () => void,
+  report: (error: unknown) => void,
 ) {
   while (!signal.aborted) {
     let delivered = false;
     try {
       delivered = await step();
-    } catch {
-      report();
+    } catch (error) {
+      report(error);
     }
     if (!delivered && !signal.aborted) {
       try {
