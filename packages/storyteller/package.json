@@ -23,6 +23,10 @@
       "types": "./dist/src/providers/request-audit.d.ts",
       "default": "./dist/src/providers/request-audit.js"
     },
+    "./providers/request-audit-fixtures": {
+      "types": "./dist/src/providers/request-audit-fixtures.d.ts",
+      "default": "./dist/src/providers/request-audit-fixtures.js"
+    },
     "./fixtures": {
       "types": "./dist/src/fixtures/index.d.ts",
       "default": "./dist/src/fixtures/index.js"

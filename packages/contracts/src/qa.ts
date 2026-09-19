@@ -12,7 +12,11 @@ export const qaCostClassSchema = z.enum([
   'potentially-billable',
   'live-billable',
 ]);
-export const qaDriverSchema = z.enum(['manual-chamber', 'browser-automation']);
+export const qaDriverSchema = z.enum([
+  'manual-chamber',
+  'browser-automation',
+  'api-script',
+]);
 export const qaImportanceSchema = z.enum([
   'poc-blocker',
   'major',

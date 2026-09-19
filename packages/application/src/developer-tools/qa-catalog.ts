@@ -972,6 +972,62 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
   }),
   defineCase({
+    id: 'storyteller-request-purpose-audit',
+    version: 1,
+    name: 'Storyteller request-purpose packet audit',
+    purpose:
+      'Compare every implemented Storyteller request shape before spending provider credit.',
+    risk: 'A generic or noisy prompt can waste context, blur task authority, and hide long-scene continuity loss.',
+    costClass: 'offline',
+    availability: { state: 'available' },
+    prerequisites: [
+      'Use authored audit fixtures; no application story or provider credential is required.',
+    ],
+    initialScenario: null,
+    drivers: ['api-script'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'capture-purposes',
+        name: 'Capture all request purposes',
+        importance: 'poc-blocker',
+        preconditions: ['The Storyteller package can build locally.'],
+        action:
+          'Run pnpm storyteller:packet-audit and retain the reported manifest and readable comparison paths.',
+        observableExpectation:
+          'Five cases identify narrative/mechanical opening, continuation, consequence and report contracts with exact structural sizes and hashes.',
+        authoritativeExpectation:
+          'The manifest states that transport was not performed, charge is zero, and token/cache fields remain unknown.',
+      }),
+      stage({
+        id: 'compare-evidence',
+        name: 'Inspect evidence and overlap',
+        importance: 'major',
+        preconditions: ['The audit manifest exists.'],
+        action:
+          'Compare loaded/omitted evidence, user sections, output schemas and adjacent message-prefix bytes.',
+        observableExpectation:
+          'Purpose-specific differences and current context loss are understandable without reading raw provider code.',
+        authoritativeExpectation:
+          'The report derives from the machine-readable manifest and makes no token, billing or cache-hit claim from byte counts.',
+      }),
+    ],
+    evidenceRequirements: [
+      {
+        kind: 'request-artifact',
+        description:
+          'The generation/run-scoped JSON manifest and derived readable comparison.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Run the command again; every audit writes a new directory and preserves earlier evidence.',
+    nonAssertions: [
+      'Authored task captures do not prove an HTTP/worker gameplay journey.',
+      'Bytes do not establish tokens, provider cache reuse, cost, or narrative quality.',
+    ],
+  }),
+  defineCase({
     id: 'provider-dispatch-review',
     version: 1,
     name: 'Provider dispatch review gate',
