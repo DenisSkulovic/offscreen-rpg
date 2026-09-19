@@ -50,7 +50,8 @@ Stop for a material product/cost change or an unresolved authority boundary. Rou
 
 1. [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owns work/rules/clock; A1 and A2 are the bounded foundation slices above, not the entire broad participation design.
 2. [Storyteller-authored situations and reusable choices](2026-09-19--13-49--storyteller-authored-situations/FEATURE.md) — S1, bounded solo S2 and S3's core exact handoff are complete: per-situation authorship, quiet reusable choices, finite story-scoped repetition, boundary blocking and Storyteller-selected exact retained resumes now work. Broader prepared-definition generation remains later S3 work. This is an authority layer, not a second engine/queue.
-3. [Multiple suspended commitments](2026-09-19--02-24--multiple-suspended-commitments/FEATURE.md) — partial implementation; remaining work follows activity A1 and later lifecycle/capacity phases, not a competing coding route. Do not delete it as complete.
+
+The activity foundation now also owns the former multiple-suspended-commitments slice. Its checkpoint retains the unproved A -> B -> same A settlement, chronology, capacity and terminal-lifecycle acceptance, so there is one activity implementation route rather than two overlapping folders.
 
 ## Experience-first POC recalibration
 
