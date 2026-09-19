@@ -20,6 +20,7 @@ import { campaignActionTopic } from './topics';
 import type { CampaignRecord } from './persistence';
 import { decideActionExecutionTransition } from './action-execution-transition';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
+import { campaignClockHeld } from './holds';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
 export type ActionExecutionEventKind =
@@ -69,6 +70,7 @@ export async function settleActionExecution(
   const transition = decideActionExecutionTransition({
     state,
     execution,
+    clockHeld: campaignClockHeld(state),
     now,
     rollDie: () => randomInt(1, 21),
   });

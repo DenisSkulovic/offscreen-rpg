@@ -1,19 +1,19 @@
-import type { gameActionExecution } from '@offscreen/db/campaign-schema';
 import {
   immediateActionPlanSchema,
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
+import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { realMsUntilTick } from '@offscreen/game/time';
-import { campaignClockHeld } from './holds';
 import { projectCampaignClock } from './clock';
-import {
-  campaignCharacter,
-  campaignStoryFacts,
-  type CampaignRecord,
-} from './persistence';
+import type { CampaignRecord } from './persistence';
 import type { CampaignFollowUpIntent } from './follow-up-intents';
 
-type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
+type ActionExecutionTransitionInput = {
+  operationId: string;
+  plan: unknown;
+  revision: number;
+  targetTick: number;
+};
 
 export type ActionExecutionTransition =
   | {
@@ -40,7 +40,8 @@ export type ActionExecutionTransition =
  */
 export function decideActionExecutionTransition(args: {
   state: CampaignRecord;
-  execution: ActionExecutionRecord;
+  execution: ActionExecutionTransitionInput;
+  clockHeld: boolean;
   now: number;
   rollDie: () => number;
 }): ActionExecutionTransition {
@@ -53,7 +54,7 @@ export function decideActionExecutionTransition(args: {
     state,
     now,
     { kind: 'accepted-action', operationId: execution.operationId },
-    campaignClockHeld(state),
+    args.clockHeld,
     execution.targetTick,
   );
   if (projected.clock.elapsedTicks < execution.targetTick) {
@@ -69,8 +70,8 @@ export function decideActionExecutionTransition(args: {
   }
 
   const receipt = resolveImmediateAction(
-    campaignCharacter(state),
-    campaignStoryFacts(state),
+    characterSchema.parse(state.character),
+    storyFactsSchema.parse(state.storyFacts),
     plan,
     execution.operationId,
     args.rollDie,
