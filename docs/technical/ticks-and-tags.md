@@ -4,13 +4,15 @@ Status: exact arithmetic and the campaign-owned application clock are implemente
 
 ## Simulation clock
 
-The authoritative position is an integer tick. Action durations, recurrence cadences, deadlines inside the simulation and committed receipt positions use ticks. Zero-duration actions are explicit. A tick has no universal fictional duration and is not a demand to run code, persist a row or call a model on every tick.
+The authoritative position is an integer simulation tick. Action durations, recurrence cadences, fictional deadlines and committed receipt positions use ticks. Its fictional scale, where supplied, stays fixed within the campaign independently of pace. A tick has no universal fictional duration and is not one real second, a demand to run code, a database row or a model call. Zero-duration operations must be explicitly supported; missing action timing must not mean zero. Finite action timing and eligibility are prepared in [committed time](committed-time.md), not yet implemented by the immediate-action schema.
 
 Keep three separate contracts:
 
 - Simulation: tick position, due tick, action duration, check cadence and interruption boundaries.
 - Scheduling: a captured positive rational rate of ticks per real-time duration, real timestamp anchors, pause/hold state and retained fractional tick progress. Milliseconds are legitimate here because this measures the player's actual wait.
 - Presentation: optional content-owned mappings and labels for fictional calendars or scales. Without a mapping, display ticks. Never infer an hour from species, prose or an action name.
+
+Progression additionally requires accepted execution. No active commitment means no projection from elapsed wall time, even with an empty hold list. One-second countdown refreshes may display progress but grant no additional checks or time. See the committed-time contract for boundary caps and preparation latency.
 
 Settle earned progress at the old rate before changing pace. Preserve the fractional remainder explicitly; repeated pause/resume or speed changes must neither discard it nor earn it twice. Process due checks in deterministic order, stopping at the first interruption. A batch-size cap limits work per transaction, not the duration of fiction. Real response allowances remain real deadlines, separate from simulation targets.
 

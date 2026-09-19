@@ -85,8 +85,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1 complete/B2 implementing. Required mechanical turns now transfer an independently owned hold from generation/retry to the exact published player decision; a valid selection consumes that decision hold. Initial mechanical offers also hold immediately. Exact next action: continue the B2 failure/hold matrix, especially independent manual pause and publication failure. Do not enable provider execution. Storage C1/C2 remains independently ready.
-- Decision-hold slice base: `0d42400`; its implementation is the next commit on `main`.
+- Phase: B1 complete/B2 implementing. Generation-to-decision hold transfer exists, but the owner clarified that all progression requires deliberate accepted execution and short actions must consume time. Exact next action: implement [deliberate-time T1](../2026-09-19--22-13--deliberate-action-time/PLAN.md), then use its clock/intent-hold boundary for the remaining B2 failure/recovery matrix. Time/overlap belongs to that feature; do not build a second clock here. Do not enable provider execution. Storage C1/C2 remains independently ready.
+- Implemented decision-hold slice: `1d8c814`; preparation-intent gaps and idle clock drift remain. Design-only clarification is recorded in the linked feature.
 - Verification: focused offline mechanical-loop and recovery tests prove initial decision ownership, generation ownership, failure retention, same-generation retry, publication transfer to the exact offer, selection consumption and no held-time catch-up. All affected dependency builds and the regenerated test baseline pass. Paid failure/retry remains intentionally unexercised; no live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

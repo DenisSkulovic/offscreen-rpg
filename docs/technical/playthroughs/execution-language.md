@@ -13,14 +13,14 @@ The authoritative vocabulary is [Gameplay and Storyteller concepts](../../concep
 | Passage | The published account of Gary's answer | Recorded narration tied to committed chronology; does not automatically begin a new scene |
 | Decision point | The player can choose what to do about Gary's answer | A current authored offer requiring selection; no literary or clock boundary |
 | Offer | Talk Gary down / take cover | Public intentions and risks, backed by private admitted plans. Selecting a label is not submitting arbitrary effects. |
-| Immediate action | Take cover now | Automatic outcome or supported check; receipt/effects without an activity or tick advance. |
+| Short action | Take cover / inspect a badge | Target: finite accepted execution, explicit duration and atomic result. Current immediate-action code still commits without time. |
 | Activity | Repair, patrol, travel | Durable work over eligible simulated time. The rule determines progress, not the text label or displayed ETA. |
 | Boundary | Repair attempt due at tick 5 | A meaningful settlement position. No row, timer or model request is required for every intermediate tick. |
 | Event | A stranger reaches the landing | A committed development and, when required, a new interaction. Not synonymous with every failed roll. |
 | Report | “The gate was reached at dusk” | Explanation of committed history. The implemented report-only path does not create current choices, rewards or a hold. |
 | Chain | Travel → sleep → travel | Bounded accepted successor intentions with revalidated starts. Not one giant activity with duplicated rewards. |
 
-The current runtime has immediate actions, contribution and wait activities, reports and bounded accepted chains. Broader activity families and document retrieval remain feature work. Narrative-only prepared intervals also exist, but are not proof of authoritative travel mechanics.
+The current runtime has zero-time immediate actions, contribution and wait activities, reports and bounded accepted chains. [Committed time](../committed-time.md) prepares short timed actions and no-idle advancement; any existing zero-time trace is current-source evidence, not acceptance of that target. Broader activity families and document retrieval remain feature work. Narrative-only prepared intervals do not establish authoritative travel mechanics.
 
 ## Three axes that must not collapse into one
 
@@ -55,15 +55,17 @@ Each trace declares its own tick presentation and rate. Ticks have no universal 
 For a constant rate, a projection is:
 
 ```text
-eligible ticks = floor(retained fraction + elapsed unheld real time * rate)
+eligible ticks = floor(retained fraction + accepted unheld execution time * rate)
 next due boundary = rule/cadence/deadline, not the next browser refresh
 ```
 
-Settling those ticks still processes ordered rules and can stop earlier at an interruption. ETA derives from the remaining work and current assumptions; it does not award completion. In a contribution rule, a failed attempt may spend eligible effort time and earn zero. A literal “wait 20 minutes” can finish purely by elapsed time. A repair should not be represented as that wait to simplify scheduling.
+The projection is capped at the execution's stopping boundary; no execution means no advancement. Settling processes ordered rules and can stop earlier at an interruption. ETA derives from remaining work and current assumptions; it does not award completion. In a contribution rule, a failed attempt may spend effort time and earn zero. A literal “wait 20 minutes” can finish purely by elapsed time. A repair should not be represented as that wait to simplify scheduling.
 
-The current per-activity cursor is not the intended owner of world chronology. When A pauses and B runs for five ticks, resuming A must continue at the new world tick, with A's previous effort retained according to its rule. It must not reconstruct the world as `A.originalStart + A.localCursor`.
+The campaign owns world chronology; an activity's cursor owns only its eligible effort. When A pauses and B runs for five ticks, resuming A continues at the new world tick with A's saved effort. Timed conversation has the same relationship to suspended A. Never reconstruct the world as `A.originalStart + A.localCursor`.
 
 ## Who does what at a choice
+
+The sequence below describes the current immediate-action implementation. Target finite actions first accept an execution, then settle their result at the admitted boundary; safe early preparation uses a separately identified pending resolution. The [committed-time contract](../committed-time.md) owns this correction and its failure semantics.
 
 1. The application publishes a valid passage and its admitted offer together. The public view exposes intention/risk, not private DCs, all branches or future hidden events.
 2. The player submits an opaque offer/choice reference, expected state and command identity. The application authenticates and rechecks current authority, eligibility and resources.

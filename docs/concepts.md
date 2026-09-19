@@ -6,7 +6,7 @@ This is the vocabulary for product descriptions, feature plans and technical con
 
 A **Storyteller turn** is one bounded operation to prepare the next playable presentation of the current situation: inspect context, retrieve evidence when useful, compose narration, and propose the available choices or explicit absence of choices. The application validates and publishes the result. The player then sees the narration and, when a choice is requested, a **decision point**.
 
-The next player decision can lead immediately to another Storyteller turn. Several turns can develop the same conversation or confrontation without advancing the game clock. A turn can also hand back routine activity access, leave progression held, or establish that no choice is currently available. The game does not require a fixed alternation between turns and activities.
+The next player decision can lead to another Storyteller turn. Several turns can develop the same conversation or confrontation. Each selected in-world action has its own admitted time semantics; a rapid presentation does not imply a frozen conversation. Reading choices and generating prose consume no fictional time themselves. A turn can also hand back routine activity access, leave progression held, or establish that no choice is currently available. The game does not require a fixed alternation between turns and activities.
 
 “Turn” here describes the Storyteller's logical work; it does not mean a combat round, fixed duration, player action, model API call or literary division. Reports and memory maintenance are other Storyteller tasks with different outputs. Internal reasoning is not a player-visible gameplay unit or a transcript we need to preserve.
 
@@ -18,9 +18,10 @@ The next player decision can lead immediately to another Storyteller turn. Sever
 | Situation | The relevant present circumstances, plus currently authorized possibilities | Changes through committed actions/events/work; prose alone cannot fabricate mechanical progress |
 | Scene | The local dramatic or perceptual context: this conversation, confrontation, visit or stretch of experience | Can span multiple Storyteller turns and activities; no mandatory start/end state machine or clock duration |
 | Narration | Prose presenting a situation or explaining an outcome | Presentation, not an instruction that directly mutates game state |
-| Decision point | A currently open opportunity for the player to choose among authored options | Ends when consumed, replaced or otherwise closed; it need not advance time |
+| Decision point | A currently open opportunity for the player to choose among authored options | Deliberation holds fiction; the accepted action owns subsequent elapsed time |
 | Offer | The concrete authorized choices and their private admitted plans | A reusable activity offer can survive through fresh projections without a new Storyteller turn |
-| Action | The player's selected intention resolved by supported rules | An immediate action can resolve now; starting/resuming an activity commits work to perform over time |
+| Action | The player's selected intention resolved by supported rules with explicit time semantics | Atomic resolution does not imply zero fictional duration; starting/resuming an activity commits its work rule |
+| Execution | A durable accepted action or active activity that authorizes a bounded span of progression | Shared clock authority, not a second clock or a table required for each action family |
 | Activity | A durable commitment extended over eligible game time | Progress follows its admitted rules: contribution, literal waiting, or another supported process |
 | Event | A committed development in the world, such as someone arriving | May prompt a Storyteller turn; not every turn requires a new event |
 | Report | An account of an already committed result | Does not create current choices or take control of ongoing activity |
@@ -51,11 +52,11 @@ Existing code uses `result.scene` for a result envelope containing content and n
 At world tick 10 a stranger arrives while Mara repairs the beacon. The activity records its earned progress and the event creates an interaction hold.
 
 1. Storyteller turn T1 prepares narration of the arrival and offers “Ask who sent you” or a supported withdrawal. Its publication creates passage P1 and decision point D1.
-2. The player asks. The rules commit the exchange without advancing time. T2 uses that receipt, narrates the claim and offers inspection of the badge or disengagement. P2/D2 are still part of the same conversation.
-3. The player inspects the badge. The engine makes the admitted D20 check. T3 describes that actual result and offers the next supported response, P3/D3. It cannot reroll to obtain a more convenient story.
+2. The player asks. In this target example the offered exchange costs two simulation ticks; its execution advances the world to tick 12. T2 presents the receipt, narrates the claim and offers inspection of the badge or disengagement. P2/D2 are still part of the same conversation.
+3. The player inspects the badge for its admitted three ticks. The engine records the supported D20 result once and commits the outcome at tick 15. T3 describes that result and offers P3/D3. It cannot reroll to obtain a more convenient story.
 4. The player resolves the confrontation. T4 publishes the explicit activity handoff. The player selects authorized work or continues another available interaction.
 
-The first three choices can occur in rapid succession at tick 10. Model response time is real latency, not invented labor. This is one contextual scene with several Storyteller turns, passages and decisions. No larger literary structure needs to begin or finish.
+This is target behavior from the [committed-time contract](technical/committed-time.md); the current immediate-action path still spends zero ticks. The interrupted beacon earns no labor from the conversation, even though the world advances through it. Player deliberation and excess model latency add no ticks. This is one contextual scene with several turns, passages and decisions, without a larger literary structure.
 
 In another run, a wait finishes quietly: receipt, updated state, and perhaps the next authorized activity, with no Storyteller turn. A report can arrive later without opening a decision. A microbe sensing a changed environment uses the same distinctions without a conversation, town or human identity.
 

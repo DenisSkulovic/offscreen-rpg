@@ -1,6 +1,6 @@
 # How a story could unfold
 
-Use [Gameplay and Storyteller concepts](concepts.md) for the domain vocabulary. The Storyteller prepares a **turn**; the player receives narration and, when interaction is needed, a **decision point**. Multiple turns can share a scene and the same game-clock tick. Activities occupy eligible time. No chapters, literary boundaries or fixed turn durations are implied.
+Use [Gameplay and Storyteller concepts](concepts.md) for the domain vocabulary. The Storyteller prepares a **turn**; the player receives narration and, when interaction is needed, a **decision point**. Multiple turns can share a scene. Their selected actions consume declared fictional time; reading and model processing do not. Activities occupy accepted execution time. No chapters, literary boundaries or fixed turn durations are implied.
 
 The working approach is one generic progression flow. Walking, noticing a tower, making an agreement, spending an afternoon somewhere and meeting a stranger can all become moments in the same chronology. We do not need a dedicated software system for each verb. This overview connects the product; the [playthrough](playthroughs.md) shows it from the players' perspective.
 
@@ -34,7 +34,7 @@ See the [Seyda Neen worked trace](technical/playthroughs/local-opportunities.md)
 
 The game must support both narration → choice → narration → choice for a rapid sequence and an offered hours-long activity while the player is elsewhere. They are not a compulsory alternating cycle. In Red Mountain the Storyteller might provide several consecutive interactive scenes with no routine menu; in a quiet Seyda Neen situation it might authorize a broad prepared selection. These are situational choices, not map-name rules or permanent campaign modes.
 
-The Storyteller selects the intended dramatic rhythm within the campaign's preferences, accepted risk and supported mechanics. Scene resolution does not automatically return to activities, and an activity completion does not automatically request a scene. Immediate decisions add no artificial activity/timer; real work and travel retain their admitted time/progress. “Eat apple,” when offered, can be an immediate action rather than an extended activity. Generation latency must be represented honestly, not disguised as fictional waiting; required narration still needs valid generation or explicitly prepared content within budget.
+The Storyteller selects the dramatic rhythm within the campaign's preferences, accepted risk and supported mechanics. Scene resolution does not automatically return to activities, and activity completion does not automatically request a scene. Brief dialogue, observation and combat actions still have explicit time costs consistent with their fiction and selected pace; rapid scenes need not be timeless. Menu navigation consumes no fictional time. “Eat apple,” when offered, can use an atomic result without being a recurring work process. Generation latency is shown separately from the accepted action's remaining wait. See [deliberate time](time-and-autonomy.md) for the maintained target; short action durations remain unimplemented.
 
 ## What the game remembers
 

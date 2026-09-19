@@ -8,7 +8,7 @@ The desired feeling is a small absurd episode in which the player can be curious
 
 Current SpongeBob has Charisma 14, Wisdom 14, Dexterity 12, Intelligence 10; Persuasion and Perception proficiency +2; HP 10. Initial character facts are `gary-alert=true`, `under-cover=false`, `location=pineapple`. The generated-plan opening is the path traced here; the seed file also contains authored plans with different keys/wording. Do not accidentally combine their offers into one menu.
 
-For SB-01 through SB-05, every selected action is immediate. The campaign tick stays at 0 regardless of how many seconds the reader spends thinking. That is existing semantics, not a claim that a long conversation has a realistic physical duration. The later activity extension declares its own clock.
+For SB-01 through SB-05, the current source resolves every selected action immediately and keeps the campaign tick at 0. This is a known gap against [deliberate action time](../committed-time.md), not the intended conversation behavior. Reader/model time must remain free, but selected in-world exchanges must acquire admitted durations when that feature lands. The activity extension below uses the shared campaign clock. Its numeric event/resume ticks also need adjusting for the selected conversation durations; repair/tidying must not earn labor during those exchanges.
 
 ## SB-01: wake up and see actual options — current
 

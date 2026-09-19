@@ -1,6 +1,6 @@
 # Connected solo gameplay: implementation contract
 
-Status: maintained implementation contract. Its clock correction, authored quiet reuse, historical-report boundary, bounded accepted chains, horizon/pending cancellation and explicit post-scene re-entry are implemented; broader chain editing, world preparation and delegated decisions remain proposed. No live inference, deployment or multiplayer behavior is authorized here.
+Status: maintained implementation contract. Campaign clock arithmetic, authored quiet reuse, historical reports, bounded accepted chains and explicit post-scene re-entry are implemented. The owner's deliberate-time clarification requires a further [execution-permission and short-action correction](committed-time.md), prepared but not implemented. Broader chain editing, world preparation and delegated decisions remain separate. No live inference, deployment or multiplayer behavior is authorized here.
 
 Read the [gold session](playthroughs/harbor-session.md) alongside this contract. [Rules and activities](rules-and-activities.md) owns action/choice authority; [ticks](ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
 
@@ -11,7 +11,8 @@ Read the [gold session](playthroughs/harbor-session.md) alongside this contract.
 | Simulation scope | One solo campaign clock; one advancing actor commitment initially | Independent scene clocks or multiplayer authority |
 | Choice authorship | Each interactive publication explicitly supplies scene choices and activity authorization, including none | Options inferred from inventory, skill catalogue or route access |
 | Quiet reuse | Reproject only the current authored selection; no model task per menu/read/repeat | Reusing a consumed offer or copying a cached reward |
-| Fast scenes | Immediate actions have no artificial duration; new scenes can keep routines unavailable | Skipping rule-defined work or hiding model latency |
+| Fast scenes | Selected actions consume explicit fictional durations at the selected pace; new scenes can keep routines unavailable | Universal zero-time dialogue or charging model latency as fiction |
+| Idle state | No accepted execution means no clock advancement; waiting itself requires an authored accepted option | Time drifting through an untouched menu or empty plan |
 | Event absence | Hold at required interaction; no automatic player decision or response deadline in the first cut | Personality fallbacks or unattended combat |
 | Reports | Optional historical text can finish late and cannot change current choices/state | Treating ordinary consequence output as safe report-only output |
 | Planning | Standalone choices first, then finite explicit accepted chains | A planner inventing replacement work when blocked |
@@ -41,22 +42,22 @@ Current `story.revision` selects a committed passage sequence; `game_offer.narra
 
 ## Clock correction: the nearest implementation boundary
 
-Current source owns pace/anchor/fraction on `game_activity`; receipts and campaign tick use `plan.startTick + boundaryTick`. That is wrong after another activity runs. Move real-time progression authority to the campaign, and stamp every receipt at its actual world boundary. Never repair this with `max(oldTick, calculatedTick)`: that hides the rewind while leaving cadence/history wrong.
+The campaign now owns pace/anchor/fraction and world chronology. Each activity retains only its eligible effort and progress; receipts use actual world boundaries after other commitments advance. The next correction makes accepted execution an explicit input to clock projection, including finite scene actions. Never reconstruct world time from an activity's original start plus its local effort or use `max(oldTick, calculatedTick)` to conceal a rewind.
 
 Use discrete integer simulation ticks. The exact rational fraction measures progress **toward the campaign's next tick**, not fractional fictional work owned by an activity. An active instance accumulates whole eligible world ticks; it retains unfinished whole-tick effort toward its next attempt across suspension. Removing per-activity real anchors/fractions is an intentional prototype format change, not a migration/compatibility project.
 
 Example: at projected world 3 plus 1/2 tick, switching A to B records the switch at tick 3. A retains three eligible ticks; the campaign retains the half-tick clock remainder. B owns subsequent whole tick advances; the first can occur half a real tick later. This is explicit simulation quantization, not double credit: the fractional remainder is held once, not copied into both jobs. If finer physical timing is needed, choose a finer tick presentation/rate; do not quietly invent fractional authoritative event positions. A pause/resume without a switch retains that same fraction and A's effort.
 
-The clock runs through authorized quiet periods, including idle time, unless a declared domain hold applies. An idle interval earns no activity progress. Immediate decision/preparation periods in this solo proof hold simulation; their wall-clock thinking/model time earns no labor. Do not advance a narrative-only prepared-arrival flow and the mechanical campaign clock simultaneously; the legacy narrative rehearsal remains a separate path, not another scheduler for the same campaign.
+The clock advances only through accepted execution: short actions, activities or eligible accepted successors. No selected work means no advancement. Decision deliberation and excess preparation latency earn no ticks. A timed conversation advances world time without advancing suspended labor; its duration is owned by execution, not by how long the player reads or the model works. See [committed time](committed-time.md) for readiness and overlap. Do not advance a narrative-only prepared-arrival flow and the mechanical campaign clock simultaneously.
 
 Phase-one algorithm under the story lock:
 
-1. Read database time; project the campaign clock at its old pace/hold state. Keep this target distinct from the settled frontier.
+1. Read database time; project the campaign clock using its accepted execution, old pace and hold state, capped at the next stopping boundary. Without accepted execution, retain the current clock. Keep this target distinct from the settled frontier.
 2. Find the next due meaningful boundary from the active work's retained effort and current eligible interval. Translate it to a world tick, not its original start. Settle at most the existing 24-boundary batch limit.
 3. Commit receipts/effects in order. If a controlling event occurs, stop exactly there and establish the hold. Time projected beyond that boundary is not banked for later; reanchor at the observed real time without awarding unseen post-event work.
 4. If a batch limit leaves due work, preserve catch-up and reject/defer the requested control without pretending it applied. Do not throw away the committed batch. No later command may jump past that backlog.
 5. Once caught up, evaluate command freshness/permission and apply the change. A rejected switch does not suspend A, although already-due history can legitimately have settled first. Record accepted command identity and changed work/clock/offer state atomically.
-6. Schedule the next due obligation. Wakes carry identity/revision hints and recheck database authority; the browser never advances time. With no due obligation, no periodic timer is needed merely to make the idle clock project correctly.
+6. Schedule the next due obligation. Wakes carry identity/revision hints and recheck database authority; the browser never advances time. With no accepted execution, the clock is stationary and needs no periodic wake.
 
 Keep one advancing work pointer in the first phase. This corrects chronology without claiming cooperative allocation. Future obligations must join the same scheduler when introduced, not each rebuild time from their own start. Keep safe-integer tick bounds and existing exact rational arithmetic.
 

@@ -22,6 +22,8 @@ The catalogue contains:
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
+The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) is prepared coverage for the next progression change: timed conversation, no idle drift, early/late narration, pause, restart and exact retry. These cases are not yet in the runnable catalogue. Add/version them with their owning implementation phase and expose deterministic controls before marking them available. Current immediate-loop cases prove zero-time behavior only.
+
 ## Run lifecycle
 
 The Chamber launcher captures the Git commit, dirty-tree state and non-secret local environment identity. The client supplies the case/version, variant, driver and known scenario/profile/settings identities. The server snapshots the complete case definition into the run, fixes execution to offline, and initializes provider accounting to verified zero use.
