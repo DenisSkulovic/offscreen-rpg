@@ -66,6 +66,26 @@ const isoDateTime = z.iso.datetime();
 export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
+  activityReports: z
+    .array(
+      z.strictObject({
+        hookId: z.uuid(),
+        activityId: z.uuid(),
+        activityRevision: z.number().int().nonnegative(),
+        sourcePassageId: z.uuid(),
+        sourceRevision: z.number().int().positive(),
+        sourceTick: z.number().int().nonnegative(),
+        state: z.string().min(1),
+        generationId: z.uuid().nullable(),
+        generationState: z
+          .enum(['pending', 'running', 'succeeded', 'failed', 'uncertain'])
+          .nullable(),
+        generationFailureCode: z.string().nullable(),
+        publicationState: z.string().nullable(),
+        publicationFailureCode: z.string().nullable(),
+      }),
+    )
+    .max(50),
   storyteller: z
     .strictObject({
       profile: z.unknown(),

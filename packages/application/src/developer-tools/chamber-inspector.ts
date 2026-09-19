@@ -19,6 +19,8 @@ import {
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
+import { gameActivityReport } from '@offscreen/db/campaign-schema';
+import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import {
   story,
   storyPassage,
@@ -206,6 +208,36 @@ export function createChamberInspector(database: Database) {
             eq(storyResolution.baseRevision, snapshot.revision),
           ),
         );
+      const activityReports = await database.db
+        .select({
+          hookId: gameActivityReport.id,
+          activityId: gameActivityReport.activityId,
+          activityRevision: gameActivityReport.activityRevision,
+          sourcePassageId: gameActivityReport.sourcePassageId,
+          sourceRevision: gameActivityReport.sourceRevision,
+          sourceTick: gameActivityReport.sourceTick,
+          state: gameActivityReport.state,
+          generationId: gameActivityReport.generationId,
+          generationState: generation.state,
+          generationFailureCode: generation.failureCode,
+          publicationState: storytellerPublication.state,
+          publicationFailureCode: storytellerPublication.failureCode,
+        })
+        .from(gameActivityReport)
+        .leftJoin(
+          generation,
+          eq(generation.id, gameActivityReport.generationId),
+        )
+        .leftJoin(
+          storytellerPublication,
+          eq(
+            storytellerPublication.generationId,
+            gameActivityReport.generationId,
+          ),
+        )
+        .where(eq(gameActivityReport.storyId, id))
+        .orderBy(desc(gameActivityReport.createdAt))
+        .limit(50);
       const sourceGeneration =
         current.generationId === null
           ? null
@@ -234,6 +266,7 @@ export function createChamberInspector(database: Database) {
         activeResolution?.generationOutput,
       );
       return chamberInspectorSchema.parse({
+        activityReports,
         storyteller:
           current.storyteller == null
             ? null

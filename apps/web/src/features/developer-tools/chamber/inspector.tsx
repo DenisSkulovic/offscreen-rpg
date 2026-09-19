@@ -139,6 +139,51 @@ export function ChamberInspectorPanel(args: {
                 </li>
               ))}
             </ol>
+            <h2>Activity report hooks</h2>
+            {inspection.activityReports.length ? (
+              <ol>
+                {inspection.activityReports.map((report) => (
+                  <li key={report.hookId}>
+                    tick {report.sourceTick}, revision {report.sourceRevision} ·{' '}
+                    {report.state}
+                    <dl>
+                      <Field label="Hook ID" value={report.hookId} />
+                      <Field label="Activity ID" value={report.activityId} />
+                      <Field
+                        label="Activity revision"
+                        value={String(report.activityRevision)}
+                      />
+                      <Field
+                        label="Source passage ID"
+                        value={report.sourcePassageId}
+                      />
+                      <Field
+                        label="Generation ID"
+                        value={report.generationId ?? 'None'}
+                      />
+                      <Field
+                        label="Generation state"
+                        value={report.generationState ?? 'None'}
+                      />
+                      <Field
+                        label="Generation failure"
+                        value={report.generationFailureCode ?? 'None'}
+                      />
+                      <Field
+                        label="Publication state"
+                        value={report.publicationState ?? 'None'}
+                      />
+                      <Field
+                        label="Publication failure"
+                        value={report.publicationFailureCode ?? 'None'}
+                      />
+                    </dl>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p>No activity report hooks.</p>
+            )}
             <h2>Generation provenance</h2>
             {inspection.generation ? (
               <dl>

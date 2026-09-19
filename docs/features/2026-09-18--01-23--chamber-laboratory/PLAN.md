@@ -506,7 +506,7 @@ A second radically different setting should eventually prove the same engine ass
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 1 is implemented and landed on `main`. Do not start Phase 2 without returning to its planned scenario-fixture scope.
+- Current phase and exact next action: Phase 1 is implemented and landed on `main`. Its read-only inspector has since gained activity-report hook/source and generation/publication correlation as required by U2b QA. Do not start Phase 2 without returning to its planned scenario-fixture scope; deterministic delay/failure controls remain separate planned work.
 - Base/reviewed Git revision: Phase 1 predates the current DM-loop work and is part of repository history.
 - Relevant uncommitted changes: none owned by this feature checkpoint.
 - Actual checks/results: `@offscreen/contracts` tests including catalog completeness; API bootstrap proves default `createApp` does not mount `/api/chamber-tools`; story core/http/start inspector tests in the full stories run; `stories-browser.integration.js` 4/4; `node dist/dev/chamber.js --smoke` passed; targeted Prettier/ESLint and `python scripts/check_docs.py`. Typecheck via package `tsc` for contracts/server/api/web. Did not rerun the entire combined `stories.integration.js` suite after the last browser locator fix (browser suite re-ran cleanly). `pnpm` was invoked as `corepack pnpm`.
