@@ -141,6 +141,20 @@ function consequence(
   });
 }
 
+function report() {
+  const base = consequence();
+  return prepareStorytellerTask({
+    task: 'report',
+    source: {
+      ...base.source,
+      hookId: randomUUID(),
+    },
+    profile: base.profile,
+    execution: base.execution,
+    context: base.context,
+  });
+}
+
 function mechanicalOpening() {
   const base = opening();
   return prepareStorytellerTask({
@@ -399,6 +413,27 @@ test('captured schemas expose only the result for the requested task', () => {
   }
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
+});
+
+test('historical reports have a strict prose-only task boundary', () => {
+  const task = report();
+  const result = scriptedStorytellerResult(task);
+  assert.equal(result.report.version, 1);
+  assert.match(result.report.paragraphs[0] ?? '', /committed result/);
+
+  const schema = JSON.stringify(task.request.outputSchema);
+  assert.match(schema, /"report"/);
+  assert.doesNotMatch(schema, /"scene"|"currentNotes"|"arrivalNotes"/);
+
+  assert.throws(() =>
+    validateStorytellerResult(task, {
+      ...result,
+      currentNotes: [],
+    }),
+  );
+  assert.throws(() =>
+    validateStorytellerResult(task, scriptedStorytellerResult(consequence())),
+  );
 });
 
 test('context rejects inconsistent current evidence and unpublished future evidence', () => {

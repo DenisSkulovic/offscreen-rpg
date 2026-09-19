@@ -46,6 +46,11 @@ export async function publishStorytellerResult(
     }
     const task = storytellerTaskSchema.parse(record.input);
     const result = validateStorytellerResult(task, record.output);
+    if ('report' in result) {
+      // Historical publication is added with the durable report hook. Until
+      // then no report task is admitted, and it must never fall into scene code.
+      throw new StoryError('invalid');
+    }
     if (task.task === 'opening') {
       await setPublication(tx, id, 'published');
       return;

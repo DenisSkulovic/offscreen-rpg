@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import type { StorytellerTask, StorytellerResult } from '../tasks';
+import type {
+  StorytellerReportResult,
+  StorytellerSceneTask,
+  StorytellerTask,
+  StorytellerResult,
+  StorytellerOutput,
+} from '../tasks';
 import { storytellerResultSchema, validateStorytellerResult } from '../tasks';
 import authoredRehearsal from './content/narrative-rehearsal.json';
 import {
@@ -70,7 +76,9 @@ function selectedBranchResult(
   return branch.result;
 }
 
-function scriptedNarrativeResult(task: StorytellerTask): StorytellerResult {
+function scriptedNarrativeResult(
+  task: StorytellerSceneTask,
+): StorytellerResult {
   const premise = task.context.premise.premise.toLocaleLowerCase('en-US');
   const matches = rehearsal.matchTerms.some((term) =>
     premise.includes(term.toLocaleLowerCase('en-US')),
@@ -98,8 +106,30 @@ function scriptedNarrativeResult(task: StorytellerTask): StorytellerResult {
 
 /** Pure repeatable no-provider source. Authored worlds live in validated content. */
 export function scriptedStorytellerResult(
+  task: Extract<StorytellerTask, { task: 'report' }>,
+): StorytellerReportResult;
+export function scriptedStorytellerResult(
+  task: StorytellerSceneTask,
+): StorytellerResult;
+export function scriptedStorytellerResult(
   task: StorytellerTask,
-): StorytellerResult {
+): StorytellerOutput;
+export function scriptedStorytellerResult(
+  task: StorytellerTask,
+): StorytellerOutput {
+  if (task.task === 'report') {
+    return validateStorytellerResult(task, {
+      version: 1,
+      report: {
+        version: 1,
+        title: task.context.selected?.label ?? 'Earlier',
+        paragraphs: [
+          task.context.resolution?.receipts[0]?.text ??
+            'The earlier committed result remains recorded.',
+        ],
+      },
+    });
+  }
   if (task.context.mechanicalOpening && task.task === 'opening') {
     return validateStorytellerResult(task, scriptedMechanicalOpening(task));
   }

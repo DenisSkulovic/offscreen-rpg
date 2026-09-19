@@ -35,6 +35,10 @@ export async function publishStorytellerNotes(
     throw new Error('Missing storyteller result');
   }
   const task = storytellerTaskSchema.parse(record.input);
+  if (task.task === 'report') {
+    // Reports are historical display artifacts and can never mutate continuity.
+    throw new Error('Historical reports do not publish continuity notes');
+  }
   const result = validateStorytellerResult(task, record.output);
   const evidence = taskEvidence(task);
   if (input.sourcePart === 'current') {

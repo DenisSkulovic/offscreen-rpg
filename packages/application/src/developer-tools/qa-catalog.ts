@@ -491,7 +491,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
   }),
   defineCase({
     id: 'historical-report-vs-scene',
-    version: 1,
+    version: 2,
     name: 'Historical report versus controlling scene',
     purpose:
       'Prove that delayed report-only narration cannot replace current gameplay while a required scene can deliberately hold it.',
@@ -500,10 +500,10 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     availability: {
       state: 'planned',
       reason:
-        'U2b report-only task storage and historical publication are not implemented yet.',
+        'The strict report-only task exists, but U2b hook storage and historical publication are not implemented yet.',
     },
     prerequisites: [
-      'U2b strict report-only tasks and historical publication are implemented.',
+      'U2b receipt+hook admission and historical publication are implemented on the existing strict report-only task.',
       'The Chamber can delay, fail, retry, and inspect report and controlling-scene hooks independently.',
     ],
     initialScenario: 'beacon-watch.v1',

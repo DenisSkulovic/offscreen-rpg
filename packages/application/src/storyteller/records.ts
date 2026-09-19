@@ -6,7 +6,7 @@ import type { Transaction } from '../outbox/index';
 import { enqueue } from '../outbox/index';
 import {
   storytellerTaskSchema,
-  storytellerResultSchema,
+  storytellerOutputSchema,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import { createGenerations } from '../generations/index';
@@ -19,7 +19,7 @@ export function storytellerGenerations(database: Database) {
   return createGenerations(database, {
     kind: storytellerKind,
     input: storytellerTaskSchema,
-    output: storytellerResultSchema,
+    output: storytellerOutputSchema,
   });
 }
 export async function insertStorytellerTask(
