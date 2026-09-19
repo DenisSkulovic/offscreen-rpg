@@ -111,6 +111,16 @@ The canonical-file feature brings a short return scene and disposable-context pr
 
 ## Three different caches
 
+### Active-scene continuity and disposable task conversations
+
+Target behavior, prepared in [context recipes R1–R3](../features/2026-09-19--23-59--storyteller-context-recipes/PLAN.md): each task reconstructs an immutable request from persistent state and evidence. Tool-round transcripts are task-local; useful findings survive only through admitted source-linked artifacts. This does not imply summarizing every prior turn. Preserve the detailed ongoing interaction while its wording, choreography, commitments and unresolved observations matter. A fight or nonhuman exchange spanning fifteen turns may require all fifteen concise passages.
+
+The current six-optional-passage selector is a prototype recency limit, not the desired scene policy. The application must identify required active evidence before optional history selection and expose missing/overflow coverage explicitly. History, current exact state and attributed claims have distinct roles. A summary of a completed portion must declare its coverage and preserve unresolved details; it cannot silently replace required evidence or alter mechanical state. Archived discovery remains owned by the memory feature.
+
+Request purposes select their own templates, schemas and limits. Existing opening, continuation, consequence and report tasks remain one-shot. Separate models or agents are optional implementations of a demonstrated need, not a fixed pipeline every decision must traverse. All future retrieval, repair and maintenance consumes the existing attributable operation budget.
+
+Measure scene-wide cost as cumulative requests, repeated input, generated output and attributable maintenance. Preserve exact bytes and unknown token estimates until a tokenizer is verified. Potential common-prefix reuse is an offline structural fact; a provider cache hit or discount requires provider evidence. Rebuilding from durable evidence can preserve identical prefixes without preserving a server-side conversation.
+
 | Cache | What it saves | Correctness rule |
 | --- | --- | --- |
 | Application data/context | Database reads, assembly and tokenization work | Key by story, visibility, source revisions and schema/prompt versions; expire or invalidate when dependencies change. |

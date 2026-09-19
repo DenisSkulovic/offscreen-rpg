@@ -6,6 +6,8 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
+Next after the owner's model switch: [Storyteller context recipes R1](2026-09-19--23-59--storyteller-context-recipes/PLAN.md), an API-only audit across request purposes and a fifteen-turn continuity fixture. This is the immediate prompt/context investigation slice; deliberate-time and canonical-memory dependencies below remain owned by their existing features. R2 coordinates provenance fixes with memory Phase 1 rather than duplicating it.
+
 Implementation is active under the owner's instruction. Follow this route one coherent slice at a time and commit/push before the next. Do not launch another agent, enable providers or broaden into unrelated unfinished features.
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
@@ -14,6 +16,7 @@ Nearest prepared work: [deliberate action time T1](2026-09-19--22-13--deliberate
 
 | Feature | Phases | Ownership |
 | --- | --- | --- |
+| [Storyteller context recipes](2026-09-19--23-59--storyteller-context-recipes/FEATURE.md) | R1 purpose/packet audit → R2 active continuity → R3 stable prefix evidence | Disposable task conversations, detailed ongoing scenes, purpose-specific context and measured cache opportunity |
 | [Deliberate action time](2026-09-19--22-13--deliberate-action-time/FEATURE.md) | T1 accepted-execution clock → T2 finite actions → T3 safe overlapping preparation | No idle drift, time-bearing story selections, independent execution/narration readiness |
 | [Calendars and world deadlines](2026-09-19--22-29--calendars-and-world-deadlines/FEATURE.md) | K1 bounded date definitions → K2 shared world boundaries | Optional ordinal/custom dates, exact timed plots and consequential season transitions; K2 integrates after T2, before timed-plot T3 acceptance |
 | [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1a effective profiles → B1b recipes/preflight → B2a accounting/B2b windows and holds → B3 memory integration → B4 evidence | Configurable account/tier/context/model limits, cumulative work/spending, safe pause/reset recovery |

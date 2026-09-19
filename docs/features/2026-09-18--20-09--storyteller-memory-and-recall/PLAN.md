@@ -22,6 +22,8 @@ This feature consumes storage C1/C2 and defines no second content store. C3 crea
 
 ## Phase 1 — Separate provenance from prompt loading
 
+Coordination: [context recipes R1/R2](../2026-09-19--23-59--storyteller-context-recipes/PLAN.md) adds the immediate multi-purpose packet audit and active-scene continuity oracle. Implement provenance/body separation and current-prose deduplication once. Those pure context fixes can be extracted for existing passage storage before C2 if needed by R2; canonical document publication and archived recall keep their C1/C2 dependencies. Update this phase's checkpoint when work is consumed there.
+
 Outcome: note-source growth and duplicated current prose no longer create avoidable overflow; required material still fails closed when genuinely too large.
 Dependencies: storage C2 document references and the implemented direct action receipt/follow-up boundary. No new agent runner.
 

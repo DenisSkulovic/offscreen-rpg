@@ -1,0 +1,66 @@
+# Implementation plan
+
+Feature: [Storyteller request purposes and active-scene continuity](FEATURE.md).
+Execution scope: prepared for the owner's next coding turn. Backend and offline artifacts only. Commit/push each coherent phase. No model calls, new agents or UI work.
+
+## R1 — Request-purpose inventory and reproducible packet audit
+
+Status: next ready phase. No canonical-storage dependency; use existing task snapshots and local fixtures.
+
+Outcome: one command captures comparable packets for every implemented purpose, with explicit task/template/context identities and zero provider transport. This is the immediate continuation of the held-opening work, before larger gameplay development resumes.
+
+Owners to read:
+
+- `packages/storyteller/src/tasks/index.ts`, `tasks/resources.ts`: purpose schemas, instructions, one-round envelope.
+- `packages/storyteller/src/context/index.ts`: projection and bounded selection.
+- `packages/storyteller/src/providers/openrouter.ts`: exact packet builder and inspection.
+- `packages/application/src/storyteller/context.ts`, `openings.ts`, `dispatch-review.ts`: captured evidence, admission and hold.
+- `tools/chamber/src/main.ts`: existing API-only opening probe and temporary export.
+- `packages/application/src/developer-tools/qa-catalog.ts`: maintained acceptance catalogue.
+- Relevant Storyteller tests and the memory Phase 1 plan.
+
+Bounded edits:
+
+1. Define an explicit, typed purpose description beside task composition: intended input, allowed output, applicable prompt fragments and context-policy version. A small exhaustive mapping or functions suffice; no plugin registry or generalized agent framework. Preserve existing task kinds and accounting identities. Future purposes are documentation only.
+2. Extract the API-only packet probe into a cohesive module. Allow explicit case/profile selection and generation-specific output paths. Do not overwrite the only previous artifact. Retain normal authentication, origin checks, immutable admission, hold and zero-attempt assertion. Browser imports/startup and web builds must not be prerequisites of the backend command.
+3. Add local snapshot cases for narrative opening, mechanical opening, continuation, consequence and report. Mark pure task captures versus HTTP/worker captures honestly; do not claim a hand-built snapshot proves end-to-end gameplay.
+4. Export a machine-readable manifest and concise readable comparison: source revision, purpose, prompt/context/schema versions and hashes, request/message/schema bytes, loaded/omitted evidence and reasons, exact common-prefix bytes for comparable messages. Compare content by stable evidence handle; do not infer tokenizer identity from bytes. Preserve unknown token/cost/cache-hit fields.
+5. Construct a chronological fifteen-turn confrontation fixture with early required clue, attributed false claim, changed holder and unresolved intention; include a nonhuman variation. Establish expected/forbidden evidence independently of the selector. Initially report the existing six-optional-passage loss as a known failing acceptance condition, not a successful continuity test.
+6. Correct prior audit claims: `current` is a valid opening-note source in the original validator. Removing all opening notes is an intentional functionality change, not a necessary consequence of absent previous passages. Document the current restriction and assess restoring useful opening memory under the purpose contract; do not silently discard notes to make schemas smaller.
+7. Add/version backend QA coverage and explain the audit command in development docs. Keep raw story artifacts private/local; sanitized summaries may be committed if they contain only authored fixtures.
+
+Evidence: focused pure checks for deterministic comparison and source coverage, plus the existing API held-opening probe when useful. No broad suite needed. Capture current failures explicitly; checks remain optional under repository policy.
+
+Exit: the next maintainer can reproduce current request shapes and long-scene context loss without a browser or provider, and has a bounded R2 acceptance oracle.
+
+## R2 — Preserve the active scene within a bounded request
+
+Dependencies: R1 oracle. Coordinate with memory Phase 1 for provenance/body separation and duplicate-current removal. Those representation fixes may be extracted from its storage-dependent scope for existing passages; update that plan rather than build two selectors. Canonical publication and archived retrieval still depend on C1/C2.
+
+Owners: application context loading and capture, Storyteller context selection/manifest, generation admission and QA. Use existing persistence for exact source references; no second history store.
+
+Introduce versioned context scope containing story revision, active source range and explicit required handles. Scope is private continuity metadata; only application admission may accept or replace it. Initial fixtures provide explicit scope; production defaults conservatively retain a bounded recent interaction and never infer a scene ended from passage count alone. Automatic semantic boundary inference remains unimplemented and must be labelled as such.
+
+Load the declared range within strict candidate/byte limits rather than querying seven rows and hoping later selection recovers omitted sources. Preserve required active material and current exact state; select optional older evidence under the same request envelope. Source selection includes accepted intentions/outcomes, not just disconnected prose or opaque response IDs. Chronology claims remain attributed; hidden future material is excluded.
+
+When a declared range is too large, hold with coverage diagnostics. Never truncate the query and present partial coverage as complete. A future condensed segment requires source coverage, version and unresolved-detail retention; this phase does not create paid summaries. Scope updates use the current story revision and existing publication transaction; a late result cannot reset scope or drop a newer fact. Preparation/retry cannot reroll mechanics.
+
+Exit: fifteen-turn confrontation and microbe traces preserve their required continuity within a declared envelope; overflow, stale scope, missing source and restart produce precise outcomes. No claim of unlimited scenes or live quality.
+
+## R3 — Stable context layout and cache-aware evidence
+
+Dependencies: R2 stable selection and source manifest. Owners: request composer, provider inspector and cost evidence; use the existing bounded-cost ledger.
+
+Order stable instructions, task contract and profile deterministically, then stable scene background/history where applicable, then changing state and selected intention. Preserve chronological meaning and instruction hierarchy. A profile/rule revision intentionally invalidates affected prefix reuse. Do not keep stale state, pad requests or mix incompatible task schemas for caching.
+
+Report potential reusable-prefix growth across the fixture sequence and cold cumulative input bounds. Actual hits and cache-write prices remain unknown until the chosen provider supports and reports them. Route-specific controls and pricing belong to a separately verified live configuration; no provider switch or live cache-warming probe in this phase.
+
+Exit: deterministic assembly preserves useful common material across rapid turns; artifacts distinguish potential reuse from billed savings and account for all request purposes.
+
+## Current checkpoint
+
+- Base reviewed: `6ac7173`; planning changes only. User requested documentation before switching models for implementation.
+- Exact next action: R1 request-purpose inventory and API-only multi-case packet audit. Inspect current source and Git status; reuse the existing held dispatch builder and accounting boundary.
+- Known gaps: six optional recent passages, duplicated current prose, mandatory raw note sources, no admitted active-scene scope, no tool/multi-round runtime. Opening-note removal needs semantic review before optimizing further.
+- Verification: source/design inspection only for this handoff; no new runtime checks. Existing successful opening probe does not prove fifteen-turn continuity.
+- Model spend: $0 application-provider spend; cumulative account usage unverified.
