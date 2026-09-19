@@ -1,6 +1,6 @@
 # Account usage policy, windows and recovery
 
-Status: B1a implements the pure schemas, strictest-limit/allowlist resolver, provenance and synthetic profiles. Task capture, account selection, durable window debits, holds and billing remain prepared work. The [bounded-cost feature](../features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) owns delivery. [Context and cost](context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
+Status: B1 implements the pure schemas, strictest-limit/allowlist resolver, provenance, synthetic profiles and fail-closed task admission. A provider task captures its complete resolved authority, route match and narrowed envelope; started stories retain that authority for later tasks. Commercial account selection, durable window debits, holds and billing remain prepared work. The [bounded-cost feature](../features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) owns delivery. [Context and cost](context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
 
 ## Distinct authorities
 
