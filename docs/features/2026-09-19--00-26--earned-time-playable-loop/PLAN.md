@@ -6,6 +6,8 @@ Implementation owner: Codex for the current bounded slices.
 
 ## Dependencies and sequencing
 
+The owner's later routine/scene clarification makes the next experience proof a quiet admitted sequence with optional event escalation. After activity identity/clock correction, follow [activity foundation phase 2](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md) with [bounded autonomy](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md). Ordinary completion must not require narration. The beacon remains evidence for earned contribution; it is not the complete contract for quiet life, and broad cooperation should not delay the first no-generation sequence.
+
 Approve the player flow first, then approve only the contribution/runtime subset needed from [activity processes](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md). Do not wait for traversal, every process family or long-story memory. The existing immediate receipt/DM-turn boundary is reused rather than replaced. Prove the interruption with a present player first; absence-time choice is owned by [bounded autonomy and re-entry](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) and must not be implied by the process runtime.
 
 ## Phases

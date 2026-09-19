@@ -2,7 +2,7 @@
 
 Simulation time is measured in ticks. A tick is an ordered unit of progression, not an hour, a second, a narration beat or an LLM call. Real elapsed time determines how quickly eligible ticks advance under the selected pace. A world's calendar and duration labels are optional content projections over ticks; a microbe or distributed consciousness does not require human calendar concepts.
 
-Actions declare durations and rule cadences in ticks. Different checks can be due at different tick boundaries. The runtime may batch quiet ticks or wake at the next meaningful boundary, but must preserve the same ordered consequences and stop at the first interruption. Choosing an efficient scheduler does not change the simulation's time model.
+Extended activities declare supported progress rules and cadences in ticks; immediate actions need no artificial duration. Different checks can be due at different boundaries. The runtime may batch quiet ticks or wake at the next meaningful boundary, but must preserve ordered consequences and stop affected work at an interruption. Choosing an efficient scheduler does not change the simulation's time model.
 
 ## Pace
 
@@ -33,6 +33,22 @@ Travel expectations must follow established spatial facts, movement conditions a
 An interruption must preserve the journey's actual progress and establish the resulting situation consistently for every affected character. Elapsed duration is not universally proportional to distance: a route can include stationary waiting, varying terrain or a discrete transition such as a portal. The initial movement/progress rule remains to be designed; do not implement a universal straight-line interpolation merely because it makes animating a map marker easy. Paused real time must not create fictional travel progress.
 
 ## Response windows and absence
+
+### Routine execution and event escalation
+
+Design direction, not current runtime coverage: an admitted routine progresses through code, including applicable D&D checks, bounded effects, ordinary completion and transitions already authorized by the player. Deterministic progress or pure waits need no gratuitous dice. Quiet summaries use recorded facts and templates; opening the page, checking progress or starting the next admitted routine must not implicitly request generation.
+
+For example, rest followed by patrol can proceed without inference once both entries have supported, accepted mechanics. A patrol contract may cover routine outcomes and known costs within a declared area/risk envelope. It cannot settle arbitrary villains, invent permanent NPCs or resolve unknown tactics without a supported rule or Storyteller interpretation. A check that nominates an unusual development requests a scene; it does not by itself invent that development's facts.
+
+Occurrence policy is separate from productivity and from writing style. Supported checks, meaningful state changes or admitted plot leads may nominate developments. Selection considers relevance, repetition/cooldown, pending events and allowed generation cost. No model call is needed merely to ask whether a model call is needed. Increasing clock speed or polling frequency must not add random opportunities, and starting the same routine again must not reset its event exposure or bypass a cooldown. No event is a valid result; a surprise quota would turn quiet life into compulsory drama.
+
+Before handing off, commit resolved effort/costs and stop incompatible progress at the event boundary. The proposed first solo policy holds that scene's clock during event preparation and a declared response opportunity. If generation is unavailable, hold visibly or apply only an already admitted safe rule; do not narrate the threat away. An optional, not-yet-established story opportunity can be declined without undoing facts, but committed hazards cannot be dropped because generation is inconvenient. Broader continuing-danger and group policies require separate design.
+
+### Bounded plans for absence
+
+The proposed queue is a small sequence of intentions over supported activities, with an explicit horizon or terminal condition and risk/resource limits. Entries are conditional instructions, not promises that future prerequisites will hold. Admission of each next entry rechecks the then-current actor, location, resources, capacity and unresolved decisions. Waiting entries claim no future resources by default. Unsupported or blocked entries stop with a reason unless the player explicitly chose a supported skip/fallback.
+
+An event suspends incompatible queued transitions; the next activity cannot start behind an unresolved fight. After resolution, revalidate remaining intentions and resume only when captured policy permits. Queue completion produces a quiet recap and an explained idle state or an explicitly admitted continuing routine. It does not synthesize a new agenda. Maximum unattended horizon, response policy and permission for new generation are independent settings. Detailed queue admission and recovery belong to the [autonomy plan](features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md).
 
 A development can request a response by a visible deadline. If a player does not answer, a permitted fallback based on the character and situation lets the story continue. Autonomy settings define the kinds of decisions that can be delegated; personality does not override those permissions.
 

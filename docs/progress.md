@@ -4,6 +4,8 @@
 
 **Lifecycle:** pre-POC, solo development on `main`. Live inference remains disabled. Provider adapters and accounting exist, but no live route, balance or model quality is verified. A stored key and the original $10 deposit are not authorization to spend.
 
+**Experience direction:** extended activities carry admitted routines without inference; meaningful developments selectively hand off to Storyteller scenes. The next proposed proof after clock/identity correction is a bounded quiet sequence with an optional event, jointly owned by activity foundation phase 2 and [bounded autonomy](features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md). Queue admission, recurring routine rules, selective scene generation and zero-task quiet completion are unimplemented. In particular, current completion requests consequence narration automatically. Broad cooperation follows this proof; illustrative rest/patrol durations are not requirements.
+
 ## Implemented boundary
 
 | Area | Exists now | Important limit |

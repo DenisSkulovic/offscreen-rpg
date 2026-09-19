@@ -8,7 +8,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Current design priority
 
-1. [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owner-requested architecture redesign: separate work from participants, enforce capacity/eligibility, fix clock ownership, and define transfer, failure, deadlines and distinct process semantics. Expanded design is proposed; contribution mechanics already exist.
+1. [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owner-requested architecture redesign: extended work, participants, eligibility/capacity and clock ownership. After identity/time correction, first prove quiet routine → permitted next routine → optional scene jointly with bounded autonomy; broader cooperation follows. Expanded design is proposed; contribution mechanics already exist.
 2. [Multiple suspended commitments](2026-09-19--02-24--multiple-suspended-commitments/FEATURE.md) — partial implementation retains A while B starts; remaining lifecycle/capacity work follows the activity foundation plan. Actual B settlement, chronological correctness and browser acceptance remain unproven by the current retention test.
 
 ## Experience-first POC recalibration
@@ -19,7 +19,7 @@ Recommended order:
 
 1. [Storyteller agency and taste](2026-09-19--00-26--storyteller-agency-and-taste/FEATURE.md) — replace the generic assess loop with state-responsive, genre-aware, human-reviewed turns and explicit anti-slop acceptance.
 2. [Earned-time playable loop](2026-09-19--00-26--earned-time-playable-loop/FEATURE.md) — connect one real-time commitment, interruption, immediate D&D consequence, resumption/completion and earned result. It consumes only the minimal approved subset of the existing activity-process proposal.
-3. [Bounded autonomy and re-entry](2026-09-19--00-26--bounded-autonomy-and-reentry/FEATURE.md) — make absence safe and legible through explicit delegated authority, captured fallbacks, exactly-once deadlines and attributed return recaps.
+3. [Bounded autonomy and re-entry](2026-09-19--00-26--bounded-autonomy-and-reentry/FEATURE.md) — owns the proposed bounded routine queue, selective event escalation, separate execution/decision/spending permission, captured fallbacks and attributed return recaps. Its quiet-plan/event proof pairs with activity foundation phase 2.
 4. [Inhabitable play and return](2026-09-19--00-26--inhabitable-play-and-return/FEATURE.md) — make the current scene, ongoing life, return recap and recovery states feel like a game rather than an inspector.
 5. [Premise to playable campaign](2026-09-19--00-26--premise-to-playable-campaign/FEATURE.md) — after the play contracts are convincing, replace developer-authored mechanical seeds with reviewed setup proposals for radically different premises.
 

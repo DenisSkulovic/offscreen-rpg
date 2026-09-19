@@ -188,6 +188,20 @@ An abstract entity might spend time forming connections, accumulating influence 
 
 The software must therefore support durable activities, relevant state and consequences without assuming that every character has a wallet, armour slots, employment or human-scale movement.
 
+## Routine-to-scene benchmark
+
+Owner brainstorming on 2026-09-19: Batman in Gotham selects rest and then crime patrol before the player sleeps. Eight in-game hours of rest, a day's plan and a crime boss carrying a katana are illustrative, not mandatory mechanics or event content.
+
+The admitted rest completes under its rules. The next permitted routine rechecks readiness and starts. Routine patrol checks record only outcomes supported by its captured scope; there are no fresh model calls for checks, logs, ordinary completion or a permitted queue transition. Preparing the plan may have needed generation earlier. One run can remain quiet throughout and still yield meaningful earned results.
+
+In another run, a due occurrence or relevant state condition requests an unusual development. The runtime commits work up to that boundary and records one escalation. The Storyteller prepares a situation and meaningful options from those facts, such as the confrontation. It must not retroactively decide that the patrol was never performed or that a previously committed reward was unearned. The detailed scene and subsequent attempts use the same character/resources as the routine.
+
+If the player is away, the visible policy determines whether to hold or apply a captured permitted fallback after a response window. No assumed consent to a whole generated battle follows from “patrol.” After resolution, the remaining plan is revalidated; it may continue, be blocked or need replacement. Returning explains which results came from routine execution and which decisions were delegated.
+
+Contrast with the Seyda Neen life: conversation with a guard can reveal a destination immediately, while walking to Balmora takes actual time at the selected pace. Three real hours is an illustrative experience, not a global duration. Arrival commits only when the route rule succeeds. The trip can be entirely uneventful. A microbe's growth followed by migration, or an abstract entity's connection work followed by contemplation, should fit without a patrol/combat/calendar subsystem.
+
+The benchmark fails if it requires a model call to end rest or start patrol, if a fixed probability effectively guarantees a constant string of dramatic interruptions, if restarting routines farms fresh event rolls, or if an unresolved event is skipped by the queue. It also fails if every positive consequence is forced through a timer: a real gift or supported immediate discovery is still a legitimate change.
+
 ## Benchmark questions
 
 When evaluating future features, ask:

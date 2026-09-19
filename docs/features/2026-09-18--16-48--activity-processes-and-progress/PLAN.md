@@ -16,6 +16,7 @@ Reviewed source at `1ef5a81`. No runtime repair is claimed by this design pass.
 | `tools/api-integration/test/storyteller.integration.ts` | A → B → A marks B complete and restores the earlier offer through database writes. It proves retention, not real B settlement, fresh public resumption or monotonic chronology. |
 | `packages/contracts/src/campaign.ts` | Every activity needs an earned/required meter. Participants, blockers, deadlines and other rule views are absent. |
 | `packages/db/src/schema/campaign.ts` | Activity rows already have stable instance IDs. Campaign character/pointer are single-character constraints. Transactions, command and roll receipts are useful foundations. |
+| `packages/application/src/campaign/activities.ts` consequence handoff | Every non-running settlement, including quiet completion, calls `requestConsequenceNarration`. Zero provider calls with the offline adapter does not prove a routine path can avoid generation-task admission. |
 
 Preserve exact rational clock arithmetic, private plans behind opaque offers, recorded evidence/dice/effects, atomic effects/outbox and separately recoverable narration. Delete disposable prototype formats instead of adding compatibility shims.
 
@@ -70,7 +71,7 @@ Bound settlement batches and persist catch-up. A control is acknowledged only af
 
 Suspended workers earn nothing, but work may still decay, expire or advance autonomously. Schedule due obligations, not only running participants. Initially implement world deadlines and active-effort durations here; real response allowances remain owned by autonomy. Manual campaign pause freezes the shared domain and preserves deadlines. Missing repairable conditions block; irrecoverable conditions invalidate only under explicit policy.
 
-Narration must not implicitly freeze independent work by occupying the one offer slot. Initially serialize scene mutations and coalesce receipts for one narrative task; declared decision holds freeze the whole initial domain. Independent permitted work can continue, staling unpublished narrative results. Retry prepares fresh context without rerolling. Bound backlog/regeneration and show a system hold if unable to catch up. Demonstrate this before claiming concurrent processes work during a DM turn; independent scene coordination is deferred.
+Quiet routine progress/completion records mechanical receipts and compact factual views without admitting a narrative task or requiring fresh offers to execute an already authorized next entry. Escalation is an explicit, deduplicated handoff owned by the [autonomy plan](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md). Its proposed first solo policy holds the shared scene at the escalation boundary through preparation/response. Do not silently discard pending danger or regenerate scenes indefinitely as background state changes. Later independently progressing work requires explicit interaction fences before relaxing that hold; independent scene coordination is deferred.
 
 ### Persistence, targets and recovery
 
@@ -95,6 +96,7 @@ Storyteller activity parameters cannot create new capabilities, resource pools o
 | Microbe transformation | Autonomous state change, environmental eligibility | Staged-rule proof, no humanoid worker |
 | Abstract consciousness | Two declared channels, optional physical resources | Capacity proof |
 | Rifle shot in combat | Immediate effect versus encounter coordination | Extension boundary; combat deferred |
+| Rest then patrol; quiet run versus unusual encounter | Extended routine with no generation, bounded queued permission and optional scene escalation | Next connected proof after clock correction; illustrative durations/content |
 
 Universal invariants: authority, identity, ordered time, grounded inputs, typed effects and durable receipts. D&D belongs to selected rules. Professions, capacities, tools, currencies and genre belong to admitted content. One scene and bounded actors/rule kinds are implementation limits, not universal character restrictions.
 
@@ -109,28 +111,36 @@ Universal invariants: authority, identity, ordered time, grounded inputs, typed 
 - Optional evidence: real B settlement and freshly published resume offer replace direct database injection; settle resumed A and assert monotonic world/receipt ticks. Add same-definition instances, stale commands/wakes and fractional pause/pace retention. Scripted generation only.
 - Exit: coherent identity/time foundation, updated limits and pushed checkpoint. This phase does not complete the broader feature.
 
-### 2 — Work, actors, roles and claims
+### 2 — Quiet routines and selective scenes
 
-- Depends on phase 1. Separate participants from work, persist relevant actors/pools/claims, and replace advancing-pointer authority with a bounded active set and earliest-boundary scheduler. Implement independent contribution, assistance and atomic leave/reassign/switch.
+- Depends on phase 1. Outcome: an extended activity completes and the next permitted entry starts without a generation task; another run escalates exactly once into a meaningful scene. Use the existing solo actor and scope, not broad cooperation as a prerequisite.
+- Owners: game clock-condition and bounded recurring-rule semantics; application settlement/reporting; Storyteller event admission; autonomy's queue/permission contracts; compact play view. Extract rule dispatch when introducing the second rule. A timer-shaped contribution counter is not a valid rest/wait implementation.
+- Split ordinary completion/result reporting from scene preparation. Support a finite authored two-entry intention plan and explicit horizon/stop conditions; revalidate each transition. A candidate event captures committed evidence, holds incompatible progress and enters the existing durable generation/publication path using an offline source.
+- Evidence: no-event completion/transition with zero task admissions and zero provider calls; occurrence without extra productivity rolls; restart/reload/pace changes preserve checks and queue cursor; one event prevents later work until resolved; unavailable generation is legible. Use deterministic fixtures to show both quiet and event branches, then one bounded wall-clock rehearsal.
+- Exit: player can leave, return to earned results and understand an interruption. Implement the quiet sequence and minimal queue/event contract as one coherent cross-feature slice; do not duplicate queue ownership in this feature. Broader delegated choices follow the autonomy phases.
+
+### 3 — Work, actors, roles and claims
+
+- Depends on phases 1–2. Separate participants from work, persist relevant actors/pools/claims, and replace advancing-pointer authority with a bounded active set and earliest-boundary scheduler. Implement independent contribution, assistance and atomic leave/reassign/switch.
 - Owners: game eligibility/allocation/contribution; application admission/settlement; database actors/claims; private plans/views. Validate identity/access, capabilities, declared skills/tools and targets.
 - Evidence: two workers one repair; assistance without double-counting; contested tool; replacement retains shared work; personal work rejects transfer; abstract actor runs two channels; terminal result once. Use explicit solo control of authored NPCs, not assumed multiplayer permissions.
 - Exit: connected shared/personal work and enforced capacity, including pending narration ordering/holds. No multi-actor facade over one campaign character.
 
-### 3 — Lifecycle, deadline and loss
+### 4 — Lifecycle, deadline and loss
 
-- Depends on phases 1–2. Implement explicit abandonment, temporary blocks, permanent invalidation, failure/retry linkage, captured expiry and one bounded progress-loss rule with cost/refund and known-loss disclosure.
+- Depends on phase 3; phase 2 already needs minimum stop/block behavior. Extend explicit abandonment, temporary blocks, permanent invalidation, failure/retry linkage, captured expiry and one bounded progress-loss rule with cost/refund and known-loss disclosure.
 - Owners: lifecycle, eligibility invalidation, scheduler, typed effects/persistence and control projection. Relevant target changes wake affected work.
 - Evidence: suspended work expires; missing tools block; destroyed target invalidates; reset retains costs/history; duplicate abandon/failure cannot reward; expiry/completion ties are deterministic; pause preserves deadlines.
 - Exit: legible failure/recovery, no leaked claims or replayable terminal rewards.
 
-### 4 — Distinct process rules
+### 5 — Additional process rules
 
-- Depends on phases 1–3. Extract finite rule dispatch when the second rule exists. Add clock condition without work meter, minimal traversal over declared place/connection identities, and bounded autonomous staged transformation.
+- Depends on phase 4. Reuse the clock/recurring-rule protocol introduced in phase 2. Add minimal traversal over declared place/connection identities and bounded autonomous staged transformation. Do not rebuild rule dispatch or introduce a second scheduler.
 - Owners: game rules, relevant target/effect vocabulary, estimates/projections and fixtures. No grid/pathfinder/general physiology. Immediate actions retain direct receipts.
 - Evidence: world wait versus active attendance; diversion preserves position while time advances; microbe transforms without a worker or equipment. All share authority/recovery.
 - Exit: new rules do not introduce a second scheduler or species branches.
 
-### 5 — Configurable Storyteller and player acceptance
+### 6 — Configurable Storyteller and player acceptance
 
 - Earlier phases each include fixture offers/views. Broaden supported proposal composition, evidence diagnostics and explicit method/condition revisions; no replacement of saved work by regenerated offers.
 - Owners: Storyteller catalogue/context/validation, private admission, fixtures, compact play view and QA journeys.
@@ -139,12 +149,12 @@ Universal invariants: authority, identity, ordered time, grounded inputs, typed 
 
 ## Alternatives and limits
 
-A giant optional-field activity object admits nonsense combinations; use typed rule/policy composition. A class per profession/species requires engine edits for settings; use declared capabilities/targets/methods. Arbitrary generated scripts make validation/replay unpredictable; reject unsupported semantics. A full entity-component world simulator adds scope before proving a better scene; start with relevant actors/targets. The single pointer remains only a phase-1 limit, with explicit removal in phase 2.
+A giant optional-field activity object admits nonsense combinations; use typed rule/policy composition. A class per profession/species requires engine edits for settings; use declared capabilities/targets/methods. Arbitrary generated scripts make validation/replay unpredictable; reject unsupported semantics. A full entity-component world simulator adds scope before proving a better scene; start with relevant actors/targets. The single advancing pointer remains a temporary solo-proof limit, with removal in phase 3. Immediate actions share authority without becoming activities; events/chapters are not process families.
 
 ## Current checkpoint
 
-- Current phase: design prepared; runtime unchanged. Next: review proposed defaults and update permanent specifications for phase 1. The owner intentionally prioritized this design over the older requirement to do browser rehearsal before selecting another feature.
-- Reviewed revision: `1ef5a81`. This existing feature now owns broader design and the remaining lifecycle/capacity direction; the retained-commitment feature is still incomplete.
+- Current phase: design refined around the owner's ordinary-routine/Storyteller-scene distinction; runtime unchanged. Next: implement the identity/clock foundation when agreed, followed by the quiet-sequence/event proof with autonomy. Broad cooperation must not delay that experience. Durations, patrol content and daily horizon remain examples.
+- Reviewed revision: `63e06b9`; runtime findings trace the unchanged implementation from `1ef5a81`. This feature owns process mechanics; autonomy owns queues, event escalation and absence permission. The retained-commitment feature remains incomplete.
 - Verification: source and focused test inspection only; no builds/tests run. The chronology defect is a source trace, not a new runtime reproduction. Existing integration coverage is narrower than prior summaries implied.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.

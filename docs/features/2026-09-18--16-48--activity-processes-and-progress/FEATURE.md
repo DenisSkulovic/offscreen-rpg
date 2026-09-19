@@ -4,7 +4,7 @@ Status: Expanded design proposal. The owner requested this architecture/design p
 
 ## Intended outcome
 
-Activities are a foundational gameplay concept: characters attempt things, commit effort, cooperate, change plans and live with consequences. The engine must express this across conventional lives, strange creatures and abstract worlds without making every action a timer or every goal a progress bar.
+Activities are extended commitments that carry ordinary life forward through supported rules. Characters commit effort, cooperate, change plans and live with consequences. Immediate actions and Storyteller scenes share mechanical authority with activities but have different lifecycles. The engine must express this across conventional lives, strange creatures and abstract worlds without making every action a timer or every goal a progress bar.
 
 The owner explicitly described dwarf, SpongeBob, dragon, microbe, abstract consciousness, movement and rifle examples as brainstorming. They challenge the design; they do not mandate species systems, weapons, maps or a class hierarchy mirroring those nouns. RimWorld inspires depth of work and participation, not a specification to clone.
 
@@ -42,9 +42,9 @@ In a contrasting story, an abstract consciousness allocates two declared attenti
 | Process rule | Meaning of progress, due boundaries, completion and estimates |
 | Consequence | Committed effects and their recipients; narration subsequently explains them |
 
-These are responsibilities, not a table or base class per noun. Immediate actions share admission, capability, cost and effect policies without creating long-running process records.
+These are responsibilities, not a table or base class per noun. Immediate actions share admission, capability, cost and effect policies without becoming activities or creating long-running process records. Reserve activity for something extended in time; the generic admission/effect layer can support both.
 
-Movement is an activity whose rule changes authoritative place, route segment or relation. Geometry is optional. A combat encounter coordinates contested state and action opportunities; aiming, moving and shooting can be its actions/processes. A shot need not be an entire encounter, and an encounter need not be a contribution meter. Combat scheduling and attack rules require a separate ruleset slice.
+Sustained movement is an activity whose rule changes authoritative place, route segment or relation. Geometry is optional. A combat encounter coordinates contested state and action opportunities; an individual shot can resolve as an action, while a patrol or sustained maneuver can be an activity. The current storytelling focus is routine patrol escalating into a developed encounter, not treating every shot or scene as a background job. Full combat scheduling/attack rules require a separate ruleset slice.
 
 ## Configuration axes
 
@@ -57,7 +57,7 @@ Configuration selects finite implemented semantics. The Storyteller supplies val
 | Allocation | Claims against declared actor or shared-resource capacity pools; no universal body model |
 | Progress binding | Personal to an actor, shared on work/target, or owned by a world process |
 | Transfer | Whether a role may be replaced, under whose authority and with what continuity requirements |
-| Resolution | Immediate automatic/check, earned contribution, clock condition, transformation or traversal; add a family only for a concrete semantic need |
+| Process rule | Earned contribution, clock condition, repeating routine, transformation or traversal; immediate actions share policies but are not process variants |
 | Conditions | Admission-only, rechecked on each attempt, or required continuously |
 | Interruption | Preserve, block, explicitly lose/decay progress, or terminate |
 | Termination | Completion, abandonment, rule-defined failure, expiry or invalidation |
@@ -79,6 +79,10 @@ One failed attempt need not fail the activity. Permanent failure, destruction, e
 
 ## Storyteller and player experience
 
+The [ordinary-life/scene direction](../../vision.md#ordinary-life-and-storyteller-scenes) determines how this machinery serves play. Quiet admitted activity needs no model call for ticks, ordinary checks, completion, result logs or the next already authorized routine. Starting a novel routine may require the Storyteller to prepare supported terms. A meaningful development can escalate into a generated scene; neither completion nor a failed roll requires one automatically. Detailed generation/spending/absence policy is owned by [bounded autonomy](../2026-09-19--00-26--bounded-autonomy-and-reentry/FEATURE.md).
+
+The first proof after clock correction is a bounded quiet sequence and one optional event, before broader cooperative mechanics. This keeps architecture work tied to the desired feeling of time creating value. Rest then patrol is an illustrative contrast; no Batman-specific mechanics or mandatory daily timetable. A repeating routine can produce bounded periodic results until its stop condition without manufacturing a final completion reward.
+
 The Storyteller receives supported mechanics, relevant entities/capabilities, ongoing work, participation, deadlines and evidence. It proposes contextual actions and bounded changes. Revising saved work requires an explicit admitted transition after settling old terms; regenerating an offer cannot rewrite it.
 
 Unsupported mechanics produce a useful hold or a supported approach. Do not turn impossibility into a low-chance check or invent effects through narrative text. Genre shapes content/framing; story names and species never choose runtime branches.
@@ -98,10 +102,11 @@ The view should answer: what am I doing, who is helping, what remains, what coul
 - Races between completion, leave and timeout, duplicate delivery and stale narration yield one coherent history.
 - Map-free traversal and small/abstract examples share authority/lifecycle without mandatory anatomy, equipment or economy.
 - Connected offline rehearsal demonstrates participation, blockers and earned consequences. Owner taste and later live evaluation separately establish storytelling quality.
+- A quiet routine can finish and transition to a permitted next routine with zero generation task admissions, including consequence narration. A distinct event path records one escalation, preserves committed work and prevents the queue bypassing the decision.
 
 ## Scope and staged delivery
 
-[PLAN.md](PLAN.md) starts with identity/clock correctness, then cooperative participation/capacity, lifecycle/deadline/loss, distinct process rules and Storyteller configurability. Each implementation phase includes enough presentation to experience its result.
+[PLAN.md](PLAN.md) starts with identity/clock correctness, then proves quiet routine progression and selective event escalation together with the autonomy feature. Cooperation/capacity, richer loss policies and additional process families follow that playable proof. Each phase includes enough presentation to experience its result; do not require the whole activity framework before showing a meaningful quiet interval.
 
 The cooperative proof uses relevant authored actors under explicit solo-campaign authority. Human multiplayer negotiation, independent scenes, autonomous NPC job search/priorities, full combat, arbitrary dependency graphs, universal maps/physics, open scripting and simulated populations remain separate features.
 

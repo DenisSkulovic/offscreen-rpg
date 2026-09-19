@@ -42,6 +42,10 @@ Agency between offered decisions needs deliberate limits. The player should unde
 
 Quiet time is a valid experience. We should not manufacture choices merely because the player keeps the browser open. Pause, current progress and the expectation for the next update should remain understandable.
 
+The proposed activity/scene rhythm makes quiet life playable without displaying every mechanical detail. During a routine, show the intention, meaningful progress, conditional time estimate, known risk and relevant stop/change controls. Routine results can accumulate in a compact factual log without new generated prose. An event brings a developed scene and contextual choices to the foreground; a minor failed check need not summon the Storyteller.
+
+For absence, a small plan such as “rest, then patrol until the chosen limit” should explain its horizon and interruption policy before commitment. It is neither a guaranteed future nor an obligation to manage an hourly calendar. Returning should show completed work, actual costs/results, unfinished intentions and any current decision. A factual return summary can be free of inference; generated literary recaps are a separate, explicitly budgeted option. These are proposed experience requirements, not implemented queue controls.
+
 ## Playing with friends
 
 A creator can invite friends into a shared story, with each player controlling their own character. The group experiences a common developing situation. A choice should make clear whose character it concerns; controlling one character does not authorize controlling another.
