@@ -19,7 +19,7 @@ The catalogue contains:
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.
-- exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` can now exercise an actual pre-story opening and inspect the raw credential-free packet while release remains unavailable. The formal QA case remains unavailable until its guided evidence capture and reject/rebuild controls land.
+- exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` exercises an actual pre-story opening and preserves its credential-free packet under a generation-scoped filename. Developer-only GET/PUT endpoints expose owner-scoped inspection and exact hash/revision release or rejection; the offline QA case uses rejection and never authorizes live release.
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 

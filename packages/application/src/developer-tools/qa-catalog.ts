@@ -960,6 +960,63 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
   }),
   defineCase({
+    id: 'provider-dispatch-review',
+    version: 1,
+    name: 'Provider dispatch review gate',
+    purpose:
+      'Inspect and explicitly reject a complete provider packet without spending model credit.',
+    risk: 'A review surface is unsafe if inspection can dispatch implicitly, stale decisions apply, or rejection is mistaken for a provider failure.',
+    costClass: 'offline',
+    availability: { state: 'available' },
+    prerequisites: [
+      'Run the developer-only Chamber with the mandatory unpriced hold route.',
+      'Do not configure or authorize a commercial provider route for this case.',
+    ],
+    initialScenario: null,
+    drivers: ['manual-chamber'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'capture',
+        name: 'Capture the exact held packet',
+        importance: 'poc-blocker',
+        preconditions: ['No provider attempt exists for the generation.'],
+        action:
+          'Run pnpm chamber:packet and inspect the generation-scoped artifact.',
+        observableExpectation:
+          'The artifact identifies its request purpose, packet hash, messages, schema and structural sizes.',
+        authoritativeExpectation:
+          'One awaiting-review record exists and provider attempts, reservations and charges remain zero.',
+      }),
+      stage({
+        id: 'reject',
+        name: 'Reject by exact revision and packet hash',
+        importance: 'major',
+        preconditions: ['The held revision and packet hash are known.'],
+        action:
+          'Submit a developer-only reject decision with a fresh decision ID.',
+        observableExpectation:
+          'The review becomes rejected and the generation exposes an intentional dispatch-rejected failure.',
+        authoritativeExpectation:
+          'No provider attempt is created; stale revision/hash decisions conflict without changing state.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'operation-trace',
+        description:
+          'Generation, review revision, packet hash, decision identity and zero-attempt accounting.',
+        required: true,
+      },
+    ],
+    resetPolicy: 'Use a fresh generation for every packet or decision rehearsal.',
+    nonAssertions: [
+      'Byte counts do not establish tokenizer output or provider cache hits.',
+      'This offline rejection case does not authorize release to a live provider.',
+    ],
+  }),
+  defineCase({
     id: 'conservative-live-quality-probe',
     version: 1,
     name: 'Conservative live quality probe',

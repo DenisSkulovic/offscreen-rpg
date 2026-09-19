@@ -85,6 +85,12 @@ export const dispatchReviewViewSchema = z.strictObject({
 export const dispatchReviewResponseSchema = z.strictObject({
   review: dispatchReviewViewSchema,
 });
+export const dispatchReviewDecisionRequestSchema = z.strictObject({
+  decisionId: z.uuid(),
+  expectedRevision: z.number().int().nonnegative(),
+  packetSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  decision: z.enum(['release', 'reject']),
+});
 export type DispatchReviewView = z.infer<typeof dispatchReviewViewSchema>;
 
 export const chamberInspectorHistoryLimit = 20;

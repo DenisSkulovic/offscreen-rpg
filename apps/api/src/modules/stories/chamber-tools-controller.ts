@@ -1,9 +1,11 @@
 import {
   Controller,
+  Body,
   Get,
   HttpException,
   Inject,
   Param,
+  Put,
   Req,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -14,6 +16,8 @@ import { IdentityService } from '../auth/identity.js';
 import { STORIES } from './controller.js';
 import { OPENINGS } from '../drafts/openings-controller.js';
 import type { createScriptedOpenings } from '@offscreen/application/generations';
+import { DispatchReviewConflictError } from '@offscreen/application/storyteller';
+import { dispatchReviewDecisionRequestSchema } from '@offscreen/contracts/chamber';
 
 @Controller('chamber-tools')
 export class ChamberToolsController {
@@ -33,6 +37,29 @@ export class ChamberToolsController {
     const review = await this.openings.dispatchReview(user.id, id);
     if (!review) throw new HttpException({ code: 'not_found' }, 404);
     return { review };
+  }
+
+  @Put('generations/:id/dispatch-review')
+  async decideDispatchReview(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await this.identity.requireUser(request.headers);
+    const parsed = dispatchReviewDecisionRequestSchema.safeParse(body);
+    if (!parsed.success) throw new HttpException({ code: 'invalid' }, 400);
+    try {
+      const review = await this.openings.dispatchReviewDecision(user.id, {
+        generationId: id,
+        ...parsed.data,
+      });
+      return { review };
+    } catch (error) {
+      if (error instanceof DispatchReviewConflictError) {
+        throw new HttpException({ code: 'conflict' }, 409);
+      }
+      throw error;
+    }
   }
 
   @Get('stories/:id')

@@ -15,6 +15,13 @@ import { storytellerTopic } from './records';
 
 export type DispatchReviewDisposition = 'proceed' | 'held' | 'stopped';
 
+export class DispatchReviewConflictError extends Error {
+  constructor() {
+    super('Dispatch review conflict');
+    this.name = 'DispatchReviewConflictError';
+  }
+}
+
 /**
  * Persist the exact packet before any reservation or provider attempt. A code
  * change that rebuilds a different packet supersedes the old evidence rather
@@ -141,7 +148,7 @@ export function createDispatchReviewControls(database: Database) {
           review.revision !== decision.expectedRevision ||
           review.packetSha256 !== decision.packetSha256
         ) {
-          throw new Error('Dispatch review conflict');
+          throw new DispatchReviewConflictError();
         }
         await tx.insert(storytellerDispatchReviewDecision).values({
           id: decision.decisionId,
@@ -172,7 +179,7 @@ export function createDispatchReviewControls(database: Database) {
             ),
           )
           .returning();
-        if (!saved) throw new Error('Dispatch review conflict');
+        if (!saved) throw new DispatchReviewConflictError();
         if (decision.decision === 'release') {
           await enqueue(tx, {
             id: decision.decisionId,

@@ -95,6 +95,19 @@ export function createScriptedOpenings(
     dispatchReview(ownerId: string, generationId: string) {
       return dispatchReviews.read(ownerId, generationId);
     },
+    /** Developer-only decision; release re-enters normal budget/provider authority. */
+    dispatchReviewDecision(
+      ownerId: string,
+      input: {
+        generationId: string;
+        decisionId: string;
+        expectedRevision: number;
+        packetSha256: string;
+        decision: 'release' | 'reject';
+      },
+    ) {
+      return dispatchReviews.decide(ownerId, input);
+    },
     catalogue() {
       return profiled.catalogue();
     },

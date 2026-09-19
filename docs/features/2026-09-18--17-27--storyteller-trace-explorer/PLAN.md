@@ -1,7 +1,7 @@
 # Storyteller trace explorer plan
 
 Feature: [Storyteller trace explorer](FEATURE.md)
-Status: Prepared. Exact outbound-packet construction is being implemented by the linked [provider dispatch review](../2026-09-19--22-58--provider-dispatch-review/PLAN.md); this plan owns the broader correlated trace UI.
+Status: Prepared. Exact outbound-packet construction and durable review decisions are implemented by the [provider dispatch-review contract](../../technical/provider-dispatch-review.md); this plan owns the broader correlated trace UI.
 
 ## Phase 1 — Trace inventory and correlation contract
 

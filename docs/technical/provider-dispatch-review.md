@@ -1,6 +1,6 @@
 # Provider dispatch review and dry-run analysis
 
-Status: exact packet construction, durable breakpoint/release core and developer-only API inspection are implemented. `pnpm chamber:packet` creates and exports a held opening without a browser. Reject/rebuild/compare/release controls remain; release is intentionally not exposed before live-evaluation preflight.
+Status: implemented for the offline POC. Exact packet construction, durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. Rebuilding means admitting a fresh immutable generation. Pure packet comparison reports exact byte overlap while the context-recipes work broadens the reproducible case set. Live release still requires the separate spending and evaluation preflight.
 
 ## Product contract
 
@@ -33,6 +33,8 @@ prepared -> awaiting-review -> released -> reserved -> dispatched
 Creating the record happens before budget reservation. Release performs, in order: packet-hash equality, generation/source freshness, current dispatch authority, current price/resource policy, funding/window availability and global uncertainty checks. Only then may the normal atomic reservation and dispatch path run. Code/config changes require rebuilding a new packet; the reviewer cannot edit captured JSON into an untraceable request.
 
 Rejecting a packet is a safe terminal developer decision, not provider failure and not zero-cost model evidence. A held packet keeps the gameplay reason visible without consuming a provider attempt. Long-held review must not create fictional elapsed time.
+
+Developer tools expose `GET` and `PUT /api/chamber-tools/generations/:id/dispatch-review` only when the API is explicitly composed with developer tools. The decision body carries a fresh decision ID, expected review revision, exact packet hash and `release` or `reject`. The normal API composition does not mount these routes. Release is merely the first gate: it re-enters current funding, usage-window, authority and provider checks and cannot make an unpriced Chamber route dispatchable.
 
 ## Analysis and comparison
 
