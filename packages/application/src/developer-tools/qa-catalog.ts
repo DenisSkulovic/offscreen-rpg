@@ -1014,9 +1014,9 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         action:
           'Capture output quality observations and reconcile provider accounting.',
         observableExpectation:
-          'The run states what was learned and whether another call is justified.',
+          'The run states what was learned, the safe limiting reason when blocked, and whether retry can help.',
         authoritativeExpectation:
-          'Attempt detail and aggregate operation rounds, tokens, charge, reservations, and certainty are retained without double-counting.',
+          'Attempt detail and aggregate operation rounds, tokens, charge, reservations, and certainty are retained without double-counting; retry is offered only for unsent/recoverable work or saved publication.',
       }),
     ],
     evidenceRequirements: [

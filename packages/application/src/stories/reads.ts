@@ -68,6 +68,38 @@ function publicResolutionState(
   return { state };
 }
 
+function publicResolutionBlocker(
+  state: 'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain' | null,
+  publication: 'pending' | 'published' | 'stale' | 'blocked' | null,
+  failureCode: string | null,
+  sourceMode: 'scripted' | 'provider',
+) {
+  // Public categories are deliberately stable and coarse. Provider/account
+  // identifiers and internal policy sources remain in the accounting audit.
+  if (publication === 'blocked' || publication === 'stale') {
+    return { kind: 'publication' as const, recovery: 'retry' as const };
+  }
+  if (state === 'uncertain' || failureCode === 'usage_uncertain') {
+    return { kind: 'usage-uncertain' as const, recovery: 'operator' as const };
+  }
+  if (state !== 'failed') return null;
+  if (failureCode === 'budget_unavailable')
+    return { kind: 'funding' as const, recovery: 'retry' as const };
+  if (failureCode === 'window_exhausted')
+    return { kind: 'usage-window' as const, recovery: 'retry' as const };
+  if (failureCode === 'authority_unavailable')
+    return { kind: 'authority' as const, recovery: 'retry' as const };
+  if (failureCode === 'context_too_large')
+    return { kind: 'task-input' as const, recovery: 'none' as const };
+  if (failureCode === 'provider_disabled')
+    return { kind: 'provider-disabled' as const, recovery: 'retry' as const };
+  return {
+    kind: 'generation' as const,
+    recovery:
+      sourceMode === 'scripted' ? ('retry' as const) : ('none' as const),
+  };
+}
+
 function listStoryStatus(row: {
   wait: unknown;
   remaining: number | null;
@@ -367,19 +399,28 @@ export function createStoryReads(
             resolution:
               row.resolutionState === null
                 ? null
-                : {
-                    ...publicResolutionState(row.resolutionState),
-                    state:
-                      row.publicationState === 'blocked' ||
-                      row.publicationState === 'stale'
-                        ? 'blocked'
-                        : publicResolutionState(row.resolutionState)?.state,
-                    version: row.resolutionVersion ?? 0,
-                    reason: row.publicationFailure ?? row.failureCode,
-                    canRetry:
-                      row.publicationState === 'blocked' ||
-                      row.resolutionState === 'failed',
-                  },
+                : (() => {
+                    const blocker = publicResolutionBlocker(
+                      row.resolutionState,
+                      row.publicationState,
+                      row.failureCode,
+                      row.execution == null
+                        ? 'scripted'
+                        : executionPolicySchema.parse(row.execution).mode,
+                    );
+                    return {
+                      ...publicResolutionState(row.resolutionState),
+                      state:
+                        row.publicationState === 'blocked' ||
+                        row.publicationState === 'stale'
+                          ? 'blocked'
+                          : publicResolutionState(row.resolutionState)?.state,
+                      version: row.resolutionVersion ?? 0,
+                      reason: row.publicationFailure ?? row.failureCode,
+                      blocker,
+                      canRetry: blocker?.recovery === 'retry',
+                    };
+                  })(),
           });
         },
         { isolationLevel: 'repeatable read', accessMode: 'read only' },

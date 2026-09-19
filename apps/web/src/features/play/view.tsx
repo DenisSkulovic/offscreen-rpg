@@ -25,31 +25,38 @@ function resolutionMessage(story: StorySnapshot) {
   if (!story.resolution) {
     return null;
   }
-  if (story.campaign?.character) {
-    if (
-      story.resolution.state === 'failed' ||
-      story.resolution.state === 'blocked'
-    ) {
-      return 'The outcome and dice are saved. Narration could not finish; retry reuses those results.';
-    }
-    if (story.resolution.state !== 'uncertain') {
-      return 'The outcome and dice are saved. The storyteller is preparing the next passage.';
-    }
+  const savedOutcome = story.campaign?.character
+    ? 'The outcome and dice are saved. '
+    : '';
+  if (story.resolution.state === 'uncertain') {
+    return `${savedOutcome}Provider usage is uncertain. Paid generation is stopped until it is reconciled; refreshing does not send another model request.`;
   }
   if (story.resolution.state === 'failed') {
-    if (story.resolution.reason === 'budget_unavailable') {
-      return 'The generation allowance is unavailable. Your scene is unchanged.';
+    if (story.resolution.blocker?.kind === 'funding') {
+      return `${savedOutcome}The generation allowance is unavailable. Your scene is unchanged.`;
     }
-    if (story.resolution.reason === 'provider_disabled') {
-      return 'Live generation is disabled. Your scene is unchanged.';
+    if (story.resolution.blocker?.kind === 'usage-window') {
+      return `${savedOutcome}This story has reached a renewable generation limit. Your scene is saved; retry after capacity returns.`;
+    }
+    if (story.resolution.blocker?.kind === 'authority') {
+      return `${savedOutcome}Generation authorization changed before dispatch. Nothing was sent and your scene is unchanged.`;
+    }
+    if (story.resolution.blocker?.kind === 'task-input') {
+      return `${savedOutcome}The required story context does not fit this generation policy. Retrying the unchanged request will not help.`;
+    }
+    if (story.resolution.blocker?.kind === 'provider-disabled') {
+      return `${savedOutcome}Live generation is disabled. Your scene is unchanged.`;
+    }
+    if (story.campaign?.character) {
+      return 'The outcome and dice are saved. Narration could not finish, and this spent operation cannot be repeated.';
     }
     return 'Continuation failed. Your intention is saved and the current scene is unchanged.';
   }
-  if (story.resolution.state === 'uncertain') {
-    return 'Provider usage is uncertain. Paid generation is stopped until it is reconciled; refreshing does not send another model request.';
-  }
   if (story.resolution.state === 'blocked') {
-    return 'The saved continuation could not be published. Your current scene is unchanged.';
+    return `${savedOutcome}The saved continuation could not be published. Your current scene is unchanged.`;
+  }
+  if (story.campaign?.character) {
+    return 'The outcome and dice are saved. The storyteller is preparing the next passage.';
   }
   return 'The storyteller is resolving this intention.';
 }

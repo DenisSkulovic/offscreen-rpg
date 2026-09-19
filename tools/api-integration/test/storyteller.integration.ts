@@ -1633,6 +1633,11 @@ test(
               storyId: fresh.storyId,
             });
             assert.equal(failed.resolution?.state, 'failed');
+            assert.deepEqual(failed.resolution?.blocker, {
+              kind: 'generation',
+              recovery: 'retry',
+            });
+            assert.equal(failed.resolution?.canRetry, true);
             assert.equal(failed.revision, 1);
             const retryId = randomUUID();
             await stories.retryResolution({

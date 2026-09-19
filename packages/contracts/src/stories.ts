@@ -78,6 +78,22 @@ export const storySnapshotSchema = z.strictObject({
       state: z.enum(['pending', 'running', 'failed', 'uncertain', 'blocked']),
       version: z.number().int().nonnegative().optional(),
       reason: z.string().max(80).nullable().optional(),
+      blocker: z
+        .strictObject({
+          kind: z.enum([
+            'funding',
+            'usage-window',
+            'authority',
+            'task-input',
+            'provider-disabled',
+            'usage-uncertain',
+            'publication',
+            'generation',
+          ]),
+          recovery: z.enum(['retry', 'refresh', 'operator', 'none']),
+        })
+        .nullable()
+        .optional(),
       canRetry: z.boolean().optional(),
     })
     .nullable()
