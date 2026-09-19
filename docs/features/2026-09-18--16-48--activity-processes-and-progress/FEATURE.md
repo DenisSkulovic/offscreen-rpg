@@ -1,118 +1,114 @@
-# Activity processes and world-defined progress
+# Activities, participation and world-defined progress
 
-Status: Approved on 2026-09-19 for the contribution/runtime subset required by the earned-time playable loop. Other process families remain proposals.
-
-## Problem
-
-The current mechanical slice treats a positive `durationTicks` as the amount an activity must accumulate before completion. That confuses the simulation clock with progress. A tick says when rules may advance; it does not say what the character accomplished.
-
-This produces the wrong model for work, movement and many stranger processes. A skilled character may contribute more than an unskilled character during the same interval. An interruption may consume time without advancing the goal. A journey can progress along a route, wait at a crossing, change vehicle or use a portal. Some processes decay, branch or become impossible. Waiting is different: reaching a clock position may itself be the completion condition.
+Status: Expanded design proposal. The owner requested this architecture/design pass on 2026-09-19. The contribution/runtime subset was previously approved and partially implemented; the broader policies and implementation phases below remain proposals.
 
 ## Intended outcome
 
-Represent a committed activity as a resumable, rules-governed process. The shared runtime owns lifecycle, scheduling, authority, receipts, interruption and durable publication. A selected process rule owns the meaning of progress and completion.
+Activities are a foundational gameplay concept: characters attempt things, commit effort, cooperate, change plans and live with consequences. The engine must express this across conventional lives, strange creatures and abstract worlds without making every action a timer or every goal a progress bar.
 
-Ticks remain the setting-independent simulation coordinate. They determine ordering and when a process is eligible to advance. They are never the universal progress unit.
+The owner explicitly described dwarf, SpongeBob, dragon, microbe, abstract consciousness, movement and rifle examples as brainstorming. They challenge the design; they do not mandate species systems, weapons, maps or a class hierarchy mirroring those nouns. RimWorld inspires depth of work and participation, not a specification to clone.
 
-## Core model
+The current A → B → A slice retains work but still has one campaign character, one advancing activity, contribution-only state and no enforced capacity reservations. See the inspected findings and proposed technical contract in [PLAN.md](PLAN.md).
 
-Every admitted process captures:
+## Separate work from participation
 
-- a goal and the authoritative world state on which admission depended;
-- a supported process rule and its immutable parameters;
-- rule-owned progress state, which may be numeric, positional, staged or absent;
-- the next meaningful boundary at which the rule must run;
-- completion, interruption and invalidation conditions;
-- a conditional estimate suitable for presentation, when one can honestly be calculated.
+A work instance and a character's participation in it are different things.
 
-The runtime asks the captured rule to advance from one committed boundary to another. The rule returns a bounded result: committed progress/state changes, checks and random receipts, completion or interruption, and the next boundary. The storyteller can propose and narrate a process, but cannot directly award progress, invent executable rule names or declare mechanical completion.
+One beacon repair has a target and durable progress. Several characters may contribute, assist, leave or replace one another under its rules. Leaving releases the participant's claims; it does not erase the repair. Personal learning has a different binding: progress belongs to the learner and cannot be given to a replacement reader. An autonomous transformation might have no current performer at all.
 
-This is not a requirement to execute code or roll once per tick. A deterministic contribution over twenty quiet ticks may be settled analytically in one operation. If a rule requires distinct checks or changing conditions, those points become explicit boundaries and are processed in order. Batching is an execution optimization and must produce the same committed result as the declared rule semantics.
+The right to direct work, the right to operate a character and ownership of the result are separate. Repairing a ship does not make the worker its owner. Changing a supervisor does not transfer a player's character or redirect a promised reward.
 
-## Progress families
+## Representative play
 
-These are semantic families, not mandatory database variants or one subsystem per activity name.
+Mara starts restoring a beacon. She has the required knowledge and tools. Its state says “3 of 12 repair work completed,” with a conditional estimate based on her method and capability. Reaching that estimated time grants nothing by itself.
 
-| Family | Authoritative progress | Typical completion | Examples |
-| --- | --- | --- | --- |
-| Contribution | Accumulated rule-defined work toward a requirement | Required contribution reached and final conditions hold | crafting, research, forming an abstract connection |
-| Transformation | Captured state moves through stages or a state machine | A terminal state is reached | recovery, incubation, ritual, negotiation campaign |
-| Traversal | Position/progress within an admitted route or transition | Destination/exit condition reached | walking, flying, sailing, teleport sequence, interdimensional passage |
-| Clock condition | No productive progress is required | Target tick or temporal predicate becomes true | waiting, a cooldown, observing until dawn under an authored calendar |
-| Repeating practice | Durable results occur at repeated boundaries; it may have no natural completion | Player stops, an interruption occurs or a separately defined goal is met | standing guard, ongoing study, maintaining a signal |
-| Discrete exchange | Ordered actions change contested state | Encounter-specific terminal/exit condition | combat or another turn/exchange-based contest |
+Ivo joins as a qualified contributor. His effort contributes to the same repair using his own capabilities and recorded checks. Alternatively he holds a light as an assistant: that supported role improves Mara's attempt without also earning an independent worker's contribution. Two people do not automatically mean twice the output.
 
-“Contribution points” are therefore useful for some processes but are not a synonym for time or a universal game resource. Their name, scale and modifiers belong to captured content/rules. Travel must not be disguised as generic work points if route state matters. Combat must not be stretched into a progress bar merely to reuse the activity UI.
+A stranger arrives. Mara leaves the repair to respond. If Ivo's role can continue independently, work continues; if the method requires both roles together, it becomes blocked. The player sees the missing condition and whether progress is safe. An immediate response introduces no artificial wait; a response that takes meaningful effort can itself be a process.
 
-## Contribution semantics
+Mara performs other work and later returns. Resume names this exact repair. Missing tools produce “Needs a suitable tool,” not a new zero-progress repair or arbitrary failed roll. An eligible replacement can take her role without acquiring her skills or property. A destroyed beacon invalidates the repair. A deadline can expire while nobody works; an authored spoilage rule can erase progress with a recorded cause.
 
-For a contribution process, each due boundary computes contribution from authoritative circumstances: capabilities, selected method, tools, assistance, conditions, checks and rule-specific modifiers. Equal elapsed ticks need not yield equal contribution. A boundary may yield zero, negative or transformed progress only when the captured rule explicitly permits it.
+In a contrasting story, an abstract consciousness allocates two declared attention channels to separate connections. One pauses while the other continues. The engine requires no hands, wages or physical distance. A microbe's environmental transformation can progress without an assigned worker when its rule and environment permit it.
 
-The accumulated result survives a pause or unrelated interruption when the fiction says the underlying work survives. The rule may instead define spoilage, decay, loss or invalidation. Preservation cannot be a blanket engine assumption.
+## Shared concepts, distinct semantics
 
-A completion estimate is derived from current conditions and expected contribution. It is not a promised duration and cannot grant completion. When conditions, method or allocation change, the estimate is recomputed from committed state.
+| Concept | Responsibility |
+| --- | --- |
+| Activity definition | Supported rules, parameters, roles, prerequisites, targets, costs and result terms |
+| Admitted instance | Stable identity, accepted definition, bound targets, progress and lifecycle |
+| Participation | Actor, role, method, state and capacity claims |
+| Attempt | One immediate resolution or due productive contribution with a receipt |
+| World clock | Simulation ordering and elapsed time, independent of productive progress |
+| Process rule | Meaning of progress, due boundaries, completion and estimates |
+| Consequence | Committed effects and their recipients; narration subsequently explains them |
 
-## Interruption, allocation and resumption
+These are responsibilities, not a table or base class per noun. Immediate actions share admission, capability, cost and effect policies without creating long-running process records.
 
-Real pause stops simulated advancement in its declared scope. A fictional distraction can allow the clock to advance while contributing nothing to the interrupted goal. A character normally cannot allocate the same exclusive capacity to two incompatible processes, but the capability being allocated must be explicit; the engine must not assume one human body. A distributed consciousness might support several processes, while a human tying a shoe pauses walking contribution.
+Movement is an activity whose rule changes authoritative place, route segment or relation. Geometry is optional. A combat encounter coordinates contested state and action opportunities; aiming, moving and shooting can be its actions/processes. A shot need not be an entire encounter, and an encounter need not be a contribution meter. Combat scheduling and attack rules require a separate ruleset slice.
 
-An interruption commits everything resolved before its boundary, then applies the rule's interruption result. Resumption either continues the same durable process state or admits a revised process when its method, route or prerequisites changed. The runtime must not silently restart from zero, silently finish, or blindly resume an invalid plan.
+## Configuration axes
 
-## World independence
+Configuration selects finite implemented semantics. The Storyteller supplies validated, evidence-backed parameters and supported combinations, never scripts or invented resolvers.
 
-- Human craft: ticks schedule contribution opportunities; skill, tools and rolls determine contributed work.
-- Human walk: the route rule advances position from movement capability and conditions; tying a shoe consumes fictional time with no route advancement.
-- Bird or spacecraft: the same lifecycle can use a different supported traversal rule and route representation.
-- Portal or interdimensional being: progress may be a discrete transition or staged condition rather than distance.
-- Microbe: a process can transform environmental or colony state without employment, money, human anatomy or kilometres.
-- Abstract entity: progress may mean strengthening a connection or completing a logical transformation.
-- Waiting: completion may depend only on reaching an admitted clock condition.
+| Axis | Proposed choices and meaning |
+| --- | --- |
+| Participation | Solo, independent contributors, required cooperating roles, or autonomous process with optional supervision |
+| Eligibility | Particular actors, applicable capabilities, declared skills/proficiencies, current facts, access and supported equipment requirements |
+| Allocation | Claims against declared actor or shared-resource capacity pools; no universal body model |
+| Progress binding | Personal to an actor, shared on work/target, or owned by a world process |
+| Transfer | Whether a role may be replaced, under whose authority and with what continuity requirements |
+| Resolution | Immediate automatic/check, earned contribution, clock condition, transformation or traversal; add a family only for a concrete semantic need |
+| Conditions | Admission-only, rechecked on each attempt, or required continuously |
+| Interruption | Preserve, block, explicitly lose/decay progress, or terminate |
+| Termination | Completion, abandonment, rule-defined failure, expiry or invalidation |
+| Results | Once at completion, per attempt or at milestones; explicit recipient, cost and refund terms |
 
-These examples constrain the boundary. They do not authorize generic physics, a universal route graph, dedicated profession systems or arbitrary model-authored mechanics.
+Not all combinations are legal. Personal learning rejects transfer of learned progress. An assistant cannot also contribute using the same allocated effort unless supported explicitly. Autonomous incubation does not require attention unless its supervision semantics say so. Validate cross-field meaning, not only JSON shape.
 
-## Player experience
+Eligibility differs from effectiveness. A lucky d20 cannot replace a mandatory capability. Eligible actors may differ in cadence, success chance, contribution, cost and supported quality outcomes. Ground those differences in recorded capabilities and circumstances. A copied “+5 for tools” cannot survive loss of the required tool.
 
-The UI describes the actual process state and a conditional expectation. It may show work completed, route position, current stage, next check, or simply “waiting until …”. It must not label elapsed ticks as completed work. If an interruption changes the process, the old estimate is visibly replaced.
+## Time, interruption and loss
 
-The player chooses a contextual intention. Before publication, application policy validates that the resulting process uses a supported rule and that its prerequisites, authority and exclusivity constraints hold. Dice and committed rule results remain visible where the selected ruleset exposes them.
+One shared simulation clock governs the initial solo scene. Work instances separately record productive intervals and progress. Running another activity never rewinds that clock. Deadlines, decay and autonomous progression can remain scheduled while participants are suspended.
 
-## Architecture boundary
+Distinguish world-clock deadlines, accumulated active-work duration and real response allowances. “Wait twenty minutes of world time” differs from “spend twenty active minutes observing.” Published real response windows belong to autonomy/pause policy, not an activity's estimate.
 
-The universal process runtime owns:
+Switching settles due effects first, discloses material known loss, releases claims and admits the new participation atomically. It does not suspend unrelated workers. Campaign pause freezes its simulation scope; leaving work stops only that participant's contribution. Narrative holds and system failures remain separate reasons.
 
-- admission and immutable rule capture;
-- clock anchoring and scheduling the next meaningful boundary;
-- process status, capacity claims, idempotency and locking;
-- ordered settlement and durable receipts;
-- pause, interruption, resumption and publication handoff.
+One failed attempt need not fail the activity. Permanent failure, destruction, expiry, temporary blocks and abandonment have different consequences. Reset is a supported rule result with history, never a generic recovery action. Retrying terminal work creates a new linked instance; repairing disrupted open work preserves its identity and loss history. Neither erases receipts or refunds spent resources accidentally.
 
-Rule implementations own:
+## Storyteller and player experience
 
-- their progress-state schema and invariants;
-- boundary selection and contribution/state-transition calculation;
-- relevant skill checks, modifiers and random events;
-- completion, decay and invalidation predicates;
-- estimates derived from committed state.
+The Storyteller receives supported mechanics, relevant entities/capabilities, ongoing work, participation, deadlines and evidence. It proposes contextual actions and bounded changes. Revising saved work requires an explicit admitted transition after settling old terms; regenerating an offer cannot rewrite it.
 
-The runtime uses a finite server-owned registry of implemented rule kinds. Data selects a supported kind and supplies validated parameters; it cannot contain executable code. Add a new rule family only when a concrete playable slice needs semantics that existing families cannot express.
+Unsupported mechanics produce a useful hold or a supported approach. Do not turn impossibility into a low-chance check or invent effects through narrative text. Genre shapes content/framing; story names and species never choose runtime branches.
 
-## Acceptance for the architecture correction
+The view should answer: what am I doing, who is helping, what remains, what could interrupt it, and can I leave or return? Show relevant commitments and known blockers. Estimates disclose their assumptions and can be unknown. Keep the scene central; a colony-management dashboard and UI redesign are outside this task.
 
-- No shared activity contract equates completion with accumulated elapsed ticks.
-- Clock position, process progress, resolved boundary and presentation estimate are separate concepts.
-- Contribution can vary by skill, roll, method and conditions, including zero contribution while fictional time advances.
-- Waiting can complete from a clock condition without fake work points.
-- A work-like process preserves valid accumulated work across interruption and resume.
-- A traversal example records meaningful route state rather than generic work points.
-- A microbe and an abstract entity use the same lifecycle without human time, distance, employment or anatomy assumptions.
-- The storyteller proposes only plans expressible by supported rules; authoritative code resolves them.
-- Quiet spans can be batched without per-tick persistence or inference.
-- Estimates are explicitly conditional and never act as authority.
+## Acceptance
 
-## Excluded from this feature
+- Actual A → B → same A settlement preserves valid work and monotonic chronology; old offers/wake-ups cannot award extra progress.
+- Multiple instances of the same definition can coexist and be resumed precisely.
+- Workers contribute to one repair under independent or cooperating-role rules; assistance, departure and replacement have explicit effects.
+- Missing capabilities block admission; differences between eligible workers affect recorded productivity.
+- Capacity is enforced. A declared two-channel actor may do compatible work concurrently; a shared tool cannot be reserved twice.
+- Shared work survives worker replacement; personal learning does not transfer. Control and rewards remain separate.
+- Waiting needs no work points. Suspended work can expire or decay; campaign pause follows its declared scope.
+- Failure, expiry, invalidation, reset and abandonment have legible outcomes and no accidental completion rewards.
+- Races between completion, leave and timeout, duplicate delivery and stale narration yield one coherent history.
+- Map-free traversal and small/abstract examples share authority/lifecycle without mandatory anatomy, equipment or economy.
+- Connected offline rehearsal demonstrates participation, blockers and earned consequences. Owner taste and later live evaluation separately establish storytelling quality.
 
-This feature does not settle a universal spatial representation, full travel simulation, combat, body/capacity modelling, decay for every process, arbitrary user-defined executable rules or live model evaluation. Those require concrete gameplay slices and their own reviewed designs.
+## Scope and staged delivery
 
-## Owning specifications after approval
+[PLAN.md](PLAN.md) starts with identity/clock correctness, then cooperative participation/capacity, lifecycle/deadline/loss, distinct process rules and Storyteller configurability. Each implementation phase includes enough presentation to experience its result.
 
-If approved, replace the duration-based activity model in [game rules](../../game-rules.md), [time and autonomy](../../time-and-autonomy.md), [ticks and tags](../../technical/ticks-and-tags.md), and [rules and activities](../../technical/rules-and-activities.md). The current implementation should then be treated as a prototype to reshape, not a contract to preserve.
+The cooperative proof uses relevant authored actors under explicit solo-campaign authority. Human multiplayer negotiation, independent scenes, autonomous NPC job search/priorities, full combat, arbitrary dependency graphs, universal maps/physics, open scripting and simulated populations remain separate features.
+
+## Decisions still needed
+
+Before bulk implementation, review the proposed distinctions between shared/personal work; simultaneous roles and replacement; disclosure of destructive interruption; and the initial solo-scene clock with authored cooperative actors. The plan provides concrete defaults. Preparing this design requires no further choice.
+
+## Owning specifications
+
+[Game rules](../../game-rules.md), [time and autonomy](../../time-and-autonomy.md), [rules and activities](../../technical/rules-and-activities.md), and [ticks and tags](../../technical/ticks-and-tags.md) own maintained contracts. Fold agreed decisions there before implementation. Until then, this folder owns the broader proposal and does not claim runtime support.

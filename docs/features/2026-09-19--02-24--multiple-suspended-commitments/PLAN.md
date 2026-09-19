@@ -34,17 +34,10 @@ Execution scope: approved as the next offline architecture change; begin in the 
 
 ## Current checkpoint
 
-- Base revision: `736a27b` on `main` implements one persisted activity with encounter-state resumption.
-- Known limitation to remove: starting a different process automatically marks the interrupted activity `abandoned`; `campaign.activeActivityId` exposes only one commitment.
-- Reorientation on 2026-09-19 found a sharper defect: immediate encounter resolution clears `campaign.activeActivityId`. The existing resume integration constructs the encounter and resume offer directly, so it does not prove the real interruption-response-resume path. Repair and cover this before extending the lifecycle.
-- Keep `game_activity` as the commitment collection. It already stores multiple identities per story. Treat `campaign.activeActivityId` narrowly as the one commitment allowed to advance, rather than introducing a redundant collection table.
-- A resume plan must eventually identify the retained activity instance, not only its reusable action definition. Multiple instances of one action can otherwise make resumption ambiguous.
-- Today's vertical acceptance target is: start beacon work, earn contribution through checks, interrupt, resolve the interruption, start a second commitment while retaining the first, resume the exact beacon activity, and apply completion once. Reload and stale scheduled wake-ups must preserve the same facts.
-- Implement in separately pushed checkpoints: real interruption linkage; retained commitment lifecycle and A -> B -> A integration; minimal play projection/controls; running browser evidence.
-- Preserve: opaque offers, private plans, earned contribution, exact clock arithmetic, idempotent commands, revision fencing and exactly-once effects.
-- Do not begin with UI redesign or generalized process families.
-- Provider spend: $0 authorized; cumulative OpenRouter usage remains unverified.
-- Implementation checkpoint: `game_activity` is now used as the retained collection, `activeActivityId` is only the advancing identity, starting B suspends an encounter/paused A, and resume searches for one eligible retained instance before repointing the campaign. The play projection exposes unfinished commitments and the browser labels them as non-advancing work.
-- The integration covers an immediate encounter response followed by authored A -> B -> same A with retained contribution. Full workspace typecheck/build, 19 game tests, 29 Storyteller tests and the 10-case PostgreSQL/Temporal Storyteller integration pass.
-- Docker Desktop 4.91 still crashes in its Windows WSL socket bridge even after a clean reinstall. The verified local runtime is Docker Engine inside Ubuntu WSL using mirrored networking; this is an environment workaround, not application architecture.
-- Next: perform the manual wall-clock beacon rehearsal through the browser, then implement explicit abandonment and legible blocked/invalidated resume results before closing this feature. Do not start another feature before the browser evidence exists.
+- Current phase: partial retention implementation, incomplete feature. The owner's 2026-09-19 request prioritizes the broader [activity foundation design](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md); follow its identity/clock phase before adding isolated lifecycle patches here.
+- Reviewed source: `1ef5a81`. Activity rows retain interrupted work, starting B suspends encounter/paused A, and a unique action-definition match can resume A with saved contribution. Running A cannot yet be switched directly.
+- Evidence: the earlier focused integration passed, but its diversion is marked complete and its previous offer restored by direct database writes. It proves retention, not real B completion or subsequent chronological correctness. Source inspection found old A's start/cursor can regress campaign time after B.
+- Remaining acceptance: exact instance/revision resume, world-clock correction, capacity claims, explicit abandonment, blocked/invalidated results and real browser rehearsal. Broader participation/transfer/deadline design is owned by the existing activity foundation folder; do not create a competing lifecycle design here.
+- Next action: review that concrete proposal, then follow its phase 1. This changes sequencing, not the completion status of this feature; retain the folder until remaining acceptance is delivered or explicitly rescaled.
+- Infrastructure: Docker Desktop's dependency stack is restored; [development](../../development.md#local-dependencies) owns the recovery details.
+- This design pass ran no tests/builds and made no provider calls ($0); cumulative OpenRouter usage unverified.

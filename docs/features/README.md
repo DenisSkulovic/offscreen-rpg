@@ -6,9 +6,10 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 - [Chamber laboratory](2026-09-18--01-23--chamber-laboratory/FEATURE.md) — evolve the scripted chamber into the controlled development laboratory.
 
-## Next implementation evolution
+## Current design priority
 
-1. [Multiple suspended commitments](2026-09-19--02-24--multiple-suspended-commitments/FEATURE.md) — replace the single-active-activity shortcut so A can be suspended, B performed, and the same A resumed with its earned progress after prerequisites and capacity are revalidated.
+1. [Activities, participation and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — owner-requested architecture redesign: separate work from participants, enforce capacity/eligibility, fix clock ownership, and define transfer, failure, deadlines and distinct process semantics. Expanded design is proposed; contribution mechanics already exist.
+2. [Multiple suspended commitments](2026-09-19--02-24--multiple-suspended-commitments/FEATURE.md) — partial implementation retains A while B starts; remaining lifecycle/capacity work follows the activity foundation plan. Actual B settlement, chronological correctness and browser acceptance remain unproven by the current retention test.
 
 ## Experience-first POC recalibration
 
@@ -39,7 +40,7 @@ The immediate DM loop is paused at an experience-review boundary. Its safety/aut
 
 1. [Playable DM adjudication loop](2026-09-18--17-21--playable-dm-adjudication-loop/FEATURE.md) — implemented authority spine awaiting meaningful-agency and runtime acceptance.
 2. [Editable storyteller settings](2026-09-18--14-49--editable-storyteller-settings/FEATURE.md) — revisions, custom tags/guidance, private presets and creation locks.
-3. [Activity processes and world-defined progress](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — proposed correction separating clock advancement, rule-owned progress, completion and estimates. The earned-time slice should approve and consume only its smallest necessary subset.
+3. [Activity foundation](2026-09-18--16-48--activity-processes-and-progress/FEATURE.md) — current design priority above; its existing folder now owns the broader activity/participation proposal.
 4. [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) — draft design: separate provenance from prompt loading, scene/identity-based episodic retrieval and bounded read-only recall. Direct receipts stay first; longevity is not established by the current note window.
 
 Each folder contains a PLAN.md with bounded phases and a current handoff checkpoint. Product ownership: [game rules](../game-rules.md) and [storyteller settings](../storyteller-settings.md).

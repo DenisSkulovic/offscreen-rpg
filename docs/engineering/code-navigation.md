@@ -32,7 +32,7 @@ The [architecture specification](../technical/architecture.md) also describes in
 | Publication | Separate decision to apply a saved result to the still-current story; successful generation alone is insufficient |
 | Offer | Public choices plus separately persisted private plans under an offer identity |
 | Immediate action | Admitted automatic outcome or ability check; resolved directly into one durable action receipt without advancing time |
-| Activity | Existing tick/cadence machinery; its duration-based completion model is under redesign |
+| Activity | Persisted contribution process with independent clock/progress values; shared work, participation, other process rules and clock ownership are under redesign |
 | Passage / arrival | Committed narrative versus a prepared future slice; arrival is not current evidence before publication |
 | Chamber | Both local tooling and, currently, a wrapper used by ordinary story routes; inspect wiring rather than assuming everything with this name is developer-only |
 

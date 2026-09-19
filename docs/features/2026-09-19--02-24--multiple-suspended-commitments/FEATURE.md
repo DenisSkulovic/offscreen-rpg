@@ -1,6 +1,6 @@
 # Multiple suspended commitments
 
-Status: Approved as the next architectural evolution by the owner on 2026-09-19. Implementation is deferred until the next work session. Live inference remains unauthorized.
+Status: Approved on 2026-09-19 and partially implemented. Retention exists; remaining clock/identity, capacity and lifecycle work now follows the expanded [activity foundation design](../2026-09-18--16-48--activity-processes-and-progress/PLAN.md). This feature remains incomplete. Live inference remains unauthorized.
 
 ## Intended outcome
 
