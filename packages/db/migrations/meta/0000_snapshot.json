@@ -1,5 +1,5 @@
 {
-  "id": "3f28ec42-1a2d-4fd0-b8b1-2c63158bb7d4",
+  "id": "d64bb198-5549-46f2-a20b-314afd3cbdd1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3031,6 +3031,196 @@
         "storyteller_attempt_metrics": {
           "name": "storyteller_attempt_metrics",
           "value": "\"storyteller_attempt\".\"request_bytes\" >= 0 AND (\"storyteller_attempt\".\"prompt_tokens\" IS NULL OR \"storyteller_attempt\".\"prompt_tokens\" >= 0) AND (\"storyteller_attempt\".\"completion_tokens\" IS NULL OR \"storyteller_attempt\".\"completion_tokens\" >= 0) AND (\"storyteller_attempt\".\"reasoning_tokens\" IS NULL OR \"storyteller_attempt\".\"reasoning_tokens\" >= 0) AND (\"storyteller_attempt\".\"cached_tokens\" IS NULL OR \"storyteller_attempt\".\"cached_tokens\" >= 0) AND (\"storyteller_attempt\".\"cache_write_tokens\" IS NULL OR \"storyteller_attempt\".\"cache_write_tokens\" >= 0) AND (\"storyteller_attempt\".\"total_tokens\" IS NULL OR \"storyteller_attempt\".\"total_tokens\" >= 0) AND (\"storyteller_attempt\".\"duration_ms\" IS NULL OR \"storyteller_attempt\".\"duration_ms\" >= 0)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.storyteller_dispatch_review": {
+      "name": "storyteller_dispatch_review",
+      "schema": "",
+      "columns": {
+        "generation_id": {
+          "name": "generation_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "packet_sha256": {
+          "name": "packet_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "packet": {
+          "name": "packet",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inspection": {
+          "name": "inspection",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prepared_at": {
+          "name": "prepared_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "storyteller_dispatch_review_generation_id_generation_id_fk": {
+          "name": "storyteller_dispatch_review_generation_id_generation_id_fk",
+          "tableFrom": "storyteller_dispatch_review",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "storyteller_dispatch_review_revision": {
+          "name": "storyteller_dispatch_review_revision",
+          "value": "\"storyteller_dispatch_review\".\"revision\" >= 0"
+        },
+        "storyteller_dispatch_review_mode": {
+          "name": "storyteller_dispatch_review_mode",
+          "value": "\"storyteller_dispatch_review\".\"mode\" IN ('hold','observe','off')"
+        },
+        "storyteller_dispatch_review_state": {
+          "name": "storyteller_dispatch_review_state",
+          "value": "\"storyteller_dispatch_review\".\"state\" IN ('awaiting-review','not-held','released','rejected','superseded')"
+        },
+        "storyteller_dispatch_review_hash": {
+          "name": "storyteller_dispatch_review_hash",
+          "value": "\"storyteller_dispatch_review\".\"packet_sha256\" ~ '^[0-9a-f]{64}$'"
+        },
+        "storyteller_dispatch_review_reviewed": {
+          "name": "storyteller_dispatch_review_reviewed",
+          "value": "(\"storyteller_dispatch_review\".\"state\" IN ('awaiting-review','not-held')) = (\"storyteller_dispatch_review\".\"reviewed_at\" IS NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.storyteller_dispatch_review_decision": {
+      "name": "storyteller_dispatch_review_decision",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "generation_id": {
+          "name": "generation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expected_revision": {
+          "name": "expected_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "packet_sha256": {
+          "name": "packet_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk": {
+          "name": "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk",
+          "tableFrom": "storyteller_dispatch_review_decision",
+          "tableTo": "storyteller_dispatch_review",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "generation_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "storyteller_dispatch_review_decision_revision": {
+          "name": "storyteller_dispatch_review_decision_revision",
+          "nullsNotDistinct": false,
+          "columns": [
+            "generation_id",
+            "expected_revision"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "storyteller_dispatch_review_decision_revision_value": {
+          "name": "storyteller_dispatch_review_decision_revision_value",
+          "value": "\"storyteller_dispatch_review_decision\".\"expected_revision\" >= 0"
+        },
+        "storyteller_dispatch_review_decision_kind": {
+          "name": "storyteller_dispatch_review_decision_kind",
+          "value": "\"storyteller_dispatch_review_decision\".\"kind\" IN ('release','reject','supersede')"
+        },
+        "storyteller_dispatch_review_decision_hash": {
+          "name": "storyteller_dispatch_review_decision_hash",
+          "value": "\"storyteller_dispatch_review_decision\".\"packet_sha256\" ~ '^[0-9a-f]{64}$'"
         }
       },
       "isRLSEnabled": false

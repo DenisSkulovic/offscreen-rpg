@@ -884,6 +884,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     mode: 'provider' as const,
     accountId: randomUUID(),
     runId: randomUUID(),
+    dispatchReview: { mode: 'hold' as const },
     policy: {
       version: 'test',
       route: 'test:economy',

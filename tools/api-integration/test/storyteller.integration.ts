@@ -30,6 +30,7 @@ import { createStorytellerOpenings } from '@offscreen/application/storyteller';
 import { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import {
   createStorytellerBudget,
+  createDispatchReviewControls,
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
 } from '@offscreen/application/storyteller';
@@ -1804,6 +1805,7 @@ test(
               mode: 'provider' as const,
               accountId,
               runId,
+              dispatchReview: { mode: 'hold' as const },
               policy: {
                 version: 'fake',
                 route: 'fake:economy',
@@ -1946,6 +1948,7 @@ test(
               mode: 'provider',
               accountId,
               runId,
+              dispatchReview: { mode: 'off' },
               policy: {
                 version: 'fake',
                 route: 'fake:economy',
@@ -1988,6 +1991,58 @@ test(
               storyteller: { id: 'absurd-action-comedy', revision: 1 },
               expectedRevision: 0,
             });
+            const heldExecution: ExecutionPolicy = {
+              ...execution,
+              dispatchReview: { mode: 'hold' },
+            };
+            const heldProfiled = createStorytellerOpenings(
+              database,
+              heldExecution,
+              testUsagePolicy(execution.policy.route),
+            );
+            const heldId = randomUUID();
+            await heldProfiled.request(ownerId, draftId, heldId, 1);
+            let heldCalls = 0;
+            const heldRuntime = createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (task) => {
+                heldCalls++;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('reviewed-provider-id'),
+                };
+              },
+            });
+            await heldRuntime.complete(heldId);
+            assert.equal(heldCalls, 0);
+            const reviews = createDispatchReviewControls(database);
+            const review = await reviews.read(ownerId, heldId);
+            assert.equal(review?.state, 'awaiting-review');
+            assert.equal(review?.mode, 'hold');
+            assert.match(review?.packetSha256 ?? '', /^[0-9a-f]{64}$/);
+            const [attemptBeforeRelease] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, heldId));
+            assert.equal(attemptBeforeRelease, undefined);
+            await reviews.decide(ownerId, {
+              generationId: heldId,
+              decisionId: randomUUID(),
+              expectedRevision: review?.revision,
+              packetSha256: review?.packetSha256,
+              decision: 'release',
+            });
+            await heldRuntime.complete(heldId);
+            assert.equal(heldCalls, 1);
+            assert.equal(
+              (await reviews.read(ownerId, heldId))?.state,
+              'released',
+            );
             const deniedId = randomUUID();
             await profiled.request(ownerId, draftId, deniedId, 1);
             await createStorytellerRuntime(database, {

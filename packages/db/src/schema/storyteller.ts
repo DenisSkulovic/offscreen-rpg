@@ -34,6 +34,99 @@ export const storytellerPublication = pgTable(
   ],
 );
 
+export const storytellerDispatchReview = pgTable(
+  'storyteller_dispatch_review',
+  {
+    generationId: uuid('generation_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    revision: integer('revision').notNull().default(0),
+    mode: text('mode').notNull().$type<'hold' | 'observe' | 'off'>(),
+    state: text('state')
+      .notNull()
+      .$type<
+        | 'awaiting-review'
+        | 'not-held'
+        | 'released'
+        | 'rejected'
+        | 'superseded'
+      >(),
+    packetSha256: text('packet_sha256').notNull(),
+    packet: jsonb('packet').notNull().$type<unknown>(),
+    inspection: jsonb('inspection').notNull().$type<unknown>(),
+    preparedAt: timestamp('prepared_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    reviewedAt: timestamp('reviewed_at', {
+      withTimezone: true,
+      precision: 3,
+    }),
+  },
+  (t) => [
+    check('storyteller_dispatch_review_revision', sql`${t.revision} >= 0`),
+    check(
+      'storyteller_dispatch_review_mode',
+      sql`${t.mode} IN ('hold','observe','off')`,
+    ),
+    check(
+      'storyteller_dispatch_review_state',
+      sql`${t.state} IN ('awaiting-review','not-held','released','rejected','superseded')`,
+    ),
+    check(
+      'storyteller_dispatch_review_hash',
+      sql`${t.packetSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_dispatch_review_reviewed',
+      sql`(${t.state} IN ('awaiting-review','not-held')) = (${t.reviewedAt} IS NULL)`,
+    ),
+  ],
+);
+
+export const storytellerDispatchReviewDecision = pgTable(
+  'storyteller_dispatch_review_decision',
+  {
+    id: uuid('id').primaryKey(),
+    generationId: uuid('generation_id')
+      .notNull()
+      .references(() => storytellerDispatchReview.generationId, {
+        onDelete: 'restrict',
+      }),
+    expectedRevision: integer('expected_revision').notNull(),
+    kind: text('kind')
+      .notNull()
+      .$type<'release' | 'reject' | 'supersede'>(),
+    packetSha256: text('packet_sha256').notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('storyteller_dispatch_review_decision_revision').on(
+      t.generationId,
+      t.expectedRevision,
+    ),
+    check(
+      'storyteller_dispatch_review_decision_revision_value',
+      sql`${t.expectedRevision} >= 0`,
+    ),
+    check(
+      'storyteller_dispatch_review_decision_kind',
+      sql`${t.kind} IN ('release','reject','supersede')`,
+    ),
+    check(
+      'storyteller_dispatch_review_decision_hash',
+      sql`${t.packetSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);
+
 export const storytellerFunding = pgTable(
   'storyteller_funding',
   {

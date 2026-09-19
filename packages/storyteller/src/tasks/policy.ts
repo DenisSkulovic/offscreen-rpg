@@ -14,6 +14,10 @@ export const modelPolicySchema = z.strictObject({
   maxOutputTokens: z.number().int().positive().max(8000),
   timeoutMs: z.number().int().min(1000).max(120000),
 });
+export const dispatchReviewPolicySchema = z.strictObject({
+  /** Captured per run; never inherited from a process-global toggle. */
+  mode: z.enum(['hold', 'observe', 'off']),
+});
 export const executionPolicySchema = z.discriminatedUnion('mode', [
   z.strictObject({
     mode: z.literal('scripted'),
@@ -23,6 +27,7 @@ export const executionPolicySchema = z.discriminatedUnion('mode', [
     mode: z.literal('provider'),
     accountId: z.uuid(),
     runId: z.uuid(),
+    dispatchReview: dispatchReviewPolicySchema,
     policy: modelPolicySchema,
   }),
 ]);

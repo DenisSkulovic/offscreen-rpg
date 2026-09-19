@@ -11,7 +11,7 @@ Exit: tests prove inspected and transported bodies share the builder; no provide
 
 ## D2 — Durable hold/release authority
 
-Status: next. Fold the review record into the single baseline schema. Add captured mode, packet hash/artifact, prepared/released/rejected/superseded states and append-only review decisions. Worker execution stops before reservation when held. Developer-only application operations release/reject under ownership and expected revision, then redeliver the existing generation. Release rechecks packet hash, generation/source, current authority, route policy, global uncertainty and funding.
+Status: core implemented. The single baseline contains generation-owned review/artifact and append-only decision records. Captured `hold`, `observe` or `off` mode is mandatory for provider execution. Worker execution stops before reservation/publication while held; owner-scoped application controls release/reject under expected revision and packet hash, and release redelivers the existing generation through normal authority/budget enforcement. Packet changes supersede the review. Developer-only API/Chamber exposure and explicit source-freshness diagnostics remain.
 
 Exit: restart and duplicate delivery cannot bypass a hold; release of stale/rebuilt evidence fails closed.
 
@@ -29,7 +29,7 @@ Exit: one eventual charged call yields a complete decision-quality evidence bund
 
 ## Current checkpoint
 
-- Phase: D1 complete. Exact builder and structural inspection are implemented and documented; the Storyteller build and all 30 focused package tests pass with injected transports only.
-- Next: design the baseline review row and expected-revision release/reject operations for D2 before touching worker dispatch. The default must remain no review record/no live path until an evaluation run explicitly captures hold mode.
+- Phase: D1 complete; D2 core complete. Exact packet artifacts persist before accounting, held worker delivery cannot publish or reserve, and release/reject/supersede decisions are durable and hash-scoped. The focused fake-provider integration passes: awaiting review causes zero attempts/calls, then one explicit release permits exactly one dispatch through existing accounting.
+- Next: expose private read/release/reject operations through developer-only Chamber routes and add clear freshness/blocker diagnostics, then build the D3 packet laboratory. Ordinary product routes must not gain these controls.
 - Dependencies: existing immutable Storyteller task, B1/B2 authority/accounting and developer-only Chamber. D2 must reuse `budget.reserve/dispatch`; it cannot create a parallel money path.
 - Spend: no provider calls are authorized or required; expected application-model spend is $0.

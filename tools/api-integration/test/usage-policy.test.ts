@@ -27,6 +27,7 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
     mode: 'provider',
     accountId: '00000000-0000-4000-8000-000000000001',
     runId: '00000000-0000-4000-8000-000000000002',
+    dispatchReview: { mode: 'hold' },
     policy: {
       version: 'test',
       route: 'fake:economy',

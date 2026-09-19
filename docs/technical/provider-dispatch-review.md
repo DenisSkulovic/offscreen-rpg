@@ -1,6 +1,6 @@
 # Provider dispatch review and dry-run analysis
 
-Status: first packet-construction slice implemented; durable breakpoint/release lifecycle prepared.
+Status: exact packet construction and the durable breakpoint/release core are implemented. Developer-only API and Chamber inspection controls remain.
 
 ## Product contract
 
@@ -22,7 +22,7 @@ API keys, authorization headers and arbitrary environment data are never part of
 
 ## Durable breakpoint lifecycle
 
-The planned review record is generation-owned and append-audited:
+The review record is generation-owned and decisions are append-only:
 
 ```text
 prepared -> awaiting-review -> released -> reserved -> dispatched
@@ -58,4 +58,3 @@ The released packet links to provider attempt, response, validation diagnostics,
 - Raw packets remain private developer diagnostics and use bounded local storage/export redaction.
 - A release after authority, source, pricing or packet changes fails closed.
 - The breakpoint does not authorize live evaluation; the spending rules and evaluation gate still apply.
-

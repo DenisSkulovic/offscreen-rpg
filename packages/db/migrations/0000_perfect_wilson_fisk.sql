@@ -418,6 +418,36 @@ CREATE TABLE "storyteller_attempt" (
 	CONSTRAINT "storyteller_attempt_metrics" CHECK ("storyteller_attempt"."request_bytes" >= 0 AND ("storyteller_attempt"."prompt_tokens" IS NULL OR "storyteller_attempt"."prompt_tokens" >= 0) AND ("storyteller_attempt"."completion_tokens" IS NULL OR "storyteller_attempt"."completion_tokens" >= 0) AND ("storyteller_attempt"."reasoning_tokens" IS NULL OR "storyteller_attempt"."reasoning_tokens" >= 0) AND ("storyteller_attempt"."cached_tokens" IS NULL OR "storyteller_attempt"."cached_tokens" >= 0) AND ("storyteller_attempt"."cache_write_tokens" IS NULL OR "storyteller_attempt"."cache_write_tokens" >= 0) AND ("storyteller_attempt"."total_tokens" IS NULL OR "storyteller_attempt"."total_tokens" >= 0) AND ("storyteller_attempt"."duration_ms" IS NULL OR "storyteller_attempt"."duration_ms" >= 0))
 );
 --> statement-breakpoint
+CREATE TABLE "storyteller_dispatch_review" (
+	"generation_id" uuid PRIMARY KEY NOT NULL,
+	"revision" integer DEFAULT 0 NOT NULL,
+	"mode" text NOT NULL,
+	"state" text NOT NULL,
+	"packet_sha256" text NOT NULL,
+	"packet" jsonb NOT NULL,
+	"inspection" jsonb NOT NULL,
+	"prepared_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"reviewed_at" timestamp (3) with time zone,
+	CONSTRAINT "storyteller_dispatch_review_revision" CHECK ("storyteller_dispatch_review"."revision" >= 0),
+	CONSTRAINT "storyteller_dispatch_review_mode" CHECK ("storyteller_dispatch_review"."mode" IN ('hold','observe','off')),
+	CONSTRAINT "storyteller_dispatch_review_state" CHECK ("storyteller_dispatch_review"."state" IN ('awaiting-review','not-held','released','rejected','superseded')),
+	CONSTRAINT "storyteller_dispatch_review_hash" CHECK ("storyteller_dispatch_review"."packet_sha256" ~ '^[0-9a-f]{64}$'),
+	CONSTRAINT "storyteller_dispatch_review_reviewed" CHECK (("storyteller_dispatch_review"."state" IN ('awaiting-review','not-held')) = ("storyteller_dispatch_review"."reviewed_at" IS NULL))
+);
+--> statement-breakpoint
+CREATE TABLE "storyteller_dispatch_review_decision" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"generation_id" uuid NOT NULL,
+	"expected_revision" integer NOT NULL,
+	"kind" text NOT NULL,
+	"packet_sha256" text NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "storyteller_dispatch_review_decision_revision" UNIQUE("generation_id","expected_revision"),
+	CONSTRAINT "storyteller_dispatch_review_decision_revision_value" CHECK ("storyteller_dispatch_review_decision"."expected_revision" >= 0),
+	CONSTRAINT "storyteller_dispatch_review_decision_kind" CHECK ("storyteller_dispatch_review_decision"."kind" IN ('release','reject','supersede')),
+	CONSTRAINT "storyteller_dispatch_review_decision_hash" CHECK ("storyteller_dispatch_review_decision"."packet_sha256" ~ '^[0-9a-f]{64}$')
+);
+--> statement-breakpoint
 CREATE TABLE "storyteller_funding" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"limit_microusd" bigint NOT NULL,
@@ -539,6 +569,8 @@ ALTER TABLE "story_resolution" ADD CONSTRAINT "story_resolution_base_passage_id_
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_run_id_storyteller_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."storyteller_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_dispatch_review" ADD CONSTRAINT "storyteller_dispatch_review_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_dispatch_review_decision" ADD CONSTRAINT "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."storyteller_dispatch_review"("generation_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_run_id_storyteller_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."storyteller_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint

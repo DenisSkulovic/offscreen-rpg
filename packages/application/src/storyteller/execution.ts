@@ -14,6 +14,7 @@ import {
 } from '@offscreen/contracts/usage-policy';
 import { isDeepStrictEqual } from 'node:util';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
+import { prepareDispatchReview } from './dispatch-review';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
@@ -110,6 +111,14 @@ export function createStorytellerExecution(
       }
       await saveOutcome(record.id, attemptId, { state: 'succeeded', output });
       return;
+    }
+    const reviewDisposition = await prepareDispatchReview(
+      database,
+      record.id,
+      task,
+    );
+    if (reviewDisposition !== 'proceed') {
+      return reviewDisposition;
     }
     if (!options.provider) {
       await saveOutcome(record.id, attemptId, {

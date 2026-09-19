@@ -33,7 +33,13 @@ export function createStorytellerRuntime(
       }
       const task = storytellerTaskSchema.parse(record.input);
       if (record.state === 'pending' || record.state === 'running') {
-        await execution.execute(record, task);
+        const executionDisposition = await execution.execute(record, task);
+        if (
+          executionDisposition === 'held' ||
+          executionDisposition === 'stopped'
+        ) {
+          return;
+        }
       }
       try {
         await publishStorytellerResult(
