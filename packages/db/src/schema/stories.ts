@@ -25,6 +25,7 @@ export const story = pgTable(
     execution: jsonb('execution').$type<unknown>(),
     usagePolicy: jsonb('usage_policy').$type<unknown>(),
     continuityNotes: jsonb('continuity_notes').$type<unknown>(),
+    activeSceneScope: jsonb('active_scene_scope').$type<unknown>(),
     revision: integer('revision').notNull().default(1),
     viewVersion: integer('view_version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })

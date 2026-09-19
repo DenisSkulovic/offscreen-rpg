@@ -29,6 +29,7 @@ export async function initializeStoryInTransaction(
   tx: Transaction,
   { ownerId, storyId, input }: InitializeStoryInTransaction,
 ) {
+  const firstPassageId = randomUUID();
   const inserted = await tx
     .insert(story)
     .values({
@@ -40,6 +41,13 @@ export async function initializeStoryInTransaction(
       execution: input.execution ?? null,
       usagePolicy: input.usagePolicy ?? null,
       continuityNotes: input.storyteller ? [] : null,
+      activeSceneScope: input.storyteller
+        ? {
+            version: 'active-scene-anchor.v1',
+            fromSequence: 1,
+            requiredPassageIds: [firstPassageId],
+          }
+        : null,
     })
     .onConflictDoNothing()
     .returning({ id: story.id });
@@ -99,7 +107,7 @@ export async function initializeStoryInTransaction(
       .values(input.items.map((item) => ({ storyId, ...item })));
   }
   await tx.insert(storyPassage).values({
-    id: randomUUID(),
+    id: firstPassageId,
     storyId,
     sequence: 1,
     initialItems: input.items,

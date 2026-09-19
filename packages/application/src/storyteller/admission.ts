@@ -143,6 +143,7 @@ export async function admitStorytellerResolution(
     revision: current.revision,
     premise: current.premise,
     notes: current.continuityNotes,
+    activeSceneScope: current.activeSceneScope,
     selected,
   });
   const task = prepareAdmittedStorytellerTask(

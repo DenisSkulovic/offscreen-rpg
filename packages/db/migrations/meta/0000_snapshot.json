@@ -2387,6 +2387,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "active_scene_scope": {
+          "name": "active_scene_scope",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "revision": {
           "name": "revision",
           "type": "integer",

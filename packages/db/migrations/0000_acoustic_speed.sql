@@ -329,6 +329,7 @@ CREATE TABLE "story" (
 	"execution" jsonb,
 	"usage_policy" jsonb,
 	"continuity_notes" jsonb,
+	"active_scene_scope" jsonb,
 	"revision" integer DEFAULT 1 NOT NULL,
 	"view_version" integer DEFAULT 1 NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,

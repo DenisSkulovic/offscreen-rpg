@@ -4,7 +4,7 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
-import { and, desc, eq, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
@@ -15,6 +15,13 @@ import {
 } from '@offscreen/game/activities';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 import { readAcceptedActivityPlan } from '../campaign/accepted-plans';
+import { z } from 'zod';
+
+const activeSceneAnchorSchema = z.strictObject({
+  version: z.literal('active-scene-anchor.v1'),
+  fromSequence: z.number().int().positive(),
+  requiredPassageIds: z.array(z.uuid()).max(40),
+});
 
 function projectActivityProgress(plan: unknown, progress: unknown) {
   const resolved = resolvedActivityPlanSchema.parse(plan);
@@ -55,22 +62,35 @@ export async function loadStorytellerContext(
     revision: number;
     premise: unknown;
     notes: unknown;
+    activeSceneScope: unknown;
     selected: { id: string; label: string; intention: string };
   },
 ) {
   const notes = continuityNotesSchema.parse(input.notes ?? []);
-  const recent = await tx
+  const activeScene =
+    input.activeSceneScope === null
+      ? null
+      : activeSceneAnchorSchema.parse(input.activeSceneScope);
+  const recentQuery = tx
     .select()
     .from(storyPassage)
     .where(
       and(
         eq(storyPassage.storyId, input.storyId),
         lte(storyPassage.sequence, input.revision),
+        ...(activeScene
+          ? [gte(storyPassage.sequence, activeScene.fromSequence)]
+          : []),
       ),
     )
-    .orderBy(desc(storyPassage.sequence))
-    .limit(7);
-  const evidenceIds = [...new Set(notes.flatMap((note) => note.sources))];
+    .orderBy(desc(storyPassage.sequence));
+  const recent = activeScene ? await recentQuery : await recentQuery.limit(7);
+  const evidenceIds = [
+    ...new Set([
+      ...notes.flatMap((note) => note.sources),
+      ...(activeScene?.requiredPassageIds ?? []),
+    ]),
+  ];
   const older = evidenceIds.length
     ? await tx
         .select()
@@ -192,6 +212,16 @@ export async function loadStorytellerContext(
       }
     : undefined;
   return contextInputSchema.parse({
+    ...(activeScene
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1',
+            fromSequence: activeScene.fromSequence,
+            throughSequence: input.revision,
+            requiredPassageIds: activeScene.requiredPassageIds,
+          },
+        }
+      : {}),
     ...(activitySituation ? { activitySituation } : {}),
     ...(captured ? { campaignSettings: captured.settings } : {}),
     premise: input.premise,

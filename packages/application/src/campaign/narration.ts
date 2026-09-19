@@ -105,6 +105,7 @@ async function admitActionNarration(
     revision: current.revision,
     premise: current.premise,
     notes: current.continuityNotes,
+    activeSceneScope: current.activeSceneScope,
     selected: {
       id: receipt.operationId,
       label: receipt.label,
@@ -215,6 +216,7 @@ async function admitConsequenceNarration(
     revision: current.revision,
     premise: current.premise,
     notes: current.continuityNotes,
+    activeSceneScope: current.activeSceneScope,
     selected: {
       id: receipt.operationId,
       label: receipt.label,

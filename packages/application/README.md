@@ -8,6 +8,10 @@ Campaign commands and timer wakes enter purpose-specific operations under the st
 
 Start finite-action settlement at `campaign/action-execution-transition.ts` for the due/waiting and resolution decision, then `campaign/action-executions.ts` for atomic persistence. Activity mechanics remain process-specific in `campaign/activities.ts`; `campaign/activity-follow-up-policy.ts` separately decides whether a completed boundary requests no prose, a source-frozen historical report or a controlling consequence scene. Timers only wake these operations by execution ID. They do not own mechanical or narration policy.
 
+## Active-scene context
+
+Profiled stories persist a private `active-scene-anchor.v1` containing the first committed passage sequence and explicitly required passage identities. `storyteller/context.ts` reads the anchor under the story lock, loads its complete committed range through the locked revision and hands a derived `active-scene.v1` scope to Storyteller preparation. The immutable task—not a worker-local chat—therefore survives restart with the same evidence. Missing passages, future evidence, ranges over forty passages and request overflow fail closed. The anchor currently begins with the story and carries forward conservatively; an explicit publication-owned boundary replacement remains R2 work.
+
 ## Persistence and read caching
 
 Drizzle access stays in the domain operation that owns the transaction; there is intentionally no generic repository per table. `stories/reads.ts` builds the public snapshot under repeatable-read isolation. Its optional cache dependency is the small port in `src/cache`: it can store only an already-authorized, runtime-validated projection under an owner-scoped projection identity. The Redis implementation and connection lifecycle live in `@offscreen/cache`, outside this package. Commands, locks, timers, private plans and accounting authority never read Redis. See [persistence and caching](../../docs/technical/persistence-and-caching.md).

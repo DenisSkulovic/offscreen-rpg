@@ -41,6 +41,7 @@ export async function requestActivityReport(
     revision: args.current.revision,
     premise: args.current.premise,
     notes: args.current.continuityNotes,
+    activeSceneScope: args.current.activeSceneScope,
     selected: {
       id: args.activity.id,
       label: args.label,
