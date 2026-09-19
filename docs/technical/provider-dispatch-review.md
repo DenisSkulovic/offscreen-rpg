@@ -1,6 +1,6 @@
 # Provider dispatch review and dry-run analysis
 
-Status: exact packet construction and the durable breakpoint/release core are implemented. Developer-only API and Chamber inspection controls remain.
+Status: exact packet construction, durable breakpoint/release core and developer-only API inspection are implemented. `pnpm chamber:packet` creates and exports a held opening without a browser. Reject/rebuild/compare/release controls remain; release is intentionally not exposed before live-evaluation preflight.
 
 ## Product contract
 
@@ -46,6 +46,14 @@ The Chamber should show a summary before raw JSON:
 - differences from a selected earlier packet by prompt, context, schema, route and limits.
 
 Analysis findings are structured diagnostics with severity, stable rule ID, affected JSON path and measured evidence. They do not automatically rewrite prompts. The reviewer changes code/content, rebuilds, and compares hashes. This preserves reproducibility and prevents a convenient UI edit from becoming invisible production behavior.
+
+## Prompt responsibility
+
+The engine, not the model, owns legal game transitions: checks and modifiers, clocks, activity progress, possessions, capabilities, requirements, effects, deadlines and durable facts. A prompt supplies only the subset of those typed contracts and resolved facts needed for the current task. The Storyteller may narrate committed outcomes and propose intentions inside that contract; it does not roll, execute, or invent a parallel rules system.
+
+Do not paste a general tabletop rulebook into every request or tell the model merely to “use D&D edition X.” The former wastes context and creates competing authority; the latter is ambiguous, model-dependent and cannot be validated. D&D-inspired mechanics are application contracts. A task should name the relevant check/action vocabulary and admissible values when that task can propose them, while omitting mechanics irrelevant to the turn.
+
+Likewise, do not explain the entire product on every turn. The stable system message states role, authority and universal narrative boundaries. Task guidance states the current output opportunity—opening, continuation, committed consequence or report. The user payload carries the selected Storyteller profile and bounded authoritative context. The JSON Schema is part of the prompt budget and must be task-specific: fields with no legal meaning for that task are defects, not harmless completeness.
 
 ## Evidence retained after a real run
 
