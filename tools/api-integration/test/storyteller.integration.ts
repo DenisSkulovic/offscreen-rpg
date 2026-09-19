@@ -274,32 +274,36 @@ test(
               activity?.id,
               'Expected the admitted activity identity',
             );
-            const resumeOfferId = randomUUID();
-            const resumePlan = {
+            const encounterOfferId = randomUUID();
+            const encounterPlan = {
               version: 1 as const,
-              key: 'resume-beacon-repair',
-              label: 'Return to the beacon repair',
-              intention:
-                'Resume the suspended repair from its last sound contribution.',
+              key: 'bar-the-door',
+              label: 'Bar the beacon door',
+              intention: 'Secure the entrance until the stranger leaves.',
               risk: null,
               evidence: [],
-              requires: [
-                { id: 'beacon-damaged', value: true },
-                { id: 'repair-tools', value: true },
-                { id: 'stranger-at-beacon', value: false },
-              ],
+              requires: [{ id: 'stranger-at-beacon', value: true }],
               requiresStory: [],
               requiresQuantities: [],
               resolution: {
-                kind: 'resume' as const,
-                activityActionId: 'restore-beacon',
+                kind: 'automatic' as const,
+                outcome: {
+                  text: 'You bar the door until the stranger returns to the boat.',
+                  effects: [
+                    {
+                      kind: 'fact.set.v1' as const,
+                      fact: { id: 'stranger-at-beacon', value: false },
+                    },
+                  ],
+                  declarations: [],
+                },
               },
             };
             await database.db.insert(gameOffer).values({
-              id: resumeOfferId,
+              id: encounterOfferId,
               storyId: started.storyId,
               narrativeRevision: snapshot.revision,
-              plans: [resumePlan],
+              plans: [encounterPlan],
             });
             await database.db
               .update(gameActivity)
@@ -320,14 +324,14 @@ test(
               .update(campaignTable)
               .set({
                 offer: {
-                  id: resumeOfferId,
+                  id: encounterOfferId,
                   nodes: [
                     {
-                      id: resumePlan.key,
+                      id: encounterPlan.key,
                       parent: null,
-                      label: resumePlan.label,
-                      description: resumePlan.intention,
-                      risk: resumePlan.risk,
+                      label: encounterPlan.label,
+                      description: encounterPlan.intention,
+                      risk: encounterPlan.risk,
                       action: { kind: 'attempt' },
                     },
                   ],
@@ -335,14 +339,48 @@ test(
               })
               .where(eq(campaignTable.storyId, started.storyId));
 
+            const encounterOperationId = randomUUID();
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: encounterOperationId,
+              body: {
+                expectedRevision: snapshot.revision,
+                offerId: encounterOfferId,
+                path: [encounterPlan.key],
+              },
+            });
+            const [afterResponse] = await database.db
+              .select({ activeActivityId: campaignTable.activeActivityId })
+              .from(campaignTable)
+              .where(eq(campaignTable.storyId, started.storyId));
+            assert.equal(afterResponse?.activeActivityId, activityId);
+
+            await storyService.prepareCampaignConsequence(encounterOperationId);
+            const [receipt] = await database.db
+              .select({ generationId: gameActionReceipt.generationId })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, encounterOperationId));
+            assert.ok(receipt?.generationId);
+            await runtime.complete(receipt.generationId);
+            const afterNarration = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const resumeOffer = requireDefined(
+              afterNarration.campaign?.offer,
+              'Expected the fixture storyteller to offer the retained work',
+            );
+            assert.equal(resumeOffer.nodes[0]?.id, 'resume-beacon-repair');
+
             await stories.campaignAction({
               ownerId,
               storyId: started.storyId,
               operationId: randomUUID(),
               body: {
-                expectedRevision: snapshot.revision,
-                offerId: resumeOfferId,
-                path: [resumePlan.key],
+                expectedRevision: afterNarration.revision,
+                offerId: resumeOffer.id,
+                path: ['resume-beacon-repair'],
               },
             });
             const resumed = await stories.read({

@@ -229,7 +229,10 @@ export function createCampaignActions(database: Database) {
           character: resolved.character,
           storyFacts: resolved.storyFacts,
           offer: null,
-          activeActivityId: null,
+          // An encounter action resolves the obstacle, not the interrupted
+          // commitment. Keep its identity attached so subsequent narration can
+          // offer a resume of the exact durable work and retained progress.
+          activeActivityId: active?.state === 'encounter' ? active.id : null,
         })
         .where(eq(campaign.storyId, current.id));
       await saveCommand(tx, current.id, args.operationId, request);
