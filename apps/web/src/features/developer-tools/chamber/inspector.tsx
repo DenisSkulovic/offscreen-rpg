@@ -184,6 +184,13 @@ export function ChamberInspectorPanel(args: {
             ) : (
               <p>No activity report hooks.</p>
             )}
+            <h2>Accepted activity plan</h2>
+            <dl>
+              <dt>Current activity access</dt>
+              <JsonValue value={inspection.activityAccess} />
+              <dt>Plan, entry bindings, horizon, and stop reason</dt>
+              <JsonValue value={inspection.acceptedActivityPlan} />
+            </dl>
             <h2>Generation provenance</h2>
             {inspection.generation ? (
               <dl>

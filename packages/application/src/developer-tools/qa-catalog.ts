@@ -296,7 +296,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     version: 1,
     name: 'Quiet activity lifecycle',
     purpose:
-      'Manually verify genuine clock waiting, an accepted two-entry continuation, factual quiet completion, finite repeatable work, and reload-safe activity identity without model work.',
+      'Manually verify genuine clock waiting, finite accepted continuation, horizon/cancellation/blocking stops, finite repeatable work, and reload-safe activity identity without model work.',
     risk: 'Routine play may secretly roll, generate narration, duplicate instances, replay a finite opportunity, or lose authority after reload.',
     costClass: 'offline',
     availability: { state: 'available' },

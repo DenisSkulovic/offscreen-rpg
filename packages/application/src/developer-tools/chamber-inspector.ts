@@ -266,6 +266,8 @@ export function createChamberInspector(database: Database) {
         activeResolution?.generationOutput,
       );
       return chamberInspectorSchema.parse({
+        acceptedActivityPlan: snapshot.campaign?.acceptedActivityPlan ?? null,
+        activityAccess: snapshot.campaign?.activityAccess ?? { kind: 'none' },
         activityReports,
         storyteller:
           current.storyteller == null

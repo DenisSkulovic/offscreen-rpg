@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { activityAccessSchema } from '@offscreen/game/immediate-actions';
+import { acceptedActivityPlanViewSchema } from './campaign';
 import { interactionSchema } from './interactions';
 import {
   passageContentSchema,
@@ -66,6 +68,8 @@ const isoDateTime = z.iso.datetime();
 export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
+  acceptedActivityPlan: acceptedActivityPlanViewSchema.nullable(),
+  activityAccess: activityAccessSchema,
   activityReports: z
     .array(
       z.strictObject({
