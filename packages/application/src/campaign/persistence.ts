@@ -8,6 +8,8 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import {
+  immediateActionContentSchema,
+  immediateActionAvailable,
   immediateActionPlanSchema,
   situationAuthorizationSchema,
   type ImmediateActionPlan,
@@ -15,6 +17,7 @@ import {
 import type { Roll } from '@offscreen/game/checks';
 import type { OutcomeEffect } from '@offscreen/game/effects';
 import { offerSchema, type GameOffer } from '@offscreen/game/offers';
+import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import type { Transaction } from '../outbox/index';
 import {
@@ -53,24 +56,77 @@ export async function recordRoll(
 export async function refreshOffer(
   tx: Transaction,
   state: CampaignRecord,
-  _activityState: string | null,
   narrativeRevision: number,
+  allowPreparedActivities: boolean,
 ): Promise<GameOffer> {
-  // Mechanical boundaries do not author the next fictional menu. Until a
-  // Storyteller scene publishes an explicit replacement, routine access is none.
-  const offer = offerSchema.parse({
+  const authorization = campaignSituationAuthorization(state);
+  const eligiblePlans: ImmediateActionPlan[] = [];
+  if (allowPreparedActivities) {
+    for (const plan of authorization.preparedPlans) {
+      if (
+        !immediateActionAvailable(
+          campaignCharacter(state),
+          campaignStoryFacts(state),
+          plan,
+        )
+      ) {
+        continue;
+      }
+      if (plan.resolution.kind === 'resume') {
+        const resume = plan.resolution;
+        if (!resume.activityId || resume.activityRevision === undefined) {
+          continue;
+        }
+        const [retained] = await tx
+          .select()
+          .from(gameActivity)
+          .where(eq(gameActivity.id, resume.activityId));
+        if (
+          !retained ||
+          retained.storyId !== state.storyId ||
+          retained.revision !== resume.activityRevision ||
+          !['encounter', 'suspended'].includes(retained.state)
+        ) {
+          continue;
+        }
+      }
+      eligiblePlans.push(plan);
+    }
+  }
+  const opportunities = composeOpportunities({
     id: randomUUID(),
-    nodes: [],
+    content: immediateActionContentSchema.parse({
+      version: 1,
+      id: `prepared-${state.storyId}`,
+      plans: eligiblePlans,
+    }),
+    character: campaignCharacter(state),
+    storyFacts: campaignStoryFacts(state),
+    busy: false,
   });
-  await saveOfferPlans(tx, state.storyId, narrativeRevision, offer.id, []);
+  const offer = offerSchema.parse(opportunities.offer);
+  await saveOfferPlans(
+    tx,
+    state.storyId,
+    narrativeRevision,
+    offer.id,
+    opportunities.plans,
+  );
+  const activityAccess = opportunities.plans.length
+    ? {
+        kind: 'selected' as const,
+        actionKeys: opportunities.plans.map((plan) => plan.key),
+      }
+    : { kind: 'none' as const };
   await tx
     .update(campaign)
     .set({
       offer,
       situationAuthorization: {
-        version: 1,
+        version: 2,
         offerId: offer.id,
-        activityAccess: { kind: 'none' },
+        activityAccess,
+        preparedPlans: authorization.preparedPlans,
       },
     })
     .where(eq(campaign.storyId, state.storyId));

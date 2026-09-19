@@ -196,6 +196,7 @@
             ],
             "resolution": {
               "kind": "process",
+              "reuse": "once",
               "action": {
                 "id": "restore-beacon",
                 "label": "Restore the signal beacon",
@@ -227,6 +228,7 @@
                     "failureText": "The attempt consumes time without producing a sound repair."
                   }
                 },
+                "completionFollowUp": "scene",
                 "checks": [
                   {
                     "id": "stranger-approaches",

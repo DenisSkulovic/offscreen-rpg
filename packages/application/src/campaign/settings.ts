@@ -33,6 +33,7 @@ import {
   immediateActionContentSchema,
   immediateActionPlanSchema,
   activityAccessSchema,
+  authorizeSituation,
   validateActivityAccess,
   type ImmediateActionPlan,
   type ActivityAccess,
@@ -115,11 +116,11 @@ export async function initializeCampaign(
     clockAnchorAt: new Date(now),
     clockPace: settings.pace,
     offer: opportunities?.offer ?? null,
-    situationAuthorization: {
-      version: 1,
-      offerId: opportunities?.offer.id ?? null,
+    situationAuthorization: authorizeSituation(
+      opportunities?.plans ?? [],
+      opportunities?.offer.id ?? null,
       activityAccess,
-    },
+    ),
   });
   if (opportunities) {
     await saveOfferPlans(

@@ -7,6 +7,7 @@ import { storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import {
+  authorizeSituation,
   immediateActionAvailable,
   validateImmediateActionProposal,
   type ImmediateActionPlan,
@@ -192,11 +193,11 @@ export async function publishStorytellerResult(
         .update(campaign)
         .set({
           offer: plannedOffer,
-          situationAuthorization: {
-            version: 1,
-            offerId: plannedOffer.id,
-            activityAccess: result.scene.next.activityAccess,
-          },
+          situationAuthorization: authorizeSituation(
+            selectedPlans,
+            plannedOffer.id,
+            result.scene.next.activityAccess,
+          ),
         })
         .where(eq(campaign.storyId, current.id));
       await advanceStoryView(tx, {

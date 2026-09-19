@@ -238,7 +238,9 @@ export async function settleActivity(
   if (!reachedBoundary) {
     return { activity: nextActivity, current, state: nextCampaign };
   }
-  await refreshOffer(tx, nextCampaign, nextState, current.revision + 1);
+  const quietCompletion =
+    nextState === 'complete' && plan.action.completionFollowUp === 'quiet';
+  await refreshOffer(tx, nextCampaign, current.revision + 1, quietCompletion);
   // Receipts retain every roll. Keep the player-facing summary within passage bounds.
   const paragraphs = lines.slice(-8);
   if (lines.length > 8) {
@@ -257,7 +259,7 @@ export async function settleActivity(
     revision: current.revision + 1,
     viewVersion: current.viewVersion + 1,
   };
-  if (nextState !== 'running') {
+  if (nextState !== 'running' && !quietCompletion) {
     await requestConsequenceNarration(tx, nextStory, {
       passageId,
       operationId: activity.id,

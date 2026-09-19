@@ -68,6 +68,7 @@ export const immediateActionPlanSchema = z.strictObject({
     z.strictObject({
       kind: z.literal('process'),
       action: actionDefinitionSchema,
+      reuse: z.enum(['once', 'repeatable']),
     }),
     z
       .strictObject({
@@ -99,11 +100,91 @@ export const activityAccessSchema = z.discriminatedUnion('kind', [
 ]);
 export type ActivityAccess = z.infer<typeof activityAccessSchema>;
 
-export const situationAuthorizationSchema = z.strictObject({
-  version: z.literal(1),
-  offerId: z.uuid().nullable(),
-  activityAccess: activityAccessSchema,
-});
+export const situationAuthorizationSchema = z
+  .strictObject({
+    version: z.literal(2),
+    offerId: z.uuid().nullable(),
+    activityAccess: activityAccessSchema,
+    preparedPlans: z.array(immediateActionPlanSchema).max(6),
+  })
+  .superRefine((authorization, context) => {
+    if (
+      authorization.preparedPlans.some(
+        (plan) =>
+          plan.resolution.kind !== 'process' &&
+          plan.resolution.kind !== 'resume',
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['preparedPlans'],
+        message: 'Only extended activity plans may remain prepared',
+      });
+    }
+    if (
+      authorization.offerId === null &&
+      authorization.activityAccess.kind !== 'none'
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['activityAccess'],
+        message: 'Activity access requires a current offer',
+      });
+    }
+  });
+
+export function preparedActivityPlans(plans: readonly ImmediateActionPlan[]) {
+  return plans.filter(
+    (plan) =>
+      plan.resolution.kind === 'process' || plan.resolution.kind === 'resume',
+  );
+}
+
+export function authorizeSituation(
+  plans: readonly ImmediateActionPlan[],
+  offerId: string | null,
+  activityAccess: ActivityAccess,
+) {
+  validateActivityAccess(plans, activityAccess);
+  return situationAuthorizationSchema.parse({
+    version: 2,
+    offerId,
+    activityAccess,
+    preparedPlans: preparedActivityPlans(plans),
+  });
+}
+
+export function consumePreparedActivityPlan(
+  plans: readonly ImmediateActionPlan[],
+  selected: ImmediateActionPlan,
+) {
+  if (
+    selected.resolution.kind === 'process' &&
+    selected.resolution.reuse === 'repeatable'
+  ) {
+    return [...plans];
+  }
+  return plans.filter((plan) => plan.key !== selected.key);
+}
+
+export function rebindPreparedResume(
+  plans: readonly ImmediateActionPlan[],
+  activityId: string,
+  activityRevision: number,
+) {
+  return plans.map((plan) => {
+    if (
+      plan.resolution.kind !== 'resume' ||
+      plan.resolution.activityId !== activityId
+    ) {
+      return plan;
+    }
+    return immediateActionPlanSchema.parse({
+      ...plan,
+      resolution: { ...plan.resolution, activityRevision },
+    });
+  });
+}
 
 /** Every extended-process plan must be deliberately authorized in this scene. */
 export function validateActivityAccess(

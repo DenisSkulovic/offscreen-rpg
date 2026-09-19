@@ -62,6 +62,7 @@ export const actionDefinitionSchema = z.strictObject({
   requires: z.array(factSchema).max(16),
   capacity: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   process: processDefinitionSchema,
+  completionFollowUp: z.enum(['quiet', 'scene']),
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
 });

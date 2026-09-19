@@ -191,6 +191,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'process',
+        reuse: 'once',
         action: {
           id: 'wait-contracted',
           label: 'Remain contracted',
@@ -203,6 +204,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
             progressLabel: 'Protective interval',
             requiredTicks: 10,
           },
+          completionFollowUp: 'quiet',
           checks: [],
           completion: {
             text: 'The disturbance passes while the organism remains contracted.',
@@ -244,6 +246,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'process',
+        reuse: 'once',
         action: {
           id: 'restore-beacon',
           label: 'Restore the signal beacon',
@@ -276,6 +279,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
                 'The attempt consumes time without producing a sound repair.',
             },
           },
+          completionFollowUp: 'scene',
           checks: [
             {
               id: 'stranger-approaches',
@@ -667,6 +671,7 @@ function beaconConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'process',
+        reuse: 'once',
         action: {
           id: 'secure-repair-tools',
           label: 'Secure the repair tools',
@@ -689,7 +694,7 @@ function beaconConsequence(
                 purpose: 'Secure the exposed repair tools',
                 skill: null,
                 ability: 'intelligence',
-                dc: 8,
+                dc: 5,
                 advantage: false,
                 disadvantage: false,
                 modifiers: [{ source: 'repair tools', value: 2 }],
@@ -702,6 +707,7 @@ function beaconConsequence(
                 'The hurried attempt consumes time, but the exposed tools are not yet secure.',
             },
           },
+          completionFollowUp: 'quiet',
           checks: [],
           completion: {
             text: 'The repair tools are secured and ready for the beacon work to continue.',

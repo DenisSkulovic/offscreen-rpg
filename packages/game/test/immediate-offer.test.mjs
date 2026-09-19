@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  authorizeSituation,
+  consumePreparedActivityPlan,
   immediateActionContentSchema,
   immediateActionAvailable,
   resolveImmediateAction,
+  rebindPreparedResume,
   validateActivityAccess,
   validateImmediateActionProposal,
 } from '../dist/src/immediate-actions.js';
@@ -302,6 +305,7 @@ test('extended activity access is explicit and cannot omit or invent a plan', ()
     key: 'continue-over-time',
     resolution: {
       kind: 'process',
+      reuse: 'once',
       action: {
         id: 'continue-over-time',
         label: 'Continue over time',
@@ -314,13 +318,23 @@ test('extended activity access is explicit and cannot omit or invent a plan', ()
           requiredContribution: 1,
           everyTicks: 1,
           attempt: {
-            check: content.plans[0].resolution.check,
+            check: {
+              rule: 'srd-5.2.1-subset.v1',
+              purpose: 'Continue the admitted work',
+              skill: null,
+              ability: 'wisdom',
+              dc: 10,
+              advantage: false,
+              disadvantage: false,
+              modifiers: [],
+            },
             successContribution: 1,
             failureContribution: 0,
             successText: 'Progress is made.',
             failureText: 'Time passes without progress.',
           },
         },
+        completionFollowUp: 'quiet',
         checks: [],
         completion: { text: 'The work is complete.', effects: [] },
       },
@@ -336,6 +350,38 @@ test('extended activity access is explicit and cannot omit or invent a plan', ()
       actionKeys: ['continue-over-time'],
     }),
     { kind: 'selected', actionKeys: ['continue-over-time'] },
+  );
+  const activityId = '45469315-a0ca-4a89-b25d-d74a8e7250c8';
+  const resume = {
+    ...structuredClone(content.plans[0]),
+    key: 'resume-existing',
+    resolution: {
+      kind: 'resume',
+      activityActionId: 'existing-work',
+      activityId,
+      activityRevision: 4,
+    },
+  };
+  const authorization = authorizeSituation(
+    [process, resume],
+    'd667e4ad-06ee-4320-a428-363b874ac063',
+    {
+      kind: 'selected',
+      actionKeys: ['continue-over-time', 'resume-existing'],
+    },
+  );
+  const remaining = consumePreparedActivityPlan(
+    authorization.preparedPlans,
+    process,
+  );
+  assert.deepEqual(
+    rebindPreparedResume(remaining, activityId, 5)[0]?.resolution,
+    {
+      kind: 'resume',
+      activityActionId: 'existing-work',
+      activityId,
+      activityRevision: 5,
+    },
   );
 });
 

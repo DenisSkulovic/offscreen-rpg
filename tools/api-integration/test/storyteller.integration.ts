@@ -10,6 +10,7 @@ import type * as Drizzle from 'drizzle-orm' with {
 import { generation } from '@offscreen/db/generation-schema';
 import {
   campaign as campaignTable,
+  campaignConsequence,
   gameActionReceipt,
   gameActivity,
   gameOffer,
@@ -361,9 +362,10 @@ test(
                   ],
                 },
                 situationAuthorization: {
-                  version: 1,
+                  version: 2,
                   offerId: encounterOfferId,
                   activityAccess: { kind: 'none' },
+                  preparedPlans: [],
                 },
               })
               .where(eq(campaignTable.storyId, started.storyId));
@@ -431,70 +433,58 @@ test(
               commitments.find((commitment) => commitment.id !== activityId),
               'Expected a second activity identity',
             );
-            await database.db
-              .update(gameActivity)
-              .set({ state: 'complete' })
-              .where(eq(gameActivity.id, diversion.id));
-            const [retainedAfterSwitch] = await database.db
-              .select({ revision: gameActivity.revision })
-              .from(gameActivity)
-              .where(eq(gameActivity.id, activityId));
-            const [storedResumeOffer] = await database.db
-              .select({ plans: gameOffer.plans })
-              .from(gameOffer)
-              .where(eq(gameOffer.id, resumeOffer.id));
-            const reboundOffer = { ...resumeOffer, id: randomUUID() };
-            const reboundPlans = (
-              requireDefined(
-                storedResumeOffer?.plans,
-                'Expected private resume plans',
-              ) as Array<{
-                key: string;
-                resolution: Record<string, unknown>;
-              }>
-            ).map((storedPlan) =>
-              storedPlan.key === 'resume-beacon-repair'
-                ? {
-                    ...storedPlan,
-                    resolution: {
-                      ...storedPlan.resolution,
-                      activityId,
-                      activityRevision: requireDefined(
-                        retainedAfterSwitch?.revision,
-                        'Expected retained activity revision',
-                      ),
-                    },
-                  }
-                : storedPlan,
-            );
-            await database.db.insert(gameOffer).values({
-              id: reboundOffer.id,
+            const admittedDiversion = await stories.read({
+              ownerId,
               storyId: started.storyId,
-              narrativeRevision: afterNarration.revision,
-              plans: reboundPlans,
             });
-            await database.db
-              .update(campaignTable)
-              .set({
-                offer: reboundOffer,
-                situationAuthorization: {
-                  version: 1,
-                  offerId: reboundOffer.id,
-                  activityAccess: {
-                    kind: 'selected',
-                    actionKeys: ['resume-beacon-repair', 'secure-repair-tools'],
-                  },
-                },
-              })
-              .where(eq(campaignTable.storyId, started.storyId));
+            const diversionView = requireDefined(
+              admittedDiversion.campaign?.activity,
+              'Expected the diversion to be active',
+            );
+            await storyService.campaignControl({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                activityId: diversion.id,
+                expectedRevision: diversionView.revision,
+                action: 'pace',
+                pace: { kind: 'instant' },
+              },
+            });
+            const paced = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            if (paced.campaign?.activity?.state === 'running') {
+              await storyService.advanceCampaignActivity(diversion.id);
+            }
+            const quietCompletion = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(quietCompletion.campaign?.activity?.state, 'complete');
+            const freshResumeOffer = requireDefined(
+              quietCompletion.campaign?.offer,
+              'Expected quiet completion to restore authored work',
+            );
+            assert.deepEqual(
+              freshResumeOffer.nodes.map((node) => node.id),
+              ['resume-beacon-repair'],
+            );
+            const narratedDiversion = await database.db
+              .select({ operationId: campaignConsequence.operationId })
+              .from(campaignConsequence)
+              .where(eq(campaignConsequence.operationId, diversion.id));
+            assert.equal(narratedDiversion.length, 0);
 
             await stories.campaignAction({
               ownerId,
               storyId: started.storyId,
               operationId: randomUUID(),
               body: {
-                expectedRevision: afterNarration.revision,
-                offerId: reboundOffer.id,
+                expectedRevision: quietCompletion.revision,
+                offerId: freshResumeOffer.id,
                 path: ['resume-beacon-repair'],
               },
             });

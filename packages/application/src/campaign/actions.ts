@@ -10,7 +10,9 @@ import {
 } from '@offscreen/db/campaign-schema';
 import { actionCommandSchema } from '@offscreen/contracts/campaign';
 import {
+  consumePreparedActivityPlan,
   immediateActionAvailable,
+  rebindPreparedResume,
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
@@ -179,9 +181,13 @@ export function createCampaignActions(database: Database) {
           .set({
             offer: null,
             situationAuthorization: {
-              version: 1,
+              version: 2,
               offerId: null,
               activityAccess: { kind: 'none' },
+              preparedPlans: consumePreparedActivityPlan(
+                authorization.preparedPlans,
+                definition,
+              ),
             },
             activeActivityId: retained.id,
             clockAnchorAt: new Date(now),
@@ -199,6 +205,7 @@ export function createCampaignActions(database: Database) {
         // A new commitment takes the character's one advancing slot, but it does
         // not erase interrupted work. The retained row remains an explicit future
         // choice with the same identity, progress, rolls and captured terms.
+        const suspendedRevision = active ? active.revision + 1 : null;
         if (active && ['encounter', 'paused'].includes(active.state)) {
           await tx
             .update(gameActivity)
@@ -229,9 +236,23 @@ export function createCampaignActions(database: Database) {
           .set({
             offer: null,
             situationAuthorization: {
-              version: 1,
+              version: 2,
               offerId: null,
               activityAccess: { kind: 'none' },
+              preparedPlans:
+                active && suspendedRevision !== null
+                  ? rebindPreparedResume(
+                      consumePreparedActivityPlan(
+                        authorization.preparedPlans,
+                        definition,
+                      ),
+                      active.id,
+                      suspendedRevision,
+                    )
+                  : consumePreparedActivityPlan(
+                      authorization.preparedPlans,
+                      definition,
+                    ),
             },
             activeActivityId: activityId,
             tick: projected.clock.elapsedTicks,
@@ -277,9 +298,10 @@ export function createCampaignActions(database: Database) {
           storyFacts: resolved.storyFacts,
           offer: null,
           situationAuthorization: {
-            version: 1,
+            version: 2,
             offerId: null,
             activityAccess: { kind: 'none' },
+            preparedPlans: [],
           },
           // An encounter action resolves the obstacle, not the interrupted
           // commitment. Keep its identity attached so subsequent narration can
