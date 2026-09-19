@@ -9,9 +9,14 @@ import {
 import {
   executionPolicySchema,
   reservationForRequest,
+  serializedRequestBytes,
   type ExecutionPolicy,
-  type StorytellerTaskResources,
+  type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
+import type {
+  ProviderTelemetry,
+  ProviderUsage,
+} from '@offscreen/storyteller/providers/openrouter';
 import { isDeepStrictEqual } from 'node:util';
 import type { Transaction } from '../outbox/index';
 
@@ -24,6 +29,53 @@ export class StorytellerBudgetError extends Error {
   }
 }
 type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
+
+function taskAttribution(task: StorytellerTask) {
+  return {
+    storyId: 'storyId' in task.source ? task.source.storyId : null,
+    draftId: 'draftId' in task.source ? task.source.draftId : null,
+    purpose: task.task,
+    profileId: task.profile.id,
+    profileRevision: task.profile.revision,
+    source: task.source,
+  };
+}
+
+function calculatedCharge(
+  execution: ProviderExecution,
+  usage: ProviderUsage,
+): bigint | null {
+  // The current price snapshot has no cache-read/write prices. Returning
+  // unknown is safer than presenting a plausible but dimensionally wrong cost.
+  if ((usage.cachedTokens ?? 0) > 0 || (usage.cacheWriteTokens ?? 0) > 0) {
+    return null;
+  }
+  const amount =
+    BigInt(usage.promptTokens) *
+      BigInt(execution.policy.inputMicrousdPerMillion) +
+    BigInt(usage.completionTokens) *
+      BigInt(execution.policy.outputMicrousdPerMillion);
+  return (amount + 999_999n) / 1_000_000n;
+}
+
+function estimatedCharge(execution: ProviderExecution, requestBytes: number) {
+  // A tokenizer token represents at least one encoded byte. This is a useful
+  // labelled input upper bound, not provider metering or a route tokenizer.
+  const estimatedInputTokens = Math.min(
+    execution.policy.maxInputTokens,
+    requestBytes,
+  );
+  const amount =
+    BigInt(estimatedInputTokens) *
+      BigInt(execution.policy.inputMicrousdPerMillion) +
+    BigInt(execution.policy.maxOutputTokens) *
+      BigInt(execution.policy.outputMicrousdPerMillion);
+  return {
+    inputTokens: estimatedInputTokens,
+    microusd: (amount + 999_999n) / 1_000_000n,
+    method: 'serialized-byte-upper-bound.v1',
+  } as const;
+}
 
 async function lockAllowance(tx: Transaction, execution: ProviderExecution) {
   await tx.execute(sql`SELECT pg_advisory_xact_lock(714092631)`);
@@ -51,25 +103,25 @@ export function createStorytellerBudget(database: Database) {
     async reserve(input: {
       id: string;
       generationId: string;
-      execution: ProviderExecution;
-      request: unknown;
-      resources: StorytellerTaskResources;
+      ownerId: string;
+      task: StorytellerTask;
     }) {
-      const execution = executionPolicySchema.parse(input.execution);
+      const { task } = input;
+      const execution = executionPolicySchema.parse(task.execution);
       if (execution.mode !== 'provider') {
         throw new StorytellerBudgetError('budget_unavailable');
       }
       let amount: bigint;
       try {
         amount = reservationForRequest(
-          input.request,
+          task.request,
           execution.policy,
-          input.resources.envelope.maxSerializedRequestBytes,
+          task.resources.envelope.maxSerializedRequestBytes,
         );
       } catch {
         throw new StorytellerBudgetError('context_too_large');
       }
-      if (amount > BigInt(input.resources.envelope.maxMicrousd)) {
+      if (amount > BigInt(task.resources.envelope.maxMicrousd)) {
         throw new StorytellerBudgetError('budget_unavailable');
       }
       return database.db.transaction(async (tx) => {
@@ -113,13 +165,35 @@ export function createStorytellerBudget(database: Database) {
         ) {
           throw new StorytellerBudgetError('budget_unavailable');
         }
+        const attribution = taskAttribution(task);
+        const requestBytes = serializedRequestBytes(task.request);
+        const estimate = estimatedCharge(execution, requestBytes);
         await tx.insert(attempt).values({
           id: input.id,
           generationId: input.generationId,
           accountId: account.id,
           runId: allowance.id,
+          ownerId: input.ownerId,
+          storyId: attribution.storyId,
+          draftId: attribution.draftId,
+          purpose: task.task,
+          storytellerProfileId: task.profile.id,
+          storytellerProfileRevision: task.profile.revision,
+          taskInputVersion: task.inputVersion,
+          promptVersion: task.promptVersion,
+          recipeVersion: task.resources.recipe.version,
+          resourcePolicyVersion: task.resources.version,
+          requestedModel: execution.policy.model,
+          requestedProvider: execution.policy.provider,
+          priceVersion: execution.policy.priceVersion,
+          attribution,
           state: 'reserved',
           reservedMicrousd: amount,
+          estimatedMicrousd: estimate.microusd,
+          estimatedInputTokens: estimate.inputTokens,
+          estimationMethod: estimate.method,
+          reconciliation: 'pending',
+          requestBytes,
           policy: execution.policy,
         });
         await tx
@@ -155,7 +229,12 @@ export function createStorytellerBudget(database: Database) {
         if (account.stopped || !allowance.enabled || unknown) {
           await tx
             .update(attempt)
-            .set({ state: 'unsent', chargedMicrousd: 0n })
+            .set({
+              state: 'unsent',
+              chargedMicrousd: 0n,
+              reconciliation: 'unavailable',
+              settledAt: sql`clock_timestamp()`,
+            })
             .where(eq(attempt.id, id));
           await tx
             .update(funding)
@@ -175,17 +254,29 @@ export function createStorytellerBudget(database: Database) {
         }
         await tx
           .update(attempt)
-          .set({ state: 'dispatched' })
+          .set({ state: 'dispatched', dispatchedAt: sql`clock_timestamp()` })
           .where(eq(attempt.id, id));
         return true;
       });
     },
-    async uncertain(id: string, execution: ProviderExecution) {
+    async uncertain(
+      id: string,
+      execution: ProviderExecution,
+      telemetry?: ProviderTelemetry,
+    ) {
       await database.db.transaction(async (tx) => {
         await lockAllowance(tx, execution);
         await tx
           .update(attempt)
-          .set({ state: 'uncertain' })
+          .set({
+            state: 'uncertain',
+            reconciliation: 'unknown',
+            durationMs: telemetry?.durationMs,
+            httpStatus: telemetry?.httpStatus,
+            providerId: telemetry?.providerId,
+            reportedModel: telemetry?.reportedModel,
+            finishReason: telemetry?.finishReason,
+          })
           .where(
             and(
               eq(attempt.id, id),
@@ -199,15 +290,15 @@ export function createStorytellerBudget(database: Database) {
     async settle(input: {
       id: string;
       execution: ProviderExecution;
-      chargeMicrousd: bigint;
-      providerId: string;
+      usage: ProviderUsage;
+      telemetry: ProviderTelemetry;
       generationOutcome?: {
         state: 'succeeded' | 'failed';
         output: unknown;
         failureCode: string | null;
       };
     }) {
-      if (input.chargeMicrousd < 0n) {
+      if (input.usage.reportedCostMicrousd < 0n) {
         throw new Error('Invalid charge');
       }
       return database.db.transaction(async (tx) => {
@@ -222,8 +313,18 @@ export function createStorytellerBudget(database: Database) {
         }
         if (record.state === 'settled') {
           if (
-            record.chargedMicrousd !== input.chargeMicrousd ||
-            record.providerId !== input.providerId
+            record.chargedMicrousd !== input.usage.reportedCostMicrousd ||
+            record.providerId !== input.telemetry.providerId ||
+            record.promptTokens !== input.usage.promptTokens ||
+            record.completionTokens !== input.usage.completionTokens ||
+            record.reasoningTokens !== input.usage.reasoningTokens ||
+            record.cachedTokens !== input.usage.cachedTokens ||
+            record.cacheWriteTokens !== input.usage.cacheWriteTokens ||
+            record.totalTokens !== input.usage.totalTokens ||
+            record.reportedModel !== input.telemetry.reportedModel ||
+            record.finishReason !== input.telemetry.finishReason ||
+            record.httpStatus !== input.telemetry.httpStatus ||
+            record.durationMs !== input.telemetry.durationMs
           ) {
             throw new Error('Conflicting settlement');
           }
@@ -247,12 +348,35 @@ export function createStorytellerBudget(database: Database) {
               ),
             );
         }
+        const calculatedMicrousd = calculatedCharge(
+          input.execution,
+          input.usage,
+        );
+        const reconciliation =
+          calculatedMicrousd === null
+            ? 'unavailable'
+            : calculatedMicrousd === input.usage.reportedCostMicrousd
+              ? 'matched'
+              : 'different';
         await tx
           .update(attempt)
           .set({
             state: 'settled',
-            chargedMicrousd: input.chargeMicrousd,
-            providerId: input.providerId,
+            chargedMicrousd: input.usage.reportedCostMicrousd,
+            calculatedMicrousd,
+            reconciliation,
+            promptTokens: input.usage.promptTokens,
+            completionTokens: input.usage.completionTokens,
+            reasoningTokens: input.usage.reasoningTokens,
+            cachedTokens: input.usage.cachedTokens,
+            cacheWriteTokens: input.usage.cacheWriteTokens,
+            totalTokens: input.usage.totalTokens,
+            providerId: input.telemetry.providerId,
+            reportedModel: input.telemetry.reportedModel,
+            finishReason: input.telemetry.finishReason,
+            httpStatus: input.telemetry.httpStatus,
+            durationMs: input.telemetry.durationMs,
+            settledAt: sql`clock_timestamp()`,
           })
           .where(eq(attempt.id, record.id));
         await tx
@@ -260,9 +384,11 @@ export function createStorytellerBudget(database: Database) {
           .set({
             reservedMicrousd:
               account.reservedMicrousd - record.reservedMicrousd,
-            settledMicrousd: account.settledMicrousd + input.chargeMicrousd,
+            settledMicrousd:
+              account.settledMicrousd + input.usage.reportedCostMicrousd,
             stopped:
-              account.stopped || input.chargeMicrousd > record.reservedMicrousd,
+              account.stopped ||
+              input.usage.reportedCostMicrousd > record.reservedMicrousd,
           })
           .where(eq(funding.id, account.id));
         await tx
@@ -270,10 +396,11 @@ export function createStorytellerBudget(database: Database) {
           .set({
             reservedMicrousd:
               allowance.reservedMicrousd - record.reservedMicrousd,
-            settledMicrousd: allowance.settledMicrousd + input.chargeMicrousd,
+            settledMicrousd:
+              allowance.settledMicrousd + input.usage.reportedCostMicrousd,
           })
           .where(eq(run.id, allowance.id));
-        if (input.chargeMicrousd > record.reservedMicrousd) {
+        if (input.usage.reportedCostMicrousd > record.reservedMicrousd) {
           await tx.update(funding).set({ stopped: true });
         }
       });

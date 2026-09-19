@@ -2,20 +2,36 @@ import { z } from 'zod';
 import type { StorytellerTask } from '../tasks';
 import { reservationForRequest } from '../tasks/policy';
 
+export type ProviderUsage = Readonly<{
+  reportedCostMicrousd: bigint;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  reasoningTokens: number | null;
+  cachedTokens: number | null;
+  cacheWriteTokens: number | null;
+}>;
+export type ProviderTelemetry = Readonly<{
+  durationMs: number | null;
+  httpStatus: number | null;
+  providerId: string | null;
+  reportedModel: string | null;
+  finishReason: string | null;
+}>;
 export type ProviderOutcome =
   | {
       kind: 'result';
       output: unknown;
-      chargeMicrousd: bigint;
-      providerId: string;
+      usage: ProviderUsage;
+      telemetry: ProviderTelemetry;
     }
   | {
       kind: 'failed';
       failureCode: 'provider_refusal' | 'invalid_output';
-      chargeMicrousd: bigint;
-      providerId: string;
+      usage: ProviderUsage;
+      telemetry: ProviderTelemetry;
     }
-  | { kind: 'uncertain' };
+  | { kind: 'uncertain'; telemetry: ProviderTelemetry };
 export type StorytellerProvider = (
   task: StorytellerTask,
 ) => Promise<ProviderOutcome>;
@@ -41,8 +57,21 @@ export function usdToMicrousd(value: string | number): bigint {
 }
 const responseSchema = z.object({
   id: z.string().min(1).max(200),
+  model: z.string().min(1).max(200),
   usage: z.object({
     cost: z.union([z.number().finite().nonnegative(), z.string().max(100)]),
+    prompt_tokens: z.number().int().nonnegative(),
+    completion_tokens: z.number().int().nonnegative(),
+    total_tokens: z.number().int().nonnegative(),
+    prompt_tokens_details: z
+      .object({
+        cached_tokens: z.number().int().nonnegative().optional(),
+        cache_write_tokens: z.number().int().nonnegative().optional(),
+      })
+      .optional(),
+    completion_tokens_details: z
+      .object({ reasoning_tokens: z.number().int().nonnegative().optional() })
+      .optional(),
   }),
   choices: z
     .array(
@@ -104,6 +133,8 @@ export function createOpenRouterProvider(config: {
       policy,
       task.resources.envelope.maxSerializedRequestBytes,
     );
+    const startedAt = Date.now();
+    let httpStatus: number | null = null;
     try {
       const response = await transport(
         'https://openrouter.ai/api/v1/chat/completions',
@@ -136,14 +167,41 @@ export function createOpenRouterProvider(config: {
           }),
         },
       );
+      httpStatus = response.status;
       // Even HTTP errors may follow a billed attempt. Missing accounting is not zero.
       const parsed = responseSchema.safeParse(await boundedResponse(response));
       if (!parsed.success) {
-        return { kind: 'uncertain' };
+        return {
+          kind: 'uncertain',
+          telemetry: {
+            durationMs: Date.now() - startedAt,
+            httpStatus,
+            providerId: null,
+            reportedModel: null,
+            finishReason: null,
+          },
+        };
       }
-      const chargeMicrousd = usdToMicrousd(parsed.data.usage.cost);
-      const providerId = parsed.data.id;
       const choice = parsed.data.choices[0];
+      const usage: ProviderUsage = {
+        reportedCostMicrousd: usdToMicrousd(parsed.data.usage.cost),
+        promptTokens: parsed.data.usage.prompt_tokens,
+        completionTokens: parsed.data.usage.completion_tokens,
+        totalTokens: parsed.data.usage.total_tokens,
+        reasoningTokens:
+          parsed.data.usage.completion_tokens_details?.reasoning_tokens ?? null,
+        cachedTokens:
+          parsed.data.usage.prompt_tokens_details?.cached_tokens ?? null,
+        cacheWriteTokens:
+          parsed.data.usage.prompt_tokens_details?.cache_write_tokens ?? null,
+      };
+      const telemetry: ProviderTelemetry = {
+        durationMs: Date.now() - startedAt,
+        httpStatus,
+        providerId: parsed.data.id,
+        reportedModel: parsed.data.model,
+        finishReason: choice?.finish_reason ?? null,
+      };
       if (
         !choice ||
         !response.ok ||
@@ -153,27 +211,36 @@ export function createOpenRouterProvider(config: {
         return {
           kind: 'failed',
           failureCode: 'provider_refusal',
-          chargeMicrousd,
-          providerId,
+          usage,
+          telemetry,
         };
       }
       try {
         return {
           kind: 'result',
           output: JSON.parse(choice.message.content ?? ''),
-          chargeMicrousd,
-          providerId,
+          usage,
+          telemetry,
         };
       } catch {
         return {
           kind: 'failed',
           failureCode: 'invalid_output',
-          chargeMicrousd,
-          providerId,
+          usage,
+          telemetry,
         };
       }
     } catch {
-      return { kind: 'uncertain' };
+      return {
+        kind: 'uncertain',
+        telemetry: {
+          durationMs: Date.now() - startedAt,
+          httpStatus,
+          providerId: null,
+          reportedModel: null,
+          finishReason: null,
+        },
+      };
     }
   };
 }

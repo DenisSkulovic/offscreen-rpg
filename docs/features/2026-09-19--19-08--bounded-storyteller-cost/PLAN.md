@@ -37,17 +37,19 @@ Acceptance: report excludes irrelevant planner/tools; mandatory input overflows 
 
 Exit: named frozen envelopes and dry-run evidence, no provider dispatch; B2 can consume the contract.
 
-## B2 — Durable shared enforcement and route accounting
+## B2 — Durable shared enforcement and route accounting (implementing)
 
 Outcome: every dispatch and side job consumes admitted capacity without escaping its originating operation.
-Dependencies: B1. Status: queued.
+Dependencies: B1. Status: B2a implementing; B2b queued.
 Owners: application `storyteller/budget.ts`, `execution.ts`, `records.ts`; `packages/db/src/schema/storyteller.ts` and single baseline migration; `packages/storyteller/src/providers/openrouter.ts`. B2b also touches existing campaign hold/clock operations, public status contracts, API/snapshot projection, minimal play recovery controls and workflow wake-up bindings. Follow their current owners rather than duplicate a clock or scheduler.
 
 Deliver as two coherent slices: B2a operation/attempt accounting and normalized provider usage; B2b account windows, policy transitions and game hold/recovery. Both are required before a live run. Keep one baseline migration and reset disposable data, no migration chain.
 
-Extend the existing ledger with operation-envelope identity, aggregate consumption and allocations, not another ledger. Reserve operation money once, subdivide for attempts and settle/release known unused capacity without double-counting. Retain uncertain dispatched allocation and stop paid admission; deadlines/cancellation cannot erase liability. Consistent lock ordering covers concurrent attempts and background work. A retry receipt cannot reset aggregate limits. Preserve current global uncertainty/overcharge stop.
+Extend the existing ledger with operation-envelope identity, aggregate consumption and allocations, not another ledger. The first B2a slice enriches the existing attempt row as the audit grain: account/run/owner/story-or-draft/generation attribution; task/profile/prompt/recipe/resource/price versions; requested and reported route; request bytes; estimated/reserved/reported/calculated money; normalized prompt/completion/reasoning/cache-read/cache-write tokens; lifecycle timestamps, duration, HTTP/finish metadata, outcome and reconciliation state. Private prompt/output prose remains in generation artifacts, not duplicated into accounting. Reserve operation money once, subdivide for attempts and settle/release known unused capacity without double-counting. Retain uncertain dispatched allocation and stop paid admission; deadlines/cancellation cannot erase liability. Consistent lock ordering covers concurrent attempts and background work. A retry receipt cannot reset aggregate limits. Preserve current global uncertainty/overcharge stop.
 
 Map captured route reasoning controls to supported wire parameters; normalize returned usage/cache/reasoning metadata, preserving unavailable as unknown. Validate actual provider/model when observable. Reserve the greater applicable cold/cache-write price and other supported fees; cache hits release savings only after settlement. Unknown usage/cost keeps conservative reservations. Add bounded purpose/frequency allocation for optional background work; no autonomous summary agent.
+
+Current B2a checkpoint: the existing attempt row now captures rich attribution, route/config versions, request size, a labelled byte-derived estimate, conservative reservation, dispatch/settlement timing, observed duration, normalized provider token/cache/reasoning usage, reported and calculable money, and reconciliation certainty. OpenRouter fake responses exercise reported model, generation id and token-detail normalization. Cache-priced attempts deliberately leave calculated cost unavailable until route snapshots carry cache prices. The single baseline migration was regenerated. Next, capture effective usage-policy/window identity at admission, then implement durable operation/window allocations and developer inspection/aggregation over this same ledger.
 
 Acceptance/optional probes: injected transport for cache miss/write surcharge, reasoning-only truncated output, repeated repair, concurrent last allowance, crash after dispatch and saved-result replay. No duplicate mechanics or paid redispatch on uncertain delivery. Test tools remain fake; no live route validation implied.
 
@@ -83,7 +85,7 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1b implementing. Recipe/envelope capture and complete-request byte preflight are implemented. Exact next action: map the application effective-policy snapshot into task admission so account/story limits can only tighten the captured envelope; then add durable B2 accounting/windows/holds. Do not enable provider execution. Storage C1/C2 remains independently ready.
+- Phase: B1b/B2a implementing. Recipe/envelope capture, complete-request byte preflight and rich attempt-level cost attribution/reconciliation are implemented. Exact next action: map the application effective-policy snapshot into task admission and attempt attribution so account/story limits can only tighten the captured envelope; then add operation/window allocations and game holds. Developer aggregation/inspection consumes the same ledger after those identities stabilize. Do not enable provider execution. Storage C1/C2 remains independently ready.
 - Slice base: `321944b`; B1a is committed and its package-boundary audit is complete. B1b is the next code slice.
 - Verification: `@offscreen/application` and `@offscreen/api-integration` builds pass; focused `usage-policy.test.js` passes 4/4. Tests use pure fixtures and no provider path. No database/browser checks or live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.

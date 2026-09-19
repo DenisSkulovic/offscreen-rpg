@@ -54,7 +54,7 @@ Use the existing [QA workspace](qa-journeys.md) for available cases. For cases s
 | Time | Pause/resume/reload; change pace; return after elapsed time | Authoritative tick state; no inference while merely waiting; prepared arrival not current before completion |
 | Settings | Switch profile mid-story; inspect next task and an earlier artifact; try locked edits | New settings affect newly admitted work; prior captures/receipts unchanged; lock enforced |
 | World independence | Repeat immediate loop for pineapple and microbe; inspect state/proposals | Shared mechanics; no required coins, job, human calendar, walking or scenario-name branch |
-| Provider protocol | Inject fake HTTP results, invalid JSON, refusal, timeout, missing usage, duplicate delivery | Same adapter/accounting contract; settled/uncertain distinction; no automatic retry; no network |
+| Provider protocol | Inject fake HTTP results, invalid JSON, refusal, timeout, missing usage, duplicate delivery | One attempt audit row identifies account/run/owner/story-or-draft/task/profile/route and lifecycle timing; estimate, reservation, provider charge and calculable charge stay distinct; token/cache/reasoning absence remains unknown; settled/uncertain distinction; no automatic retry; no network |
 | Evidence | Explain one success and one rejection from saved artifacts; export completed QA run | Link request → model/tool result → admission → receipt → publication; missing links remain explicit gaps |
 
 Run small independent cases before a three-round playthrough so an early UI failure does not hide all lower-layer results. Simulated dice/model outputs are declared inputs, not fabricated observations. Cover both valid and adversarial outputs; success-only transcripts test orchestration poorly.

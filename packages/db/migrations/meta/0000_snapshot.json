@@ -1,5 +1,5 @@
 {
-  "id": "5066430a-cfb5-40e2-8a71-8c8a10cf9453",
+  "id": "fefb6c9e-9935-4dfc-af0f-23468b0c9a9a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2641,6 +2641,90 @@
           "primaryKey": false,
           "notNull": true
         },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "draft_id": {
+          "name": "draft_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storyteller_profile_id": {
+          "name": "storyteller_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storyteller_profile_revision": {
+          "name": "storyteller_profile_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "task_input_version": {
+          "name": "task_input_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_version": {
+          "name": "prompt_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipe_version": {
+          "name": "recipe_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resource_policy_version": {
+          "name": "resource_policy_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_model": {
+          "name": "requested_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_provider": {
+          "name": "requested_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_version": {
+          "name": "price_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attribution": {
+          "name": "attribution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "state": {
           "name": "state",
           "type": "text",
@@ -2653,9 +2737,81 @@
           "primaryKey": false,
           "notNull": true
         },
+        "estimated_microusd": {
+          "name": "estimated_microusd",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estimated_input_tokens": {
+          "name": "estimated_input_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estimation_method": {
+          "name": "estimation_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "charged_microusd": {
           "name": "charged_microusd",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calculated_microusd": {
+          "name": "calculated_microusd",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reconciliation": {
+          "name": "reconciliation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_bytes": {
+          "name": "request_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt_tokens": {
+          "name": "prompt_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completion_tokens": {
+          "name": "completion_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reasoning_tokens": {
+          "name": "reasoning_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cached_tokens": {
+          "name": "cached_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cache_write_tokens": {
+          "name": "cache_write_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_tokens": {
+          "name": "total_tokens",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -2671,6 +2827,42 @@
           "primaryKey": false,
           "notNull": false
         },
+        "reported_model": {
+          "name": "reported_model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finish_reason": {
+          "name": "finish_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "http_status": {
+          "name": "http_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration_ms": {
+          "name": "duration_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dispatched_at": {
+          "name": "dispatched_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "settled_at": {
+          "name": "settled_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -2679,7 +2871,71 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "storyteller_attempt_account_created": {
+          "name": "storyteller_attempt_account_created",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "storyteller_attempt_story_created": {
+          "name": "storyteller_attempt_story_created",
+          "columns": [
+            {
+              "expression": "story_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "storyteller_attempt_purpose_created": {
+          "name": "storyteller_attempt_purpose_created",
+          "columns": [
+            {
+              "expression": "purpose",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "storyteller_attempt_generation_id_generation_id_fk": {
           "name": "storyteller_attempt_generation_id_generation_id_fk",
@@ -2735,7 +2991,15 @@
         },
         "storyteller_attempt_amounts": {
           "name": "storyteller_attempt_amounts",
-          "value": "\"storyteller_attempt\".\"reserved_microusd\" >= 0 AND (\"storyteller_attempt\".\"charged_microusd\" IS NULL OR \"storyteller_attempt\".\"charged_microusd\" >= 0)"
+          "value": "\"storyteller_attempt\".\"reserved_microusd\" >= 0 AND \"storyteller_attempt\".\"estimated_microusd\" >= 0 AND \"storyteller_attempt\".\"estimated_input_tokens\" >= 0 AND (\"storyteller_attempt\".\"charged_microusd\" IS NULL OR \"storyteller_attempt\".\"charged_microusd\" >= 0) AND (\"storyteller_attempt\".\"calculated_microusd\" IS NULL OR \"storyteller_attempt\".\"calculated_microusd\" >= 0)"
+        },
+        "storyteller_attempt_reconciliation": {
+          "name": "storyteller_attempt_reconciliation",
+          "value": "\n        (\"storyteller_attempt\".\"state\" IN ('reserved','dispatched') AND \"storyteller_attempt\".\"reconciliation\" = 'pending' AND \"storyteller_attempt\".\"calculated_microusd\" IS NULL AND \"storyteller_attempt\".\"settled_at\" IS NULL) OR\n        (\"storyteller_attempt\".\"state\" = 'uncertain' AND \"storyteller_attempt\".\"reconciliation\" = 'unknown' AND \"storyteller_attempt\".\"calculated_microusd\" IS NULL AND \"storyteller_attempt\".\"dispatched_at\" IS NOT NULL AND \"storyteller_attempt\".\"settled_at\" IS NULL) OR\n        (\"storyteller_attempt\".\"state\" = 'unsent' AND \"storyteller_attempt\".\"reconciliation\" = 'unavailable' AND \"storyteller_attempt\".\"calculated_microusd\" IS NULL AND \"storyteller_attempt\".\"dispatched_at\" IS NULL AND \"storyteller_attempt\".\"settled_at\" IS NOT NULL) OR\n        (\"storyteller_attempt\".\"state\" = 'settled' AND \"storyteller_attempt\".\"reconciliation\" IN ('matched','different') AND \"storyteller_attempt\".\"calculated_microusd\" IS NOT NULL AND \"storyteller_attempt\".\"dispatched_at\" IS NOT NULL AND \"storyteller_attempt\".\"settled_at\" IS NOT NULL) OR\n        (\"storyteller_attempt\".\"state\" = 'settled' AND \"storyteller_attempt\".\"reconciliation\" = 'unavailable' AND \"storyteller_attempt\".\"calculated_microusd\" IS NULL AND \"storyteller_attempt\".\"dispatched_at\" IS NOT NULL AND \"storyteller_attempt\".\"settled_at\" IS NOT NULL)\n      "
+        },
+        "storyteller_attempt_metrics": {
+          "name": "storyteller_attempt_metrics",
+          "value": "\"storyteller_attempt\".\"request_bytes\" >= 0 AND (\"storyteller_attempt\".\"prompt_tokens\" IS NULL OR \"storyteller_attempt\".\"prompt_tokens\" >= 0) AND (\"storyteller_attempt\".\"completion_tokens\" IS NULL OR \"storyteller_attempt\".\"completion_tokens\" >= 0) AND (\"storyteller_attempt\".\"reasoning_tokens\" IS NULL OR \"storyteller_attempt\".\"reasoning_tokens\" >= 0) AND (\"storyteller_attempt\".\"cached_tokens\" IS NULL OR \"storyteller_attempt\".\"cached_tokens\" >= 0) AND (\"storyteller_attempt\".\"cache_write_tokens\" IS NULL OR \"storyteller_attempt\".\"cache_write_tokens\" >= 0) AND (\"storyteller_attempt\".\"total_tokens\" IS NULL OR \"storyteller_attempt\".\"total_tokens\" >= 0) AND (\"storyteller_attempt\".\"duration_ms\" IS NULL OR \"storyteller_attempt\".\"duration_ms\" >= 0)"
         }
       },
       "isRLSEnabled": false

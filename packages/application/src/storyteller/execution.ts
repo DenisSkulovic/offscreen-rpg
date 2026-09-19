@@ -98,9 +98,8 @@ export function createStorytellerExecution(
       const state = await budget.reserve({
         id: attemptId,
         generationId: record.id,
-        execution: task.execution,
-        request: task.request,
-        resources: task.resources,
+        ownerId: record.ownerId,
+        task,
       });
       if (state === 'settled') {
         return;
@@ -132,10 +131,19 @@ export function createStorytellerExecution(
       try {
         outcome = await options.provider(task);
       } catch {
-        outcome = { kind: 'uncertain' as const };
+        outcome = {
+          kind: 'uncertain' as const,
+          telemetry: {
+            durationMs: null,
+            httpStatus: null,
+            providerId: null,
+            reportedModel: null,
+            finishReason: null,
+          },
+        };
       }
       if (outcome.kind === 'uncertain') {
-        await budget.uncertain(attemptId, task.execution);
+        await budget.uncertain(attemptId, task.execution, outcome.telemetry);
         await saveOutcome(record.id, attemptId, { state: 'uncertain' });
         return;
       }
@@ -151,8 +159,8 @@ export function createStorytellerExecution(
       await budget.settle({
         id: attemptId,
         execution: task.execution,
-        chargeMicrousd: outcome.chargeMicrousd,
-        providerId: outcome.providerId,
+        usage: outcome.usage,
+        telemetry: outcome.telemetry,
         generationOutcome: failureCode
           ? { state: 'failed', output: null, failureCode }
           : { state: 'succeeded', output, failureCode: null },

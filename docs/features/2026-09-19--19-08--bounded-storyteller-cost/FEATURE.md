@@ -1,6 +1,6 @@
 # Bounded Storyteller effort and cost
 
-Status: Implementing. B1a pure policy composition is implemented; task capture, enforcement, windows and holds remain.
+Status: Implementing. Pure policy composition, task recipe/envelope capture and rich attempt-level cost attribution/reconciliation are implemented; effective-policy admission, operation/window enforcement, inspection and holds remain.
 Direction: on 2026-09-19 the owner required serious protection against context, tool, reasoning and orchestration bloat, then configurable account profiles, usage windows and conservative pause/recovery before paid evaluation. This handoff constrains the prepared canonical-memory work. Live inference, paid services and runtime subagents remain disabled.
 
 ## Intended outcome
@@ -46,6 +46,7 @@ Canonical storage remains owned by its feature; memory selection/search/round pe
 10. Window/reset/late-settlement and concurrent-last-allowance behavior is durable. Unknown usage stays blocked across reset; tier changes do not grant duplicate quota. Explicit on-demand consent cannot be inferred from a subscription.
 11. The game exposes separate manual/usage holds, known eligibility time and safe Resume. No clock catch-up, repeated roll, automatic paid retry or backlog stampede occurs after reset.
 12. Before the first paid run, offline evidence covers the selected profile, window, accounting and hold path. The initial proposed live envelope is one request, 8k input / 1,024 generated tokens and at most $0.01, subject to stricter limits and explicit future authorization.
+13. Every dispatched attempt remains attributable without reading private prompt prose: account/run, owner, story or draft, generation/operation, purpose, Storyteller/profile and prompt/recipe/policy/price versions, requested and reported route, lifecycle timestamps/duration, estimate/reservation, provider charge, normalized token/cache/reasoning usage, outcome and reconciliation certainty are queryable. Missing provider fields remain unknown rather than zero.
 
 ## Owning specifications
 

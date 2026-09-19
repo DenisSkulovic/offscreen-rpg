@@ -850,7 +850,18 @@ test('provider adapter uses an injected transport, one route and no retry; missi
       return new Response(
         JSON.stringify({
           id: 'fake',
-          usage: { cost: 0.0000012 },
+          model: 'test/model',
+          usage: {
+            cost: 0.0000012,
+            prompt_tokens: 10,
+            completion_tokens: 20,
+            total_tokens: 30,
+            prompt_tokens_details: {
+              cached_tokens: 3,
+              cache_write_tokens: 0,
+            },
+            completion_tokens_details: { reasoning_tokens: 2 },
+          },
           choices: [
             {
               finish_reason: 'stop',
@@ -866,7 +877,10 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   const result = await provider(providerTask);
   assert.equal(result.kind, 'result');
   if (result.kind === 'result') {
-    assert.equal(result.chargeMicrousd, 2n);
+    assert.equal(result.usage.reportedCostMicrousd, 2n);
+    assert.equal(result.usage.reasoningTokens, 2);
+    assert.equal(result.usage.cachedTokens, 3);
+    assert.equal(result.telemetry.reportedModel, 'test/model');
   }
   assert.equal(calls, 1);
   const missingUsage = createOpenRouterProvider({
@@ -874,7 +888,9 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     apiKey: 'dummy',
     transport: async () => new Response('{}'),
   });
-  assert.deepEqual(await missingUsage(providerTask), { kind: 'uncertain' });
+  const missing = await missingUsage(providerTask);
+  assert.equal(missing.kind, 'uncertain');
+  assert.equal(missing.telemetry.httpStatus, 200);
   assert.throws(() =>
     createOpenRouterProvider({ enabled: false, apiKey: 'dummy' }),
   );

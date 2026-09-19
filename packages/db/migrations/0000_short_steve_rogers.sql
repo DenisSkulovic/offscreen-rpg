@@ -362,15 +362,55 @@ CREATE TABLE "storyteller_attempt" (
 	"generation_id" uuid NOT NULL,
 	"account_id" uuid NOT NULL,
 	"run_id" uuid NOT NULL,
+	"owner_id" text NOT NULL,
+	"story_id" uuid,
+	"draft_id" uuid,
+	"purpose" text NOT NULL,
+	"storyteller_profile_id" text NOT NULL,
+	"storyteller_profile_revision" integer NOT NULL,
+	"task_input_version" integer NOT NULL,
+	"prompt_version" text NOT NULL,
+	"recipe_version" text NOT NULL,
+	"resource_policy_version" text NOT NULL,
+	"requested_model" text NOT NULL,
+	"requested_provider" text NOT NULL,
+	"price_version" text NOT NULL,
+	"attribution" jsonb NOT NULL,
 	"state" text NOT NULL,
 	"reserved_microusd" bigint NOT NULL,
+	"estimated_microusd" bigint NOT NULL,
+	"estimated_input_tokens" integer NOT NULL,
+	"estimation_method" text NOT NULL,
 	"charged_microusd" bigint,
+	"calculated_microusd" bigint,
+	"reconciliation" text NOT NULL,
+	"request_bytes" integer NOT NULL,
+	"prompt_tokens" integer,
+	"completion_tokens" integer,
+	"reasoning_tokens" integer,
+	"cached_tokens" integer,
+	"cache_write_tokens" integer,
+	"total_tokens" integer,
 	"policy" jsonb NOT NULL,
 	"provider_id" text,
+	"reported_model" text,
+	"finish_reason" text,
+	"http_status" integer,
+	"duration_ms" integer,
+	"dispatched_at" timestamp (3) with time zone,
+	"settled_at" timestamp (3) with time zone,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "storyteller_attempt_state" CHECK ("storyteller_attempt"."state" IN ('reserved','dispatched','settled','uncertain','unsent')),
 	CONSTRAINT "storyteller_attempt_settlement" CHECK (("storyteller_attempt"."state" IN ('settled','unsent')) = ("storyteller_attempt"."charged_microusd" IS NOT NULL)),
-	CONSTRAINT "storyteller_attempt_amounts" CHECK ("storyteller_attempt"."reserved_microusd" >= 0 AND ("storyteller_attempt"."charged_microusd" IS NULL OR "storyteller_attempt"."charged_microusd" >= 0))
+	CONSTRAINT "storyteller_attempt_amounts" CHECK ("storyteller_attempt"."reserved_microusd" >= 0 AND "storyteller_attempt"."estimated_microusd" >= 0 AND "storyteller_attempt"."estimated_input_tokens" >= 0 AND ("storyteller_attempt"."charged_microusd" IS NULL OR "storyteller_attempt"."charged_microusd" >= 0) AND ("storyteller_attempt"."calculated_microusd" IS NULL OR "storyteller_attempt"."calculated_microusd" >= 0)),
+	CONSTRAINT "storyteller_attempt_reconciliation" CHECK (
+        ("storyteller_attempt"."state" IN ('reserved','dispatched') AND "storyteller_attempt"."reconciliation" = 'pending' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."settled_at" IS NULL) OR
+        ("storyteller_attempt"."state" = 'uncertain' AND "storyteller_attempt"."reconciliation" = 'unknown' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."dispatched_at" IS NOT NULL AND "storyteller_attempt"."settled_at" IS NULL) OR
+        ("storyteller_attempt"."state" = 'unsent' AND "storyteller_attempt"."reconciliation" = 'unavailable' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."dispatched_at" IS NULL AND "storyteller_attempt"."settled_at" IS NOT NULL) OR
+        ("storyteller_attempt"."state" = 'settled' AND "storyteller_attempt"."reconciliation" IN ('matched','different') AND "storyteller_attempt"."calculated_microusd" IS NOT NULL AND "storyteller_attempt"."dispatched_at" IS NOT NULL AND "storyteller_attempt"."settled_at" IS NOT NULL) OR
+        ("storyteller_attempt"."state" = 'settled' AND "storyteller_attempt"."reconciliation" = 'unavailable' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."dispatched_at" IS NOT NULL AND "storyteller_attempt"."settled_at" IS NOT NULL)
+      ),
+	CONSTRAINT "storyteller_attempt_metrics" CHECK ("storyteller_attempt"."request_bytes" >= 0 AND ("storyteller_attempt"."prompt_tokens" IS NULL OR "storyteller_attempt"."prompt_tokens" >= 0) AND ("storyteller_attempt"."completion_tokens" IS NULL OR "storyteller_attempt"."completion_tokens" >= 0) AND ("storyteller_attempt"."reasoning_tokens" IS NULL OR "storyteller_attempt"."reasoning_tokens" >= 0) AND ("storyteller_attempt"."cached_tokens" IS NULL OR "storyteller_attempt"."cached_tokens" >= 0) AND ("storyteller_attempt"."cache_write_tokens" IS NULL OR "storyteller_attempt"."cache_write_tokens" >= 0) AND ("storyteller_attempt"."total_tokens" IS NULL OR "storyteller_attempt"."total_tokens" >= 0) AND ("storyteller_attempt"."duration_ms" IS NULL OR "storyteller_attempt"."duration_ms" >= 0))
 );
 --> statement-breakpoint
 CREATE TABLE "storyteller_funding" (
@@ -451,4 +491,7 @@ CREATE UNIQUE INDEX "account_provider_identity_unique" ON "account" USING btree 
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");--> statement-breakpoint
 CREATE INDEX "story_draft_owner_created_idx" ON "story_draft" USING btree ("owner_id","created_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
-CREATE INDEX "outbox_pending" ON "outbox" USING btree ("available_at","id") WHERE "outbox"."delivered_at" IS NULL;
+CREATE INDEX "outbox_pending" ON "outbox" USING btree ("available_at","id") WHERE "outbox"."delivered_at" IS NULL;--> statement-breakpoint
+CREATE INDEX "storyteller_attempt_account_created" ON "storyteller_attempt" USING btree ("account_id","created_at");--> statement-breakpoint
+CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING btree ("story_id","created_at");--> statement-breakpoint
+CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");

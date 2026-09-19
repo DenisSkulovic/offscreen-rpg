@@ -43,6 +43,23 @@ import { requireDefined } from './helpers/require.js';
 const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');
 const { eq } = orm;
 
+const fakeUsage = (reportedCostMicrousd: bigint) => ({
+  reportedCostMicrousd,
+  promptTokens: 20,
+  completionTokens: 10,
+  totalTokens: 30,
+  reasoningTokens: 0,
+  cachedTokens: 0,
+  cacheWriteTokens: 0,
+});
+const fakeTelemetry = (providerId: string) => ({
+  durationMs: 25,
+  httpStatus: 200,
+  providerId,
+  reportedModel: 'fake/model',
+  finishReason: 'stop',
+});
+
 // All sources and provider responses in this suite are local. No credentials are read.
 test(
   'profiled storyteller: durable choices, context, accounting and browser creation',
@@ -1605,15 +1622,26 @@ test(
               },
             };
             const budget = createStorytellerBudget(database);
+            const [sourceGeneration] = await database.db
+              .select()
+              .from(generation)
+              .where(eq(generation.id, first.generationId));
+            assert.ok(sourceGeneration);
+            const sourceTask = storytellerTaskSchema.parse(
+              sourceGeneration.input,
+            );
             const ids = [randomUUID(), randomUUID()];
             const results = await Promise.allSettled(
               ids.map((id) =>
                 budget.reserve({
                   id,
                   generationId: first.generationId,
-                  execution,
-                  request: {},
-                  resources: resourcesForExecution(execution),
+                  ownerId,
+                  task: {
+                    ...sourceTask,
+                    execution,
+                    resources: resourcesForExecution(execution),
+                  },
                 }),
               ),
             );
@@ -1633,8 +1661,8 @@ test(
             const settlement = {
               id: winner,
               execution,
-              chargeMicrousd: 80n,
-              providerId: 'fake-settled',
+              usage: fakeUsage(80n),
+              telemetry: fakeTelemetry('fake-settled'),
             };
             await budget.settle(settlement);
             await budget.settle(settlement);
@@ -1690,8 +1718,8 @@ test(
                 return {
                   kind: 'result',
                   output: scriptedStorytellerResult(task),
-                  chargeMicrousd: 10n,
-                  providerId: 'fake-provider-id',
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('fake-provider-id'),
                 };
               },
             });
@@ -1713,12 +1741,50 @@ test(
               (await budget.inspect(accountId)).settledMicrousd,
               10n,
             );
+            const [settledAttempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, id));
+            assert.ok(settledAttempt);
+            assert.equal(settledAttempt.ownerId, ownerId);
+            assert.equal(settledAttempt.storyId, null);
+            assert.equal(settledAttempt.draftId, draftId);
+            assert.equal(settledAttempt.purpose, 'opening');
+            assert.equal(
+              settledAttempt.storytellerProfileId,
+              'absurd-action-comedy',
+            );
+            assert.equal(settledAttempt.requestedModel, 'fake/model');
+            assert.equal(settledAttempt.reportedModel, 'fake/model');
+            assert.equal(settledAttempt.providerId, 'fake-provider-id');
+            assert.equal(settledAttempt.promptTokens, 20);
+            assert.equal(settledAttempt.completionTokens, 10);
+            assert.equal(settledAttempt.reasoningTokens, 0);
+            assert.equal(settledAttempt.chargedMicrousd, 10n);
+            assert.equal(settledAttempt.calculatedMicrousd, 1n);
+            assert.ok(
+              settledAttempt.estimatedMicrousd <
+                settledAttempt.reservedMicrousd,
+            );
+            assert.equal(
+              settledAttempt.estimationMethod,
+              'serialized-byte-upper-bound.v1',
+            );
+            assert.ok(settledAttempt.estimatedInputTokens > 0);
+            assert.equal(settledAttempt.reconciliation, 'different');
+            assert.ok(settledAttempt.requestBytes > 0);
+            assert.ok(settledAttempt.dispatchedAt);
+            assert.ok(settledAttempt.settledAt);
+            assert.equal(settledAttempt.durationMs, 25);
             const uncertainId = randomUUID();
             await profiled.request(ownerId, draftId, uncertainId, 1);
             const uncertain = createStorytellerRuntime(database, {
               provider: async () => {
                 calls++;
-                return { kind: 'uncertain' };
+                return {
+                  kind: 'uncertain',
+                  telemetry: fakeTelemetry('fake-uncertain'),
+                };
               },
             });
             await uncertain.complete(uncertainId);
@@ -1733,6 +1799,9 @@ test(
               .where(eq(storytellerAttempt.generationId, uncertainId));
             assert.equal(attempt?.state, 'uncertain');
             assert.ok(attempt);
+            assert.equal(attempt.reconciliation, 'unknown');
+            assert.equal(attempt.providerId, 'fake-uncertain');
+            assert.equal(attempt.durationMs, 25);
             // Explicit simulated reconciliation; keep this disposable test database usable on rerun.
             if (execution.mode !== 'provider') {
               throw new Error('Expected provider execution');
@@ -1740,8 +1809,8 @@ test(
             await budget.settle({
               id: attempt.id,
               execution,
-              chargeMicrousd: 1n,
-              providerId: 'fake-reconciled',
+              usage: fakeUsage(1n),
+              telemetry: fakeTelemetry('fake-reconciled'),
             });
             assert.equal((await budget.inspect(accountId)).stopped, true);
           },
