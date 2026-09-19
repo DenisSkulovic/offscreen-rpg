@@ -8,6 +8,8 @@
 
 **Experience direction:** activities and chains separate mechanical execution, reporting and continuation. The proposed proof after clock/identity correction compares quiet completion, narration with continuation, selected narrated milestones and held choices through one configurable boundary, jointly owned by activity foundation phase 2 and [bounded autonomy](features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md). Chain admission, recurring rules and configurable follow-ups remain unimplemented. Current completion always requests consequence narration; the correction is to make it selectable, not forbid it. Broad cooperation follows this proof; example itineraries and durations remain illustrative.
 
+The latest owner clarification adds [prepared local opportunities](technical/rules-and-activities.md#prepared-local-opportunities-proposed) and a [Seyda Neen dormant-play trace](technical/playthroughs/local-opportunities.md): independent player selection/repetition should require no fresh model task while captured rules remain eligible. Storyteller-curated place/scene restrictions are enforced deterministically, not through global sleep/travel buttons or a model judge per click. Reviewed source at `53ad6c1`; documentation only. Current filtered scene offers are not this durable capability. Activity phase 2 and the connected POC now include this acceptance alongside chains; runtime generation of such packages remains proposed.
+
 ## Implemented boundary
 
 | Area | Exists now | Important limit |

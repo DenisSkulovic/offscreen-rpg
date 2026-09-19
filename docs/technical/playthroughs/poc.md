@@ -26,6 +26,8 @@ Replay this fixture with follow-up policies changed, not core rules rewritten:
 - **Narrated replay:** completion requests a historical report while the wait begins. Delay report publication until the wait has advanced. The report attaches to the completed repair, does not replace current controls and cannot grant credit again.
 - The interactive branch in the main session supplies the third case: a required scene holds relevant progression until it is resolved.
 
+Also prove **player-directed dormant play**, not only the chain: after quiet completion, independently choose another still-valid prepared activity, complete it, then repeat an eligible one with no new generation tasks. Reuse a small authored harbor opportunity package and the same rules; no whole village generator is needed for the first proof. Change an admitted access/scene condition and reject a stale now-ineligible start. [LO-02 through LO-04](local-opportunities.md) specify the corresponding larger-world experience. A repair that is already complete must not be offered as repeatable work just to fill this test; select genuinely repeatable content.
+
 Aim for roughly a minute of active waiting at an explicit demo rate, not a real overnight onboarding requirement. The same rules can run slowly; a fast demonstration must not grant completion via test-only shortcuts. Longer waits can be evaluated separately for their emotional payoff.
 
 ## Acceptance references and current evidence
@@ -36,6 +38,7 @@ Aim for roughly a minute of active waiting at an explicit demo rate, not a real 
 | Effort, eligibility and ETA differ | BC-01/02, NH-02 | Contribution checks exist; alternate progress families are proposed | [Activity foundation](../../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) |
 | Real A → B → A with no rewind | BC-04, NH-03 | Retention exists; current clock reconstruction can regress; integration shortcut does not prove B settlement | Activity phase 1 |
 | Quiet completion and bounded successor | BM-02/03, RM-02/06 | Completion currently always requests consequence narration; no general chain | Activity phase 2 + [autonomy](../../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) |
+| Choose/repeat local activities while the Storyteller stays dormant | LO-02/03/04 | Scene-local filtered offers exist; no durable scoped opportunity package or model-free rediscovery/repeat lifecycle | Activity phase 2; autonomy consumes eligible entries but does not own their availability |
 | Optional historical report versus required scene | RM-04/05 | Ordinary consequence tasks exist; report-only task and configurable boundary policy do not | Same joint slice |
 | Cancel/suspend/pause are distinct | RM-03, BC-06 | Pause/retention partial; abandonment and complete chain controls absent | Activity lifecycle + autonomy |
 | Nonhuman contrast uses the same authority | NH-01 through NH-03 | Applicable capabilities and an immediate microbe fixture exist; extended loop is proposed | Each introduced rule needs this contrast |

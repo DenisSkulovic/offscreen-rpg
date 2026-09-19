@@ -10,6 +10,8 @@ The owner explicitly described dwarf, SpongeBob, dragon, microbe, abstract consc
 
 The current A → B → A slice retains work but still has one campaign character, one advancing activity, contribution-only state and no enforced capacity reservations. See the inspected findings and proposed technical contract in [PLAN.md](PLAN.md).
 
+The owner's prepared-local-life clarification adds a second essential proof: after the Storyteller establishes a situation and its supported activities, the player can independently select, repeat and switch among currently eligible activities while it remains dormant. This is not limited to following a preaccepted queue. The Storyteller curates what is reasonable; the application enforces captured availability without inference on every click. See [product behavior](../../gameplay.md#prepared-local-life-while-the-storyteller-is-dormant) and the [technical opportunity contract](../../technical/rules-and-activities.md#prepared-local-opportunities-proposed). This direction is recorded; detailed implementation choices remain proposed.
+
 ## Separate work from participation
 
 A work instance and a character's participation in it are different things.
@@ -35,6 +37,7 @@ In a contrasting story, an abstract consciousness allocates two declared attenti
 | Concept | Responsibility |
 | --- | --- |
 | Activity definition | Supported rules, parameters, roles, prerequisites, targets, costs and result terms |
+| Local opportunity | Scoped, versioned availability of a prepared definition and targets; distinct from a consumed scene offer or an accepted queue |
 | Admitted instance | Stable identity, accepted definition, bound targets, progress and lifecycle |
 | Participation | Actor, role, method, state and capacity claims |
 | Attempt | One immediate resolution or due productive contribution with a receipt |
@@ -107,6 +110,7 @@ The view should answer: what am I doing, who is helping, what remains, what coul
 - Map-free traversal and small/abstract examples share authority/lifecycle without mandatory anatomy, equipment or economy.
 - Connected offline rehearsal demonstrates participation, blockers and earned consequences. Owner taste and later live evaluation separately establish storytelling quality.
 - A quiet routine can finish and transition to a permitted next routine with zero generation task admissions, including consequence narration. A distinct event path records one escalation, preserves committed work and prevents the queue bypassing the decision.
+- After preparation, the player can independently choose another eligible local activity and repeat supported work with zero new generation tasks. Current state/scene restrictions can remove and restore availability without regeneration; stale commands and ongoing incompatible work cannot bypass those restrictions. Repeatable rules never replay old rewards or reset scoped occurrence/finite-finding state.
 - The same mechanical outcome can instead narrate and continue, or hold for a contextual choice, under a different admitted policy. Scheduled milestone narration requires no random event. Late report-only prose remains historical; it cannot overwrite the current situation or introduce unadmitted facts.
 
 ## Scope and staged delivery

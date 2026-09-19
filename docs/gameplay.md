@@ -4,7 +4,7 @@ The working approach is one generic progression flow. Walking, noticing a tower,
 
 ## From intention to continuation
 
-The storyteller receives the current situation, relevant memories, character capabilities and campaign settings. It offers contextual intentions. Supported rules adjudicate a selected attempt and commit its checks and effects; the storyteller narrates those results. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
+The storyteller receives the current situation, relevant memories, character capabilities and campaign settings. It offers contextual intentions and can prepare reusable local activities. Supported rules adjudicate a selected attempt and commit its checks and effects; narration follows only when the accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
 
 Time passes. A quiet interval can finish, or a development can interrupt it. The player may respond, delegate or pause; the scope of changing direction between offered choices remains open. A choice can resolve the situation or lead to another stage. Nonresponse uses a permitted character fallback rather than requiring constant attention. In shared play, interacting intentions must resolve into a common, coherent consequence.
 
@@ -13,6 +13,18 @@ One passage might summarize a calm day, while a dangerous encounter unfolds thro
 An extended ordinary life is a target playthrough, not filler between mandatory plot twists. The player may repeat a chosen intention, save for equipment, revisit familiar people and observe gradual changes over real days. Resource changes and any supported skill progression must be recorded consistently, but the exact progression rules remain open. Professions and activities are examples of content; they do not each require a dedicated simulation subsystem. The finite testing chamber does not decide the lifetime or dramatic density of the eventual character experience.
 
 Interaction presentation should be able to evolve without redefining story progression. The POC uses single selection from pre-generated contextual options, with no free-text gameplay actions; the set may vary with the situation. Different interaction forms can be considered after this POC, each requiring a clear meaning and validation before becoming supported behavior. Player input expresses an intention; it does not directly supply the resulting world changes.
+
+## Prepared local life while the Storyteller is dormant
+
+On establishing a village or another relevant situation, the Storyteller can prepare a bounded set of opportunities: fish by the lighthouse, spend time in the tavern, gather rumors, or rest. The game validates their supported rules, targets, outcomes, eligibility and wake conditions. The player may then discover, select, repeat or switch among still-valid prepared activities without fresh inference. This is broader than executing a previously accepted queue: choosing what to do next need not summon the Storyteller either. A queue is optional unattended permission over a subset of those opportunities.
+
+The Storyteller also curates what fits the situation. Sleep and travel are not universal buttons. A dangerous confrontation may rule out ordinary sleep; locked routes may remove departure. These restrictions must be captured as enforceable conditions or explicit scene constraints, not require a model to rejudge every click. Red Mountain is an illustration, not a hard-coded place where sleep is always impossible. New shelter, opened routes or a resolved encounter can change availability through already-admitted rules without another call.
+
+Known activities can end quietly, produce bounded mechanical results or prepared observations, continue accepted work, or request narration under their configured policies. A supported check, milestone, deadline or relevant world change can request a Storyteller wake; it need not wait for activity completion. Wakes are bounded and deduplicated, not model polling to ask whether anything interesting happened. No event is also a valid result.
+
+Routine chitchat does not promise fresh bespoke dialogue, and repeated rumor gathering cannot manufacture unlimited novel lore for free. It can reveal prepared evidence or record a supported quiet outcome. When something genuinely new needs judgment/content, the Storyteller returns with current state and relevant history, prepares a scene or revises local opportunities through validated changes, then can become dormant again. Preparing a place does not mean exhaustively simulating its inhabitants or generating every possible future.
+
+See the [Seyda Neen worked trace](technical/playthroughs/local-opportunities.md) and the [proposed technical opportunity contract](technical/rules-and-activities.md#prepared-local-opportunities-proposed). This direction is not implemented by the current scene-local offer system.
 
 ## What the game remembers
 

@@ -48,6 +48,54 @@ The offline consequence source repeats the deterministic outcome summary and sel
 
 Contrasting authored examples enter through the same preview, private-plan lookup, resolver, receipts, narrator and recovery boundaries. They prove that an example can omit quantities, currency, human calendars, anatomy and geography without changing runtime logic. Their mechanics remain authored content until the planning agent is connected.
 
+## Prepared local opportunities (proposed)
+
+Status: owner-described direction, not current runtime support. Current `composeOpportunities` filters supplied plans, and a saved `game_offer` fences one scene-local selection. That is useful admission machinery, but it is not a durable source of repeatable local activities. The [activity feature](../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) owns implementation; [bounded autonomy](../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) owns accepted queues and follow-up policy. [Local-life trace](playthroughs/local-opportunities.md) owns the worked example.
+
+### Definitions, availability and offers are different
+
+- **Activity definition:** captured supported rule/version, parameters, requirements, outcomes and follow-up hooks. Reuse the terms, not an old successful outcome or old dice.
+- **Local opportunity:** a story-scoped, versioned grant to propose that definition with specified targets/bindings in a place or situation. It includes declared start/scope conditions, repeatability, known limits and evidence. It does not grant the character new capabilities or control rights.
+- **Current offer:** a short-lived public projection of eligible opportunities and scene-specific choices, bound to current authority. Its private plans retain the usual opacity and stale-command protection. A consumed offer is never made reusable to avoid a model call; the application can compose a fresh eligible offer without inference.
+- **Work instance / participation:** the admitted attempt at extended work. Repeating fishing can create a new instance; returning to unfinished repair references the exact retained instance. A reusable definition is neither one immortal job nor permission to reset meaningful work.
+- **Accepted chain:** permission to start particular future work without another player click. Availability in a local menu alone authorizes no unattended execution.
+
+These are separate responsibilities, not a requirement for five new tables or abstractions. Start with a small bounded scene/place scope and existing typed rules. No global action taxonomy, generic expression interpreter or arbitrary generated code.
+
+### Preparing and refreshing a situation
+
+An opening, arrival or event task may propose a bounded local opportunity package together with relevant supported world declarations. Admission validates references, rules, capability applicability, costs/results, scope conditions, repeat terms, wake hooks and evidence. Publish the package and its required state changes atomically against the captured source revision. The Storyteller cannot refer to a tavern or tool it merely invented in prose as though an authoritative target already existed.
+
+Revisiting a still-valid known place can reuse its package. A new place, unsupported change or requested novel interaction may require preparation; not every arrival must regenerate everything. Revisions replace/retire named opportunities explicitly rather than unioning every past menu into an ever-growing list. Record which task/content revision established the terms. An opportunity revision does not silently rewrite an in-progress instance's captured mechanics.
+
+Bound preparation to what is useful now. Fishing rules plus a small prepared observation set are reusable content; dozens of prewritten branching futures are not required. Future general world/definition generation still needs its own validated result contract; the existing opening/consequence schema must not be advertised as already producing these packages.
+
+### Contextual curation with deterministic enforcement
+
+Availability is the intersection of the admitted opportunity's scope/conditions, current capabilities/resources/control, and controlling scene restrictions. Re-evaluate on projection and under the start transaction lock. A stale browser button fails before any roll, debit or work start. Storyteller curation cannot override missing capacity, resources, actor permissions or a required unresolved scene.
+
+Represent only bounded supported conditions over declared state: presence/access, enabled opportunity scope, required capabilities/resources, admitted time window, and relevant scene/phase restrictions. Do not evaluate arbitrary prose such as “when narratively appropriate” at every click. An unknown condition either needs supported preparation or cannot authorize that opportunity. Local context need not be a geographic place: a microbe's nutrient pocket or an abstract connection phase can supply the same boundary.
+
+For the locked-confrontation fixture, ordinary sleep is ineligible because the admitted scene disallows safe rest, and departure is ineligible because accessible routes are closed. The model does not receive a permanent power to delete any inconvenient choice for drama; restrictions need current grounding or an explicit selected story constraint, and supported ways to change them. Opening a route can restore a prepared departure opportunity deterministically. There is no `if location == Red Mountain` rule.
+
+Explain known blockers without leaking hidden facts. Incompatible routines cannot bypass a controlling decision, but pause/stop controls follow their own authorization and are not removed by narrative curation. If nothing is eligible, distinguish a deliberate hold, an understood temporary block and missing preparation; do not silently charge generation for every empty-menu refresh.
+
+### Start eligibility is not ongoing validity
+
+Each relevant condition declares whether it is start-only or continuously required. Settle work through the admitted change boundary before blocking, interrupting or invalidating incompatible participation. A lockdown can therefore prevent a new sleep and interrupt existing incompatible work without retroactively undoing earned results. Merely hiding its button is not enforcement. A changed package can revoke future starts; cancelling existing work additionally needs an explicit lifecycle cause/policy.
+
+Repeat cycles obtain new receipts/draws at their meaningful boundaries. Resource consumption, finite prepared findings, quotas and any cooldown/diminishing-return semantics are explicit content/rules, not mandatory universal penalties. Persistent occurrence/consumption state belongs to its declared actor/site/story scope; stopping and restarting cannot reset it to farm draws or reveal the same supposedly unique rumor repeatedly. Completed rewards are never reissued from cached generation output.
+
+### Dormancy and wake admission
+
+Reading/projecting local opportunities, starting/repeating admitted work, supported switching/resumption, deterministic availability changes and quiet settlement admit no generation task unless a selected hook requires one. Scripted execution of an unnecessary generation task does not satisfy this property.
+
+Supported wake sources include occurrence results, milestones, admitted deadlines and relevant state-change events. “At any moment” means the corresponding authoritative boundary can trigger a wake, not continuous LLM polling or one task per world mutation. Register explicit relevant triggers; deduplicate by cause/hook identity, apply captured budgets/cooldowns, and coalesce compatible pending causes without losing committed hazards or allowing one busy source to starve a required interaction. Initial implementation needs only a small selected subset.
+
+The wake packet includes the trigger receipt or candidate, current scoped opportunities and revisions, active/retained work, material outcomes since preparation, character/world state, unresolved interaction and relevant memory. Resolve through the existing budget/recovery fence. Candidate-versus-committed hazards and optional-report-versus-required-scene behavior follow the autonomy contract. No budget or provider availability does not invalidate unrelated prepared routines; however, an already-admitted controlling hazard cannot be bypassed just because inference is unavailable.
+
+Returning generated output is validated, then published against current state. It may narrate and propose explicit revisions, but cannot replay routine rewards, rewrite past dice or resurrect a retired opportunity from a stale snapshot. Once no unresolved interaction needs generation, the system can return to dormant local play without a mandatory farewell scene or new task.
+
 ## Persistence and known limits
 
 The single baseline migration creates the current database directly, including immutable `game_offer` private plans, captured activities, rolls, effects and settings. There are no prototype conversions or compatibility DTOs. Local databases must be reset when the pre-POC schema changes. Multiple unfinished rows are retained, but the campaign pointer still authorizes only one advancing instance. Named capacity is captured without reservation enforcement. The [activity foundation proposal](../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) owns the proposed participant/capacity lifecycle and shared clock correction. Current settlement reconstructs campaign time from an instance's original start plus its cursor, which can regress chronology after other work advances; retention alone does not establish correct A → B → A timing.

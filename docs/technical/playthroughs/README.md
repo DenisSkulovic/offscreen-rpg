@@ -20,6 +20,7 @@ Then use the contrasts when designing a change:
 | --- | --- | --- |
 | Wizard, goblin, apple and companion | [Wizard](wizard.md) | Instant transformation versus prolonged waiting; containment, changing capabilities, another actor changing your situation |
 | Vvardenfell continuing life | [Vvardenfell](vvardenfell.md) | Labor, real waiting, interrupted travel, inventory/relationships and recall over days |
+| Seyda Neen while the Storyteller is dormant | [Prepared local opportunities](local-opportunities.md) | Fresh player-selected/repeated activities without inference; story-dependent eligibility and wake conditions |
 | Seyda Neen → Red Mountain itinerary | [Activity chain](red-mountain.md) | Selected narration, quiet completion, dependent starts, cancellation and late reports |
 | Batman asleep, then patrolling | [Batman](batman.md) | Bounded unattended permission, zero-inference routine, event candidacy and unresolved scenes |
 | Space cargo journey | [Cargo](cargo.md) | Vehicle/crew/beneficiary are different; costs and movement cannot be undone by cancelling |

@@ -10,6 +10,8 @@ The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/
 
 ## Proposed queue and event contract
 
+A queue is not the only way to play without inference. The [prepared-local-opportunity contract](../../technical/rules-and-activities.md#prepared-local-opportunities-proposed) lets a present player freely choose/repeat still-valid activities while the Storyteller is dormant. This feature consumes those eligible definitions/targets into explicit unattended permission; it must not own a competing availability catalogue or require prequeueing every model-free choice. Scene restrictions apply to queued starts as well as direct selections.
+
 Concrete acceptance anchors are now in the [execution atlas](../../technical/playthroughs/README.md): [BM-02/03](../../technical/playthroughs/batman.md#bm-02-rest-then-revalidate-patrol) for quiet offscreen work, [BM-04/05](../../technical/playthroughs/batman.md#bm-04-the-event-branch-at-the-sixth-hour) for candidate-versus-hazard admission and absence permission, and [RM-03/04/06](../../technical/playthroughs/red-mountain.md#rm-03-cancellation-in-the-middle-is-not-rewind) for cancellation, late reports and exactly one successor. Implement the smaller [connected POC](../../technical/playthroughs/poc.md), not literal Gotham or a full travel system, to prove these contracts first.
 
 ### Configurable boundary follow-ups
