@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -16,10 +16,9 @@ import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
 import { resolveEffectiveUsagePolicy } from '@offscreen/application/storyteller';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
-import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
-import { draftSchema } from '@offscreen/contracts/drafts';
 import { authOptions, createAuth } from '@offscreen/api/auth';
 import { stopChamberResources } from './stop.js';
+import { captureHeldOpeningPacket } from './packet-review.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
@@ -270,70 +269,11 @@ try {
     )
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');
-    const apiOrigin = 'http://127.0.0.1:3001';
-    const draftId = crypto.randomUUID();
-    const generationId = crypto.randomUUID();
-    const request = async (path: string, init?: RequestInit) => {
-      const response = await fetch(`${apiOrigin}${path}`, {
-        ...init,
-        headers: {
-          cookie,
-          origin,
-          ...(init?.body ? { 'content-type': 'application/json' } : {}),
-          ...init?.headers,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(`Packet-review API failed: ${response.status} ${path}`);
-      }
-      return response.json();
-    };
-    const draft = draftSchema.parse(
-      await request(`/api/drafts/${draftId}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          expectedRevision: 0,
-          storyteller: { id: 'quiet-eerie-mystery', revision: 1 },
-          title: '',
-          premise:
-            'I am a newly arrived prisoner in Seyda Neen. I have little money, no local standing, and want to reach Balmora without the world waiting passively for me.',
-          storytellingDirection: '',
-        }),
-      }),
-    );
-    await request(`/api/drafts/${draftId}/openings/${generationId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ expectedRevision: draft.revision }),
-    });
-    let captured: unknown;
-    for (let read = 0; read < 30; read++) {
-      const response = await fetch(
-        `${apiOrigin}/api/chamber-tools/generations/${generationId}/dispatch-review`,
-        { headers: { cookie, origin } },
-      );
-      if (response.ok) {
-        captured = dispatchReviewResponseSchema.parse(await response.json());
-        break;
-      }
-      await delay(200);
-    }
-    if (!captured) throw new Error('Held packet was not captured');
-    const accounting = await database.db.$client.query(
-      'SELECT (SELECT count(*) FROM storyteller_attempt WHERE generation_id = $1) AS attempts, (SELECT count(*) FROM storyteller_dispatch_review WHERE generation_id = $1 AND state = $2) AS held',
-      [generationId, 'awaiting-review'],
-    );
-    if (
-      accounting.rows[0]?.attempts !== '0' ||
-      accounting.rows[0]?.held !== '1'
-    ) {
-      throw new Error('Held packet unexpectedly reached provider accounting');
-    }
-    const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-packet-review');
-    await mkdir(evidenceDirectory, { recursive: true });
-    const evidencePath = join(evidenceDirectory, 'opening-request.json');
-    await writeFile(evidencePath, `${JSON.stringify(captured, null, 2)}\n`, {
-      encoding: 'utf8',
-      flag: 'w',
+    const { evidencePath } = await captureHeldOpeningPacket({
+      apiOrigin: 'http://127.0.0.1:3001',
+      browserOrigin: origin,
+      cookie,
+      database,
     });
     console.log(
       `API-only held opening packet saved to ${evidencePath}. Verified: awaiting review, zero provider attempts. Model spend: $0; no browser, provider call or reservation.`,
