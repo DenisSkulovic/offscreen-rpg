@@ -132,14 +132,14 @@ const resultSchemas = {
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.literal(7),
+  inputVersion: z.literal(8),
   promptVersion: z.literal('storyteller.v2'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
   context: contextInputSchema,
   contextManifest: z.strictObject({
-    policyVersion: z.literal('bounded-scene.v2'),
+    policyVersion: z.literal('bounded-scene.v3'),
     recentFrom: z.number().int().nonnegative(),
     through: z.number().int().nonnegative(),
     omittedSequences: z.array(z.number().int().positive()).max(87),
@@ -299,7 +299,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
   );
   const through = context.current?.sequence ?? 0;
   const contextManifest = {
-    policyVersion: 'bounded-scene.v2',
+    policyVersion: 'bounded-scene.v3',
     recentFrom:
       context.activeSceneScope?.fromSequence ?? Math.max(0, through - 6),
     through,
@@ -327,7 +327,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 7,
+    inputVersion: 8,
     promptVersion: 'storyteller.v2',
     resources,
     request: requestFor(input, context),

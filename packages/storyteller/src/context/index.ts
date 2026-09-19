@@ -182,11 +182,13 @@ export function contextPayload(context: StorytellerContext) {
       text: note.text,
       evidence: note.sources.map(handle),
     })),
-    evidence: context.evidence.map((passage) => ({
-      handle: `p${passage.sequence}`,
-      content: passage.content,
-      response: passage.response,
-    })),
+    evidence: context.evidence
+      .filter((passage) => passage.id !== context.current?.id)
+      .map((passage) => ({
+        handle: `p${passage.sequence}`,
+        content: passage.content,
+        response: passage.response,
+      })),
   };
 }
 

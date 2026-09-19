@@ -11,7 +11,7 @@ import {
 } from '../src/tasks';
 import { scriptedStorytellerResult } from '../src/fixtures';
 import { applyContinuityPatch } from '../src/context/continuity';
-import { boundStorytellerContext } from '../src/context';
+import { boundStorytellerContext, contextPayload } from '../src/context';
 import {
   createOpenRouterProvider,
   inspectOpenRouterRequest,
@@ -519,7 +519,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 7);
+    assert.equal(task.inputVersion, 8);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -919,6 +919,12 @@ test('active scene scope retains its complete range and rejects partial coverage
     selected.evidence.map((passage) => passage.sequence),
     Array.from({ length: 15 }, (_, index) => index + 1),
   );
+  const payload = contextPayload(selected);
+  assert.equal(payload.current?.handle, 'p15');
+  assert.equal(
+    payload.evidence.some((passage) => passage.handle === 'p15'),
+    false,
+  );
   assert.throws(
     () =>
       boundStorytellerContext(
@@ -961,7 +967,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(inspection.body.model, 'test/model');
   assert.equal(inspection.purpose.id, 'opening.narrative');
   assert.equal(inspection.purpose.outputContract, 'playable-opening.v1');
-  assert.equal(inspection.contextPolicyVersion, 'bounded-scene.v2');
+  assert.equal(inspection.contextPolicyVersion, 'bounded-scene.v3');
   assert.deepEqual(inspection.body.provider.only, ['Test']);
   assert.equal(inspection.body.provider.allow_fallbacks, false);
   assert.match(inspection.sha256, /^[a-f0-9]{64}$/);
