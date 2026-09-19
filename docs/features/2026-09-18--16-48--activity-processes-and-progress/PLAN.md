@@ -137,6 +137,7 @@ Concrete A1 oracle: BC-04 world ticks 10→15→20→25, retained A progress, fr
 ### 2 — Quiet routines and selective scenes
 
 Execution label **A2**. This phase owns rule diversity and typed boundary emission, not all scene/queue work.
+Status: implemented in September 2026. The rule/lifecycle portion is complete; quiet no-task follow-up and reusable authored choices deliberately remain the next S2/U2a slice.
 
 - Dependencies: A1; execute after situation S1 in the handoff route so every exposed choice already has explicit authority.
 - Add a strict clock-wait rule alongside contribution: positive finite tick target, rule-specific progress/view and one terminal boundary. No fake work points or compulsory dice for waiting. Extract cohesive validation/next-boundary/settlement/projection dispatch within existing packages, not a plugin framework.
@@ -179,8 +180,9 @@ A giant optional-field activity object admits nonsense combinations; use typed r
 
 ## Current checkpoint
 
-- Current phase: A1 implemented; next route slice is situations S1, followed by A2. Campaign storage owns clock anchor/pace/remainder/frontier; activity storage owns effort/progress/pending completion. Resume publication binds exact instance/revision and selection fences it. Prototype baseline/schema and plan formats were reset rather than compatibility-layered.
-- Implemented from baseline `09f1fe2`. World receipt mapping uses current campaign tick plus remaining local effort, so the BC-04 oracle maps 15→20→25. A goal-reaching interrupt remains pending and eligible resumption completes without a new draw. One advancing activity remains the explicit limit.
-- Verification: affected package builds/typechecks and 20/20 game tests passed, including retained-effort world mapping and resume binding shape. After recreating the disposable test database from the new baseline, the focused scripted Storyteller integration completed through PostgreSQL, Temporal and its browser stage. Its A→B→A branch still uses direct B completion and explicit test-only offer rebinding, so it is not claimed as real BC-04 settlement evidence.
+- Current phase: A1 and A2 are implemented. Campaign storage owns clock anchor/pace/remainder/frontier; activity storage owns effort, typed rule progress and pending completion. Resume publication binds exact instance/revision and selection fences it. The next connected slice is situations S2 plus autonomy U2a, not the broad cooperation phase.
+- Implemented boundary: version-6 plans use a strict contribution-or-clock-wait process union. Shared dispatch owns initial progress, next boundary, settlement, completion estimate and projection. Ten eligible wait ticks complete without a d20/work points; contribution remains roll-earned. The nonhuman microbe fixture exercises the wait through ordinary Storyteller authorization and campaign admission.
+- Verification: affected packages and production web build; 22/22 game and 29/29 Storyteller tests pass. After recreating the disposable database, the focused integration passes 11/11 through PostgreSQL, Temporal and browser creation. It proves wait completion at tick 10, zero rolls and duplicate completion no-op. Its A→B→A branch still uses direct B completion and explicit test-only offer rebinding, so it is not claimed as real BC-04 settlement evidence.
+- Known boundary: completion still admits consequence narration. Zero-task completion, factual continuation and independently repeated authored routines belong to S2/U2a. One advancing activity remains the explicit limit.
 - Open decisions: product defaults in FEATURE.md. Multiplayer control/holds and combat rules remain separate, not prerequisites for solo cooperative proof.
 - Spend: no provider calls, $0 for this pass; cumulative OpenRouter usage unverified. Resetting Codex usage does not authorize live game inference.

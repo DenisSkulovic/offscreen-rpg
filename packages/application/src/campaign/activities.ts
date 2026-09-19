@@ -4,9 +4,11 @@ import type { Database } from '@offscreen/db';
 import { campaign, gameActivity } from '@offscreen/db/campaign-schema';
 import {
   activityProgressSchema,
-  contributeAtBoundary,
   nextBoundaryTick,
+  processBoundaryDue,
+  processProgressAtEffortTick,
   resolvedActivityPlanSchema,
+  settleProcessBoundary,
   worldTickForEffortBoundary,
 } from '@offscreen/game/activities';
 import { resolveCheckResolution } from '@offscreen/game/checks';
@@ -103,34 +105,33 @@ export async function settleActivity(
       boundaryEffortTick: boundaryTick,
     });
     boundariesSettled++;
-    let contributionComplete = false;
-    if (boundaryTick % plan.action.process.everyTicks === 0) {
+    let processComplete = false;
+    if (processBoundaryDue(plan, boundaryTick)) {
       const before = character;
-      const contribution = contributeAtBoundary(
-        plan,
-        processProgress,
-        before,
-        () => randomInt(1, 21),
+      const result = settleProcessBoundary(plan, processProgress, before, () =>
+        randomInt(1, 21),
       );
-      processProgress = contribution.progress;
-      contributionComplete = contribution.complete;
-      await recordRoll(tx, {
-        storyId: current.id,
-        operationId: activity.id,
-        segment: boundariesSettled,
-        checkKey: 'process-contribution',
-        tick: worldBoundaryTick,
-        plan: {
-          resolution: {
-            kind: 'ability',
-            plan: plan.action.process.attempt.check,
+      processProgress = result.progress;
+      processComplete = result.complete;
+      if (result.roll && plan.action.process.kind === 'contribution.v1') {
+        await recordRoll(tx, {
+          storyId: current.id,
+          operationId: activity.id,
+          segment: boundariesSettled,
+          checkKey: 'process-contribution',
+          tick: worldBoundaryTick,
+          plan: {
+            resolution: {
+              kind: 'ability',
+              plan: plan.action.process.attempt.check,
+            },
+            character: before,
           },
-          character: before,
-        },
-        result: contribution.roll,
-        effects: [],
-      });
-      lines.push(contribution.text);
+          result: result.roll,
+          effects: [],
+        });
+      }
+      if (result.text) lines.push(result.text);
     }
     for (const schedule of plan.action.checks) {
       if (boundaryTick % schedule.everyTicks !== 0) {
@@ -161,10 +162,10 @@ export async function settleActivity(
     cursorTick = boundaryTick;
     worldCursor = worldBoundaryTick;
     if (nextState === 'encounter') {
-      completionPending = contributionComplete;
+      completionPending = processComplete;
       break;
     }
-    if (contributionComplete) {
+    if (processComplete) {
       character = applyOutcomeEffects(
         character,
         plan.action.completion.effects,
@@ -182,6 +183,11 @@ export async function settleActivity(
     nextBoundaryTick(plan, cursorTick) <= availableEffortTicks;
   const caughtUpRunning = nextState === 'running' && !backlogDue;
   const nextEffortTicks = caughtUpRunning ? availableEffortTicks : cursorTick;
+  processProgress = processProgressAtEffortTick(
+    plan,
+    processProgress,
+    nextEffortTicks,
+  );
   const nextClock =
     nextState === 'running' && pace.kind !== 'instant'
       ? clock

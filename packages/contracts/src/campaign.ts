@@ -51,11 +51,20 @@ const campaignActivityViewSchema = z.strictObject({
   boundariesSettled: z.number().int().nonnegative(),
   revision: z.number().int(),
   completionPending: z.boolean(),
-  progress: z.strictObject({
-    label: z.string().min(1).max(120),
-    earned: z.number().int().nonnegative(),
-    required: z.number().int().positive(),
-  }),
+  progress: z.discriminatedUnion('kind', [
+    z.strictObject({
+      kind: z.literal('contribution'),
+      label: z.string().min(1).max(120),
+      earned: z.number().int().nonnegative(),
+      required: z.number().int().positive(),
+    }),
+    z.strictObject({
+      kind: z.literal('wait'),
+      label: z.string().min(1).max(120),
+      elapsedTicks: z.number().int().nonnegative(),
+      requiredTicks: z.number().int().positive(),
+    }),
+  ]),
   dueAt: z.iso.datetime().nullable(),
   estimatedCompletionAt: z.iso.datetime().nullable(),
   resolvedTicks: z.number().int().nonnegative(),

@@ -82,6 +82,13 @@ test(
         }
         async function mechanicalCandidate(
           contentId = 'pineapple-mechanics.v4',
+          pace:
+            | { kind: 'instant' }
+            | { kind: 'rate'; ticks: number; realMs: number } = {
+            kind: 'rate',
+            ticks: 1,
+            realMs: 1000,
+          },
         ) {
           const draftId = randomUUID();
           await drafts.save(ownerId, draftId, {
@@ -103,7 +110,7 @@ test(
             campaign: {
               mechanics: true,
               locked: false,
-              pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+              pace,
             },
           });
           return { storyId, snapshot };
@@ -248,6 +255,7 @@ test(
             assert.equal(snapshot.campaign?.offer, null);
             assert.equal(snapshot.campaign?.activity?.state, 'running');
             assert.deepEqual(snapshot.campaign?.activity?.progress, {
+              kind: 'contribution',
               label: 'Beacon repair',
               earned: 0,
               required: 9,
@@ -271,7 +279,7 @@ test(
               version?: unknown;
               action?: { id?: unknown };
             };
-            assert.equal(plan.version, 5);
+            assert.equal(plan.version, 6);
             assert.equal(plan.action?.id, 'restore-beacon');
 
             const activityId = requireDefined(
@@ -496,7 +504,12 @@ test(
             });
             assert.equal(resumed.campaign?.activity?.id, activityId);
             assert.equal(resumed.campaign?.activity?.state, 'running');
-            assert.equal(resumed.campaign?.activity?.progress.earned, 3);
+            assert.equal(
+              resumed.campaign?.activity?.progress.kind === 'contribution'
+                ? resumed.campaign.activity.progress.earned
+                : null,
+              3,
+            );
             assert.equal(
               (
                 await database.db
@@ -506,6 +519,71 @@ test(
               ).length,
               2,
             );
+          },
+        );
+        await t.test(
+          'clock wait completes from eligible time without rolling or earning work points',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            const wait = requireDefined(
+              offer.nodes.find((node) => node.id === 'wait-contracted'),
+              'Expected an authored wait option',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [wait.id],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const activityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the admitted wait activity',
+            );
+            await storyService.advanceCampaignActivity(activityId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(completed.campaign?.activity?.state, 'complete');
+            assert.deepEqual(completed.campaign?.activity?.progress, {
+              kind: 'wait',
+              label: 'Protective interval',
+              elapsedTicks: 10,
+              requiredTicks: 10,
+            });
+            assert.equal(completed.campaign?.tick, 10);
+            assert.equal(completed.campaign?.rolls.length, 0);
+            assert.equal(
+              completed.campaign?.character?.facts.find(
+                (fact) => fact.id === 'exposed',
+              )?.value,
+              false,
+            );
+            assert.equal(
+              await storyService.advanceCampaignActivity(activityId),
+              null,
+            );
+            const duplicate = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(duplicate.revision, completed.revision);
+            assert.equal(duplicate.campaign?.tick, 10);
+            assert.equal(duplicate.campaign?.rolls.length, 0);
           },
         );
         await t.test(

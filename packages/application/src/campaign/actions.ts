@@ -16,6 +16,7 @@ import {
 import { selectOfferAction } from '@offscreen/game/offers';
 import {
   actionAvailable,
+  initialActivityProgress,
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import {
@@ -214,18 +215,14 @@ export function createCampaignActions(database: Database) {
           id: activityId,
           storyId: current.id,
           plan: {
-            version: 5,
+            version: 6,
             action: definition.resolution.action,
             settingsRevision: state.settingsRevision,
             resolvedThroughTick: 0,
           },
           state: 'running',
           boundariesSettled: 0,
-          progress: {
-            effortTicks: 0,
-            process: { kind: 'contribution.v1', earned: 0 },
-            completionPending: false,
-          },
+          progress: initialActivityProgress(definition.resolution.action),
         });
         await tx
           .update(campaign)

@@ -111,11 +111,28 @@ export async function readCampaign(
       state: candidate.state,
       boundariesSettled: candidate.boundariesSettled,
       completionPending: progress.completionPending,
-      progress: {
-        label: plan.action.process.progressLabel,
-        earned: progress.process.earned,
-        required: plan.action.process.requiredContribution,
-      },
+      progress:
+        plan.action.process.kind === 'contribution.v1' &&
+        progress.process.kind === 'contribution.v1'
+          ? {
+              kind: 'contribution' as const,
+              label: plan.action.process.progressLabel,
+              earned: progress.process.earned,
+              required: plan.action.process.requiredContribution,
+            }
+          : plan.action.process.kind === 'clock-wait.v1' &&
+              progress.process.kind === 'clock-wait.v1'
+            ? {
+                kind: 'wait' as const,
+                label: plan.action.process.progressLabel,
+                elapsedTicks: progress.process.elapsedTicks,
+                requiredTicks: plan.action.process.requiredTicks,
+              }
+            : (() => {
+                throw new Error(
+                  'Activity progress does not match its process rule',
+                );
+              })(),
       revision: candidate.revision,
       resolvedTicks: plan.resolvedThroughTick,
       settingsRevision: plan.settingsRevision,

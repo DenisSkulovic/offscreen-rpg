@@ -178,6 +178,44 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
         ),
       },
     },
+    {
+      version: 1,
+      key: 'wait-contracted',
+      label: 'Remain contracted',
+      intention:
+        'Remain contracted for ten eligible clock ticks while the disturbance passes.',
+      risk: null,
+      evidence: [],
+      requires: [{ id: 'exposed', value: true }],
+      requiresStory: [],
+      requiresQuantities: [],
+      resolution: {
+        kind: 'process',
+        action: {
+          id: 'wait-contracted',
+          label: 'Remain contracted',
+          description:
+            'Hold the protective contraction until the disturbance passes.',
+          requires: [{ id: 'exposed', value: true }],
+          capacity: 'primary',
+          process: {
+            kind: 'clock-wait.v1',
+            progressLabel: 'Protective interval',
+            requiredTicks: 10,
+          },
+          checks: [],
+          completion: {
+            text: 'The disturbance passes while the organism remains contracted.',
+            effects: [
+              {
+                kind: 'fact.set.v1',
+                fact: { id: 'exposed', value: false },
+              },
+            ],
+          },
+        },
+      },
+    },
   ];
 }
 

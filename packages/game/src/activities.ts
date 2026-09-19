@@ -20,37 +20,48 @@ export const scheduledCheckSchema = z.strictObject({
   success: outcomeSchema,
   failure: outcomeSchema,
 });
+const contributionProcessSchema = z.strictObject({
+  kind: z.literal('contribution.v1'),
+  progressLabel: z.string().min(1).max(120),
+  requiredContribution: z
+    .number()
+    .int()
+    .positive()
+    .max(Number.MAX_SAFE_INTEGER),
+  everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  attempt: z.strictObject({
+    check: checkPlanSchema,
+    successContribution: z
+      .number()
+      .int()
+      .positive()
+      .max(Number.MAX_SAFE_INTEGER),
+    failureContribution: z
+      .number()
+      .int()
+      .nonnegative()
+      .max(Number.MAX_SAFE_INTEGER),
+    successText: z.string().min(1).max(1000),
+    failureText: z.string().min(1).max(1000),
+  }),
+});
+const clockWaitProcessSchema = z.strictObject({
+  kind: z.literal('clock-wait.v1'),
+  progressLabel: z.string().min(1).max(120),
+  requiredTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+});
+export const processDefinitionSchema = z.discriminatedUnion('kind', [
+  contributionProcessSchema,
+  clockWaitProcessSchema,
+]);
+
 export const actionDefinitionSchema = z.strictObject({
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   label: z.string().min(1).max(200),
   description: z.string().min(1).max(500),
   requires: z.array(factSchema).max(16),
   capacity: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
-  process: z.strictObject({
-    kind: z.literal('contribution.v1'),
-    progressLabel: z.string().min(1).max(120),
-    requiredContribution: z
-      .number()
-      .int()
-      .positive()
-      .max(Number.MAX_SAFE_INTEGER),
-    everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    attempt: z.strictObject({
-      check: checkPlanSchema,
-      successContribution: z
-        .number()
-        .int()
-        .positive()
-        .max(Number.MAX_SAFE_INTEGER),
-      failureContribution: z
-        .number()
-        .int()
-        .nonnegative()
-        .max(Number.MAX_SAFE_INTEGER),
-      successText: z.string().min(1).max(1000),
-      failureText: z.string().min(1).max(1000),
-    }),
-  }),
+  process: processDefinitionSchema,
   checks: z.array(scheduledCheckSchema).max(8),
   completion: outcomeSchema.omit({ interrupts: true }),
 });
@@ -109,17 +120,21 @@ export function validateContentState(
   character: Character,
 ) {
   for (const action of content.actions) {
-    const contributionCheck = action.process.attempt.check;
-    if (!character.applicableAbilities.includes(contributionCheck.ability)) {
-      throw new Error(
-        'Contribution ability is not applicable to the current form',
-      );
-    }
-    if (
-      contributionCheck.skill &&
-      !character.skills.some((skill) => skill.id === contributionCheck.skill)
-    ) {
-      throw new Error('Contribution skill is not declared on the current form');
+    if (action.process.kind === 'contribution.v1') {
+      const contributionCheck = action.process.attempt.check;
+      if (!character.applicableAbilities.includes(contributionCheck.ability)) {
+        throw new Error(
+          'Contribution ability is not applicable to the current form',
+        );
+      }
+      if (
+        contributionCheck.skill &&
+        !character.skills.some((skill) => skill.id === contributionCheck.skill)
+      ) {
+        throw new Error(
+          'Contribution skill is not declared on the current form',
+        );
+      }
     }
     for (const required of action.requires) {
       if (
@@ -162,7 +177,7 @@ export function validateContentState(
 }
 
 export const resolvedActivityPlanSchema = z.strictObject({
-  version: z.literal(5),
+  version: z.literal(6),
   action: actionDefinitionSchema,
   settingsRevision: z.number().int().positive(),
   resolvedThroughTick: z.number().int().nonnegative().default(0),
@@ -174,17 +189,40 @@ export const contributionProgressSchema = z.strictObject({
   earned: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 export type ContributionProgress = z.infer<typeof contributionProgressSchema>;
+export const clockWaitProgressSchema = z.strictObject({
+  kind: z.literal('clock-wait.v1'),
+  elapsedTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+});
+export type ClockWaitProgress = z.infer<typeof clockWaitProgressSchema>;
+export const processProgressSchema = z.discriminatedUnion('kind', [
+  contributionProgressSchema,
+  clockWaitProgressSchema,
+]);
 export const activityProgressSchema = z.strictObject({
   effortTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  process: contributionProgressSchema,
+  process: processProgressSchema,
   completionPending: z.boolean().default(false),
 });
 export type ActivityProgress = z.infer<typeof activityProgressSchema>;
+
+export function initialActivityProgress(action: ActionDefinition) {
+  return activityProgressSchema.parse({
+    effortTicks: 0,
+    process:
+      action.process.kind === 'contribution.v1'
+        ? { kind: 'contribution.v1', earned: 0 }
+        : { kind: 'clock-wait.v1', elapsedTicks: 0 },
+    completionPending: false,
+  });
+}
 
 function abilityCheckSuccessChance(
   character: Character,
   plan: ActionDefinition,
 ) {
+  if (plan.process.kind !== 'contribution.v1') {
+    throw new Error('Completion chance requires a contribution rule');
+  }
   const check = plan.process.attempt.check;
   const abilityModifier = Math.floor(
     (character.scores[check.ability] - 10) / 2,
@@ -218,9 +256,21 @@ function abilityCheckSuccessChance(
 /** Conditional projection only; never use this value to award progress. */
 export function estimatedCompletionBoundaryTick(
   plan: ResolvedActivityPlan,
-  progress: ContributionProgress,
+  progress: ContributionProgress | ClockWaitProgress,
   character: Character,
 ) {
+  if (plan.action.process.kind === 'clock-wait.v1') {
+    if (progress.kind !== 'clock-wait.v1') {
+      throw new Error('Activity progress does not match its process rule');
+    }
+    return Math.max(
+      plan.resolvedThroughTick,
+      plan.action.process.requiredTicks,
+    );
+  }
+  if (progress.kind !== 'contribution.v1') {
+    throw new Error('Activity progress does not match its process rule');
+  }
   const remaining = Math.max(
     0,
     plan.action.process.requiredContribution - progress.earned,
@@ -253,6 +303,9 @@ export function contributeAtBoundary(
   character: Character,
   drawD20: DrawD20,
 ) {
+  if (plan.action.process.kind !== 'contribution.v1') {
+    throw new Error('Contribution settlement requires a contribution rule');
+  }
   const roll = resolveCheck(
     character,
     plan.action.process.attempt.check,
@@ -275,14 +328,74 @@ export function contributeAtBoundary(
   };
 }
 
+export function processBoundaryDue(
+  plan: ResolvedActivityPlan,
+  boundaryTick: number,
+) {
+  const process = plan.action.process;
+  return process.kind === 'contribution.v1'
+    ? boundaryTick % process.everyTicks === 0
+    : boundaryTick === process.requiredTicks;
+}
+
+/** Reflect eligible clock effort without confusing it with contribution. */
+export function processProgressAtEffortTick(
+  plan: ResolvedActivityPlan,
+  progress: ActivityProgress['process'],
+  effortTick: number,
+) {
+  if (plan.action.process.kind === 'contribution.v1') {
+    if (progress.kind !== 'contribution.v1') {
+      throw new Error('Activity progress does not match its process rule');
+    }
+    return progress;
+  }
+  if (progress.kind !== 'clock-wait.v1') {
+    throw new Error('Activity progress does not match its process rule');
+  }
+  return {
+    kind: 'clock-wait.v1' as const,
+    elapsedTicks: Math.min(plan.action.process.requiredTicks, effortTick),
+  };
+}
+
+/** Settle exactly one due process boundary without persistence or follow-up work. */
+export function settleProcessBoundary(
+  plan: ResolvedActivityPlan,
+  progress: ActivityProgress['process'],
+  character: Character,
+  drawD20: DrawD20,
+) {
+  if (plan.action.process.kind === 'contribution.v1') {
+    if (progress.kind !== 'contribution.v1') {
+      throw new Error('Activity progress does not match its process rule');
+    }
+    return contributeAtBoundary(plan, progress, character, drawD20);
+  }
+  if (progress.kind !== 'clock-wait.v1') {
+    throw new Error('Activity progress does not match its process rule');
+  }
+  const elapsedTicks = plan.action.process.requiredTicks;
+  return {
+    progress: { kind: 'clock-wait.v1', elapsedTicks } as const,
+    complete: true,
+    contribution: null,
+    text: null,
+    roll: null,
+  };
+}
+
 /** Skip quiet ticks while preserving the earliest due mechanical boundary. */
 export function nextBoundaryTick(
   plan: ResolvedActivityPlan,
   cursorTick: number,
 ) {
-  const contributionCadence = BigInt(plan.action.process.everyTicks);
+  const process = plan.action.process;
   let next =
-    (BigInt(cursorTick) / contributionCadence + 1n) * contributionCadence;
+    process.kind === 'contribution.v1'
+      ? (BigInt(cursorTick) / BigInt(process.everyTicks) + 1n) *
+        BigInt(process.everyTicks)
+      : BigInt(process.requiredTicks);
   for (const schedule of plan.action.checks) {
     const cadence = BigInt(schedule.everyTicks);
     const candidate = (BigInt(cursorTick) / cadence + 1n) * cadence;

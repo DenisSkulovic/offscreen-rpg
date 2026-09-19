@@ -4,7 +4,10 @@ import {
   contributeAtBoundary,
   estimatedCompletionBoundaryTick,
   nextBoundaryTick,
+  processBoundaryDue,
+  processProgressAtEffortTick,
   resolvedActivityPlanSchema,
+  settleProcessBoundary,
   worldTickForEffortBoundary,
 } from '../dist/src/activities.js';
 
@@ -36,7 +39,7 @@ const character = {
 };
 
 const plan = resolvedActivityPlanSchema.parse({
-  version: 5,
+  version: 6,
   action: {
     id: 'restore-beacon',
     label: 'Restore the signal beacon',
@@ -153,4 +156,45 @@ test('retained effort maps to the current campaign clock after other work', () =
     }),
     125,
   );
+});
+
+test('clock wait completes at its eligible tick target without a roll or work points', () => {
+  const wait = resolvedActivityPlanSchema.parse({
+    version: 6,
+    action: {
+      id: 'remain-contracted',
+      label: 'Remain contracted',
+      description: 'Wait for the disturbance to pass.',
+      requires: [],
+      capacity: 'primary',
+      process: {
+        kind: 'clock-wait.v1',
+        progressLabel: 'Protective interval',
+        requiredTicks: 10,
+      },
+      checks: [],
+      completion: { text: 'The disturbance passes.', effects: [] },
+    },
+    settingsRevision: 1,
+    resolvedThroughTick: 0,
+  });
+  const progress = { kind: 'clock-wait.v1', elapsedTicks: 0 };
+  assert.equal(nextBoundaryTick(wait, 0), 10);
+  assert.equal(estimatedCompletionBoundaryTick(wait, progress, character), 10);
+  assert.equal(processBoundaryDue(wait, 9), false);
+  assert.equal(processBoundaryDue(wait, 10), true);
+  assert.deepEqual(processProgressAtEffortTick(wait, progress, 6), {
+    kind: 'clock-wait.v1',
+    elapsedTicks: 6,
+  });
+  const result = settleProcessBoundary(wait, progress, character, () => {
+    throw new Error('A wait must not draw a d20');
+  });
+  assert.deepEqual(result.progress, {
+    kind: 'clock-wait.v1',
+    elapsedTicks: 10,
+  });
+  assert.equal(result.complete, true);
+  assert.equal(result.roll, null);
+  assert.equal(result.contribution, null);
 });

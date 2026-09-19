@@ -342,8 +342,12 @@ test('mechanical opening uses the same task contract for nonhuman agency', () =>
   }
   assert.deepEqual(
     result.scene.next.plans.map((plan) => plan.key),
-    ['follow-gradient', 'contract'],
+    ['follow-gradient', 'contract', 'wait-contracted'],
   );
+  assert.deepEqual(result.scene.next.activityAccess, {
+    kind: 'selected',
+    actionKeys: ['wait-contracted'],
+  });
   assert.equal(
     JSON.stringify(result).includes('gary'),
     false,
@@ -613,6 +617,10 @@ test('beacon interruption plans resolve danger before offering process resumptio
   assert.equal(diversion?.resolution.kind, 'process');
   if (diversion?.resolution.kind === 'process') {
     assert.equal(diversion.resolution.action.capacity, 'primary');
+    assert.equal(diversion.resolution.action.process.kind, 'contribution.v1');
+    if (diversion.resolution.action.process.kind !== 'contribution.v1') {
+      throw new Error('Expected contribution diversion');
+    }
     assert.equal(diversion.resolution.action.process.requiredContribution, 3);
   }
 });

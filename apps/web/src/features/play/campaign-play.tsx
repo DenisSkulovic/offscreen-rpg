@@ -90,9 +90,12 @@ export function CampaignPlay({
         <div>
           <h2>{activity.label}</h2>
           <p>
-            {activity.progress.label}: {activity.progress.earned}/
-            {activity.progress.required} · {activity.state}.{' '}
-            {activity.boundariesSettled} productive boundaries settled.
+            {activity.progress.label}:{' '}
+            {activity.progress.kind === 'contribution'
+              ? `${activity.progress.earned}/${activity.progress.required}`
+              : `${activity.progress.elapsedTicks}/${activity.progress.requiredTicks} ticks`}{' '}
+            · {activity.state}. {activity.boundariesSettled} mechanical
+            boundaries settled.
           </p>
           {activity.dueAt ? (
             <p>
@@ -186,8 +189,11 @@ export function CampaignPlay({
                 <strong>{commitment.label}</strong> · {commitment.state}
               </p>
               <p>
-                {commitment.progress.label}: {commitment.progress.earned}/
-                {commitment.progress.required}. Time is not advancing this work.
+                {commitment.progress.label}:{' '}
+                {commitment.progress.kind === 'contribution'
+                  ? `${commitment.progress.earned}/${commitment.progress.required}`
+                  : `${commitment.progress.elapsedTicks}/${commitment.progress.requiredTicks} ticks`}
+                . Time is not advancing this work.
               </p>
             </article>
           ))}
