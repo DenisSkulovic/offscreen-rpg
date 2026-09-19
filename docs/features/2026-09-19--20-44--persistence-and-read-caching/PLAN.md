@@ -29,6 +29,6 @@ Implementation owner: Codex for the current requested pass.
 
 - Current phase and exact next action: P3 is evidence-driven and queued; first commit the implemented P1/P2 slice, then measure before caching another projection.
 - Base/reviewed Git revision and relevant uncommitted changes: base `a66deec`; P1/P2 implementation and documentation are uncommitted.
-- Actual checks/results for this revision; checks not run: application, cache, API and integration workspaces compile. A real local Redis set/get/expiry adapter probe passed. Full story/browser suites were not run.
+- Actual checks/results for this revision; checks not run: application, cache, API and integration workspaces compile. A real local Redis set/get/expiry adapter probe passed. The focused story-core cache case passed against disposable PostgreSQL, covering hit, projection-version miss, malformed-value fallback and owner rejection. Full story/browser suites were not run.
 - Unresolved findings/blockers: cache hit-rate and latency under Chamber polling are unmeasured; list/history remain deliberately uncached. The snapshot identity adds one compact authoritative query on every read.
 - Provider spend and accounting certainty: $0; no provider calls; cumulative OpenRouter usage unverified.

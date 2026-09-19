@@ -7,6 +7,7 @@ import {
 } from '@offscreen/contracts/stories';
 import { listChamberScenarios } from '@offscreen/contracts/chamber';
 import type { Database } from '@offscreen/db';
+import type { ReadCache } from '@offscreen/application/cache';
 import { createStories, StoryError } from '@offscreen/application/stories';
 import {
   createChamber,
@@ -32,6 +33,63 @@ export async function checkStoryCore({
   cookie,
   otherCookie,
 }: StoryCoreArgs) {
+  await t.test(
+    'story snapshot cache is owner checked, version addressed and disposable',
+    async () => {
+      const values = new Map<string, unknown>();
+      const reads: string[] = [];
+      const writes: string[] = [];
+      const incidents: string[] = [];
+      const cache: ReadCache = {
+        async get(key) {
+          reads.push(key);
+          return values.get(key) ?? null;
+        },
+        async set(key, value) {
+          writes.push(key);
+          values.set(key, value);
+        },
+      };
+      const chamber = createChamber(database, {
+        cache,
+        onCacheIncident: ({ operation }) => incidents.push(operation),
+      });
+      const storyId = randomUUID();
+      await chamber.start({ ownerId: owner, storyId });
+      reads.length = 0;
+      writes.length = 0;
+
+      const first = await chamber.read({ ownerId: owner, storyId });
+      const second = await chamber.read({ ownerId: owner, storyId });
+      assert.deepEqual(second, first);
+      assert.equal(reads.length, 2);
+      assert.equal(writes.length, 0, 'the Start response populated the cache');
+
+      await database.db.$client.query(
+        'UPDATE story SET view_version = view_version + 1 WHERE id = $1',
+        [storyId],
+      );
+      const changed = await chamber.read({ ownerId: owner, storyId });
+      assert.equal(changed.viewVersion, first.viewVersion + 1);
+      assert.equal(writes.length, 1, 'a new identity builds a new cache entry');
+
+      const currentKey = writes.at(-1);
+      assert.ok(currentKey);
+      values.set(currentKey, { malformed: true });
+      const recovered = await chamber.read({ ownerId: owner, storyId });
+      assert.equal(recovered.viewVersion, changed.viewVersion);
+      assert.deepEqual(incidents, ['get']);
+
+      const readsBeforeUnauthorized = reads.length;
+      await assert.rejects(
+        chamber.read({ ownerId: 'not-the-owner', storyId }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'not_found',
+      );
+      assert.equal(reads.length, readsBeforeUnauthorized);
+    },
+  );
+
   await t.test(
     'chamber catalog metadata maps to fixtures and inspector reads committed state',
     async () => {

@@ -62,4 +62,6 @@ For the current A1/S1/A2/S2-U2a checkpoint, affected packages and production web
 
 Checks remain optional under [verification policy](../.agents/rules/verification.md). The preceding readiness pass checked document links/anchors; A1 added the focused build/test evidence above without a persisted runtime session. Historical build failures that were subsequently fixed are not current blockers. Passing compilation or scripted tests does not certify meaningful agency, live continuity, prose quality or general mechanics.
 
+The persistence/cache slice compiles across application, cache, API and integration workspaces. Its focused disposable-database case verifies a snapshot hit, projection-version miss, malformed-value fallback and owner rejection; a real local Redis adapter probe verifies bounded serialization and expiry plumbing. These checks establish cache consistency boundaries, not production hit rate or latency benefit.
+
 Live evaluation requires the owner to reopen it explicitly under [spending rules](../.agents/rules/spending.md), after offline flow/trace work and a concrete bounded evaluation design. No provider calls occurred in this pass: $0 provider spend; cumulative account usage unverified.
