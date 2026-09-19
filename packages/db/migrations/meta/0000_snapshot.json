@@ -1,5 +1,5 @@
 {
-  "id": "3d6b7d17-1542-4f90-af52-e9da53a7a4aa",
+  "id": "39fd6663-e913-4b4f-9fb1-53f4e4e0a84e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2743,6 +2743,24 @@
           "primaryKey": false,
           "notNull": true
         },
+        "reserved_input_tokens": {
+          "name": "reserved_input_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_generated_tokens": {
+          "name": "reserved_generated_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_reasoning_tokens": {
+          "name": "reserved_reasoning_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "estimated_microusd": {
           "name": "estimated_microusd",
           "type": "bigint",
@@ -2997,7 +3015,7 @@
         },
         "storyteller_attempt_amounts": {
           "name": "storyteller_attempt_amounts",
-          "value": "\"storyteller_attempt\".\"reserved_microusd\" >= 0 AND \"storyteller_attempt\".\"estimated_microusd\" >= 0 AND \"storyteller_attempt\".\"estimated_input_tokens\" >= 0 AND (\"storyteller_attempt\".\"charged_microusd\" IS NULL OR \"storyteller_attempt\".\"charged_microusd\" >= 0) AND (\"storyteller_attempt\".\"calculated_microusd\" IS NULL OR \"storyteller_attempt\".\"calculated_microusd\" >= 0)"
+          "value": "\"storyteller_attempt\".\"reserved_microusd\" >= 0 AND \"storyteller_attempt\".\"reserved_input_tokens\" >= 0 AND \"storyteller_attempt\".\"reserved_generated_tokens\" >= 0 AND \"storyteller_attempt\".\"reserved_reasoning_tokens\" >= 0 AND \"storyteller_attempt\".\"estimated_microusd\" >= 0 AND \"storyteller_attempt\".\"estimated_input_tokens\" >= 0 AND (\"storyteller_attempt\".\"charged_microusd\" IS NULL OR \"storyteller_attempt\".\"charged_microusd\" >= 0) AND (\"storyteller_attempt\".\"calculated_microusd\" IS NULL OR \"storyteller_attempt\".\"calculated_microusd\" >= 0)"
         },
         "storyteller_attempt_reconciliation": {
           "name": "storyteller_attempt_reconciliation",
@@ -3063,6 +3081,251 @@
         "storyteller_funding_nonnegative": {
           "name": "storyteller_funding_nonnegative",
           "value": "\"storyteller_funding\".\"limit_microusd\" >= 0 AND \"storyteller_funding\".\"settled_microusd\" >= 0 AND \"storyteller_funding\".\"reserved_microusd\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.storyteller_operation": {
+      "name": "storyteller_operation",
+      "schema": "",
+      "columns": {
+        "generation_id": {
+          "name": "generation_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resources": {
+          "name": "resources",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "max_model_rounds": {
+          "name": "max_model_rounds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_rounds": {
+          "name": "reserved_rounds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "dispatched_rounds": {
+          "name": "dispatched_rounds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "max_input_tokens": {
+          "name": "max_input_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_input_tokens": {
+          "name": "reserved_input_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumed_input_tokens": {
+          "name": "consumed_input_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "max_generated_tokens": {
+          "name": "max_generated_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_generated_tokens": {
+          "name": "reserved_generated_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumed_generated_tokens": {
+          "name": "consumed_generated_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "max_reasoning_tokens": {
+          "name": "max_reasoning_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_reasoning_tokens": {
+          "name": "reserved_reasoning_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "consumed_reasoning_tokens": {
+          "name": "consumed_reasoning_tokens",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "max_microusd": {
+          "name": "max_microusd",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_microusd": {
+          "name": "reserved_microusd",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "consumed_microusd": {
+          "name": "consumed_microusd",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "storyteller_operation_account_created": {
+          "name": "storyteller_operation_account_created",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "storyteller_operation_generation_id_generation_id_fk": {
+          "name": "storyteller_operation_generation_id_generation_id_fk",
+          "tableFrom": "storyteller_operation",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "storyteller_operation_account_id_storyteller_funding_id_fk": {
+          "name": "storyteller_operation_account_id_storyteller_funding_id_fk",
+          "tableFrom": "storyteller_operation",
+          "tableTo": "storyteller_funding",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "storyteller_operation_run_id_storyteller_run_id_fk": {
+          "name": "storyteller_operation_run_id_storyteller_run_id_fk",
+          "tableFrom": "storyteller_operation",
+          "tableTo": "storyteller_run",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "storyteller_operation_state": {
+          "name": "storyteller_operation_state",
+          "value": "\"storyteller_operation\".\"state\" IN ('open','complete','uncertain','exhausted')"
+        },
+        "storyteller_operation_rounds": {
+          "name": "storyteller_operation_rounds",
+          "value": "\"storyteller_operation\".\"max_model_rounds\" > 0 AND \"storyteller_operation\".\"reserved_rounds\" >= 0 AND \"storyteller_operation\".\"dispatched_rounds\" >= 0 AND \"storyteller_operation\".\"reserved_rounds\" + \"storyteller_operation\".\"dispatched_rounds\" <= \"storyteller_operation\".\"max_model_rounds\""
+        },
+        "storyteller_operation_amounts": {
+          "name": "storyteller_operation_amounts",
+          "value": "\"storyteller_operation\".\"max_input_tokens\" >= 0 AND \"storyteller_operation\".\"reserved_input_tokens\" >= 0 AND \"storyteller_operation\".\"consumed_input_tokens\" >= 0 AND \"storyteller_operation\".\"max_generated_tokens\" >= 0 AND \"storyteller_operation\".\"reserved_generated_tokens\" >= 0 AND \"storyteller_operation\".\"consumed_generated_tokens\" >= 0 AND \"storyteller_operation\".\"max_reasoning_tokens\" >= 0 AND \"storyteller_operation\".\"reserved_reasoning_tokens\" >= 0 AND \"storyteller_operation\".\"consumed_reasoning_tokens\" >= 0 AND \"storyteller_operation\".\"max_microusd\" >= 0 AND \"storyteller_operation\".\"reserved_microusd\" >= 0 AND \"storyteller_operation\".\"consumed_microusd\" >= 0"
         }
       },
       "isRLSEnabled": false

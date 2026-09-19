@@ -993,7 +993,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The operator can see the exact maximum exposure before dispatch.',
         authoritativeExpectation:
-          'A durable run allowance, effective account/story policy snapshot, matching route identity, and narrowed task envelope authorize only this probe.',
+          'A durable run allowance, effective account/story policy snapshot, matching route identity, and one immutable operation envelope authorize only this probe.',
       }),
       stage({
         id: 'dispatch',
@@ -1004,7 +1004,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The result or explicit failure becomes inspectable without automatic fallback.',
         authoritativeExpectation:
-          'At most the authorized call count and reservation are consumed.',
+          'At most the authorized call count and operation-wide token/cost reservation are consumed; a new attempt ID cannot replenish them.',
       }),
       stage({
         id: 'reconcile',
@@ -1016,7 +1016,7 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         observableExpectation:
           'The run states what was learned and whether another call is justified.',
         authoritativeExpectation:
-          'Call count, tokens, charge, reservations, and certainty are retained.',
+          'Attempt detail and aggregate operation rounds, tokens, charge, reservations, and certainty are retained without double-counting.',
       }),
     ],
     evidenceRequirements: [

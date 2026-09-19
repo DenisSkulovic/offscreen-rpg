@@ -4,6 +4,7 @@ import type { Database } from '@offscreen/db';
 import {
   storytellerAttempt as attempt,
   storytellerFunding as funding,
+  storytellerOperation as operation,
   storytellerRun as run,
 } from '@offscreen/db/storyteller-schema';
 import {
@@ -158,6 +159,63 @@ export function createStorytellerBudget(database: Database) {
           }
           return prior.state;
         }
+        const envelope = task.resources.envelope;
+        let [operationRecord] = await tx
+          .select()
+          .from(operation)
+          .where(eq(operation.generationId, input.generationId))
+          .for('update');
+        if (!operationRecord) {
+          [operationRecord] = await tx
+            .insert(operation)
+            .values({
+              generationId: input.generationId,
+              accountId: account.id,
+              runId: allowance.id,
+              ownerId: input.ownerId,
+              purpose: task.task,
+              resources: task.resources,
+              maxModelRounds: task.resources.recipe.maxModelRounds,
+              maxInputTokens: envelope.maxInputTokens,
+              maxGeneratedTokens: envelope.maxGeneratedTokens,
+              maxReasoningTokens: envelope.maxReasoningTokens,
+              maxMicrousd: BigInt(envelope.maxMicrousd),
+            })
+            .returning();
+        }
+        if (
+          !operationRecord ||
+          operationRecord.accountId !== account.id ||
+          operationRecord.runId !== allowance.id ||
+          operationRecord.ownerId !== input.ownerId ||
+          operationRecord.purpose !== task.task ||
+          !isDeepStrictEqual(operationRecord.resources, task.resources)
+        ) {
+          throw new StorytellerBudgetError('budget_unavailable');
+        }
+        if (
+          operationRecord.state !== 'open' ||
+          operationRecord.reservedRounds + operationRecord.dispatchedRounds >=
+            operationRecord.maxModelRounds ||
+          operationRecord.reservedInputTokens +
+            operationRecord.consumedInputTokens +
+            envelope.maxInputTokens >
+            operationRecord.maxInputTokens ||
+          operationRecord.reservedGeneratedTokens +
+            operationRecord.consumedGeneratedTokens +
+            envelope.maxGeneratedTokens >
+            operationRecord.maxGeneratedTokens ||
+          operationRecord.reservedReasoningTokens +
+            operationRecord.consumedReasoningTokens +
+            envelope.maxReasoningTokens >
+            operationRecord.maxReasoningTokens ||
+          operationRecord.reservedMicrousd +
+            operationRecord.consumedMicrousd +
+            amount >
+            operationRecord.maxMicrousd
+        ) {
+          throw new StorytellerBudgetError('budget_unavailable');
+        }
         // Any unresolved dispatched attempt across funding scopes stops new paid admission.
         const [unknown] = await tx
           .select({ id: attempt.id })
@@ -210,6 +268,9 @@ export function createStorytellerBudget(database: Database) {
           attribution,
           state: 'reserved',
           reservedMicrousd: amount,
+          reservedInputTokens: envelope.maxInputTokens,
+          reservedGeneratedTokens: envelope.maxGeneratedTokens,
+          reservedReasoningTokens: envelope.maxReasoningTokens,
           estimatedMicrousd: estimate.microusd,
           estimatedInputTokens: estimate.inputTokens,
           estimationMethod: estimate.method,
@@ -217,6 +278,22 @@ export function createStorytellerBudget(database: Database) {
           requestBytes,
           policy: execution.policy,
         });
+        await tx
+          .update(operation)
+          .set({
+            reservedRounds: operationRecord.reservedRounds + 1,
+            reservedInputTokens:
+              operationRecord.reservedInputTokens + envelope.maxInputTokens,
+            reservedGeneratedTokens:
+              operationRecord.reservedGeneratedTokens +
+              envelope.maxGeneratedTokens,
+            reservedReasoningTokens:
+              operationRecord.reservedReasoningTokens +
+              envelope.maxReasoningTokens,
+            reservedMicrousd: operationRecord.reservedMicrousd + amount,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(eq(operation.generationId, input.generationId));
         if (task.resources.authority.kind !== 'effective-usage-policy') {
           throw new StorytellerBudgetError('budget_unavailable');
         }
@@ -259,6 +336,14 @@ export function createStorytellerBudget(database: Database) {
         if (!record || record.state !== 'reserved') {
           return false;
         }
+        const [operationRecord] = await tx
+          .select()
+          .from(operation)
+          .where(eq(operation.generationId, record.generationId))
+          .for('update');
+        if (!operationRecord) {
+          throw new Error('Missing Storyteller operation');
+        }
         const [unknown] = await tx
           .select({ id: attempt.id })
           .from(attempt)
@@ -288,6 +373,24 @@ export function createStorytellerBudget(database: Database) {
                 allowance.reservedMicrousd - record.reservedMicrousd,
             })
             .where(eq(run.id, allowance.id));
+          await tx
+            .update(operation)
+            .set({
+              reservedRounds: operationRecord.reservedRounds - 1,
+              reservedInputTokens:
+                operationRecord.reservedInputTokens -
+                record.reservedInputTokens,
+              reservedGeneratedTokens:
+                operationRecord.reservedGeneratedTokens -
+                record.reservedGeneratedTokens,
+              reservedReasoningTokens:
+                operationRecord.reservedReasoningTokens -
+                record.reservedReasoningTokens,
+              reservedMicrousd:
+                operationRecord.reservedMicrousd - record.reservedMicrousd,
+              updatedAt: sql`clock_timestamp()`,
+            })
+            .where(eq(operation.generationId, record.generationId));
           await markUsageWindows(tx, record.id, 'released');
           return false;
         }
@@ -295,6 +398,14 @@ export function createStorytellerBudget(database: Database) {
           .update(attempt)
           .set({ state: 'dispatched', dispatchedAt: sql`clock_timestamp()` })
           .where(eq(attempt.id, id));
+        await tx
+          .update(operation)
+          .set({
+            reservedRounds: operationRecord.reservedRounds - 1,
+            dispatchedRounds: operationRecord.dispatchedRounds + 1,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(eq(operation.generationId, record.generationId));
         await markUsageWindows(tx, record.id, 'dispatched');
         return true;
       });
@@ -306,6 +417,17 @@ export function createStorytellerBudget(database: Database) {
     ) {
       await database.db.transaction(async (tx) => {
         await lockAllowance(tx, execution);
+        const [record] = await tx
+          .select({ generationId: attempt.generationId })
+          .from(attempt)
+          .where(
+            and(
+              eq(attempt.id, id),
+              eq(attempt.runId, execution.runId),
+              eq(attempt.state, 'dispatched'),
+            ),
+          )
+          .for('update');
         await tx
           .update(attempt)
           .set({
@@ -325,6 +447,12 @@ export function createStorytellerBudget(database: Database) {
             ),
           );
         await markUsageWindows(tx, id, 'uncertain');
+        if (record) {
+          await tx
+            .update(operation)
+            .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
+            .where(eq(operation.generationId, record.generationId));
+        }
         await tx.update(funding).set({ stopped: true });
       });
     },
@@ -373,6 +501,14 @@ export function createStorytellerBudget(database: Database) {
         }
         if (!['dispatched', 'uncertain'].includes(record.state)) {
           throw new Error('Attempt was not dispatched');
+        }
+        const [operationRecord] = await tx
+          .select()
+          .from(operation)
+          .where(eq(operation.generationId, record.generationId))
+          .for('update');
+        if (!operationRecord) {
+          throw new Error('Missing Storyteller operation');
         }
         if (input.generationOutcome) {
           await tx
@@ -441,6 +577,42 @@ export function createStorytellerBudget(database: Database) {
               allowance.settledMicrousd + input.usage.reportedCostMicrousd,
           })
           .where(eq(run.id, allowance.id));
+        const consumedInputTokens =
+          operationRecord.consumedInputTokens + input.usage.promptTokens;
+        const consumedGeneratedTokens =
+          operationRecord.consumedGeneratedTokens +
+          input.usage.completionTokens;
+        const consumedReasoningTokens =
+          operationRecord.consumedReasoningTokens +
+          (input.usage.reasoningTokens ?? 0);
+        const consumedMicrousd =
+          operationRecord.consumedMicrousd + input.usage.reportedCostMicrousd;
+        const operationExceeded =
+          consumedInputTokens > operationRecord.maxInputTokens ||
+          consumedGeneratedTokens > operationRecord.maxGeneratedTokens ||
+          consumedReasoningTokens > operationRecord.maxReasoningTokens ||
+          consumedMicrousd > operationRecord.maxMicrousd;
+        await tx
+          .update(operation)
+          .set({
+            state: operationExceeded ? 'exhausted' : 'complete',
+            reservedInputTokens:
+              operationRecord.reservedInputTokens - record.reservedInputTokens,
+            consumedInputTokens,
+            reservedGeneratedTokens:
+              operationRecord.reservedGeneratedTokens -
+              record.reservedGeneratedTokens,
+            consumedGeneratedTokens,
+            reservedReasoningTokens:
+              operationRecord.reservedReasoningTokens -
+              record.reservedReasoningTokens,
+            consumedReasoningTokens,
+            reservedMicrousd:
+              operationRecord.reservedMicrousd - record.reservedMicrousd,
+            consumedMicrousd,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(eq(operation.generationId, record.generationId));
         const exceededUsageWindow = await settleUsageWindows(
           tx,
           record.id,
@@ -448,7 +620,8 @@ export function createStorytellerBudget(database: Database) {
         );
         if (
           input.usage.reportedCostMicrousd > record.reservedMicrousd ||
-          exceededUsageWindow
+          exceededUsageWindow ||
+          operationExceeded
         ) {
           await tx.update(funding).set({ stopped: true });
         }

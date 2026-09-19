@@ -85,6 +85,81 @@ export const storytellerRun = pgTable(
   ],
 );
 
+/**
+ * One immutable allowance for the complete Storyteller operation. Attempts are
+ * delivery/audit records beneath this boundary; creating a fresh attempt must
+ * never replenish the generation's model rounds, tokens, or money.
+ */
+export const storytellerOperation = pgTable(
+  'storyteller_operation',
+  {
+    generationId: uuid('generation_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => storytellerFunding.id, { onDelete: 'restrict' }),
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => storytellerRun.id, { onDelete: 'restrict' }),
+    ownerId: text('owner_id').notNull(),
+    purpose: text('purpose').notNull(),
+    resources: jsonb('resources').notNull().$type<unknown>(),
+    state: text('state')
+      .notNull()
+      .default('open')
+      .$type<'open' | 'complete' | 'uncertain' | 'exhausted'>(),
+    maxModelRounds: integer('max_model_rounds').notNull(),
+    reservedRounds: integer('reserved_rounds').notNull().default(0),
+    dispatchedRounds: integer('dispatched_rounds').notNull().default(0),
+    maxInputTokens: integer('max_input_tokens').notNull(),
+    reservedInputTokens: integer('reserved_input_tokens').notNull().default(0),
+    consumedInputTokens: integer('consumed_input_tokens').notNull().default(0),
+    maxGeneratedTokens: integer('max_generated_tokens').notNull(),
+    reservedGeneratedTokens: integer('reserved_generated_tokens')
+      .notNull()
+      .default(0),
+    consumedGeneratedTokens: integer('consumed_generated_tokens')
+      .notNull()
+      .default(0),
+    maxReasoningTokens: integer('max_reasoning_tokens').notNull(),
+    reservedReasoningTokens: integer('reserved_reasoning_tokens')
+      .notNull()
+      .default(0),
+    consumedReasoningTokens: integer('consumed_reasoning_tokens')
+      .notNull()
+      .default(0),
+    maxMicrousd: bigint('max_microusd', { mode: 'bigint' }).notNull(),
+    reservedMicrousd: bigint('reserved_microusd', { mode: 'bigint' })
+      .notNull()
+      .default(sql`0`),
+    consumedMicrousd: bigint('consumed_microusd', { mode: 'bigint' })
+      .notNull()
+      .default(sql`0`),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('storyteller_operation_account_created').on(t.accountId, t.createdAt),
+    check(
+      'storyteller_operation_state',
+      sql`${t.state} IN ('open','complete','uncertain','exhausted')`,
+    ),
+    check(
+      'storyteller_operation_rounds',
+      sql`${t.maxModelRounds} > 0 AND ${t.reservedRounds} >= 0 AND ${t.dispatchedRounds} >= 0 AND ${t.reservedRounds} + ${t.dispatchedRounds} <= ${t.maxModelRounds}`,
+    ),
+    check(
+      'storyteller_operation_amounts',
+      sql`${t.maxInputTokens} >= 0 AND ${t.reservedInputTokens} >= 0 AND ${t.consumedInputTokens} >= 0 AND ${t.maxGeneratedTokens} >= 0 AND ${t.reservedGeneratedTokens} >= 0 AND ${t.consumedGeneratedTokens} >= 0 AND ${t.maxReasoningTokens} >= 0 AND ${t.reservedReasoningTokens} >= 0 AND ${t.consumedReasoningTokens} >= 0 AND ${t.maxMicrousd} >= 0 AND ${t.reservedMicrousd} >= 0 AND ${t.consumedMicrousd} >= 0`,
+    ),
+  ],
+);
+
 export const storytellerAttempt = pgTable(
   'storyteller_attempt',
   {
@@ -118,6 +193,9 @@ export const storytellerAttempt = pgTable(
       .notNull()
       .$type<'reserved' | 'dispatched' | 'settled' | 'uncertain' | 'unsent'>(),
     reservedMicrousd: bigint('reserved_microusd', { mode: 'bigint' }).notNull(),
+    reservedInputTokens: integer('reserved_input_tokens').notNull(),
+    reservedGeneratedTokens: integer('reserved_generated_tokens').notNull(),
+    reservedReasoningTokens: integer('reserved_reasoning_tokens').notNull(),
     estimatedMicrousd: bigint('estimated_microusd', {
       mode: 'bigint',
     }).notNull(),
@@ -164,7 +242,7 @@ export const storytellerAttempt = pgTable(
     ),
     check(
       'storyteller_attempt_amounts',
-      sql`${t.reservedMicrousd} >= 0 AND ${t.estimatedMicrousd} >= 0 AND ${t.estimatedInputTokens} >= 0 AND (${t.chargedMicrousd} IS NULL OR ${t.chargedMicrousd} >= 0) AND (${t.calculatedMicrousd} IS NULL OR ${t.calculatedMicrousd} >= 0)`,
+      sql`${t.reservedMicrousd} >= 0 AND ${t.reservedInputTokens} >= 0 AND ${t.reservedGeneratedTokens} >= 0 AND ${t.reservedReasoningTokens} >= 0 AND ${t.estimatedMicrousd} >= 0 AND ${t.estimatedInputTokens} >= 0 AND (${t.chargedMicrousd} IS NULL OR ${t.chargedMicrousd} >= 0) AND (${t.calculatedMicrousd} IS NULL OR ${t.calculatedMicrousd} >= 0)`,
     ),
     check(
       'storyteller_attempt_reconciliation',

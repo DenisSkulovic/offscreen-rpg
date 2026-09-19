@@ -20,6 +20,7 @@ import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
   storytellerFunding,
+  storytellerOperation,
   storytellerRun,
   storytellerUsageAllocation,
 } from '@offscreen/db/storyteller-schema';
@@ -1696,6 +1697,19 @@ test(
             const sourceTask = storytellerTaskSchema.parse(
               sourceGeneration.input,
             );
+            const resources = resourcesForEffectiveUsagePolicy(
+              execution,
+              testUsagePolicy(execution.policy.route, [
+                {
+                  id: 'account-cost-burst',
+                  version: 1,
+                  scope: 'account',
+                  metric: 'microusd',
+                  limit: '150',
+                  window: { kind: 'rolling', durationSeconds: 3600 },
+                },
+              ]),
+            );
             const ids = [randomUUID(), randomUUID()];
             const results = await Promise.allSettled(
               ids.map((id) =>
@@ -1706,19 +1720,7 @@ test(
                   task: {
                     ...sourceTask,
                     execution,
-                    resources: resourcesForEffectiveUsagePolicy(
-                      execution,
-                      testUsagePolicy(execution.policy.route, [
-                        {
-                          id: 'account-cost-burst',
-                          version: 1,
-                          scope: 'account',
-                          metric: 'microusd',
-                          limit: '150',
-                          window: { kind: 'rolling', durationSeconds: 3600 },
-                        },
-                      ]),
-                    ),
+                    resources,
                   },
                 }),
               ),
@@ -1732,6 +1734,13 @@ test(
               .from(storytellerUsageAllocation);
             assert.equal(allocations.length, 1);
             assert.equal(allocations[0]?.reserved, 102n);
+            const [reservedOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, first.generationId));
+            assert.equal(reservedOperation?.reservedRounds, 1);
+            assert.equal(reservedOperation?.dispatchedRounds, 0);
+            assert.equal(reservedOperation?.reservedMicrousd, 102n);
             const winner =
               ids[results.findIndex((result) => result.status === 'fulfilled')];
             assert.ok(winner);
@@ -1761,6 +1770,28 @@ test(
             assert.equal(
               (await budget.inspect(accountId)).reservedMicrousd,
               0n,
+            );
+            const [completedOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, first.generationId));
+            assert.equal(completedOperation?.state, 'complete');
+            assert.equal(completedOperation?.reservedRounds, 0);
+            assert.equal(completedOperation?.dispatchedRounds, 1);
+            assert.equal(completedOperation?.reservedMicrousd, 0n);
+            assert.equal(completedOperation?.consumedMicrousd, 80n);
+            await assert.rejects(
+              budget.reserve({
+                id: randomUUID(),
+                generationId: first.generationId,
+                ownerId,
+                task: {
+                  ...sourceTask,
+                  execution,
+                  resources,
+                },
+              }),
+              { code: 'budget_unavailable' },
             );
           },
         );

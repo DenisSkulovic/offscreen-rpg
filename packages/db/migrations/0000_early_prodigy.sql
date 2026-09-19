@@ -379,6 +379,9 @@ CREATE TABLE "storyteller_attempt" (
 	"attribution" jsonb NOT NULL,
 	"state" text NOT NULL,
 	"reserved_microusd" bigint NOT NULL,
+	"reserved_input_tokens" integer NOT NULL,
+	"reserved_generated_tokens" integer NOT NULL,
+	"reserved_reasoning_tokens" integer NOT NULL,
 	"estimated_microusd" bigint NOT NULL,
 	"estimated_input_tokens" integer NOT NULL,
 	"estimation_method" text NOT NULL,
@@ -403,7 +406,7 @@ CREATE TABLE "storyteller_attempt" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "storyteller_attempt_state" CHECK ("storyteller_attempt"."state" IN ('reserved','dispatched','settled','uncertain','unsent')),
 	CONSTRAINT "storyteller_attempt_settlement" CHECK (("storyteller_attempt"."state" IN ('settled','unsent')) = ("storyteller_attempt"."charged_microusd" IS NOT NULL)),
-	CONSTRAINT "storyteller_attempt_amounts" CHECK ("storyteller_attempt"."reserved_microusd" >= 0 AND "storyteller_attempt"."estimated_microusd" >= 0 AND "storyteller_attempt"."estimated_input_tokens" >= 0 AND ("storyteller_attempt"."charged_microusd" IS NULL OR "storyteller_attempt"."charged_microusd" >= 0) AND ("storyteller_attempt"."calculated_microusd" IS NULL OR "storyteller_attempt"."calculated_microusd" >= 0)),
+	CONSTRAINT "storyteller_attempt_amounts" CHECK ("storyteller_attempt"."reserved_microusd" >= 0 AND "storyteller_attempt"."reserved_input_tokens" >= 0 AND "storyteller_attempt"."reserved_generated_tokens" >= 0 AND "storyteller_attempt"."reserved_reasoning_tokens" >= 0 AND "storyteller_attempt"."estimated_microusd" >= 0 AND "storyteller_attempt"."estimated_input_tokens" >= 0 AND ("storyteller_attempt"."charged_microusd" IS NULL OR "storyteller_attempt"."charged_microusd" >= 0) AND ("storyteller_attempt"."calculated_microusd" IS NULL OR "storyteller_attempt"."calculated_microusd" >= 0)),
 	CONSTRAINT "storyteller_attempt_reconciliation" CHECK (
         ("storyteller_attempt"."state" IN ('reserved','dispatched') AND "storyteller_attempt"."reconciliation" = 'pending' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."settled_at" IS NULL) OR
         ("storyteller_attempt"."state" = 'uncertain' AND "storyteller_attempt"."reconciliation" = 'unknown' AND "storyteller_attempt"."calculated_microusd" IS NULL AND "storyteller_attempt"."dispatched_at" IS NOT NULL AND "storyteller_attempt"."settled_at" IS NULL) OR
@@ -422,6 +425,36 @@ CREATE TABLE "storyteller_funding" (
 	"stopped" boolean DEFAULT true NOT NULL,
 	"verified_at" timestamp (3) with time zone NOT NULL,
 	CONSTRAINT "storyteller_funding_nonnegative" CHECK ("storyteller_funding"."limit_microusd" >= 0 AND "storyteller_funding"."settled_microusd" >= 0 AND "storyteller_funding"."reserved_microusd" >= 0)
+);
+--> statement-breakpoint
+CREATE TABLE "storyteller_operation" (
+	"generation_id" uuid PRIMARY KEY NOT NULL,
+	"account_id" uuid NOT NULL,
+	"run_id" uuid NOT NULL,
+	"owner_id" text NOT NULL,
+	"purpose" text NOT NULL,
+	"resources" jsonb NOT NULL,
+	"state" text DEFAULT 'open' NOT NULL,
+	"max_model_rounds" integer NOT NULL,
+	"reserved_rounds" integer DEFAULT 0 NOT NULL,
+	"dispatched_rounds" integer DEFAULT 0 NOT NULL,
+	"max_input_tokens" integer NOT NULL,
+	"reserved_input_tokens" integer DEFAULT 0 NOT NULL,
+	"consumed_input_tokens" integer DEFAULT 0 NOT NULL,
+	"max_generated_tokens" integer NOT NULL,
+	"reserved_generated_tokens" integer DEFAULT 0 NOT NULL,
+	"consumed_generated_tokens" integer DEFAULT 0 NOT NULL,
+	"max_reasoning_tokens" integer NOT NULL,
+	"reserved_reasoning_tokens" integer DEFAULT 0 NOT NULL,
+	"consumed_reasoning_tokens" integer DEFAULT 0 NOT NULL,
+	"max_microusd" bigint NOT NULL,
+	"reserved_microusd" bigint DEFAULT 0 NOT NULL,
+	"consumed_microusd" bigint DEFAULT 0 NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "storyteller_operation_state" CHECK ("storyteller_operation"."state" IN ('open','complete','uncertain','exhausted')),
+	CONSTRAINT "storyteller_operation_rounds" CHECK ("storyteller_operation"."max_model_rounds" > 0 AND "storyteller_operation"."reserved_rounds" >= 0 AND "storyteller_operation"."dispatched_rounds" >= 0 AND "storyteller_operation"."reserved_rounds" + "storyteller_operation"."dispatched_rounds" <= "storyteller_operation"."max_model_rounds"),
+	CONSTRAINT "storyteller_operation_amounts" CHECK ("storyteller_operation"."max_input_tokens" >= 0 AND "storyteller_operation"."reserved_input_tokens" >= 0 AND "storyteller_operation"."consumed_input_tokens" >= 0 AND "storyteller_operation"."max_generated_tokens" >= 0 AND "storyteller_operation"."reserved_generated_tokens" >= 0 AND "storyteller_operation"."consumed_generated_tokens" >= 0 AND "storyteller_operation"."max_reasoning_tokens" >= 0 AND "storyteller_operation"."reserved_reasoning_tokens" >= 0 AND "storyteller_operation"."consumed_reasoning_tokens" >= 0 AND "storyteller_operation"."max_microusd" >= 0 AND "storyteller_operation"."reserved_microusd" >= 0 AND "storyteller_operation"."consumed_microusd" >= 0)
 );
 --> statement-breakpoint
 CREATE TABLE "storyteller_publication" (
@@ -505,6 +538,9 @@ ALTER TABLE "story_resolution" ADD CONSTRAINT "story_resolution_base_passage_id_
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_run_id_storyteller_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."storyteller_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_run_id_storyteller_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."storyteller_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_publication" ADD CONSTRAINT "storyteller_publication_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_retry" ADD CONSTRAINT "storyteller_retry_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_run" ADD CONSTRAINT "storyteller_run_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -518,4 +554,5 @@ CREATE INDEX "outbox_pending" ON "outbox" USING btree ("available_at","id") WHER
 CREATE INDEX "storyteller_attempt_account_created" ON "storyteller_attempt" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING btree ("story_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");--> statement-breakpoint
+CREATE INDEX "storyteller_operation_account_created" ON "storyteller_operation" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_usage_allocation_window" ON "storyteller_usage_allocation" USING btree ("scope","scope_key","window_id","window_version","attributed_at");
