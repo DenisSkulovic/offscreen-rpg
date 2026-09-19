@@ -1,7 +1,7 @@
 # Bounded autonomy and re-entry
 
-Status: Expanded design proposal following the owner's 2026-09-19 brainstorming about quiet activities and selective Storyteller events. Preparation does not authorize implementation, notifications or live inference.
-Approval: Design work requested; exact queue, risk, horizon and response policies remain proposed.
+Status: Approved and partially implemented. The bounded standalone quiet-settlement slice (U2a) is complete; historical reports/controlling scenes, finite chains, delegated fallbacks and notifications remain unfinished.
+Approval: Offline implementation is authorized along the repository's coding route. Exact later fallback, notification and broader risk policies remain proposed; no live inference is authorized.
 
 The [solo integration contract](../../technical/solo-gameplay-contract.md) selects a bounded first offline tranche: finite chains of at most six entries, explicit tick horizon, and required-scene hold without response timeout or autonomous fallback. Those implementation defaults do not approve the broader delegated-decision proposal below. Follow the [coding route](../README.md), not every phase end-to-end before trying ordinary play.
 
