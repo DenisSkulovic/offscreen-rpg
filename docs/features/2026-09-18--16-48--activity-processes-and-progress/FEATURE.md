@@ -62,6 +62,8 @@ Configuration selects finite implemented semantics. The Storyteller supplies val
 | Interruption | Preserve, block, explicitly lose/decay progress, or terminate |
 | Termination | Completion, abandonment, rule-defined failure, expiry or invalidation |
 | Results | Once at completion, per attempt or at milestones; explicit recipient, cost and refund terms |
+| Boundary follow-up | Factual report, prepared/generated narration, scene/choice preparation and continuation policy, in validated combinations |
+| Composition | Standalone activity or an entry in a bounded itinerary; milestone hooks and remaining intentions survive interruption |
 
 Not all combinations are legal. Personal learning rejects transfer of learned progress. An assistant cannot also contribute using the same allocated effort unless supported explicitly. Autonomous incubation does not require attention unless its supervision semantics say so. Validate cross-field meaning, not only JSON shape.
 
@@ -79,7 +81,9 @@ One failed attempt need not fail the activity. Permanent failure, destruction, e
 
 ## Storyteller and player experience
 
-The [ordinary-life/scene direction](../../vision.md#ordinary-life-and-storyteller-scenes) determines how this machinery serves play. Quiet admitted activity needs no model call for ticks, ordinary checks, completion, result logs or the next already authorized routine. Starting a novel routine may require the Storyteller to prepare supported terms. A meaningful development can escalate into a generated scene; neither completion nor a failed roll requires one automatically. Detailed generation/spending/absence policy is owned by [bounded autonomy](../2026-09-19--00-26--bounded-autonomy-and-reentry/FEATURE.md).
+The [ordinary-life/scene direction](../../vision.md#ordinary-life-and-storyteller-scenes) determines how this machinery serves play. Mechanical settlement and continuation do not inherently require generation. An accepted follow-up policy can nevertheless request completion narration, a planned milestone vignette, a choice, next work or compatible combinations. Quiet execution is an available configuration, not a universal ban on narration. Starting a novel routine may require preparation. Detailed chain/reporting/scene policy is owned by [bounded autonomy](../2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md#configurable-boundary-follow-ups).
+
+The owner's Red Mountain journey probes composition: travel to Balmora, rest, spend time at its tavern, travel to the Gate, rest, then travel onward. Any leg can have supported optional events; arriving at the Gate can independently request planned narration. The itinerary is accepted intentions, not completed travel or a second reward-producing process. A tavern visit can remain routine social downtime or open detailed dialogue. These are configurable uses of one system, not place-name branches. Preserve finished legs when revising the remainder after an event.
 
 The first proof after clock correction is a bounded quiet sequence and one optional event, before broader cooperative mechanics. This keeps architecture work tied to the desired feeling of time creating value. Rest then patrol is an illustrative contrast; no Batman-specific mechanics or mandatory daily timetable. A repeating routine can produce bounded periodic results until its stop condition without manufacturing a final completion reward.
 
@@ -103,6 +107,7 @@ The view should answer: what am I doing, who is helping, what remains, what coul
 - Map-free traversal and small/abstract examples share authority/lifecycle without mandatory anatomy, equipment or economy.
 - Connected offline rehearsal demonstrates participation, blockers and earned consequences. Owner taste and later live evaluation separately establish storytelling quality.
 - A quiet routine can finish and transition to a permitted next routine with zero generation task admissions, including consequence narration. A distinct event path records one escalation, preserves committed work and prevents the queue bypassing the decision.
+- The same mechanical outcome can instead narrate and continue, or hold for a contextual choice, under a different admitted policy. Scheduled milestone narration requires no random event. Late report-only prose remains historical; it cannot overwrite the current situation or introduce unadmitted facts.
 
 ## Scope and staged delivery
 

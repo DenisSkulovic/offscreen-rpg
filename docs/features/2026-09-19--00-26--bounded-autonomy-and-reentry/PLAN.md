@@ -10,13 +10,41 @@ The [activity foundation](../2026-09-18--16-48--activity-processes-and-progress/
 
 ## Proposed queue and event contract
 
+### Configurable boundary follow-ups
+
+Activity completion commits mechanics; it does not prescribe the next player experience. Represent the trigger, presentation and continuation separately. A boundary policy selects a supported trigger (start, committed milestone, outcome including failure, or a due activity-relative/story tick), optional grounded conditions, and compatible follow-ups. In the first slice support completion and a selected entry milestone; other trigger kinds are extension points, not implied runtime capabilities.
+
+| Decision | Proposed supported semantics |
+| --- | --- |
+| Reporting | Factual log only, prepared text, or requested generated narration of committed facts |
+| Continuation | Remain idle, admit the next eligible chain entry, or hold at a declared interaction boundary |
+| Interaction | No choice, publish already admitted options, or prepare a Storyteller scene with new supported options |
+| Ordering | Informational report may accompany continuation; required narrative/choice preparation gates continuation |
+| Unavailable generation | Defer/omit optional reporting with factual status retained, or visibly hold required preparation; never erase committed danger |
+
+These decisions are compatible combinations, not arbitrary flags or executable callbacks. For example, generated completion narration plus automatic continuation is legal when the narration only reports settled facts. A choice that can change whether the character continues cannot be combined with unconditional advancement past that choice. A scheduled arrival vignette needs no random encounter. “Narration requested” does not itself imply an event, decision window, campaign pause or new world facts.
+
+Capture the effective policy on the accepted activity/chain entry. A supported campaign default may be replaced explicitly by an entry-specific policy; avoid merging two continuation policies or silently inheriting extra generation requests. Storyteller proposals use the same admission path and cannot exceed player control, risk or spending authority. Changing future policy creates a revision and cannot retroactively fire hooks or replay receipts. Future queued entries follow their accepted policy unless explicitly revised.
+
+Use a stable boundary receipt and policy-hook identity for each follow-up. Commit pending report/scene intents and at most one continuation decision with the mechanical result in the same transaction. The chain owns the next entry; a completion hook cannot independently start a second successor. If an interrupting event and an ordinary milestone coincide, resolve committed effects then apply the controlling hold; defer compatible reporting and suppress automatic continuation until release. Multiple report requests for the same configured hook deduplicate; distinct authored milestones may each narrate intentionally.
+
+Report-only generation consumes an immutable settled snapshot and reports “At the gate, earlier…” if it publishes after later activity has begun. It cannot mutate facts, publish current choices or pretend the character is still there. Give it a report identity/provenance separate from the current playable offer, so world advancement does not create an endless stale-report regeneration loop. Delivery may batch/defer under limits. Anything establishing new relevant facts, changing mechanics or offering current choices uses the fenced scene publication path and, where required, holds progression. This task-contract distinction is proposed work, not behavior of the current consequence task.
+
+### Chains as composed intentions
+
+A journey can be an itinerary of ordinary activity entries: travel, rest, social downtime, travel, rest, travel. Keep its identity and ordered entries for progress/history without creating a second parent activity that also awards travel progress or rewards. The itinerary ends when its required entries and final conditions are satisfied; the initial ETA never completes it. A standalone activity need not belong to a chain.
+
+Both the player and Storyteller may propose a chain within their authority. The initial implementation remains bounded and linear with explicit supported stop/skip/resume conditions; branching or nesting requires a later concrete need rather than a general workflow language. A scene may propose a replacement remainder through the existing plan revision/admission boundary. It cannot rewrite completed legs, silently teleport the character to a planned location, or discard unfinished work. Manual and unattended chains use the same contract.
+
+Optional events may occur during any eligible leg, several legs, or none, governed by their supported policies. Planned narration at a milestone is independent of that occurrence chance. A tavern visit may stay a timed social routine or develop into a detailed conversation; its name does not fix the mode. Arrival and rest requirements are revalidated at each transition, including route access, cost, location and capacity. Canceling the itinerary does not imply undoing its current activity; stopping current work is explicit.
+
 ### Queue admission and continuation
 
 Persist a revisioned story/actor-scoped plan with ordered entry IDs, accepted definition snapshots, target bindings, horizon, permission/limit snapshot and cursor. Each entry identifies new work or an exact retained instance. Definition terms are immutable; runtime eligibility and remaining allowance are checked again at actual start. Never use an old public offer as permanent authority for queued execution.
 
 The application transaction verifies control, settles due activity boundaries, checks the current queue revision and admits the next entry under current world/capacity conditions. Commit entry consumption, activity start, relevant claims, receipt and wake-up atomically. Deduplicate by plan/entry identity, not workflow delivery. Failed admission leaves the cursor and remaining entries inspectable, with a known blocker. An unsupported or stale binding does not prompt automatic regeneration or reinterpretation.
 
-Completion may advance the queue in the same bounded settlement transaction without creating a Storyteller task. Multiple due entries catch up in bounded batches; stop at the first event, blocker, permission limit or horizon. Handle an activity still running at the horizon using its captured stop/interruptibility policy: do not promise a stoppable horizon for work that cannot honor it. Editing/canceling pending entries uses an expected revision; stopping current work is a separate admitted lifecycle operation with its own costs and disclosures.
+Completion may advance the queue in the same bounded settlement transaction; the accepted boundary policy independently decides whether to request narration. Multiple due entries catch up in bounded batches; stop at a controlling event/interaction, blocker, permission limit or horizon. Handle an activity still running at the horizon using its captured stop/interruptibility policy: do not promise a stoppable horizon for work that cannot honor it. Editing/canceling pending entries uses an expected revision; stopping current work is a separate admitted lifecycle operation with its own costs and disclosures.
 
 Keep queue state, participation, campaign pause and scene response state independent. A suspension retains the queue cursor. Scene resolution revalidates resume/next-entry permission; no completed or missed entry is replayed on return. The queue is the product mechanism for already chosen intentions, not a substitute for a planning agent.
 
@@ -34,9 +62,9 @@ Initial solo default: hold the domain from accepted escalation until event resol
 
 ### Free quiet life and honest cost evidence
 
-Ordinary advancement, completion, queue transitions, mechanical logs and a factual recap have no path to provider execution or generation admission. They may use templates derived from receipts. A rules-defined wait need not roll; uncertain work can use D&D checks without LLM calls. Quiet results do not require a fresh public offer to continue pre-authorized work.
+Mechanical settlement, queue transitions, logs and factual recap must be executable without generation. In the selected quiet configuration, none admits a generation task. Other admitted configurations may request prepared/generated reporting, gate continuation on a scene, or combine narration and permitted next work. The mechanical resolver never calls a provider; explicit persisted follow-up intents enter the task layer. A rules-defined wait need not roll; uncertain work can use D&D checks without LLM calls.
 
-Measure generation-task admissions and provider attempts separately for plan preparation, quiet execution, event preparation and later literary recaps. A fake provider charging zero does not establish the architectural no-call property. The existing activity runtime currently requests narration on every non-running settlement; split that branch so only an explicit scene handoff enters generation. Player-requested novel plans and eventual live scene creation may cost tokens; present that boundary truthfully.
+Measure generation-task admissions and provider attempts separately for plan preparation, configured boundary reporting, quiet execution, scene preparation and literary recaps. A fake provider charging zero does not establish the no-call property. Replace unconditional consequence narration with admitted follow-up policy; do not replace it with a prohibition on completion narration. Generation remains subject to explicit allowance, including scheduled milestones. The quiet mode must remain available without claiming all configurations cost zero.
 
 ## Phases
 
@@ -50,10 +78,10 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ### Phase 2 — Bounded quiet plan and one escalation
 
-- Outcome: a small accepted routine plan runs unattended through a quiet transition; a contrasting branch creates one recoverable scene opportunity.
+- Outcome: a small accepted activity chain demonstrates quiet continuation, selected completion narration and a recoverable interactive scene through the same policy boundary.
 - Owners: queue persistence/application admission, activity settlement, game occurrence policy, Storyteller task/publication and compact current/return projection.
-- Work: implement the minimal contract above with the activity foundation's second phase. Start with hold-on-event, an explicit horizon and known scripted terms; no fallback selection or generated replanning is required for the first proof.
-- Evidence: quiet branch has no generation tasks; real queue transition instead of injected completion/offer state; duplicate wakes/restart/pace changes preserve event exposure; event blocks the next entry; failed/unavailable generation produces an explained hold; known receipts support a factual recap.
+- Work: implement the minimal contract above with activity foundation phase 2. Capture completion/milestone hooks, factual/report-only/interactive follow-ups and single-owner chain continuation. Start with hold-on-interaction, a finite horizon and known scripted terms; no generic graph language or automatic replanning required.
+- Evidence: same completion quietly advances in one configuration, narrates while advancing in another, and holds for a decision in another. A selected itinerary milestone narrates without an encounter; late report remains historical; rejected scene cannot advance the chain. Real transitions, retry deduplication and simultaneous event/milestone arbitration preserve one successor, rewards and event exposure. Optional report failure and required-scene failure have distinct declared behavior.
 - Exit: the owner can follow time-earned results and the routine-to-scene transition without a dashboard or a live-model bill.
 
 ### Phase 3 — Captured fallback contract
@@ -90,8 +118,8 @@ Measure generation-task admissions and provider attempts separately for plan pre
 
 ## Current checkpoint
 
-- Current phase: design expanded around player-selected quiet routines and selective generated scenes. Next: review the concrete defaults, then implement the quiet plan/event slice after the activity clock correction. Do not require broad cooperation or notifications before this proof.
-- Reviewed revision: `63e06b9`; documents only changed. Inspected activity completion still unconditionally requests consequence narration, so the no-generation quiet transition requires a code change.
+- Current phase: design refined for configurable follow-ups and activity chains, following the owner's Red Mountain itinerary example. Quiet execution is one configuration; completion narration and selected milestone scenes remain valid. Next: implement the bounded chain/follow-up proof after clock correction when scope is agreed.
+- Reviewed revision: `bfa8284`; documentation-only changes. Current unconditional narration requires a configurable boundary policy, not removal of consequence narration. Report-only generation is a proposed new task contract; no runtime support claimed.
 - Verification: source/design inspection; no tests, builds or provider calls. Batman/Seyda Neen durations and day-long scheduling remain brainstorming, not fixed requirements.
 - Open decisions: initial bounds/risk vocabulary and proposed solo hold policy. Fallback categories precede delegated scene decisions; a notification channel does not block offline acceptance.
 - Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.

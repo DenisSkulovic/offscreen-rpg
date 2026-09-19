@@ -44,6 +44,8 @@ Quiet time is a valid experience. We should not manufacture choices merely becau
 
 The proposed activity/scene rhythm makes quiet life playable without displaying every mechanical detail. During a routine, show the intention, meaningful progress, conditional time estimate, known risk and relevant stop/change controls. Routine results can accumulate in a compact factual log without new generated prose. An event brings a developed scene and contextual choices to the foreground; a minor failed check need not summon the Storyteller.
 
+Chains should read like intentions for a journey or part of a life, with selected narrated moments rather than a required narrative screen between every step. Activity outcomes may request narration, continue, or open a choice according to accepted policy. Explain whether a passage is a report that allows the itinerary to continue or an interaction awaiting a response. Do not require the player to click through a purely descriptive arrival merely to start already permitted rest.
+
 For absence, a small plan such as “rest, then patrol until the chosen limit” should explain its horizon and interruption policy before commitment. It is neither a guaranteed future nor an obligation to manage an hourly calendar. Returning should show completed work, actual costs/results, unfinished intentions and any current decision. A factual return summary can be free of inference; generated literary recaps are a separate, explicitly budgeted option. These are proposed experience requirements, not implemented queue controls.
 
 ## Playing with friends

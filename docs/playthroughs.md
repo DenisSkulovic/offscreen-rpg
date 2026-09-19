@@ -202,6 +202,16 @@ Contrast with the Seyda Neen life: conversation with a guard can reveal a destin
 
 The benchmark fails if it requires a model call to end rest or start patrol, if a fixed probability effectively guarantees a constant string of dramatic interruptions, if restarting routines farms fresh event rolls, or if an unresolved event is skipped by the queue. It also fails if every positive consequence is forced through a timer: a real gift or supported immediate discovery is still a legitimate change.
 
+## Chained journey with selected narration
+
+Further owner brainstorming: travel from Seyda Neen to Balmora, sleep there, spend time chatting at its tavern, travel to the Gate, sleep, then travel toward Red Mountain. This is an illustrative itinerary, not a required route, geographic claim or content pack.
+
+The accepted chain can keep the first arrival quiet, report the rest with a factual log, and request vivid narration at the Gate. A tavern entry can be an extended social routine, or its follow-up may open a conversation with choices. Optional events may arise during any eligible leg, several legs or none. Scheduled gate narration does not depend on winning an encounter roll.
+
+One configured gate arrival narrates and starts the permitted rest. Another opens a consequential choice and holds the onward itinerary. A late descriptive passage reports the saved arrival rather than claiming the character is still at the gate. If an event changes route access or the player's intent, revalidate or explicitly revise the remaining legs while preserving committed travel and costs. The itinerary cannot award travel progress or arrival rewards a second time on top of its entries.
+
+Acceptance compares the same mechanical completion with quiet, narrated-and-continuing, and interactive-held policies. This prevents either compulsory generation or a blanket prohibition on consequence narration from becoming the architecture.
+
 ## Benchmark questions
 
 When evaluating future features, ask:

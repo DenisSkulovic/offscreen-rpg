@@ -23,13 +23,23 @@ In a high-risk situation with no permitted fallback, the story holds instead of 
 
 ## Proposed initial policy
 
+### Configurable chains and presentation
+
+A chain can be a daytime itinerary as well as an unattended plan. For example: travel to Balmora, rest, spend time at the tavern, travel to the Gate, rest, then travel onward. The Storyteller or player can propose those intentions within their authority. Any leg can have an optional event, while a selected arrival can deliberately request narration without an encounter roll. Place names and itinerary length remain examples.
+
+Completion does not imply one universal next step. Independently configure what to report and whether to continue or hold: factual log and next activity; completion narration and next activity; or narrated scene and a contextual choice. Report-only prose may arrive after the character has moved on and must describe its recorded moment honestly. A scene that establishes new facts or changes the possible continuation needs authoritative validation and appropriate holding behavior. A social activity can remain abstract or open detailed dialogue when its admitted policy calls for it.
+
+Accept a bounded policy rather than arbitrary callbacks. The [technical follow-up contract](PLAN.md#configurable-boundary-follow-ups) defines trigger identity, compatible outputs, ordering, failures and deduplication. A scheduled narrative milestone consumes generation allowance when configured to generate; the zero-call quiet configuration remains independently available. Neither option is the universal default for all future activities.
+
+### Bounded execution and absence
+
 Use a bounded ordered list, not an arbitrary branching program or an AI choosing a new agenda. Each entry selects supported admitted terms, an actor/target binding and a stop condition. The plan has an overall horizon, cost/risk limits and an explicit interruption/resumption policy. Until values are chosen, no universal day length, queue count or offline limit is assumed.
 
 Pending entries reserve no resources by default; acquire claims and recheck eligibility when they actually start. Invalid entries stop with a reason unless an explicit supported skip/fallback was captured. Queue exhaustion leaves an explained idle state or a separately authorized continuing routine. Returning to the browser does not itself cancel the plan; editing it cannot undo committed results or reroll event checks.
 
 Keep three permissions separate: execution of accepted routine terms, delegated decisions at a scene, and spending on new generation. A zero-generation allowance can still permit quiet work. If a committed hazard needs interpretation outside supported fallback rules, hold it; do not continue farming rewards through unresolved danger. Optional undeveloped story opportunities may be declined under policy before new facts commit.
 
-The first solo event policy holds the scene's clock at the escalation boundary while content is prepared and during the declared response opportunity. The response allowance begins when valid content/options publish, not when a background request starts. This protects the opportunity while the player is away but means a serious event can stop the remaining overnight plan. That tradeoff must be visible. Continuing danger, human multiplayer and broad unsupervised combat are separate choices.
+The proposed first solo interactive-event policy holds the scene's clock at the escalation boundary while content is prepared and during the declared response opportunity. Report-only narration need not hold it. The response allowance begins when valid options publish, not when a background request starts. A serious event can therefore stop the remaining overnight plan; that tradeoff must be visible. Continuing danger, human multiplayer and broad unsupervised combat are separate choices.
 
 Events are selected, not compulsory. Independent occurrence cadence and campaign-scoped cooldown/repetition rules prevent every work check becoming drama. A useful scene may be an ordinary relationship, discovery or opportunity, not only a threat. An event may resolve back into the routine or lead into several active scenes; it need not create a chapter or immediately resume queued work.
 
@@ -39,6 +49,7 @@ Included:
 
 - bounded player-selected routine sequence with conditional start, horizon, limits, stop/edit and revalidation;
 - quiet completion/queue transition and factual return summary without generation-task admission;
+- configurable completion/milestone reporting and continuation, including narration alongside the next activity and narrated choice gates;
 - code-owned event nomination/selection, deduplicated scene escalation and a clear generation-failure hold;
 - solo campaign autonomy policy with a small explicit vocabulary;
 - admitted fallback identity and mechanics captured with a response window;
@@ -73,6 +84,8 @@ Prepared options and fallbacks must be rechecked against current state at resolu
 - Event nomination, restart, retry, reloading and pace changes cannot duplicate occurrence rolls, scenes, queue transitions or rewards.
 - A blocked next entry or event stops incompatible progression and explains what the player must do. Resume rechecks the original remaining intentions rather than generating a new agenda.
 - An unavailable/budget-blocked Storyteller neither erases committed danger nor starts a response deadline against unpublished options.
+- The same activity result supports quiet continuation, narration with continuation, or a held choice through accepted policy, without duplicating mechanical logic.
+- A chosen itinerary milestone narrates even if no random event occurred. Event/arrival coincidence does not start two successors or repeat the reward. Delayed optional prose cannot overwrite current state or choices.
 - No external notification service is required to prove the gameplay contract offline.
 
 ## Decisions still needed
