@@ -1,7 +1,7 @@
 # Storyteller-authored situations and reusable choices
 
-Status: Ready design proposal; not implemented.
-Approval: The owner explicitly selected Storyteller-authored choices, optional activity access and rapid/quiet pacing on 2026-09-19, then requested this implementation-readiness handoff. This turn authorizes design only; code begins after the requested model switch and continuation. No live inference or automatic model switch is authorized.
+Status: Approved and partially implemented. Per-situation authority (S1) is complete; reusable quiet choices and exact retained resumes (S2) are in progress. Finite occurrence scope and broader continuous invalidation remain unfinished.
+Approval: The owner explicitly selected Storyteller-authored choices, optional activity access and rapid/quiet pacing on 2026-09-19, then authorized offline implementation. No live inference is authorized.
 
 ## Intended outcome
 
