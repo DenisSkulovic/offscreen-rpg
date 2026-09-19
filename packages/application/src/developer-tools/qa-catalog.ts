@@ -362,6 +362,20 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         authoritativeExpectation:
           'There are zero activity rolls, zero consequence intents for the quiet completions, zero provider calls, and zero charge.',
       }),
+      stage({
+        id: 'cancel-pending-chain',
+        name: 'Cancel only pending continuation',
+        importance: 'major',
+        preconditions: [
+          'Start a fresh microbe.v3 story and accept the same two-entry plan.',
+        ],
+        action:
+          'While the first entry is running, choose Cancel pending activities, then let the current entry finish.',
+        observableExpectation:
+          'The current activity continues and completes; the pending successor is marked cancelled and never starts.',
+        authoritativeExpectation:
+          'The plan-control command is replay-safe, changes only future entries, and does not pause, abandon, reroll, or replace the current activity.',
+      }),
     ],
     evidenceRequirements: [
       stateEvidence,

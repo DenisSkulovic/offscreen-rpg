@@ -741,6 +741,78 @@ test(
           },
         );
         await t.test(
+          'cancelling pending plan entries leaves current work running',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['sample-gradient-cycle'],
+                successorPaths: [['hold-temperature-cycle']],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const currentActivityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected current accepted work',
+            );
+            const accepted = requireDefined(
+              admitted.campaign?.acceptedActivityPlan,
+              'Expected the accepted activity plan',
+            );
+            await stories.acceptedPlanControl({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                planId: accepted.id,
+                expectedRevision: accepted.revision,
+                action: 'cancel-pending',
+              },
+            });
+            const cancelled = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(cancelled.campaign?.activity?.id, currentActivityId);
+            assert.equal(cancelled.campaign?.activity?.state, 'running');
+            assert.deepEqual(
+              cancelled.campaign?.acceptedActivityPlan?.entries.map(
+                (entry) => entry.state,
+              ),
+              ['running', 'cancelled'],
+            );
+            await storyService.advanceCampaignActivity(currentActivityId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(completed.campaign?.activity?.id, currentActivityId);
+            assert.equal(completed.campaign?.activity?.state, 'complete');
+            assert.equal(
+              completed.campaign?.acceptedActivityPlan?.state,
+              'cancelled',
+            );
+            assert.deepEqual(
+              completed.campaign?.activityEvents.map((event) => event.kind),
+              ['completed', 'started'],
+            );
+          },
+        );
+        await t.test(
           'clock wait completes from eligible time without rolling or earning work points',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {

@@ -42,6 +42,7 @@ export function CampaignPlay({
   const [pace, setPace] = useState('steady');
   const command = useCampaignCommand(story.id, onSnapshot);
   const activity = campaign.activity;
+  const acceptedPlan = campaign.acceptedActivityPlan;
   const nodes = story.resolution ? [] : (campaign.offer?.nodes ?? []);
   const parent = path.at(-1) ?? null;
   const children = nodes.filter((node) => node.parent === parent);
@@ -200,22 +201,36 @@ export function CampaignPlay({
           ))}
         </details>
       ) : null}
-      {campaign.acceptedActivityPlan ? (
+      {acceptedPlan ? (
         <details open>
           <summary>Accepted activity plan</summary>
           <p>
-            {campaign.acceptedActivityPlan.state}
-            {campaign.acceptedActivityPlan.blockedReason
-              ? ` — ${campaign.acceptedActivityPlan.blockedReason}`
+            {acceptedPlan.state}
+            {acceptedPlan.blockedReason
+              ? ` — ${acceptedPlan.blockedReason}`
               : ''}
           </p>
           <ol>
-            {campaign.acceptedActivityPlan.entries.map((entry) => (
+            {acceptedPlan.entries.map((entry) => (
               <li key={entry.id}>
                 {entry.label} · {entry.state}
               </li>
             ))}
           </ol>
+          {['active', 'blocked'].includes(acceptedPlan.state) ? (
+            <button
+              disabled={command.busy || command.retry}
+              onClick={() =>
+                void command.send('accepted-plan-controls', {
+                  planId: acceptedPlan.id,
+                  expectedRevision: acceptedPlan.revision,
+                  action: 'cancel-pending',
+                })
+              }
+            >
+              Cancel pending activities
+            </button>
+          ) : null}
         </details>
       ) : null}
       {campaign.activityEvents.length ? (

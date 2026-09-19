@@ -2,6 +2,7 @@ import { createCampaignSettings } from '../campaign/settings';
 import { createCampaignActions } from '../campaign/actions';
 import { createCampaignControls } from '../campaign/controls';
 import { createCampaignActivities } from '../campaign/activities';
+import { createAcceptedPlanControls } from '../campaign/accepted-plan-controls';
 import {
   campaignConsequenceTopic,
   createConsequenceNarration,
@@ -34,6 +35,7 @@ export function createStories(database: Database) {
     campaignSettings: createCampaignSettings(database),
     campaignAction: createCampaignActions(database),
     campaignControl: createCampaignControls(database),
+    acceptedPlanControl: createAcceptedPlanControls(database),
     advanceCampaignActivity: createCampaignActivities(database).advance,
     prepareCampaignConsequence: createConsequenceNarration(database),
     list(args: { ownerId: string; before?: string }) {

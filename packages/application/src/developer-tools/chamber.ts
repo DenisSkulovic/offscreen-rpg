@@ -60,6 +60,7 @@ export function createChamber(database: Database) {
     campaignSettings: stories.campaignSettings,
     campaignAction: stories.campaignAction,
     campaignControl: stories.campaignControl,
+    acceptedPlanControl: stories.acceptedPlanControl,
     list(args: { ownerId: string; before?: string }) {
       return stories.list(args);
     },
@@ -143,7 +144,7 @@ export function createChamber(database: Database) {
       storyId: string;
       candidateId: string;
       expectedDraftRevision: number;
-    campaign?: CampaignStart;
+      campaign?: CampaignStart;
     }) {
       await stories.startFromCandidate(args);
       return read({ ownerId: args.ownerId, storyId: args.storyId });

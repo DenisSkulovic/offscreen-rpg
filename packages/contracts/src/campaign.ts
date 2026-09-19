@@ -213,6 +213,11 @@ export const activityControlSchema = z
     pace: paceSchema.optional(),
   })
   .refine((value) => (value.action === 'pace') === (value.pace !== undefined));
+export const acceptedActivityPlanControlSchema = z.strictObject({
+  planId: z.uuid(),
+  expectedRevision: z.number().int().nonnegative(),
+  action: z.literal('cancel-pending'),
+});
 export const campaignStartSchema = z.strictObject({
   mechanics: z.boolean().default(false),
   locked: z.boolean().default(false),

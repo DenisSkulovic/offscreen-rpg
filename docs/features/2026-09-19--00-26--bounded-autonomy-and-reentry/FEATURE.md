@@ -1,6 +1,6 @@
 # Bounded autonomy and re-entry
 
-Status: Approved and partially implemented. Bounded quiet settlement (U2a), source-bound historical reports (core U2b), and the first durable two-entry accepted-chain path (U2c) are implemented. Deterministic manual report controls, chain editing/cancellation and later delegated fallbacks/notifications remain unfinished.
+Status: Approved and partially implemented. Bounded quiet settlement (U2a), source-bound historical reports (core U2b), and the first durable two-entry accepted-chain path with pending-entry cancellation (U2c) are implemented. Deterministic manual report controls, broader chain editing/horizons and later delegated fallbacks/notifications remain unfinished.
 Approval: Offline implementation is authorized along the repository's coding route. Exact later fallback, notification and broader risk policies remain proposed; no live inference is authorized.
 
 The [solo integration contract](../../technical/solo-gameplay-contract.md) selects a bounded first offline tranche: finite chains of at most six entries, explicit tick horizon, and required-scene hold without response timeout or autonomous fallback. Those implementation defaults do not approve the broader delegated-decision proposal below. Follow the [coding route](../README.md), not every phase end-to-end before trying ordinary play.
