@@ -1,21 +1,50 @@
 # Storyteller memory implementation plan
 
 Feature: [Storyteller memory and situated recall](FEATURE.md).
-Execution scope: investigation/design only, requested on 2026-09-18. The owner explicitly requested pre-narrative exploration using compact hints and read tools; implementation details and phases await agreement. No live calls, deployment or remote push authorized by this plan.
+Execution scope: investigation/design requested on 2026-09-18 and extended to canonical files on 2026-09-19. This pass prepares a concrete storage and agent-workspace reorientation; no runtime migration, paid service or inference is being performed. The owner's standing commit/push instruction applies to the resulting design documents.
 Implementation owner: Cursor after agreement; reviewer: Codex unless assigned otherwise.
 
 ## Design trace and sequencing
 
 World-independent invariant: later correctness must depend on committed state and recoverable evidence, not on the last few messages. A returning gate guard, a spacecraft contact and a microbe's previously encountered environment need the same source/state/identity separation. None requires simulating unseen populations or treating prose as an executable rule.
 
-The [immediate DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) remains the gameplay spine. Its direct receipt boundary is implemented. Deliver Phase 1 below alongside the first structured DM-turn work after the proposal is approved. Scene frames, emergent facts and a minimal durable identity directory enable Phase 2. Phase 3 adds targeted read-only recall, not a general agent platform. Demonstrate longevity before connecting arbitrary many-day play; do not defer this indefinitely behind a trace UI or map.
+The [immediate DM loop](../2026-09-18--17-21--playable-dm-adjudication-loop/PLAN.md) remains the gameplay spine. Its direct receipt boundary is implemented. The [canonical-file contract](CANONICAL-FILES.md) is now the nearest architectural slice: documents own narrative content; a small transactional layer coordinates publication and exact execution. Integrate a short harbor/return scenario with the workspace in this POC. Rich trace UI, maps and a giant lifetime corpus are not prerequisites.
 
-Do not implement all phases in one Cursor pass. Phase 1 is deliberately useful without entities, scene tables, summaries or tools. Later phases are a scope boundary, not permission to start them automatically.
+Keep phases independently reviewable. Phase 0 introduces file storage and its publication contract. Phase 1 fixes prompt/provenance loading against those references, Phase 2 supplies linked narrative knowledge, and Phase 3 connects exploration to a playable turn. Semantic evaluation can proceed alongside Phase 3 once the committed corpus and filters exist. A file export alone is not the product exit.
+
+## Phase 0 — Canonical document storage and publication
+
+Outcome: versioned narrative documents can be read, revised, published and exported without making SQL rows their editable content owner. Current game effects retain exactly-once transactional execution.
+Dependencies: review of the concrete [ownership and publication proposal](CANONICAL-FILES.md#publication-across-files-and-the-execution-ledger); no bucket or vector vendor required for the local adapter.
+
+### Nearest bounded slice: storage and one admitted document
+
+- Read `packages/application/src/storyteller/context.ts`, `memory.ts`, `publication.ts`, `records.ts`, `packages/storyteller/src/context/index.ts`, `tasks/index.ts`, `profiles/index.ts`, database story/generation schemas, and the relevant package guides. Resolve schema paths from package exports; do not assume one filename per domain.
+- Introduce document-envelope, source-reference, manifest and proposed-change schemas with stable IDs, exact revisions, logical paths, content hashes, authority/visibility and provenance. Keep content kinds extensible through validated schemas without an entity table for each kind.
+- Give document storage one focused module/package responsibility, separate from the pure mechanical game package. Implement an ignored local `data/` adapter with immutable reads/writes, declared durable-write guarantees, root-confined logical paths and export. API/worker must share the same configured root; no process-local memory or developer CWD assumption.
+- Keep a small database root/commit reference and deduplication record. Stage required immutable objects before the short story-lock publication transaction, compare the expected root and relevant state fence, atomically select the new root and enqueue indexing. Reuse existing outbox infrastructure. Fold schema changes into the single pre-POC baseline.
+- Admit one lore/identity document through an application command using this boundary; return a readable diff and new revision. Unknown historical claims cannot become sources, and content fields cannot grant mechanical effects. Human edits and Storyteller proposals should converge on the same admission operation.
+- Provide scoped directory/header and section reads. Expose initial existing passages/receipts as read-only projections with honest coverage; label them as transitional SQL-owned sources. No unrestricted filesystem tool.
+- Add focused Chamber inspection and QA stages for document identity, source/authority, revision conflict, restart, export and index absence. Record correlation and safe failure codes at the commit/read boundary.
+
+Acceptance if checks are chosen: a two-document commit exposes either the old or new root; retry after lost acknowledgement finds the same commit; two proposals from one base do not overwrite each other; unreachable staging is unreadable as canon; traversal and cross-story handles fail; a missing required object produces a recoverable blocker. These are the actual storage risks, not a request for a broad test campaign.
+
+Exit: one admitted narrative document is file-owned, survives a process restart and exports with its sources. Mechanical state remains unchanged by a document edit. No claim of agent recall yet.
+
+### Next connected slice: move narrative ownership and capture references
+
+Move published scene bodies and newly admitted memory documents into immutable content storage; retain ordering/visibility/source-operation metadata and pointers in SQL. Update snapshot/history readers, Storyteller capture and publication together so there is one narrative-body owner. Remove superseded write paths and reset disposable saves as needed; no long-lived compatibility branch.
+
+Tasks pin exact document and Storyteller-bundle revisions. Profile Markdown sections compile through a validated bundle loader; permission/rules/spend policy cannot come from the editable creative files. Current profile JSON is existing file-backed content, not a database migration target. Keep the public presentation DTO stable where practical.
+
+Quiet ledger commits may create asynchronous source-export intents without narrative calls. Record their coverage and retain relevant unexported receipts in context until materialized; archive lag must not lose earned work. A missing optional summary does not hold ordinary work. A missing required narrative source holds its dependent generation/publication honestly.
+
+Exit: a short playable campaign reads its prose from file artifacts, captures reproducible source revisions and can rebuild its index without losing content. Document export is distinguished from a complete resumable game backup.
 
 ## Phase 1 — Separate provenance from prompt loading
 
 Outcome: note-source growth and duplicated current prose no longer create avoidable overflow; required material still fails closed when genuinely too large.
-Dependencies: approved design; direct action receipt/follow-up boundary from the DM plan. No new agent runner.
+Dependencies: Phase 0 document references and the implemented direct action receipt/follow-up boundary. No new agent runner.
 
 ### Existing owners to read
 
@@ -60,14 +89,14 @@ Exit: source-backed memory can remain durable without dragging its complete sour
 Outcome: returning places/participants/items retrieve relevant history automatically from a bounded candidate set.
 Dependencies: Phase 1, admitted scene frame and stable story-local identity references. Define those with the existing scene-frame and emergent-state slice rather than competing schemas.
 
-Owners: `packages/db` for minimal identity/episode/thread/link records and indexes; application context/memory operations for reads and publication; Storyteller for bounded episode/patch schemas and policy; existing game state/receipts for exact mechanical data.
+Owners: the Phase 0 document store for canonical identity/episode/thread bodies and links; application context/memory operations for admission and scoped retrieval; rebuildable indexes for discovery; Storyteller for bounded episode/patch schemas and policy; existing game state/receipts for exact mechanical data. Do not create competing editable content tables.
 
 Scope:
 
-- Replace the single always-loaded note list as lifetime memory with persistent episode/thread records and a bounded selection. Leaving the working set is not retirement or deletion.
+- Replace the single always-loaded note list as lifetime memory with persistent episode/thread documents and a bounded selection. Leaving the working set is not retirement or deletion.
 - Store every published passage and admitted receipt as recoverable evidence. Link known entities and scenes when their identity is admitted, not by continuously re-reading lifetime prose with an LLM.
 - Build identity cards from existing state plus separately labelled narrative annotations. Current whereabouts, item holder and capabilities have one state owner. Keep aliases/disambiguation explicit.
-- Publish source links and required state atomically; propose short episode cards at scene/segment boundaries in the DM output. Summary failures have explicit status and coverage gaps, not invisible loss or rollback of gameplay.
+- Publish the staged source/document manifest with required state atomically; propose short episode cards at scene/segment boundaries in the DM output. Summary failures have explicit status and coverage gaps, not invisible loss or rollback of gameplay.
 - Use current-scene/place/participant/action references to select cards, open threads and bounded previous episodes. Raw search remains available for unpromoted details.
 - Build the versioned orientation packet from FEATURE.md: scoped registry slices, relevant source-backed leads, available tool contracts/search modes and remaining allowance. Required state is supplied directly; optional historical/thematic leads invite exploration without forcing a callback. Structural hint selection needs no extra model call.
 - Bound pages, leads and selection work. Label exact/lower-bound/unknown counts and completeness at the captured revision; use cursors rather than expensive optional lifetime totals. Apply knowledge/visibility scope to counts and hints as well as bodies. An omitted record is not evidence of absence.
@@ -77,14 +106,14 @@ Scope:
 
 Acceptance: return after 40 scenes, changed holder/bridge facts, duplicate names, closed versus still-open favor, single-scene segmentation, missing synopsis fallback, no forced human attributes. Test dense early chapters as well as long histories; many entities can accumulate before many scenes do. Registry pages report scoped completeness without leaking hidden entities. Query/candidate counts and prompt bytes stay bounded as irrelevant scenes increase.
 
-Exit: one hundred-plus scene fixture resolves known returning identities and their relevant history without full transcript loading. The POC may use scripted episode proposals; do not label them demonstrated live-model memory.
+Exit: a short return fixture resolves known identities and relevant document history without full transcript loading, enabling Phase 3's playable exploration. Phase 4 expands that same route to hundreds of scenes. The POC may use scripted episode proposals; do not label them demonstrated live-model memory.
 
 ## Phase 3 — Pre-narrative exploration with one shared round budget
 
 Outcome: before choosing final narration/options, the DM can follow a supplied lead or search for relevant history beyond the orientation packet. Exploration supports both necessary fact checks and optional narrative connections; it is not merely repair after a failed proposal.
 Dependencies: Phase 2 candidate query and visibility policies; existing attempt/accounting system; approved envelope from FEATURE.md.
 
-Owners: Storyteller task/result schema for `needs_context`; application for scoped `query_registry`, `search_memory`, `inspect_memory`, `read_source`; task/attempt storage for saved rounds; existing workflows for operation delivery; no separate execution engine.
+Owners: Storyteller task/result schema for `needs_context` and admitted document-change proposals; application for scoped state queries, document navigation and source/search views defined in CANONICAL-FILES.md; task/attempt storage for saved rounds; existing workflows for operation delivery; no separate execution engine.
 
 Scope:
 
@@ -107,25 +136,24 @@ Use the matrix in FEATURE.md: 200 scenes scaling to 2,000; 40 places, 120 recurr
 
 Inspect request budget, required-fact inclusion, optional recall quality, irrelevant payload, query work, stale index behavior and rounds per accepted turn. Add a browser return rehearsal showing the old place with changed circumstances and an action affected by earlier events. No requirement for a rich trace explorer.
 
-Exit: offline behavior and known limitations recorded honestly. A later live evaluation requires an explicit allowance and selected hypotheses; neither this plan nor successful offline checks grants that permission. Embeddings are considered only if named lexical/identity retrieval failures persist.
+Exit: offline behavior and known limitations recorded honestly. A later live evaluation requires an explicit allowance and selected hypotheses; neither this plan nor successful offline checks grants that permission. Semantic retrieval is evaluated as part of the POC proposal against the same named questions and source corpus, not used to excuse incorrect exact state.
 
-## Investigation gate — Semantic and hybrid retrieval
+## POC investigation — Semantic and hybrid retrieval
 
-This is recorded follow-up work, not an instruction to install a vector service now. The product requires useful exploration, not a particular index engine. Keep the tool contract backend-neutral and expose enabled search modes truthfully.
+This is a scoped POC investigation, not an instruction to provision a service now. The owner explicitly values indexed canonical knowledge. Keep storage/source ownership independent from the index engine and expose enabled search modes truthfully. Evaluate a local embedding route after model/license/resource review; any hosted embedding/backfill/query calls retain the existing explicit spending boundary.
 
 1. Establish the exact/alias/relationship/lexical baseline with annotated questions and expected/forbidden results. Include paraphrased memories, low-drama callbacks, similar-but-unrelated events, stale quantities, duplicate names, multilingual wording where relevant, and details absent from summaries. Select acceptance thresholds before evaluating alternatives.
-2. Identify named misses that semantic candidates could remedy. Compare bounded lexical versus hybrid retrieval for relevant-source recall, irrelevant payload, latency/query work and estimated/authorized cost; no unsupported claim that embeddings improve this story corpus.
+2. Compare exact/lexical and hybrid retrieval for paraphrased callbacks, relevant-source recall, irrelevant payload, latency/query work and estimated/authorized cost. A lexical-only win or a hybrid win is evidence about that case; neither is assumed. Record where semantic candidates help and where they confuse identity or chronology.
 3. Specify chunk boundaries, immutable source hashes, embedding model/version, eligible data destination, incremental coverage, deletion/rebuild policy and story/knowledge/time filtering. Query embeddings are potentially paid calls too. Require explicit authorization before any external embedding or live-model evaluation.
-4. If justified, evaluate PostgreSQL plus pgvector before selecting a separate service. Merge candidates with deduplication/rank fusion, not incomparable raw-score arithmetic. Preserve exact state lookup and primary-source inspection; similarity never settles identity or possession.
+4. Compare a disposable PostgreSQL/pgvector index and a dedicated service only to the extent necessary to choose a maintainable local POC route. Both must rebuild from canonical documents. Merge candidates with deduplication/rank fusion, not incomparable raw-score arithmetic. Preserve exact state lookup and primary-source inspection; similarity never settles identity or possession.
 5. Record the measured choice and remaining misses here. Disabled/stale semantic indexing must be visible, with lexical/raw-source fallback. A failed experiment must not silently expand prompt or spending limits.
 
 ## Current checkpoint
 
-- Phase: design complete for review; implementation not begun. Next action after approval: finish the DM plan's direct-receipt boundary, then implement Phase 1 only.
-- Reviewed code: runtime `48c3c56`; latest local documentation base `095a1dd`. No runtime code was changed.
-- Investigation: traced context assembly, note patches, request sizing, memory publication, execution/recovery, schema and existing test coverage; reviewed existing context-cost and world-continuity specifications.
-- Follow-up design: pre-narrative orientation/exploration, scoped registry counts, multi-hop reads, optional creative leads, working-set pruning and the gated semantic-retrieval investigation are explicit. PostgreSQL/pgvector primary documentation was consulted for retrieval options, not as evidence of application quality.
-- Verification: two dependency-free JSON-size calculations (65,356 bytes for note-source subset; 60,216 bytes for duplicated large current content). These reproduce serialization pressure, not an application test. Builds, runtime suites, database and browser not run for this design change.
-- Blockers/limits: design approval and later scene/identity admission. Exact state versus derived scene memory must not acquire duplicate owners. No live-model recall quality established.
+- Phase: canonical-file reorientation prepared; implementation not begun. Exact next implementation slice is Phase 0 local storage plus one admitted document, then narrative-body ownership and Phase 1 source loading. The current user request is design/investigation, so no runtime migration was performed.
+- Reviewed code: `ae25c74`, with a clean worktree at investigation start. Current changes are design documents and navigation only.
+- Investigation: re-inspected database context loading, transactional note publication, current creative profile files, scene publication and ignored runtime-storage roots. Original serialization-pressure probes remain design evidence, not new runtime verification.
+- Design result: CANONICAL-FILES.md specifies source ownership, an agent-navigable library, extraction/summarization, versioned Storyteller bundles, semantic retrieval in POC scope, immutable staging/atomic root publication, recovery, export and a concrete return scene. Updated the existing feature rather than adding a rival memory roadmap.
+- Verification: source/document review only; no builds, runtime tests, database resets, installed dependencies or provider calls for this design pass. Primary Anthropic, AWS and Qdrant documentation informed the architectural comparisons, not a claim of application quality.
+- Limits: concrete storage boundary is proposed for review; search backend and embedding model are unselected. The current context window remains the implemented behavior. No live-model recall quality or complete executable-save export is established.
 - Provider spend: no game/provider calls, $0. Cumulative OpenRouter usage unverified.
-- Remote status: this and the preceding documentation work remain local; no remote publication is attempted in this work.

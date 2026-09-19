@@ -1,16 +1,16 @@
 # Storyteller memory and situated recall
 
-Status: Draft technical proposal. The owner requested investigation, durable design and pre-narrative tool exploration on 2026-09-18. That product direction is explicit; detailed schemas, implementation phases and live inference are not authorized merely by documenting them.
+Status: Draft technical proposal. The owner requested durable memory and pre-narrative exploration on 2026-09-18, then canonical files, searchable knowledge and reduced database content ownership on 2026-09-19. Those product directions are explicit. The [canonical-file design](CANONICAL-FILES.md) defines the proposed ownership/publication boundary and brings a connected document workspace into POC scope; it is not implemented, and no hosted storage or inference is enabled by this proposal.
 
 ## Intended outcome
 
-A continuing life can accumulate places, people, possessions, promises and experiences without either replaying its entire history into every prompt or forgetting whichever detail leaves a recent-message window. Each DM invocation receives a small, task-specific working set, knows what relevant evidence is available, and can request bounded additional evidence. PostgreSQL and committed chronology remember the life; no immortal chat session or agent per NPC does so.
+A continuing life can accumulate places, people, possessions, promises and experiences without either replaying its entire history into every prompt or forgetting whichever detail leaves a recent-message window. Each DM invocation receives a small, task-specific working set, knows what relevant evidence is available, and can request bounded additional evidence. A versioned campaign document library and the committed execution ledger remember the life; the model's conversation is disposable. Canonical documents own narrative knowledge, while exact mechanical state retains transactional authority.
 
-Memory is a gameplay dependency, not a later convenience. It must preserve ordinary achievements, relationships and constraints, not just dramatic plot points. The next immediate-action receipt refactor stays first, but longevity retrieval must be exercised before claiming a multi-day playable story.
+Memory is a gameplay dependency, not a later convenience. It must preserve ordinary achievements, relationships and constraints, not just dramatic plot points. Direct action receipts are implemented. The next design boundary is the canonical document workspace, connected to a small playable return scene before claiming the POC demonstrates a remembering Storyteller.
 
 ## Inspected implementation boundary
 
-Reviewed runtime: `48c3c564f8b8703234913f95dbf7a1b86f3fabf4`; latest local documentation base: `095a1dd`. Remote main matched the runtime revision at the last remote check; this design follow-up makes no new remote-state claim.
+Context assembly, note publication, profile loading and scene publication were re-inspected at `ae25c74`. Their storage remains database-backed except for the checked-in JSON creative profiles. No canonical campaign document store or searchable workspace is implemented.
 
 | Existing owner | Implemented behavior | Long-story limitation |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ In the microbe contrast, a previously encountered chemical environment and persi
 | Chronology and receipts | Original published prose, accepted choices and mechanical results | Durable primary evidence. Retrieved selectively and never replaced by summaries |
 | Working prompt | Instructions and selected projections from the above | Disposable task input; not the store of truth |
 
-These are responsibilities, not seven services. Reuse existing story passages, receipts, character state and item ownership. A small identity directory, episode records, entity/episode links and thread records are enough for the proposed extension. Do not duplicate authoritative inventory, quantities or abilities into mutable memory tables.
+These are responsibilities, not seven services or seven new table families. Narrative identities, episodes and threads become linked versioned documents; source passages remain recoverable originals. The execution ledger retains exact character state and item ownership. Directory/search metadata can be indexed in a database without making it the canonical owner of document bodies. See [file ownership](CANONICAL-FILES.md#one-owner-per-kind-of-truth).
 
 ### Identity, claims and knowledge
 
@@ -162,7 +162,7 @@ The target DM lifecycle is **orient → explore if useful → compose final turn
 | `inspect_memory` | Returned episode/identity/thread handle and requested view | Current card at the captured state or an episode synopsis with provenance |
 | `read_source` | Permitted source handle and bounded paragraph/range selector | Exact committed excerpt or receipt, its sequence/time and continuation metadata |
 
-These may be represented by a provider-neutral structured `needs_context` result and application-dispatched reads rather than vendor tool calling. Their schemas are task-specific; no arbitrary SQL, filesystem, cross-story search or mutating tool is exposed.
+These may be represented by a provider-neutral structured `needs_context` result and application-dispatched reads rather than vendor tool calling. Their schemas are task-specific. The [document workspace](CANONICAL-FILES.md#agent-working-cycle) adds bounded directory/section navigation over the same records, without arbitrary SQL, host filesystem or cross-story access. Document edits are proposals with expected revisions, admitted separately from reads.
 
 Proposed execution envelope: zero to two exploration rounds followed by one final generation, within three model rounds and six total read operations per DM turn. Recall and schema/admission repair share the same total; do not multiply a three-round agent by a separate repair allowance. At most one repair after invalid final output, only if a round remains. A `needs_context` round is not a failed attempt and cannot publish prose or effects. The first response may request reads without drafting any story; exploratory candidates are private and do not precommit narrative events.
 
@@ -186,7 +186,7 @@ Use different retrieval paths for different questions:
 
 The DM asks a scoped `search_memory` question; application code owns whether available lexical, semantic or hybrid retrieval serves it. Advertise which modes are actually enabled. Semantic similarity suggests candidates, never truth, ownership, identity equality, chronology or relevance by itself. Resolve candidates back to committed sources and check newer authoritative state before use. The same distinction applies to automatically generated hints.
 
-No separate vector database is required by the product. If lexical/identity retrieval demonstrably misses useful paraphrased memories, evaluate PostgreSQL plus pgvector as an implementation candidate. Its documentation describes vector search and combination with full-text retrieval; engine choice does not solve source authority or memory selection. See [pgvector](https://github.com/pgvector/pgvector#hybrid-search) and [PostgreSQL full-text search](https://www.postgresql.org/docs/current/textsearch-intro.html).
+Semantic/hybrid retrieval is in the proposed POC evaluation scope, alongside exact paths, identity links and lexical search. Establish the lexical baseline for comparison, not as a reason to defer canonical files. Evaluate a disposable PostgreSQL/pgvector index or a dedicated search service behind the same document contract; neither owns canonical prose. Engine selection must preserve version, knowledge and source filters. See [search design](CANONICAL-FILES.md#search-belongs-in-the-poc).
 
 Before enabling embeddings, specify chunk granularity, embedding model/version, source hash, story/visibility/time filtering, rebuild/deletion behavior and incremental index coverage. Embed only eligible committed source/summary versions, not prepared branches or every repeated prompt. Query embedding and backfill charges also count as inference; no hidden paid call inside an apparently read-only tool. Explicitly authorize the model/data destination and cost. When semantic search is disabled or lagging, report that and preserve lexical/raw-source access.
 
@@ -227,17 +227,11 @@ Keep this inspection accessible through existing artifact/QA facilities. Do not 
 
 ## 8. Persistence and update ownership
 
-The initial storage recommendation is ordinary PostgreSQL beside existing story data:
+Use a canonical document library for lore, identities, chapters, narrative threads and Storyteller guidance. Preserve exact transactional ownership for mechanical state, decisions, publication fences and spending. The [canonical-file design](CANONICAL-FILES.md) owns the file layout, metadata, semantic-search contract, extraction rules, storage publication/recovery and export semantics; do not implement a competing content schema here.
 
-- a story-scoped identity directory with type, aliases and stable identifying/visual anchors; existing items retain their authoritative holder record;
-- scene/segment records referencing place and committed passage boundaries;
-- immutable episode summary versions with source coverage and rebuild provenance;
-- explicit entity/episode links and a small thread record with source-backed status;
-- deterministic context manifests and recall-round artifacts in the existing task/generation lifecycle.
+The first local adapter stores immutable objects under ignored runtime data. A committed manifest names their logical paths and versions. Publication selects the manifest root atomically with related execution changes after object staging succeeds. Search/backlinks are rebuildable projections with explicit coverage. A bucket adapter can replace local storage without changing Storyteller tools. A temporary view of SQL sources is labelled a projection, followed by an explicit ownership transfer of narrative bodies; merely adding an export button does not complete file ownership.
 
-Do not build a universal EAV world database, a graph database, embeddings service or dozens of subtype tables. Add indexes for actual queries: story+identity, story+place+sequence, entity+episode, open thread+cues, chronological source range. PostgreSQL text search over committed prose and summaries is the initial fallback for details that were never promoted. Language/tokenization and alias coverage must be measured for the story text used; lexical retrieval is not promised to recognize every paraphrase.
-
-The game engine owns mechanical transitions. The application owns identity admission, current-state projection, source scope, transaction boundaries and retrieval. The DM proposes narration, limited new scene information, episode cards and memory patches. Summary interpretation never becomes a competing state owner. Images receive a separate visible-scene projection, not the whole DM context or secret archive.
+The game engine owns mechanical transitions. The application admits identity/lore updates, protects source/knowledge scope and publishes document changes. The DM proposes narration, episode cards and sourced edits. Summary interpretation never grants mechanical effects. Images receive a separate visible-scene projection, not the whole DM archive.
 
 ## 9. Acceptance and evaluation
 
@@ -265,6 +259,9 @@ Use a fixture with 200 scenes, 40 locations, 120 recurring identities, 60 conseq
 | Scoped counts and incomplete pages | Exact/lower-bound/unknown distinguished; hidden records do not leak via totals; quantities never inferred from search counts |
 | Semantic paraphrase with misleading neighbor | Relevant episode retrieved when enabled; similar but contradictory/unrelated material is not promoted to truth |
 | Dense chapter with few scenes | Large participant/event density exercises budgets even before the history has many chapters |
+| Disposable conversation and index | A new invocation reconstructs useful context from canonical documents plus exact state; rebuilding the index loses no narrative content |
+| Document publication and export | A conflicting multi-file update cannot partially publish; a knowledge export preserves original evidence and does not pretend to replace the executable save ledger |
+| Storyteller bundle revised | New tasks use the selected bundle revision; captured tasks retain their exact guidance and source versions |
 | Pineapple and microbe | Same composition/retrieval contract without mandatory human/economic/geographic fields |
 
 Record expected relevant and forbidden handles for each case. Measure required-state inclusion (100% or an explicit hold), expected-memory recall, irrelevant payload share, stale/false/forbidden evidence, request bytes, rows/candidates examined, reads/rounds, assembly latency and spend per accepted turn. A deterministic fixture can establish inclusion and authority boundaries, not semantic retrieval perfection or enjoyable prose.
@@ -275,7 +272,7 @@ After offline acceptance and separately authorized funding, evaluate a small gro
 
 Recommended design decisions: fresh per-task context; stored versus loaded memory separation; source-backed bounded episodes; automatic identity/scene recall first; small read-only recall second; receipt authority; one shared attempt/repair allowance; no automatic spending or model switching.
 
-Still requiring agreement: implementation scope and phase ordering in PLAN.md. Record counts, budget allocation, segment thresholds and optional recall ceilings are proposed tuning defaults; implementation should preserve one versioned policy and evaluate them rather than scattering constants. Pre-narrative exploration is the requested direction, not an error-recovery-only feature. Semantic retrieval is a designed optional extension requiring measured benefit and separately authorized provisioning/spend. Rich secret-world state, adversarial NPC beliefs, autonomous memory agents, full maps, image generation and entire-lifetime summaries remain outside this feature.
+Implementation scope and ordering are specified as a concrete proposal in PLAN.md. Record counts, budget allocation, segment thresholds and recall ceilings remain tuning defaults. The owner requested canonical-file thinking and pre-narrative exploration; this pass designs them without migrating runtime storage. Semantic retrieval belongs in the POC evaluation, with backend/model selection and any paid provisioning still explicit. Rich secret-world simulation, adversarial NPC beliefs, autonomous memory agents, full maps, image generation and whole-lifetime resummarization remain outside this feature.
 
 ## Owning specifications and research
 

@@ -29,7 +29,7 @@ The player and model may see different information. Server-only prepared futures
 
 The context manifest references one immutable base snapshot and a frozen decision/settings version. Retrieval tools either read facts from that version or detect that it is stale and stop; they must not quietly mix the old situation with a new inventory. Read snapshots in a short transaction, persist the artifact, then release database resources before inference. Input/result artifacts remain available for unfinished and retryable workflows; their cleanup policy is not simply the telemetry retention period.
 
-Start retrieval with explicit entity references, chronology windows, unresolved threads and PostgreSQL text search. Introduce embeddings/pgvector only after examples show that semantic retrieval finds important memories those methods miss. A vector result is a candidate memory, not proof of a fact. No separate vector service is needed initially.
+The proposed [canonical document workspace](../features/2026-09-18--20-09--storyteller-memory-and-recall/CANONICAL-FILES.md) supplies explicit paths/identities, source links, chronology windows and unresolved threads. Exact, lexical and semantic/hybrid retrieval belong in its POC evaluation, with backend choice separate from content ownership. Compare their contribution on the same return scenes; vectors are candidate discovery, not proof of a fact. No embedding service or paid call is enabled by this design.
 
 ## Summaries without losing the story
 
@@ -61,7 +61,7 @@ Use current state, character-scoped learned claims and source-backed episode sum
 
 Recency alone is insufficient: an old promise may outrank yesterday's small talk. Select by current cues, explicit references, unresolved relevance and importance within a bounded context budget. Summaries can omit a detail that later matters, so retain searchable committed passages and source coverage; do not recursively summarize summaries as the only surviving record. Avoid storing every sentence as an independent fact or maintaining associations through continuous model calls. Simulated forgetting, probabilistic recall and a dedicated memory/graph service are not prerequisites for useful recall.
 
-After the first chamber works, add a scripted longevity fixture with many quiet intervals and conversations. Introduce an acquaintance early, include an unverified rumor and a lasting commitment, then revisit them on day 30 after irrelevant exchanges. Check identity, attribution, current possessions, supporting source references and bounded context size. Also check that an unrelated scene does not receive the whole history. Accelerated tests can exercise data growth and retrieval; actual wall-clock/provider cost and live narrative quality need separate measurement. This complements the short timing chamber rather than blocking its first run.
+The canonical-file proposal brings a short return scene and disposable-context proof into the POC: establish an acquaintance, preserve a rumor and commitment, then restart the Storyteller from stored documents and exact state. Extend that same path to a scripted day-30 fixture after irrelevant exchanges. Check identity, attribution, current possessions, source references and bounded context size; an unrelated scene must not receive the whole library. Accelerated tests can exercise growth and retrieval, while actual wall-clock/provider cost and live narrative quality need separate measurement.
 
 ## Three different caches
 
