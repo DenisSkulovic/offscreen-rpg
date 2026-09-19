@@ -2,7 +2,13 @@ import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import { capturedProviderRequestSchema } from './opening';
 import { storytellerProfileSchema } from '../profiles';
-import { executionPolicySchema } from './policy';
+import { executionPolicySchema, serializedRequestBytes } from './policy';
+import {
+  resourcesForExecution,
+  storytellerTaskResourcesSchema,
+  type StorytellerTaskResources,
+  validateResourcesForExecution,
+} from './resources';
 import {
   boundStorytellerContext,
   contextInputSchema,
@@ -28,6 +34,7 @@ import {
 export * from './opening';
 export * from './playable';
 export * from './policy';
+export * from './resources';
 
 const actionPlanNextSchema = z
   .strictObject({
@@ -96,10 +103,11 @@ const mechanicalOpeningResultSchema = storytellerResultSchema.extend({
   arrivalNotes: continuityPatchSchema.max(0),
 });
 const common = {
-  inputVersion: z.literal(3),
+  inputVersion: z.literal(4),
   promptVersion: z.literal('storyteller.v1'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
+  resources: storytellerTaskResourcesSchema,
   context: contextInputSchema,
   contextManifest: z.strictObject({
     policyVersion: z.literal('bounded.v1'),
@@ -159,7 +167,11 @@ type StorytellerTaskInput = StorytellerTask extends infer Task
   ? Task extends StorytellerTask
     ? Omit<
         Task,
-        'inputVersion' | 'promptVersion' | 'request' | 'contextManifest'
+        | 'inputVersion'
+        | 'promptVersion'
+        | 'request'
+        | 'contextManifest'
+        | 'resources'
       >
     : never
   : never;
@@ -233,13 +245,17 @@ function requestFor(
 
 /** Caller supplies one authorized snapshot. No storage, tools or provider I/O. */
 export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
-  input: T,
+  input: T & { resources?: StorytellerTaskResources },
 ): Extract<StorytellerTask, { task: T['task'] }> {
+  const resources = storytellerTaskResourcesSchema.parse(
+    input.resources ?? resourcesForExecution(input.execution),
+  );
+  validateResourcesForExecution(input.execution, resources);
   const context = boundStorytellerContext(
     input.context,
     (candidate) =>
-      Buffer.byteLength(JSON.stringify(requestFor(input, candidate)), 'utf8') <=
-      48 * 1024,
+      serializedRequestBytes(requestFor(input, candidate)) <=
+      resources.envelope.maxSerializedRequestBytes,
   );
   const through = context.current?.sequence ?? 0;
   const contextManifest = {
@@ -257,8 +273,9 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 3,
+    inputVersion: 4,
     promptVersion: 'storyteller.v1',
+    resources,
     request: requestFor(input, context),
   });
   return freezeTask(task) as Extract<StorytellerTask, { task: T['task'] }>;

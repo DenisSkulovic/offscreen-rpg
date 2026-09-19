@@ -30,7 +30,10 @@ import { createStorytellerBudget } from '@offscreen/application/storyteller';
 import { createChamber } from '@offscreen/application/developer-tools';
 import { createStories } from '@offscreen/application/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
-import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
+import {
+  resourcesForExecution,
+  storytellerTaskSchema,
+} from '@offscreen/storyteller/tasks';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
@@ -1610,6 +1613,7 @@ test(
                   generationId: first.generationId,
                   execution,
                   request: {},
+                  resources: resourcesForExecution(execution),
                 }),
               ),
             );

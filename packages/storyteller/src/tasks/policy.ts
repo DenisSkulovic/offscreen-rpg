@@ -31,12 +31,17 @@ export const offlineExecution: ExecutionPolicy = {
 };
 
 /** Byte count conservatively bounds tokenizer input; include framing/schema overhead. */
+export function serializedRequestBytes(request: unknown): number {
+  return Buffer.byteLength(JSON.stringify(request), 'utf8') + 1024;
+}
+
 export function reservationForRequest(
   request: unknown,
   policy: z.infer<typeof modelPolicySchema>,
+  maxSerializedRequestBytes = 48 * 1024,
 ): bigint {
-  const inputBound = Buffer.byteLength(JSON.stringify(request), 'utf8') + 1024;
-  if (inputBound > policy.maxInputTokens) {
+  const inputBound = serializedRequestBytes(request);
+  if (inputBound > maxSerializedRequestBytes) {
     throw new Error('context_too_large');
   }
   const amount =

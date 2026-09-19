@@ -99,7 +99,11 @@ export function createOpenRouterProvider(config: {
       throw new Error('Wrong execution mode');
     }
     const policy = task.execution.policy;
-    reservationForRequest(task.request, policy);
+    reservationForRequest(
+      task.request,
+      policy,
+      task.resources.envelope.maxSerializedRequestBytes,
+    );
     try {
       const response = await transport(
         'https://openrouter.ai/api/v1/chat/completions',
@@ -115,7 +119,7 @@ export function createOpenRouterProvider(config: {
             model: policy.model,
             messages: task.request.messages,
             stream: false,
-            max_tokens: policy.maxOutputTokens,
+            max_tokens: task.resources.envelope.maxGeneratedTokens,
             provider: {
               only: [policy.provider],
               allow_fallbacks: false,

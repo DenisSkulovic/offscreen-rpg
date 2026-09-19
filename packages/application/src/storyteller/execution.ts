@@ -8,10 +8,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import type { StorytellerProvider } from '@offscreen/storyteller/providers/openrouter';
-import {
-  createStorytellerBudget,
-  StorytellerBudgetError,
-} from './budget';
+import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
@@ -103,6 +100,7 @@ export function createStorytellerExecution(
         generationId: record.id,
         execution: task.execution,
         request: task.request,
+        resources: task.resources,
       });
       if (state === 'settled') {
         return;

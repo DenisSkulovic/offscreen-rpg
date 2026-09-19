@@ -7,6 +7,7 @@ import {
 } from '../src/profiles';
 import {
   prepareStorytellerTask,
+  resourcesForExecution,
   validateStorytellerResult,
 } from '../src/tasks';
 import { scriptedStorytellerResult } from '../src/fixtures';
@@ -444,6 +445,16 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
+    assert.equal(task.inputVersion, 4);
+    assert.deepEqual(task.resources.recipe, {
+      version: 'single-turn.v1',
+      maxModelRounds: 1,
+      maxReads: 0,
+      tools: 'disabled',
+      automaticEscalation: false,
+    });
+    assert.equal(task.resources.envelope.maxSerializedRequestBytes, 48 * 1024);
+    assert.equal(task.resources.envelope.maxMicrousd, '0');
   }
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
@@ -806,24 +817,26 @@ test('old mandatory evidence survives recent-window selection, overflow holds', 
 
 test('provider adapter uses an injected transport, one route and no retry; missing accounting is uncertain', async () => {
   const task = opening();
+  const providerExecution = {
+    mode: 'provider' as const,
+    accountId: randomUUID(),
+    runId: randomUUID(),
+    policy: {
+      version: 'test',
+      model: 'test/model',
+      provider: 'Test',
+      priceVersion: 'invented-test',
+      inputMicrousdPerMillion: '500000',
+      outputMicrousdPerMillion: '2000000',
+      maxInputTokens: 100000,
+      maxOutputTokens: 2000,
+      timeoutMs: 1000,
+    },
+  };
   const providerTask = prepareStorytellerTask({
     ...task,
-    execution: {
-      mode: 'provider',
-      accountId: randomUUID(),
-      runId: randomUUID(),
-      policy: {
-        version: 'test',
-        model: 'test/model',
-        provider: 'Test',
-        priceVersion: 'invented-test',
-        inputMicrousdPerMillion: '500000',
-        outputMicrousdPerMillion: '2000000',
-        maxInputTokens: 100000,
-        maxOutputTokens: 2000,
-        timeoutMs: 1000,
-      },
-    },
+    execution: providerExecution,
+    resources: resourcesForExecution(providerExecution),
   });
   let calls = 0;
   const provider = createOpenRouterProvider({

@@ -15,11 +15,13 @@ World-independent trace: a quiet patrol tick makes no model request; a rapid gro
 ## B1 — Effective usage profiles, captured recipes and preflight (implementing)
 
 Outcome: an offline task explains precisely what it may load, call and spend, or why it cannot start.
-Dependencies: existing task capture/provider policy only. Status: B1a implemented; B1b ready as the exact next slice.
+Dependencies: existing task capture/provider policy only. Status: B1a implemented; B1b implementing.
 
 Owners: `packages/storyteller/src/tasks/policy.ts`, `tasks/index.ts`, `tasks/opening.ts`, `context/index.ts`; application `storyteller/context.ts`, `execution.ts`, `records.ts`, plus a focused usage-policy resolver/configuration module. Account entitlement selection belongs to application authorization, not creative profiles. Use typed server-owned profile fixtures initially; no billing SDK or generic policy engine.
 
 First bounded sub-slice B1a is implemented: versioned entitlement/restriction/window schemas, funding/recovery modes, strictest-limit and allowlist intersection, explicit denials/role-qualified provenance, a runtime-validated effective-policy snapshot and a disabled conservative development preset. Synthetic free/two paid/on-demand profiles live behind the developer-tools boundary rather than the runtime Storyteller API. The resolver is pure application policy; it cannot dispatch or persist provider work. Focused offline evidence covers lower limits, route/funding non-escalation, contradictory/unlimited rejection and disabled development policy. No commercial entitlement selection is connected yet.
+
+B1b has begun at the model-facing boundary. Every newly captured task now includes a validated one-shot, tool-free, non-escalating recipe and a distinct byte/token/output/reasoning/deadline/cost envelope. Complete-request preflight uses serialized bytes plus framing overhead instead of comparing bytes with a token field; provider reservation and dispatch consume the captured byte/output ceilings. The authority is still the existing server-owned execution policy. Mapping the stricter application effective-policy snapshot into this task contract is the next sub-slice; durable window accounting remains B2.
 
 Then B1b connects the resolved policy to existing captured tasks:
 
@@ -81,7 +83,7 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1a implemented. Exact next action B1b: select server-owned effective policy during task admission, capture its versions/recipe/envelope with the immutable task, and reject complete-request overflow before dispatch. Do not enable provider execution. B2a/B2b follow for accounting, windows and game holds. Storage C1/C2 remains independently ready.
+- Phase: B1b implementing. Recipe/envelope capture and complete-request byte preflight are implemented. Exact next action: map the application effective-policy snapshot into task admission so account/story limits can only tighten the captured envelope; then add durable B2 accounting/windows/holds. Do not enable provider execution. Storage C1/C2 remains independently ready.
 - Slice base: `321944b`; B1a is committed and its package-boundary audit is complete. B1b is the next code slice.
 - Verification: `@offscreen/application` and `@offscreen/api-integration` builds pass; focused `usage-policy.test.js` passes 4/4. Tests use pure fixtures and no provider path. No database/browser checks or live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.

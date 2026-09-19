@@ -10,6 +10,7 @@ import {
   executionPolicySchema,
   reservationForRequest,
   type ExecutionPolicy,
+  type StorytellerTaskResources,
 } from '@offscreen/storyteller/tasks';
 import { isDeepStrictEqual } from 'node:util';
 import type { Transaction } from '../outbox/index';
@@ -52,6 +53,7 @@ export function createStorytellerBudget(database: Database) {
       generationId: string;
       execution: ProviderExecution;
       request: unknown;
+      resources: StorytellerTaskResources;
     }) {
       const execution = executionPolicySchema.parse(input.execution);
       if (execution.mode !== 'provider') {
@@ -59,9 +61,16 @@ export function createStorytellerBudget(database: Database) {
       }
       let amount: bigint;
       try {
-        amount = reservationForRequest(input.request, execution.policy);
+        amount = reservationForRequest(
+          input.request,
+          execution.policy,
+          input.resources.envelope.maxSerializedRequestBytes,
+        );
       } catch {
         throw new StorytellerBudgetError('context_too_large');
+      }
+      if (amount > BigInt(input.resources.envelope.maxMicrousd)) {
+        throw new StorytellerBudgetError('budget_unavailable');
       }
       return database.db.transaction(async (tx) => {
         const { account, allowance } = await lockAllowance(tx, execution);
