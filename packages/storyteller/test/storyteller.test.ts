@@ -15,6 +15,7 @@ import { boundStorytellerContext } from '../src/context';
 import {
   createOpenRouterProvider,
   inspectOpenRouterRequest,
+  compareOpenRouterRequests,
   usdToMicrousd,
 } from '../src/providers/openrouter';
 
@@ -905,12 +906,28 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   });
   const inspection = inspectOpenRouterRequest(providerTask);
   assert.equal(inspection.body.model, 'test/model');
+  assert.equal(inspection.purpose.id, 'opening.narrative');
+  assert.equal(inspection.purpose.outputContract, 'playable-opening.v1');
+  assert.equal(inspection.contextPolicyVersion, 'bounded.v1');
   assert.deepEqual(inspection.body.provider.only, ['Test']);
   assert.equal(inspection.body.provider.allow_fallbacks, false);
   assert.match(inspection.sha256, /^[a-f0-9]{64}$/);
   assert.ok(inspection.serializedBytes > inspection.outputSchemaBytes);
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
+  assert.match(inspection.outputSchemaSha256, /^[a-f0-9]{64}$/);
+  assert.ok(inspection.messages.every((message) => /^[a-f0-9]{64}$/.test(message.sha256)));
+  const comparison = compareOpenRouterRequests(inspection, inspection);
+  assert.equal(comparison.samePacket, true);
+  assert.equal(comparison.sameOutputSchema, true);
+  assert.equal(comparison.serializedBytesDelta, 0);
+  assert.ok(
+    comparison.messages.every(
+      (message, index) =>
+        message.commonPrefixBytes === inspection.messages[index]?.bytes,
+    ),
+  );
+  assert.equal(comparison.estimatedSharedInputTokens, null);
   let calls = 0;
   const provider = createOpenRouterProvider({
     enabled: true,

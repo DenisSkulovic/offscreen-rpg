@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
 import type { StorytellerTask } from '../tasks';
+import { describeStorytellerRequestPurpose } from '../tasks';
 import { reservationForRequest } from '../tasks/policy';
 
 export type ProviderUsage = Readonly<{
@@ -93,6 +94,9 @@ export function inspectOpenRouterRequest(task: StorytellerTask) {
     }
   }
   return {
+    purpose: describeStorytellerRequestPurpose(task),
+    promptVersion: task.promptVersion,
+    contextPolicyVersion: task.contextManifest.policyVersion,
     body,
     sha256: createHash('sha256').update(serialized).digest('hex'),
     serializedBytes: Buffer.byteLength(serialized, 'utf8'),
@@ -104,14 +108,63 @@ export function inspectOpenRouterRequest(task: StorytellerTask) {
       JSON.stringify(task.request.outputSchema),
       'utf8',
     ),
+    outputSchemaSha256: createHash('sha256')
+      .update(JSON.stringify(task.request.outputSchema))
+      .digest('hex'),
     messages: body.messages.map((message, index) => ({
       index,
       role: message.role,
       characters: message.content.length,
       bytes: Buffer.byteLength(message.content, 'utf8'),
+      sha256: createHash('sha256').update(message.content).digest('hex'),
     })),
     userSections,
     estimatedInputTokens: null,
+  } as const;
+}
+
+export type OpenRouterRequestInspection = ReturnType<
+  typeof inspectOpenRouterRequest
+>;
+
+function commonPrefixBytes(left: string, right: string): number {
+  const leftBytes = Buffer.from(left, 'utf8');
+  const rightBytes = Buffer.from(right, 'utf8');
+  const limit = Math.min(leftBytes.length, rightBytes.length);
+  let index = 0;
+  while (index < limit && leftBytes[index] === rightBytes[index]) index++;
+  return index;
+}
+
+/** Compare exact assembled content; byte overlap is not a tokenizer/cache claim. */
+export function compareOpenRouterRequests(
+  left: OpenRouterRequestInspection,
+  right: OpenRouterRequestInspection,
+) {
+  const messageCount = Math.max(
+    left.body.messages.length,
+    right.body.messages.length,
+  );
+  return {
+    leftPurpose: left.purpose.id,
+    rightPurpose: right.purpose.id,
+    samePacket: left.sha256 === right.sha256,
+    serializedBytesDelta: right.serializedBytes - left.serializedBytes,
+    sameOutputSchema: left.outputSchemaSha256 === right.outputSchemaSha256,
+    messages: Array.from({ length: messageCount }, (_, index) => {
+      const leftMessage = left.body.messages[index];
+      const rightMessage = right.body.messages[index];
+      return {
+        index,
+        rolesMatch: leftMessage?.role === rightMessage?.role,
+        commonPrefixBytes:
+          leftMessage && rightMessage
+            ? commonPrefixBytes(leftMessage.content, rightMessage.content)
+            : 0,
+      };
+    }),
+    estimatedSharedInputTokens: null,
+    observedProviderCacheHitTokens: null,
   } as const;
 }
 

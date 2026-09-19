@@ -59,8 +59,9 @@ Exit: deterministic assembly preserves useful common material across rapid turns
 
 ## Current checkpoint
 
-- Base reviewed: `6ac7173`; planning changes only. User requested documentation before switching models for implementation.
-- Exact next action: R1 request-purpose inventory and API-only multi-case packet audit. Inspect current source and Git status; reuse the existing held dispatch builder and accounting boundary.
+- Base reviewed: `3c58776`. R1 is active. The typed request-purpose inventory and pure exact-packet comparison are implemented for narrative/mechanical openings, continuation, consequence and report without changing persisted task identity.
+- Implemented evidence: request inspection now reports purpose, input/output contract, prompt fragments, prompt/context-policy versions, message/schema hashes and exact UTF-8 common-prefix bytes. Unknown token and observed cache-hit values remain null rather than inferred from byte counts. The focused Storyteller build and all 30 tests pass.
+- Exact next action: extract the existing API-only held-packet probe, add explicit multi-case fixture selection and emit the machine-readable manifest/readable comparison without overwriting prior artifacts. Add the maintained QA catalogue case with that command.
 - Known gaps: six optional recent passages, duplicated current prose, mandatory raw note sources, no admitted active-scene scope, no tool/multi-round runtime. Opening-note removal needs semantic review before optimizing further.
-- Verification: source/design inspection only for this handoff; no new runtime checks. Existing successful opening probe does not prove fifteen-turn continuity.
+- Verification: focused Storyteller build and 30 tests pass. Existing successful opening probe still does not prove multi-purpose HTTP capture or fifteen-turn continuity.
 - Model spend: $0 application-provider spend; cumulative account usage unverified.

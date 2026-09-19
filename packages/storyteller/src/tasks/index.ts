@@ -34,6 +34,7 @@ import {
 export * from './opening';
 export * from './playable';
 export * from './policy';
+export * from './purpose';
 export * from './resources';
 
 const actionPlanNextSchema = z
