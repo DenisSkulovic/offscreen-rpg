@@ -57,6 +57,81 @@ export function ChamberInspectorPanel(args: {
               />
               <Field label="Created" value={inspection.story.createdAt} />
             </dl>
+            <h2>Model cost accounting</h2>
+            <dl>
+              <Field
+                label="Attempts"
+                value={String(inspection.costAccounting.totals.attempts)}
+              />
+              <Field
+                label="Estimated / charged microusd"
+                value={`${inspection.costAccounting.totals.estimatedMicrousd} / ${inspection.costAccounting.totals.chargedMicrousd}`}
+              />
+              <Field
+                label="Currently reserved microusd"
+                value={inspection.costAccounting.totals.reservedMicrousd}
+              />
+              <Field
+                label="Uncertain / cost-different attempts"
+                value={`${inspection.costAccounting.totals.uncertainAttempts} / ${inspection.costAccounting.totals.differentAttempts}`}
+              />
+            </dl>
+            {inspection.costAccounting.recentAttempts.length ? (
+              <ol>
+                {inspection.costAccounting.recentAttempts.map((attempt) => (
+                  <li key={attempt.id}>
+                    {attempt.purpose} · {attempt.state} ·{' '}
+                    {attempt.reconciliation}
+                    <dl>
+                      <Field label="Attempt ID" value={attempt.id} />
+                      <Field
+                        label="Generation ID"
+                        value={attempt.generationId}
+                      />
+                      <Field
+                        label="Storyteller profile"
+                        value={`${attempt.profile.id}/${attempt.profile.revision}`}
+                      />
+                      <Field
+                        label="Requested route"
+                        value={`${attempt.requestedProvider} · ${attempt.requestedModel}`}
+                      />
+                      <Field
+                        label="Reported model"
+                        value={attempt.reportedModel ?? 'Unknown'}
+                      />
+                      <Field
+                        label="Estimate / reserve / reported / calculated"
+                        value={`${attempt.estimatedMicrousd} / ${attempt.reservedMicrousd} / ${attempt.chargedMicrousd ?? 'unknown'} / ${attempt.calculatedMicrousd ?? 'unavailable'} microusd`}
+                      />
+                      <Field
+                        label="Tokens: prompt / completion / reasoning / cached / cache write"
+                        value={`${attempt.promptTokens ?? 'unknown'} / ${attempt.completionTokens ?? 'unknown'} / ${attempt.reasoningTokens ?? 'unknown'} / ${attempt.cachedTokens ?? 'unknown'} / ${attempt.cacheWriteTokens ?? 'unknown'}`}
+                      />
+                      <Field
+                        label="Request bytes / estimated input tokens"
+                        value={`${attempt.requestBytes} / ${attempt.estimatedInputTokens} (${attempt.estimationMethod})`}
+                      />
+                      <Field
+                        label="Duration / HTTP / finish"
+                        value={`${attempt.durationMs ?? 'unknown'} ms / ${attempt.httpStatus ?? 'unknown'} / ${attempt.finishReason ?? 'unknown'}`}
+                      />
+                      <Field label="Reserved" value={attempt.createdAt} />
+                      <Field
+                        label="Dispatched"
+                        value={attempt.dispatchedAt ?? 'Never'}
+                      />
+                      <Field
+                        label="Settled"
+                        value={attempt.settledAt ?? 'Not settled'}
+                      />
+                    </dl>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p>No provider attempts are attributable to this story.</p>
+            )}
             <h2>Current passage</h2>
             <dl>
               <Field label="Passage ID" value={inspection.current.passageId} />

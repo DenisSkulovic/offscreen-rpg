@@ -68,6 +68,67 @@ const isoDateTime = z.iso.datetime();
 export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
+  costAccounting: z.strictObject({
+    totals: z.strictObject({
+      attempts: z.number().int().nonnegative(),
+      estimatedMicrousd: z.string().regex(/^\d+$/),
+      reservedMicrousd: z.string().regex(/^\d+$/),
+      chargedMicrousd: z.string().regex(/^\d+$/),
+      uncertainAttempts: z.number().int().nonnegative(),
+      differentAttempts: z.number().int().nonnegative(),
+    }),
+    recentAttempts: z
+      .array(
+        z.strictObject({
+          id: z.uuid(),
+          generationId: z.uuid(),
+          purpose: z.string().min(1),
+          state: z.enum([
+            'reserved',
+            'dispatched',
+            'settled',
+            'uncertain',
+            'unsent',
+          ]),
+          profile: z.strictObject({
+            id: z.string().min(1),
+            revision: z.number(),
+          }),
+          requestedModel: z.string().min(1),
+          requestedProvider: z.string().min(1),
+          reportedModel: z.string().nullable(),
+          providerId: z.string().nullable(),
+          priceVersion: z.string().min(1),
+          estimationMethod: z.string().min(1),
+          requestBytes: z.number().int().nonnegative(),
+          estimatedInputTokens: z.number().int().nonnegative(),
+          estimatedMicrousd: z.string().regex(/^\d+$/),
+          reservedMicrousd: z.string().regex(/^\d+$/),
+          chargedMicrousd: z.string().regex(/^\d+$/).nullable(),
+          calculatedMicrousd: z.string().regex(/^\d+$/).nullable(),
+          reconciliation: z.enum([
+            'pending',
+            'matched',
+            'different',
+            'unavailable',
+            'unknown',
+          ]),
+          promptTokens: z.number().int().nonnegative().nullable(),
+          completionTokens: z.number().int().nonnegative().nullable(),
+          reasoningTokens: z.number().int().nonnegative().nullable(),
+          cachedTokens: z.number().int().nonnegative().nullable(),
+          cacheWriteTokens: z.number().int().nonnegative().nullable(),
+          totalTokens: z.number().int().nonnegative().nullable(),
+          httpStatus: z.number().int().nullable(),
+          finishReason: z.string().nullable(),
+          durationMs: z.number().int().nonnegative().nullable(),
+          createdAt: isoDateTime,
+          dispatchedAt: isoDateTime.nullable(),
+          settledAt: isoDateTime.nullable(),
+        }),
+      )
+      .max(50),
+  }),
   acceptedActivityPlan: acceptedActivityPlanViewSchema.nullable(),
   activityAccess: activityAccessSchema,
   activityReports: z

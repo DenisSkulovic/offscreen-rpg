@@ -20,13 +20,16 @@ import { passageContentSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { gameActivityReport } from '@offscreen/db/campaign-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import {
+  storytellerAttempt,
+  storytellerPublication,
+} from '@offscreen/db/storyteller-schema';
 import {
   story,
   storyPassage,
   storyResolution,
 } from '@offscreen/db/story-schema';
-import { and, desc, eq, lte } from 'drizzle-orm';
+import { and, desc, eq, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { parseStoryIdentifier, StoryError } from '../stories/errors';
 import { decisionPlanSchema, waitPlanSchema } from '../stories/plans';
@@ -238,6 +241,24 @@ export function createChamberInspector(database: Database) {
         .where(eq(gameActivityReport.storyId, id))
         .orderBy(desc(gameActivityReport.createdAt))
         .limit(50);
+      const costScope = sql`${storytellerAttempt.ownerId} = ${ownerId} AND (${storytellerAttempt.storyId} = ${id} OR ${storytellerAttempt.generationId} IN (SELECT ${storyPassage.sourceGenerationId} FROM ${storyPassage} WHERE ${storyPassage.storyId} = ${id} AND ${storyPassage.sourceGenerationId} IS NOT NULL) OR ${storytellerAttempt.generationId} IN (SELECT ${storyResolution.generationId} FROM ${storyResolution} WHERE ${storyResolution.storyId} = ${id}))`;
+      const [costTotals] = await database.db
+        .select({
+          attempts: sql<number>`count(*)::int`,
+          estimatedMicrousd: sql<string>`COALESCE(sum(${storytellerAttempt.estimatedMicrousd}), 0)::text`,
+          reservedMicrousd: sql<string>`COALESCE(sum(CASE WHEN ${storytellerAttempt.state} IN ('reserved','dispatched','uncertain') THEN ${storytellerAttempt.reservedMicrousd} ELSE 0 END), 0)::text`,
+          chargedMicrousd: sql<string>`COALESCE(sum(${storytellerAttempt.chargedMicrousd}), 0)::text`,
+          uncertainAttempts: sql<number>`count(*) FILTER (WHERE ${storytellerAttempt.state} = 'uncertain')::int`,
+          differentAttempts: sql<number>`count(*) FILTER (WHERE ${storytellerAttempt.reconciliation} = 'different')::int`,
+        })
+        .from(storytellerAttempt)
+        .where(costScope);
+      const costAttempts = await database.db
+        .select()
+        .from(storytellerAttempt)
+        .where(costScope)
+        .orderBy(desc(storytellerAttempt.createdAt))
+        .limit(50);
       const sourceGeneration =
         current.generationId === null
           ? null
@@ -266,6 +287,51 @@ export function createChamberInspector(database: Database) {
         activeResolution?.generationOutput,
       );
       return chamberInspectorSchema.parse({
+        costAccounting: {
+          totals: costTotals ?? {
+            attempts: 0,
+            estimatedMicrousd: '0',
+            reservedMicrousd: '0',
+            chargedMicrousd: '0',
+            uncertainAttempts: 0,
+            differentAttempts: 0,
+          },
+          recentAttempts: costAttempts.map((attempt) => ({
+            id: attempt.id,
+            generationId: attempt.generationId,
+            purpose: attempt.purpose,
+            state: attempt.state,
+            profile: {
+              id: attempt.storytellerProfileId,
+              revision: attempt.storytellerProfileRevision,
+            },
+            requestedModel: attempt.requestedModel,
+            requestedProvider: attempt.requestedProvider,
+            reportedModel: attempt.reportedModel,
+            providerId: attempt.providerId,
+            priceVersion: attempt.priceVersion,
+            estimationMethod: attempt.estimationMethod,
+            requestBytes: attempt.requestBytes,
+            estimatedInputTokens: attempt.estimatedInputTokens,
+            estimatedMicrousd: attempt.estimatedMicrousd.toString(),
+            reservedMicrousd: attempt.reservedMicrousd.toString(),
+            chargedMicrousd: attempt.chargedMicrousd?.toString() ?? null,
+            calculatedMicrousd: attempt.calculatedMicrousd?.toString() ?? null,
+            reconciliation: attempt.reconciliation,
+            promptTokens: attempt.promptTokens,
+            completionTokens: attempt.completionTokens,
+            reasoningTokens: attempt.reasoningTokens,
+            cachedTokens: attempt.cachedTokens,
+            cacheWriteTokens: attempt.cacheWriteTokens,
+            totalTokens: attempt.totalTokens,
+            httpStatus: attempt.httpStatus,
+            finishReason: attempt.finishReason,
+            durationMs: attempt.durationMs,
+            createdAt: attempt.createdAt.toISOString(),
+            dispatchedAt: timestampIso(attempt.dispatchedAt),
+            settledAt: timestampIso(attempt.settledAt),
+          })),
+        },
         acceptedActivityPlan: snapshot.campaign?.acceptedActivityPlan ?? null,
         activityAccess: snapshot.campaign?.activityAccess ?? { kind: 'none' },
         activityReports,
