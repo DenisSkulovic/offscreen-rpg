@@ -1,13 +1,12 @@
-import { z } from 'zod';
 import {
+  effectiveUsagePolicySchema,
   fundingModeSchema,
-  recoveryPolicySchema,
   usageEntitlementProfileSchema,
   usageLimitKeys,
   usageLimitsSchema,
   usagePolicyRestrictionSchema,
   type UsageLimits,
-  type UsageWindowDefinition,
+  type EffectiveUsagePolicy,
 } from './usage-policy-schema';
 
 type LimitSource = {
@@ -15,26 +14,12 @@ type LimitSource = {
   value: number | string;
 };
 
-export type EffectiveUsagePolicy = {
-  schemaVersion: 1;
-  profile: { id: string; revision: number };
-  route: string;
-  fundingMode: z.infer<typeof fundingModeSchema>;
-  recovery: z.infer<typeof recoveryPolicySchema>;
-  limits: UsageLimits;
-  limitSources: Record<keyof UsageLimits, readonly LimitSource[]>;
-  windows: readonly (UsageWindowDefinition & { source: string })[];
-  restrictions: readonly { id: string; revision: number }[];
-};
-
 export type UsagePolicyResolution =
   | { kind: 'allowed'; policy: EffectiveUsagePolicy }
   | {
       kind: 'denied';
       reason:
-        | 'policy_disabled'
-        | 'route_not_allowed'
-        | 'funding_mode_not_allowed';
+        'policy_disabled' | 'route_not_allowed' | 'funding_mode_not_allowed';
       source: string;
     };
 
@@ -61,29 +46,41 @@ export function resolveEffectiveUsagePolicy(input: {
   entitlement: unknown;
   restrictions?: readonly unknown[];
   requestedRoute?: string;
-  requestedFundingMode: z.infer<typeof fundingModeSchema>;
+  requestedFundingMode: unknown;
 }): UsagePolicyResolution {
   const platform = usageEntitlementProfileSchema.parse(input.platform);
   const entitlement = usageEntitlementProfileSchema.parse(input.entitlement);
   const restrictions = (input.restrictions ?? []).map((restriction) =>
     usagePolicyRestrictionSchema.parse(restriction),
   );
+  const requestedFundingMode = fundingModeSchema.parse(
+    input.requestedFundingMode,
+  );
   const sources = [
-    { id: platform.id, policy: platform },
-    { id: entitlement.id, policy: entitlement },
-    ...restrictions.map((policy) => ({ id: policy.id, policy })),
+    { source: `platform:${platform.id}`, policy: platform },
+    { source: `entitlement:${entitlement.id}`, policy: entitlement },
+    ...restrictions.map((policy) => ({
+      source: `restriction:${policy.id}`,
+      policy,
+    })),
   ];
 
   const disabled = sources.find(({ policy }) => policy.enabled === false);
   if (disabled) {
-    return { kind: 'denied', reason: 'policy_disabled', source: disabled.id };
+    return {
+      kind: 'denied',
+      reason: 'policy_disabled',
+      source: disabled.source,
+    };
   }
 
   let allowedRoutes = new Set(platform.allowedRoutes);
   for (const { policy } of sources.slice(1)) {
     if (policy.allowedRoutes) {
       allowedRoutes = new Set(
-        [...allowedRoutes].filter((route) => policy.allowedRoutes?.includes(route)),
+        [...allowedRoutes].filter((route) =>
+          policy.allowedRoutes?.includes(route),
+        ),
       );
     }
   }
@@ -104,7 +101,7 @@ export function resolveEffectiveUsagePolicy(input: {
       );
     }
   }
-  if (!fundingModes.has(input.requestedFundingMode)) {
+  if (!fundingModes.has(requestedFundingMode)) {
     return {
       kind: 'denied',
       reason: 'funding_mode_not_allowed',
@@ -112,8 +109,8 @@ export function resolveEffectiveUsagePolicy(input: {
     };
   }
 
-  const recoveries = sources.flatMap(({ id, policy }) =>
-    policy.recovery ? [{ id, recovery: policy.recovery }] : [],
+  const recoveries = sources.flatMap(({ source, policy }) =>
+    policy.recovery ? [{ source, recovery: policy.recovery }] : [],
   );
   const recovery = recoveries.some(
     ({ recovery: candidate }) => candidate === 'explicit-resume',
@@ -123,9 +120,9 @@ export function resolveEffectiveUsagePolicy(input: {
   const limitSources = Object.fromEntries(
     usageLimitKeys.map((key) => [
       key,
-      sources.flatMap(({ id, policy }) => {
+      sources.flatMap(({ source, policy }) => {
         const value = policy.limits[key];
-        return value === undefined ? [] : [{ source: id, value }];
+        return value === undefined ? [] : [{ source, value }];
       }),
     ]),
   ) as Record<keyof UsageLimits, LimitSource[]>;
@@ -153,22 +150,23 @@ export function resolveEffectiveUsagePolicy(input: {
       usageLimitKeys.map((key) => [key, minimumLimit(key, limitSources[key])]),
     ),
   );
-  const windows = sources.flatMap(({ id, policy }) =>
-    policy.windows.map((window) => ({ ...window, source: id })),
+  const windows = sources.flatMap(({ source, policy }) =>
+    policy.windows.map((window) => ({ ...window, source })),
   );
 
   return {
     kind: 'allowed',
-    policy: {
+    policy: effectiveUsagePolicySchema.parse({
       schemaVersion: 1,
+      platform: { id: platform.id, revision: platform.revision },
       profile: { id: entitlement.id, revision: entitlement.revision },
       route,
-      fundingMode: input.requestedFundingMode,
+      fundingMode: requestedFundingMode,
       recovery,
       limits,
       limitSources,
       windows,
       restrictions: restrictions.map(({ id, revision }) => ({ id, revision })),
-    },
+    }),
   };
 }

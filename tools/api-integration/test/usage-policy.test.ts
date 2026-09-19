@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   conservativeDevelopmentUsagePolicy,
+  effectiveUsagePolicySchema,
   resolveEffectiveUsagePolicy,
-  syntheticPlatformUsagePolicy,
-  syntheticUsageProfiles,
   usageEntitlementProfileSchema,
 } from '@offscreen/application/storyteller';
+import {
+  syntheticPlatformUsagePolicy,
+  syntheticUsageProfiles,
+} from '@offscreen/application/developer-tools';
 
 test('effective usage takes strict limits and route intersections', () => {
   const result = resolveEffectiveUsagePolicy({
@@ -56,17 +59,21 @@ test('effective usage takes strict limits and route intersections', () => {
   ]);
   assert.deepEqual(
     result.policy.windows.map(({ id, source }) => ({ id, source })),
-    [{ id: 'daily-input', source: 'account-conserve.v1' }],
+    [{ id: 'daily-input', source: 'restriction:account-conserve.v1' }],
   );
   assert.deepEqual(
     result.policy.limitSources.maxInputTokensPerRequest.map(
       ({ source }) => source,
     ),
     [
-      'synthetic-platform.v1',
-      'synthetic-standard.v1',
-      'account-conserve.v1',
+      'platform:synthetic-platform.v1',
+      'entitlement:synthetic-standard.v1',
+      'restriction:account-conserve.v1',
     ],
+  );
+  assert.deepEqual(
+    effectiveUsagePolicySchema.parse(result.policy),
+    result.policy,
   );
 });
 
@@ -129,7 +136,7 @@ test('development policy is disabled and conservative by construction', () => {
   assert.deepEqual(result, {
     kind: 'denied',
     reason: 'policy_disabled',
-    source: 'development-disabled.v1',
+    source: 'platform:development-disabled.v1',
   });
 });
 

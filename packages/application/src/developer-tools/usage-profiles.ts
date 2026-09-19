@@ -1,25 +1,10 @@
 import { z } from 'zod';
 import {
+  baselineUsageLimits,
   fundingModeSchema,
   usageEntitlementProfileSchema,
   type UsageEntitlementProfile,
-  type UsageLimits,
-} from './usage-policy-schema';
-
-const baseLimits: UsageLimits = {
-  maxInputTokensPerRequest: 100_000,
-  maxSerializedBytesPerRequest: 400_000,
-  maxGeneratedTokensPerRequest: 8_000,
-  maxReasoningTokensPerRequest: 4_000,
-  maxInputTokensPerOperation: 300_000,
-  maxGeneratedTokensPerOperation: 16_000,
-  maxModelRoundsPerOperation: 3,
-  maxReadsPerOperation: 6,
-  maxRetainedReadBytes: 12_288,
-  maxMicrousdPerOperation: '1000000',
-  maxInFlightDispatches: 4,
-  maxBackgroundJobsPerWindow: 100,
-};
+} from '../storyteller/usage-policy';
 
 function syntheticProfile(input: {
   id: string;
@@ -38,7 +23,7 @@ function syntheticProfile(input: {
     fundingModes: input.fundingModes,
     recovery: 'explicit-resume',
     limits: {
-      ...baseLimits,
+      ...baselineUsageLimits,
       maxInputTokensPerRequest: input.maxInputTokens,
       maxInputTokensPerOperation: input.maxInputTokens * 3,
       maxGeneratedTokensPerRequest: input.maxOutputTokens,
@@ -88,32 +73,3 @@ export const syntheticPlatformUsagePolicy = syntheticProfile({
   routes: ['fake:economy', 'fake:standard', 'fake:advanced'],
   fundingModes: ['sponsored', 'prepaid', 'on-demand'],
 });
-
-/** Importing this preset never enables provider execution. */
-export const conservativeDevelopmentUsagePolicy =
-  usageEntitlementProfileSchema.parse({
-    schemaVersion: 1,
-    id: 'development-disabled.v1',
-    revision: 1,
-    enabled: false,
-    allowedRoutes: ['openrouter:unconfigured'],
-    defaultRoute: 'openrouter:unconfigured',
-    fundingModes: ['prepaid'],
-    recovery: 'explicit-resume',
-    limits: {
-      ...baseLimits,
-      maxInputTokensPerRequest: 8_000,
-      maxSerializedBytesPerRequest: 32_000,
-      maxGeneratedTokensPerRequest: 1_024,
-      maxReasoningTokensPerRequest: 0,
-      maxInputTokensPerOperation: 8_000,
-      maxGeneratedTokensPerOperation: 1_024,
-      maxModelRoundsPerOperation: 1,
-      maxReadsPerOperation: 0,
-      maxRetainedReadBytes: 0,
-      maxMicrousdPerOperation: '10000',
-      maxInFlightDispatches: 1,
-      maxBackgroundJobsPerWindow: 0,
-    },
-    windows: [],
-  });

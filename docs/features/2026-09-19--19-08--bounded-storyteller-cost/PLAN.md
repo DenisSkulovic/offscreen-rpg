@@ -19,7 +19,7 @@ Dependencies: existing task capture/provider policy only. Status: B1a implemente
 
 Owners: `packages/storyteller/src/tasks/policy.ts`, `tasks/index.ts`, `tasks/opening.ts`, `context/index.ts`; application `storyteller/context.ts`, `execution.ts`, `records.ts`, plus a focused usage-policy resolver/configuration module. Account entitlement selection belongs to application authorization, not creative profiles. Use typed server-owned profile fixtures initially; no billing SDK or generic policy engine.
 
-First bounded sub-slice B1a is implemented: versioned entitlement/restriction/window schemas, funding/recovery modes, strictest-limit and allowlist intersection, explicit denials/limit provenance, synthetic free/two paid/on-demand profiles and a disabled conservative development preset. The resolver is pure application policy; it cannot dispatch or persist provider work. Focused offline evidence covers lower limits, route/funding non-escalation, contradictory/unlimited rejection and disabled development policy. No commercial entitlement selection is connected yet.
+First bounded sub-slice B1a is implemented: versioned entitlement/restriction/window schemas, funding/recovery modes, strictest-limit and allowlist intersection, explicit denials/role-qualified provenance, a runtime-validated effective-policy snapshot and a disabled conservative development preset. Synthetic free/two paid/on-demand profiles live behind the developer-tools boundary rather than the runtime Storyteller API. The resolver is pure application policy; it cannot dispatch or persist provider work. Focused offline evidence covers lower limits, route/funding non-escalation, contradictory/unlimited rejection and disabled development policy. No commercial entitlement selection is connected yet.
 
 Then B1b connects the resolved policy to existing captured tasks:
 
@@ -82,7 +82,7 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 ## Current checkpoint
 
 - Phase: B1a implemented. Exact next action B1b: select server-owned effective policy during task admission, capture its versions/recipe/envelope with the immutable task, and reject complete-request overflow before dispatch. Do not enable provider execution. B2a/B2b follow for accounting, windows and game holds. Storage C1/C2 remains independently ready.
-- Slice base: `321944b`; B1a is committed with this checkpoint and has no expected uncommitted follow-up.
+- Slice base: `321944b`; B1a is committed and its package-boundary audit is complete. B1b is the next code slice.
 - Verification: `@offscreen/application` and `@offscreen/api-integration` builds pass; focused `usage-policy.test.js` passes 4/4. Tests use pure fixtures and no provider path. No database/browser checks or live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

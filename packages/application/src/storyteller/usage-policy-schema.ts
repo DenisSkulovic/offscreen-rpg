@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const policyIdSchema = z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/);
+export const policyIdSchema = z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/);
 const positiveCount = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 const nonnegativeCount = z
   .number()
@@ -46,8 +46,7 @@ export const usageLimitsSchema = z
       });
     }
     if (
-      limits.maxReasoningTokensPerRequest >
-      limits.maxGeneratedTokensPerRequest
+      limits.maxReasoningTokensPerRequest > limits.maxGeneratedTokensPerRequest
     ) {
       context.addIssue({
         code: 'custom',
@@ -77,15 +76,12 @@ const usageLimitOverrideShape = {
     usageLimitShape.maxModelRoundsPerOperation.optional(),
   maxReadsPerOperation: usageLimitShape.maxReadsPerOperation.optional(),
   maxRetainedReadBytes: usageLimitShape.maxRetainedReadBytes.optional(),
-  maxMicrousdPerOperation:
-    usageLimitShape.maxMicrousdPerOperation.optional(),
+  maxMicrousdPerOperation: usageLimitShape.maxMicrousdPerOperation.optional(),
   maxInFlightDispatches: usageLimitShape.maxInFlightDispatches.optional(),
   maxBackgroundJobsPerWindow:
     usageLimitShape.maxBackgroundJobsPerWindow.optional(),
 };
-export const usageLimitOverrideSchema = z.strictObject(
-  usageLimitOverrideShape,
-);
+export const usageLimitOverrideSchema = z.strictObject(usageLimitOverrideShape);
 export type UsageLimitOverride = z.infer<typeof usageLimitOverrideSchema>;
 
 const fixedWindowSchema = z.strictObject({
@@ -109,11 +105,12 @@ export const usageWindowDefinitionSchema = z.strictObject({
     'background_jobs',
   ]),
   limit: windowLimitSchema,
-  window: z.discriminatedUnion('kind', [fixedWindowSchema, rollingWindowSchema]),
+  window: z.discriminatedUnion('kind', [
+    fixedWindowSchema,
+    rollingWindowSchema,
+  ]),
 });
-export type UsageWindowDefinition = z.infer<
-  typeof usageWindowDefinitionSchema
->;
+export type UsageWindowDefinition = z.infer<typeof usageWindowDefinitionSchema>;
 
 export const fundingModeSchema = z.enum(['sponsored', 'prepaid', 'on-demand']);
 export const recoveryPolicySchema = z.enum(['explicit-resume', 'auto-resume']);
@@ -240,3 +237,45 @@ export const usagePolicyRestrictionSchema = z
 export type UsagePolicyRestriction = z.infer<
   typeof usagePolicyRestrictionSchema
 >;
+
+const policyReferenceSchema = z.strictObject({
+  id: policyIdSchema,
+  revision: positiveCount.max(1_000_000),
+});
+const limitSourceSchema = z.strictObject({
+  source: z.string().min(1).max(140),
+  value: z.union([nonnegativeCount, z.string().regex(/^\d{1,18}$/)]),
+});
+const limitSourcesSchema = z.strictObject({
+  maxInputTokensPerRequest: z.array(limitSourceSchema).min(1),
+  maxSerializedBytesPerRequest: z.array(limitSourceSchema).min(1),
+  maxGeneratedTokensPerRequest: z.array(limitSourceSchema).min(1),
+  maxReasoningTokensPerRequest: z.array(limitSourceSchema).min(1),
+  maxInputTokensPerOperation: z.array(limitSourceSchema).min(1),
+  maxGeneratedTokensPerOperation: z.array(limitSourceSchema).min(1),
+  maxModelRoundsPerOperation: z.array(limitSourceSchema).min(1),
+  maxReadsPerOperation: z.array(limitSourceSchema).min(1),
+  maxRetainedReadBytes: z.array(limitSourceSchema).min(1),
+  maxMicrousdPerOperation: z.array(limitSourceSchema).min(1),
+  maxInFlightDispatches: z.array(limitSourceSchema).min(1),
+  maxBackgroundJobsPerWindow: z.array(limitSourceSchema).min(1),
+});
+
+/** Durable, runtime-validated authority snapshot captured by admitted work. */
+export const effectiveUsagePolicySchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  platform: policyReferenceSchema,
+  profile: policyReferenceSchema,
+  route: policyIdSchema,
+  fundingMode: fundingModeSchema,
+  recovery: recoveryPolicySchema,
+  limits: usageLimitsSchema,
+  limitSources: limitSourcesSchema,
+  windows: z.array(
+    usageWindowDefinitionSchema.extend({
+      source: z.string().min(1).max(140),
+    }),
+  ),
+  restrictions: z.array(policyReferenceSchema),
+});
+export type EffectiveUsagePolicy = z.infer<typeof effectiveUsagePolicySchema>;
