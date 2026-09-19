@@ -26,7 +26,27 @@ export const evidencePassageSchema = z.strictObject({
   content: passageContentSchema,
   response: z.string().max(2000).nullable(),
 });
+export const activeSceneScopeSchema = z
+  .strictObject({
+    version: z.literal('active-scene.v1'),
+    fromSequence: z.number().int().positive(),
+    throughSequence: z.number().int().positive(),
+    requiredPassageIds: z.array(z.uuid()).max(40),
+  })
+  .refine(
+    (scope) =>
+      scope.throughSequence >= scope.fromSequence &&
+      scope.throughSequence - scope.fromSequence < 40,
+    'Active scene scope must contain one to forty passages',
+  )
+  .refine(
+    (scope) =>
+      new Set(scope.requiredPassageIds).size ===
+      scope.requiredPassageIds.length,
+    'Active scene required passage IDs must be unique',
+  );
 export const contextInputSchema = z.strictObject({
+  activeSceneScope: activeSceneScopeSchema.optional(),
   activitySituation: z
     .strictObject({
       activityAccess: activityAccessSchema,
@@ -198,9 +218,50 @@ export function boundStorytellerContext(
       throw new Error('Context evidence includes a future passage');
     }
   }
+  const activeScene = context.activeSceneScope;
+  if (activeScene) {
+    if (
+      !context.current ||
+      activeScene.fromSequence > activeScene.throughSequence ||
+      activeScene.throughSequence !== context.current.sequence
+    ) {
+      throw new Error('Invalid active scene scope');
+    }
+    const sceneSequences = new Set(
+      context.evidence
+        .filter(
+          (passage) =>
+            passage.sequence >= activeScene.fromSequence &&
+            passage.sequence <= activeScene.throughSequence,
+        )
+        .map((passage) => passage.sequence),
+    );
+    for (
+      let sequence = activeScene.fromSequence;
+      sequence <= activeScene.throughSequence;
+      sequence++
+    ) {
+      if (!sceneSequences.has(sequence)) {
+        throw new Error('Active scene evidence is incomplete');
+      }
+    }
+  }
   const required = new Set(context.notes.flatMap((note) => note.sources));
   if (context.current) {
     required.add(context.current.id);
+  }
+  if (activeScene) {
+    for (const passage of context.evidence) {
+      if (
+        passage.sequence >= activeScene.fromSequence &&
+        passage.sequence <= activeScene.throughSequence
+      ) {
+        required.add(passage.id);
+      }
+    }
+    for (const passageId of activeScene.requiredPassageIds) {
+      required.add(passageId);
+    }
   }
   const mandatory = context.evidence.filter((passage) =>
     required.has(passage.id),

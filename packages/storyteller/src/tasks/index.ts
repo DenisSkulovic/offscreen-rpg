@@ -126,17 +126,24 @@ const resultSchemas = {
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.literal(5),
+  inputVersion: z.literal(6),
   promptVersion: z.literal('storyteller.v1'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
   context: contextInputSchema,
   contextManifest: z.strictObject({
-    policyVersion: z.literal('bounded.v1'),
+    policyVersion: z.literal('bounded-scene.v2'),
     recentFrom: z.number().int().nonnegative(),
     through: z.number().int().nonnegative(),
     omittedSequences: z.array(z.number().int().positive()).max(87),
+    activeScene: z
+      .strictObject({
+        fromSequence: z.number().int().positive(),
+        throughSequence: z.number().int().positive(),
+        requiredHandles: z.array(z.string().regex(/^p\d+$/)).max(40),
+      })
+      .nullable(),
   }),
   request: capturedProviderRequestSchema,
 };
@@ -285,8 +292,9 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
   );
   const through = context.current?.sequence ?? 0;
   const contextManifest = {
-    policyVersion: 'bounded.v1',
-    recentFrom: Math.max(0, through - 6),
+    policyVersion: 'bounded-scene.v2',
+    recentFrom:
+      context.activeSceneScope?.fromSequence ?? Math.max(0, through - 6),
     through,
     omittedSequences: input.context.evidence
       .filter(
@@ -294,12 +302,25 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
           !context.evidence.some((included) => included.id === passage.id),
       )
       .map((passage) => passage.sequence),
+    activeScene: context.activeSceneScope
+      ? {
+          fromSequence: context.activeSceneScope.fromSequence,
+          throughSequence: context.activeSceneScope.throughSequence,
+          requiredHandles: context.activeSceneScope.requiredPassageIds.map(
+            (id) => {
+              const passage = context.evidence.find((entry) => entry.id === id);
+              if (!passage) throw new Error('Missing active scene evidence');
+              return `p${passage.sequence}`;
+            },
+          ),
+        }
+      : null,
   };
   const task = storytellerTaskSchema.parse({
     ...input,
     context,
     contextManifest,
-    inputVersion: 5,
+    inputVersion: 6,
     promptVersion: 'storyteller.v1',
     resources,
     request: requestFor(input, context),
@@ -347,8 +368,9 @@ export function validateStorytellerResult(
   }
   // An opening has no earlier passage handles or private arrival. Normalize the
   // lean provider contract into the stable stored result used by publication.
-  const result: StorytellerResult = task.task === 'opening'
-    ? storytellerResultSchema.parse({
+  const result: StorytellerResult =
+    task.task === 'opening'
+      ? storytellerResultSchema.parse({
           ...(task.context.mechanicalOpening
             ? parseOpeningProviderResult(
                 output,
@@ -358,7 +380,7 @@ export function validateStorytellerResult(
           currentNotes: [],
           arrivalNotes: [],
         })
-    : storytellerResultSchema.parse(resultSchemas[task.task].parse(output));
+      : storytellerResultSchema.parse(resultSchemas[task.task].parse(output));
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
     const keys =

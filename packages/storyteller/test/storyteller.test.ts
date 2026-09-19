@@ -519,7 +519,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 5);
+    assert.equal(task.inputVersion, 6);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -889,6 +889,49 @@ test('old mandatory evidence survives recent-window selection, overflow holds', 
   );
 });
 
+test('active scene scope retains its complete range and rejects partial coverage', () => {
+  const task = opening();
+  const evidence = Array.from({ length: 15 }, (_, index) => ({
+    id: randomUUID(),
+    sequence: index + 1,
+    content: {
+      version: 1 as const,
+      title: `Exchange ${index + 1}`,
+      paragraphs: [`The unresolved interaction continues at ${index + 1}.`],
+    },
+    response: null,
+  }));
+  const current = evidence.at(-1)!;
+  const context = {
+    ...task.context,
+    current,
+    evidence,
+    activeSceneScope: {
+      version: 'active-scene.v1' as const,
+      fromSequence: 1,
+      throughSequence: 15,
+      requiredPassageIds: [evidence[0]!.id, evidence[5]!.id, current.id],
+    },
+  };
+  const selected = boundStorytellerContext(context, () => true);
+  assert.equal(selected.evidence.length, 15);
+  assert.deepEqual(
+    selected.evidence.map((passage) => passage.sequence),
+    Array.from({ length: 15 }, (_, index) => index + 1),
+  );
+  assert.throws(
+    () =>
+      boundStorytellerContext(
+        {
+          ...context,
+          evidence: evidence.filter((item) => item.sequence !== 6),
+        },
+        () => true,
+      ),
+    /Active scene evidence is incomplete/,
+  );
+});
+
 test('provider adapter uses an injected transport, one route and no retry; missing accounting is uncertain', async () => {
   const task = opening();
   const providerExecution = {
@@ -918,7 +961,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(inspection.body.model, 'test/model');
   assert.equal(inspection.purpose.id, 'opening.narrative');
   assert.equal(inspection.purpose.outputContract, 'playable-opening.v1');
-  assert.equal(inspection.contextPolicyVersion, 'bounded.v1');
+  assert.equal(inspection.contextPolicyVersion, 'bounded-scene.v2');
   assert.deepEqual(inspection.body.provider.only, ['Test']);
   assert.equal(inspection.body.provider.allow_fallbacks, false);
   assert.match(inspection.sha256, /^[a-f0-9]{64}$/);

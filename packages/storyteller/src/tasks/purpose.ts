@@ -10,7 +10,7 @@ export type StorytellerRequestPurpose = Readonly<{
   inputContract: string;
   outputContract: string;
   promptFragments: readonly string[];
-  contextPolicy: 'bounded.v1';
+  contextPolicy: 'bounded-scene.v2';
 }>;
 
 const purposes = {
@@ -19,35 +19,35 @@ const purposes = {
     inputContract: 'opening-context.v1',
     outputContract: 'playable-opening.v1',
     promptFragments: ['scene-rules', 'opening-rules'],
-    contextPolicy: 'bounded.v1',
+    contextPolicy: 'bounded-scene.v2',
   },
   openingMechanical: {
     id: 'opening.mechanical',
     inputContract: 'mechanical-opening-context.v1',
     outputContract: 'mechanical-opening.v1',
     promptFragments: ['scene-rules', 'mechanical-opening-rules'],
-    contextPolicy: 'bounded.v1',
+    contextPolicy: 'bounded-scene.v2',
   },
   continuation: {
     id: 'scene.continuation',
     inputContract: 'continuation-context.v1',
     outputContract: 'playable-continuation.v2',
     promptFragments: ['scene-rules', 'continuity-rules', 'continuation-rules'],
-    contextPolicy: 'bounded.v1',
+    contextPolicy: 'bounded-scene.v2',
   },
   consequence: {
     id: 'activity.consequence',
     inputContract: 'committed-resolution-context.v1',
     outputContract: 'activity-consequence.v3',
     promptFragments: ['scene-rules', 'continuity-rules', 'consequence-rules'],
-    contextPolicy: 'bounded.v1',
+    contextPolicy: 'bounded-scene.v2',
   },
   report: {
     id: 'history.report',
     inputContract: 'committed-resolution-context.v1',
     outputContract: 'historical-report.v1',
     promptFragments: ['scene-rules', 'report-rules'],
-    contextPolicy: 'bounded.v1',
+    contextPolicy: 'bounded-scene.v2',
   },
 } as const satisfies Record<string, StorytellerRequestPurpose>;
 
@@ -55,7 +55,7 @@ const purposes = {
 export function describeStorytellerRequestPurpose(
   task: Pick<StorytellerTask, 'task' | 'contextManifest' | 'context'>,
 ): StorytellerRequestPurpose {
-  if (task.contextManifest.policyVersion !== 'bounded.v1') {
+  if (task.contextManifest.policyVersion !== 'bounded-scene.v2') {
     throw new Error('Unknown Storyteller context policy');
   }
   switch (task.task) {

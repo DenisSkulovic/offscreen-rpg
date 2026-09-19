@@ -335,6 +335,17 @@ function longContinuityCase(
     resources,
     context: {
       ...baseContext,
+      activeSceneScope: {
+        version: 'active-scene.v1',
+        fromSequence: 1,
+        throughSequence: 15,
+        requiredPassageIds: [
+          evidence[0]!.id,
+          evidence[5]!.id,
+          evidence[9]!.id,
+          latest.id,
+        ],
+      },
       premise: nonhuman
         ? {
             title: 'Gradient colony',
