@@ -7,11 +7,7 @@ import {
   gameActionExecutionEvent,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
-import {
-  immediateActionPlanSchema,
-  resolveImmediateAction,
-} from '@offscreen/game/immediate-actions';
-import { realMsUntilTick } from '@offscreen/game/time';
+import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { enqueue, type Transaction } from '../outbox/index';
 import {
   incrementStoryViewVersion,
@@ -19,16 +15,11 @@ import {
   readDatabaseClockMs,
 } from '../stories/persistence';
 import type { StoryRecord } from '../stories/persistence';
-import {
-  campaignCharacter,
-  campaignStoryFacts,
-  requireCampaign,
-} from './persistence';
-import { campaignClockHeld, holdCampaignForStorytellerIntent } from './holds';
-import { projectCampaignClock } from './clock';
-import { requestActionNarration } from './narration';
+import { requireCampaign } from './persistence';
 import { campaignActionTopic } from './topics';
 import type { CampaignRecord } from './persistence';
+import { decideActionExecutionTransition } from './action-execution-transition';
+import { applyCampaignFollowUpIntents } from './follow-up-intents';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
 export type ActionExecutionEventKind =
@@ -75,35 +66,14 @@ export async function settleActionExecution(
   now: number,
 ) {
   const plan = immediateActionPlanSchema.parse(execution.plan);
-  if (plan.resolution.kind === 'process' || plan.resolution.kind === 'resume') {
-    throw new Error('Finite action execution contains an activity plan');
-  }
-  const projected = projectCampaignClock(
+  const transition = decideActionExecutionTransition({
     state,
+    execution,
     now,
-    { kind: 'accepted-action', operationId: execution.operationId },
-    campaignClockHeld(state),
-    execution.targetTick,
-  );
-  if (projected.clock.elapsedTicks < execution.targetTick) {
-    return {
-      state: 'waiting' as const,
-      projected,
-      remainingRealMs: realMsUntilTick(
-        projected.clock,
-        execution.targetTick,
-        projected.pace,
-      ),
-    };
-  }
+    rollDie: () => randomInt(1, 21),
+  });
+  if (transition.state === 'waiting') return transition;
 
-  const resolved = resolveImmediateAction(
-    campaignCharacter(state),
-    campaignStoryFacts(state),
-    plan,
-    execution.operationId,
-    () => randomInt(1, 21),
-  );
   await tx.insert(gameActionReceipt).values({
     operationId: execution.operationId,
     storyId: current.id,
@@ -114,45 +84,36 @@ export async function settleActionExecution(
     plan,
     label: plan.label,
     intention: plan.intention,
-    outcome: resolved.outcome,
-    outcomeText: resolved.text,
-    effects: resolved.effects,
-    declarations: resolved.declarations,
-    roll: resolved.roll,
+    outcome: transition.receipt.outcome,
+    outcomeText: transition.receipt.text,
+    effects: transition.receipt.effects,
+    declarations: transition.receipt.declarations,
+    roll: transition.receipt.roll,
   });
   await tx
     .update(gameActionExecution)
     .set({
       state: 'settled',
-      revision: execution.revision + 1,
+      revision: transition.fact.executionRevision,
       settledAt: new Date(now),
     })
     .where(eq(gameActionExecution.operationId, execution.operationId));
   await recordActionExecutionEvent(tx, {
     storyId: current.id,
     executionId: execution.operationId,
-    executionRevision: execution.revision + 1,
-    tick: execution.targetTick,
-    kind: 'settled',
-    label: plan.label,
+    executionRevision: transition.fact.executionRevision,
+    tick: transition.fact.tick,
+    kind: transition.fact.kind,
+    label: transition.fact.label,
   });
-  const settledState = {
-    ...state,
-    character: resolved.character,
-    storyFacts: resolved.storyFacts,
-    tick: execution.targetTick,
-    clock: projected.clock,
-    clockAnchorAt: new Date(now),
-    activeActionOperationId: null,
-  };
   await tx
     .update(campaign)
     .set({
-      character: settledState.character,
-      storyFacts: settledState.storyFacts,
-      tick: settledState.tick,
-      clock: settledState.clock,
-      clockAnchorAt: settledState.clockAnchorAt,
+      character: transition.campaign.character,
+      storyFacts: transition.campaign.storyFacts,
+      tick: transition.campaign.tick,
+      clock: transition.campaign.clock,
+      clockAnchorAt: transition.campaign.clockAnchorAt,
       activeActionOperationId: null,
     })
     .where(eq(campaign.storyId, current.id));
@@ -160,14 +121,13 @@ export async function settleActionExecution(
     storyId: current.id,
     viewVersion: current.viewVersion + 1,
   });
-  await holdCampaignForStorytellerIntent(
+  const settledCampaign = await applyCampaignFollowUpIntents(
     tx,
-    settledState,
-    execution.operationId,
+    transition.campaign,
+    transition.followUps,
     now,
   );
-  await requestActionNarration(tx, execution.operationId);
-  return { state: 'settled' as const, campaign: settledState };
+  return { state: 'settled' as const, campaign: settledCampaign };
 }
 
 export function createCampaignActionExecutions(database: Database) {

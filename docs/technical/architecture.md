@@ -97,6 +97,14 @@ Redis is optional for measured read-cache, distributed rate-limit or live fan-ou
 
 The initial workloads do not justify a separate event broker. Temporal Task Queues dispatch workflow and Activity work; they are not general application publish/subscribe. If several independently operated consumers need durable delivery of the same application fact, evaluate a broker such as RabbitMQ. Keep the outbox relay narrow; do not grow subscriber routing, per-subscriber backlogs and dead-letter administration into a homemade broker.
 
+### Gameplay transitions and durable follow-ups
+
+An admitted command or timer wake loads and locks authoritative state, then a purpose-specific policy describes a typed transition. The transition separates three concerns: the next authoritative state, durable domain facts for chronology/audit, and explicit follow-up intents such as scheduling work or preparing narration. The application transaction applies the state and facts and records any durable follow-up in the transactional outbox before committing. Temporal performs the follow-up after commit and rechecks authority at its application entry point.
+
+This event-oriented boundary does not make campaign state event-sourced. Current state remains an authoritative PostgreSQL projection, and facts that must agree—clock position, roll, effects, receipt and lifecycle state—commit atomically. Local invariant-preserving work remains a direct typed call. Do not replace readable coordination with a generic in-process event bus or invisible subscribers. A timer identifies work that may be due; it does not decide the mechanic, narration policy or next gameplay mode.
+
+Finite actions and activities may share lifecycle facts and follow-up intent delivery while retaining distinct resolution policies. Generality here means exhaustive types and replaceable policy boundaries, not a universal JSON execution object.
+
 ## User-flow contracts
 
 | Player flow | Defining technical contract |

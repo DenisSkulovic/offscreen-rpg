@@ -2,6 +2,12 @@
 
 This package owns use cases, transactions and coordination. The API and Activity worker compose its public exports from [package.json](package.json). Pure rules belong in `@offscreen/game`; task preparation and output validation belong in `@offscreen/storyteller`. Start with one flow below rather than reading every module.
 
+## Campaign transition boundary
+
+Campaign commands and timer wakes enter purpose-specific operations under the story lock. Mechanical policy describes the resulting authoritative state, durable lifecycle fact and typed follow-up intents; the operation persists those parts in one transaction. `campaign/follow-up-intents.ts` is the exhaustive adapter from those intents to durable application work such as a Storyteller hold plus transactional-outbox notice. It is deliberately not a general event bus.
+
+Start finite-action settlement at `campaign/action-execution-transition.ts` for the due/waiting and resolution decision, then `campaign/action-executions.ts` for atomic persistence. Timers only wake the latter by operation ID. They do not own mechanical or narration policy. Activities still contain their older inline coordination until the active event-oriented transition feature migrates that path.
+
 ## Persistence and read caching
 
 Drizzle access stays in the domain operation that owns the transaction; there is intentionally no generic repository per table. `stories/reads.ts` builds the public snapshot under repeatable-read isolation. Its optional cache dependency is the small port in `src/cache`: it can store only an already-authorized, runtime-validated projection under an owner-scoped projection identity. The Redis implementation and connection lifecycle live in `@offscreen/cache`, outside this package. Commands, locks, timers, private plans and accounting authority never read Redis. See [persistence and caching](../../docs/technical/persistence-and-caching.md).
