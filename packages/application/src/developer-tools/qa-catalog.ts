@@ -376,6 +376,19 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
         authoritativeExpectation:
           'The plan-control command is replay-safe, changes only future entries, and does not pause, abandon, reroll, or replace the current activity.',
       }),
+      stage({
+        id: 'block-invalid-successor',
+        name: 'Block a successor whose prerequisite changed',
+        importance: 'poc-blocker',
+        preconditions: [
+          'Start a fresh microbe.v3 story; stage Hold through a temperature cycle after Remain contracted.',
+        ],
+        action: 'Let Remain contracted finish and inspect the accepted plan.',
+        observableExpectation:
+          'The completed wait remains in history and the temperature-cycle entry is visibly blocked instead of starting.',
+        authoritativeExpectation:
+          'The wait clears exposed before successor admission; revalidation creates no second activity or wake and records a durable blocked reason.',
+      }),
     ],
     evidenceRequirements: [
       stateEvidence,

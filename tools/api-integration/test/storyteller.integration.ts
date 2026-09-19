@@ -741,6 +741,72 @@ test(
           },
         );
         await t.test(
+          'changed prerequisites block the accepted successor without starting it',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the microbe opening offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['wait-contracted'],
+                successorPaths: [['hold-temperature-cycle']],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const firstActivityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the first accepted activity',
+            );
+            await storyService.advanceCampaignActivity(firstActivityId);
+            const blocked = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(blocked.campaign?.activity, null);
+            assert.equal(
+              blocked.campaign?.acceptedActivityPlan?.state,
+              'blocked',
+            );
+            assert.deepEqual(
+              blocked.campaign?.acceptedActivityPlan?.entries.map((entry) => [
+                entry.state,
+                entry.activityId,
+              ]),
+              [
+                ['complete', firstActivityId],
+                ['blocked', null],
+              ],
+            );
+            assert.match(
+              blocked.campaign?.acceptedActivityPlan?.blockedReason ?? '',
+              /no longer authorized or mechanically eligible/,
+            );
+            assert.equal(blocked.campaign?.activityReports.length, 1);
+            assert.equal(blocked.campaign?.rolls.length, 0);
+            assert.deepEqual(
+              blocked.campaign?.activityEvents.map((event) => event.kind),
+              ['completed', 'started'],
+            );
+            const activities = await database.db
+              .select({ id: gameActivity.id })
+              .from(gameActivity)
+              .where(eq(gameActivity.storyId, started.storyId));
+            assert.deepEqual(activities, [{ id: firstActivityId }]);
+          },
+        );
+        await t.test(
           'cancelling pending plan entries leaves current work running',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {
