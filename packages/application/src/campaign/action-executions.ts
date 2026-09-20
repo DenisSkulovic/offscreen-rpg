@@ -22,8 +22,8 @@ import { decideActionExecutionTransition } from './action-execution-transition';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
 import { campaignClockHeld } from './holds';
 import {
-  fireWorldObligation,
-  readNearestPendingWorldObligation,
+  fireWorldObligations,
+  readNearestPendingWorldObligations,
 } from './world-obligations';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
@@ -71,10 +71,11 @@ export async function settleActionExecution(
   now: number,
 ) {
   const plan = immediateActionPlanSchema.parse(execution.plan);
-  const controllingObligation = await readNearestPendingWorldObligation(tx, {
+  const controllingObligations = await readNearestPendingWorldObligations(tx, {
     storyId: current.id,
     throughTick: execution.targetTick,
   });
+  const controllingObligation = controllingObligations[0] ?? null;
   const transition = decideActionExecutionTransition({
     state,
     execution: {
@@ -121,11 +122,11 @@ export async function settleActionExecution(
       })
       .where(eq(campaign.storyId, current.id));
     const interruptedCampaign = controllingObligation
-      ? await fireWorldObligation(
+      ? await fireWorldObligations(
           tx,
           current,
           transition.campaign,
-          controllingObligation,
+          controllingObligations,
           now,
         )
       : transition.campaign;

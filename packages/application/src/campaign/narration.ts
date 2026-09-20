@@ -52,6 +52,7 @@ const consequenceReceiptSchema = z.discriminatedUnion('kind', [
     kind: z.literal('world-obligation'),
     passageId: z.uuid(),
     operationId: z.uuid(),
+    obligationIds: z.array(z.uuid()).min(1).max(50),
     label: z.string().min(1).max(200),
     intention: z.string().min(1).max(500),
   }),

@@ -57,8 +57,8 @@ import {
 } from './activity-follow-up-policy';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
 import {
-  fireWorldObligation,
-  readNearestPendingWorldObligation,
+  fireWorldObligations,
+  readNearestPendingWorldObligations,
   type WorldObligationRecord,
 } from './world-obligations';
 
@@ -593,13 +593,14 @@ export function createCampaignActivities(database: Database) {
           return null;
         }
         const now = await readDatabaseClockMs(tx, current.id);
-        const controllingObligation = await readNearestPendingWorldObligation(
+        const controllingObligations = await readNearestPendingWorldObligations(
           tx,
           {
             storyId: current.id,
             throughTick: Number.MAX_SAFE_INTEGER,
           },
         );
+        const controllingObligation = controllingObligations[0] ?? null;
         const settled = await settleActivity(
           tx,
           current,
@@ -628,11 +629,11 @@ export function createCampaignActivities(database: Database) {
               .action.label,
             summary: `${resolvedActivityPlanSchema.parse(settled.activity.plan).action.label} was interrupted by a due world event.`,
           });
-          await fireWorldObligation(
+          await fireWorldObligations(
             tx,
             current,
             settled.state,
-            controllingObligation,
+            controllingObligations,
             now,
           );
           await incrementStoryViewVersion(tx, {
