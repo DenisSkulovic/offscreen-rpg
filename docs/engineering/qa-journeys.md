@@ -2,6 +2,22 @@
 
 The local Chamber contains a developer-only, manual-first QA workspace for repeatable POC investigation. A person or coding agent reads each stage, performs the action through the UI or endpoint, observes the result and records evidence. The structured catalogue does not imply an automation fleet; browser driving remains optional. It is a guide for investigation, not a production release gate.
 
+## Iterative POC convergence
+
+QA journeys and benchmark playthroughs state current expectations that connected play must repeatedly challenge. They are not a static certification layer saved for the end of implementation. During POC development, rerun representative flows as mechanics become connected, preserve each completed run, and treat unexpected behavior as useful evidence.
+
+Classify a discrepancy before responding to it:
+
+- an implementation defect violates an owned contract;
+- a missing mechanic exposes behavior that no contract or code owns yet;
+- an incomplete or incorrect expectation requires correcting its owning product/technical text and then the case;
+- a fixture or harness limitation prevents representative exercise of the real application boundary;
+- a qualitative judgment requires anchored human review rather than a structural assertion.
+
+Correct the nearest owner and evolve the relevant case or benchmark when understanding changes. Never edit old run evidence, erase a difficult example, or loosen a stage merely to obtain a passing result. A materially distinct world or story should extend the corpus; it should not automatically become a universal mechanic.
+
+Credential-free provider-packet inspection belongs in this loop once the corresponding flow produces representative authoritative state. Review exactly what would be dispatched, including its evidence status, identity, schema and byte distribution, without releasing it. Packet review does not compensate for missing mechanics or a synthetic state path.
+
 ## Case catalogue
 
 The [offline POC acceptance matrix](offline-poc-acceptance.md) covers context, mechanics, agent tools, recovery and end-to-end play. It distinguishes checks possible now from those blocked on the DM runner; it does not change catalogue availability or claim those checks have been performed.
