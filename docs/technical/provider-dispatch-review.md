@@ -1,6 +1,6 @@
 # Provider dispatch review and dry-run analysis
 
-Status: implemented for the offline POC. Exact packet construction, durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. Rebuilding means admitting a fresh immutable generation. Pure packet comparison reports exact byte overlap while the context-recipes work broadens the reproducible case set. Live release still requires the separate spending and evaluation preflight.
+Status: implemented for the offline POC. Exact packet construction, durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. Live release still requires the separate spending and evaluation preflight.
 
 ## Product contract
 

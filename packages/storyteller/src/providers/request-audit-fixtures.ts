@@ -7,10 +7,25 @@ export const requestAuditCaseIds = [
   'scene-continuation',
   'activity-consequence',
   'history-report',
+  'continuity-human-turn-13',
+  'continuity-human-turn-14',
   'continuity-fifteen-turn',
   'continuity-nonhuman',
 ] as const;
 export type RequestAuditCaseId = (typeof requestAuditCaseIds)[number];
+
+function humanSequencePosition(id: RequestAuditCaseId) {
+  switch (id) {
+    case 'continuity-human-turn-13':
+      return 13;
+    case 'continuity-human-turn-14':
+      return 14;
+    case 'continuity-fifteen-turn':
+      return 15;
+    default:
+      return null;
+  }
+}
 
 const execution = {
   mode: 'provider' as const,
@@ -45,7 +60,7 @@ const resources = {
     maxInputTokens: 100000,
     maxGeneratedTokens: 2000,
     maxReasoningTokens: 0,
-    maxMicrousd: '0',
+    maxMicrousd: '1',
     deadlineMs: 1000,
   },
   authority: {
@@ -67,7 +82,7 @@ const resources = {
         maxModelRoundsPerOperation: 1,
         maxReadsPerOperation: 0,
         maxRetainedReadBytes: 0,
-        maxMicrousdPerOperation: '0',
+        maxMicrousdPerOperation: '1',
         maxInFlightDispatches: 1,
         maxBackgroundJobsPerWindow: 0,
       },
@@ -83,7 +98,7 @@ const resources = {
         maxModelRoundsPerOperation: limitSource,
         maxReadsPerOperation: [{ source: 'structural-audit', value: 0 }],
         maxRetainedReadBytes: [{ source: 'structural-audit', value: 0 }],
-        maxMicrousdPerOperation: [{ source: 'structural-audit', value: '0' }],
+        maxMicrousdPerOperation: [{ source: 'structural-audit', value: '1' }],
         maxInFlightDispatches: limitSource,
         maxBackgroundJobsPerWindow: [{ source: 'structural-audit', value: 0 }],
       },
@@ -259,8 +274,10 @@ export function createRequestAuditFixtureCases(input: {
         resources,
         context: { ...baseContext, resolution },
       }),
-    'continuity-fifteen-turn': () => longContinuityCase(profile, false),
-    'continuity-nonhuman': () => longContinuityCase(profile, true),
+    'continuity-human-turn-13': () => longContinuityCase(profile, false, 13),
+    'continuity-human-turn-14': () => longContinuityCase(profile, false, 14),
+    'continuity-fifteen-turn': () => longContinuityCase(profile, false, 15),
+    'continuity-nonhuman': () => longContinuityCase(profile, true, 15),
   } satisfies Record<
     RequestAuditCaseId,
     () => ReturnType<typeof prepareStorytellerTask>
@@ -268,13 +285,27 @@ export function createRequestAuditFixtureCases(input: {
   return selected.map((id) => {
     const task = tasks[id]();
     if (!id.startsWith('continuity-')) return { id, task };
+    const sequencePosition = humanSequencePosition(id);
     return {
       id,
       task,
+      ...(sequencePosition
+        ? {
+            sequence: {
+              id: 'human-active-scene',
+              position: sequencePosition,
+            },
+          }
+        : {}),
       evidenceExpectations: {
         // The first clue and holder change are independently required by the
         // fixture, not inferred from what the current selector retained.
-        requiredHandles: ['p1', 'p6', 'p10', 'p15'],
+        requiredHandles: [
+          'p1',
+          'p6',
+          'p10',
+          `p${sequencePosition ?? 15}`,
+        ],
         forbiddenHandles: ['p16'],
       },
     };
@@ -284,8 +315,9 @@ export function createRequestAuditFixtureCases(input: {
 function longContinuityCase(
   profile: ReturnType<typeof storytellerCatalogue.resolve>,
   nonhuman: boolean,
+  throughSequence: number,
 ) {
-  const evidence = Array.from({ length: 15 }, (_, index) => {
+  const evidence = Array.from({ length: throughSequence }, (_, index) => {
     const sequence = index + 1;
     const humanMoments: Record<number, string> = {
       1: 'The stranger hides a blade and falsely claims the beacon is abandoned.',
@@ -324,7 +356,7 @@ function longContinuityCase(
       storyId: nonhuman
         ? '00000000-0000-4000-8000-000000000041'
         : '00000000-0000-4000-8000-000000000040',
-      narrativeRevision: 15,
+      narrativeRevision: throughSequence,
       passageId: latest.id,
       interactionId: nonhuman
         ? '00000000-0000-4000-8000-000000000043'
@@ -338,7 +370,7 @@ function longContinuityCase(
       activeSceneScope: {
         version: 'active-scene.v1',
         fromSequence: 1,
-        throughSequence: 15,
+        throughSequence,
         requiredPassageIds: [
           evidence[0]!.id,
           evidence[5]!.id,

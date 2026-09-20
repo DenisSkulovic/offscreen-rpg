@@ -11,6 +11,7 @@ export type StorytellerRequestAuditCase = Readonly<{
     requiredHandles: readonly string[];
     forbiddenHandles: readonly string[];
   }>;
+  sequence?: Readonly<{ id: string; position: number }>;
 }>;
 
 function sourceRevision(task: StorytellerTask) {
@@ -33,7 +34,7 @@ export function createStorytellerRequestAudit(
   if (new Set(ids).size !== ids.length) {
     throw new Error('Storyteller request audit case IDs must be unique');
   }
-  const inspected = cases.map(({ id, task, evidenceExpectations }) => {
+  const inspected = cases.map(({ id, task, evidenceExpectations, sequence }) => {
     const inspection = inspectOpenRouterRequest(task);
     const loadedHandles = task.context.evidence.map(
       (passage) => `p${passage.sequence}`,
@@ -42,6 +43,7 @@ export function createStorytellerRequestAudit(
     const forbiddenHandles = evidenceExpectations?.forbiddenHandles ?? [];
     return {
       id,
+      sequence: sequence ?? null,
       source: sourceRevision(task),
       profile: { id: task.profile.id, revision: task.profile.revision },
       purpose: inspection.purpose,
@@ -80,19 +82,56 @@ export function createStorytellerRequestAudit(
       inspection,
     };
   });
+  const comparisons = inspected.slice(1).map((right, index) => ({
+    leftCaseId: inspected[index]!.id,
+    rightCaseId: right.id,
+    ...compareOpenRouterRequests(inspected[index]!.inspection, right.inspection),
+  }));
+  const sequenceIds = [
+    ...new Set(
+      inspected.flatMap((entry) => (entry.sequence ? [entry.sequence.id] : [])),
+    ),
+  ];
   return {
-    version: 'storyteller-request-audit.v1' as const,
+    version: 'storyteller-request-audit.v2' as const,
     transportPerformed: false as const,
     providerChargeMicrousd: '0' as const,
     cases: inspected.map(({ inspection: _inspection, ...entry }) => entry),
-    comparisons: inspected.slice(1).map((right, index) => ({
-      leftCaseId: inspected[index]!.id,
-      rightCaseId: right.id,
-      ...compareOpenRouterRequests(
-        inspected[index]!.inspection,
-        right.inspection,
-      ),
-    })),
+    comparisons,
+    sequences: sequenceIds.map((sequenceId) => {
+      const entries = inspected
+        .filter((entry) => entry.sequence?.id === sequenceId)
+        .sort(
+          (left, right) =>
+            left.sequence!.position - right.sequence!.position,
+        );
+      const transitions = entries.slice(1).map((right, index) => {
+        const left = entries[index]!;
+        const comparison = compareOpenRouterRequests(
+          left.inspection,
+          right.inspection,
+        );
+        return {
+          leftCaseId: left.id,
+          rightCaseId: right.id,
+          potentialReusableMessageContentBytes:
+            comparison.potentialReusableMessageContentBytes,
+          estimatedSharedInputTokens: null,
+          observedProviderCacheHitTokens: null,
+        };
+      });
+      return {
+        id: sequenceId,
+        caseIds: entries.map((entry) => entry.id),
+        coldSerializedRequestBytes: entries.reduce(
+          (total, entry) => total + entry.inspection.serializedBytes,
+          0,
+        ),
+        transitions,
+        estimatedColdInputTokens: null,
+        observedProviderCacheHitTokens: null,
+      };
+    }),
   };
 }
 
@@ -124,6 +163,19 @@ export function formatStorytellerRequestAudit(audit: StorytellerRequestAudit) {
       lines.push(
         `  ${comparison.leftCaseId} -> ${comparison.rightCaseId}: delta ${comparison.serializedBytesDelta} bytes; message prefixes ${comparison.messages.map((message) => message.commonPrefixBytes).join('/')}`,
       );
+    }
+  }
+  if (audit.sequences.length) {
+    lines.push('', 'Cache-aware sequences (structural potential only):');
+    for (const sequence of audit.sequences) {
+      lines.push(
+        `  ${sequence.id}: cold ${sequence.coldSerializedRequestBytes} bytes across ${sequence.caseIds.length} requests; tokens/cache/savings unknown`,
+      );
+      for (const transition of sequence.transitions) {
+        lines.push(
+          `    ${transition.leftCaseId} -> ${transition.rightCaseId}: potential reusable message content ${transition.potentialReusableMessageContentBytes} bytes`,
+        );
+      }
     }
   }
   return `${lines.join('\n')}\n`;

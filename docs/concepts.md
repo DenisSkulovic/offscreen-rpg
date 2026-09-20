@@ -12,7 +12,7 @@ The next player decision can lead to another Storyteller turn. Several turns can
 
 ## Player and world concepts
 
-The Storyteller is a product identity realized by purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. Active-scene continuity and its bounded request policies are prepared in [Storyteller context recipes](features/2026-09-19--23-59--storyteller-context-recipes/FEATURE.md).
+The Storyteller is a product identity realized by purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. [Active-scene continuity](technical/context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) defines its bounded request policy.
 
 | Term | Meaning | Boundary |
 | --- | --- | --- |

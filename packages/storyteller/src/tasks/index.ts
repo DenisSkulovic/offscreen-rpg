@@ -12,7 +12,7 @@ import {
 import {
   boundStorytellerContext,
   contextInputSchema,
-  contextPayload,
+  contextRequestSections,
 } from '../context';
 import {
   continuityPatchSchema,
@@ -133,7 +133,7 @@ const resultSchemas = {
 };
 const common = {
   inputVersion: z.literal(8),
-  promptVersion: z.literal('storyteller.v2'),
+  promptVersion: z.literal('storyteller.v3'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -252,6 +252,7 @@ function requestFor(
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
   }
+  const sections = contextRequestSections(context);
   return {
     messages: [
       {
@@ -271,7 +272,7 @@ function requestFor(
                   : input.task
               ],
           },
-          ...contextPayload(context),
+          ...sections,
         }),
       },
     ] as const,
@@ -328,7 +329,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     context,
     contextManifest,
     inputVersion: 8,
-    promptVersion: 'storyteller.v2',
+    promptVersion: 'storyteller.v3',
     resources,
     request: requestFor(input, context),
   });

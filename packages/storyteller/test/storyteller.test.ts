@@ -11,7 +11,10 @@ import {
 } from '../src/tasks';
 import { scriptedStorytellerResult } from '../src/fixtures';
 import { applyContinuityPatch } from '../src/context/continuity';
-import { boundStorytellerContext, contextPayload } from '../src/context';
+import {
+  boundStorytellerContext,
+  contextRequestSections,
+} from '../src/context';
 import {
   createOpenRouterProvider,
   inspectOpenRouterRequest,
@@ -22,6 +25,7 @@ import {
   createStorytellerRequestAudit,
   formatStorytellerRequestAudit,
 } from '../src/providers/request-audit';
+import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
 
 function providerResources(route: string) {
   const source = [{ source: 'test', value: 100000 }];
@@ -919,10 +923,12 @@ test('active scene scope retains its complete range and rejects partial coverage
     selected.evidence.map((passage) => passage.sequence),
     Array.from({ length: 15 }, (_, index) => index + 1),
   );
-  const payload = contextPayload(selected);
-  assert.equal(payload.current?.handle, 'p15');
+  const sections = contextRequestSections(selected);
+  assert.equal(sections.currentState.current?.handle, 'p15');
   assert.equal(
-    payload.evidence.some((passage) => passage.handle === 'p15'),
+    sections.sceneContext.evidence.some(
+      (passage) => passage.handle === 'p15',
+    ),
     false,
   );
   assert.throws(
@@ -974,6 +980,16 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.ok(inspection.serializedBytes > inspection.outputSchemaBytes);
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
+  assert.deepEqual(
+    inspection.userSections.map((section) => [section.key, section.stability]),
+    [
+      ['task', 'stable'],
+      ['profile', 'stable'],
+      ['sceneContext', 'stable'],
+      ['currentState', 'changing'],
+      ['selectedIntention', 'changing'],
+    ],
+  );
   assert.match(inspection.outputSchemaSha256, /^[a-f0-9]{64}$/);
   assert.ok(
     inspection.messages.every((message) =>
@@ -984,6 +1000,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(comparison.samePacket, true);
   assert.equal(comparison.sameOutputSchema, true);
   assert.equal(comparison.serializedBytesDelta, 0);
+  assert.ok(comparison.potentialReusableMessageContentBytes > 0);
   assert.ok(
     comparison.messages.every(
       (message, index) =>
@@ -1090,9 +1107,42 @@ test('request audit reports exact multi-purpose structure without inventing toke
   assert.equal(audit.cases[0]?.estimatedInputTokens, null);
   assert.equal(audit.cases[0]?.observedProviderCacheHitTokens, null);
   assert.equal(audit.comparisons.length, 1);
+  assert.equal(audit.sequences.length, 0);
   assert.match(formatStorytellerRequestAudit(audit), /tokens\/cache: unknown/);
   assert.throws(
     () => createStorytellerRequestAudit([cases[0]!, cases[0]!]),
     /case IDs must be unique/,
+  );
+});
+
+test('request audit reports cold bounds and reusable prefixes for an active-scene sequence', () => {
+  const cases = createRequestAuditFixtureCases({
+    caseIds: [
+      'continuity-human-turn-13',
+      'continuity-human-turn-14',
+      'continuity-fifteen-turn',
+    ],
+    profile: { id: 'quiet-eerie-mystery', revision: 1 },
+  });
+  const audit = createStorytellerRequestAudit(cases);
+  const sequence = audit.sequences[0];
+  assert.equal(sequence?.id, 'human-active-scene');
+  assert.deepEqual(sequence?.caseIds, [
+    'continuity-human-turn-13',
+    'continuity-human-turn-14',
+    'continuity-fifteen-turn',
+  ]);
+  assert.ok((sequence?.coldSerializedRequestBytes ?? 0) > 0);
+  assert.equal(sequence?.transitions.length, 2);
+  assert.ok(
+    sequence?.transitions.every(
+      (transition) => transition.potentialReusableMessageContentBytes > 0,
+    ),
+  );
+  assert.equal(sequence?.estimatedColdInputTokens, null);
+  assert.equal(sequence?.observedProviderCacheHitTokens, null);
+  assert.match(
+    formatStorytellerRequestAudit(audit),
+    /structural potential only/,
   );
 });

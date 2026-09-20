@@ -79,13 +79,21 @@ export function inspectOpenRouterRequest(task: StorytellerTask) {
   const body = buildOpenRouterRequest(task);
   const serialized = JSON.stringify(body);
   const userMessage = body.messages.find((message) => message.role === 'user');
-  let userSections: ReadonlyArray<{ key: string; bytes: number }> = [];
+  let userSections: ReadonlyArray<{
+    key: string;
+    stability: 'stable' | 'changing';
+    bytes: number;
+  }> = [];
   if (userMessage) {
     try {
       const parsed = JSON.parse(userMessage.content) as unknown;
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         userSections = Object.entries(parsed).map(([key, value]) => ({
           key,
+          stability:
+            key === 'currentState' || key === 'selectedIntention'
+              ? ('changing' as const)
+              : ('stable' as const),
           bytes: Buffer.byteLength(JSON.stringify(value), 'utf8'),
         }));
       }
@@ -136,6 +144,32 @@ function commonPrefixBytes(left: string, right: string): number {
   return index;
 }
 
+function reusableMessageContentPrefixBytes(
+  left: OpenRouterRequestInspection,
+  right: OpenRouterRequestInspection,
+) {
+  let total = 0;
+  const messageCount = Math.min(
+    left.body.messages.length,
+    right.body.messages.length,
+  );
+  for (let index = 0; index < messageCount; index++) {
+    const leftMessage = left.body.messages[index]!;
+    const rightMessage = right.body.messages[index]!;
+    if (leftMessage.role !== rightMessage.role) {
+      break;
+    }
+    const shared = commonPrefixBytes(leftMessage.content, rightMessage.content);
+    total += shared;
+    const leftBytes = Buffer.byteLength(leftMessage.content, 'utf8');
+    const rightBytes = Buffer.byteLength(rightMessage.content, 'utf8');
+    if (shared < leftBytes || shared < rightBytes) {
+      break;
+    }
+  }
+  return total;
+}
+
 /** Compare exact assembled content; byte overlap is not a tokenizer/cache claim. */
 export function compareOpenRouterRequests(
   left: OpenRouterRequestInspection,
@@ -151,6 +185,8 @@ export function compareOpenRouterRequests(
     samePacket: left.sha256 === right.sha256,
     serializedBytesDelta: right.serializedBytes - left.serializedBytes,
     sameOutputSchema: left.outputSchemaSha256 === right.outputSchemaSha256,
+    potentialReusableMessageContentBytes:
+      reusableMessageContentPrefixBytes(left, right),
     messages: Array.from({ length: messageCount }, (_, index) => {
       const leftMessage = left.body.messages[index];
       const rightMessage = right.body.messages[index];

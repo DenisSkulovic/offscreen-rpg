@@ -143,7 +143,7 @@ export const contextInputSchema = z.strictObject({
 });
 export type StorytellerContext = z.infer<typeof contextInputSchema>;
 
-export function contextPayload(context: StorytellerContext) {
+export function contextRequestSections(context: StorytellerContext) {
   const handle = (id: string) => {
     const passage = context.evidence.find((item) => item.id === id);
     if (!passage) {
@@ -152,43 +152,47 @@ export function contextPayload(context: StorytellerContext) {
     return `p${passage.sequence}`;
   };
   return {
-    ...(context.activitySituation
-      ? { activitySituation: context.activitySituation }
-      : {}),
-    ...(context.mechanicalOpening
-      ? {
-          mechanicalOpening: {
-            character: context.mechanicalOpening.character,
-            storyFacts: context.mechanicalOpening.storyFacts,
-            opening: context.mechanicalOpening.opening,
-          },
-        }
-      : {}),
-    ...(context.resolution ? { resolution: context.resolution } : {}),
-    ...(context.campaignSettings
-      ? { campaignSettings: context.campaignSettings }
-      : {}),
-    premise: context.premise,
-    current: context.current
-      ? {
-          handle: `p${context.current.sequence}`,
-          content: context.current.content,
-        }
-      : null,
-    items: context.items,
-    selected: context.selected,
-    notes: context.notes.map((note) => ({
-      key: note.key,
-      text: note.text,
-      evidence: note.sources.map(handle),
-    })),
-    evidence: context.evidence
-      .filter((passage) => passage.id !== context.current?.id)
-      .map((passage) => ({
-        handle: `p${passage.sequence}`,
-        content: passage.content,
-        response: passage.response,
+    sceneContext: {
+      premise: context.premise,
+      notes: context.notes.map((note) => ({
+        key: note.key,
+        text: note.text,
+        evidence: note.sources.map(handle),
       })),
+      evidence: context.evidence
+        .filter((passage) => passage.id !== context.current?.id)
+        .map((passage) => ({
+          handle: `p${passage.sequence}`,
+          content: passage.content,
+          response: passage.response,
+        })),
+    },
+    currentState: {
+      ...(context.activitySituation
+        ? { activitySituation: context.activitySituation }
+        : {}),
+      ...(context.mechanicalOpening
+        ? {
+            mechanicalOpening: {
+              character: context.mechanicalOpening.character,
+              storyFacts: context.mechanicalOpening.storyFacts,
+              opening: context.mechanicalOpening.opening,
+            },
+          }
+        : {}),
+      ...(context.resolution ? { resolution: context.resolution } : {}),
+      ...(context.campaignSettings
+        ? { campaignSettings: context.campaignSettings }
+        : {}),
+      current: context.current
+        ? {
+            handle: `p${context.current.sequence}`,
+            content: context.current.content,
+          }
+        : null,
+      items: context.items,
+    },
+    selectedIntention: context.selected,
   };
 }
 

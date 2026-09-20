@@ -22,7 +22,7 @@ This feature consumes storage C1/C2 and defines no second content store. C3 crea
 
 ## Phase 1 — Separate provenance from prompt loading
 
-Coordination: [context recipes R1/R2](../2026-09-19--23-59--storyteller-context-recipes/PLAN.md) owns the multi-purpose audit and active-scene continuity. Current-prose deduplication is implemented there: the provider receives its body once while the handle remains valid. Phase 1 retains ownership of broader provenance/body separation, metadata-only sources and note-source loading after C2; do not reimplement current projection.
+Coordination: the implemented [active-scene continuity contract](../../technical/context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) owns the multi-purpose audit and bounded active context. Current-prose deduplication is implemented there: the provider receives its body once while the handle remains valid. Phase 1 retains ownership of broader provenance/body separation, metadata-only sources and note-source loading after C2; do not reimplement current projection.
 
 Outcome: note-source growth and duplicated current prose no longer create avoidable overflow; required material still fails closed when genuinely too large.
 Dependencies: storage C2 document references and the implemented direct action receipt/follow-up boundary. No new agent runner.
