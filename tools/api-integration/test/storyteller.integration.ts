@@ -11,11 +11,11 @@ import { generation } from '@offscreen/db/generation-schema';
 import {
   campaign as campaignTable,
   campaignConsequence,
+  campaignReport,
   gameActionExecution,
   gameActionExecutionEvent,
   gameActionReceipt,
   gameActivity,
-  gameActivityReport,
   gameOffer,
   worldObligation,
   worldObligationEvent,
@@ -605,6 +605,7 @@ test(
           'custom-calendar winter interrupts a sixty-day journey at day fifty-five and publishes a replacement scene',
           async () => {
             const obligationId = randomUUID();
+            const reportObligationId = randomUUID();
             const started = await mechanicalCandidate(
               'frost-road.v1',
               { kind: 'instant' },
@@ -629,6 +630,23 @@ test(
                   },
                 },
                 worldObligations: [
+                  {
+                    id: reportObligationId,
+                    revision: 1,
+                    source: { id: 'frost-road-opening', revision: 1 },
+                    label: 'First snow reaches the lower road',
+                    visibility: { kind: 'hidden' },
+                    consequence: {
+                      kind: 'condition.set.v1',
+                      condition: {
+                        id: 'lower-road-snow',
+                        label: 'Lower road snow',
+                        value: true,
+                      },
+                    },
+                    followUp: 'report',
+                    due: { kind: 'tick', tick: 20 },
+                  },
                   {
                     id: obligationId,
                     revision: 1,
@@ -715,6 +733,16 @@ test(
             });
             assert.deepEqual(interrupted.campaign?.worldConditions, [
               {
+                id: 'lower-road-snow',
+                label: 'Lower road snow',
+                value: true,
+                provenance: {
+                  kind: 'world-obligation',
+                  obligationId: reportObligationId,
+                },
+                setAtTick: 20,
+              },
+              {
                 id: 'frost-pass',
                 label: 'Frost pass',
                 value: 'closed',
@@ -726,6 +754,38 @@ test(
               },
             ]);
             assert.deepEqual(interrupted.campaign?.holds, [
+              {
+                kind: 'world-obligation',
+                obligationId,
+                reason: 'controlling-event',
+              },
+            ]);
+            const report = requireDefined(
+              interrupted.campaign?.worldObligationReports[0],
+              'Expected the optional world-event report',
+            );
+            assert.equal(report.obligationId, reportObligationId);
+            assert.equal(report.sourceTick, 20);
+            assert.equal(report.state, 'generating');
+            const [reportHook] = await database.db
+              .select()
+              .from(campaignReport)
+              .where(eq(campaignReport.id, report.id));
+            await runtime.complete(
+              requireDefined(
+                reportHook?.generationId,
+                'Expected the optional report generation',
+              ),
+            );
+            const withReport = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(
+              withReport.campaign?.worldObligationReports[0]?.state,
+              'published',
+            );
+            assert.deepEqual(withReport.campaign?.holds, [
               {
                 kind: 'world-obligation',
                 obligationId,
@@ -1916,8 +1976,8 @@ test(
 
             const [reportHook] = await database.db
               .select()
-              .from(gameActivityReport)
-              .where(eq(gameActivityReport.activityId, activityId));
+              .from(campaignReport)
+              .where(eq(campaignReport.storyId, started.storyId));
             const reportGenerationId = requireDefined(
               reportHook?.generationId,
               'Expected a report generation bound to the completed wait',
@@ -2057,8 +2117,8 @@ test(
             });
             const [hook] = await database.db
               .select()
-              .from(gameActivityReport)
-              .where(eq(gameActivityReport.activityId, activityId));
+              .from(campaignReport)
+              .where(eq(campaignReport.storyId, started.storyId));
             const generationId = requireDefined(
               hook?.generationId,
               'Expected a bound report generation',

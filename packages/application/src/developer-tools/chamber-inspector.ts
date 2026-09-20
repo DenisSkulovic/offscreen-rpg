@@ -19,7 +19,7 @@ import {
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
-import { gameActivityReport } from '@offscreen/db/campaign-schema';
+import { campaignReport } from '@offscreen/db/campaign-schema';
 import {
   storytellerAttempt,
   storytellerDispatchReview,
@@ -35,6 +35,7 @@ import { z } from 'zod';
 import { parseStoryIdentifier, StoryError } from '../stories/errors';
 import { decisionPlanSchema, waitPlanSchema } from '../stories/plans';
 import { createStories } from '../stories/index';
+import { campaignReportSourceSchema } from '../campaign/report-source';
 
 type OwnedStory = Readonly<{
   ownerId: string;
@@ -205,8 +206,7 @@ export function createChamberInspector(database: Database) {
           dispatchReviewRevision: storytellerDispatchReview.revision,
           dispatchReviewMode: storytellerDispatchReview.mode,
           dispatchReviewState: storytellerDispatchReview.state,
-          dispatchReviewPacketSha256:
-            storytellerDispatchReview.packetSha256,
+          dispatchReviewPacketSha256: storytellerDispatchReview.packetSha256,
           dispatchReviewPacket: storytellerDispatchReview.packet,
           dispatchReviewInspection: storytellerDispatchReview.inspection,
           dispatchReviewPreparedAt: storytellerDispatchReview.preparedAt,
@@ -228,36 +228,41 @@ export function createChamberInspector(database: Database) {
             eq(storyResolution.baseRevision, snapshot.revision),
           ),
         );
-      const activityReports = await database.db
+      const reportRows = await database.db
         .select({
-          hookId: gameActivityReport.id,
-          activityId: gameActivityReport.activityId,
-          activityRevision: gameActivityReport.activityRevision,
-          sourcePassageId: gameActivityReport.sourcePassageId,
-          sourceRevision: gameActivityReport.sourceRevision,
-          sourceTick: gameActivityReport.sourceTick,
-          state: gameActivityReport.state,
-          generationId: gameActivityReport.generationId,
+          hookId: campaignReport.id,
+          source: campaignReport.source,
+          sourcePassageId: campaignReport.sourcePassageId,
+          sourceRevision: campaignReport.sourceRevision,
+          sourceTick: campaignReport.sourceTick,
+          state: campaignReport.state,
+          generationId: campaignReport.generationId,
           generationState: generation.state,
           generationFailureCode: generation.failureCode,
           publicationState: storytellerPublication.state,
           publicationFailureCode: storytellerPublication.failureCode,
         })
-        .from(gameActivityReport)
-        .leftJoin(
-          generation,
-          eq(generation.id, gameActivityReport.generationId),
-        )
+        .from(campaignReport)
+        .leftJoin(generation, eq(generation.id, campaignReport.generationId))
         .leftJoin(
           storytellerPublication,
-          eq(
-            storytellerPublication.generationId,
-            gameActivityReport.generationId,
-          ),
+          eq(storytellerPublication.generationId, campaignReport.generationId),
         )
-        .where(eq(gameActivityReport.storyId, id))
-        .orderBy(desc(gameActivityReport.createdAt))
-        .limit(50);
+        .where(eq(campaignReport.storyId, id))
+        .orderBy(desc(campaignReport.createdAt))
+        .limit(100);
+      const activityReports = reportRows.flatMap((report) => {
+        const source = campaignReportSourceSchema.parse(report.source);
+        return source.kind === 'activity'
+          ? [
+              {
+                ...report,
+                activityId: source.activityId,
+                activityRevision: source.activityRevision,
+              },
+            ]
+          : [];
+      });
       const costScope = sql`${storytellerAttempt.ownerId} = ${ownerId} AND (${storytellerAttempt.storyId} = ${id} OR ${storytellerAttempt.generationId} IN (SELECT ${storyPassage.sourceGenerationId} FROM ${storyPassage} WHERE ${storyPassage.storyId} = ${id} AND ${storyPassage.sourceGenerationId} IS NOT NULL) OR ${storytellerAttempt.generationId} IN (SELECT ${storyResolution.generationId} FROM ${storyResolution} WHERE ${storyResolution.storyId} = ${id}))`;
       const [costTotals] = await database.db
         .select({
@@ -452,9 +457,11 @@ export function createChamberInspector(database: Database) {
                           invariantMissing('dispatch review packet hash'),
                         packet: activeResolution.dispatchReviewPacket,
                         inspection: activeResolution.dispatchReviewInspection,
-                        preparedAt: timestampIso(
-                          activeResolution.dispatchReviewPreparedAt,
-                        ) ?? invariantMissing('dispatch review preparation time'),
+                        preparedAt:
+                          timestampIso(
+                            activeResolution.dispatchReviewPreparedAt,
+                          ) ??
+                          invariantMissing('dispatch review preparation time'),
                         reviewedAt: timestampIso(
                           activeResolution.dispatchReviewReviewedAt,
                         ),

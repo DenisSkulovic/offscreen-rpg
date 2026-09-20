@@ -2,13 +2,13 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
+  campaignReport,
   campaignSettings,
   gameActionReceipt,
   gameActionExecution,
   gameActionExecutionEvent,
   gameActivity,
   gameActivityEvent,
-  gameActivityReport,
   gameRoll,
   worldObligation,
   worldObligationEvent,
@@ -46,6 +46,7 @@ import {
   readAcceptedActivityPlan,
 } from './accepted-plans';
 import { campaignHoldsSchema } from './holds';
+import { campaignReportSourceSchema } from './report-source';
 
 function actionReceiptState(
   generationId: string | null,
@@ -114,15 +115,16 @@ export async function readCampaign(
     .where(eq(gameActivityEvent.storyId, storyId))
     .orderBy(desc(gameActivityEvent.ordinal))
     .limit(100);
-  const activityReports = await db
+  const reportRows = await db
     .select()
-    .from(gameActivityReport)
-    .where(eq(gameActivityReport.storyId, storyId))
-    .orderBy(
-      desc(gameActivityReport.sourceTick),
-      desc(gameActivityReport.createdAt),
-    )
-    .limit(50);
+    .from(campaignReport)
+    .where(eq(campaignReport.storyId, storyId))
+    .orderBy(desc(campaignReport.sourceTick), desc(campaignReport.createdAt))
+    .limit(100);
+  const reports = reportRows.map((report) => ({
+    report,
+    source: campaignReportSourceSchema.parse(report.source),
+  }));
   const obligationRows = await db
     .select()
     .from(worldObligation)
@@ -305,25 +307,62 @@ export async function readCampaign(
       summary: event.summary,
       createdAt: event.createdAt.toISOString(),
     })),
-    activityReports: activityReports.map((report) => ({
-      id: report.id,
-      activityId: report.activityId,
-      activityRevision: report.activityRevision,
-      sourceTick: report.sourceTick,
-      label: report.label,
-      factualSummary: report.factualSummary,
-      state:
-        report.state === 'published'
-          ? 'published'
-          : report.state === 'blocked' || report.state === 'omitted'
-            ? 'unavailable'
-            : report.generationId
-              ? 'generating'
-              : 'pending',
-      report: report.report,
-      createdAt: report.createdAt.toISOString(),
-      publishedAt: report.publishedAt?.toISOString() ?? null,
-    })),
+    activityReports: reports
+      .filter(
+        (
+          entry,
+        ): entry is typeof entry & {
+          source: Extract<typeof entry.source, { kind: 'activity' }>;
+        } => entry.source.kind === 'activity',
+      )
+      .slice(0, 50)
+      .map(({ report, source }) => ({
+        id: report.id,
+        activityId: source.activityId,
+        activityRevision: source.activityRevision,
+        sourceTick: report.sourceTick,
+        label: report.label,
+        factualSummary: report.factualSummary,
+        state:
+          report.state === 'published'
+            ? 'published'
+            : report.state === 'blocked' || report.state === 'omitted'
+              ? 'unavailable'
+              : report.generationId
+                ? 'generating'
+                : 'pending',
+        report: report.report,
+        createdAt: report.createdAt.toISOString(),
+        publishedAt: report.publishedAt?.toISOString() ?? null,
+      })),
+    worldObligationReports: reports
+      .filter(
+        (
+          entry,
+        ): entry is typeof entry & {
+          source: Extract<typeof entry.source, { kind: 'world-obligation' }>;
+        } => entry.source.kind === 'world-obligation',
+      )
+      .slice(0, 50)
+      .map(({ report, source }) => ({
+        id: report.id,
+        obligationId: source.obligationId,
+        obligationRevision: source.obligationRevision,
+        sourceTick: report.sourceTick,
+        label: report.label,
+        factualSummary: report.factualSummary,
+        state:
+          report.state === 'published'
+            ? 'published'
+            : report.state === 'blocked' || report.state === 'omitted'
+              ? 'unavailable'
+              : report.generationId
+                ? 'generating'
+                : 'pending',
+        report: report.report,
+        createdAt: report.createdAt.toISOString(),
+        publishedAt: report.publishedAt?.toISOString() ?? null,
+      })),
     worldConditions: worldConditionsSchema.parse(state.worldConditions),
     worldObligations: obligationRows.flatMap((row) => {
       const projected = projectPublicWorldObligation({

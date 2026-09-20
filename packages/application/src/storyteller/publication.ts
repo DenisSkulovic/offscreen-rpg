@@ -3,8 +3,8 @@ import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
+  campaignReport,
   gameActivity,
-  gameActivityReport,
 } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
@@ -60,16 +60,16 @@ export async function publishStorytellerResult(
           ownerId: record.ownerId,
         });
         const changed = await tx
-          .update(gameActivityReport)
+          .update(campaignReport)
           .set({ state: 'blocked' })
           .where(
             and(
-              eq(gameActivityReport.id, task.source.hookId),
-              eq(gameActivityReport.generationId, id),
-              eq(gameActivityReport.state, 'generating'),
+              eq(campaignReport.id, task.source.hookId),
+              eq(campaignReport.generationId, id),
+              eq(campaignReport.state, 'generating'),
             ),
           )
-          .returning({ id: gameActivityReport.id });
+          .returning({ id: campaignReport.id });
         if (changed.length) {
           await incrementStoryViewVersion(tx, {
             storyId: current.id,
@@ -107,8 +107,8 @@ export async function publishStorytellerResult(
       }
       const [hook] = await tx
         .select()
-        .from(gameActivityReport)
-        .where(eq(gameActivityReport.id, task.source.hookId))
+        .from(campaignReport)
+        .where(eq(campaignReport.id, task.source.hookId))
         .for('update');
       if (
         !hook ||
@@ -124,13 +124,13 @@ export async function publishStorytellerResult(
         return;
       }
       await tx
-        .update(gameActivityReport)
+        .update(campaignReport)
         .set({
           state: 'published',
           report: result.report,
           publishedAt: new Date(),
         })
-        .where(eq(gameActivityReport.id, hook.id));
+        .where(eq(campaignReport.id, hook.id));
       await incrementStoryViewVersion(tx, {
         storyId: current.id,
         viewVersion: current.viewVersion + 1,

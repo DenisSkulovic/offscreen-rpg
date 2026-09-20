@@ -59,6 +59,7 @@ import { applyCampaignFollowUpIntents } from './follow-up-intents';
 import {
   fireWorldObligations,
   readNearestPendingWorldObligations,
+  readPendingWorldObligations,
   type WorldObligationRecord,
 } from './world-obligations';
 
@@ -603,6 +604,7 @@ export function createCampaignActivities(database: Database) {
           {
             storyId: current.id,
             throughTick: Number.MAX_SAFE_INTEGER,
+            followUp: 'controlling-scene',
           },
         );
         const controllingObligation = controllingObligations[0] ?? null;
@@ -614,6 +616,11 @@ export function createCampaignActivities(database: Database) {
           now,
           controllingObligation,
         );
+        const reportObligations = await readPendingWorldObligations(tx, {
+          storyId: current.id,
+          throughTick: settled.state.tick,
+          followUp: 'report',
+        });
         if (
           controllingObligation &&
           settled.state.tick >= controllingObligation.dueTick
@@ -638,7 +645,7 @@ export function createCampaignActivities(database: Database) {
             tx,
             current,
             settled.state,
-            controllingObligations,
+            [...reportObligations, ...controllingObligations],
             now,
           );
           await incrementStoryViewVersion(tx, {
@@ -647,6 +654,13 @@ export function createCampaignActivities(database: Database) {
           });
           return null;
         }
+        const settledState = await fireWorldObligations(
+          tx,
+          current,
+          settled.state,
+          reportObligations,
+          now,
+        );
         if (settled.activity.state !== 'running') {
           return null;
         }
@@ -655,20 +669,20 @@ export function createCampaignActivities(database: Database) {
           settled.activity.progress,
         );
         const { clock: progress, pace } = projectCampaignClock(
-          settled.state,
+          settledState,
           now,
           {
             kind: 'accepted-activity',
             activityId: settled.activity.id,
           },
-          campaignClockHeld(settled.state),
-          settled.state.tick,
+          campaignClockHeld(settledState),
+          settledState.tick,
           controllingObligation
-            ? Math.max(settled.state.tick, controllingObligation.dueTick)
+            ? Math.max(settledState.tick, controllingObligation.dueTick)
             : undefined,
         );
         const nextWorldBoundary = worldTickForEffortBoundary({
-          campaignTick: settled.state.tick,
+          campaignTick: settledState.tick,
           retainedEffortTicks: storedProgress.effortTicks,
           boundaryEffortTick: nextBoundaryTick(plan, plan.resolvedThroughTick),
         });
@@ -677,7 +691,7 @@ export function createCampaignActivities(database: Database) {
           Math.min(
             nextWorldBoundary,
             controllingObligation
-              ? Math.max(settled.state.tick, controllingObligation.dueTick)
+              ? Math.max(settledState.tick, controllingObligation.dueTick)
               : nextWorldBoundary,
           ),
           pace,

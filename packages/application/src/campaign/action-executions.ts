@@ -24,6 +24,7 @@ import { campaignClockHeld } from './holds';
 import {
   fireWorldObligations,
   readNearestPendingWorldObligations,
+  readPendingWorldObligations,
 } from './world-obligations';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
@@ -74,6 +75,7 @@ export async function settleActionExecution(
   const controllingObligations = await readNearestPendingWorldObligations(tx, {
     storyId: current.id,
     throughTick: execution.targetTick,
+    followUp: 'controlling-scene',
   });
   const controllingObligation = controllingObligations[0] ?? null;
   const transition = decideActionExecutionTransition({
@@ -121,12 +123,17 @@ export async function settleActionExecution(
         activeActionOperationId: null,
       })
       .where(eq(campaign.storyId, current.id));
+    const reportObligations = await readPendingWorldObligations(tx, {
+      storyId: current.id,
+      throughTick: transition.campaign.tick,
+      followUp: 'report',
+    });
     const interruptedCampaign = controllingObligation
       ? await fireWorldObligations(
           tx,
           current,
           transition.campaign,
-          controllingObligations,
+          [...reportObligations, ...controllingObligations],
           now,
         )
       : transition.campaign;
@@ -180,13 +187,25 @@ export async function settleActionExecution(
       activeActionOperationId: null,
     })
     .where(eq(campaign.storyId, current.id));
+  const reportObligations = await readPendingWorldObligations(tx, {
+    storyId: current.id,
+    throughTick: transition.campaign.tick,
+    followUp: 'report',
+  });
+  const campaignWithReports = await fireWorldObligations(
+    tx,
+    current,
+    transition.campaign,
+    reportObligations,
+    now,
+  );
   await incrementStoryViewVersion(tx, {
     storyId: current.id,
     viewVersion: current.viewVersion + 1,
   });
   const settledCampaign = await applyCampaignFollowUpIntents(
     tx,
-    transition.campaign,
+    campaignWithReports,
     transition.followUps,
     now,
   );

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import { gameActivityReport, gameRoll } from '@offscreen/db/campaign-schema';
+import { campaignReport, gameRoll } from '@offscreen/db/campaign-schema';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { offerSchema } from '@offscreen/game/offers';
 import type { OutcomeEffect } from '@offscreen/game/effects';
@@ -14,28 +14,36 @@ import { insertStorytellerTask } from '../storyteller/records';
 import type { ActivityRecord, CampaignRecord } from './persistence';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
+import {
+  campaignReportSourceKey,
+  campaignReportSourceSchema,
+  type CampaignReportSource,
+} from './report-source';
 
-/** Capture immutable evidence at the mechanical boundary, before later play. */
-export async function requestActivityReport(
+async function requestHistoricalReport(
   tx: Transaction,
   args: {
     current: StoryRecord;
     state: CampaignRecord;
-    activity: ActivityRecord;
+    source: CampaignReportSource;
+    selectedId: string;
+    sourceTick: number;
     passageId: string;
     label: string;
     intention: string;
     factualSummary: string;
-    completionEffects: readonly OutcomeEffect[];
+    effects: readonly OutcomeEffect[];
+    receipts?: ReadonlyArray<{
+      id: string;
+      roll: unknown;
+      effects: unknown;
+      declarations: readonly [];
+    }>;
   },
 ) {
+  const source = campaignReportSourceSchema.parse(args.source);
   const hookId = randomUUID();
   const generationId = randomUUID();
-  const rolls = await tx
-    .select()
-    .from(gameRoll)
-    .where(eq(gameRoll.operationId, args.activity.id))
-    .orderBy(gameRoll.segment, gameRoll.checkKey);
   const baseContext = await loadStorytellerContext(tx, {
     storyId: args.current.id,
     revision: args.current.revision,
@@ -43,7 +51,7 @@ export async function requestActivityReport(
     notes: args.current.continuityNotes,
     activeSceneScope: args.current.activeSceneScope,
     selected: {
-      id: args.activity.id,
+      id: args.selectedId,
       label: args.label,
       intention: args.intention,
     },
@@ -71,15 +79,10 @@ export async function requestActivityReport(
               id: hookId,
               text: args.factualSummary,
               roll: null,
-              effects: args.completionEffects,
+              effects: args.effects,
               declarations: [],
             },
-            ...rolls.map((roll) => ({
-              id: roll.id,
-              roll: roll.result,
-              effects: roll.effects,
-              declarations: [],
-            })),
+            ...(args.receipts ?? []),
           ],
         },
       }),
@@ -93,17 +96,83 @@ export async function requestActivityReport(
     ownerId: args.current.ownerId,
     task,
   });
-  await tx.insert(gameActivityReport).values({
+  await tx.insert(campaignReport).values({
     id: hookId,
     storyId: args.current.id,
-    activityId: args.activity.id,
-    activityRevision: args.activity.revision,
+    sourceKey: campaignReportSourceKey(source),
+    source,
     sourcePassageId: args.passageId,
     sourceRevision: args.current.revision,
-    sourceTick: args.state.tick,
+    sourceTick: args.sourceTick,
     label: args.label,
     factualSummary: args.factualSummary,
     state: 'generating',
     generationId,
+  });
+}
+
+/** Capture immutable evidence at the mechanical boundary, before later play. */
+export async function requestActivityReport(
+  tx: Transaction,
+  args: {
+    current: StoryRecord;
+    state: CampaignRecord;
+    activity: ActivityRecord;
+    passageId: string;
+    label: string;
+    intention: string;
+    factualSummary: string;
+    completionEffects: readonly OutcomeEffect[];
+  },
+) {
+  const rolls = await tx
+    .select()
+    .from(gameRoll)
+    .where(eq(gameRoll.operationId, args.activity.id))
+    .orderBy(gameRoll.segment, gameRoll.checkKey);
+  await requestHistoricalReport(tx, {
+    ...args,
+    source: {
+      kind: 'activity',
+      activityId: args.activity.id,
+      activityRevision: args.activity.revision,
+    },
+    selectedId: args.activity.id,
+    sourceTick: args.state.tick,
+    effects: args.completionEffects,
+    receipts: rolls.map((roll) => ({
+      id: roll.id,
+      roll: roll.result,
+      effects: roll.effects,
+      declarations: [],
+    })),
+  });
+}
+
+/** Records optional prose about an already committed world transition. */
+export async function requestWorldObligationReport(
+  tx: Transaction,
+  args: {
+    current: StoryRecord;
+    state: CampaignRecord;
+    passageId: string;
+    obligationId: string;
+    obligationRevision: number;
+    dueTick: number;
+    label: string;
+    factualSummary: string;
+  },
+) {
+  await requestHistoricalReport(tx, {
+    ...args,
+    source: {
+      kind: 'world-obligation',
+      obligationId: args.obligationId,
+      obligationRevision: args.obligationRevision,
+    },
+    selectedId: args.obligationId,
+    sourceTick: args.dueTick,
+    intention: args.factualSummary,
+    effects: [],
   });
 }

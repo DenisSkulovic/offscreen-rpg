@@ -59,6 +59,7 @@ export function createWorldObligationControls(database: Database) {
       const nearest = await readNearestPendingWorldObligations(tx, {
         storyId: current.id,
         throughTick: Number.MAX_SAFE_INTEGER,
+        followUp: 'controlling-scene',
       });
       const nearestTick = nearest[0]?.dueTick;
       const [action] = state.activeActionOperationId

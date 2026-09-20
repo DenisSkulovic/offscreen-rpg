@@ -1,5 +1,5 @@
 {
-  "id": "ec8dac05-5368-4a18-9cd4-029a07edd2e5",
+  "id": "a7204c46-8720-435f-b465-a882515acd5f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -703,6 +703,161 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.campaign_report": {
+      "name": "campaign_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_key": {
+          "name": "source_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_passage_id": {
+          "name": "source_passage_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_revision": {
+          "name": "source_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_tick": {
+          "name": "source_tick",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "factual_summary": {
+          "name": "factual_summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "generation_id": {
+          "name": "generation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "report": {
+          "name": "report",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "campaign_report_story_id_story_id_fk": {
+          "name": "campaign_report_story_id_story_id_fk",
+          "tableFrom": "campaign_report",
+          "tableTo": "story",
+          "columnsFrom": [
+            "story_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "campaign_report_source_passage_id_story_passage_id_fk": {
+          "name": "campaign_report_source_passage_id_story_passage_id_fk",
+          "tableFrom": "campaign_report",
+          "tableTo": "story_passage",
+          "columnsFrom": [
+            "source_passage_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "campaign_report_generation_id_generation_id_fk": {
+          "name": "campaign_report_generation_id_generation_id_fk",
+          "tableFrom": "campaign_report",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "campaign_report_generation_id_unique": {
+          "name": "campaign_report_generation_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "generation_id"
+          ]
+        },
+        "campaign_report_source": {
+          "name": "campaign_report_source",
+          "nullsNotDistinct": false,
+          "columns": [
+            "story_id",
+            "source_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.campaign_settings": {
       "name": "campaign_settings",
       "schema": "",
@@ -1325,174 +1480,6 @@
             "activity_id",
             "cause_key",
             "kind"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.game_activity_report": {
-      "name": "game_activity_report",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "story_id": {
-          "name": "story_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "activity_id": {
-          "name": "activity_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "activity_revision": {
-          "name": "activity_revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_passage_id": {
-          "name": "source_passage_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_revision": {
-          "name": "source_revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_tick": {
-          "name": "source_tick",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "factual_summary": {
-          "name": "factual_summary",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "generation_id": {
-          "name": "generation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "report": {
-          "name": "report",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "published_at": {
-          "name": "published_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "game_activity_report_story_id_story_id_fk": {
-          "name": "game_activity_report_story_id_story_id_fk",
-          "tableFrom": "game_activity_report",
-          "tableTo": "story",
-          "columnsFrom": [
-            "story_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "game_activity_report_activity_id_game_activity_id_fk": {
-          "name": "game_activity_report_activity_id_game_activity_id_fk",
-          "tableFrom": "game_activity_report",
-          "tableTo": "game_activity",
-          "columnsFrom": [
-            "activity_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "game_activity_report_source_passage_id_story_passage_id_fk": {
-          "name": "game_activity_report_source_passage_id_story_passage_id_fk",
-          "tableFrom": "game_activity_report",
-          "tableTo": "story_passage",
-          "columnsFrom": [
-            "source_passage_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "game_activity_report_generation_id_generation_id_fk": {
-          "name": "game_activity_report_generation_id_generation_id_fk",
-          "tableFrom": "game_activity_report",
-          "tableTo": "generation",
-          "columnsFrom": [
-            "generation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "game_activity_report_generation_id_unique": {
-          "name": "game_activity_report_generation_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "generation_id"
-          ]
-        },
-        "game_activity_report_hook": {
-          "name": "game_activity_report_hook",
-          "nullsNotDistinct": false,
-          "columns": [
-            "activity_id",
-            "activity_revision"
           ]
         }
       },

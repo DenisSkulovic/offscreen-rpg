@@ -58,7 +58,7 @@ const obligationIdentitySchema = z.strictObject({
       value: z.union([z.string().trim().min(1).max(300), z.boolean()]),
     }),
   }),
-  followUp: z.literal('controlling-scene'),
+  followUp: z.enum(['controlling-scene', 'report']),
 });
 
 export const worldObligationDueSchema = z.discriminatedUnion('kind', [

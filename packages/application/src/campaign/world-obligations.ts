@@ -17,12 +17,17 @@ import type { StoryRecord } from '../stories/persistence';
 import { campaignHoldsSchema } from './holds';
 import type { CampaignRecord } from './persistence';
 import { campaignConsequenceTopic } from './topics';
+import { requestWorldObligationReport } from './reports';
 
 export type WorldObligationRecord = typeof worldObligation.$inferSelect;
 
-export async function readNearestPendingWorldObligations(
+export async function readPendingWorldObligations(
   tx: Transaction,
-  args: { storyId: string; throughTick: number },
+  args: {
+    storyId: string;
+    throughTick: number;
+    followUp?: 'controlling-scene' | 'report';
+  },
 ) {
   const records = await tx
     .select()
@@ -35,13 +40,31 @@ export async function readNearestPendingWorldObligations(
       ),
     )
     .orderBy(asc(worldObligation.dueTick), asc(worldObligation.id));
+  return args.followUp
+    ? records.filter(
+        (record) =>
+          worldObligationSchema.parse(record.definition).followUp ===
+          args.followUp,
+      )
+    : records;
+}
+
+export async function readNearestPendingWorldObligations(
+  tx: Transaction,
+  args: {
+    storyId: string;
+    throughTick: number;
+    followUp?: 'controlling-scene' | 'report';
+  },
+) {
+  const records = await readPendingWorldObligations(tx, args);
   const nearestTick = records[0]?.dueTick;
   return nearestTick === undefined
     ? []
     : records.filter((record) => record.dueTick === nearestTick);
 }
 
-/** Commits the nearest equal-tick set with independent receipts and one hold. */
+/** Commits due effects atomically; only controlling follow-ups freeze play. */
 export async function fireWorldObligations(
   tx: Transaction,
   current: StoryRecord,
@@ -59,9 +82,6 @@ export async function fireWorldObligations(
     }
     return obligation;
   });
-  if (new Set(obligations.map((item) => item.dueTick)).size !== 1) {
-    throw new Error('Controlling world obligations must share one due tick');
-  }
   const fired = [];
   for (let index = 0; index < records.length; index++) {
     const record = records[index]!;
@@ -89,14 +109,24 @@ export async function fireWorldObligations(
       applyWorldObligationCondition({ conditions, obligation }),
     state.worldConditions,
   );
-  const controlling = fired[0]!;
+  const controlling = fired.filter(
+    (obligation) => obligation.followUp === 'controlling-scene',
+  );
+  if (new Set(controlling.map((item) => item.dueTick)).size > 1) {
+    throw new Error('Controlling world obligations must share one due tick');
+  }
+  const controllingOwner = controlling[0] ?? null;
   const holds = campaignHoldsSchema.parse([
     ...campaignHoldsSchema.parse(state.holds),
-    {
-      kind: 'world-obligation',
-      obligationId: controlling.id,
-      reason: 'controlling-event',
-    },
+    ...(controllingOwner
+      ? [
+          {
+            kind: 'world-obligation' as const,
+            obligationId: controllingOwner.id,
+            reason: 'controlling-event' as const,
+          },
+        ]
+      : []),
   ]);
   await tx.insert(worldObligationEvent).values(
     fired.map((obligation) => ({
@@ -122,39 +152,62 @@ export async function fireWorldObligations(
   if (!passage) {
     throw new Error('Missing current passage for world obligation');
   }
-  const label = fired
-    .map((obligation) => obligation.label)
-    .join(' / ')
-    .slice(0, 200);
-  const intention = fired
-    .map(
-      (obligation) =>
-        `${obligation.label}: ${obligation.consequence.condition.label} is now ${String(obligation.consequence.condition.value)}.`,
-    )
-    .join(' ')
-    .slice(0, 500);
-  await tx.insert(campaignConsequence).values({
-    operationId: controlling.id,
-    storyId: state.storyId,
-    passageId: passage.id,
-    baseRevision: current.revision,
-    receipt: {
-      kind: 'world-obligation',
+  if (controllingOwner) {
+    const label = controlling
+      .map((obligation) => obligation.label)
+      .join(' / ')
+      .slice(0, 200);
+    const intention = controlling
+      .map(
+        (obligation) =>
+          `${obligation.label}: ${obligation.consequence.condition.label} is now ${String(obligation.consequence.condition.value)}.`,
+      )
+      .join(' ')
+      .slice(0, 500);
+    await tx.insert(campaignConsequence).values({
+      operationId: controllingOwner.id,
+      storyId: state.storyId,
       passageId: passage.id,
-      operationId: controlling.id,
-      obligationIds: fired.map((obligation) => obligation.id),
-      label,
-      intention,
-    },
-  });
-  await enqueue(tx, {
-    id: randomUUID(),
-    operationId: controlling.id,
-    topic: campaignConsequenceTopic,
-  });
+      baseRevision: current.revision,
+      receipt: {
+        kind: 'world-obligation',
+        passageId: passage.id,
+        operationId: controllingOwner.id,
+        obligationIds: controlling.map((obligation) => obligation.id),
+        label,
+        intention,
+      },
+    });
+    await enqueue(tx, {
+      id: randomUUID(),
+      operationId: controllingOwner.id,
+      topic: campaignConsequenceTopic,
+    });
+  }
   await tx
     .update(campaign)
     .set({ worldConditions, holds, clockAnchorAt: new Date(now) })
     .where(eq(campaign.storyId, state.storyId));
-  return { ...state, worldConditions, holds, clockAnchorAt: new Date(now) };
+  const nextState = {
+    ...state,
+    worldConditions,
+    holds,
+    clockAnchorAt: new Date(now),
+  };
+  for (const obligation of fired) {
+    if (obligation.followUp !== 'report') {
+      continue;
+    }
+    await requestWorldObligationReport(tx, {
+      current,
+      state: nextState,
+      passageId: passage.id,
+      obligationId: obligation.id,
+      obligationRevision: obligation.revision,
+      dueTick: obligation.dueTick,
+      label: obligation.label,
+      factualSummary: `${obligation.consequence.condition.label} became ${String(obligation.consequence.condition.value)} at tick ${obligation.dueTick}.`,
+    });
+  }
+  return nextState;
 }

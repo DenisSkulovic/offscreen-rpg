@@ -191,17 +191,15 @@ export const gameActivityEvent = pgTable(
     unique('game_activity_event_cause').on(t.activityId, t.causeKey, t.kind),
   ],
 );
-export const gameActivityReport = pgTable(
-  'game_activity_report',
+export const campaignReport = pgTable(
+  'campaign_report',
   {
     id: uuid('id').primaryKey(),
     storyId: uuid('story_id')
       .notNull()
       .references(() => story.id, { onDelete: 'cascade' }),
-    activityId: uuid('activity_id')
-      .notNull()
-      .references(() => gameActivity.id),
-    activityRevision: integer('activity_revision').notNull(),
+    sourceKey: text('source_key').notNull(),
+    source: jsonb('source').notNull().$type<unknown>(),
     sourcePassageId: uuid('source_passage_id')
       .notNull()
       .references(() => storyPassage.id, { onDelete: 'cascade' }),
@@ -222,9 +220,7 @@ export const gameActivityReport = pgTable(
       precision: 3,
     }),
   },
-  (t) => [
-    unique('game_activity_report_hook').on(t.activityId, t.activityRevision),
-  ],
+  (t) => [unique('campaign_report_source').on(t.storyId, t.sourceKey)],
 );
 export const gameRoll = pgTable(
   'game_roll',
