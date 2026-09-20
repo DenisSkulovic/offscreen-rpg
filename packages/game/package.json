@@ -23,6 +23,10 @@
       "types": "./dist/src/time.d.ts",
       "default": "./dist/src/time.js"
     },
+    "./calendar": {
+      "types": "./dist/src/calendar.d.ts",
+      "default": "./dist/src/calendar.js"
+    },
     "./activities": {
       "types": "./dist/src/activities.d.ts",
       "default": "./dist/src/activities.js"

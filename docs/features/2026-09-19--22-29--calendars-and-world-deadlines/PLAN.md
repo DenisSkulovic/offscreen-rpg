@@ -5,7 +5,7 @@ Scope: prepared design/handoff; no runtime changes in this pass. Cursor is the d
 
 ## K1 — Bounded time definitions and calendar conversion
 
-Status: ready as a pure-domain slice; connected start/settings/offer display follows deliberate-time T2's duration contract.
+Status: implemented and checked; K2 is the next feature phase.
 Outcome: stable world-time definitions and deterministic date conversions without special-casing settings in shared handlers.
 
 Owners: game time and a cohesive calendar-policy module/export; contracts for campaign setup/snapshot; application campaign settings/start/reads; captured campaign time definition in the single DB baseline; content fixtures; bounded Storyteller temporal projection. Read current package exports and persistence ownership before choosing module splits.
@@ -49,9 +49,11 @@ Exit: connected offline timed story plus ordinal/custom date variants, truthful 
 
 ## Current checkpoint
 
-- Phase: prepared; nearest project work remains deliberate-time T1/T2. K1 can then supply concrete calendar projection, followed by K2 before time-sensitive overlap acceptance.
-- Reviewed base: `7fe626a`, clean tree before this pass. Documentation changes only; no runtime/schema edits.
-- Investigation: existing game time supports rational tick rates; campaign activities settle their own due boundaries. No custom calendar definition or campaign-level calendar/deadline model was found in the inspected time/campaign owners. Existing tick/hold structure is reusable, but scheduled-world obligations require implementation.
-- Verification: source/design reasoning only; no tests/builds/provider calls. Planned QA traces are not executed evidence.
-- Open scope: optional advanced calendar and era/season behavior remains deferred as specified. Numerical calendar data belongs to fixtures/content.
+- Phase: K1 complete. Implement K2 world obligations next before accepting time-sensitive overlap in deliberate-time T3.
+- Base: implementation followed deliberate-time T2 at `2bb8d10`; this checkpoint is awaiting its K1 commit.
+- Implemented: strict elapsed, ordinal-day and fixed unequal-month named-year definitions; deterministic projection/date compilation; day-preserving month addition with invalid-date rejection; duration formatting; immutable capture in versioned campaign settings; public snapshot and play-surface projection; compact server-computed Storyteller time; retry conflict protection; calendar QA catalogue variants.
+- Boundary: the monotonic campaign tick remains authority. Calendar definitions name it and pace changes do not reinterpret it. K1 creates no schedule records, deadlines, seasonal effects or autonomous advancement.
+- Benchmark reasoning: the Ember/Rain/Frost fixture proves unequal-month arithmetic and exact 55-day month addition. Ordinal Bloom days and elapsed cell cycles exercise non-Earth and abstract worlds without requiring human calendar concepts.
+- Verification: 29/29 game tests passed, including four calendar policy tests. Game, contracts and Storyteller builds passed; Storyteller, application and web affected-package typechecks passed. No provider calls were made.
+- Open scope: K2 finite world obligations, ordering and recovery; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

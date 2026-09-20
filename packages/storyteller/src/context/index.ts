@@ -1,4 +1,5 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { worldTimeViewSchema } from '@offscreen/game/calendar';
 import {
   immediateActionPlanSchema,
   storyFactDeclarationsSchema,
@@ -13,6 +14,10 @@ import {
   passageContentSchema,
   storyItemsSchema,
 } from '@offscreen/contracts/stories';
+
+export const storytellerCampaignSettingsSchema = campaignSettingsSchema.omit({
+  time: true,
+});
 import { activityAccessSchema } from '@offscreen/game/immediate-actions';
 import { premiseContentSchema } from './premise';
 import { continuityNotesSchema } from './continuity';
@@ -127,7 +132,8 @@ export const contextInputSchema = z.strictObject({
         .max(192),
     })
     .optional(),
-  campaignSettings: campaignSettingsSchema.optional(),
+  campaignSettings: storytellerCampaignSettingsSchema.optional(),
+  campaignTime: worldTimeViewSchema.optional(),
   premise: premiseContentSchema,
   current: evidencePassageSchema.nullable(),
   items: storyItemsSchema,
@@ -184,6 +190,7 @@ export function contextRequestSections(context: StorytellerContext) {
       ...(context.campaignSettings
         ? { campaignSettings: context.campaignSettings }
         : {}),
+      ...(context.campaignTime ? { campaignTime: context.campaignTime } : {}),
       current: context.current
         ? {
             handle: `p${context.current.sequence}`,

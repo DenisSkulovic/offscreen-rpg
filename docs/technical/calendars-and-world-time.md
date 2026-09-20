@@ -1,6 +1,8 @@
 # Calendars and consequential world time
 
-Status: prepared design, runtime unimplemented. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19. The [feature plan](../features/2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md) scopes delivery. [Time and autonomy](../time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [tick arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [committed time](committed-time.md) owns permission to advance it.
+Status: K1 calendar projection is implemented; K2 consequential world schedules remain unimplemented. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19. The [feature plan](../features/2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md) scopes delivery. [Time and autonomy](../time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [tick arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [committed time](committed-time.md) owns permission to advance it.
+
+K1 stores the immutable definition in versioned campaign settings, projects a public current label from the authoritative tick, formats durations, and supplies Storyteller tasks with only the compact projected value. The default is honest elapsed ticks; setup may instead admit ordinal days or one fixed unequal-month repeating year. Pace revisions preserve the definition. This does not create scheduled effects, season mechanics, or another clock.
 
 ## One chronology, optional ways of naming it
 

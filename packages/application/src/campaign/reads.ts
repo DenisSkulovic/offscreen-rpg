@@ -18,6 +18,7 @@ import {
   campaignSettingsSchema,
   type CampaignView,
 } from '@offscreen/contracts/campaign';
+import { projectWorldTime } from '@offscreen/game/calendar';
 import {
   activityProgressSchema,
   estimatedCompletionBoundaryTick,
@@ -227,12 +228,14 @@ export async function readCampaign(
       ),
     )
     .map(projectActivity);
+  const settings = campaignSettingsSchema.parse(row.settings);
   return campaignViewSchema.parse({
-    settings: campaignSettingsSchema.parse(row.settings),
+    settings,
     character: state.character,
     storyFacts: state.storyFacts,
     location: state.location,
     tick: state.tick,
+    worldTime: projectWorldTime(settings.time, state.tick),
     holds,
     offer: state.offer,
     activityAccess: situationAuthorizationSchema.parse(

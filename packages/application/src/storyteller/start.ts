@@ -126,7 +126,8 @@ export async function startStorytellerCandidate(
       const accepted = campaignSettingsSchema.parse(initialSettings.settings);
       if (
         accepted.locked !== options.locked ||
-        !isDeepStrictEqual(accepted.pace, options.pace)
+        !isDeepStrictEqual(accepted.pace, options.pace) ||
+        !isDeepStrictEqual(accepted.time, options.time)
       ) {
         throw new StoryError('conflict');
       }

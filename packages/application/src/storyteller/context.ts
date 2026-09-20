@@ -8,6 +8,8 @@ import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
 import { contextInputSchema } from '@offscreen/storyteller/context';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
+import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
+import { projectWorldTime } from '@offscreen/game/calendar';
 import type { Transaction } from '../outbox/index';
 import {
   activityProgressSchema,
@@ -153,6 +155,12 @@ export async function loadStorytellerContext(
   if (settingsRow && !captured) {
     throw new Error('Missing captured campaign settings');
   }
+  const acceptedSettings = captured
+    ? campaignSettingsSchema.parse(captured.settings)
+    : null;
+  const compactSettings = acceptedSettings
+    ? (({ time: _time, ...settings }) => settings)(acceptedSettings)
+    : null;
   const commitments = settingsRow
     ? await tx
         .select()
@@ -223,7 +231,15 @@ export async function loadStorytellerContext(
         }
       : {}),
     ...(activitySituation ? { activitySituation } : {}),
-    ...(captured ? { campaignSettings: captured.settings } : {}),
+    ...(compactSettings ? { campaignSettings: compactSettings } : {}),
+    ...(acceptedSettings && settingsRow
+      ? {
+          campaignTime: projectWorldTime(
+            acceptedSettings.time,
+            settingsRow.tick,
+          ),
+        }
+      : {}),
     premise: input.premise,
     current,
     items,

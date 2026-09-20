@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import type { CampaignView } from '@offscreen/contracts/campaign';
 import type { Pace } from '@offscreen/game/time';
+import { formatWorldDuration } from '@offscreen/game/calendar';
 import { useCampaignCommand } from './use-campaign-command';
 
 export const paceOptions: { label: string; value: string; pace: Pace }[] = [
@@ -59,6 +60,7 @@ export function CampaignPlay({
         {campaign.character?.maxHp}
         {campaign.location ? ` · ${campaign.location}` : ''}
       </p>
+      <p>World time: {campaign.worldTime.label}</p>
       <p>
         {campaign.activityAccess.kind === 'selected'
           ? 'This situation permits selected extended activities.'
@@ -80,8 +82,12 @@ export function CampaignPlay({
         <div role="status">
           <p>
             <strong>{actionExecution.label}</strong> is {actionExecution.state}{' '}
-            from tick {actionExecution.startTick} to tick{' '}
-            {actionExecution.targetTick}.
+            for{' '}
+            {formatWorldDuration(
+              campaign.settings.time,
+              actionExecution.targetTick - actionExecution.startTick,
+            )}
+            .
             {actionExecution.dueAt
               ? ` Expected around ${new Date(actionExecution.dueAt).toLocaleTimeString()}.`
               : ' Campaign time is currently held.'}{' '}
@@ -166,7 +172,7 @@ export function CampaignPlay({
             {activity.progress.label}:{' '}
             {activity.progress.kind === 'contribution'
               ? `${activity.progress.earned}/${activity.progress.required}`
-              : `${activity.progress.elapsedTicks}/${activity.progress.requiredTicks} ticks`}{' '}
+              : `${formatWorldDuration(campaign.settings.time, activity.progress.elapsedTicks)} / ${formatWorldDuration(campaign.settings.time, activity.progress.requiredTicks)}`}{' '}
             · {activity.state}. {activity.boundariesSettled} mechanical
             boundaries settled.
           </p>
@@ -265,7 +271,7 @@ export function CampaignPlay({
                 {commitment.progress.label}:{' '}
                 {commitment.progress.kind === 'contribution'
                   ? `${commitment.progress.earned}/${commitment.progress.required}`
-                  : `${commitment.progress.elapsedTicks}/${commitment.progress.requiredTicks} ticks`}
+                  : `${formatWorldDuration(campaign.settings.time, commitment.progress.elapsedTicks)} / ${formatWorldDuration(campaign.settings.time, commitment.progress.requiredTicks)}`}
                 . Time is not advancing this work.
               </p>
             </article>

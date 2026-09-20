@@ -8,6 +8,11 @@ import {
 import { offerSchema } from '@offscreen/game/offers';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { paceSchema } from '@offscreen/game/time';
+import {
+  defaultWorldTimeDefinition,
+  worldTimeDefinitionSchema,
+  worldTimeViewSchema,
+} from '@offscreen/game/calendar';
 import { storytellerReferenceSchema } from './storytellers';
 
 export const narrativeTagSchema = z.strictObject({
@@ -31,6 +36,7 @@ export const campaignSettingsSchema = z.strictObject({
   revision: z.number().int().positive(),
   creative: creativeSettingsSchema,
   pace: paceSchema,
+  time: worldTimeDefinitionSchema.default(defaultWorldTimeDefinition),
   locked: z.boolean(),
   rules: z.literal('srd-5.2.1-subset.v1'),
   risk: z.literal('nonlethal'),
@@ -160,6 +166,7 @@ export const campaignViewSchema = z.strictObject({
   storyFacts: storyFactsSchema,
   location: z.string().nullable(),
   tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  worldTime: worldTimeViewSchema,
   holds: z.array(
     z.discriminatedUnion('kind', [
       z.strictObject({
@@ -296,5 +303,6 @@ export const campaignStartSchema = z.strictObject({
   mechanics: z.boolean().default(false),
   locked: z.boolean().default(false),
   pace: paceSchema.default({ kind: 'rate', ticks: 1, realMs: 1000 }),
+  time: worldTimeDefinitionSchema.default(defaultWorldTimeDefinition),
 });
 export type CampaignStart = z.infer<typeof campaignStartSchema>;

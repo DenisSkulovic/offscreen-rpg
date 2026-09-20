@@ -15,6 +15,7 @@ import {
   type CreativeSettings,
   type CampaignStart,
 } from '@offscreen/contracts/campaign';
+import { defaultWorldTimeDefinition } from '@offscreen/game/calendar';
 import {
   storytellerCatalogue,
   storytellerProfileSchema,
@@ -71,6 +72,7 @@ export async function initializeCampaign(
     revision: 1,
     creative: initialCreative(profile),
     pace: options.pace,
+    time: options.time,
     locked: options.locked,
     rules: 'srd-5.2.1-subset.v1',
     risk: 'nonlethal',
@@ -258,6 +260,7 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
       mechanics: false,
       locked: false,
       pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+      time: defaultWorldTimeDefinition,
     },
   );
   const [created] = await tx

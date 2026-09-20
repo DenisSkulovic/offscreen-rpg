@@ -1086,6 +1086,96 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
   }),
   defineCase({
+    id: 'calendar-projection',
+    version: 1,
+    name: 'Captured calendar projection',
+    purpose:
+      'Confirm that one admitted elapsed, ordinal, or unequal-month calendar names the shared campaign clock without changing its authority.',
+    risk: 'A display calendar can silently reinterpret time, depend on Earth dates, or ask the Storyteller to perform arithmetic.',
+    costClass: 'offline',
+    availability: { state: 'available' },
+    prerequisites: [
+      'Use an offline mechanical campaign start with an explicit time definition.',
+      'Do not configure a provider route.',
+    ],
+    initialScenario: null,
+    drivers: ['api-script'],
+    variants: [
+      {
+        id: 'elapsed-cycle',
+        name: 'Elapsed cycles',
+        description: 'Projects a nonhuman cycle unit without inventing days.',
+        availability: { state: 'available' },
+        prerequisites: ['Admit an elapsed-unit definition.'],
+      },
+      {
+        id: 'ordinal-day',
+        name: 'Ordinal days',
+        description: 'Projects a positive day count from a nonzero epoch.',
+        availability: { state: 'available' },
+        prerequisites: ['Admit an ordinal-day definition.'],
+      },
+      {
+        id: 'unequal-months',
+        name: 'Unequal named months',
+        description: 'Projects a repeating year whose month lengths differ.',
+        availability: { state: 'available' },
+        prerequisites: ['Admit a named-year definition.'],
+      },
+      {
+        id: 'world-deadline',
+        name: 'Consequential deadline',
+        description: 'Interrupts accepted work at an exact world obligation.',
+        availability: {
+          state: 'planned',
+          reason: 'World schedule admission and settlement belong to K2.',
+        },
+        prerequisites: ['Implement K2 world obligations.'],
+      },
+    ],
+    stages: [
+      stage({
+        id: 'admit',
+        name: 'Admit one immutable time definition',
+        importance: 'major',
+        preconditions: ['The selected variant definition is valid.'],
+        action:
+          'Start the campaign with the selected definition and reload it.',
+        observableExpectation:
+          'The snapshot shows the selected mode and a truthful current label.',
+        authoritativeExpectation:
+          'Versioned campaign settings retain the exact definition and epoch.',
+      }),
+      stage({
+        id: 'advance',
+        name: 'Project the settled campaign tick',
+        importance: 'major',
+        preconditions: ['A finite accepted action can advance campaign time.'],
+        action: 'Settle the action and read the campaign again.',
+        observableExpectation:
+          'The date and duration labels advance by the admitted definition.',
+        authoritativeExpectation:
+          'The monotonic tick remains authoritative and the compact Storyteller context contains the server-projected date.',
+      }),
+      stage({
+        id: 'pace',
+        name: 'Change pace without changing chronology',
+        importance: 'major',
+        preconditions: ['Campaign speed is editable.'],
+        action: 'Change pace and read the same settled tick.',
+        observableExpectation: 'The world date at that tick is unchanged.',
+        authoritativeExpectation:
+          'The new settings revision preserves the captured definition and epoch exactly.',
+      }),
+    ],
+    evidenceRequirements: [stateEvidence],
+    resetPolicy: 'Use a fresh campaign for each calendar variant.',
+    nonAssertions: [
+      'Calendar labels do not schedule deadlines or seasonal effects.',
+      'This case does not cover leap years, reforms, or simultaneous calendars.',
+    ],
+  }),
+  defineCase({
     id: 'conservative-live-quality-probe',
     version: 1,
     name: 'Conservative live quality probe',
