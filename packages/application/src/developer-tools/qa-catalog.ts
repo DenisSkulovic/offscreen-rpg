@@ -1142,6 +1142,21 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
           'Start frost-road.v1 at a non-instant pace with pending obligations.',
         ],
       },
+      {
+        id: 'recurring-opportunity-window',
+        name: 'Recurring opportunity window',
+        description:
+          'Uses a Storyteller-proposed warehouse shift to distinguish a recurring availability phase from a deadline or universal daylight rule.',
+        availability: {
+          state: 'planned',
+          reason:
+            'Typed recurring availability and close-behavior rules are not implemented yet.',
+        },
+        prerequisites: [
+          'Admit a campaign chronology with a named cycle or calendar phase.',
+          'Prepare the same generic activity with start-only and continuously-required variants.',
+        ],
+      },
     ],
     stages: [
       stage({

@@ -14,6 +14,8 @@ Possible public intentions: ask about the watch, examine available supplies, or 
 
 One opening task supplies the scene. Subsequent generated dialogue is D, not a hidden free tool. Setup must establish the minimal supported possessions/quantities/capabilities, not turn prose mentions into an unlimited inventory. The prisoner premise alone does not imply a universal purse, appetite simulation or criminal reputation stat in every world.
 
+An alternate prepared opportunity is a warehouse shift. Its content may select a day shift, night shift or irregular local watch, but the reusable contract is only a typed availability/cadence rule over the admitted campaign chronology. A one-time shift can use an absolute interval; repeated work can reference a supported recurring phase. Admission states start-only versus continuous validity and the exact close behavior. Do not add `warehouse`, `daylight` or `employmentSchedule` branches to shared policy, and do not call the Storyteller each tick to decide whether the doors are open.
+
 ## VV-02: one real hour of watch duty
 
 Fixture: one tick = one fictional minute; rate = one tick per real minute. The player accepts a 60-tick clock-bound watch with six observation boundaries at ten-tick intervals. The contract grants three septims only on full completion; early interruption forfeits that completion payment in this fixture. Another contract can have explicit milestone pay. Neither policy should be inferred from percentage complete.

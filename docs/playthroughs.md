@@ -75,7 +75,7 @@ The character owns poor clothes, a little money and whatever history creation es
 
 ### Work
 
-The character finds temporary work standing guard at an Imperial outpost.
+The character finds temporary work standing guard at an Imperial outpost. Another run might offer warehouse work in Seyda Neen during an admitted day or night shift. The Storyteller chooses and explains the locally plausible terms; the engine does not contain an Imperial-job or warehouse subsystem. If the shift matters mechanically, its accepted opportunity references a supported calendar phase or tick window, states whether work may merely start there or must remain inside it, and records what happens when the window closes. “Clearly daytime” in prose is not enough authority, and a world without days can use its own named cycle or no recurring schedule at all.
 
 The player accepts a one-hour real-time shift.
 

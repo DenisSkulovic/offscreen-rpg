@@ -20,6 +20,10 @@ For contribution processes, pacing advances only the exact clock position. At a 
 
 Changing pace must explain what happens to an existing wait or deadline. The application must not quietly move an imminent deadline while another participant is deciding. Faster play also means potentially more generation per real hour, which spending controls must account for.
 
+Time can constrain an opportunity without becoming a setting-specific subsystem. A goal may expire at one boundary, an activity may permit starts only within recurring admitted phases, a process may require a minimum sustained rate, or a contract may expect attendance during selected intervals. These are different rule meanings even when prose calls all of them “a schedule.” Capture only supported declarative terms over the campaign clock and its optional calendar projection. The Storyteller may propose those terms during setup or opportunity preparation; application validation admits them, and deterministic code enforces them at start and relevant change boundaries. Prose such as “during daylight” is explanatory until it references an admitted phase/window definition. Do not ask a model on every tick whether a shift is open.
+
+The initial rule families should stay small and composable: one-time availability intervals, recurring windows over a defined cycle, exact deadlines through world obligations, and process-specific cadence/rate requirements. A rule declares whether it is start-only or continuously required and what happens at closure: reject a new start, pause, interrupt, expire, or mark a goal missed. Unknown calendar semantics, arbitrary predicates and executable model-authored code fail admission rather than receiving Earth defaults. Worlds without calendars can express the same ideas with ticks or named cycles, and worlds needing none pay no scheduling cost.
+
 ### Clock, consequences and narration
 
 A development scheduled for a fictional date follows the game clock. Its estimated real arrival can move when pace changes or the story pauses. A real-time reply allowance is a different promise to the player. Label those expectations distinctly; a fantasy calendar name does not determine how long the player waits.
@@ -42,7 +46,7 @@ A firm promise such as “the invasion begins in two months” needs a recorded 
 
 These deadlines follow deliberate time. Reading, manual pause and model latency do not consume the preparation period; accepted dialogue, travel and training do. Finishing a long activity cannot jump over a due event. A future date alone never starts the world clock or chooses a waiting activity for the player. Real-world expiring events are a distinct policy outside the current solo design.
 
-The [calendar and scheduled-world contract](technical/calendars-and-world-time.md) prepares a bounded implementation: ordinal or simple custom dates, plus consequential scheduled boundaries. Complex astronomy, arbitrary calendar programs and a full climate simulation are unnecessary for this POC. This design is not implemented yet.
+The [calendar and scheduled-world contract](technical/calendars-and-world-time.md) implements ordinal or simple custom dates plus consequential scheduled boundaries. Complex astronomy, arbitrary calendar programs and a full climate simulation remain unnecessary for this POC.
 
 ## Travel duration and progress
 
