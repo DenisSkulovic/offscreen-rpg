@@ -1,31 +1,16 @@
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
-import {
-  immediateActionContentSchema,
-  validateImmediateActionState,
-} from '@offscreen/game/immediate-actions';
 import { characterSchema } from '@offscreen/game/state';
 import definitions from './content/mechanical-openings.json';
 
 const contentIdSchema = z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/);
-const mechanicalOpeningEntrySchema = z
-  .strictObject({
-    id: contentIdSchema,
-    name: z.string().trim().min(1).max(120),
-    description: z.string().trim().min(1).max(300),
-    character: characterSchema,
-    content: immediateActionContentSchema,
-    opening: passageContentSchema,
-  })
-  .superRefine((entry, context) => {
-    if (entry.id !== entry.content.id) {
-      context.addIssue({
-        code: 'custom',
-        path: ['content', 'id'],
-        message: 'Content identity must match its catalogue identity',
-      });
-    }
-  });
+const mechanicalOpeningEntrySchema = z.strictObject({
+  id: contentIdSchema,
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().min(1).max(300),
+  character: characterSchema,
+  opening: passageContentSchema,
+});
 
 const mechanicalOpeningCatalogueSchema = z
   .strictObject({
@@ -43,12 +28,8 @@ const mechanicalOpeningCatalogueSchema = z
   });
 
 const catalogue = mechanicalOpeningCatalogueSchema.parse(definitions);
-// The authored plans remain contract examples while this pre-POC catalogue is
-// being simplified. Runtime opening capture deliberately returns no plan or
-// offer from them: the reviewed Storyteller result is the sole plan source.
-for (const entry of catalogue.entries) {
-  validateImmediateActionState(entry.content, entry.character);
-}
+// This catalogue owns setup seeds only. Scripted Storyteller fixtures own the
+// authored benchmark outputs, so an example plan cannot drift between copies.
 
 export function mechanicalContentCatalogue() {
   return catalogue.entries.map(({ id, name, description }) => ({

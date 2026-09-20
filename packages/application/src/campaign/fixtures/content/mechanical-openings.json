@@ -37,106 +37,6 @@
           { "id": "location", "value": "pineapple" }
         ]
       },
-      "content": {
-        "version": 1,
-        "id": "pineapple-mechanics.v4",
-        "plans": [
-          {
-            "version": 1,
-            "key": "talk-gary",
-            "label": "Talk Gary down",
-            "intention": "Try to calm Gary and learn why the rattling delivery alarms him.",
-            "risk": "Gary may remain distrustful.",
-            "evidence": [],
-            "requires": [{ "id": "gary-alert", "value": true }],
-            "resolution": {
-              "kind": "check",
-              "durationTicks": 5,
-              "check": {
-                "rule": "srd-5.2.1-subset.v1",
-                "purpose": "Calm Gary",
-                "skill": "persuasion",
-                "ability": "charisma",
-                "dc": 12,
-                "advantage": false,
-                "disadvantage": false,
-                "modifiers": []
-              },
-              "difficultyBasis": "Gary is alarmed but recognizes SpongeBob.",
-              "success": {
-                "text": "Gary lowers the weapon.",
-                "effects": [
-                  {
-                    "kind": "fact.set.v1",
-                    "fact": { "id": "gary-alert", "value": false }
-                  }
-                ]
-              },
-              "failure": {
-                "text": "Gary remains on alert. He has not agreed to lower the weapon.",
-                "effects": []
-              }
-            }
-          },
-          {
-            "version": 1,
-            "key": "cover",
-            "label": "Duck behind the furniture",
-            "intention": "Seek cover immediately.",
-            "risk": null,
-            "evidence": [],
-            "requires": [
-              { "id": "gary-alert", "value": true },
-              { "id": "under-cover", "value": false }
-            ],
-            "resolution": {
-              "kind": "automatic",
-              "durationTicks": 5,
-              "outcome": {
-                "text": "You take cover behind the furniture.",
-                "effects": [
-                  {
-                    "kind": "fact.set.v1",
-                    "fact": { "id": "under-cover", "value": true }
-                  }
-                ]
-              }
-            }
-          },
-          {
-            "version": 1,
-            "key": "observe",
-            "label": "Watch Gary from cover",
-            "intention": "Look for what has alarmed Gary without leaving cover.",
-            "risk": "You may fail to identify the threat.",
-            "evidence": [],
-            "requires": [{ "id": "under-cover", "value": true }],
-            "resolution": {
-              "kind": "check",
-              "durationTicks": 5,
-              "check": {
-                "rule": "srd-5.2.1-subset.v1",
-                "purpose": "Read Gary’s warning",
-                "skill": "perception",
-                "ability": "wisdom",
-                "dc": 12,
-                "advantage": false,
-                "disadvantage": false,
-                "modifiers": []
-              },
-              "difficultyBasis": "The room offers cover but Gary is behaving erratically.",
-              "success": {
-                "text": "Gary is watching the window, not you.",
-                "effects": []
-              },
-              "failure": {
-                "text": "You cannot tell what Gary is watching.",
-                "effects": []
-              }
-            }
-          }
-        ]
-      },
       "opening": {
         "version": 1,
         "title": "An alarming morning",
@@ -182,107 +82,6 @@
           { "id": "location", "value": "harbor-beacon" }
         ]
       },
-      "content": {
-        "version": 1,
-        "id": "beacon-watch.v1",
-        "plans": [
-          {
-            "version": 1,
-            "key": "restore-beacon",
-            "label": "Begin restoring the beacon",
-            "intention": "Commit to repairing the storm-damaged signal while keeping watch.",
-            "risk": "Failed attempts consume time, and trouble may interrupt the work.",
-            "evidence": [],
-            "requires": [
-              { "id": "beacon-damaged", "value": true },
-              { "id": "repair-tools", "value": true }
-            ],
-            "resolution": {
-              "kind": "process",
-              "reuse": "once",
-              "action": {
-                "id": "restore-beacon",
-                "label": "Restore the signal beacon",
-                "description": "Repair the storm-damaged beacon while keeping watch.",
-                "requires": [
-                  { "id": "beacon-damaged", "value": true },
-                  { "id": "repair-tools", "value": true }
-                ],
-                "capacity": "primary",
-                "process": {
-                  "kind": "contribution.v1",
-                  "progressLabel": "Beacon repair",
-                  "requiredContribution": 9,
-                  "everyTicks": 5,
-                  "attempt": {
-                    "check": {
-                      "rule": "srd-5.2.1-subset.v1",
-                      "purpose": "Repair the beacon",
-                      "skill": "repair",
-                      "ability": "intelligence",
-                      "dc": 13,
-                      "advantage": false,
-                      "disadvantage": false,
-                      "modifiers": [{ "source": "repair tools", "value": 2 }]
-                    },
-                    "successContribution": 3,
-                    "failureContribution": 0,
-                    "successText": "A sound repair advances the beacon restoration.",
-                    "failureText": "The attempt consumes time without producing a sound repair."
-                  }
-                },
-                "conditionPolicy": { "kind": "admission-only" },
-                "occurrence": { "kind": "unbounded" },
-                "completionFollowUp": "scene",
-                "checks": [
-                  {
-                    "id": "stranger-approaches",
-                    "everyTicks": 10,
-                    "resolution": {
-                      "kind": "event",
-                      "purpose": "An unknown boat approaches the dark beacon",
-                      "threshold": 8,
-                      "modifiers": []
-                    },
-                    "success": {
-                      "text": "An unknown boat noses against the landing, and a stranger climbs toward the dark beacon.",
-                      "effects": [
-                        {
-                          "kind": "fact.set.v1",
-                          "fact": {
-                            "id": "stranger-at-beacon",
-                            "value": true
-                          }
-                        }
-                      ],
-                      "interrupts": true
-                    },
-                    "failure": {
-                      "text": "The water below remains empty while the repair continues.",
-                      "effects": [],
-                      "interrupts": false
-                    }
-                  }
-                ],
-                "completion": {
-                  "text": "The beacon shines again, and the harbor records the completed watch.",
-                  "effects": [
-                    {
-                      "kind": "fact.set.v1",
-                      "fact": { "id": "beacon-damaged", "value": false }
-                    },
-                    {
-                      "kind": "quantity.change.v1",
-                      "quantityId": "harbor-credit",
-                      "delta": 4
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        ]
-      },
       "opening": {
         "version": 1,
         "title": "The dark beacon",
@@ -307,10 +106,7 @@
         },
         "applicableAbilities": ["constitution", "wisdom"],
         "skills": [
-          {
-            "id": "environment-sensing",
-            "label": "Environmental sensing"
-          }
+          { "id": "environment-sensing", "label": "Environmental sensing" }
         ],
         "proficientSkills": ["environment-sensing"],
         "proficiencyBonus": 2,
@@ -319,69 +115,6 @@
         "facts": [
           { "id": "exposed", "value": true },
           { "id": "gradient-disrupted", "value": false }
-        ]
-      },
-      "content": {
-        "version": 1,
-        "id": "microbe.v3",
-        "plans": [
-          {
-            "version": 1,
-            "key": "respond",
-            "label": "Respond to the chemical gradient",
-            "intention": "Sense the gradient and move toward the sheltered pocket.",
-            "risk": "The changing gradient may keep the organism exposed.",
-            "evidence": [],
-            "requires": [
-              { "id": "exposed", "value": true },
-              { "id": "gradient-disrupted", "value": false }
-            ],
-            "resolution": {
-              "kind": "check",
-              "durationTicks": 5,
-              "check": {
-                "rule": "srd-5.2.1-subset.v1",
-                "purpose": "Sense the gradient",
-                "skill": "environment-sensing",
-                "ability": "wisdom",
-                "dc": 12,
-                "advantage": false,
-                "disadvantage": false,
-                "modifiers": []
-              },
-              "difficultyBasis": "The gradient is changing but a sheltered pocket is detectable.",
-              "success": {
-                "text": "The organism reaches a sheltered pocket.",
-                "effects": [
-                  {
-                    "kind": "fact.set.v1",
-                    "fact": { "id": "exposed", "value": false }
-                  }
-                ]
-              },
-              "failure": {
-                "text": "The organism remains exposed.",
-                "effects": []
-              }
-            }
-          },
-          {
-            "version": 1,
-            "key": "contract",
-            "label": "Contract away from the disturbance",
-            "intention": "Make an immediate protective response without trying to reach shelter.",
-            "risk": null,
-            "evidence": [],
-            "requires": [{ "id": "exposed", "value": true }],
-            "resolution": {
-              "kind": "automatic",
-              "durationTicks": 5,
-              "outcome": {
-                "text": "The organism contracts away from the strongest disturbance.",
-                "effects": []
-              }
-            }
-          }
         ]
       },
       "opening": {
@@ -422,56 +155,6 @@
         "facts": [
           { "id": "location", "value": "frost-road" },
           { "id": "winter-shelter", "value": false }
-        ]
-      },
-      "content": {
-        "version": 1,
-        "id": "frost-road.v1",
-        "plans": [
-          {
-            "version": 1,
-            "key": "cross-frost-road",
-            "label": "Cross the Frost Road",
-            "intention": "Commit to the sixty-day crossing before winter closes the exposed pass.",
-            "risk": "Winter may close the pass before the crossing is complete.",
-            "evidence": [],
-            "requires": [
-              { "id": "location", "value": "frost-road" },
-              { "id": "winter-shelter", "value": false }
-            ],
-            "resolution": {
-              "kind": "process",
-              "reuse": "once",
-              "action": {
-                "id": "cross-frost-road",
-                "label": "Cross the Frost Road",
-                "description": "Travel the exposed road for sixty eligible world days.",
-                "requires": [
-                  { "id": "location", "value": "frost-road" },
-                  { "id": "winter-shelter", "value": false }
-                ],
-                "capacity": "primary",
-                "process": {
-                  "kind": "clock-wait.v1",
-                  "progressLabel": "Road crossed",
-                  "requiredTicks": 60
-                },
-                "conditionPolicy": { "kind": "admission-only" },
-                "occurrence": { "kind": "unbounded" },
-                "completionFollowUp": "scene",
-                "checks": [],
-                "completion": {
-                  "text": "The crossing reaches the far side of the Frost Road.",
-                  "effects": [
-                    {
-                      "kind": "fact.set.v1",
-                      "fact": { "id": "location", "value": "far-valley" }
-                    }
-                  ]
-                }
-              }
-            }
-          }
         ]
       },
       "opening": {

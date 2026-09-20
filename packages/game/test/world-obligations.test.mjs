@@ -70,7 +70,10 @@ test('a fired obligation replaces its condition by stable identity', () => {
           id: 'cold-current',
           label: 'Cold current',
           value: false,
-          setByObligationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          provenance: {
+            kind: 'world-obligation',
+            obligationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          },
           setAtTick: 1,
         },
       ],
@@ -81,7 +84,10 @@ test('a fired obligation replaces its condition by stable identity', () => {
         id: 'cold-current',
         label: 'Cold current',
         value: true,
-        setByObligationId: proposal.id,
+        provenance: {
+          kind: 'world-obligation',
+          obligationId: proposal.id,
+        },
         setAtTick: 8,
       },
     ],

@@ -1,6 +1,6 @@
 # Calendars and consequential world time
 
-Status: K1 calendar projection and K2a exact obligation settlement are implemented; K2b presentation, revisions and connected rehearsal remain unimplemented. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19. The [feature plan](../features/2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md) scopes delivery. [Time and autonomy](../time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [tick arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [committed time](committed-time.md) owns permission to advance it.
+Status: K1 calendar projection and the controlling K2 obligation path are implemented, including revisions, equal-tick coalescing and connected provider-free rehearsal. Optional non-controlling reports remain open. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19. The [feature plan](../features/2026-09-19--22-29--calendars-and-world-deadlines/PLAN.md) scopes delivery. [Time and autonomy](../time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [tick arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [committed time](committed-time.md) owns permission to advance it.
 
 K1 stores the immutable definition in versioned campaign settings, projects a public current label from the authoritative tick, formats durations, and supplies Storyteller tasks with only the compact projected value. The default is honest elapsed ticks; setup may instead admit ordinal days or one fixed unequal-month repeating year. Pace revisions preserve the definition. This does not create scheduled effects, season mechanics, or another clock.
 
@@ -79,9 +79,9 @@ Include the current authorized date/day/phase, the actual elapsed interval for t
 
 Historical passages retain source ticks and time-definition provenance. Formatting is derived; changing UI labels cannot alter chronology. A Storyteller must not claim winter arrived, a deadline elapsed or two extra days passed unless the admitted state supports it. When a story only needs Day N, no month/era material enters its packet.
 
-## Planned QA evidence
+## QA evidence map
 
-These cases are not implemented or executed. Promote them into the versioned QA catalogue with their owning runtime/control support.
+Core projection, deadline, revision and connected Frost Road cases are implemented and selected through the versioned QA catalogue. This table remains a living coverage map: cases without an available driver are targets, not claims of completed support.
 
 | Case | Expected result |
 | --- | --- |

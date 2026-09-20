@@ -9,11 +9,18 @@ const tickSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const identifierSchema = z.string().regex(/^[a-z][a-z0-9-]{0,79}$/);
 const labelSchema = z.string().trim().min(1).max(160);
 
+export const worldConditionProvenanceSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('world-obligation'),
+    obligationId: z.uuid(),
+  }),
+]);
+
 export const worldConditionSchema = z.strictObject({
   id: identifierSchema,
   label: labelSchema,
   value: z.union([z.string().trim().min(1).max(300), z.boolean()]),
-  setByObligationId: z.uuid(),
+  provenance: worldConditionProvenanceSchema,
   setAtTick: tickSchema,
 });
 export type WorldCondition = z.infer<typeof worldConditionSchema>;
@@ -108,7 +115,10 @@ export function applyWorldObligationCondition(args: {
   );
   next.push({
     ...obligation.consequence.condition,
-    setByObligationId: obligation.id,
+    provenance: {
+      kind: 'world-obligation',
+      obligationId: obligation.id,
+    },
     setAtTick: obligation.dueTick,
   });
   return worldConditionsSchema.parse(next);

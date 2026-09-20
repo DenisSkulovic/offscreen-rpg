@@ -718,7 +718,10 @@ test(
                 id: 'frost-pass',
                 label: 'Frost pass',
                 value: 'closed',
-                setByObligationId: obligationId,
+                provenance: {
+                  kind: 'world-obligation',
+                  obligationId,
+                },
                 setAtTick: 55,
               },
             ]);
