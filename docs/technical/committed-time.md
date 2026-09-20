@@ -1,6 +1,6 @@
 # Deliberate execution, action time and Storyteller readiness
 
-Status: the T1 execution gate and core T2 finite-action boundary are implemented. Runtime clock projection requires an explicit accepted activity or finite-action identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. A bounded action saves its source plan and target tick, supports exact pause/resume/pace control, settles rolls/effects/receipt once at that boundary, then owns its required-turn hold through exact generation and published decision. Its durable event stream records start, controls and settlement independently of transient worker logs. Accepted-plan horizons prevent successor admission, and preparation failure preserves committed mechanics without advancing time. Restart and interrupted-work chronology still need dedicated T2 evidence. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units; the [implementation feature](../features/2026-09-19--22-13--deliberate-action-time/PLAN.md) owns finite-duration delivery. This document owns execution permission and its relationship to narration.
+Status: the T1 execution gate and sequential T2 finite-action boundary are implemented. Runtime clock projection requires an explicit accepted activity or finite-action identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. A bounded action saves its source plan and target tick, supports exact pause/resume/pace control, settles rolls/effects/receipt once at that boundary, then owns its required-turn hold through exact generation and published decision. Its durable event stream records start, controls and settlement independently of transient worker logs. Accepted-plan horizons prevent successor admission, and preparation failure preserves committed mechanics without advancing time. Focused offline evidence covers interrupted-work chronology plus worker restart during a running action and duplicate settlement delivery without repeated time, rolls, effects or narration work. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units; the [implementation feature](../features/2026-09-19--22-13--deliberate-action-time/PLAN.md) owns the future bounded-overlap phase. This document owns execution permission and its relationship to narration.
 
 ## Units and responsibility
 
@@ -80,7 +80,7 @@ This remains owned by the bounded-autonomy feature. Do not enable defaults in th
 
 ## Worked traces and acceptance checklist
 
-All numbers below are fixture values. These are planned QA cases, not executed evidence or live-spend authorization.
+All numbers below are fixture values. The sequential finite-action, control, interrupted-work and restart/replay rows have focused offline evidence; overlap, due-world interruption and timed-default rows remain planned. None authorizes live spend or establishes human rhythm quality.
 
 | Trace | Accepted terms and timing | Required evidence |
 | --- | --- | --- |

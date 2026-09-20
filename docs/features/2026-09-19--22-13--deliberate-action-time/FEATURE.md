@@ -1,7 +1,7 @@
 # Deliberate action time and bounded progression
 
-Status: T1 explicit clock permission and durable preparation holds are implemented. T2 finite action duration and T3 bounded overlap remain.
-Approval: The owner requested deliberate time investment, time-bearing story choices, held decisions and careful handling of model latency on 2026-09-19. Five seconds, thirty minutes and timed defaults are illustrations rather than mandatory global values. Codex is preparing design here; no runtime rewrite is included in this pass.
+Status: T1 explicit clock permission, durable preparation holds and T2 finite action duration are implemented. T3 bounded overlap follows calendar/world-boundary work.
+Approval: The owner requested deliberate time investment, time-bearing story choices, held decisions and careful handling of model latency on 2026-09-19. Five seconds, thirty minutes and timed defaults are illustrations rather than mandatory global values. That approval covers the phased implementation; no provider execution is authorized.
 
 ## Intended outcome
 
