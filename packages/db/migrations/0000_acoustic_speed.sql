@@ -101,7 +101,7 @@ CREATE TABLE "world_obligation_event" (
 	"label" text NOT NULL,
 	"details" jsonb NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "world_obligation_event_revision" UNIQUE("obligation_id","obligation_revision"),
+	CONSTRAINT "world_obligation_event_revision_kind" UNIQUE("obligation_id","obligation_revision","kind"),
 	CONSTRAINT "world_obligation_event_kind" CHECK ("world_obligation_event"."kind" in ('fired', 'postponed', 'cancelled'))
 );
 --> statement-breakpoint

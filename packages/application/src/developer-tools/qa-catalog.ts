@@ -1125,12 +1125,22 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
       {
         id: 'world-deadline',
         name: 'Consequential deadline',
-        description: 'Interrupts accepted work at an exact world obligation.',
-        availability: {
-          state: 'planned',
-          reason: 'World schedule admission and settlement belong to K2.',
-        },
-        prerequisites: ['Implement K2 world obligations.'],
+        description:
+          'Interrupts accepted work at an exact world obligation and publishes its controlling replacement scene.',
+        availability: { state: 'available' },
+        prerequisites: [
+          'Start frost-road.v1 with the Ember/Rain/Frost definition and winter obligation.',
+        ],
+      },
+      {
+        id: 'schedule-revision',
+        name: 'Schedule revision and stale wake',
+        description:
+          'Postpones or cancels a pending obligation while accepted work is sleeping, then proves every wake re-reads authority.',
+        availability: { state: 'available' },
+        prerequisites: [
+          'Start frost-road.v1 at a non-instant pace with pending obligations.',
+        ],
       },
     ],
     stages: [
@@ -1156,6 +1166,34 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
           'The date and duration labels advance by the admitted definition.',
         authoritativeExpectation:
           'The monotonic tick remains authoritative and the compact Storyteller context contains the server-projected date.',
+      }),
+      stage({
+        id: 'deadline',
+        name: 'Stop accepted work at the controlling boundary',
+        importance: 'poc-blocker',
+        preconditions: [
+          'The world-deadline variant has an accepted journey crossing the exact due tick.',
+        ],
+        action:
+          'Advance the journey through the due boundary, redeliver it once, prepare the saved consequence and publish the scripted scene.',
+        observableExpectation:
+          'The journey retains its earned progress, the condition becomes current once, and the replacement decision reflects the changed route.',
+        authoritativeExpectation:
+          'The obligation, event, coalesced hold and consequence receipt commit once before the productive crossing boundary.',
+      }),
+      stage({
+        id: 'revise',
+        name: 'Revise a sleeping schedule',
+        importance: 'poc-blocker',
+        preconditions: [
+          'The schedule-revision variant has running accepted work that has not earned the old boundary.',
+        ],
+        action:
+          'Postpone one obligation, reject its stale revision, cancel another and deliver the old activity wake.',
+        observableExpectation:
+          'Described knowledge still hides the exact tick; history shows postpone, cancellation and the eventual firing once.',
+        authoritativeExpectation:
+          'The old wake uses the revised due tick, cancelled work cannot fire, and revision-kind receipts remain replay-safe.',
       }),
       stage({
         id: 'pace',

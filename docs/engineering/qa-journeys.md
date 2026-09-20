@@ -25,7 +25,7 @@ Availability is data, but the server also enforces the boundary. It opens only c
 
 The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop now proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. Rate/pause/restart and slow-narration variants still need dedicated catalogue stages before the full checklist is claimed.
 
-The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#planned-qa-evidence) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. It is prepared documentation only. K1/K2 adds the corresponding versioned catalogue cases and deterministic controls; no dates or seasonal effects are claimed runnable yet.
+The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#planned-qa-evidence) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. The versioned catalogue now exposes deterministic calendar projection, the `frost-road.v1` deadline journey and schedule-revision controls; these remain offline scripted evidence rather than a claim about arbitrary generated calendars or seasons.
 
 ## Run lifecycle
 

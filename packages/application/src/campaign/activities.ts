@@ -408,8 +408,13 @@ export async function settleActivity(
     processProgress,
     nextEffortTicks,
   );
+  const controllingBoundaryReached =
+    controllingObligation !== undefined &&
+    controllingObligation !== null &&
+    clock.elapsedTicks >= controllingObligation.dueTick;
   const nextClock =
-    nextState === 'running' && pace.kind !== 'instant'
+    nextState === 'running' &&
+    (pace.kind !== 'instant' || controllingBoundaryReached)
       ? clock
       : wholeTicks(worldCursor);
   const nextCampaignTick = caughtUpRunning

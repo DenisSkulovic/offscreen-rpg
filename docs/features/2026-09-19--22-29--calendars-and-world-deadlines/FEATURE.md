@@ -1,6 +1,6 @@
 # Calendars and consequential world deadlines
 
-Status: Prepared design; not implemented.
+Status: K1 and the controlling K2 journey are implemented and exercised offline; optional non-controlling obligation reports remain before feature closeout.
 Direction: on 2026-09-19 the owner requested careful support for optional custom calendars, eras, approaching seasons and time-limited stories. The bounded scope below is the recommended POC implementation; the named worlds are examples, not requirements to reproduce their lore.
 
 ## Intended outcome
@@ -19,7 +19,7 @@ K1 supports elapsed/ordinal display and a bounded fixed repeating year with name
 
 No leap/intercalation language, arbitrary executable calendar scripts, historical era engine, astronomical/climate simulator, multiple planet clocks or automatic daily model calls. These restrictions are explicit validation boundaries, not permission to misrepresent unsupported calendars. Future advanced rules can extend calendar projection without replacing the campaign clock.
 
-Calendar projection does not grant simulation permission. Scheduled events do not create actions or consume idle time. Supported effects, current authored options, bounded generation and uncertainty accounting remain authoritative. No provider calls or bulk implementation are authorized by this design pass.
+Calendar projection does not grant simulation permission. Scheduled events do not create actions or consume idle time. Supported effects, current authored options, bounded generation and uncertainty accounting remain authoritative. No provider calls are authorized by this feature; its deterministic fixtures and rehearsals remain local and provider-free.
 
 ## Acceptance
 

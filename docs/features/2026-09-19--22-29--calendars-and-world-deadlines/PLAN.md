@@ -1,7 +1,7 @@
 # Implementation plan
 
 Feature: [Calendars and consequential world deadlines](FEATURE.md).
-Scope: prepared design/handoff; no runtime changes in this pass. Cursor is the default implementation owner; Codex reviews or implements when asked. Do not launch agents or provider calls. This consumes deliberate-time progression, not a new scheduler project.
+Scope: active implementation under the owner's continuing authorization. Do not launch agents or provider calls. This consumes deliberate-time progression, not a new scheduler project.
 
 ## K1 — Bounded time definitions and calendar conversion
 
@@ -49,7 +49,7 @@ Exit: a due condition can interrupt either accepted execution exactly once, incl
 
 ### K2b — Presentation, revisions and connected rehearsal
 
-Status: active. Controlling-scene preparation/publication reuses the existing consequence lifecycle; nearest equal-tick obligations coalesce into one controlling turn with independent firing receipts; typed postpone/cancel revisions wake active work and stale wakes re-read database authority. The connected rehearsal remains.
+Status: active closeout. Controlling-scene preparation/publication reuses the existing consequence lifecycle; nearest equal-tick obligations coalesce into one controlling turn with independent firing receipts; typed postpone/cancel revisions wake active work and stale wakes re-read database authority. The connected custom-calendar journey and revision rehearsals pass. Optional non-controlling obligation reports remain.
 
 Prepare and publish the obligation's controlling scene under the retained hold, then explicitly revalidate/resume or replace interrupted work. Add typed postpone/cancel revisions, stale-wake rejection, coalescing for equal-tick obligations, optional non-controlling reports, Chamber controls and the connected 55-day deadline/winter rehearsal. Storyteller context receives only relevant visible obligations and active conditions.
 
@@ -65,11 +65,11 @@ Exit: the full K2 acceptance and failure/retry matrix is connected; K2 planned Q
 
 ## Current checkpoint
 
-- Phase: K2b active on base `66a6e91`; K1/K2a are complete. Controlling obligation scenes transfer their hold through the existing consequence generation/publication lifecycle; equal-tick sets coalesce into one controlling scene; typed revision commands postpone or cancel pending schedules and wake accepted work. Run the connected rehearsal next before deliberate-time T3 overlap.
+- Phase: K2b closeout on base `71bfebe`; K1/K2a and the controlling K2b path are implemented. Add the optional non-controlling obligation-report classification, then fold permanent guidance and close the feature before deliberate-time T3 overlap.
 - Base: implementation followed deliberate-time T2 at `2bb8d10`; this checkpoint is awaiting its K1 commit.
-- Implemented: K1 calendar definitions/projection plus K2a finite authored obligations, compile-once tick/date admission, exact/described/hidden visibility, typed world-condition effects, durable firing receipts, nearest-boundary action/activity wake clamping, hard-cutoff equality ordering, progress-preserving interruption, independent controlling holds, public condition/schedule/history projection and compact Storyteller conditions.
+- Implemented: K1 calendar definitions/projection plus K2 finite authored obligations, compile-once tick/date admission, exact/described/hidden visibility, typed world-condition effects, optimistic postpone/cancel revisions, stale-wake recovery, equal-tick coalescing, durable revision-kind lifecycle receipts, nearest-boundary action/activity wake clamping, hard-cutoff equality ordering, progress-preserving interruption, controlling-scene publication, public condition/schedule/history projection and compact Storyteller conditions.
 - Boundary: the monotonic campaign tick remains authority. Obligations advance only with accepted execution; idle and paused campaigns donate no time. Equal-tick obligations apply independent effects and receipts atomically while the stable first identity owns the single hold; preparation transfers it to one consequence generation, and publication transfers it to the exact offered decision. A schedule edit loses once accepted work has earned its old boundary; otherwise its new revision is authoritative and every old or fresh wake re-reads it.
-- Benchmark reasoning: the Ember/Rain/Frost fixture proves unequal-month arithmetic and exact 55-day month addition. Ordinal Bloom days and elapsed cell cycles exercise non-Earth and abstract worlds without requiring human calendar concepts.
-- Verification: prior K2a evidence remains; 33/33 Storyteller tests and the focused application cutoff test pass after adding obligation consequence tasks. Game/contracts/application builds and the API typecheck pass after typed revisions. The connected action/activity database interruption, schedule revision and publication journey has not yet been run. No provider calls were made.
-- Open scope: K2b connected Chamber evidence and the optional non-controlling report classification; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
+- Benchmark reasoning: the `frost-road.v1` fixture carries a sixty-day accepted journey from Ember 10 across the exact fifty-five-day Frost 10 boundary. Ordinal Bloom days exercise postponement, cancellation, stale-wake recovery and hidden exact timing; elapsed cell cycles retain the abstract-world contrast.
+- Verification: `pnpm test:focus storyteller journey` rebuilt the affected integration workspace, recreated the disposable database from the revised baseline, and passed both provider-free journey subtests. The rehearsal proves day-55 interruption, retained progress, once-only firing, winter condition projection, controlling-scene publication, replacement choice, postpone/cancel revisions, stale revision rejection and stale-wake recalculation. No provider calls were made.
+- Open scope: optional non-controlling world-obligation reports. Leap rules, reforms, multiple calendars, dynamic eras and generalized seasonal simulation remain explicitly deferred.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

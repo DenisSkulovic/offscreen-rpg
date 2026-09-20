@@ -80,17 +80,21 @@ export function createWorldObligationControls(database: Database) {
         : [];
       const runningAction = action?.state === 'running' ? action : null;
       const runningActivity = activity?.state === 'running' ? activity : null;
-      const eligibility = runningAction
-        ? {
-            kind: 'accepted-action' as const,
-            operationId: runningAction.operationId,
-          }
-        : runningActivity
-          ? {
-              kind: 'accepted-activity' as const,
-              activityId: runningActivity.id,
-            }
-          : { kind: 'none' as const };
+      let eligibility:
+        | { kind: 'accepted-action'; operationId: string }
+        | { kind: 'accepted-activity'; activityId: string }
+        | { kind: 'none' } = { kind: 'none' };
+      if (runningAction) {
+        eligibility = {
+          kind: 'accepted-action',
+          operationId: runningAction.operationId,
+        };
+      } else if (runningActivity) {
+        eligibility = {
+          kind: 'accepted-activity',
+          activityId: runningActivity.id,
+        };
+      }
       const projected = projectCampaignClock(
         state,
         now,

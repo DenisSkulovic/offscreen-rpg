@@ -102,9 +102,10 @@ export const worldObligationEvent = pgTable(
       .defaultNow(),
   },
   (t) => [
-    unique('world_obligation_event_revision').on(
+    unique('world_obligation_event_revision_kind').on(
       t.obligationId,
       t.obligationRevision,
+      t.kind,
     ),
     check(
       'world_obligation_event_kind',

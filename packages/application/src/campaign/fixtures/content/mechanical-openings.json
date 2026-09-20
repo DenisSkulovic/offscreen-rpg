@@ -391,6 +391,96 @@
           "A microscopic organism is exposed to a changing chemical gradient. A sheltered pocket may be within reach."
         ]
       }
+    },
+    {
+      "id": "frost-road.v1",
+      "name": "Frost road — consequential deadline",
+      "description": "A sixty-day journey interrupted by a firm winter boundary on a custom unequal-month calendar.",
+      "character": {
+        "name": "Ilyra",
+        "scores": {
+          "strength": 10,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 14,
+          "charisma": 10
+        },
+        "applicableAbilities": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "skills": [{ "id": "survival", "label": "Survival" }],
+        "proficientSkills": ["survival"],
+        "proficiencyBonus": 2,
+        "hp": 12,
+        "maxHp": 12,
+        "facts": [
+          { "id": "location", "value": "frost-road" },
+          { "id": "winter-shelter", "value": false }
+        ]
+      },
+      "content": {
+        "version": 1,
+        "id": "frost-road.v1",
+        "plans": [
+          {
+            "version": 1,
+            "key": "cross-frost-road",
+            "label": "Cross the Frost Road",
+            "intention": "Commit to the sixty-day crossing before winter closes the exposed pass.",
+            "risk": "Winter may close the pass before the crossing is complete.",
+            "evidence": [],
+            "requires": [
+              { "id": "location", "value": "frost-road" },
+              { "id": "winter-shelter", "value": false }
+            ],
+            "resolution": {
+              "kind": "process",
+              "reuse": "once",
+              "action": {
+                "id": "cross-frost-road",
+                "label": "Cross the Frost Road",
+                "description": "Travel the exposed road for sixty eligible world days.",
+                "requires": [
+                  { "id": "location", "value": "frost-road" },
+                  { "id": "winter-shelter", "value": false }
+                ],
+                "capacity": "primary",
+                "process": {
+                  "kind": "clock-wait.v1",
+                  "progressLabel": "Road crossed",
+                  "requiredTicks": 60
+                },
+                "conditionPolicy": { "kind": "admission-only" },
+                "occurrence": { "kind": "unbounded" },
+                "completionFollowUp": "scene",
+                "checks": [],
+                "completion": {
+                  "text": "The crossing reaches the far side of the Frost Road.",
+                  "effects": [
+                    {
+                      "kind": "fact.set.v1",
+                      "fact": { "id": "location", "value": "far-valley" }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "opening": {
+        "version": 1,
+        "title": "The road before winter",
+        "paragraphs": [
+          "The Frost Road takes sixty days to cross. Winter is expected at Frost 10, and the exposed pass cannot be trusted after that boundary."
+        ]
+      }
     }
   ]
 }

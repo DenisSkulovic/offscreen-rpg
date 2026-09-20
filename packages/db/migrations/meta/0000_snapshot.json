@@ -1908,12 +1908,13 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "world_obligation_event_revision": {
-          "name": "world_obligation_event_revision",
+        "world_obligation_event_revision_kind": {
+          "name": "world_obligation_event_revision_kind",
           "nullsNotDistinct": false,
           "columns": [
             "obligation_id",
-            "obligation_revision"
+            "obligation_revision",
+            "kind"
           ]
         }
       },
