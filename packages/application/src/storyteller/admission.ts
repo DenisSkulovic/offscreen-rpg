@@ -11,6 +11,7 @@ import {
 import { playablePresentation } from '@offscreen/storyteller/tasks';
 import {
   publishedStorytellerSlice,
+  storytellerResultSchema,
   storytellerTaskSchema,
 } from '@offscreen/storyteller/tasks';
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
@@ -36,7 +37,10 @@ import { StoryError } from '../stories/errors';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
 import type { DocumentStore } from '@offscreen/documents';
-import { readPassageDocument } from '../stories/passage-documents';
+import {
+  publicationChangedDocumentId,
+  readPassageDocument,
+} from '../stories/passage-documents';
 
 export async function admitStorytellerResolution(
   tx: Transaction,
@@ -167,6 +171,33 @@ export async function admitStorytellerResolution(
     }
     return entry.documentId;
   });
+  const sourceResult = storytellerResultSchema.parse(source.output);
+  const sourcePublicationOperationId = active.transitionId;
+  if (
+    (selected.createdDocuments?.length ?? 0) > 0 &&
+    !sourcePublicationOperationId
+  ) {
+    throw new StoryError('invalid');
+  }
+  const selectedCreatedDocumentIds = (selected.createdDocuments ?? []).map(
+    (index) => {
+      const change = sourceResult.documentChanges[index];
+      if (!change) {
+        throw new StoryError('invalid');
+      }
+      return publicationChangedDocumentId(
+        sourcePublicationOperationId!,
+        index,
+        change,
+      );
+    },
+  );
+  const selectedDocumentIds = [
+    ...new Set([
+      ...selectedCampaignDocumentIds,
+      ...selectedCreatedDocumentIds,
+    ]),
+  ];
   const context = await loadStorytellerContext(tx, {
     storyId: current.id,
     revision: current.revision,
@@ -184,9 +215,7 @@ export async function admitStorytellerResolution(
       selected.worldSections?.length
         ? canonicalWorldEvidence(selected.worldSections)
         : undefined,
-      selectedCampaignDocumentIds.length
-        ? selectedCampaignDocumentIds
-        : undefined,
+      selectedDocumentIds.length ? selectedDocumentIds : undefined,
     ),
   });
   const task = prepareAdmittedStorytellerTask(

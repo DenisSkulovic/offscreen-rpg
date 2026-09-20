@@ -675,6 +675,15 @@ test('offered agency checks reject duplicates, endings and fabricated/future evi
     () => validateStorytellerResult(task, inventedCampaignDocument),
     /captured campaign catalogue/,
   );
+  const inventedCreatedDocument = structuredClone(good);
+  if (inventedCreatedDocument.scene.next.kind !== 'choice') {
+    throw new Error('Expected offer');
+  }
+  inventedCreatedDocument.scene.next.options[0]!.createdDocuments = [0];
+  assert.throws(
+    () => validateStorytellerResult(task, inventedCreatedDocument),
+    /this result document changes/,
+  );
   assert.throws(() =>
     validateStorytellerResult(task, {
       ...good,

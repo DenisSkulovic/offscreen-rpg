@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 4,
+    version: 5,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -87,11 +87,12 @@ export const startPackageCases: readonly QaJourneyCase[] = [
         preconditions: [
           'A narrative task exposes a pinned world-section catalogue.',
           'One private choice names an exact world-section handle and an unloaded campaign-document handle from its captured catalogues.',
+          'The same result creates a source-backed descriptive thread and links that change index to the choice.',
         ],
         action:
           'Select that choice, then inspect the newly admitted Storyteller task and the player-facing offer.',
         observableExpectation:
-          'The player sees only the choice label; the next task trace shows the requested world handle, stable campaign document identity and complete loaded bodies.',
+          'The player sees only the choice label; the next task trace shows the requested world handle, stable existing and newly promoted campaign document identities, and complete loaded bodies.',
         authoritativeExpectation:
           'Publication rejects invented, duplicate or wrong-catalogue handles; admission resolves task-local campaign aliases to stable story-scoped identities, and only the selected option triggers bounded loading with no retrieval call or player-prose matching.',
       }),

@@ -62,6 +62,16 @@ function stablePublicationDocumentId(operationId: string, index: number) {
   return stableBootstrapDocumentId(operationId, `document-change-${index}`);
 }
 
+export function publicationChangedDocumentId(
+  operationId: string,
+  index: number,
+  change: ProposedDocumentChange,
+) {
+  return change.operation === 'revise'
+    ? change.documentId
+    : stablePublicationDocumentId(operationId, index);
+}
+
 export function publicationPassageId(operationId: string) {
   return stableBootstrapDocumentId(operationId, 'published-passage');
 }
@@ -124,10 +134,11 @@ export async function stageStoryPublicationDocuments(args: {
     ) {
       throw new StoryError('conflict', 'document_revision');
     }
-    const documentId =
-      change.operation === 'revise'
-        ? change.documentId
-        : stablePublicationDocumentId(args.operationId, index);
+    const documentId = publicationChangedDocumentId(
+      args.operationId,
+      index,
+      change,
+    );
     const pathOwner = [...entries.values()].find(
       (entry) => entry.path === change.path && entry.documentId !== documentId,
     );

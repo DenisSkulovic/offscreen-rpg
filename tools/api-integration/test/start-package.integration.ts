@@ -448,6 +448,7 @@ registerStoryConcern(
         const openings = createScriptedOpenings(database);
         let offeredWorldSection: string | undefined;
         let offeredCampaignDocument: string | undefined;
+        const promotedThreadPath = 'threads/patient-tide-return.md';
         const runtime = createStorytellerRuntime(database, {
           realDurationMs: () => 1000,
           documentStore: storage,
@@ -466,6 +467,20 @@ registerStoryConcern(
               ];
               result.scene.next.options[0]!.campaignDocuments =
                 offeredCampaignDocument ? [offeredCampaignDocument] : [];
+              result.documentChanges = [
+                {
+                  operation: 'create',
+                  path: promotedThreadPath,
+                  kind: 'narrative-thread',
+                  authority: 'canon',
+                  visibility: 'storyteller-private',
+                  title: 'The patient tide road',
+                  body: 'The newcomer may return at dusk to investigate the exposed stone road.',
+                  reason:
+                    'The current passage established a durable possible return.',
+                },
+              ];
+              result.scene.next.options[0]!.createdDocuments = [0];
             }
             return result;
           },
@@ -875,7 +890,12 @@ registerStoryConcern(
         assert.deepEqual(
           hintedTask.context.canonicalKnowledge?.documentSelection
             .requestedDocumentIds,
-          [unloadedCampaignDocument.documentId],
+          [
+            unloadedCampaignDocument.documentId,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedThreadPath,
+            )?.documentId,
+          ],
         );
         const reloadedCampaignEntry =
           hintedTask.context.canonicalKnowledge?.catalogue.find(
@@ -885,7 +905,12 @@ registerStoryConcern(
         assert.ok(reloadedCampaignEntry?.loaded);
         assert.deepEqual(
           hintedTask.context.canonicalKnowledge?.documentSelection.loadedHandles,
-          [reloadedCampaignEntry.handle],
+          [
+            reloadedCampaignEntry.handle,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedThreadPath,
+            )?.handle,
+          ],
         );
         assert.ok(
           hintedTask.context.canonicalKnowledge?.documents.some(
@@ -894,6 +919,24 @@ registerStoryConcern(
               document.body.length > 0,
           ),
         );
+        const promotedThreadEntry =
+          hintedTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.path === promotedThreadPath,
+          );
+        assert.ok(promotedThreadEntry?.loaded);
+        const hintedManifest = await storage.readManifest(
+          hintedTask.context.canonicalKnowledge!.rootHash,
+        );
+        const storedPromotedThread = hintedManifest.entries.find(
+          (entry) => entry.documentId === promotedThreadEntry.documentId,
+        );
+        assert.ok(storedPromotedThread);
+        const promotedThread = await storage.readDocument(
+          storedPromotedThread.objectHash,
+        );
+        assert.equal(promotedThread.envelope.sources.length, 1);
+        assert.equal(promotedThread.envelope.sources[0]?.revision, 1);
+        assert.match(promotedThread.body, /exposed stone road/);
         assert.ok(
           hintedTask.context.canonicalKnowledge?.libraries
             .flatMap((library) => library.selectedSections)

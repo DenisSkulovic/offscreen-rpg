@@ -39,6 +39,13 @@ const choice = z.strictObject({
       message: 'Campaign document handles must be unique',
     })
     .optional(),
+  createdDocuments: z
+    .array(z.number().int().min(0).max(7))
+    .max(4)
+    .refine((indexes) => new Set(indexes).size === indexes.length, {
+      message: 'Created document indexes must be unique',
+    })
+    .optional(),
 });
 
 export const playableChoiceNextSchema = z.strictObject({
