@@ -39,6 +39,14 @@ export const passageContentSchema = z.strictObject({
 export const storySnapshotSchema = z.strictObject({
   campaign: campaignViewSchema.nullable().optional(),
   id: z.uuid(),
+  lineage: z
+    .strictObject({
+      sourceStoryId: z.uuid(),
+      sourcePassageId: z.uuid(),
+      sourceSequence: z.number().int().positive(),
+    })
+    .nullable()
+    .default(null),
   revision: z.number().int().positive(),
   viewVersion: z.number().int().positive(),
   canRespond: z.boolean().default(false),
@@ -119,6 +127,9 @@ export const startStorySchema = z.strictObject({
   campaign: campaignStartSchema.optional(),
   candidateId: z.uuid(),
   expectedDraftRevision: z.number().int().positive().max(2147483646),
+});
+export const forkStorySchema = z.strictObject({
+  expectedRevision: z.number().int().positive().max(2147483646),
 });
 export const startChamberSchema = z.strictObject({
   scenario: z.enum([

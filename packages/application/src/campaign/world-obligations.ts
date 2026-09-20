@@ -18,6 +18,7 @@ import { campaignHoldsSchema } from './holds';
 import type { CampaignRecord } from './persistence';
 import { campaignConsequenceTopic } from './topics';
 import { requestWorldObligationReport } from './reports';
+import type { DocumentStore } from '@offscreen/documents';
 
 export type WorldObligationRecord = typeof worldObligation.$inferSelect;
 
@@ -71,6 +72,7 @@ export async function fireWorldObligations(
   state: CampaignRecord,
   records: readonly WorldObligationRecord[],
   now: number,
+  documentStore?: DocumentStore,
 ) {
   if (!records.length) {
     return state;
@@ -207,6 +209,7 @@ export async function fireWorldObligations(
       dueTick: obligation.dueTick,
       label: obligation.label,
       factualSummary: `${obligation.consequence.condition.label} became ${String(obligation.consequence.condition.value)} at tick ${obligation.dueTick}.`,
+      ...(documentStore ? { documentStore } : {}),
     });
   }
   return nextState;

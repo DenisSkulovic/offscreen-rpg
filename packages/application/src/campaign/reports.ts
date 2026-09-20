@@ -9,7 +9,10 @@ import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import type { Transaction } from '../outbox/index';
 import type { StoryRecord } from '../stories/persistence';
-import { loadStorytellerContext } from '../storyteller/context';
+import {
+  canonicalContextDependencies,
+  loadStorytellerContext,
+} from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
 import type { ActivityRecord, CampaignRecord } from './persistence';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
@@ -19,6 +22,7 @@ import {
   campaignReportSourceSchema,
   type CampaignReportSource,
 } from './report-source';
+import type { DocumentStore } from '@offscreen/documents';
 
 async function requestHistoricalReport(
   tx: Transaction,
@@ -39,6 +43,7 @@ async function requestHistoricalReport(
       effects: unknown;
       declarations: readonly [];
     }>;
+    documentStore?: DocumentStore;
   },
 ) {
   const source = campaignReportSourceSchema.parse(args.source);
@@ -55,6 +60,7 @@ async function requestHistoricalReport(
       label: args.label,
       intention: args.intention,
     },
+    ...canonicalContextDependencies(args.current, args.documentStore),
   });
   const task = prepareAdmittedStorytellerTask(
     {
@@ -123,6 +129,7 @@ export async function requestActivityReport(
     intention: string;
     factualSummary: string;
     completionEffects: readonly OutcomeEffect[];
+    documentStore?: DocumentStore;
   },
 ) {
   const rolls = await tx
@@ -146,6 +153,7 @@ export async function requestActivityReport(
       effects: roll.effects,
       declarations: [],
     })),
+    ...(args.documentStore ? { documentStore: args.documentStore } : {}),
   });
 }
 
@@ -161,6 +169,7 @@ export async function requestWorldObligationReport(
     dueTick: number;
     label: string;
     factualSummary: string;
+    documentStore?: DocumentStore;
   },
 ) {
   await requestHistoricalReport(tx, {
@@ -174,5 +183,6 @@ export async function requestWorldObligationReport(
     sourceTick: args.dueTick,
     intention: args.factualSummary,
     effects: [],
+    ...(args.documentStore ? { documentStore: args.documentStore } : {}),
   });
 }

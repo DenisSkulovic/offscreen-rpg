@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { betterAuth } from 'better-auth';
@@ -15,23 +15,82 @@ import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
 import { resolveEffectiveUsagePolicy } from '@offscreen/application/storyteller';
+import {
+  createChamberStorytellerControl,
+  createLiveEvaluationManifest,
+} from '@offscreen/application/developer-tools';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { authOptions, createAuth } from '@offscreen/api/auth';
 import { stopChamberResources } from './stop.js';
 import { captureHeldOpeningPacket } from './packet-review.js';
+import { createOpenRouterProvider } from '@offscreen/storyteller/providers/openrouter';
+import {
+  enableSingleLiveAttempt,
+  closeSingleLiveAttempt,
+  captureHeldContinuation,
+  provisionAndPreflightLiveEvaluation,
+  preflightAdditionalLiveEvaluation,
+  releaseHeldPacket,
+  saveLiveEvaluationReport,
+  verifyOpenRouterAuthority,
+  waitForGenerationTerminal,
+} from './live-evaluation-run.js';
+import {
+  evaluationPacketAuthority,
+  evaluationPacketInspectionSchema,
+  readEvaluationPacketConfig,
+} from './evaluation-config.js';
+import {
+  LocalDocumentStore,
+  importRulePackageDirectory,
+} from '@offscreen/documents';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
 const smoke = process.argv.includes('--smoke');
 const review = process.argv.includes('--review');
 const packetReview = process.argv.includes('--packet-review');
+const evaluationPacket = process.argv.includes('--evaluation-packet');
+const evaluationRun = process.argv.includes('--evaluation-run');
+const resetDatabase = process.argv.includes('--reset-database');
+const configArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--config='));
+const authorizationArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--authorize='));
+const runModes = [
+  smoke,
+  review,
+  packetReview,
+  evaluationPacket,
+  evaluationRun,
+].filter(Boolean);
 if (
-  [smoke, review, packetReview].filter(Boolean).length > 1 ||
+  runModes.length > 1 ||
   process.argv
     .slice(2)
-    .some((arg) => !['--smoke', '--review', '--packet-review'].includes(arg))
+    .some(
+      (arg) =>
+        ![
+          '--smoke',
+          '--review',
+          '--packet-review',
+          '--evaluation-packet',
+          '--evaluation-run',
+          '--reset-database',
+          '--',
+        ].includes(arg) &&
+        !arg.startsWith('--config=') &&
+        !arg.startsWith('--authorize='),
+    )
 ) {
-  throw new Error('Use at most one of --smoke, --review or --packet-review.');
+  throw new Error(
+    'Use at most one run mode; --evaluation-packet also requires --config=<path>.',
+  );
+}
+if ((evaluationPacket || evaluationRun) !== Boolean(configArgument)) {
+  throw new Error('Evaluation modes require exactly one --config=<path>.');
 }
 const origin = 'http://127.0.0.1:3100';
 const dryRunRoute = 'openrouter:dry-run-unselected';
@@ -92,6 +151,35 @@ const dryRunExecution: ExecutionPolicy = {
   },
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const evaluationConfig = configArgument
+  ? await readEvaluationPacketConfig(
+      resolve(workspaceRoot, configArgument.slice('--config='.length)),
+    )
+  : null;
+const evaluationAuthority = evaluationConfig
+  ? evaluationPacketAuthority(evaluationConfig)
+  : null;
+if (
+  evaluationRun &&
+  authorizationArgument?.slice('--authorize='.length) !== evaluationConfig?.id
+) {
+  throw new Error(
+    '--evaluation-run requires --authorize=<evaluation-id> matching the config.',
+  );
+}
+const evaluationPolicy =
+  evaluationAuthority && evaluationConfig
+    ? resolveEffectiveUsagePolicy({
+        platform: evaluationAuthority.profile,
+        entitlement: evaluationAuthority.profile,
+        restrictions: [],
+        requestedRoute: evaluationConfig.route.route,
+        requestedFundingMode: 'prepaid',
+      })
+    : null;
+if (evaluationPolicy?.kind === 'denied') {
+  throw new Error(`Evaluation usage policy denied: ${evaluationPolicy.reason}`);
+}
 const gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: workspaceRoot,
   encoding: 'utf8',
@@ -155,6 +243,12 @@ const admin = createDatabase(
   () => {},
 );
 try {
+  if (resetDatabase) {
+    await admin.db.$client.query(
+      'DROP DATABASE IF EXISTS offscreen_chamber WITH (FORCE)',
+    );
+    console.log('Reset disposable local Chamber database.');
+  }
   const exists = await admin.db.$client.query(
     "SELECT 1 FROM pg_database WHERE datname = 'offscreen_chamber'",
   );
@@ -170,6 +264,14 @@ await applyMigrations(
   fileURLToPath(new URL('../../../../packages/db/migrations', import.meta.url)),
 );
 const database = createDatabase(config, () => {});
+const openRouterApiKey = evaluationRun
+  ? (process.env['OPENROUTER_API_KEY'] ?? '')
+  : '';
+const creditsBefore =
+  evaluationRun && evaluationConfig
+    ? await verifyOpenRouterAuthority(evaluationConfig, openRouterApiKey)
+    : null;
+const storytellerControl = createChamberStorytellerControl();
 const authConfig = {
   origin,
   secret: randomBytes(32).toString('hex'),
@@ -193,16 +295,35 @@ const provisioner = betterAuth({
     },
   ],
 });
+const documentStore = new LocalDocumentStore(
+  join(workspaceRoot, 'data', 'chamber-documents'),
+);
+const defaultRulePackage = await importRulePackageDirectory(
+  documentStore,
+  join(workspaceRoot, 'content', 'rules', 'srd-5.2.1-subset'),
+);
 const app = await createApp(
   database,
   createAuth(database, authConfig),
   origin,
   {
+    documentStore,
+    defaultRules: {
+      ruleSetId: defaultRulePackage.manifest.ruleSetId,
+      rootHash: defaultRulePackage.rootHash,
+      revision: defaultRulePackage.manifest.revision,
+      engine: defaultRulePackage.manifest.engine,
+    },
     developerTools: true,
-    ...(packetReview
+    chamberStorytellerControl: storytellerControl,
+    ...(packetReview || evaluationPacket || evaluationRun
       ? {
-          storytellerExecution: dryRunExecution,
-          storytellerUsagePolicy: dryRunPolicy.policy,
+          storytellerExecution:
+            evaluationAuthority?.execution ?? dryRunExecution,
+          storytellerUsagePolicy:
+            evaluationPolicy?.kind === 'allowed'
+              ? evaluationPolicy.policy
+              : dryRunPolicy.policy,
         }
       : {}),
     qaContext: {
@@ -261,187 +382,370 @@ try {
       taskQueue: 'local-chamber',
     },
     () => {},
+    evaluationRun && evaluationPolicy?.kind === 'allowed'
+      ? {
+          provider: createOpenRouterProvider({
+            enabled: true,
+            apiKey: openRouterApiKey,
+            recordResponse: async (evidence) => {
+              const parsed = JSON.parse(evidence.raw) as { id?: unknown };
+              const providerId =
+                typeof parsed.id === 'string' &&
+                /^[a-zA-Z0-9_-]{1,200}$/.test(parsed.id)
+                  ? parsed.id
+                  : crypto.randomUUID();
+              const directory = join(tmpdir(), 'offscreen-rpg-packet-review');
+              await mkdir(directory, { recursive: true });
+              await writeFile(
+                join(directory, `provider-response-${providerId}.json`),
+                `${JSON.stringify(evidence, null, 2)}\n`,
+                { flag: 'wx' },
+              );
+            },
+          }),
+          dispatchAuthority: () => evaluationPolicy.policy,
+          documentStore,
+        }
+      : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
-  if (packetReview) {
-    const cookie = sessionCookiesFromLogin(
-      login.headers.get('cookie'),
-      origin,
-    )
+  if (packetReview || evaluationPacket || evaluationRun) {
+    const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');
-    const { evidencePath } = await captureHeldOpeningPacket({
+    const {
+      evidencePath,
+      draftId,
+      review: heldReview,
+    } = await captureHeldOpeningPacket({
       apiOrigin: 'http://127.0.0.1:3001',
       browserOrigin: origin,
       cookie,
       database,
     });
-    console.log(
-      `API-only held opening packet saved to ${evidencePath}. Verified: awaiting review, zero provider attempts. Model spend: $0; no browser, provider call or reservation.`,
-    );
-  } else {
-  web = spawn(
-    process.execPath,
-    [
-      'node_modules/next/dist/bin/next',
-      'start',
-      '--hostname',
-      '127.0.0.1',
-      '--port',
-      '3100',
-    ],
-    {
-      cwd: fileURLToPath(new URL('../../../../apps/web', import.meta.url)),
-      env: {
-        PATH: process.env['PATH'],
-        SYSTEMROOT: process.env['SYSTEMROOT'],
-        TEMP: process.env['TEMP'],
-        TMP: process.env['TMP'],
-        NODE_ENV: 'production',
-        API_INTERNAL_ORIGIN: 'http://127.0.0.1:3001',
-      },
-      windowsHide: true,
-      stdio: 'ignore',
-    },
-  );
-  webExit = once(web, 'exit');
-  let ready = false;
-  for (let attempt = 0; attempt < 100; attempt++) {
-    if (web.exitCode !== null) {
-      throw new Error('Web server stopped during startup.');
-    }
-    try {
-      if ((await fetch(`${origin}/sign-in`)).ok) {
-        ready = true;
-        break;
+    if (evaluationConfig) {
+      const inspection = evaluationPacketInspectionSchema.parse(
+        heldReview.inspection,
+      );
+      const { maxContextTokens: _maxContextTokens, ...route } =
+        evaluationConfig.route;
+      const manifest = createLiveEvaluationManifest({
+        id: evaluationConfig.id,
+        createdAt: new Date().toISOString(),
+        case: evaluationConfig.case,
+        review: {
+          generationId: heldReview.generationId,
+          packetSha256: heldReview.packetSha256,
+          state: heldReview.state,
+          serializedBytes: inspection.serializedBytes,
+        },
+        route,
+        recipe: evaluationConfig.recipe,
+      });
+      const manifestPath = join(
+        dirname(evidencePath),
+        `evaluation-manifest-${heldReview.generationId}.json`,
+      );
+      await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, {
+        flag: 'wx',
+      });
+      if (evaluationRun && creditsBefore) {
+        await provisionAndPreflightLiveEvaluation({
+          database,
+          config: evaluationConfig,
+          manifest,
+          review: heldReview,
+          credits: creditsBefore,
+        });
+        await enableSingleLiveAttempt(database, evaluationConfig);
+        try {
+          await releaseHeldPacket({
+            apiOrigin: 'http://127.0.0.1:3001',
+            browserOrigin: origin,
+            cookie,
+            review: heldReview,
+          });
+          const openingState = await waitForGenerationTerminal(
+            database,
+            heldReview.generationId,
+          );
+          const creditsAfterOpening = await verifyOpenRouterAuthority(
+            evaluationConfig,
+            openRouterApiKey,
+          );
+          const saved = await saveLiveEvaluationReport({
+            database,
+            directory: dirname(evidencePath),
+            config: evaluationConfig,
+            generationId: heldReview.generationId,
+            creditsBefore,
+            creditsAfter: creditsAfterOpening,
+          });
+          console.log(
+            `Live evaluation report saved to ${saved.path}. No retry is permitted.`,
+          );
+          if (evaluationConfig.recipe.primaryCalls > 1) {
+            if (openingState !== 'succeeded') {
+              throw new Error(
+                'Opening failed; the short playable loop cannot continue',
+              );
+            }
+            const continuation = await captureHeldContinuation({
+              apiOrigin: 'http://127.0.0.1:3001',
+              browserOrigin: origin,
+              cookie,
+              draftId,
+              openingGenerationId: heldReview.generationId,
+              evidenceDirectory: dirname(evidencePath),
+            });
+            const continuationInspection =
+              evaluationPacketInspectionSchema.parse(
+                continuation.review.inspection,
+              );
+            const continuationManifest = createLiveEvaluationManifest({
+              id: evaluationConfig.id,
+              createdAt: new Date().toISOString(),
+              case: evaluationConfig.case,
+              review: {
+                generationId: continuation.review.generationId,
+                packetSha256: continuation.review.packetSha256,
+                state: continuation.review.state,
+                serializedBytes: continuationInspection.serializedBytes,
+              },
+              route,
+              recipe: evaluationConfig.recipe,
+            });
+            preflightAdditionalLiveEvaluation({
+              manifest: continuationManifest,
+              review: continuation.review,
+              credits: creditsAfterOpening,
+              localAvailableMicrousd: BigInt(
+                evaluationConfig.recipe.maxMicrousd,
+              ),
+            });
+            const continuationManifestPath = join(
+              dirname(evidencePath),
+              `evaluation-manifest-${continuation.generationId}.json`,
+            );
+            await writeFile(
+              continuationManifestPath,
+              `${JSON.stringify(continuationManifest, null, 2)}\n`,
+              { flag: 'wx' },
+            );
+            await releaseHeldPacket({
+              apiOrigin: 'http://127.0.0.1:3001',
+              browserOrigin: origin,
+              cookie,
+              review: continuation.review,
+            });
+            await waitForGenerationTerminal(
+              database,
+              continuation.generationId,
+            );
+            const creditsAfterContinuation = await verifyOpenRouterAuthority(
+              evaluationConfig,
+              openRouterApiKey,
+            );
+            const continuationReport = await saveLiveEvaluationReport({
+              database,
+              directory: dirname(evidencePath),
+              config: evaluationConfig,
+              generationId: continuation.generationId,
+              creditsBefore: creditsAfterOpening,
+              creditsAfter: creditsAfterContinuation,
+            });
+            console.log(
+              `Continuation report saved to ${continuationReport.path}; selected ${continuation.selectedOption.id} (${continuation.selectedOption.label}).`,
+            );
+          }
+        } finally {
+          await closeSingleLiveAttempt(database, evaluationConfig);
+        }
       }
-    } catch {
-      /* starting */
-    }
-    await delay(200);
-  }
-  if (!ready) {
-    throw new Error('Web server did not become ready.');
-  }
-  // Review mode uses the launcher's authenticated production path and saves
-  // disposable visual evidence. This avoids introducing test-only auth routes
-  // merely to let an automated reviewer see the same pages as a local player.
-  browser = await chromium.launch({ headless: smoke || review });
-  const launchedBrowser = browser;
-  const context = await launchedBrowser.newContext();
-  await context.addCookies(
-    sessionCookiesFromLogin(login.headers.get('cookie'), origin),
-  );
-  const page = await context.newPage();
-  await page.goto(`${origin}/chamber`);
-  await page.getByRole('button', { name: 'Start scripted chamber' }).waitFor();
-  await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
-  if (review) {
-    const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
-    await mkdir(evidenceDirectory, { recursive: true });
-    await page.goto(`${origin}/stories/new`);
-    await page
-      .getByLabel('Choose your storyteller')
-      .selectOption('quiet-eerie-mystery/1');
-    await page
-      .getByLabel('Who are you, and where does this begin?')
-      .fill('I am SpongeBob in the pineapple with Gary.');
-    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
-    await page
-      .getByRole('link', { name: 'Review opening candidate' })
-      .click();
-    await page.getByLabel('Opening seed').selectOption('pineapple-mechanics.v4');
-    await page
-      .getByRole('button', {
-        name: 'Generate opening candidate',
-        exact: true,
-      })
-      .click();
-    await page
-      .getByRole('button', { name: 'Start story', exact: true })
-      .waitFor({ timeout: 30000 });
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.screenshot({
-      path: join(evidenceDirectory, 'opening-wide.png'),
-      fullPage: true,
-    });
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({
-      path: join(evidenceDirectory, 'opening-narrow.png'),
-      fullPage: true,
-    });
-    await page.getByRole('button', { name: 'Start story', exact: true }).click();
-    await page.waitForURL('**/play/**');
-    await page
-      .getByRole('button', { name: 'Slip behind the sofa', exact: true })
-      .waitFor({ timeout: 30000 });
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.screenshot({
-      path: join(evidenceDirectory, 'play-wide.png'),
-      fullPage: true,
-    });
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({
-      path: join(evidenceDirectory, 'play-narrow.png'),
-      fullPage: true,
-    });
-    console.log(
-      `Local review evidence saved to ${evidenceDirectory}. Model spend: $0; no provider calls.`,
-    );
-  } else if (smoke) {
-    await page
-      .getByRole('combobox', { name: 'Scenario' })
-      .selectOption('chamber.v5');
-    await page
-      .getByRole('region', { name: 'Selected scenario purpose' })
-      .getByText('authoritative item transfer', { exact: false })
-      .waitFor();
-    await page.getByRole('button', { name: 'Start scripted chamber' }).click();
-    await page.getByRole('region', { name: 'Inspector' }).waitFor();
-    await page
-      .getByRole('button', { name: 'Give the letter to the caretaker' })
-      .click();
-    await page.getByRole('heading', { name: 'Letter delivered.' }).waitFor();
-    await page
-      .getByRole('region', { name: 'Inspector' })
-      .getByText('held by caretaker', { exact: false })
-      .waitFor();
-    await page.reload();
-    await page
-      .getByText('Sealed letter — held by caretaker', { exact: true })
-      .waitFor();
-    await page
-      .getByRole('region', { name: 'Inspector' })
-      .getByText('held by caretaker', { exact: false })
-      .waitFor();
-    const unauthenticated = await fetch(`${origin}/api/me`);
-    if (unauthenticated.status !== 401) {
-      throw new Error('Anonymous access was not rejected.');
+      console.log(
+        evaluationRun
+          ? `Evaluation manifest saved to ${manifestPath}. The authorized one-shot run is terminal.`
+          : `Evaluation manifest saved to ${manifestPath}. Funding remains disabled; explicit provisioning and release are still required.`,
+      );
     }
     console.log(
-      'Local launcher smoke passed: authenticated play, inspector, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
+      evaluationRun
+        ? `Reviewed opening packet saved to ${evidencePath}. Its exact hash was released once after preflight; see the terminal report for spend and outcome.`
+        : `API-only held opening packet saved to ${evidencePath}. Verified: awaiting review, zero provider attempts. Model spend: $0; no browser, provider call or reservation.`,
     );
   } else {
-    console.log(
-      packetReview
-        ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
-        : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
+    web = spawn(
+      process.execPath,
+      [
+        'node_modules/next/dist/bin/next',
+        'start',
+        '--hostname',
+        '127.0.0.1',
+        '--port',
+        '3100',
+      ],
+      {
+        cwd: fileURLToPath(new URL('../../../../apps/web', import.meta.url)),
+        env: {
+          PATH: process.env['PATH'],
+          SYSTEMROOT: process.env['SYSTEMROOT'],
+          TEMP: process.env['TEMP'],
+          TMP: process.env['TMP'],
+          NODE_ENV: 'production',
+          API_INTERNAL_ORIGIN: 'http://127.0.0.1:3001',
+        },
+        windowsHide: true,
+        stdio: 'ignore',
+      },
     );
-    await Promise.race([
-      new Promise<void>((resolve) => {
-        launchedBrowser.once('disconnected', () => resolve());
-      }),
-      runtime.done.then(() => {
-        if (!stopping) {
-          throw new Error('Worker stopped.');
+    webExit = once(web, 'exit');
+    let ready = false;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (web.exitCode !== null) {
+        throw new Error('Web server stopped during startup.');
+      }
+      try {
+        if ((await fetch(`${origin}/sign-in`)).ok) {
+          ready = true;
+          break;
         }
-      }),
-      webExit.then(() => {
-        if (!stopping) {
-          throw new Error('Web server stopped.');
-        }
-      }),
-    ]);
-  }
+      } catch {
+        /* starting */
+      }
+      await delay(200);
+    }
+    if (!ready) {
+      throw new Error('Web server did not become ready.');
+    }
+    // Review mode uses the launcher's authenticated production path and saves
+    // disposable visual evidence. This avoids introducing test-only auth routes
+    // merely to let an automated reviewer see the same pages as a local player.
+    browser = await chromium.launch({ headless: smoke || review });
+    const launchedBrowser = browser;
+    const context = await launchedBrowser.newContext();
+    await context.addCookies(
+      sessionCookiesFromLogin(login.headers.get('cookie'), origin),
+    );
+    const page = await context.newPage();
+    await page.goto(`${origin}/chamber`);
+    await page
+      .getByRole('button', { name: 'Start scripted chamber' })
+      .waitFor();
+    await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+    if (review) {
+      const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
+      await mkdir(evidenceDirectory, { recursive: true });
+      await page.goto(`${origin}/stories/new`);
+      await page
+        .getByLabel('Choose your storyteller')
+        .selectOption('quiet-eerie-mystery/1');
+      await page
+        .getByLabel('Who are you, and where does this begin?')
+        .fill('I am SpongeBob in the pineapple with Gary.');
+      await page
+        .getByRole('button', { name: 'Save draft', exact: true })
+        .click();
+      await page
+        .getByRole('link', { name: 'Review opening candidate' })
+        .click();
+      await page
+        .getByLabel('Opening seed')
+        .selectOption('pineapple-mechanics.v4');
+      await page
+        .getByRole('button', {
+          name: 'Generate opening candidate',
+          exact: true,
+        })
+        .click();
+      await page
+        .getByRole('button', { name: 'Start story', exact: true })
+        .waitFor({ timeout: 30000 });
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.screenshot({
+        path: join(evidenceDirectory, 'opening-wide.png'),
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.screenshot({
+        path: join(evidenceDirectory, 'opening-narrow.png'),
+        fullPage: true,
+      });
+      await page
+        .getByRole('button', { name: 'Start story', exact: true })
+        .click();
+      await page.waitForURL('**/play/**');
+      await page
+        .getByRole('button', { name: 'Slip behind the sofa', exact: true })
+        .waitFor({ timeout: 30000 });
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.screenshot({
+        path: join(evidenceDirectory, 'play-wide.png'),
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.screenshot({
+        path: join(evidenceDirectory, 'play-narrow.png'),
+        fullPage: true,
+      });
+      console.log(
+        `Local review evidence saved to ${evidenceDirectory}. Model spend: $0; no provider calls.`,
+      );
+    } else if (smoke) {
+      await page
+        .getByRole('combobox', { name: 'Scenario' })
+        .selectOption('chamber.v5');
+      await page
+        .getByRole('region', { name: 'Selected scenario purpose' })
+        .getByText('authoritative item transfer', { exact: false })
+        .waitFor();
+      await page
+        .getByRole('button', { name: 'Start scripted chamber' })
+        .click();
+      await page.getByRole('region', { name: 'Inspector' }).waitFor();
+      await page
+        .getByRole('button', { name: 'Give the letter to the caretaker' })
+        .click();
+      await page.getByRole('heading', { name: 'Letter delivered.' }).waitFor();
+      await page
+        .getByRole('region', { name: 'Inspector' })
+        .getByText('held by caretaker', { exact: false })
+        .waitFor();
+      await page.reload();
+      await page
+        .getByText('Sealed letter — held by caretaker', { exact: true })
+        .waitFor();
+      await page
+        .getByRole('region', { name: 'Inspector' })
+        .getByText('held by caretaker', { exact: false })
+        .waitFor();
+      const unauthenticated = await fetch(`${origin}/api/me`);
+      if (unauthenticated.status !== 401) {
+        throw new Error('Anonymous access was not rejected.');
+      }
+      console.log(
+        'Local launcher smoke passed: authenticated play, inspector, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
+      );
+    } else {
+      console.log(
+        packetReview
+          ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
+          : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
+      );
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          launchedBrowser.once('disconnected', () => resolve());
+        }),
+        runtime.done.then(() => {
+          if (!stopping) {
+            throw new Error('Worker stopped.');
+          }
+        }),
+        webExit.then(() => {
+          if (!stopping) {
+            throw new Error('Web server stopped.');
+          }
+        }),
+      ]);
+    }
   }
 } finally {
   await stop();

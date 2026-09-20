@@ -26,6 +26,7 @@ import {
   readNearestPendingWorldObligations,
   readPendingWorldObligations,
 } from './world-obligations';
+import type { DocumentStore } from '@offscreen/documents';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
 export type ActionExecutionEventKind =
@@ -70,6 +71,7 @@ export async function settleActionExecution(
   state: CampaignRecord,
   execution: ActionExecutionRecord,
   now: number,
+  documentStore?: DocumentStore,
 ) {
   const plan = immediateActionPlanSchema.parse(execution.plan);
   const controllingObligations = await readNearestPendingWorldObligations(tx, {
@@ -135,6 +137,7 @@ export async function settleActionExecution(
           transition.campaign,
           [...reportObligations, ...controllingObligations],
           now,
+          documentStore,
         )
       : transition.campaign;
     await incrementStoryViewVersion(tx, {
@@ -199,6 +202,7 @@ export async function settleActionExecution(
     transition.campaign,
     reportObligations,
     now,
+    documentStore,
   );
   await incrementStoryViewVersion(tx, {
     storyId: current.id,
@@ -209,11 +213,15 @@ export async function settleActionExecution(
     campaignWithReports,
     transition.followUps,
     now,
+    documentStore,
   );
   return { state: 'settled' as const, campaign: settledCampaign };
 }
 
-export function createCampaignActionExecutions(database: Database) {
+export function createCampaignActionExecutions(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
   return {
     async advance(operationId: string): Promise<number | null> {
       return database.db.transaction(async (tx) => {
@@ -239,6 +247,7 @@ export function createCampaignActionExecutions(database: Database) {
           state,
           execution,
           now,
+          documentStore,
         );
         return result.state === 'waiting' ? result.remainingRealMs : null;
       });

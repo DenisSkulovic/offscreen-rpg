@@ -62,6 +62,7 @@ import {
   readPendingWorldObligations,
   type WorldObligationRecord,
 } from './world-obligations';
+import type { DocumentStore } from '@offscreen/documents';
 
 export { campaignActivityTopic } from './topics';
 
@@ -242,6 +243,7 @@ export async function settleActivity(
   activity: ActivityRecord,
   now: number,
   controllingObligation?: WorldObligationRecord | null,
+  documentStore?: DocumentStore,
 ) {
   const plan = resolvedActivityPlanSchema.parse(activity.plan);
   if (activity.state !== 'running') {
@@ -553,6 +555,7 @@ export async function settleActivity(
     settledCampaign,
     followUps.beforeContinuation,
     now,
+    documentStore,
   );
   if (nextState === 'complete') {
     // The refreshed offer is the current Storyteller-authored handoff. A queued
@@ -570,11 +573,15 @@ export async function settleActivity(
     settledCampaign,
     followUps.afterContinuation,
     now,
+    documentStore,
   );
   return { activity: nextActivity, state: settledCampaign, current: nextStory };
 }
 
-export function createCampaignActivities(database: Database) {
+export function createCampaignActivities(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
   return {
     async advance(id: string): Promise<number | null> {
       return database.db.transaction(async (tx) => {
@@ -615,6 +622,7 @@ export function createCampaignActivities(database: Database) {
           activity,
           now,
           controllingObligation,
+          documentStore,
         );
         const reportObligations = await readPendingWorldObligations(tx, {
           storyId: current.id,
@@ -647,6 +655,7 @@ export function createCampaignActivities(database: Database) {
             settled.state,
             [...reportObligations, ...controllingObligations],
             now,
+            documentStore,
           );
           await incrementStoryViewVersion(tx, {
             storyId: current.id,
@@ -660,6 +669,7 @@ export function createCampaignActivities(database: Database) {
           settled.state,
           reportObligations,
           now,
+          documentStore,
         );
         if (settled.activity.state !== 'running') {
           return null;

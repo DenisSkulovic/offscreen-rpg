@@ -14,6 +14,83 @@ export type StorytellerRequestAuditCase = Readonly<{
   sequence?: Readonly<{ id: string; position: number }>;
 }>;
 
+export type StorytellerRequestSectionSelection = Readonly<{
+  caseId: string;
+  sectionKey: string;
+}>;
+
+function parseUserSections(task: StorytellerTask) {
+  const inspection = inspectOpenRouterRequest(task);
+  const userMessage = inspection.body.messages.find(
+    (message) => message.role === 'user',
+  );
+  if (!userMessage) return { inspection, sections: {} };
+  const parsed = JSON.parse(userMessage.content) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Storyteller user message is not a sectioned JSON object');
+  }
+  return {
+    inspection,
+    sections: parsed as Record<string, unknown>,
+  };
+}
+
+/**
+ * Return exact content only for explicitly named sections and only within a
+ * caller-owned byte allowance. The compact audit manifest should be inspected
+ * first so routine diagnosis never requires loading the complete request.
+ */
+export function selectStorytellerRequestSections(
+  cases: readonly StorytellerRequestAuditCase[],
+  selections: readonly StorytellerRequestSectionSelection[],
+  maxSelectedBytes: number,
+) {
+  if (!Number.isSafeInteger(maxSelectedBytes) || maxSelectedBytes < 1) {
+    throw new Error('Selected-section byte limit must be a positive integer');
+  }
+  if (!selections.length) {
+    throw new Error('At least one request section must be selected');
+  }
+  const casesById = new Map(cases.map((entry) => [entry.id, entry]));
+  const parsedByCaseId = new Map<
+    string,
+    ReturnType<typeof parseUserSections>
+  >();
+  let selectedBytes = 0;
+  const sections = selections.map(({ caseId, sectionKey }) => {
+    const auditCase = casesById.get(caseId);
+    if (!auditCase) throw new Error(`Unknown audit case: ${caseId}`);
+    const parsed =
+      parsedByCaseId.get(caseId) ?? parseUserSections(auditCase.task);
+    parsedByCaseId.set(caseId, parsed);
+    if (!Object.hasOwn(parsed.sections, sectionKey)) {
+      throw new Error(`Unknown request section: ${caseId}:${sectionKey}`);
+    }
+    const content = parsed.sections[sectionKey];
+    const serialized = JSON.stringify(content);
+    const bytes = Buffer.byteLength(serialized, 'utf8');
+    selectedBytes += bytes;
+    if (selectedBytes > maxSelectedBytes) {
+      throw new Error(
+        `Selected request sections exceed ${maxSelectedBytes} bytes`,
+      );
+    }
+    const metadata = parsed.inspection.userSections.find(
+      (entry) => entry.key === sectionKey,
+    );
+    if (!metadata) throw new Error('Request section metadata is unavailable');
+    return { caseId, sectionKey, ...metadata, content };
+  });
+  return {
+    version: 'storyteller-request-section-selection.v1' as const,
+    transportPerformed: false as const,
+    providerChargeMicrousd: '0' as const,
+    maxSelectedBytes,
+    selectedBytes,
+    sections,
+  };
+}
+
 function sourceRevision(task: StorytellerTask) {
   return task.task === 'opening'
     ? { kind: 'draft' as const, revision: task.source.draftRevision }
@@ -34,58 +111,76 @@ export function createStorytellerRequestAudit(
   if (new Set(ids).size !== ids.length) {
     throw new Error('Storyteller request audit case IDs must be unique');
   }
-  const inspected = cases.map(({ id, task, evidenceExpectations, sequence }) => {
-    const inspection = inspectOpenRouterRequest(task);
-    const loadedHandles = task.context.evidence.map(
-      (passage) => `p${passage.sequence}`,
-    );
-    const requiredHandles = evidenceExpectations?.requiredHandles ?? [];
-    const forbiddenHandles = evidenceExpectations?.forbiddenHandles ?? [];
-    return {
-      id,
-      sequence: sequence ?? null,
-      source: sourceRevision(task),
-      profile: { id: task.profile.id, revision: task.profile.revision },
-      purpose: inspection.purpose,
-      taskInputVersion: task.inputVersion,
-      promptVersion: inspection.promptVersion,
-      contextPolicyVersion: inspection.contextPolicyVersion,
-      packet: {
-        sha256: inspection.sha256,
-        serializedBytes: inspection.serializedBytes,
-        capturedRequestBytes: inspection.capturedRequestBytes,
-        outputSchemaBytes: inspection.outputSchemaBytes,
-        outputSchemaSha256: inspection.outputSchemaSha256,
-        messages: inspection.messages,
-        userSections: inspection.userSections,
-      },
-      evidence: {
-        loadedHandles,
-        omittedSequences: task.contextManifest.omittedSequences,
-        omissionReason:
-          task.contextManifest.omittedSequences.length > 0
-            ? 'outside-bounded-selection'
-            : null,
-        expectations: {
-          requiredHandles,
-          forbiddenHandles,
-          missingRequiredHandles: requiredHandles.filter(
-            (handle) => !loadedHandles.includes(handle),
-          ),
-          loadedForbiddenHandles: forbiddenHandles.filter((handle) =>
-            loadedHandles.includes(handle),
-          ),
+  const inspected = cases.map(
+    ({ id, task, evidenceExpectations, sequence }) => {
+      const inspection = inspectOpenRouterRequest(task);
+      const loadedHandles = task.context.evidence.map(
+        (passage) => `p${passage.sequence}`,
+      );
+      const requiredHandles = evidenceExpectations?.requiredHandles ?? [];
+      const forbiddenHandles = evidenceExpectations?.forbiddenHandles ?? [];
+      const librarySelection = task.context.canonicalKnowledge
+        ?.librarySelection ?? {
+        requestedTopics: [],
+        unmatchedTopics: [],
+        requestedHandles: [],
+        loadedHandles: [],
+        omitted: [],
+        maxReads: 0,
+        maxBytes: 0,
+        usedReads: 0,
+        usedBytes: 0,
+      };
+      return {
+        id,
+        sequence: sequence ?? null,
+        source: sourceRevision(task),
+        profile: { id: task.profile.id, revision: task.profile.revision },
+        purpose: inspection.purpose,
+        taskInputVersion: task.inputVersion,
+        promptVersion: inspection.promptVersion,
+        contextPolicyVersion: inspection.contextPolicyVersion,
+        packet: {
+          sha256: inspection.sha256,
+          serializedBytes: inspection.serializedBytes,
+          capturedRequestBytes: inspection.capturedRequestBytes,
+          outputSchemaBytes: inspection.outputSchemaBytes,
+          outputSchemaSha256: inspection.outputSchemaSha256,
+          messages: inspection.messages,
+          userSections: inspection.userSections,
         },
-      },
-      estimatedInputTokens: inspection.estimatedInputTokens,
-      observedProviderCacheHitTokens: null,
-      inspection,
-    };
-  });
+        evidence: {
+          loadedHandles,
+          omittedSequences: task.contextManifest.omittedSequences,
+          omissionReason:
+            task.contextManifest.omittedSequences.length > 0
+              ? 'outside-bounded-selection'
+              : null,
+          expectations: {
+            requiredHandles,
+            forbiddenHandles,
+            missingRequiredHandles: requiredHandles.filter(
+              (handle) => !loadedHandles.includes(handle),
+            ),
+            loadedForbiddenHandles: forbiddenHandles.filter((handle) =>
+              loadedHandles.includes(handle),
+            ),
+          },
+        },
+        librarySelection,
+        estimatedInputTokens: inspection.estimatedInputTokens,
+        observedProviderCacheHitTokens: null,
+        inspection,
+      };
+    },
+  );
   const comparisons = inspected.slice(1).map((right, index) => ({
     leftCaseId: inspected[index]!.id,
     rightCaseId: right.id,
-    ...compareOpenRouterRequests(inspected[index]!.inspection, right.inspection),
+    ...compareOpenRouterRequests(
+      inspected[index]!.inspection,
+      right.inspection,
+    ),
   }));
   const sequenceIds = [
     ...new Set(
@@ -102,8 +197,7 @@ export function createStorytellerRequestAudit(
       const entries = inspected
         .filter((entry) => entry.sequence?.id === sequenceId)
         .sort(
-          (left, right) =>
-            left.sequence!.position - right.sequence!.position,
+          (left, right) => left.sequence!.position - right.sequence!.position,
         );
       const transitions = entries.slice(1).map((right, index) => {
         const left = entries[index]!;
@@ -152,7 +246,10 @@ export function formatStorytellerRequestAudit(audit: StorytellerRequestAudit) {
       `  contract: ${entry.purpose.inputContract} -> ${entry.purpose.outputContract}`,
       `  versions: task ${entry.taskInputVersion}, prompt ${entry.promptVersion}, context ${entry.contextPolicyVersion}`,
       `  bytes: packet ${entry.packet.serializedBytes}, request ${entry.packet.capturedRequestBytes}, schema ${entry.packet.outputSchemaBytes}`,
+      `  sections: ${entry.packet.userSections.map((section) => `${section.key}=${section.valueKind}/${section.itemCount ?? '-'}/${section.bytes}B#${section.sha256.slice(0, 8)}`).join(', ') || 'none'}`,
       `  evidence: ${entry.evidence.loadedHandles.join(', ') || 'none'}; omitted: ${entry.evidence.omittedSequences.join(', ') || 'none'}`,
+      `  library sections: ${entry.librarySelection.loadedHandles.join(', ') || 'none'}; omitted: ${entry.librarySelection.omitted.map((item) => `${item.handle}:${item.reason}`).join(', ') || 'none'}; reads ${entry.librarySelection.usedReads}/${entry.librarySelection.maxReads}; bytes ${entry.librarySelection.usedBytes}/${entry.librarySelection.maxBytes}`,
+      `  rule topics: ${entry.librarySelection.requestedTopics.join(', ') || 'none'}; unmatched: ${entry.librarySelection.unmatchedTopics.join(', ') || 'none'}`,
       `  coverage: missing required ${entry.evidence.expectations.missingRequiredHandles.join(', ') || 'none'}; loaded forbidden ${entry.evidence.expectations.loadedForbiddenHandles.join(', ') || 'none'}`,
       `  tokens/cache: unknown / unknown`,
     );

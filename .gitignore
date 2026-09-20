@@ -20,6 +20,7 @@ build/
 coverage/
 .next/
 .turbo/
+.pnpm-store/
 *.tsbuildinfo
 next-env.d.ts
 # Private runtime data and scratch work

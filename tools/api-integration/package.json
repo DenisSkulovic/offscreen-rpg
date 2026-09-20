@@ -15,13 +15,15 @@
     "test:stories:start": "node --test dist/test/story-start.integration.js",
     "test:stories:resolution": "node --test dist/test/story-resolution.integration.js",
     "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
-    "test:storyteller": "node --test dist/test/storyteller.integration.js"
+    "test:storyteller": "node --test dist/test/storyteller.integration.js",
+    "test:start-package": "node --test dist/test/start-package.integration.js"
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
     "@offscreen/application": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/db": "workspace:*",
+    "@offscreen/documents": "workspace:*",
     "@offscreen/storyteller": "workspace:*",
     "@offscreen/web": "workspace:*",
     "@offscreen/worker": "workspace:*",

@@ -27,6 +27,11 @@ import {
   requireCurrentPassage,
   restartActiveSceneAtPassage,
 } from './persistence';
+import type { StagedStoryPublication } from './passage-documents';
+import { story, storyDocumentCommit } from '@offscreen/db/story-schema';
+import { eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { enqueue } from '../outbox/index';
 
 type CommitContinuation = Readonly<{
   ownerId: string;
@@ -37,6 +42,7 @@ type CommitContinuation = Readonly<{
   completingDecisionPassageId: string | undefined;
   sourceGenerationId?: string | null;
   restartActiveScene?: boolean;
+  stagedDocuments?: StagedStoryPublication;
 }>;
 
 type AppendContinuation = Readonly<{
@@ -45,6 +51,36 @@ type AppendContinuation = Readonly<{
   transitionId: string;
   proposed: unknown;
 }>;
+
+export async function commitStagedStoryPublication(
+  tx: Transaction,
+  args: {
+    storyId: string;
+    operationId: string;
+    staged: StagedStoryPublication;
+  },
+) {
+  await tx.insert(storyDocumentCommit).values({
+    storyId: args.storyId,
+    operationId: args.operationId,
+    requestHash: args.staged.requestHash,
+    baseRootHash: args.staged.baseRootHash,
+    rootHash: args.staged.rootHash,
+    rootRevision: args.staged.rootRevision,
+  });
+  await tx
+    .update(story)
+    .set({
+      documentRootHash: args.staged.rootHash,
+      documentRootRevision: args.staged.rootRevision,
+    })
+    .where(eq(story.id, args.storyId));
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId: args.operationId,
+    topic: 'knowledge.index.v1',
+  });
+}
 
 async function admitCurrentContinuation(
   tx: Transaction,
@@ -120,6 +156,13 @@ export async function commitStoryContinuation(
   if (current.revision !== args.input.expectedRevision) {
     throw new StoryError('conflict');
   }
+  if (
+    args.stagedDocuments &&
+    (current.documentRootHash !== args.stagedDocuments.baseRootHash ||
+      current.documentRootRevision !== args.stagedDocuments.baseRootRevision)
+  ) {
+    throw new StoryError('conflict', 'document_root');
+  }
   await admitCurrentContinuation(tx, {
     ...args,
     expectedRevision: current.revision,
@@ -142,7 +185,20 @@ export async function commitStoryContinuation(
     }),
     sourceGenerationId:
       args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
+    ...(args.stagedDocuments
+      ? {
+          passageId: args.stagedDocuments.passageId,
+          contentDocumentHash: args.stagedDocuments.passageObjectHash,
+        }
+      : {}),
   });
+  if (args.stagedDocuments) {
+    await commitStagedStoryPublication(tx, {
+      storyId: args.storyId,
+      operationId: args.transitionId,
+      staged: args.stagedDocuments,
+    });
+  }
   if (current.storyteller != null && args.input.sourceGenerationId) {
     await publishStorytellerNotes(tx, {
       storyId: args.storyId,

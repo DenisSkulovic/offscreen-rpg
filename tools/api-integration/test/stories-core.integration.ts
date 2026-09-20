@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import {
   storyHistorySchema,
@@ -15,6 +18,7 @@ import {
 } from '@offscreen/application/developer-tools';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
+import { LocalDocumentStore } from '@offscreen/documents';
 
 type StoryCoreArgs = {
   t: TestContext;
@@ -33,6 +37,244 @@ export async function checkStoryCore({
   cookie,
   otherCookie,
 }: StoryCoreArgs) {
+  await t.test(
+    'canonical campaign documents publish immutable conflict-checked roots',
+    async () => {
+      const storage = new LocalDocumentStore(
+        await mkdtemp(join(tmpdir(), 'offscreen-campaign-documents-')),
+      );
+      const chamber = createChamber(database, { documentStore: storage });
+      const documents = createStories(database, { documentStore: storage })
+        .documents;
+      assert.ok(documents);
+      const storyId = randomUUID();
+      const opening = await chamber.start({
+        ownerId: owner,
+        storyId,
+        scenario: 'chamber.v5',
+      });
+      const initialRoot = await documents.readRoot({ ownerId: owner, storyId });
+      assert.equal(initialRoot.manifest.revision, 1);
+      assert.deepEqual(
+        initialRoot.manifest.entries.map((entry) => entry.path),
+        [
+          'START.md',
+          `sources/passages/passage-00000001-${opening.current.id}.md`,
+          'state/story-items.json',
+        ],
+      );
+      const openingEntry = initialRoot.manifest.entries.find(
+        (entry) => entry.documentId === opening.current.id,
+      );
+      assert.equal(openingEntry?.kind, 'source-passage');
+      const openingDocument = (
+        await documents.readDocument({
+          ownerId: owner,
+          storyId,
+          documentId: opening.current.id,
+        })
+      ).document;
+      assert.equal(openingDocument.format, 'offscreen.source-passage.v1');
+      if (openingDocument.format !== 'offscreen.source-passage.v1') {
+        throw new Error('Opening was not stored as a source passage');
+      }
+      assert.deepEqual(openingDocument.content, opening.current.content);
+      const placeId = randomUUID();
+      const threadId = randomUUID();
+      const operationId = randomUUID();
+      const firstRequest = {
+        expectedRootHash: initialRoot.rootHash,
+        expectedRootRevision: 1,
+        changes: [
+          {
+            documentId: placeId,
+            expectedRevision: null,
+            path: 'world/places/gate.md',
+            kind: 'lore',
+            authority: 'canon',
+            visibility: 'player-known',
+            title: 'The gate',
+            body: 'The iron gate opens toward the courtyard.',
+            sources: [],
+          },
+          {
+            documentId: threadId,
+            expectedRevision: null,
+            path: 'threads/unanswered-knock.md',
+            kind: 'narrative-thread',
+            authority: 'derived',
+            visibility: 'storyteller-private',
+            title: 'The unanswered knock',
+            body: 'Someone knocked after the gate was closed.',
+            sources: [{ documentId: placeId, revision: 1 }],
+          },
+        ],
+      };
+      const first = await documents.admit({
+        ownerId: owner,
+        storyId,
+        operationId,
+        body: firstRequest,
+      });
+      assert.equal(first.rootRevision, 2);
+      assert.equal(first.replayed, false);
+      assert.deepEqual(
+        await documents.admit({
+          ownerId: owner,
+          storyId,
+          operationId,
+          body: firstRequest,
+        }),
+        { ...first, replayed: true },
+      );
+      const root = await documents.readRoot({ ownerId: owner, storyId });
+      assert.equal(root.rootHash, first.rootHash);
+      assert.equal(root.manifest.entries.length, 5);
+
+      const second = await documents.admit({
+        ownerId: owner,
+        storyId,
+        operationId: randomUUID(),
+        body: {
+          expectedRootHash: first.rootHash,
+          expectedRootRevision: 2,
+          changes: [
+            {
+              documentId: placeId,
+              expectedRevision: 1,
+              path: 'world/places/gate.md',
+              kind: 'lore',
+              authority: 'canon',
+              visibility: 'player-known',
+              title: 'The gate',
+              body: 'The iron gate now stands open.',
+              sources: [],
+            },
+          ],
+        },
+      });
+      assert.equal(second.rootRevision, 3);
+      const historicalPlace = (await documents.readDocument({
+          ownerId: owner,
+          storyId,
+          documentId: placeId,
+          revision: 1,
+        })).document;
+      assert.equal(historicalPlace.format, 'offscreen.document.v1');
+      if (historicalPlace.format !== 'offscreen.document.v1') {
+        throw new Error('Place was not stored as a descriptive document');
+      }
+      assert.equal(historicalPlace.body, 'The iron gate opens toward the courtyard.');
+      await assert.rejects(
+        documents.admit({
+          ownerId: owner,
+          storyId,
+          operationId: randomUUID(),
+          body: firstRequest,
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      await assert.rejects(
+        documents.readRoot({ ownerId: 'not-the-owner', storyId }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'not_found',
+      );
+    },
+  );
+
+  await t.test(
+    'current narrative checkpoint forks as an independent first-class story',
+    async () => {
+      const chamber = createChamber(database);
+      const stories = createStories(database);
+      const sourceStoryId = randomUUID();
+      const forkStoryId = randomUUID();
+      const source = await chamber.start({
+        ownerId: owner,
+        storyId: sourceStoryId,
+        scenario: 'chamber.v2',
+      });
+
+      const fork = await stories.fork({
+        ownerId: owner,
+        sourceStoryId,
+        forkStoryId,
+        expectedRevision: source.revision,
+      });
+      assert.equal(fork.id, forkStoryId);
+      assert.deepEqual(fork.current.content, source.current.content);
+      assert.notEqual(fork.current.id, source.current.id);
+      assert.deepEqual(fork.lineage, {
+        sourceStoryId,
+        sourcePassageId: source.current.id,
+        sourceSequence: source.revision,
+      });
+      assert.equal(source.lineage, null);
+
+      const interaction = requireDefined(
+        source.current.interaction,
+        'Expected forkable opening choice',
+      );
+      const sourceContinuation = await chamber.respond({
+        ownerId: owner,
+        storyId: sourceStoryId,
+        operationId: randomUUID(),
+        body: {
+          expectedRevision: 1,
+          submission: {
+            interactionId: interaction.id,
+            answer: { kind: 'choice.v1', optionId: 'approach' },
+          },
+        },
+      });
+      const forkContinuation = await chamber.respond({
+        ownerId: owner,
+        storyId: forkStoryId,
+        operationId: randomUUID(),
+        body: {
+          expectedRevision: 1,
+          submission: {
+            interactionId: interaction.id,
+            answer: { kind: 'choice.v1', optionId: 'leave' },
+          },
+        },
+      });
+      assert.equal(sourceContinuation.current.content.title, 'At the gate.');
+      assert.equal(
+        forkContinuation.current.content.title,
+        'A quiet departure.',
+      );
+      assert.equal(sourceContinuation.lineage, null);
+      assert.deepEqual(forkContinuation.lineage, fork.lineage);
+
+      const retry = await stories.fork({
+        ownerId: owner,
+        sourceStoryId,
+        forkStoryId,
+        expectedRevision: source.revision,
+      });
+      assert.equal(retry.current.id, fork.current.id);
+      assert.equal(
+        (await stories.list({ ownerId: owner })).items.some(
+          (item) => item.id === forkStoryId,
+        ),
+        true,
+      );
+
+      await assert.rejects(
+        stories.fork({
+          ownerId: 'not-the-owner',
+          sourceStoryId,
+          forkStoryId: randomUUID(),
+          expectedRevision: source.revision,
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'not_found',
+      );
+    },
+  );
+
   await t.test(
     'story snapshot cache is owner checked, version addressed and disposable',
     async () => {

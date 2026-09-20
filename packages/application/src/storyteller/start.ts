@@ -32,6 +32,7 @@ import { initializeStoryInTransaction } from '../stories/initialization';
 import { publishStorytellerNotes } from './memory';
 import { StoryError } from '../stories/errors';
 import type { ImmediateActionPlan } from '@offscreen/game/immediate-actions';
+import type { StagedStoryBootstrap } from '../stories/passage-documents';
 
 export async function startStorytellerCandidate(
   tx: Transaction,
@@ -41,6 +42,8 @@ export async function startStorytellerCandidate(
     expectedDraftRevision: number;
     campaign?: CampaignStart;
     candidate: typeof generation.$inferSelect;
+    stagedPassage?: StagedStoryBootstrap;
+    existingPassageContent?: unknown;
   },
 ) {
   const task = storytellerTaskSchema.parse(input.candidate.input);
@@ -116,6 +119,10 @@ export async function startStorytellerCandidate(
       items: [],
       ...presentation,
     },
+    ...(input.stagedPassage ? { stagedPassage: input.stagedPassage } : {}),
+    ...(input.existingPassageContent === undefined
+      ? {}
+      : { existingPassageContent: input.existingPassageContent }),
   });
   if (!created) {
     // A retry must recover the accepted creation settings, not silently accept

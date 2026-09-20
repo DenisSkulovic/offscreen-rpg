@@ -8,13 +8,25 @@ Its judgment draws on the premise, storytelling preferences, current situation, 
 
 Frequency of unusual incidents and severity when an incident occurs are separate preferences. A mostly peaceful life with rare dangerous developments should be possible; low incident frequency must not mean that character progress stops. Conversely, routine repetition must not force escalating danger merely to keep the plot busy. Precise controls and unattended-risk permissions still need design; permission for a severe incident is not implied by permission to continue an ordinary routine.
 
+## Narrative direction and Storyteller initiative
+
+The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it can maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins, an old enemy acts, or a meteor approaches the planet. The Storyteller may make that pressure real and legible even if the character did nothing to request a dramatic scene.
+
+That authority is authorship over the surrounding story, not ownership of the player's decisions or guaranteed plot outcomes. The Storyteller can establish that the meteor is coming, reveal evidence, offer responses and let ignored danger progress through admitted world changes. It cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve its preferred finale after play makes it impossible. Long-range intent must continually adapt to committed facts.
+
+A grand narrative is optional. A campaign may explicitly prefer observation, ordinary life or a farming-simulator rhythm with no cultivated arc. In that case, the absence of a private agenda is meaningful; the Storyteller responds to the world, player choices and independently admitted events without inventing a looming destiny merely to create momentum. Between those extremes, a campaign can invite occasional thematic developments without demanding a single central plot.
+
+Narrative direction is distinct from a Storyteller profile. The profile supplies creative defaults—voice, taste, rhythm and initiative preferences—while the campaign owns any current direction, open threads, private possibilities and scheduled developments. Changing profile mid-story does not erase established threats or silently turn possibilities into facts. Explicit campaign settings outrank the new profile's defaults, and any change to the current direction is an admitted revision used by later turns.
+
+Private narrative intent is also distinct from executable future state. A possible invasion, rival or revelation remains noncanonical guidance until introduced. A development that must become due at a supported time or condition uses an admitted world obligation. A current fact is canon. These representations may link to each other, but evocative planning prose cannot schedule itself.
+
 Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves. Paying for a stronger model should improve the quality of interpretation, not purchase a better chance of success.
 
 ## Developments and choices
 
 The storyteller can compress an uneventful afternoon into a short passage or stay close to a conversation that needs immediate responses. It should mix ordinary life, discoveries and consequences rather than escalate danger at every opportunity.
 
-Choices express different intentions, not merely different wording for a predetermined outcome. Their descriptions should communicate what the character is attempting and any apparent commitment or risk, without revealing hidden information. A surprising consequence is allowed; routinely ignoring a player's intention is not.
+Choices express different intentions, not merely different wording for a predetermined outcome. Their descriptions should communicate what the character is attempting and any apparent commitment or risk, without revealing hidden information. A surprising consequence is allowed; routinely ignoring a player's intention is not. A choice may privately identify a few exact world-lore sections or campaign-memory documents that its next turn will need. These hints are optional, invisible to the player, bounded by application policy and used only when that choice is selected; they are not a reason to invent a calendar, lore or dramatic machinery for a world that has none. Compact task-local document handles are resolved to stable story-scoped identities before the next manifest is read, so publishing another passage cannot silently retarget a hint.
 
 An inactive response such as waiting is still a meaningful choice. It can establish a period of quiet, expose the character to a developing threat or give another character time to act. It does not require a special waiting subsystem.
 

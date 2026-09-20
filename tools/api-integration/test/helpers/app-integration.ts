@@ -13,6 +13,8 @@ import {
 import { applyMigrations } from '@offscreen/db/migrate';
 import { startRuntime } from '@offscreen/worker/runtime';
 import { createApp } from '@offscreen/api/app';
+import type { ChamberStorytellerControl } from '@offscreen/application/developer-tools';
+import type { StorytellerRuntimeOptions } from '@offscreen/application/storyteller';
 import { authOptions } from '@offscreen/api/auth';
 import { requireCookie } from './require.js';
 
@@ -73,6 +75,10 @@ async function release(steps: ReadonlyArray<() => void | Promise<void>>) {
 /** Shared API/web/worker/session stack for selectable auth and story suites. */
 export async function withAppIntegration(
   run: (context: AppIntegration) => Promise<void>,
+  options: {
+    chamberStorytellerControl?: ChamberStorytellerControl;
+    storytellerRuntime?: StorytellerRuntimeOptions;
+  } = {},
 ) {
   const config = readDatabaseConfig({ DATABASE_URL: databaseURL });
   await applyMigrations(
@@ -102,6 +108,9 @@ export async function withAppIntegration(
   });
   const app = await createApp(database, auth, origin, {
     developerTools: true,
+    ...(options.chamberStorytellerControl
+      ? { chamberStorytellerControl: options.chamberStorytellerControl }
+      : {}),
   });
   const helpers = (await auth.$context).test;
   const user = await helpers.saveUser(
@@ -121,6 +130,7 @@ export async function withAppIntegration(
         taskQueue: 'browser-integration',
       },
       () => {},
+      options.storytellerRuntime,
     );
   };
   try {
@@ -213,6 +223,10 @@ export async function withAppIntegration(
         );
         await database.db.$client.query(
           'DELETE FROM story_item WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM story_document_commit WHERE story_id IN (SELECT id FROM story WHERE owner_id = $1)',
           [user.id],
         );
         await database.db.$client.query(

@@ -46,6 +46,7 @@ export function createStorytellerRuntime(
           database,
           id,
           options.realDurationMs ?? (() => 20000),
+          options.documentStore,
         );
       } catch (error) {
         if (!(error instanceof StoryError)) {

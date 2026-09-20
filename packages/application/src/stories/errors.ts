@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 export class StoryError extends Error {
-  constructor(readonly code: 'invalid' | 'not_found' | 'conflict') {
+  constructor(
+    readonly code: 'invalid' | 'not_found' | 'conflict' | 'unavailable',
+    readonly reason?: string,
+  ) {
     super(code);
   }
 }

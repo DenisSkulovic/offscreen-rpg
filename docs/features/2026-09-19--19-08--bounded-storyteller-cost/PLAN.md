@@ -40,7 +40,7 @@ Exit: named frozen envelopes and dry-run evidence, no provider dispatch; B2 can 
 ## B2 — Durable shared enforcement and route accounting (implementing)
 
 Outcome: every dispatch and side job consumes admitted capacity without escaping its originating operation.
-Dependencies: B1. Status: B2a implementing; B2b quota allocation implemented, holds/recovery queued.
+Dependencies: B1. Status: B2a accounting and B2b quota/hold enforcement implemented; recovery matrix implementing.
 Owners: application `storyteller/budget.ts`, `execution.ts`, `records.ts`; `packages/db/src/schema/storyteller.ts` and single baseline migration; `packages/storyteller/src/providers/openrouter.ts`. B2b also touches existing campaign hold/clock operations, public status contracts, API/snapshot projection, minimal play recovery controls and workflow wake-up bindings. Follow their current owners rather than duplicate a clock or scheduler.
 
 Deliver as two coherent slices: B2a operation/attempt accounting and normalized provider usage; B2b account windows, policy transitions and game hold/recovery. Both are required before a live run. Keep one baseline migration and reset disposable data, no migration chain.
@@ -85,8 +85,8 @@ Exit: maintainable QA/cost evidence plus known quality gaps in permanent docs. R
 
 ## Current checkpoint
 
-- Phase: B1 complete/B2 implementing. Generation-to-decision hold transfer exists, but the owner clarified that all progression requires deliberate accepted execution and short actions must consume time. Exact next action: implement [deliberate-time T1](../2026-09-19--22-13--deliberate-action-time/PLAN.md), then use its clock/intent-hold boundary for the remaining B2 failure/recovery matrix. Time/overlap belongs to that feature; do not build a second clock here. Do not enable provider execution. Storage C1/C2 remains independently ready.
-- Implemented decision-hold slice: `1d8c814`; preparation-intent gaps and idle clock drift remain. Design-only clarification is recorded in the linked feature.
-- Verification: focused offline mechanical-loop and recovery tests prove initial decision ownership, generation ownership, failure retention, same-generation retry, publication transfer to the exact offer, selection consumption and no held-time catch-up. All affected dependency builds and the regenerated test baseline pass. Paid failure/retry remains intentionally unexercised; no live calls.
+- Phase: B1 complete/B2 recovery matrix implementing. Deliberate-time T1–T3 now supplies the accepted-execution clock and overlap boundary; B2 reuses it rather than owning another clock. Exact next action: compose the existing stale-publication and saved-result recovery evidence into an operator-friendly QA run, then assess the remaining window-expiry/policy-transition probes. Do not enable live provider execution. Storage C1/C2 remains independently ready.
+- Implemented recovery slice: fake-provider story resolutions now prove that pre-transport authority denial releases an `unsent` attempt and permits the same admitted intention to resume, while settled invalid output is non-retryable and uncertain delivery remains operator-blocked with retained liability and a stopped account. The retry command now enforces the same boundary projected by the public blocker instead of accepting a futile settled-attempt retry.
+- Verification: the focused `provider recovery retries only work proven unsent` integration case passed after all production TypeScript dependencies and the disposable baseline migration. Existing focused mechanical tests prove generation/decision ownership, failure retention, publication transfer, selection consumption and no held-time catch-up. All providers were fake; no live calls.
 - Open choices: commercial tier names/prices/quotas and future authorized route selection. Not blockers for synthetic profile/window implementation; no checkout or live authorization inferred. Initial conservative development envelope is specified in usage policy; changes require deliberate review, not automatic widening to fit a fixture.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

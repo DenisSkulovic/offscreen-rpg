@@ -1,6 +1,6 @@
 # Deliberate execution, action time and Storyteller readiness
 
-Status: the T1 execution gate, T2 finite-action boundary and fail-closed bounded-overlap path are implemented. Runtime clock projection requires an explicit accepted activity or finite-action identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. An eligible bounded action draws once under admission, stores a private pending result with source/projected-state digests and prepares one explicitly pending Storyteller task during its wait. Settlement revalidates and promotes that exact result and generation to the authoritative receipt before publication; effects, facts, history, holds and choices remain current-state operations only at or after the target. Any due admitted world obligation forces the sequential path. Pause/restart/failure presentation and deterministic early/late Chamber controls remain the active implementation phase. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units; the [implementation feature](../features/2026-09-19--22-13--deliberate-action-time/PLAN.md) owns the remaining recovery/evidence phase. This document owns execution permission and its relationship to narration.
+Status: the T1 execution gate, T2 finite-action boundary and T3 fail-closed bounded-overlap path are implemented with deterministic offline evidence. Runtime clock projection requires an explicit accepted activity or finite-action identity; no-hold state alone cannot advance time, and new work starts from the settled frontier. An eligible bounded action draws once under admission, stores a private pending result with source/projected-state digests and prepares one explicitly pending Storyteller task during its wait. Settlement revalidates and promotes that exact result and generation to the authoritative receipt before publication; effects, facts, history, holds and choices remain current-state operations only at or after the target. Any due admitted world obligation forces the sequential path. Chamber/API rehearsals cover early preparation during pause, late held preparation across worker restart, explicit same-generation failure recovery and due-boundary interruption. [Time and autonomy](../time-and-autonomy.md) owns the product intent; [tick arithmetic](ticks-and-tags.md) owns units. This document owns execution permission and its relationship to narration.
 
 ## Units and responsibility
 
@@ -80,7 +80,7 @@ This remains owned by the bounded-autonomy feature. Do not enable defaults in th
 
 ## Worked traces and acceptance checklist
 
-All numbers below are fixture values. The sequential finite-action, control, interrupted-work and restart/replay rows have focused offline evidence; overlap, due-world interruption and timed-default rows remain planned. None authorizes live spend or establishes human rhythm quality.
+All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. Timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
 
 | Trace | Accepted terms and timing | Required evidence |
 | --- | --- | --- |

@@ -57,6 +57,17 @@ export function ChamberInspectorPanel(args: {
               />
               <Field label="Created" value={inspection.story.createdAt} />
             </dl>
+            <h2>Canonical documents</h2>
+            <dl>
+              <Field
+                label="Published root"
+                value={inspection.documents.rootHash ?? 'No published root'}
+              />
+              <Field
+                label="Root revision"
+                value={String(inspection.documents.rootRevision)}
+              />
+            </dl>
             <h2>Model cost accounting</h2>
             <dl>
               <Field
@@ -342,6 +353,19 @@ export function ChamberInspectorPanel(args: {
               <>
                 <h2>Storyteller context and continuity</h2>
                 <dl>
+                  <dt>Canonical library selection</dt>
+                  <dd>
+                    <JsonValue
+                      value={inspection.storyteller.librarySelection}
+                    />
+                  </dd>
+                  <dt>Canonical campaign-document selection</dt>
+                  <dd>
+                    <JsonValue
+                      value={inspection.storyteller.documentSelection}
+                    />
+                  </dd>
+                  <dt>Captured context</dt>
                   <JsonValue value={inspection.storyteller} />
                 </dl>
               </>

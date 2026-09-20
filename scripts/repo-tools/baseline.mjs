@@ -39,7 +39,15 @@ try {
       path.join(meta, '_journal.json'),
       '{\n  "version": "7",\n  "dialect": "postgresql",\n  "entries": []\n}\n',
     );
-    runPnpm(['--filter', '@offscreen/db', 'generate']);
+    const nodeOptions = [
+      process.env.NODE_OPTIONS,
+      `--require=${path.join(root, 'scripts', 'repo-tools', 'node-user-info-shim.cjs')}`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    runPnpm(['--filter', '@offscreen/db', 'generate'], {
+      env: { ...process.env, NODE_OPTIONS: nodeOptions },
+    });
     const generatedSql = generatedEntries().filter((entry) =>
       entry.endsWith('.sql'),
     );

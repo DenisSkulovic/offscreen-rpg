@@ -32,6 +32,157 @@ export const evidencePassageSchema = z.strictObject({
   content: passageContentSchema,
   response: z.string().max(2000).nullable(),
 });
+const canonicalLibraryCatalogueEntrySchema = z.strictObject({
+  handle: z.string().regex(/^k[1-9][0-9]*$/),
+  path: z.string().min(1).max(320),
+  kind: z.string().min(1).max(80),
+  sourceBytes: z.number().int().nonnegative().max(512 * 1024),
+  sections: z
+    .array(
+      z.strictObject({
+        handle: z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/),
+        heading: z.string().min(1).max(240),
+        level: z.number().int().min(1).max(6),
+        line: z.number().int().positive(),
+        topics: z.array(z.string().min(1).max(80)).max(16),
+      }),
+    )
+    .max(12),
+  topics: z.array(z.string().min(1).max(80)).max(16),
+  loaded: z.boolean(),
+});
+const canonicalLibrarySchema = z.strictObject({
+  handle: z.string().regex(/^l[1-9][0-9]*$/),
+  kind: z.enum(['world', 'rules']),
+  title: z.string().min(1).max(160),
+  mount: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).optional(),
+  rootHash: z.string().regex(/^[0-9a-f]{64}$/),
+  revision: z.number().int().positive(),
+  catalogue: z.array(canonicalLibraryCatalogueEntrySchema).max(64),
+  catalogueTruncated: z.boolean(),
+  orientation: z
+    .strictObject({
+      documentHandle: z.string().regex(/^k[1-9][0-9]*$/),
+      title: z.string().min(1).max(240),
+      body: z.string().max(4 * 1024),
+    })
+    .optional(),
+  selectedSections: z
+    .array(
+      z.strictObject({
+        handle: z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/),
+        documentHandle: z.string().regex(/^k[1-9][0-9]*$/),
+        title: z.string().min(1).max(240),
+        heading: z.string().min(1).max(240),
+        body: z.string().max(8 * 1024),
+        bytes: z.number().int().positive().max(8 * 1024),
+      }),
+    )
+    .max(8),
+});
+const canonicalLibrarySelectionTraceSchema = z.strictObject({
+  requestedTopics: z
+    .array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/))
+    .max(8),
+  unmatchedTopics: z
+    .array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/))
+    .max(8),
+  requestedHandles: z
+    .array(z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/))
+    .max(8),
+  loadedHandles: z
+    .array(z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/))
+    .max(8),
+  omitted: z
+    .array(
+      z.strictObject({
+        handle: z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/),
+        reason: z.enum([
+          'read-limit',
+          'byte-limit',
+          'section-too-large',
+          'request-limit',
+        ]),
+        bytes: z.number().int().positive().max(512 * 1024),
+      }),
+    )
+    .max(8),
+  maxReads: z.number().int().nonnegative().max(8),
+  maxBytes: z.number().int().nonnegative().max(32 * 1024),
+  usedReads: z.number().int().nonnegative().max(8),
+  usedBytes: z.number().int().nonnegative().max(32 * 1024),
+});
+const canonicalDocumentSelectionTraceSchema = z.strictObject({
+  requestedDocumentIds: z.array(z.uuid()).max(4),
+  loadedHandles: z
+    .array(z.string().regex(/^d[1-9][0-9]*$/))
+    .max(4),
+  omitted: z
+    .array(
+      z.strictObject({
+        documentId: z.uuid(),
+        reason: z.enum([
+          'document-too-large',
+          'context-limit',
+          'request-limit',
+        ]),
+        bytes: z.number().int().positive().max(512 * 1024),
+      }),
+    )
+    .max(4),
+  maxReads: z.literal(4),
+  maxBytes: z.literal(12 * 1024),
+  usedReads: z.number().int().nonnegative().max(4),
+  usedBytes: z.number().int().nonnegative().max(12 * 1024),
+});
+export const canonicalKnowledgeSchema = z.strictObject({
+  rootHash: z.string().regex(/^[0-9a-f]{64}$/),
+  rootRevision: z.number().int().positive(),
+  catalogue: z
+    .array(
+      z.strictObject({
+        handle: z.string().regex(/^d[1-9][0-9]*$/),
+        documentId: z.uuid(),
+        revision: z.number().int().positive(),
+        path: z.string().min(1).max(320),
+        kind: z.enum([
+          'orientation',
+          'lore',
+          'identity',
+          'relationship',
+          'narrative-thread',
+          'creative-guidance',
+          'private-possibility',
+        ]),
+        authority: z.enum([
+          'canon',
+          'source',
+          'derived',
+          'attributed',
+          'projection',
+          'noncanonical',
+        ]),
+        visibility: z.enum(['player-known', 'storyteller-private']),
+        title: z.string().min(1).max(240),
+        bytes: z.number().int().nonnegative().max(512 * 1024),
+        loaded: z.boolean(),
+      }),
+    )
+    .max(64),
+  catalogueTruncated: z.boolean(),
+  documents: z
+    .array(
+      z.strictObject({
+        handle: z.string().regex(/^d[1-9][0-9]*$/),
+        title: z.string().min(1).max(240),
+        body: z.string().max(4 * 1024),
+      }),
+    )
+    .max(8),
+  documentSelection: canonicalDocumentSelectionTraceSchema,
+  libraries: z.array(canonicalLibrarySchema).max(9),
+  librarySelection: canonicalLibrarySelectionTraceSchema,
+});
 export const activeSceneScopeSchema = z
   .strictObject({
     version: z.literal('active-scene.v1'),
@@ -52,6 +203,7 @@ export const activeSceneScopeSchema = z
     'Active scene required passage IDs must be unique',
   );
 export const contextInputSchema = z.strictObject({
+  canonicalKnowledge: canonicalKnowledgeSchema.optional(),
   activeSceneScope: activeSceneScopeSchema.optional(),
   activitySituation: z
     .strictObject({
@@ -162,6 +314,22 @@ export function contextRequestSections(context: StorytellerContext) {
   return {
     sceneContext: {
       premise: context.premise,
+      ...(context.canonicalKnowledge
+        ? {
+            canonicalKnowledge: {
+              catalogue: context.canonicalKnowledge.catalogue,
+              catalogueTruncated:
+                context.canonicalKnowledge.catalogueTruncated,
+              documents: context.canonicalKnowledge.documents,
+              documentSelection:
+                context.canonicalKnowledge.documentSelection,
+              libraries: context.canonicalKnowledge.libraries.map(
+                ({ rootHash: _rootHash, ...library }) => library,
+              ),
+              librarySelection: context.canonicalKnowledge.librarySelection,
+            },
+          }
+        : {}),
       notes: context.notes.map((note) => ({
         key: note.key,
         text: note.text,
@@ -288,6 +456,132 @@ export function boundStorytellerContext(
     throw new Error('Missing continuity evidence');
   }
   const captured = { ...context, evidence: mandatory };
+  while (
+    !fits(captured) &&
+    captured.canonicalKnowledge &&
+    captured.canonicalKnowledge.documents.length
+  ) {
+    const documents = captured.canonicalKnowledge.documents.slice(0, -1);
+    const loadedHandles = new Set(documents.map((document) => document.handle));
+    captured.canonicalKnowledge = {
+      ...captured.canonicalKnowledge,
+      catalogue: captured.canonicalKnowledge.catalogue.map((entry) => ({
+        ...entry,
+        loaded: loadedHandles.has(entry.handle),
+      })),
+      documents,
+      documentSelection: (() => {
+        const selection = captured.canonicalKnowledge!.documentSelection;
+        const removed = captured.canonicalKnowledge!.documents.at(-1);
+        if (!removed || !selection.loadedHandles.includes(removed.handle)) {
+          return selection;
+        }
+        const catalogueEntry = captured.canonicalKnowledge!.catalogue.find(
+          (entry) => entry.handle === removed.handle,
+        );
+        if (!catalogueEntry) {
+          throw new Error('Missing selected campaign document catalogue entry');
+        }
+        return {
+          ...selection,
+          loadedHandles: selection.loadedHandles.filter(
+            (handle) => handle !== removed.handle,
+          ),
+          omitted: [
+            ...selection.omitted,
+            {
+              documentId: catalogueEntry.documentId,
+              reason: 'request-limit' as const,
+              bytes: catalogueEntry.bytes,
+            },
+          ],
+          usedReads: selection.usedReads - 1,
+          usedBytes: selection.usedBytes - catalogueEntry.bytes,
+        };
+      })(),
+    };
+  }
+  while (
+    !fits(captured) &&
+    captured.canonicalKnowledge?.libraries.some(
+      (library) => library.orientation,
+    )
+  ) {
+    const libraries = [...captured.canonicalKnowledge.libraries];
+    const index = libraries.findLastIndex((library) => library.orientation);
+    const library = libraries[index];
+    if (!library?.orientation) {
+      break;
+    }
+    const orientationHandle = library.orientation.documentHandle;
+    const { orientation: _orientation, ...withoutOrientation } = library;
+    libraries[index] = {
+      ...withoutOrientation,
+      catalogue: library.catalogue.map((entry) => ({
+        ...entry,
+        loaded:
+          entry.handle === orientationHandle
+            ? library.selectedSections.some(
+                (section) => section.documentHandle === entry.handle,
+              )
+            : entry.loaded,
+      })),
+    };
+    captured.canonicalKnowledge = {
+      ...captured.canonicalKnowledge,
+      libraries,
+    };
+  }
+  while (
+    !fits(captured) &&
+    captured.canonicalKnowledge?.libraries.some(
+      (library) => library.selectedSections.length,
+    )
+  ) {
+    const libraries = [...captured.canonicalKnowledge.libraries];
+    const index = libraries.findLastIndex(
+      (library) => library.selectedSections.length > 0,
+    );
+    const library = libraries[index];
+    const removed = library?.selectedSections.at(-1);
+    if (!library || !removed) {
+      break;
+    }
+    const selectedSections = library.selectedSections.slice(0, -1);
+    libraries[index] = {
+      ...library,
+      selectedSections,
+      catalogue: library.catalogue.map((entry) => ({
+        ...entry,
+        loaded:
+          entry.handle === library.orientation?.documentHandle ||
+          selectedSections.some(
+            (section) => section.documentHandle === entry.handle,
+          ),
+      })),
+    };
+    const selection = captured.canonicalKnowledge.librarySelection;
+    captured.canonicalKnowledge = {
+      ...captured.canonicalKnowledge,
+      libraries,
+      librarySelection: {
+        ...selection,
+        loadedHandles: selection.loadedHandles.filter(
+          (handle) => handle !== removed.handle,
+        ),
+        omitted: [
+          ...selection.omitted,
+          {
+            handle: removed.handle,
+            reason: 'request-limit' as const,
+            bytes: removed.bytes,
+          },
+        ],
+        usedReads: selection.usedReads - 1,
+        usedBytes: selection.usedBytes - removed.bytes,
+      },
+    };
+  }
   if (!fits(captured)) {
     throw new Error('context_too_large');
   }

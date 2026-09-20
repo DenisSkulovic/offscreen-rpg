@@ -1,0 +1,24 @@
+{
+  "format": "offscreen.rule-package-source.v1",
+  "ruleSetId": "d73c2a94-1f5b-5a83-91c3-3a9f9897e6bb",
+  "authorOperationId": "68218a77-dc21-56ae-89eb-482624d65f9b",
+  "title": "SRD 5.2.1 Offscreen subset",
+  "engine": {
+    "adapterId": "srd-5.2.1-subset",
+    "adapterVersion": 1
+  },
+  "license": {
+    "name": "Creative Commons Attribution 4.0 International",
+    "source": "https://www.dndbeyond.com/srd",
+    "attribution": "System Reference Document 5.2.1 by Wizards of the Coast LLC"
+  },
+  "pages": [
+    { "path": "RULES.md", "topics": ["rules-index"] },
+    { "path": "checks/ability-checks.md", "topics": ["ability-check", "difficulty-class", "proficiency"] },
+    { "path": "checks/advantage-and-disadvantage.md", "topics": ["ability-check", "advantage", "disadvantage"] },
+    { "path": "checks/event-occurrence.md", "topics": ["event-occurrence", "hidden-events"] },
+    { "path": "activities/contribution.md", "topics": ["activity", "contribution", "progress"] },
+    { "path": "time/committed-time.md", "topics": ["time", "ticks", "calendar"] },
+    { "path": "authority/storyteller-and-engine.md", "topics": ["authority", "adjudication", "effects"] }
+  ]
+}

@@ -18,6 +18,7 @@
   "dependencies": {
     "@offscreen/db": "workspace:*",
     "@offscreen/application": "workspace:*",
+    "@offscreen/documents": "workspace:*",
     "@offscreen/workflows": "workspace:*",
     "@temporalio/client": "1.24.0",
     "@temporalio/worker": "1.24.0",

@@ -33,7 +33,10 @@ import {
   OPENINGS,
   OpeningsController,
 } from './modules/drafts/openings-controller.js';
-import { createChamber } from '@offscreen/application/developer-tools';
+import {
+  createChamber,
+  type ChamberStorytellerControl,
+} from '@offscreen/application/developer-tools';
 import { createStoryApplication } from '@offscreen/application/stories';
 import { STORIES, StoriesController } from './modules/stories/controller.js';
 import {
@@ -43,6 +46,7 @@ import {
 } from './modules/stories/chamber-tools-controller.js';
 import { createQaJourneys } from '@offscreen/application/developer-tools';
 import type { CacheIncident, ReadCache } from '@offscreen/application/cache';
+import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import {
   QA_JOURNEYS,
   QaJourneysController,
@@ -92,11 +96,14 @@ class AppModule {}
 
 export type CreateAppOptions = Readonly<{
   developerTools?: boolean;
+  chamberStorytellerControl?: ChamberStorytellerControl;
   storytellerExecution?: ExecutionPolicy;
   storytellerUsagePolicy?: EffectiveUsagePolicy | null;
   readCache?: ReadCache;
   closeCache?: () => Promise<void>;
   onCacheIncident?: (incident: CacheIncident) => void;
+  documentStore?: DocumentStore;
+  defaultRules?: RulePackageReference;
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -149,6 +156,12 @@ export async function createApp(
         {
           provide: STORIES,
           useValue: createStoryApplication(database, {
+            ...(options.documentStore
+              ? { documentStore: options.documentStore }
+              : {}),
+            ...(options.defaultRules
+              ? { defaultRules: options.defaultRules }
+              : {}),
             ...(options.readCache ? { cache: options.readCache } : {}),
             ...(options.onCacheIncident
               ? { onCacheIncident: options.onCacheIncident }
@@ -160,9 +173,17 @@ export async function createApp(
               {
                 provide: CHAMBER,
                 useValue: createChamber(database, {
+                  ...(options.documentStore
+                    ? { documentStore: options.documentStore }
+                    : {}),
                   ...(options.readCache ? { cache: options.readCache } : {}),
                   ...(options.onCacheIncident
                     ? { onCacheIncident: options.onCacheIncident }
+                    : {}),
+                  ...(options.chamberStorytellerControl
+                    ? {
+                        storytellerControl: options.chamberStorytellerControl,
+                      }
                     : {}),
                 }),
               },

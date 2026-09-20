@@ -7,7 +7,9 @@ const nonnegativeCount = z
   .int()
   .nonnegative()
   .max(Number.MAX_SAFE_INTEGER);
-const microusdSchema = z.string().regex(/^[1-9]\d{0,14}$/);
+// Zero is a meaningful hard ceiling for verified-free routes. Funding windows
+// remain positive because a zero window would be equivalent to disabling it.
+const microusdSchema = z.string().regex(/^(?:0|[1-9]\d{0,14})$/);
 const windowLimitSchema = z.string().regex(/^[1-9]\d{0,17}$/);
 
 const usageLimitShape = {

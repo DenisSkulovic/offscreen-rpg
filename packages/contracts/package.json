@@ -38,6 +38,10 @@
     "./usage-policy": {
       "types": "./dist/src/usage-policy.d.ts",
       "default": "./dist/src/usage-policy.js"
+    },
+    "./live-evaluation": {
+      "types": "./dist/src/live-evaluation.d.ts",
+      "default": "./dist/src/live-evaluation.js"
     }
   },
   "scripts": {
@@ -46,6 +50,7 @@
     "test": "node --test dist/test/*.test.js"
   },
   "dependencies": {
+    "@offscreen/documents": "workspace:*",
     "@offscreen/game": "workspace:*",
     "zod": "4.6.5"
   },

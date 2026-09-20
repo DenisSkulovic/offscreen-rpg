@@ -24,8 +24,12 @@
     "format:check": "prettier --check .",
     "infra:up": "node scripts/repo-tools/compose.mjs up -d --wait",
     "infra:down": "node scripts/repo-tools/compose.mjs down",
+    "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
     "chamber": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start",
+    "chamber:reset": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --reset-database",
     "chamber:packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --packet-review",
+    "chamber:evaluation-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-packet",
+    "chamber:evaluation-run": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-run",
     "storyteller:packet-audit": "pnpm --filter @offscreen/storyteller build && node scripts/repo-tools/storyteller-request-audit.mjs",
     "chamber:review": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber review",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"

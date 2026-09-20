@@ -26,6 +26,10 @@ Customization should let players express the desired experience without requirin
 
 Pace and availability also matter: how long someone expects to wait, whether unattended characters may make consequential decisions, and how they want to hear about developments. Use sensible visible defaults and a short summary rather than exposing every possible setting up front. In a shared story, participants should be able to see the common play expectations before joining.
 
+Creation should also establish how much narrative initiative the Storyteller has. The player need not outline a plot: they may ask the Storyteller to cultivate a larger direction, allow occasional proactive developments, or explicitly choose an emergent ordinary-life experience with no grand narrative. This is independent of incident frequency and danger. “No grand narrative” can still contain consequences and small surprises; “directed” does not promise a railroad or a particular ending.
+
+When a start contains a hoped-for arc, antagonist move or reveal, preserve it as Storyteller-private noncanonical direction or possibilities. Only scheduled facts that really must become due are admitted as executable obligations. The opening may seed either kind without presenting a future possibility as already true.
+
 ## Before starting
 
 Present a concise preview: premise, characters, storytelling direction, pace and unattended behavior, followed by the opening situation. Allow corrections to a misunderstanding without requiring an entirely new world. Changes that require regeneration should be explicit rather than triggered on every keystroke.

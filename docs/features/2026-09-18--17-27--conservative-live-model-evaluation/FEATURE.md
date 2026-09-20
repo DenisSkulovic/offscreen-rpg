@@ -4,7 +4,7 @@ Status: Proposed design. Implementation does not authorize a provider call; ever
 
 ## Intended outcome
 
-Run small, explainable OpenRouter experiments that answer concrete POC questions while protecting the owner's limited credit. Each run starts from a named QA case, uses a captured model/pricing/execution policy, produces complete traces, and stops when cost or accounting becomes uncertain.
+Run small, explainable OpenRouter experiments that answer concrete POC questions while protecting the owner's limited credit. Free models are the default live lubricant for mechanics and flow work; paid models are reserved for a concrete quality or capability blocker. Each run starts from a named QA case, uses a captured model/pricing/execution policy, produces complete traces, and stops when cost or accounting becomes uncertain.
 
 The goal is evidence about gameplay quality and architecture compatibility, not a leaderboard or broad model search.
 
@@ -23,7 +23,13 @@ All must pass immediately before dispatch:
 - the exact outbound packet has been held, inspected and released by hash through the [dispatch review contract](../../technical/provider-dispatch-review.md);
 - [Bounded-cost B1/B2](../2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) captures and enforces the operation envelope, reasoning semantics, retransmitted input and worst applicable cold/cache-write charge; any maintenance also has an admitted allocation.
 
-A stored API key, selected model or previously authorized run does not satisfy these preconditions for another experiment.
+A stored API key, selected model or previously authorized paid run does not satisfy these preconditions for another paid experiment. The owner's 2026-09-20 standing authorization covers deliberate, finite, traced local runs only when current route metadata proves zero input/output pricing and paid fallback is impossible.
+
+## Captured evaluation recipe
+
+Cost posture is data, not a hard-coded mode name. Each run captures independently bounded allowances for primary generations, retrieval reads, repair attempts, model judges, comparison variants, background work, concurrency, input/output/reasoning tokens and money. Zero disables that capability; omission never means unlimited. Provider, model, sampling and reasoning settings are captured alongside those allowances so the same QA snapshot can be replayed under a deliberately cheap or richer recipe without changing game truth.
+
+Every auxiliary LLM call has a declared purpose and consumes the same aggregate run allowance. For example, two judge calls and ten judge calls are distinct recipes with a fivefold difference in judge-call count; neither is silently implied by “evaluation enabled.” Human or deterministic checks remain valid zero-call alternatives. Gameplay, tests and evaluations may choose different recipes, but all use the same fail-closed accounting contract.
 
 ## Evaluation ladder
 
@@ -63,7 +69,7 @@ Choose candidates at execution time from current OpenRouter data. Requirements:
 - sufficiently small context/output limits for the case;
 - no assumption that “free” or missing pricing means zero cost.
 
-Begin with one inexpensive model likely to support the contract. Add a second model only to test a stated hypothesis such as option quality, tool reliability or instruction fidelity.
+Begin with one current zero-price model likely to support the contract. Free routing is useful for flow exploration but remains captured evidence: record the actual returned model/provider and do not treat runs across changing free routes as controlled model comparisons. Move to a paid model only when free-model behavior is the diagnosed blocker, then obtain separate bounded authorization. Add another model only to test a stated hypothesis such as option quality, tool reliability or instruction fidelity.
 
 ## Stop policy
 
@@ -113,4 +119,4 @@ Launching a run provisions only its captured allowance. The general app and test
 
 ## Boundaries
 
-This feature does not create continuous benchmarks, CI inference, production traffic sampling, automatic prompt optimization, model tournaments or a standing monthly budget. The owner's USD 10 deposit remains an upper ceiling intended to last at least a month.
+This feature does not create continuous benchmarks, CI inference, production traffic sampling, automatic prompt optimization, model tournaments or an unbounded provider loop. Free quota is still finite operational capacity, not permission to generate filler. The owner's USD 10 deposit remains an upper ceiling intended to last at least a month and is untouched unless a separately authorized paid run is necessary.

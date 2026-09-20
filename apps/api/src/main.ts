@@ -9,6 +9,11 @@ import {
   writeRuntimeLog,
 } from '@offscreen/application/runtime-logging';
 import { createCacheAdapter } from '@offscreen/cache';
+import {
+  LocalDocumentStore,
+  importRulePackageDirectory,
+} from '@offscreen/documents';
+import { resolve } from 'node:path';
 
 async function main() {
   const config = readConfig(process.env);
@@ -32,13 +37,37 @@ async function main() {
       errorKind: incident.errorKind,
     }),
   );
+  const documentRoot = process.env['OFFSCREEN_DOCUMENT_ROOT'];
   try {
     await database.checkConnection();
+    const documentStore = documentRoot
+      ? new LocalDocumentStore(resolve(documentRoot))
+      : undefined;
+    const defaultRulePackage = documentStore
+      ? await importRulePackageDirectory(
+          documentStore,
+          resolve(
+            process.env['OFFSCREEN_DEFAULT_RULE_SOURCE'] ??
+              'content/rules/srd-5.2.1-subset',
+          ),
+        )
+      : undefined;
     const app = await createApp(
       database,
       createAuth(database, authConfig),
       authConfig.origin,
       {
+        ...(documentStore ? { documentStore } : {}),
+        ...(defaultRulePackage
+          ? {
+              defaultRules: {
+                ruleSetId: defaultRulePackage.manifest.ruleSetId,
+                rootHash: defaultRulePackage.rootHash,
+                revision: defaultRulePackage.manifest.revision,
+                engine: defaultRulePackage.manifest.engine,
+              },
+            }
+          : {}),
         storytellerExecution: readStorytellerExecution(process.env),
         readCache: cache.cache,
         closeCache: cache.close,

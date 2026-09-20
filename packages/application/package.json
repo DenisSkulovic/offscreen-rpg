@@ -47,6 +47,7 @@
     "@offscreen/db": "workspace:*",
     "@offscreen/contracts": "workspace:*",
     "@offscreen/game": "workspace:*",
+    "@offscreen/documents": "workspace:*",
     "drizzle-orm": "0.45.2"
   },
   "devDependencies": {

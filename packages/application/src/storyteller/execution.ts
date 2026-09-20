@@ -15,11 +15,17 @@ import {
 import { isDeepStrictEqual } from 'node:util';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareDispatchReview } from './dispatch-review';
+import type { DocumentStore } from '@offscreen/documents';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
   scriptedSource?: (task: StorytellerTask) => unknown | Promise<unknown>;
+  scriptedGate?: (input: {
+    generationId: string;
+    task: StorytellerTask;
+  }) => 'proceed' | 'hold' | 'fail' | Promise<'proceed' | 'hold' | 'fail'>;
   realDurationMs?: (gameDurationMs: number) => number;
+  documentStore?: DocumentStore;
   /** Resolves current server authority immediately before transport. */
   dispatchAuthority?: (input: {
     generationId: string;
@@ -98,6 +104,21 @@ export function createStorytellerExecution(
       }
     }
     if (task.execution.mode === 'scripted') {
+      const gate =
+        (await options.scriptedGate?.({
+          generationId: record.id,
+          task,
+        })) ?? 'proceed';
+      if (gate === 'hold') {
+        return 'held' as const;
+      }
+      if (gate === 'fail') {
+        await saveOutcome(record.id, attemptId, {
+          state: 'failed',
+          failureCode: 'chamber_injected_failure',
+        });
+        return;
+      }
       // This injected contract is explicitly side-effect-free; duplicate delivery may recompute it.
       let output: unknown;
       try {

@@ -36,6 +36,8 @@ import { parseStoryIdentifier, StoryError } from '../stories/errors';
 import { decisionPlanSchema, waitPlanSchema } from '../stories/plans';
 import { createStories } from '../stories/index';
 import { campaignReportSourceSchema } from '../campaign/report-source';
+import type { DocumentStore } from '@offscreen/documents';
+import { readPassageDocument } from '../stories/passage-documents';
 
 type OwnedStory = Readonly<{
   ownerId: string;
@@ -125,8 +127,14 @@ function inspectGeneration(row: {
   };
 }
 
-export function createChamberInspector(database: Database) {
-  const stories = createStories(database);
+export function createChamberInspector(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
+  const stories = createStories(
+    database,
+    documentStore ? { documentStore } : {},
+  );
 
   return {
     async inspect({ ownerId, storyId }: OwnedStory) {
@@ -138,6 +146,8 @@ export function createChamberInspector(database: Database) {
           source: story.source,
           storyteller: story.storyteller,
           continuityNotes: story.continuityNotes,
+          documentRootHash: story.documentRootHash,
+          documentRootRevision: story.documentRootRevision,
           sequence: storyPassage.sequence,
           transitionId: storyPassage.transitionId,
           responseSource: storyPassage.responseSource,
@@ -178,6 +188,7 @@ export function createChamberInspector(database: Database) {
           passageId: storyPassage.id,
           transitionId: storyPassage.transitionId,
           content: storyPassage.content,
+          contentDocumentHash: storyPassage.contentDocumentHash,
           responseSource: storyPassage.responseSource,
           interaction: storyPassage.interaction,
           waitPlan: storyPassage.waitPlan,
@@ -308,7 +319,35 @@ export function createChamberInspector(database: Database) {
       const continuationProposal = generatedStorytellerOutputSchema.safeParse(
         activeResolution?.generationOutput,
       );
+      const activeTask = storytellerTaskSchema.safeParse(
+        activeResolution?.generationInput,
+      );
+      const recentHistory = await Promise.all(
+        history.map(async (entry) => {
+          if (entry.contentDocumentHash !== null && !documentStore) {
+            throw new StoryError('unavailable', 'document_store');
+          }
+          const content = entry.contentDocumentHash
+            ? await readPassageDocument(documentStore!, entry.contentDocumentHash)
+            : passageContentSchema.parse(entry.content);
+          return {
+            sequence: entry.sequence,
+            passageId: entry.passageId,
+            transitionId: entry.transitionId,
+            title: content.title,
+            responseSource: parseResponseSource(entry.responseSource),
+            hasInteraction: entry.interaction !== null,
+            hasWait: entry.waitPlan !== null,
+            hasDecision: entry.decisionPlan !== null,
+            hasEffect: hasCommittedEffects(entry.effects),
+          };
+        }),
+      );
       return chamberInspectorSchema.parse({
+        documents: {
+          rootHash: current.documentRootHash,
+          rootRevision: current.documentRootRevision,
+        },
         costAccounting: {
           totals: costTotals ?? {
             attempts: 0,
@@ -365,12 +404,14 @@ export function createChamberInspector(database: Database) {
                 notes: continuityNotesSchema.parse(
                   current.continuityNotes ?? [],
                 ),
-                context: storytellerTaskSchema.safeParse(
-                  activeResolution?.generationInput,
-                ).success
-                  ? storytellerTaskSchema.parse(
-                      activeResolution?.generationInput,
-                    ).context
+                context: activeTask.success ? activeTask.data.context : null,
+                librarySelection: activeTask.success
+                  ? (activeTask.data.context.canonicalKnowledge
+                      ?.librarySelection ?? null)
+                  : null,
+                documentSelection: activeTask.success
+                  ? (activeTask.data.context.canonicalKnowledge
+                      ?.documentSelection ?? null)
                   : null,
               },
         story: {
@@ -410,17 +451,7 @@ export function createChamberInspector(database: Database) {
             snapshot.decision?.dueAt ?? timestampIso(current.responseDueAt),
         },
         items: snapshot.items,
-        recentHistory: history.map((entry) => ({
-          sequence: entry.sequence,
-          passageId: entry.passageId,
-          transitionId: entry.transitionId,
-          title: passageContentSchema.parse(entry.content).title,
-          responseSource: parseResponseSource(entry.responseSource),
-          hasInteraction: entry.interaction !== null,
-          hasWait: entry.waitPlan !== null,
-          hasDecision: entry.decisionPlan !== null,
-          hasEffect: hasCommittedEffects(entry.effects),
-        })),
+        recentHistory,
         generation: sourceGeneration,
         resolution:
           activeResolution === undefined

@@ -362,10 +362,17 @@ CREATE TABLE "story" (
 	"usage_policy" jsonb,
 	"continuity_notes" jsonb,
 	"active_scene_scope" jsonb,
+	"document_root_hash" text,
+	"document_root_revision" integer DEFAULT 0 NOT NULL,
+	"forked_from_story_id" uuid,
+	"forked_from_passage_id" uuid,
+	"forked_from_sequence" integer,
 	"revision" integer DEFAULT 1 NOT NULL,
 	"view_version" integer DEFAULT 1 NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "story_revision_positive" CHECK ("story"."revision" > 0)
+	CONSTRAINT "story_revision_positive" CHECK ("story"."revision" > 0),
+	CONSTRAINT "story_document_root_shape" CHECK (("story"."document_root_hash" IS NULL AND "story"."document_root_revision" = 0) OR ("story"."document_root_hash" ~ '^[0-9a-f]{64}$' AND "story"."document_root_revision" > 0)),
+	CONSTRAINT "story_fork_lineage_complete" CHECK (("story"."forked_from_story_id" IS NULL AND "story"."forked_from_passage_id" IS NULL AND "story"."forked_from_sequence" IS NULL) OR ("story"."forked_from_story_id" IS NOT NULL AND "story"."forked_from_passage_id" IS NOT NULL AND "story"."forked_from_sequence" > 0))
 );
 --> statement-breakpoint
 CREATE TABLE "story_control" (
@@ -373,6 +380,20 @@ CREATE TABLE "story_control" (
 	"operation_id" uuid NOT NULL,
 	"request" jsonb NOT NULL,
 	CONSTRAINT "story_control_identity" UNIQUE("story_id","operation_id")
+);
+--> statement-breakpoint
+CREATE TABLE "story_document_commit" (
+	"story_id" uuid NOT NULL,
+	"operation_id" uuid NOT NULL,
+	"request_hash" text NOT NULL,
+	"base_root_hash" text,
+	"root_hash" text NOT NULL,
+	"root_revision" integer NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "story_document_commit_identity" UNIQUE("story_id","operation_id"),
+	CONSTRAINT "story_document_commit_root" UNIQUE("story_id","root_revision"),
+	CONSTRAINT "story_document_commit_hashes" CHECK ("story_document_commit"."request_hash" ~ '^[0-9a-f]{64}$' AND "story_document_commit"."root_hash" ~ '^[0-9a-f]{64}$' AND ("story_document_commit"."base_root_hash" IS NULL OR "story_document_commit"."base_root_hash" ~ '^[0-9a-f]{64}$')),
+	CONSTRAINT "story_document_commit_revision" CHECK ("story_document_commit"."root_revision" > 0)
 );
 --> statement-breakpoint
 CREATE TABLE "story_item" (
@@ -398,7 +419,8 @@ CREATE TABLE "story_passage" (
 	"due_at" timestamp (3) with time zone,
 	"control_revision" integer DEFAULT 0 NOT NULL,
 	"remaining_ms" integer,
-	"content" jsonb NOT NULL,
+	"content" jsonb,
+	"content_document_hash" text,
 	"interaction" jsonb,
 	"source_generation_id" uuid,
 	"source_generation_part" text,
@@ -408,6 +430,7 @@ CREATE TABLE "story_passage" (
 	CONSTRAINT "story_passage_decision_valid" CHECK (("story_passage"."decision_plan" IS NULL) = ("story_passage"."response_due_at" IS NULL) AND ("story_passage"."decision_plan" IS NULL OR ("story_passage"."interaction" IS NOT NULL AND "story_passage"."wait_plan" IS NULL))),
 	CONSTRAINT "story_passage_response_source_valid" CHECK ("story_passage"."response_source" IS NULL OR ("story_passage"."response" IS NOT NULL AND "story_passage"."response_source" IN ('player', 'default'))),
 	CONSTRAINT "story_passage_sequence_positive" CHECK ("story_passage"."sequence" > 0),
+	CONSTRAINT "story_passage_content_owner" CHECK (("story_passage"."content" IS NOT NULL AND "story_passage"."content_document_hash" IS NULL) OR ("story_passage"."content" IS NULL AND "story_passage"."content_document_hash" ~ '^[0-9a-f]{64}$')),
 	CONSTRAINT "story_passage_control_valid" CHECK ("story_passage"."control_revision" >= 0 AND ("story_passage"."remaining_ms" IS NULL OR ("story_passage"."remaining_ms" >= 0 AND "story_passage"."wait_plan" IS NOT NULL))),
 	CONSTRAINT "story_passage_wait_pair" CHECK (("story_passage"."wait_plan" IS NULL) = ("story_passage"."due_at" IS NULL)),
 	CONSTRAINT "story_passage_generation_part" CHECK (("story_passage"."source_generation_id" IS NULL AND "story_passage"."source_generation_part" IS NULL) OR ("story_passage"."source_generation_id" IS NOT NULL AND "story_passage"."source_generation_part" IN ('current', 'arrival')))
@@ -632,7 +655,9 @@ ALTER TABLE "generation" ADD CONSTRAINT "generation_owner_id_user_id_fk" FOREIGN
 ALTER TABLE "qa_run" ADD CONSTRAINT "qa_run_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "qa_run_stage" ADD CONSTRAINT "qa_run_stage_run_id_qa_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."qa_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story" ADD CONSTRAINT "story_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "story" ADD CONSTRAINT "story_fork_source_story_fk" FOREIGN KEY ("forked_from_story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_control" ADD CONSTRAINT "story_control_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "story_document_commit" ADD CONSTRAINT "story_document_commit_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_item" ADD CONSTRAINT "story_item_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_passage" ADD CONSTRAINT "story_passage_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "story_passage" ADD CONSTRAINT "story_passage_source_generation_id_generation_id_fk" FOREIGN KEY ("source_generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -657,6 +682,7 @@ CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> state
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");--> statement-breakpoint
 CREATE INDEX "story_draft_owner_created_idx" ON "story_draft" USING btree ("owner_id","created_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "outbox_pending" ON "outbox" USING btree ("available_at","id") WHERE "outbox"."delivered_at" IS NULL;--> statement-breakpoint
+CREATE INDEX "story_fork_source" ON "story" USING btree ("forked_from_story_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_account_created" ON "storyteller_attempt" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING btree ("story_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");--> statement-breakpoint

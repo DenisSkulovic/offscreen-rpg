@@ -58,6 +58,11 @@ export function buildOpenRouterRequest(task: StorytellerTask) {
     messages: task.request.messages,
     stream: false,
     max_tokens: task.resources.envelope.maxGeneratedTokens,
+    reasoning: { enabled: false, exclude: true },
+    plugins: [
+      { id: 'web', enabled: false },
+      { id: 'context-compression', enabled: false },
+    ],
     provider: {
       only: [policy.provider],
       allow_fallbacks: false,
@@ -82,20 +87,42 @@ export function inspectOpenRouterRequest(task: StorytellerTask) {
   let userSections: ReadonlyArray<{
     key: string;
     stability: 'stable' | 'changing';
+    valueKind: 'array' | 'object' | 'scalar' | 'null';
+    itemCount: number | null;
+    characters: number;
     bytes: number;
+    sha256: string;
   }> = [];
   if (userMessage) {
     try {
       const parsed = JSON.parse(userMessage.content) as unknown;
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        userSections = Object.entries(parsed).map(([key, value]) => ({
-          key,
-          stability:
-            key === 'currentState' || key === 'selectedIntention'
-              ? ('changing' as const)
-              : ('stable' as const),
-          bytes: Buffer.byteLength(JSON.stringify(value), 'utf8'),
-        }));
+        userSections = Object.entries(parsed).map(([key, value]) => {
+          const serializedValue = JSON.stringify(value);
+          return {
+            key,
+            stability:
+              key === 'currentState' || key === 'selectedIntention'
+                ? ('changing' as const)
+                : ('stable' as const),
+            valueKind:
+              value === null
+                ? ('null' as const)
+                : Array.isArray(value)
+                  ? ('array' as const)
+                  : typeof value === 'object'
+                    ? ('object' as const)
+                    : ('scalar' as const),
+            itemCount: Array.isArray(value)
+              ? value.length
+              : value && typeof value === 'object'
+                ? Object.keys(value).length
+                : null,
+            characters: serializedValue.length,
+            bytes: Buffer.byteLength(serializedValue, 'utf8'),
+            sha256: createHash('sha256').update(serializedValue).digest('hex'),
+          };
+        });
       }
     } catch {
       // The exact message remains inspectable even when it is not JSON.
@@ -185,8 +212,10 @@ export function compareOpenRouterRequests(
     samePacket: left.sha256 === right.sha256,
     serializedBytesDelta: right.serializedBytes - left.serializedBytes,
     sameOutputSchema: left.outputSchemaSha256 === right.outputSchemaSha256,
-    potentialReusableMessageContentBytes:
-      reusableMessageContentPrefixBytes(left, right),
+    potentialReusableMessageContentBytes: reusableMessageContentPrefixBytes(
+      left,
+      right,
+    ),
     messages: Array.from({ length: messageCount }, (_, index) => {
       const leftMessage = left.body.messages[index];
       const rightMessage = right.body.messages[index];
@@ -255,7 +284,7 @@ const responseSchema = z.object({
     .max(1),
 });
 
-async function boundedResponse(response: Response): Promise<unknown> {
+async function boundedResponse(response: Response) {
   if (!response.body) {
     throw new Error('Missing response');
   }
@@ -278,7 +307,8 @@ async function boundedResponse(response: Response): Promise<unknown> {
     await reader.cancel();
     reader.releaseLock();
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  const raw = Buffer.concat(chunks).toString('utf8');
+  return { raw, parsed: JSON.parse(raw) as unknown };
 }
 
 /** Explicit composition only: importing this file cannot read keys or send requests. No retries. */
@@ -286,6 +316,12 @@ export function createOpenRouterProvider(config: {
   enabled: boolean;
   apiKey: string;
   transport?: typeof fetch;
+  /** Developer evidence hook. Receives the bounded literal provider envelope, never credentials. */
+  recordResponse?: (evidence: {
+    raw: string;
+    httpStatus: number;
+    receivedAt: string;
+  }) => void | Promise<void>;
 }): StorytellerProvider {
   if (!config.enabled || !config.apiKey.trim()) {
     throw new Error('Live provider is disabled');
@@ -313,7 +349,13 @@ export function createOpenRouterProvider(config: {
       );
       httpStatus = response.status;
       // Even HTTP errors may follow a billed attempt. Missing accounting is not zero.
-      const parsed = responseSchema.safeParse(await boundedResponse(response));
+      const bounded = await boundedResponse(response);
+      await config.recordResponse?.({
+        raw: bounded.raw,
+        httpStatus,
+        receivedAt: new Date().toISOString(),
+      });
+      const parsed = responseSchema.safeParse(bounded.parsed);
       if (!parsed.success) {
         return {
           kind: 'uncertain',

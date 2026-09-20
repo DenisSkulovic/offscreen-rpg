@@ -24,6 +24,7 @@ import {
 import {
   createStorytellerRequestAudit,
   formatStorytellerRequestAudit,
+  selectStorytellerRequestSections,
 } from '../src/providers/request-audit';
 import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
 
@@ -536,7 +537,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 9);
+    assert.equal(task.inputVersion, 10);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -655,6 +656,24 @@ test('offered agency checks reject duplicates, endings and fabricated/future evi
       ...good,
       scene: { ...good.scene, next: { kind: 'end' } },
     }),
+  );
+  const inventedWorldSection = structuredClone(good);
+  if (inventedWorldSection.scene.next.kind !== 'choice') {
+    throw new Error('Expected offer');
+  }
+  inventedWorldSection.scene.next.options[0]!.worldSections = ['k1.s1'];
+  assert.throws(
+    () => validateStorytellerResult(task, inventedWorldSection),
+    /captured world catalogue/,
+  );
+  const inventedCampaignDocument = structuredClone(good);
+  if (inventedCampaignDocument.scene.next.kind !== 'choice') {
+    throw new Error('Expected offer');
+  }
+  inventedCampaignDocument.scene.next.options[0]!.campaignDocuments = ['d1'];
+  assert.throws(
+    () => validateStorytellerResult(task, inventedCampaignDocument),
+    /captured campaign catalogue/,
   );
   assert.throws(() =>
     validateStorytellerResult(task, {
@@ -939,9 +958,7 @@ test('active scene scope retains its complete range and rejects partial coverage
   const sections = contextRequestSections(selected);
   assert.equal(sections.currentState.current?.handle, 'p15');
   assert.equal(
-    sections.sceneContext.evidence.some(
-      (passage) => passage.handle === 'p15',
-    ),
+    sections.sceneContext.evidence.some((passage) => passage.handle === 'p15'),
     false,
   );
   assert.throws(
@@ -993,6 +1010,19 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.ok(inspection.serializedBytes > inspection.outputSchemaBytes);
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
+  assert.ok(
+    inspection.userSections.every(
+      (section) =>
+        section.characters > 0 &&
+        section.bytes > 0 &&
+        /^[a-f0-9]{64}$/.test(section.sha256),
+    ),
+  );
+  assert.equal(
+    inspection.userSections.find((section) => section.key === 'currentState')
+      ?.valueKind,
+    'object',
+  );
   assert.deepEqual(
     inspection.userSections.map((section) => [section.key, section.stability]),
     [
@@ -1121,10 +1151,30 @@ test('request audit reports exact multi-purpose structure without inventing toke
   assert.equal(audit.cases[0]?.observedProviderCacheHitTokens, null);
   assert.equal(audit.comparisons.length, 1);
   assert.equal(audit.sequences.length, 0);
-  assert.match(formatStorytellerRequestAudit(audit), /tokens\/cache: unknown/);
+  const formattedAudit = formatStorytellerRequestAudit(audit);
+  assert.match(formattedAudit, /tokens\/cache: unknown/);
+  assert.match(formattedAudit, /sections: task=scalar\/-\/[^,]+B#[a-f0-9]{8}/);
   assert.throws(
     () => createStorytellerRequestAudit([cases[0]!, cases[0]!]),
     /case IDs must be unique/,
+  );
+  const selection = selectStorytellerRequestSections(
+    cases,
+    [{ caseId: 'opening-narrative', sectionKey: 'currentState' }],
+    32 * 1024,
+  );
+  assert.equal(selection.transportPerformed, false);
+  assert.equal(selection.sections[0]?.sectionKey, 'currentState');
+  assert.equal(selection.sections[0]?.valueKind, 'object');
+  assert.ok(selection.selectedBytes > 0);
+  assert.throws(
+    () =>
+      selectStorytellerRequestSections(
+        cases,
+        [{ caseId: 'opening-narrative', sectionKey: 'currentState' }],
+        1,
+      ),
+    /exceed 1 bytes/,
   );
 });
 

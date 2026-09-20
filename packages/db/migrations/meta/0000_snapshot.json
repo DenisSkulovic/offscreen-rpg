@@ -1,5 +1,5 @@
 {
-  "id": "a7204c46-8720-435f-b465-a882515acd5f",
+  "id": "3756cccb-9b05-4322-a7dd-5320ec54a458",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2624,6 +2624,37 @@
           "primaryKey": false,
           "notNull": false
         },
+        "document_root_hash": {
+          "name": "document_root_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_root_revision": {
+          "name": "document_root_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "forked_from_story_id": {
+          "name": "forked_from_story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "forked_from_passage_id": {
+          "name": "forked_from_passage_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "forked_from_sequence": {
+          "name": "forked_from_sequence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "revision": {
           "name": "revision",
           "type": "integer",
@@ -2646,7 +2677,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "story_fork_source": {
+          "name": "story_fork_source",
+          "columns": [
+            {
+              "expression": "forked_from_story_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "story_owner_id_user_id_fk": {
           "name": "story_owner_id_user_id_fk",
@@ -2654,6 +2707,19 @@
           "tableTo": "user",
           "columnsFrom": [
             "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "story_fork_source_story_fk": {
+          "name": "story_fork_source_story_fk",
+          "tableFrom": "story",
+          "tableTo": "story",
+          "columnsFrom": [
+            "forked_from_story_id"
           ],
           "columnsTo": [
             "id"
@@ -2669,6 +2735,14 @@
         "story_revision_positive": {
           "name": "story_revision_positive",
           "value": "\"story\".\"revision\" > 0"
+        },
+        "story_document_root_shape": {
+          "name": "story_document_root_shape",
+          "value": "(\"story\".\"document_root_hash\" IS NULL AND \"story\".\"document_root_revision\" = 0) OR (\"story\".\"document_root_hash\" ~ '^[0-9a-f]{64}$' AND \"story\".\"document_root_revision\" > 0)"
+        },
+        "story_fork_lineage_complete": {
+          "name": "story_fork_lineage_complete",
+          "value": "(\"story\".\"forked_from_story_id\" IS NULL AND \"story\".\"forked_from_passage_id\" IS NULL AND \"story\".\"forked_from_sequence\" IS NULL) OR (\"story\".\"forked_from_story_id\" IS NOT NULL AND \"story\".\"forked_from_passage_id\" IS NOT NULL AND \"story\".\"forked_from_sequence\" > 0)"
         }
       },
       "isRLSEnabled": false
@@ -2725,6 +2799,102 @@
       },
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.story_document_commit": {
+      "name": "story_document_commit",
+      "schema": "",
+      "columns": {
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "operation_id": {
+          "name": "operation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_root_hash": {
+          "name": "base_root_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "root_hash": {
+          "name": "root_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "root_revision": {
+          "name": "root_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "story_document_commit_story_id_story_id_fk": {
+          "name": "story_document_commit_story_id_story_id_fk",
+          "tableFrom": "story_document_commit",
+          "tableTo": "story",
+          "columnsFrom": [
+            "story_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "story_document_commit_identity": {
+          "name": "story_document_commit_identity",
+          "nullsNotDistinct": false,
+          "columns": [
+            "story_id",
+            "operation_id"
+          ]
+        },
+        "story_document_commit_root": {
+          "name": "story_document_commit_root",
+          "nullsNotDistinct": false,
+          "columns": [
+            "story_id",
+            "root_revision"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "story_document_commit_hashes": {
+          "name": "story_document_commit_hashes",
+          "value": "\"story_document_commit\".\"request_hash\" ~ '^[0-9a-f]{64}$' AND \"story_document_commit\".\"root_hash\" ~ '^[0-9a-f]{64}$' AND (\"story_document_commit\".\"base_root_hash\" IS NULL OR \"story_document_commit\".\"base_root_hash\" ~ '^[0-9a-f]{64}$')"
+        },
+        "story_document_commit_revision": {
+          "name": "story_document_commit_revision",
+          "value": "\"story_document_commit\".\"root_revision\" > 0"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.story_item": {
@@ -2880,7 +3050,13 @@
           "name": "content",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "content_document_hash": {
+          "name": "content_document_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "interaction": {
           "name": "interaction",
@@ -2969,6 +3145,10 @@
         "story_passage_sequence_positive": {
           "name": "story_passage_sequence_positive",
           "value": "\"story_passage\".\"sequence\" > 0"
+        },
+        "story_passage_content_owner": {
+          "name": "story_passage_content_owner",
+          "value": "(\"story_passage\".\"content\" IS NOT NULL AND \"story_passage\".\"content_document_hash\" IS NULL) OR (\"story_passage\".\"content\" IS NULL AND \"story_passage\".\"content_document_hash\" ~ '^[0-9a-f]{64}$')"
         },
         "story_passage_control_valid": {
           "name": "story_passage_control_valid",

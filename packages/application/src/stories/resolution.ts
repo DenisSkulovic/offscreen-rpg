@@ -30,6 +30,8 @@ import {
   lockOwnedStory,
   requireCurrentPassage,
 } from './persistence';
+import type { DocumentStore } from '@offscreen/documents';
+import { readPassageDocument } from './passage-documents';
 
 type AdmitResolution = Readonly<{
   ownerId: string;
@@ -58,7 +60,10 @@ function mapGenerationFailure(error: unknown): never {
   throw error;
 }
 
-export function createStoryResolution(database: Database) {
+export function createStoryResolution(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
   const operations = createGenerations(database, {
     kind: scriptedContinuationKind,
     input: playableContinuationArtifactSchema,
@@ -98,6 +103,7 @@ export function createStoryResolution(database: Database) {
             operationId: admittedOperationId,
             expectedRevision,
             submission: parsedSubmission.data,
+            ...(documentStore ? { documentStore } : {}),
           });
           return;
         }
@@ -185,6 +191,15 @@ export function createStoryResolution(database: Database) {
             .from(storyItem)
             .where(eq(storyItem.storyId, id)),
         );
+        if (active.contentDocumentHash !== null && !documentStore) {
+          throw new StoryError('unavailable', 'document_store');
+        }
+        const activeContent = active.contentDocumentHash
+          ? await readPassageDocument(
+              documentStore!,
+              active.contentDocumentHash,
+            )
+          : active.content;
         let artifact;
         try {
           artifact = playableContinuationArtifactSchema.parse(
@@ -197,7 +212,7 @@ export function createStoryResolution(database: Database) {
                 items,
                 current: {
                   id: active.id,
-                  content: active.content,
+                  content: activeContent,
                   interaction: interactionSchema.parse(active.interaction),
                 },
               },

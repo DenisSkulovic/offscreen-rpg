@@ -4,6 +4,8 @@ Shared rules live in rules/; reusable procedures live in skills/. Root AGENTS.md
 
 Always read [Working agreement](rules/working-agreement.md) and [Spending](rules/spending.md). Read [Verification](rules/verification.md) when choosing checks and [Code quality](../docs/engineering/code-quality.md) for implementation/review. Use [feature-workflow](skills/feature-workflow/SKILL.md) for significant work.
 
+For substantial Storyteller context, retrieval, memory, tooling, orchestration, tracing or evaluation work, use the [agentic systems field manual](../docs/engineering/agentic-systems-field-manual.md) as an evolving research reference. It is not a fixed architecture or exhaustive authority.
+
 Add a focused rule only when a lasting decision needs it. Add a skill for a repeatable procedure with a clear trigger. Keep detail with its owner and link it; do not duplicate policies into every tool or create dozens of empty categories.
 
 Codex/Cursor use the shared skill location. Claude has a thin skill adapter that reads the same procedure. If tool discovery is unavailable, ask the agent to read the skill path explicitly; the workflow must remain usable as plain Markdown. Native tool discovery has not been smoke-tested in each installed application.

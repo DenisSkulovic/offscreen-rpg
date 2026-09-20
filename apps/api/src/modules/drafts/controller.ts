@@ -36,7 +36,9 @@ export class DraftsController {
       if (error instanceof DraftError)
         throw new HttpException(
           { code: error.code },
-          { invalid: 400, not_found: 404, conflict: 409 }[error.code],
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
         );
       throw new ServiceUnavailableException('Draft storage unavailable');
     }

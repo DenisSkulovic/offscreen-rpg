@@ -284,6 +284,7 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
       pace: { kind: 'rate', ticks: 1, realMs: 1000 },
       time: defaultWorldTimeDefinition,
       worldObligations: [],
+      worlds: [],
     },
   );
   const [created] = await tx

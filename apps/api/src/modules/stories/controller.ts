@@ -14,7 +14,10 @@ import {
 import type { Request } from 'express';
 import type { createStoryApplication } from '@offscreen/application/stories';
 import { StoryError } from '@offscreen/application/stories';
-import { startStorySchema } from '@offscreen/contracts/stories';
+import {
+  forkStorySchema,
+  startStorySchema,
+} from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
 
 export const STORIES = Symbol('STORIES');
@@ -32,8 +35,13 @@ export class StoriesController {
     } catch (error) {
       if (error instanceof StoryError) {
         throw new HttpException(
-          { code: error.code },
-          { invalid: 400, not_found: 404, conflict: 409 }[error.code],
+          {
+            code: error.code,
+            ...(error.reason ? { reason: error.reason } : {}),
+          },
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
         );
       }
       throw new ServiceUnavailableException('Story unavailable');
@@ -203,6 +211,88 @@ export class StoriesController {
           ? { ownerId, storyId: id }
           : { ownerId, storyId: id, before };
       return this.stories.history(query);
+    });
+  }
+  @Get(':id/documents')
+  documents(@Req() request: Request, @Param('id') storyId: string) {
+    return this.run(request, (ownerId) => {
+      if (!this.stories.documents) throw new StoryError('unavailable');
+      return this.stories.documents.readRoot({ ownerId, storyId });
+    });
+  }
+  @Get(':id/documents/projected-passages')
+  projectedPassages(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.run(request, (ownerId) => {
+      if (!this.stories.documents) throw new StoryError('unavailable');
+      const parsedLimit = limit === undefined ? undefined : Number(limit);
+      return this.stories.documents.projectPassageSources({
+        ownerId,
+        storyId,
+        ...(parsedLimit === undefined ? {} : { limit: parsedLimit }),
+      });
+    });
+  }
+  @Get(':id/documents/:documentId')
+  document(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('documentId') documentId: string,
+    @Query('revision') revision?: string,
+  ) {
+    return this.run(request, (ownerId) => {
+      if (!this.stories.documents) throw new StoryError('unavailable');
+      const parsedRevision = revision === undefined ? undefined : Number(revision);
+      if (
+        parsedRevision !== undefined &&
+        (!Number.isInteger(parsedRevision) || parsedRevision < 1)
+      )
+        throw new StoryError('invalid');
+      return this.stories.documents.readDocument({
+        ownerId,
+        storyId,
+        documentId,
+        ...(parsedRevision === undefined ? {} : { revision: parsedRevision }),
+      });
+    });
+  }
+  @Put(':id/documents/:operationId')
+  admitDocuments(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) => {
+      if (!this.stories.documents) throw new StoryError('unavailable');
+      return this.stories.documents.admit({
+        ownerId,
+        storyId,
+        operationId,
+        body,
+      });
+    });
+  }
+  @Put(':id/forks/:forkId')
+  @HttpCode(200)
+  fork(
+    @Req() request: Request,
+    @Param('id') sourceStoryId: string,
+    @Param('forkId') forkStoryId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) => {
+      const parsed = forkStorySchema.safeParse(body);
+      if (!parsed.success) throw new StoryError('invalid');
+      return this.stories.fork({
+        ownerId,
+        sourceStoryId,
+        forkStoryId,
+        expectedRevision: parsed.data.expectedRevision,
+      });
     });
   }
   @Put(':id/start')

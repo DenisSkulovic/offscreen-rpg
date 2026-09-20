@@ -9,12 +9,15 @@ Implemented for profiled solo stories, with offline rehearsal limits described b
 | Tone and themes | Tags and bounded player-written guidance: melancholy, absurd comedy, domestic life, exploration. |
 | Activity emphasis | Weighted preferences or ordered categories: economy, growth, social life, adventure. These guide opportunities, not compulsory character actions. |
 | Dramatic rhythm | Named policy and guidance for quiet stretches, scene density and transitions. |
+| Narrative initiative | Named policy and bounded guidance for whether the Storyteller should merely respond, cultivate occasional larger developments or actively maintain a directed narrative. It may explicitly select no grand narrative. |
 | Surprise frequency | A supported policy for how often eligible incidents are checked/triggered; independent of their severity. |
 | Surprise character | Descriptive guidance for how conventional or strange developments may be. Not a replacement for the random-number generator. |
 | Risk permissions | Typed limits on allowed consequences and unattended decisions. Creative text cannot override them. |
 | Pace | Explicit game-time/real-time mapping, separate from dramatic rhythm and response allowances. |
 
 Not every control is a number. Expose a small understandable editor first, with advanced bounded text and tags, rather than dozens of unexplained sliders. Saving a preset stores data, not another agent implementation. Applying a different preset replaces its creative defaults; show the effective result before saving and preserve separate campaign clock/risk choices unless the user explicitly changes them.
+
+Narrative initiative is not another name for surprise frequency. A rare meteor can be part of deliberate long-range direction rather than a random incident, while a high-surprise slice-of-life campaign may contain many small disruptions and no central arc. Initiative grants the Storyteller permission to cultivate pressure; it does not make an uncommitted possibility true or choose the player's response. Explicit campaign choice—including “no grand narrative”—overrides a preset default.
 
 Resource controls are separate from creative presets. [Account usage policy](technical/usage-policy.md) defines allowed models, context/output sizes, exploration effort, optional narration/maintenance allocations, spending windows and recovery settings. Players may lower their limits; creative guidance or a dramatic-rhythm setting cannot enlarge account authority. Keep a few understandable presets backed by independently bounded controls, not a single “eagerness” slider that secretly increases every kind of spending. This resource-policy layer is prepared, not yet implemented in the editor.
 
@@ -45,3 +48,5 @@ See [game rules](game-rules.md) and [settings execution](technical/story-setting
 The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available.
 
 The offline source does not improvise from arbitrary text: creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. Its offline narrator repeats saved outcomes; it has no special profile voice or absurd-comedy tag branch. Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented. Mid-activity pace changes are separate controls.
+
+The current editor does not yet expose narrative initiative or a campaign narrative-direction revision. Existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as that authority.

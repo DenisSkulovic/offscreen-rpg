@@ -17,6 +17,7 @@ The Storyteller is a product identity realized by purpose-specific tasks, creati
 | Term | Meaning | Boundary |
 | --- | --- | --- |
 | Campaign | The continuing character/world experience with its history, rules and settings | Does not need a planned plot or compulsory ending |
+| Narrative direction | The campaign-owned Storyteller intent for what larger pressures, themes or developments to cultivate, when the selected settings permit one | May be absent; it is a revisable private strategy, not a promised sequence or authority over player choices |
 | Situation | The relevant present circumstances, plus currently authorized possibilities | Changes through committed actions/events/work; prose alone cannot fabricate mechanical progress |
 | Scene | The local dramatic or perceptual context: this conversation, confrontation, visit or stretch of experience | Can span multiple Storyteller turns and activities; no mandatory start/end state machine or clock duration |
 | Narration | Prose presenting a situation or explaining an outcome | Presentation, not an instruction that directly mutates game state |
@@ -46,6 +47,7 @@ Scene is useful descriptive context, not a synonym for every screen update. A ne
 | Memory segment | A bounded source range used for extraction/indexing/summarization; an internal storage concern |
 | Summary | A derived, source-linked account of selected history; may be regenerated without changing that history |
 | Canonical document | A versioned authoritative document for its declared role; a summary's role remains derived, while a published source preserves original prose |
+| Story fork | A new first-class story copied from one exact committed position; lineage records provenance, while later mutable state is independent and neither branch is automatically canonical |
 
 A file is not automatically a scene, turn, event or unit of time. One turn may consult many documents. A scene can be represented by several source passages. A memory segment can split a long conversation without ending it or making the player wait. Summary creation never gates progress merely because a segment reached its size threshold; missing required evidence has a separate recovery rule.
 

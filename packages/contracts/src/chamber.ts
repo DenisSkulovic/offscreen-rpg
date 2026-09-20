@@ -93,9 +93,41 @@ export const dispatchReviewDecisionRequestSchema = z.strictObject({
 });
 export type DispatchReviewView = z.infer<typeof dispatchReviewViewSchema>;
 
+export const chamberStorytellerControlViewSchema = z.strictObject({
+  storyId: z.uuid(),
+  revision: z.number().int().nonnegative(),
+  state: z.enum([
+    'idle',
+    'armed-hold',
+    'armed-failure',
+    'held',
+    'released',
+    'failed',
+  ]),
+  generationId: z.uuid().nullable(),
+});
+export const chamberStorytellerControlRequestSchema = z.discriminatedUnion(
+  'action',
+  [
+    z.strictObject({
+      action: z.enum(['arm-hold', 'arm-failure', 'clear']),
+      expectedRevision: z.number().int().nonnegative(),
+    }),
+    z.strictObject({
+      action: z.literal('release'),
+      expectedRevision: z.number().int().nonnegative(),
+      generationId: z.uuid(),
+    }),
+  ],
+);
+
 export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
+  documents: z.strictObject({
+    rootHash: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+    rootRevision: z.number().int().nonnegative(),
+  }),
   costAccounting: z.strictObject({
     totals: z.strictObject({
       attempts: z.number().int().nonnegative(),
@@ -184,6 +216,8 @@ export const chamberInspectorSchema = z.strictObject({
       profile: z.unknown(),
       notes: z.unknown(),
       context: z.unknown().nullable(),
+      librarySelection: z.unknown().nullable(),
+      documentSelection: z.unknown().nullable(),
     })
     .nullable()
     .optional(),

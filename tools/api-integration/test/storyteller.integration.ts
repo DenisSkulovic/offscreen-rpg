@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 // Match the database package's CommonJS Drizzle types across the ESM API boundary.
 import { createRequire } from 'node:module';
@@ -39,7 +42,10 @@ import {
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
 } from '@offscreen/application/storyteller';
-import { createChamber } from '@offscreen/application/developer-tools';
+import {
+  createChamber,
+  createChamberStorytellerControl,
+} from '@offscreen/application/developer-tools';
 import { createStories } from '@offscreen/application/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
@@ -48,6 +54,11 @@ import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
+import {
+  LocalDocumentStore,
+  importRulePackageDirectory,
+  importStartPackageDirectory,
+} from '@offscreen/documents';
 
 const orm: typeof Drizzle = createRequire(import.meta.url)('drizzle-orm');
 const { asc, eq } = orm;
@@ -137,6 +148,7 @@ test(
   'profiled storyteller: durable choices, context, accounting and browser creation',
   { timeout: 240000 },
   async (t) => {
+    const chamberStorytellerControl = createChamberStorytellerControl();
     await withAppIntegration(
       async ({
         database,
@@ -214,6 +226,7 @@ test(
               epoch: { wholeUnits: 0, tickOfUnit: 0 },
             },
             worldObligations: campaignOverrides.worldObligations ?? [],
+            worlds: campaignOverrides.worlds ?? [],
           };
           const snapshot = await stories.startFromCandidate({
             ownerId,
@@ -249,6 +262,196 @@ test(
           };
         }
         const first = await candidate();
+        await t.test(
+          'imported abstract start publishes one root and one obligation across retry',
+          async () => {
+            const fixtureRoot = await mkdtemp(
+              join(tmpdir(), 'offscreen-start-integration-'),
+            );
+            const storage = new LocalDocumentStore(join(fixtureRoot, 'store'));
+            const rules = await importRulePackageDirectory(
+              storage,
+              resolve('content/rules/srd-5.2.1-subset'),
+            );
+            const defaultRules = {
+              ruleSetId: rules.manifest.ruleSetId,
+              rootHash: rules.rootHash,
+              revision: rules.manifest.revision,
+              engine: rules.manifest.engine,
+            };
+            const source = join(fixtureRoot, 'abstract-start');
+            await mkdir(join(source, 'obligations'), { recursive: true });
+            await writeFile(
+              join(source, 'START.md'),
+              '# Gradient life\n\nThere are no people here, only a living response to chemical gradients.',
+            );
+            const packageObligationId = randomUUID();
+            await writeFile(
+              join(source, 'obligations', 'warming.json'),
+              JSON.stringify({
+                version: 1,
+                obligation: {
+                  id: packageObligationId,
+                  revision: 1,
+                  source: { id: 'gradient-life', revision: 1 },
+                  label: 'The medium warms',
+                  visibility: { kind: 'hidden' },
+                  consequence: {
+                    kind: 'condition.set.v1',
+                    condition: {
+                      id: 'warm-medium',
+                      label: 'Warm medium',
+                      value: true,
+                    },
+                  },
+                  followUp: 'report',
+                  due: { kind: 'tick', tick: 12 },
+                },
+              }),
+            );
+            const startPackageId = randomUUID();
+            await writeFile(
+              join(source, 'start-package.json'),
+              JSON.stringify({
+                format: 'offscreen.start-package-source.v1',
+                startPackageId,
+                authorOperationId: randomUUID(),
+                title: 'Gradient life',
+                worlds: [],
+                rules: defaultRules,
+                documents: [
+                  {
+                    path: 'START.md',
+                    kind: 'orientation',
+                    activation: 'initial-canon',
+                    authority: 'canon',
+                    visibility: 'player-known',
+                  },
+                  {
+                    path: 'obligations/warming.json',
+                    kind: 'world-obligation',
+                    activation: 'executable-obligation',
+                    authority: 'canon',
+                    visibility: 'storyteller-private',
+                    schemaId: 'world-obligation.v1',
+                  },
+                ],
+              }),
+            );
+            const imported = await importStartPackageDirectory(storage, source);
+            const storiesWithDocuments = createStories(database, {
+              documentStore: storage,
+              defaultRules,
+            });
+            const draftId = randomUUID();
+            await drafts.save(ownerId, draftId, {
+              title: 'Abstract start integration',
+              premise: 'A small organism responds to its environment.',
+              storytellingDirection: 'Avoid humanoid assumptions.',
+              storyteller: { id: 'absurd-action-comedy', revision: 1 },
+              expectedRevision: 0,
+            });
+            const generationId = randomUUID();
+            await openings.request(
+              ownerId,
+              draftId,
+              generationId,
+              1,
+              'microbe.v3',
+            );
+            await runtime.complete(generationId);
+            const storyId = randomUUID();
+            const campaign: CampaignStart = {
+              mechanics: true,
+              locked: false,
+              pace: { kind: 'instant' },
+              time: {
+                kind: 'elapsed',
+                id: 'simulation-ticks',
+                revision: 1,
+                unit: {
+                  id: 'tick',
+                  label: 'tick',
+                  pluralLabel: 'ticks',
+                  ticksPerUnit: 1,
+                },
+                epoch: { wholeUnits: 0, tickOfUnit: 0 },
+              },
+              worldObligations: [],
+              worlds: [],
+              startPackage: {
+                startPackageId,
+                rootHash: imported.rootHash,
+                revision: imported.manifest.revision,
+              },
+            };
+            await storiesWithDocuments.startFromCandidate({
+              ownerId,
+              storyId,
+              candidateId: generationId,
+              expectedDraftRevision: 1,
+              campaign,
+            });
+            const [createdStory] = await database.db
+              .select({
+                rootHash: story.documentRootHash,
+                rootRevision: story.documentRootRevision,
+              })
+              .from(story)
+              .where(eq(story.id, storyId));
+            assert.ok(createdStory?.rootHash);
+            assert.equal(createdStory.rootRevision, 2);
+            const firstRootHash = createdStory.rootHash;
+            const firstManifest = await storage.readManifest(firstRootHash);
+            assert.ok(
+              firstManifest.entries.some(
+                (entry) => entry.path === 'start/package.md',
+              ),
+            );
+            assert.ok(
+              firstManifest.entries.some(
+                (entry) => entry.path === 'start/reference.json',
+              ),
+            );
+            assert.equal(
+              firstManifest.entries.some((entry) => entry.kind === 'character'),
+              true,
+              'the mechanical opening character remains explicit campaign data',
+            );
+            const obligationsAfterStart = await database.db
+              .select()
+              .from(worldObligation)
+              .where(eq(worldObligation.storyId, storyId));
+            assert.equal(obligationsAfterStart.length, 1);
+            assert.notEqual(obligationsAfterStart[0]?.id, packageObligationId);
+            assert.equal(obligationsAfterStart[0]?.dueTick, 12);
+
+            await storiesWithDocuments.startFromCandidate({
+              ownerId,
+              storyId,
+              candidateId: generationId,
+              expectedDraftRevision: 1,
+              campaign,
+            });
+            const [retriedStory] = await database.db
+              .select({
+                rootHash: story.documentRootHash,
+                rootRevision: story.documentRootRevision,
+              })
+              .from(story)
+              .where(eq(story.id, storyId));
+            assert.deepEqual(retriedStory, createdStory);
+            assert.equal(
+              (
+                await database.db
+                  .select()
+                  .from(worldObligation)
+                  .where(eq(worldObligation.storyId, storyId))
+              ).length,
+              1,
+            );
+          },
+        );
         await t.test(
           'mechanical opening and three consequences reshape plans from committed state',
           async () => {
@@ -413,6 +616,99 @@ test(
                   ['inspect-from-cover', 'leave-cover'],
                 );
               }
+            }
+          },
+        );
+        await t.test(
+          'microbe completes three mechanical turns through the shared finite-action path',
+          async () => {
+            const started = await mechanicalCandidate('microbe.v3', {
+              kind: 'instant',
+            });
+            let snapshot = started.snapshot;
+            const microbePlans = new Set([
+              'follow-gradient',
+              'contract',
+              'remain-sheltered',
+              'follow-gradient-again',
+              'contract-again',
+            ]);
+
+            for (let round = 0; round < 3; round++) {
+              const offer = requireDefined(
+                snapshot.campaign?.offer,
+                'Expected a microbe decision offer',
+              );
+              assert.ok(offer.nodes.length > 0);
+              assert.equal(
+                offer.nodes.every((node) => microbePlans.has(node.id)),
+                true,
+              );
+              const selected = requireDefined(
+                offer.nodes.find((node) => node.action),
+                'Expected an admitted finite microbe action',
+              );
+              const operationId = randomUUID();
+              const tickBefore = requireDefined(
+                snapshot.campaign?.tick,
+                'Expected a microbe campaign tick',
+              );
+
+              await stories.campaignAction({
+                ownerId,
+                storyId: started.storyId,
+                operationId,
+                body: {
+                  expectedRevision: snapshot.revision,
+                  offerId: offer.id,
+                  path: [selected.id],
+                },
+              });
+              assert.equal(
+                await storyService.advanceCampaignAction(operationId),
+                null,
+              );
+              const committed = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(committed.campaign?.tick, tickBefore + 5);
+              assert.equal(
+                committed.campaign?.actionReceipts.length,
+                round + 1,
+              );
+              assert.deepEqual(committed.campaign?.holds, [
+                {
+                  kind: 'storyteller-intent',
+                  operationId,
+                  reason: 'required-turn',
+                },
+              ]);
+
+              await storyService.prepareCampaignConsequence(operationId);
+              const [receipt] = await database.db
+                .select({ generationId: gameActionReceipt.generationId })
+                .from(gameActionReceipt)
+                .where(eq(gameActionReceipt.operationId, operationId));
+              assert.ok(receipt?.generationId);
+              await runtime.complete(receipt.generationId);
+              snapshot = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+              assert.equal(snapshot.revision, round + 2);
+              assert.equal(snapshot.campaign?.actionReceipts.length, round + 1);
+              assert.equal(
+                snapshot.campaign?.actionReceipts[0]?.state,
+                'published',
+              );
+              assert.deepEqual(snapshot.campaign?.holds, [
+                {
+                  kind: 'decision',
+                  offerId: snapshot.campaign?.offer?.id,
+                  reason: 'player-choice',
+                },
+              ]);
             }
           },
         );
@@ -910,7 +1206,7 @@ test(
           },
         );
         await t.test(
-          'failed required narration holds time until the same generation is retried',
+          'Chamber failure holds time until the same generation is retried',
           async () => {
             const started = await mechanicalCandidate();
             const offer = requireDefined(
@@ -921,6 +1217,20 @@ test(
               offer.nodes[0],
               'Expected an admitted mechanical action',
             );
+            const controlUrl = `${origin}/api/chamber-tools/stories/${started.storyId}/storyteller-control`;
+            const armFailure = await fetch(controlUrl, {
+              method: 'PUT',
+              headers: {
+                cookie,
+                origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                action: 'arm-failure',
+                expectedRevision: 0,
+              }),
+            });
+            assert.equal(armFailure.status, 200);
             const operationId = randomUUID();
             await stories.campaignAction({
               ownerId,
@@ -932,7 +1242,19 @@ test(
                 path: [action.id],
               },
             });
-            await storyService.prepareCampaignConsequence(operationId);
+            await restartWorker();
+            let failed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            for (let attempt = 0; attempt < 30; attempt++) {
+              if (failed.resolution?.blocker?.recovery === 'retry') break;
+              await delay(500);
+              failed = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+            }
             const [receipt] = await database.db
               .select({ generationId: gameActionReceipt.generationId })
               .from(gameActionReceipt)
@@ -941,22 +1263,28 @@ test(
               receipt?.generationId,
               'Expected required narration identity',
             );
-            const invalidRuntime = createStorytellerRuntime(database, {
-              scriptedSource: () => ({}),
-              realDurationMs: () => 1000,
-            });
-
-            await invalidRuntime.complete(generationId);
-            const failed = await stories.read({
-              ownerId,
-              storyId: started.storyId,
-            });
             assert.deepEqual(failed.campaign?.holds, [
               { kind: 'storyteller', generationId, reason: 'required-turn' },
             ]);
             assert.deepEqual(failed.resolution?.blocker, {
               kind: 'generation',
               recovery: 'retry',
+            });
+            const controlResponse = await fetch(controlUrl, {
+              headers: { cookie },
+            });
+            assert.equal(controlResponse.status, 200);
+            const controlBody = (await controlResponse.json()) as {
+              control: {
+                state: string;
+                generationId: string | null;
+              };
+            };
+            assert.deepEqual(controlBody.control, {
+              storyId: started.storyId,
+              revision: 2,
+              state: 'failed',
+              generationId,
             });
 
             const [heldState] = await database.db
@@ -971,22 +1299,37 @@ test(
               .set({ clockAnchorAt: new Date('2000-01-01T00:00:00.000Z') })
               .where(eq(campaignTable.storyId, started.storyId));
 
-            await storyService.retryResolution({
+            const retry = await fetch(
+              `${origin}/api/stories/${started.storyId}/retries/${randomUUID()}`,
+              {
+                method: 'PUT',
+                headers: { cookie, origin },
+              },
+            );
+            assert.equal(retry.status, 200);
+            let recovered = await stories.read({
               ownerId,
               storyId: started.storyId,
-              retryId: randomUUID(),
             });
-            await runtime.complete(generationId);
+            for (let attempt = 0; attempt < 30; attempt++) {
+              if (
+                recovered.resolution === null &&
+                recovered.campaign?.actionReceipts[0]?.state === 'published'
+              ) {
+                break;
+              }
+              await delay(500);
+              recovered = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+            }
             const [releasedState] = await database.db
               .select({ clock: campaignTable.clock })
               .from(campaignTable)
               .where(eq(campaignTable.storyId, started.storyId));
             assert.deepEqual(releasedState?.clock, heldState.clock);
 
-            const recovered = await stories.read({
-              ownerId,
-              storyId: started.storyId,
-            });
             assert.deepEqual(recovered.campaign?.holds, [
               {
                 kind: 'decision',
@@ -999,6 +1342,264 @@ test(
               recovered.campaign?.actionReceipts[0]?.state,
               'published',
             );
+            const receipts = await database.db
+              .select({
+                generationId: gameActionReceipt.generationId,
+                operationId: gameActionReceipt.operationId,
+              })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, operationId));
+            assert.deepEqual(receipts, [{ generationId, operationId }]);
+          },
+        );
+        await t.test(
+          'early preparation stays private while its finite action is paused',
+          async () => {
+            const started = await mechanicalCandidate();
+            const campaign = requireDefined(
+              started.snapshot.campaign,
+              'Expected a mechanical campaign',
+            );
+            const offer = requireDefined(
+              campaign.offer,
+              'Expected a generated mechanical offer',
+            );
+            const action = requireDefined(
+              offer.nodes[0],
+              'Expected an admitted finite action',
+            );
+            const operationId = randomUUID();
+            await restartWorker();
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId,
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [action.id],
+              },
+            });
+
+            const control = async (
+              expectedRevision: number,
+              actionControl: 'pause' | 'resume' | 'pace',
+              pace?: { kind: 'instant' },
+            ) => {
+              const response = await fetch(
+                `${origin}/api/stories/${started.storyId}/action-execution-controls/${randomUUID()}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    cookie,
+                    origin,
+                    'content-type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    executionId: operationId,
+                    expectedRevision,
+                    action: actionControl,
+                    ...(pace ? { pace } : {}),
+                  }),
+                },
+              );
+              assert.equal(response.status, 200);
+            };
+            await control(0, 'pause');
+
+            let preparationGenerationId: string | null = null;
+            let preparationState: string | null = null;
+            for (let attempt = 0; attempt < 30; attempt++) {
+              const [execution] = await database.db
+                .select({
+                  preparationGenerationId:
+                    gameActionExecution.preparationGenerationId,
+                })
+                .from(gameActionExecution)
+                .where(eq(gameActionExecution.operationId, operationId));
+              preparationGenerationId =
+                execution?.preparationGenerationId ?? null;
+              if (preparationGenerationId) {
+                const [prepared] = await database.db
+                  .select({ state: generation.state })
+                  .from(generation)
+                  .where(eq(generation.id, preparationGenerationId));
+                preparationState = prepared?.state ?? null;
+                if (preparationState === 'succeeded') break;
+              }
+              await delay(200);
+            }
+            const generationId = requireDefined(
+              preparationGenerationId,
+              'Expected an early preparation generation',
+            );
+            assert.equal(preparationState, 'succeeded');
+            const paused = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(paused.revision, started.snapshot.revision);
+            assert.equal(paused.campaign?.tick, campaign.tick);
+            assert.equal(paused.campaign?.actionExecution?.state, 'paused');
+            assert.equal(paused.campaign?.actionReceipts.length, 0);
+            assert.equal(paused.resolution?.evidence, 'pending-action');
+            assert.equal(paused.resolution?.state, 'succeeded');
+
+            await delay(1100);
+            const stillPaused = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(stillPaused.campaign?.tick, campaign.tick);
+            assert.equal(
+              stillPaused.campaign?.actionExecution?.state,
+              'paused',
+            );
+            assert.equal(stillPaused.campaign?.actionReceipts.length, 0);
+
+            await control(1, 'pace', { kind: 'instant' });
+            await control(2, 'resume');
+            let published = stillPaused;
+            for (let attempt = 0; attempt < 30; attempt++) {
+              if (
+                published.campaign?.actionReceipts[0]?.state === 'published'
+              ) {
+                break;
+              }
+              await delay(200);
+              published = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+            }
+            assert.equal(published.campaign?.tick, campaign.tick + 5);
+            assert.equal(published.campaign?.actionReceipts.length, 1);
+            const [receipt] = await database.db
+              .select({ generationId: gameActionReceipt.generationId })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, operationId));
+            assert.equal(receipt?.generationId, generationId);
+          },
+        );
+        await t.test(
+          'a due world boundary prevents finite-action overlap',
+          async () => {
+            const obligationId = randomUUID();
+            const started = await mechanicalCandidate(
+              'pineapple-mechanics.v4',
+              { kind: 'rate', ticks: 1, realMs: 60_000 },
+              {
+                worldObligations: [
+                  {
+                    id: obligationId,
+                    revision: 1,
+                    source: { id: 'incoming-tide', revision: 1 },
+                    label: 'The tide reaches the pineapple',
+                    visibility: { kind: 'exact' },
+                    consequence: {
+                      kind: 'condition.set.v1',
+                      condition: {
+                        id: 'pineapple-flooded',
+                        label: 'Pineapple flooded',
+                        value: true,
+                      },
+                    },
+                    followUp: 'controlling-scene',
+                    due: { kind: 'tick', tick: 3 },
+                  },
+                ],
+              },
+            );
+            const campaign = requireDefined(
+              started.snapshot.campaign,
+              'Expected a mechanical campaign',
+            );
+            const offer = requireDefined(
+              campaign.offer,
+              'Expected a generated mechanical offer',
+            );
+            const action = requireDefined(
+              offer.nodes[0],
+              'Expected an admitted finite action',
+            );
+            const operationId = randomUUID();
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId,
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [action.id],
+              },
+            });
+
+            const [admittedExecution] = await database.db
+              .select({
+                pendingResolution: gameActionExecution.pendingResolution,
+                preparationGenerationId:
+                  gameActionExecution.preparationGenerationId,
+              })
+              .from(gameActionExecution)
+              .where(eq(gameActionExecution.operationId, operationId));
+            assert.equal(admittedExecution?.pendingResolution, null);
+            assert.equal(admittedExecution?.preparationGenerationId, null);
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(admitted.resolution, null);
+            assert.equal(admitted.campaign?.actionReceipts.length, 0);
+
+            await stories.actionExecutionControl({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                executionId: operationId,
+                expectedRevision: 0,
+                action: 'pace',
+                pace: { kind: 'instant' },
+              },
+            });
+            assert.equal(
+              await storyService.advanceCampaignAction(operationId),
+              null,
+            );
+
+            const interrupted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(interrupted.campaign?.tick, 3);
+            assert.equal(interrupted.campaign?.actionReceipts.length, 0);
+            assert.deepEqual(interrupted.campaign?.holds, [
+              {
+                kind: 'world-obligation',
+                obligationId,
+                reason: 'controlling-event',
+              },
+            ]);
+            assert.equal(
+              interrupted.campaign?.worldConditions.find(
+                (condition) => condition.id === 'pineapple-flooded',
+              )?.value,
+              true,
+            );
+            const [storedExecution] = await database.db
+              .select({
+                state: gameActionExecution.state,
+                pendingResolution: gameActionExecution.pendingResolution,
+                preparationGenerationId:
+                  gameActionExecution.preparationGenerationId,
+              })
+              .from(gameActionExecution)
+              .where(eq(gameActionExecution.operationId, operationId));
+            assert.deepEqual(storedExecution, {
+              state: 'interrupted',
+              pendingResolution: null,
+              preparationGenerationId: null,
+            });
           },
         );
         await t.test(
@@ -2762,6 +3363,231 @@ test(
           },
         );
         await t.test(
+          'provider recovery retries only work proven unsent',
+          async () => {
+            async function providerStory() {
+              const accountId = randomUUID();
+              const runId = randomUUID();
+              await database.db.insert(storytellerFunding).values({
+                id: accountId,
+                limitMicrousd: 1000000n,
+                stopped: false,
+                verifiedAt: new Date(),
+              });
+              await database.db.insert(storytellerRun).values({
+                id: runId,
+                accountId,
+                limitMicrousd: 1000000n,
+                maxAttempts: 4,
+                enabled: true,
+              });
+              const execution: ExecutionPolicy = {
+                mode: 'provider',
+                accountId,
+                runId,
+                dispatchReview: { mode: 'off' },
+                policy: {
+                  version: 'fake',
+                  route: 'fake:economy',
+                  model: 'fake/model',
+                  provider: 'fake',
+                  priceVersion: 'test-only',
+                  inputMicrousdPerMillion: '1000',
+                  outputMicrousdPerMillion: '1000',
+                  maxInputTokens: 100000,
+                  maxOutputTokens: 2000,
+                  timeoutMs: 1000,
+                },
+              };
+              const draftId = randomUUID();
+              await drafts.save(ownerId, draftId, {
+                title: 'Provider recovery test',
+                premise: 'SpongeBob wakes in the pineapple with Gary.',
+                storytellingDirection: '',
+                storyteller: { id: 'absurd-action-comedy', revision: 1 },
+                expectedRevision: 0,
+              });
+              const openingId = randomUUID();
+              await createStorytellerOpenings(
+                database,
+                execution,
+                testUsagePolicy(execution.policy.route),
+              ).request(ownerId, draftId, openingId, 1);
+              await createStorytellerRuntime(database, {
+                dispatchAuthority: ({ task }) =>
+                  task.resources.authority.kind === 'effective-usage-policy'
+                    ? task.resources.authority.policy
+                    : null,
+                provider: async (task) => ({
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('provider-opening'),
+                }),
+              }).complete(openingId);
+              const storyId = randomUUID();
+              await stories.startFromCandidate({
+                ownerId,
+                storyId,
+                candidateId: openingId,
+                expectedDraftRevision: 1,
+              });
+              return { accountId, execution, storyId };
+            }
+
+            async function admit(storyId: string) {
+              const before = await stories.read({ ownerId, storyId });
+              assert.ok(before.current.interaction);
+              const generationId = randomUUID();
+              await stories.admitResolution({
+                ownerId,
+                storyId,
+                operationId: generationId,
+                body: {
+                  expectedRevision: before.revision,
+                  submission: {
+                    interactionId: before.current.interaction.id,
+                    answer: { kind: 'choice.v1', optionId: 'ask' },
+                  },
+                },
+              });
+              return generationId;
+            }
+
+            const unsent = await providerStory();
+            const unsentId = await admit(unsent.storyId);
+            let unsentCalls = 0;
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: () => null,
+              provider: async (task) => {
+                unsentCalls++;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('must-not-be-called'),
+                };
+              },
+            }).complete(unsentId);
+            const denied = await stories.read({
+              ownerId,
+              storyId: unsent.storyId,
+            });
+            assert.deepEqual(denied.resolution?.blocker, {
+              kind: 'authority',
+              recovery: 'retry',
+            });
+            assert.equal(denied.resolution?.canRetry, true);
+            assert.equal(unsentCalls, 0);
+            await stories.retryResolution({
+              ownerId,
+              storyId: unsent.storyId,
+              retryId: randomUUID(),
+            });
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (task) => {
+                unsentCalls++;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('retried-unsent'),
+                };
+              },
+            }).complete(unsentId);
+            assert.equal(unsentCalls, 1);
+            assert.equal(
+              (await stories.read({ ownerId, storyId: unsent.storyId }))
+                .revision,
+              2,
+            );
+
+            const spent = await providerStory();
+            const spentId = await admit(spent.storyId);
+            let spentCalls = 0;
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async () => {
+                spentCalls++;
+                return {
+                  kind: 'result',
+                  output: { invalid: true },
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('spent-invalid-output'),
+                };
+              },
+            }).complete(spentId);
+            const invalid = await stories.read({
+              ownerId,
+              storyId: spent.storyId,
+            });
+            assert.deepEqual(invalid.resolution?.blocker, {
+              kind: 'generation',
+              recovery: 'none',
+            });
+            assert.equal(invalid.resolution?.canRetry, false);
+            await assert.rejects(
+              stories.retryResolution({
+                ownerId,
+                storyId: spent.storyId,
+                retryId: randomUUID(),
+              }),
+              { code: 'conflict' },
+            );
+            assert.equal(spentCalls, 1);
+
+            const uncertain = await providerStory();
+            const uncertainId = await admit(uncertain.storyId);
+            let uncertainCalls = 0;
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async () => {
+                uncertainCalls++;
+                return {
+                  kind: 'uncertain',
+                  telemetry: fakeTelemetry('uncertain-delivery'),
+                };
+              },
+            }).complete(uncertainId);
+            const unknown = await stories.read({
+              ownerId,
+              storyId: uncertain.storyId,
+            });
+            assert.deepEqual(unknown.resolution?.blocker, {
+              kind: 'usage-uncertain',
+              recovery: 'operator',
+            });
+            assert.equal(unknown.resolution?.canRetry, false);
+            await assert.rejects(
+              stories.retryResolution({
+                ownerId,
+                storyId: uncertain.storyId,
+                retryId: randomUUID(),
+              }),
+              { code: 'conflict' },
+            );
+            assert.equal(uncertainCalls, 1);
+            assert.equal(
+              (
+                await createStorytellerBudget(database).inspect(
+                  uncertain.accountId,
+                )
+              ).stopped,
+              true,
+            );
+          },
+        );
+        await t.test(
           'worker restart and activity replay settle one finite action exactly once',
           async () => {
             const started = await mechanicalCandidate();
@@ -2781,6 +3607,20 @@ test(
               kind: 'finite',
               ticks: 5,
             });
+            const controlUrl = `${origin}/api/chamber-tools/stories/${started.storyId}/storyteller-control`;
+            const armControl = await fetch(controlUrl, {
+              method: 'PUT',
+              headers: {
+                cookie,
+                origin,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                action: 'arm-hold',
+                expectedRevision: 0,
+              }),
+            });
+            assert.equal(armControl.status, 200);
             const operationId = randomUUID();
             await stories.campaignAction({
               ownerId,
@@ -2815,10 +3655,58 @@ test(
             assert.equal(receiptsBeforeRestart.length, 0);
 
             await restartWorker();
-            let completed = await stories.read({
+            let held = await stories.read({
               ownerId,
               storyId: started.storyId,
             });
+            for (let attempt = 0; attempt < 30; attempt++) {
+              const controlResponse = await fetch(controlUrl, {
+                headers: { cookie },
+              });
+              assert.equal(controlResponse.status, 200);
+              const controlBody = (await controlResponse.json()) as {
+                control: {
+                  revision: number;
+                  state: string;
+                  generationId: string | null;
+                };
+              };
+              if (
+                controlBody.control.state === 'held' &&
+                held.campaign?.actionReceipts[0]?.state === 'generating'
+              ) {
+                assert.deepEqual(Object.keys(controlBody.control).sort(), [
+                  'generationId',
+                  'revision',
+                  'state',
+                  'storyId',
+                ]);
+                const release = await fetch(controlUrl, {
+                  method: 'PUT',
+                  headers: {
+                    cookie,
+                    origin,
+                    'content-type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    action: 'release',
+                    expectedRevision: controlBody.control.revision,
+                    generationId: controlBody.control.generationId,
+                  }),
+                });
+                assert.equal(release.status, 200);
+                break;
+              }
+              await delay(500);
+              held = await stories.read({
+                ownerId,
+                storyId: started.storyId,
+              });
+            }
+            assert.equal(held.campaign?.tick, campaign.tick + 5);
+            assert.equal(held.campaign?.actionReceipts[0]?.state, 'generating');
+
+            let completed = held;
             for (let attempt = 0; attempt < 30; attempt++) {
               if (
                 completed.revision === started.snapshot.revision + 1 &&
@@ -3009,6 +3897,12 @@ test(
             });
           },
         );
+      },
+      {
+        chamberStorytellerControl,
+        storytellerRuntime: {
+          scriptedGate: chamberStorytellerControl.evaluate,
+        },
       },
     );
   },

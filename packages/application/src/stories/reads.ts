@@ -25,6 +25,29 @@ import { createHash } from 'node:crypto';
 import { StoryError, parseStoryIdentifier } from './errors';
 import { decisionPlanSchema, waitPlanSchema } from './plans';
 import { disabledReadCache, type ReadCacheOptions } from '../cache/read-cache';
+import type { DocumentStore } from '@offscreen/documents';
+import { readPassageDocument } from './passage-documents';
+
+type StoryReadOptions = ReadCacheOptions &
+  Readonly<{
+    documentStore?: DocumentStore;
+  }>;
+
+async function resolvePassageContent(
+  row: Readonly<{
+    content: unknown;
+    contentDocumentHash: string | null;
+  }>,
+  storage?: DocumentStore,
+) {
+  if (row.contentDocumentHash === null) {
+    return passageContentSchema.parse(row.content);
+  }
+  if (!storage) {
+    throw new StoryError('unavailable', 'document_store');
+  }
+  return readPassageDocument(storage, row.contentDocumentHash);
+}
 
 type OwnedStory = Readonly<{
   ownerId: string;
@@ -69,9 +92,7 @@ function publicResolutionState(
 }
 
 function publicResolutionEvidence(submission: unknown) {
-  const parsed = z
-    .object({ kind: z.string() })
-    .safeParse(submission);
+  const parsed = z.object({ kind: z.string() }).safeParse(submission);
   return parsed.success && parsed.data.kind === 'pending-action-consequence'
     ? ('pending-action' as const)
     : ('committed' as const);
@@ -137,7 +158,7 @@ function cacheErrorKind(error: unknown) {
 
 export function createStoryReads(
   database: Database,
-  options: ReadCacheOptions = {},
+  options: StoryReadOptions = {},
 ) {
   const cache = options.cache ?? disabledReadCache;
 
@@ -215,6 +236,7 @@ export function createStoryReads(
           id: story.id,
           profile: story.storyteller,
           content: storyPassage.content,
+          contentDocumentHash: storyPassage.contentDocumentHash,
           interaction: storyPassage.interaction,
           activityState: sql<
             string | null
@@ -233,10 +255,16 @@ export function createStoryReads(
         .where(and(eq(story.ownerId, ownerId), boundary))
         .orderBy(desc(story.createdAt), desc(story.id))
         .limit(21);
+      const visibleRows = await Promise.all(
+        rows.slice(0, 20).map(async (row) => ({
+          row,
+          content: await resolvePassageContent(row, options.documentStore),
+        })),
+      );
       return storyListSchema.parse({
-        items: rows.slice(0, 20).map((row) => ({
+        items: visibleRows.map(({ row, content }) => ({
           id: row.id,
-          title: passageContentSchema.parse(row.content).title,
+          title: content.title,
           storyteller:
             row.profile == null
               ? null
@@ -272,6 +300,9 @@ export function createStoryReads(
           const [row] = await tx
             .select({
               id: story.id,
+              forkedFromStoryId: story.forkedFromStoryId,
+              forkedFromPassageId: story.forkedFromPassageId,
+              forkedFromSequence: story.forkedFromSequence,
               storyteller: story.storyteller,
               execution: story.execution,
               revision: story.revision,
@@ -279,6 +310,7 @@ export function createStoryReads(
               items: sql<unknown>`COALESCE((SELECT jsonb_agg(jsonb_build_object('key', i.key, 'label', i.label, 'holderKey', i.holder_key) ORDER BY i.key) FROM story_item i WHERE i.story_id = ${story.id}), '[]'::jsonb)`,
               passageId: storyPassage.id,
               content: storyPassage.content,
+              contentDocumentHash: storyPassage.contentDocumentHash,
               interaction: storyPassage.interaction,
               waitPlan: storyPassage.waitPlan,
               decisionPlan: storyPassage.decisionPlan,
@@ -336,6 +368,10 @@ export function createStoryReads(
             publicationFailure: row.publicationFailure,
             usage: row.usage,
           };
+          const content = await resolvePassageContent(
+            row,
+            options.documentStore,
+          );
           return storySnapshotSchema.parse({
             campaign:
               (await readCampaign(tx, ownerId, storyId)) ??
@@ -365,6 +401,16 @@ export function createStoryReads(
                   }
                 : null),
             id: row.id,
+            lineage:
+              row.forkedFromStoryId === null ||
+              row.forkedFromPassageId === null ||
+              row.forkedFromSequence === null
+                ? null
+                : {
+                    sourceStoryId: row.forkedFromStoryId,
+                    sourcePassageId: row.forkedFromPassageId,
+                    sourceSequence: row.forkedFromSequence,
+                  },
             storyteller:
               row.storyteller == null
                 ? null
@@ -403,7 +449,7 @@ export function createStoryReads(
                   },
             current: {
               id: row.passageId,
-              content: row.content,
+              content,
               interaction: row.interaction,
             },
             resolution:
@@ -464,6 +510,7 @@ export function createStoryReads(
           id: storyPassage.id,
           sequence: storyPassage.sequence,
           content: storyPassage.content,
+          contentDocumentHash: storyPassage.contentDocumentHash,
         })
         .from(story)
         .leftJoin(
@@ -492,8 +539,18 @@ export function createStoryReads(
       }
       const entries = rows.filter((row) => row.id !== null);
       const nextPageStart = entries.at(19);
+      const items = await Promise.all(
+        entries.slice(0, 20).map(async (entry) => ({
+          id: entry.id,
+          sequence: entry.sequence,
+          content: await resolvePassageContent(
+            entry,
+            options.documentStore,
+          ),
+        })),
+      );
       return storyHistorySchema.parse({
-        items: entries.slice(0, 20),
+        items,
         nextBefore:
           entries.length > 20 && nextPageStart ? nextPageStart.sequence : null,
       });

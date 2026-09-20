@@ -190,9 +190,11 @@ export async function insertContinuationPassage(
     input: StoryContinuation;
     responseSource: 'player' | 'default' | null;
     sourceGenerationId?: string | null;
+    passageId?: string;
+    contentDocumentHash?: string;
   },
 ) {
-  const passageId = randomUUID();
+  const passageId = args.passageId ?? randomUUID();
   await tx.insert(storyPassage).values({
     id: passageId,
     storyId: args.storyId,
@@ -209,7 +211,8 @@ export async function insertContinuationPassage(
     dueAt: args.input.wait
       ? sql`clock_timestamp() + ${args.input.wait.realDurationMs} * interval '1 millisecond'`
       : null,
-    content: args.input.content,
+    content: args.contentDocumentHash ? null : args.input.content,
+    contentDocumentHash: args.contentDocumentHash ?? null,
     interaction: args.input.interaction
       ? interactionSchema.parse({
           id: randomUUID(),

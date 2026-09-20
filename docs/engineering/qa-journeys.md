@@ -28,7 +28,7 @@ The catalogue contains:
 
 - offline player entry, available for local execution;
 - timed mechanical DM loop, available with the deterministic pineapple scenario for three state-shaped rounds;
-- finite-action preparation overlap, planned until deterministic early/late release and due-boundary controls can expose the implemented pending-evidence fences repeatably;
+- finite-action preparation overlap, available through deterministic early/pause, late/release/restart, injected-failure/retry and due-boundary API/Chamber paths;
 - quiet activity lifecycle, available for deterministic manual verification of clock waiting, finite accepted continuation and its horizon/cancellation/blocking stops, finite repetition and zero-call execution;
 - activity interruption/blocking, visible but planned until deterministic Chamber controls make the lifecycle reproducible without database edits;
 - activity history and diagnostics, visible but planned until the durable event ledger, structured logger, and deterministic failure controls exist;
@@ -37,12 +37,27 @@ The catalogue contains:
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.
 - exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` exercises an actual pre-story opening and preserves its credential-free packet under a generation-scoped filename. Developer-only GET/PUT endpoints expose owner-scoped inspection and exact hash/revision release or rejection; the offline QA case uses rejection and never authorizes live release.
+- alternate-continuity rehearsal: preserve a supported first decision as a fork, take a different option in each story, and confirm both histories, current passages and lineage remain independently readable. Phase 1 exercises only narrative revision-one checkpoints; a blocked mechanical or historical position is evidence that snapshot coverage is still missing, not permission to copy newer state backward.
+- reusable start package: both the abstract/microbe and conventional rich-content variants are available through the focused provider-free API driver. Together they prove imported-package admission, one final campaign root, exact references/provenance, distinct activation classes, campaign-specific obligation identity, idempotent retry and revision pinning after a reusable package publishes revision two.
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
-The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop now proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. Rate/pause/restart and slow-narration variants still need dedicated catalogue stages before the full checklist is claimed.
+The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. The available overlap journey adds rate/pause, worker-restart, late release, same-generation failure recovery and due-world-boundary fallback. Human pacing and prose quality remain separate judgments.
 
 The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#planned-qa-evidence) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. The versioned catalogue now exposes deterministic calendar projection, the `frost-road.v1` deadline journey and schedule-revision controls; these remain offline scripted evidence rather than a claim about arbitrary generated calendars or seasons.
+
+### Reusable start-package checklist
+
+This checklist remains a durable acceptance target while its Chamber case is being connected:
+
+1. Import a conventional start containing `START.md`, three character identities, two location/lore documents, one player-known narrative thread, one private noncanonical antagonist possibility and one typed conditional obligation. Inspect the package without creating a campaign and confirm every entry retains its declared authority, visibility and activation.
+2. Instantiate it twice. Confirm both campaigns pin the same exact world/rule/start roots but receive deterministic campaign-owned document identities, one selected campaign root and no duplicated scheduled obligation on retry.
+3. Publish a second reusable-start revision. Confirm both existing campaigns remain on the first revision until an explicit operation chooses otherwise.
+4. Import and instantiate an abstract or microbe start through the same operations. Confirm the absent humanoid characters, map, inventory, economy, calendar and quest remain absent rather than being synthesized as empty defaults.
+5. Reject a possibility declared as initial canon, prose declared as an executable obligation, a missing `START.md`, duplicate paths, a path escape, a symbolic link, malformed structured JSON and a rules adapter mismatch.
+6. Export and inspect the resulting campaign root. Shared world/rule bodies remain referenced rather than copied, campaign-owned documents cite package provenance, and no provider attempt, token usage or charge exists.
+
+Until import and instantiation are exposed through the QA catalogue, record these as focused storage/application evidence. A schema-only fixture is not evidence that campaign creation, retry fencing or obligation scheduling works.
 
 ## Run lifecycle
 

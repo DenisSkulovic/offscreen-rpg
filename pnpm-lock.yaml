@@ -53,6 +53,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -136,6 +139,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@offscreen/workflows':
         specifier: workspace:*
         version: link:../../packages/workflows
@@ -170,6 +176,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../db
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../documents
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
@@ -219,6 +228,9 @@ importers:
 
   packages/contracts:
     dependencies:
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../documents
       '@offscreen/game':
         specifier: workspace:*
         version: link:../game
@@ -260,6 +272,22 @@ importers:
       drizzle-kit:
         specifier: 0.31.10
         version: 0.31.10
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/documents:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@offscreen/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 22.20.3
+        version: 22.20.3
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -326,6 +354,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller
@@ -372,6 +403,9 @@ importers:
       '@offscreen/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@offscreen/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller

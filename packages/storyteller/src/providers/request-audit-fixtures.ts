@@ -150,7 +150,12 @@ const character = {
   proficiencyBonus: 2,
   hp: 8,
   maxHp: 8,
-  facts: [{ id: 'location', value: 'harbor-beacon' }],
+  facts: [
+    { id: 'location', value: 'harbor-beacon' },
+    { id: 'beacon-damaged', value: true },
+    { id: 'repair-tools', value: true },
+    { id: 'stranger-at-beacon', value: true },
+  ],
   quantities: [],
 };
 const baseContext = {
@@ -182,11 +187,29 @@ export function createRequestAuditFixtureCases(input: {
     character,
     storyFacts: [],
     tick: 25,
-    offer: {
-      id: '00000000-0000-4000-8000-000000000011',
-      nodes: [],
-    },
-    receipts: [],
+    offer: null,
+    receipts: [
+      {
+        id: '00000000-0000-4000-8000-000000000011',
+        outcome: 'success' as const,
+        text: 'Mara notices the stranger tightening their grip on a concealed blade.',
+        roll: {
+          kind: 'ability' as const,
+          purpose: 'Inspect the stranger’s claim',
+          dice: [12],
+          chosen: 12,
+          modifiers: [
+            { source: 'Wisdom', value: 1 },
+            { source: 'Perception proficiency', value: 2 },
+          ],
+          total: 15,
+          dc: 12,
+          success: true,
+        },
+        effects: [],
+        declarations: [],
+      },
+    ],
   };
   const tasks = {
     'opening-narrative': () =>

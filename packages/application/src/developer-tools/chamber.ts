@@ -1,6 +1,8 @@
 import type { CampaignStart } from '@offscreen/contracts/campaign';
+import { chamberStorytellerControlRequestSchema } from '@offscreen/contracts/chamber';
 import { respondToStorySchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
+import { randomUUID } from 'node:crypto';
 import {
   chamberAllowsResponse,
   chamberOpeningFor,
@@ -15,7 +17,10 @@ import {
   readOwnedStorySource,
   StoryError,
 } from '../stories/index';
-import type { ReadCacheOptions } from '../cache/read-cache';
+import type { StoryApplicationOptions } from '../stories/index';
+import { enqueue } from '../outbox/index';
+import { storytellerTopic } from '../storyteller/records';
+import type { ChamberStorytellerControl } from './storyteller-control';
 
 export { listChamberScenarios };
 
@@ -24,10 +29,12 @@ export { listChamberScenarios };
 // See ../../README.md, Other entrances and misleading names.
 export function createChamber(
   database: Database,
-  options: ReadCacheOptions = {},
+  options: StoryApplicationOptions & {
+    storytellerControl?: ChamberStorytellerControl;
+  } = {},
 ) {
   const stories = createStoryApplication(database, options);
-  const inspector = createChamberInspector(database);
+  const inspector = createChamberInspector(database, options.documentStore);
 
   async function read(args: { ownerId: string; storyId: string }) {
     const snapshot = await stories.read(args);
@@ -44,6 +51,7 @@ export function createChamber(
   }
 
   return {
+    documents: stories.documents,
     campaignSettings: stories.campaignSettings,
     campaignAction: stories.campaignAction,
     campaignControl: stories.campaignControl,
@@ -113,6 +121,15 @@ export function createChamber(
       return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
     read,
+    async fork(args: {
+      ownerId: string;
+      sourceStoryId: string;
+      forkStoryId: string;
+      expectedRevision: number;
+    }) {
+      await stories.fork(args);
+      return read({ ownerId: args.ownerId, storyId: args.forkStoryId });
+    },
     async control(args: {
       ownerId: string;
       storyId: string;
@@ -127,6 +144,68 @@ export function createChamber(
     },
     inspect(args: { ownerId: string; storyId: string }) {
       return inspector.inspect(args);
+    },
+    async readStorytellerControl(args: { ownerId: string; storyId: string }) {
+      await stories.read(args);
+      return options.storytellerControl?.read(args.storyId) ?? null;
+    },
+    async controlStoryteller(args: {
+      ownerId: string;
+      storyId: string;
+      body: unknown;
+    }) {
+      await stories.read(args);
+      const control = options.storytellerControl;
+      if (!control) throw new StoryError('conflict');
+      const request = chamberStorytellerControlRequestSchema.safeParse(
+        args.body,
+      );
+      if (!request.success) throw new StoryError('invalid');
+      const { expectedRevision } = request.data;
+      try {
+        switch (request.data.action) {
+          case 'arm-hold':
+            return control.arm(args.storyId, expectedRevision, 'hold');
+          case 'arm-failure':
+            return control.arm(args.storyId, expectedRevision, 'fail');
+          case 'clear':
+            return control.clear(args.storyId, expectedRevision);
+          case 'release': {
+            const generationId = request.data.generationId;
+            const current = control.read(args.storyId);
+            if (
+              current.revision !== expectedRevision ||
+              current.state !== 'held' ||
+              current.generationId !== generationId
+            ) {
+              throw new Error('storyteller_control_conflict');
+            }
+            await database.db.transaction((tx) =>
+              enqueue(tx, {
+                id: randomUUID(),
+                operationId: generationId,
+                topic: storytellerTopic,
+              }),
+            );
+            return control.release(
+              args.storyId,
+              expectedRevision,
+              generationId,
+            );
+          }
+          default:
+            request.data satisfies never;
+            throw new StoryError('invalid');
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === 'storyteller_control_conflict'
+        ) {
+          throw new StoryError('conflict');
+        }
+        throw error;
+      }
     },
     async startFromCandidate(args: {
       ownerId: string;

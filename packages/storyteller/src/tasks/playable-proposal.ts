@@ -1,21 +1,53 @@
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 
-const text = (maximum: number) => z.string().max(maximum).regex(/\S/);
+const meaningfulText = (minimum: number, maximum: number, description: string) =>
+  z.string().min(minimum).max(maximum).regex(/\S/).describe(description);
 const choice = z.strictObject({
   id: z
     .string()
     .min(1)
     .max(100)
     .regex(/^[a-zA-Z0-9_-]+$/),
-  label: text(500),
+  label: meaningfulText(
+    2,
+    500,
+    'Specific visible player action; never a placeholder or single letter.',
+  ),
   // Player intention, not executable effects or a promised successful outcome.
-  intention: text(2000),
+  intention: meaningfulText(
+    8,
+    2000,
+    'Complete description of what the player attempts; never a placeholder.',
+  ),
+  // Private anticipatory retrieval hints. The application validates these
+  // against the exact captured world catalogue and loads them only if this
+  // option is selected; they are never part of the player-facing offer.
+  worldSections: z
+    .array(z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/))
+    .max(4)
+    .refine((handles) => new Set(handles).size === handles.length, {
+      message: 'World section handles must be unique',
+    })
+    .optional(),
+  // Task-local aliases are resolved through the source task to stable
+  // campaign document identities before a successor context is loaded.
+  campaignDocuments: z
+    .array(z.string().regex(/^d[1-9][0-9]*$/))
+    .max(4)
+    .refine((handles) => new Set(handles).size === handles.length, {
+      message: 'Campaign document handles must be unique',
+    })
+    .optional(),
 });
 
 export const playableChoiceNextSchema = z.strictObject({
   kind: z.literal('choice'),
-  prompt: text(2000),
+  prompt: meaningfulText(
+    5,
+    2000,
+    'Meaningful question or decision prompt shown to the player.',
+  ),
   options: z.array(choice).min(1).max(12),
 });
 export const playableEndNextSchema = z.strictObject({

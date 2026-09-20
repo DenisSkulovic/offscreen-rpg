@@ -4,7 +4,7 @@ The immediate milestone is a solo story with reviewed opening, meaningful offere
 
 ## What exists and what is missing
 
-Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. Mechanical opening review and the offline consequence DM turn now propose and admit fresh private plans through the same deterministic boundary. Consecutive browser rounds, retrieval tools and live-model quality remain unverified. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
+Account/draft/start/history, captured one-shot Storyteller tasks, continuity notes, scripted generation, mechanical receipts, clock controls and manual QA evidence storage exist. Mechanical opening review and the offline consequence DM turn propose and admit fresh private plans through the same deterministic boundary. Focused application/API journeys now complete three consecutive mechanical turns for both pineapple and microbe fixtures through accepted time, receipts, consequence publication and fresh decision ownership. The browser experience, retrieval tools and live-model quality remain unverified. Narrative continuation can produce prose/choices without adjudicating them; that rehearsal path is not proof of the mechanical game.
 
 The next dependency order is:
 
@@ -23,7 +23,7 @@ The Storyteller is a profile, not an execution topology. A deterministic applica
 | Responsibility | Execution | Required information | Excluded authority |
 | --- | --- | --- | --- |
 | Admission and resolution | Pure rules coordinated in a transaction | Captured plan, current state, selected intention, fences, server dice | Model-authored rolls, client-authored effects |
-| Immediate opportunity planning (missing) | Bounded structured DM turn | Current scene, relevant committed facts/character, constraints, recent outcome, profile/settings guidance, relevant rule catalogue | Mutating tools, speculative future facts, unrelated history |
+| Immediate opportunity planning | Bounded structured DM turn | Current scene, relevant committed facts/character, constraints, recent outcome, profile/settings guidance, relevant rule catalogue | Mutating tools, speculative future facts, unrelated history |
 | Consequence DM turn | Focused generation plus deterministic plan admission | Saved receipts, current scene and state, relevant continuity and supported action contract | Rerolls, retroactive success or direct state mutation |
 | Opening | Focused generation plus mechanical planning before review | Premise, starting state, selected profile/settings | A previous story's evidence or actions |
 | Continuity | Validated note patches published with their passage | Existing notes and bounded cited evidence | Treating summaries or dialogue as rules or state |

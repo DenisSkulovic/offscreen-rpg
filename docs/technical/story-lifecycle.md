@@ -1,5 +1,13 @@
 # Story creation, control and completion
 
+## Forked continuities
+
+A story may record that it forked from one exact committed passage in another owned story. The fork is a new story identity with independent mutable state; its lineage is provenance, not a live parent-child synchronization relationship. Creating it performs no inference and cannot copy pending provider work, unsettled mechanics or running timers as completed facts.
+
+The first implementation supports only explicitly validated current checkpoints whose complete authoritative state can be cloned. Historical passages are not sufficient snapshots: current campaign, item, activity and obligation tables may already reflect later events. Arbitrary historical forking therefore depends on revision-scoped state snapshots. Until then, unsupported positions fail instead of combining old prose with newer mechanics.
+
+Future branch navigation may present ancestry and descendants as a tree of alternate continuities. That visualization does not create chapters or change passage semantics.
+
 This document connects account entry, collaborative setup, the first live scene and the end of a story. [Execution](execution.md) defines how accepted commands run; it must not leave creation and recovery to unrelated ad hoc endpoints.
 
 ## Drafts and generated previews

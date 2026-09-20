@@ -22,7 +22,11 @@ import {
   lockStoryById,
   readDatabaseClockMs,
 } from '../stories/persistence';
-import { loadStorytellerContext } from '../storyteller/context';
+import {
+  canonicalContextDependencies,
+  canonicalRuleEvidence,
+  loadStorytellerContext,
+} from '../storyteller/context';
 import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
@@ -37,6 +41,7 @@ import {
 } from './holds';
 
 import { campaignConsequenceTopic } from './topics';
+import type { DocumentStore } from '@offscreen/documents';
 
 export { campaignConsequenceTopic } from './topics';
 
@@ -55,6 +60,7 @@ export async function preparePendingActionNarration(
     intention: string;
     pending: PendingImmediateActionResolution;
   },
+  documentStore?: DocumentStore,
 ) {
   const [passage] = await tx
     .select({ id: storyPassage.id })
@@ -78,6 +84,13 @@ export async function preparePendingActionNarration(
       intention: input.intention,
     },
     projectTick: input.targetTick,
+    ...canonicalContextDependencies(
+      current,
+      documentStore,
+      input.pending.resolution.roll
+        ? canonicalRuleEvidence(['ability-check'])
+        : undefined,
+    ),
   });
   const task = prepareAdmittedStorytellerTask(
     {
@@ -202,6 +215,7 @@ async function admitActionNarration(
   tx: Transaction,
   current: StoryRecord,
   receipt: typeof gameActionReceipt.$inferSelect,
+  documentStore?: DocumentStore,
 ) {
   const [state] = await tx
     .select()
@@ -230,6 +244,11 @@ async function admitActionNarration(
       label: receipt.label,
       intention: receipt.intention,
     },
+    ...canonicalContextDependencies(
+      current,
+      documentStore,
+      receipt.roll ? canonicalRuleEvidence(['ability-check']) : undefined,
+    ),
   });
   const task = prepareAdmittedStorytellerTask(
     {
@@ -311,6 +330,7 @@ async function admitConsequenceNarration(
     label: string;
     intention: string;
   },
+  documentStore?: DocumentStore,
 ) {
   const [state] = await tx
     .select()
@@ -342,6 +362,13 @@ async function admitConsequenceNarration(
       label: receipt.label,
       intention: receipt.intention,
     },
+    ...canonicalContextDependencies(
+      current,
+      documentStore,
+      rolls.length
+        ? canonicalRuleEvidence(['contribution', 'ability-check'])
+        : undefined,
+    ),
   });
   const task = prepareAdmittedStorytellerTask(
     {
@@ -403,6 +430,7 @@ async function admitWorldObligationNarration(
     z.infer<typeof consequenceReceiptSchema>,
     { kind: 'world-obligation' }
   >,
+  documentStore?: DocumentStore,
 ) {
   const [state] = await tx
     .select()
@@ -422,6 +450,7 @@ async function admitWorldObligationNarration(
       label: receipt.label,
       intention: receipt.intention,
     },
+    ...canonicalContextDependencies(current, documentStore),
   });
   const task = prepareAdmittedStorytellerTask(
     {
@@ -484,7 +513,10 @@ async function admitWorldObligationNarration(
 }
 
 /** Idempotently prepares narration after mechanical settlement has committed. */
-export function createConsequenceNarration(database: Database) {
+export function createConsequenceNarration(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
   return async function prepare(operationId: string) {
     await database.db.transaction(async (tx) => {
       const [actionReceipt] = await tx
@@ -502,6 +534,7 @@ export function createConsequenceNarration(database: Database) {
           tx,
           current,
           actionReceipt,
+          documentStore,
         );
         await tx
           .update(gameActionReceipt)
@@ -526,8 +559,18 @@ export function createConsequenceNarration(database: Database) {
       const receipt = consequenceReceiptSchema.parse(intent.receipt);
       const generationId =
         receipt.kind === 'world-obligation'
-          ? await admitWorldObligationNarration(tx, current, receipt)
-          : await admitConsequenceNarration(tx, current, receipt);
+          ? await admitWorldObligationNarration(
+              tx,
+              current,
+              receipt,
+              documentStore,
+            )
+          : await admitConsequenceNarration(
+              tx,
+              current,
+              receipt,
+              documentStore,
+            );
       await tx
         .update(campaignConsequence)
         .set({ generationId })

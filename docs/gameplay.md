@@ -6,7 +6,7 @@ The working approach is one generic progression flow. Walking, noticing a tower,
 
 ## From intention to continuation
 
-The storyteller receives the current situation, relevant memories, character capabilities and campaign settings. It offers contextual intentions and can prepare reusable local activities. Supported rules adjudicate a selected attempt and commit its checks and effects; narration follows only when the accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
+The storyteller receives the current situation, relevant memories, character capabilities, campaign settings and a bounded selection of canonical campaign material. It also receives compact navigation for the exact shared world and rule packages selected by the campaign; those references do not authorize loading an entire setting or rulebook. Canonical discovery is metadata-first: small directly relevant documents may be included whole, while larger or lower-priority files remain discoverable rather than being silently truncated into misleading facts. It offers contextual intentions and can prepare reusable local activities. Supported rules adjudicate a selected attempt and commit its checks and effects; narration follows only when the accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
 
 Time passes. A quiet interval can finish, or a development can interrupt it. The player may respond, delegate or pause; the scope of changing direction between offered choices remains open. A choice can resolve the situation or lead to another stage. Nonresponse uses a permitted character fallback rather than requiring constant attention. In shared play, interacting intentions must resolve into a common, coherent consequence.
 
@@ -43,6 +43,8 @@ The Storyteller selects the dramatic rhythm within the campaign's preferences, a
 - **Pending continuation:** what might happen next and under what circumstances.
 
 A planned arrival is not a completed journey. Changing course may invalidate a prepared encounter on the abandoned route. A restart or repeated click must not apply the same outcome twice.
+
+An authored start may assemble an existing world, rules, characters, relationships, known threads, private possibilities and executable obligations into one reusable starting position. Only content actually present in that start exists: an abstract consciousness or microorganism does not acquire a humanoid body, inventory, map, calendar, job or quest merely because another start uses them. Expected future plots remain possibilities unless play establishes them, while genuinely scheduled requirements use validated obligations. Starting a campaign makes an independent pinned copy of campaign-owned material; later edits to the reusable start do not rewrite a story already in progress.
 
 Important people and objects need consistent identity across appearances. Incidental detail can remain prose. Nobody needs an individual record merely because the world implies they exist.
 

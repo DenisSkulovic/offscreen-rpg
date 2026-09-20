@@ -36,7 +36,9 @@ async function runChamber<T>(
     if (error instanceof StoryError) {
       throw new HttpException(
         { code: error.code },
-        { invalid: 400, not_found: 404, conflict: 409 }[error.code],
+        { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+          error.code
+        ],
       );
     }
     throw new ServiceUnavailableException('Story unavailable');
@@ -133,7 +135,64 @@ export class ChamberToolsController {
       if (error instanceof StoryError) {
         throw new HttpException(
           { code: error.code },
-          { invalid: 400, not_found: 404, conflict: 409 }[error.code],
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
+        );
+      }
+      throw new ServiceUnavailableException('Story unavailable');
+    }
+  }
+
+  @Get('stories/:id/storyteller-control')
+  async inspectStorytellerControl(
+    @Req() request: Request,
+    @Param('id') id: string,
+  ) {
+    const user = await this.identity.requireUser(request.headers);
+    try {
+      const control = await this.stories.readStorytellerControl({
+        ownerId: user.id,
+        storyId: id,
+      });
+      if (!control) throw new HttpException({ code: 'not_found' }, 404);
+      return { control };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (error instanceof StoryError) {
+        throw new HttpException(
+          { code: error.code },
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
+        );
+      }
+      throw new ServiceUnavailableException('Story unavailable');
+    }
+  }
+
+  @Put('stories/:id/storyteller-control')
+  async controlStoryteller(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await this.identity.requireUser(request.headers);
+    try {
+      return {
+        control: await this.stories.controlStoryteller({
+          ownerId: user.id,
+          storyId: id,
+          body,
+        }),
+      };
+    } catch (error) {
+      if (error instanceof StoryError) {
+        throw new HttpException(
+          { code: error.code },
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
         );
       }
       throw new ServiceUnavailableException('Story unavailable');

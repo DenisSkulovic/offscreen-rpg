@@ -20,6 +20,10 @@ import {
   worldObligationProposalSchema,
 } from '@offscreen/game/world-obligations';
 import { storytellerReferenceSchema } from './storytellers';
+import {
+  startPackageReferenceSchema,
+  worldPackageReferenceSchema,
+} from '@offscreen/documents/schema';
 
 export const narrativeTagSchema = z.strictObject({
   id: z.string().regex(/^[a-z0-9-]{1,60}$/),
@@ -366,5 +370,7 @@ export const campaignStartSchema = z.strictObject({
   pace: paceSchema.default({ kind: 'rate', ticks: 1, realMs: 1000 }),
   time: worldTimeDefinitionSchema.default(defaultWorldTimeDefinition),
   worldObligations: z.array(worldObligationProposalSchema).max(50).default([]),
+  worlds: z.array(worldPackageReferenceSchema).max(8).default([]),
+  startPackage: startPackageReferenceSchema.optional(),
 });
 export type CampaignStart = z.infer<typeof campaignStartSchema>;

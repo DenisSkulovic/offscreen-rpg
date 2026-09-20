@@ -12,6 +12,7 @@ import { transitionStorytellerIntentToGeneration } from './holds';
 import { enqueue } from '../outbox/index';
 import { storytellerTopic } from '../storyteller/records';
 import { randomUUID } from 'node:crypto';
+import type { DocumentStore } from '@offscreen/documents';
 
 /**
  * Durable work required by an already-decided campaign transition. These are
@@ -57,6 +58,7 @@ export async function applyCampaignFollowUpIntents(
   state: CampaignRecord,
   intents: readonly CampaignFollowUpIntent[],
   now: number,
+  documentStore?: DocumentStore,
 ) {
   let nextState = state;
   for (const intent of intents) {
@@ -120,6 +122,7 @@ export async function applyCampaignFollowUpIntents(
           intention: intent.intention,
           factualSummary: intent.factualSummary,
           completionEffects: intent.completionEffects,
+          ...(documentStore ? { documentStore } : {}),
         });
         break;
       default:

@@ -8,6 +8,8 @@ import {
   timestamp,
   unique,
   check,
+  foreignKey,
+  index,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { generation } from './generations';
@@ -26,13 +28,60 @@ export const story = pgTable(
     usagePolicy: jsonb('usage_policy').$type<unknown>(),
     continuityNotes: jsonb('continuity_notes').$type<unknown>(),
     activeSceneScope: jsonb('active_scene_scope').$type<unknown>(),
+    documentRootHash: text('document_root_hash'),
+    documentRootRevision: integer('document_root_revision').notNull().default(0),
+    forkedFromStoryId: uuid('forked_from_story_id'),
+    forkedFromPassageId: uuid('forked_from_passage_id'),
+    forkedFromSequence: integer('forked_from_sequence'),
     revision: integer('revision').notNull().default(1),
     viewVersion: integer('view_version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),
   },
-  (t) => [check('story_revision_positive', sql`${t.revision} > 0`)],
+  (t) => [
+    check('story_revision_positive', sql`${t.revision} > 0`),
+    check(
+      'story_document_root_shape',
+      sql`(${t.documentRootHash} IS NULL AND ${t.documentRootRevision} = 0) OR (${t.documentRootHash} ~ '^[0-9a-f]{64}$' AND ${t.documentRootRevision} > 0)`,
+    ),
+    check(
+      'story_fork_lineage_complete',
+      sql`(${t.forkedFromStoryId} IS NULL AND ${t.forkedFromPassageId} IS NULL AND ${t.forkedFromSequence} IS NULL) OR (${t.forkedFromStoryId} IS NOT NULL AND ${t.forkedFromPassageId} IS NOT NULL AND ${t.forkedFromSequence} > 0)`,
+    ),
+    foreignKey({
+      columns: [t.forkedFromStoryId],
+      foreignColumns: [t.id],
+      name: 'story_fork_source_story_fk',
+    }).onDelete('restrict'),
+    index('story_fork_source').on(t.forkedFromStoryId, t.createdAt),
+  ],
+);
+
+export const storyDocumentCommit = pgTable(
+  'story_document_commit',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'restrict' }),
+    operationId: uuid('operation_id').notNull(),
+    requestHash: text('request_hash').notNull(),
+    baseRootHash: text('base_root_hash'),
+    rootHash: text('root_hash').notNull(),
+    rootRevision: integer('root_revision').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('story_document_commit_identity').on(t.storyId, t.operationId),
+    unique('story_document_commit_root').on(t.storyId, t.rootRevision),
+    check(
+      'story_document_commit_hashes',
+      sql`${t.requestHash} ~ '^[0-9a-f]{64}$' AND ${t.rootHash} ~ '^[0-9a-f]{64}$' AND (${t.baseRootHash} IS NULL OR ${t.baseRootHash} ~ '^[0-9a-f]{64}$')`,
+    ),
+    check('story_document_commit_revision', sql`${t.rootRevision} > 0`),
+  ],
 );
 
 // Revision selects the current committed passage. Control/timing state is not
@@ -59,7 +108,8 @@ export const storyPassage = pgTable(
     dueAt: timestamp('due_at', { withTimezone: true, precision: 3 }),
     controlRevision: integer('control_revision').notNull().default(0),
     remainingMs: integer('remaining_ms'),
-    content: jsonb('content').notNull().$type<unknown>(),
+    content: jsonb('content').$type<unknown>(),
+    contentDocumentHash: text('content_document_hash'),
     interaction: jsonb('interaction').$type<unknown>(),
     sourceGenerationId: uuid('source_generation_id').references(
       () => generation.id,
@@ -82,6 +132,10 @@ export const storyPassage = pgTable(
       sql`${t.responseSource} IS NULL OR (${t.response} IS NOT NULL AND ${t.responseSource} IN ('player', 'default'))`,
     ),
     check('story_passage_sequence_positive', sql`${t.sequence} > 0`),
+    check(
+      'story_passage_content_owner',
+      sql`(${t.content} IS NOT NULL AND ${t.contentDocumentHash} IS NULL) OR (${t.content} IS NULL AND ${t.contentDocumentHash} ~ '^[0-9a-f]{64}$')`,
+    ),
     check(
       'story_passage_control_valid',
       sql`${t.controlRevision} >= 0 AND (${t.remainingMs} IS NULL OR (${t.remainingMs} >= 0 AND ${t.waitPlan} IS NOT NULL))`,

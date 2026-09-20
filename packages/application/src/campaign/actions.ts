@@ -53,8 +53,12 @@ import {
 import { readPendingWorldObligations } from './world-obligations';
 import { freezePendingActionResolution } from './action-overlap';
 import { preparePendingActionNarration } from './narration';
+import type { DocumentStore } from '@offscreen/documents';
 
-export function createCampaignActions(database: Database) {
+export function createCampaignActions(
+  database: Database,
+  documentStore?: DocumentStore,
+) {
   return async function act(args: {
     ownerId: string;
     storyId: string;
@@ -434,7 +438,7 @@ export function createCampaignActions(database: Database) {
           label: definition.label,
           intention: definition.intention,
           pending: pendingResolution,
-        });
+        }, documentStore);
       }
       await recordActionExecutionEvent(tx, {
         storyId: current.id,

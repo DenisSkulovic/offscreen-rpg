@@ -21,9 +21,17 @@ import { createStoryReads } from './reads';
 import { createStoryResolution } from './resolution';
 import { createStoryStart, playableOpeningStorySource } from './start';
 import { createStoryTiming } from './timing';
+import { createStoryForks } from './forks';
 import type { ReadCacheOptions } from '../cache/read-cache';
 import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
+import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
+import { createCampaignDocuments } from './documents';
+
+export type StoryApplicationOptions = ReadCacheOptions & {
+  documentStore?: DocumentStore;
+  defaultRules?: RulePackageReference;
+};
 
 export {
   controlledIntervalTopic,
@@ -34,24 +42,46 @@ export { campaignActionTopic } from '../campaign/topics';
 
 export function createStories(
   database: Database,
-  options: ReadCacheOptions = {},
+  options: StoryApplicationOptions = {},
 ) {
   const reads = createStoryReads(database, options);
-  const initializeStory = createStoryInitialization(database);
-  const startPlayableCandidate = createStoryStart(database);
+  const initializeStory = createStoryInitialization(
+    database,
+    options.documentStore,
+    options.defaultRules,
+  );
+  const startPlayableCandidate = createStoryStart(
+    database,
+    options.documentStore,
+    options.defaultRules,
+  );
   const continuation = createStoryContinuation(database);
-  const resolution = createStoryResolution(database);
+  const resolution = createStoryResolution(database, options.documentStore);
   const timing = createStoryTiming(database);
+  const forkCurrent = createStoryForks(database);
+  const documents = options.documentStore
+    ? createCampaignDocuments(database, options.documentStore)
+    : null;
   return {
+    documents,
     campaignSettings: createCampaignSettings(database),
-    campaignAction: createCampaignActions(database),
+    campaignAction: createCampaignActions(database, options.documentStore),
     actionExecutionControl: createActionExecutionControls(database),
     campaignControl: createCampaignControls(database),
     acceptedPlanControl: createAcceptedPlanControls(database),
     worldObligationControl: createWorldObligationControls(database),
-    advanceCampaignActivity: createCampaignActivities(database).advance,
-    advanceCampaignAction: createCampaignActionExecutions(database).advance,
-    prepareCampaignConsequence: createConsequenceNarration(database),
+    advanceCampaignActivity: createCampaignActivities(
+      database,
+      options.documentStore,
+    ).advance,
+    advanceCampaignAction: createCampaignActionExecutions(
+      database,
+      options.documentStore,
+    ).advance,
+    prepareCampaignConsequence: createConsequenceNarration(
+      database,
+      options.documentStore,
+    ),
     list(args: { ownerId: string; before?: string }) {
       return reads.listStories(args);
     },
@@ -65,6 +95,18 @@ export function createStories(
     },
     read(args: { ownerId: string; storyId: string }) {
       return reads.readSnapshot(args);
+    },
+    async fork(args: {
+      ownerId: string;
+      sourceStoryId: string;
+      forkStoryId: string;
+      expectedRevision: number;
+    }) {
+      await forkCurrent(args);
+      return reads.readSnapshot({
+        ownerId: args.ownerId,
+        storyId: args.forkStoryId,
+      });
     },
     /** Worker-only timeout. The lock and database clock arbitrate with player writes. */
     resolveDecision(args: { passageId: string }) {
@@ -169,7 +211,7 @@ export async function readOwnedStorySource(
 /** Ordinary story application surface. Fixture mutation and inspection belong to Chamber. */
 export function createStoryApplication(
   database: Database,
-  options: ReadCacheOptions = {},
+  options: StoryApplicationOptions = {},
 ) {
   const stories = createStories(database, options);
 
@@ -189,6 +231,10 @@ export function createStoryApplication(
   return {
     ...stories,
     read,
+    async fork(args: Parameters<typeof stories.fork>[0]) {
+      await stories.fork(args);
+      return read({ ownerId: args.ownerId, storyId: args.forkStoryId });
+    },
     async retryResolution(args: {
       ownerId: string;
       storyId: string;
@@ -237,3 +283,4 @@ export function createStoryApplication(
 export { StoryError };
 export { playableOpeningStorySource } from './start';
 export { campaignConsequenceTopic };
+export { createCampaignDocuments, knowledgeIndexTopic } from './documents';

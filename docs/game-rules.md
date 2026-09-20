@@ -8,6 +8,16 @@ The initial implementation uses a small, explicitly versioned D&D-style rules su
 
 The DM interprets intent, proposes applicable challenges and narrates outcomes. Code validates the challenge, rolls dice, determines results and applies supported effects. A model cannot choose a die face, reroll a failure, award an unsupported resource or narrate away a committed result. The player's character, resources and completed history survive changes of storyteller.
 
+## Rule libraries and executable adapters
+
+Rules are a reusable, immutable canonical library pinned by exact root and revision when a campaign starts. The default library documents the implemented SRD 5.2.1 subset; a campaign may later adopt another compatible revision or a different supported ruleset explicitly. Campaign-local rulings and optional guidance live in versioned overlays rather than editing the shared library or relying on model memory.
+
+The library is organized like a compact game-master reference, not one giant prompt attachment. A small `RULES.md` orientation identifies the executable adapter, important topics and navigation handles. Each rule page and heading carries deterministic topic metadata such as `ability-check`, `advantage`, `time` or `contribution`. A task recipe selects mandatory sections from its known mechanics without a routing-model call. The Storyteller receives the compact applicable rules and may inspect another exact section under the same bounded operation allowance. The whole rulebook is never injected merely because it exists.
+
+Markdown does not execute mechanics. Every rule package declares an exact engine adapter identity and version. Application admission must have that adapter and validate the proposed plan before code rolls or changes state. Editing prose can change interpretation, examples and campaign rulings; changing a formula, supported effect or state transition requires a supported adapter/schema change. If a required rule or compatible adapter is unavailable, the task holds or narrows instead of inventing mechanics.
+
+Low-cost recipes include the mechanical kernel and exact sections needed for the current operation. Rich recipes may add examples, related rulings and edge cases, but use the same pinned sources and executable authority. Storage remains complete across tiers; only the bounded working set changes. Imported rule material must be licensed for the product or privately supplied by an authorized user, with source and license provenance retained.
+
 Certain ordinary actions can succeed without a check; impossible actions cannot become possible through a lucky roll. Uncertainty with consequences warrants a check. Encounter occurrence is separate from action success: an uneventful road is not evidence that the character failed to travel. Routine checks can produce useful progress without producing a dramatic incident.
 
 ## World-independent foundation

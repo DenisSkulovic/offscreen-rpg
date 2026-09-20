@@ -22,7 +22,11 @@ import {
   storytellerKind,
   storytellerTopic,
 } from './records';
-import { loadStorytellerContext } from './context';
+import {
+  canonicalContextDependencies,
+  canonicalWorldEvidence,
+  loadStorytellerContext,
+} from './context';
 import {
   incrementStoryViewVersion,
   requireCurrentPassage,
@@ -31,6 +35,8 @@ import {
 import { StoryError } from '../stories/errors';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
+import type { DocumentStore } from '@offscreen/documents';
+import { readPassageDocument } from '../stories/passage-documents';
 
 export async function admitStorytellerResolution(
   tx: Transaction,
@@ -39,6 +45,7 @@ export async function admitStorytellerResolution(
     operationId: string;
     expectedRevision: number;
     submission: unknown;
+    documentStore?: DocumentStore;
   },
 ) {
   const { current, operationId, expectedRevision } = input;
@@ -124,8 +131,17 @@ export async function admitStorytellerResolution(
   const published = publishedStorytellerSlice(source.output, part);
   const presentation = playablePresentation(published);
   const offer = interactionSchema.parse(active.interaction);
+  if (active.contentDocumentHash !== null && !input.documentStore) {
+    throw new StoryError('unavailable', 'document_store');
+  }
+  const activeContent = active.contentDocumentHash
+    ? await readPassageDocument(
+        input.documentStore!,
+        active.contentDocumentHash,
+      )
+    : active.content;
   if (
-    !isDeepStrictEqual(presentation.content, active.content) ||
+    !isDeepStrictEqual(presentation.content, activeContent) ||
     !isDeepStrictEqual(presentation.interaction, offer.specification) ||
     published.next.kind !== 'choice'
   ) {
@@ -138,13 +154,40 @@ export async function admitStorytellerResolution(
   if (!selected) {
     throw new StoryError('invalid');
   }
+  const sourceCampaignCatalogue =
+    sourceTask.context.canonicalKnowledge?.catalogue ?? [];
+  const selectedCampaignDocumentIds = (
+    selected.campaignDocuments ?? []
+  ).map((handle) => {
+    const entry = sourceCampaignCatalogue.find(
+      (candidate) => candidate.handle === handle,
+    );
+    if (!entry) {
+      throw new StoryError('invalid');
+    }
+    return entry.documentId;
+  });
   const context = await loadStorytellerContext(tx, {
     storyId: current.id,
     revision: current.revision,
     premise: current.premise,
     notes: current.continuityNotes,
     activeSceneScope: current.activeSceneScope,
-    selected,
+    selected: {
+      id: selected.id,
+      label: selected.label,
+      intention: selected.intention,
+    },
+    ...canonicalContextDependencies(
+      current,
+      input.documentStore,
+      selected.worldSections?.length
+        ? canonicalWorldEvidence(selected.worldSections)
+        : undefined,
+      selectedCampaignDocumentIds.length
+        ? selectedCampaignDocumentIds
+        : undefined,
+    ),
   });
   const task = prepareAdmittedStorytellerTask(
     {

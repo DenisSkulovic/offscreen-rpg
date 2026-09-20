@@ -113,7 +113,11 @@ export async function retryStoryteller(
           .select()
           .from(storytellerAttempt)
           .where(eq(storytellerAttempt.id, record.attemptId));
-        if (attempt && !['settled', 'unsent'].includes(attempt.state)) {
+        // Only work that provably never reached transport can be dispatched
+        // again. A settled provider failure has already consumed this
+        // operation's one-shot allowance; uncertain delivery needs operator
+        // reconciliation rather than another request.
+        if (attempt?.state !== 'unsent') {
           throw new StoryError('conflict');
         }
       }

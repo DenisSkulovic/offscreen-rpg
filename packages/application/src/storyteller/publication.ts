@@ -9,7 +9,7 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
-import { storyResolution } from '@offscreen/db/story-schema';
+import { story, storyResolution } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import { offerSchema } from '@offscreen/game/offers';
 import {
@@ -25,7 +25,10 @@ import {
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { setPublication, storytellerKind } from './records';
 import { translateGeneratedContinuation } from '../generations/generated-continuation';
-import { commitStoryContinuation } from '../stories/continuation';
+import {
+  commitStagedStoryPublication,
+  commitStoryContinuation,
+} from '../stories/continuation';
 import {
   lockOwnedStory,
   insertContinuationPassage,
@@ -44,12 +47,67 @@ import {
   actionProjectedStateDigest,
   pendingImmediateActionResolutionSchema,
 } from '../campaign/action-overlap';
+import type { DocumentStore } from '@offscreen/documents';
+import {
+  publicationPassageId,
+  stageStoryPublicationDocuments,
+  type StagedStoryPublication,
+} from '../stories/passage-documents';
 
 export async function publishStorytellerResult(
   database: Database,
   id: string,
   realDurationMs: (gameDurationMs: number) => number,
+  documentStore?: DocumentStore,
 ) {
+  let stagedDocuments: StagedStoryPublication | undefined;
+  const [candidate] = await database.db
+    .select()
+    .from(generation)
+    .where(and(eq(generation.id, id), eq(generation.kind, storytellerKind)));
+  if (candidate?.state === 'succeeded') {
+    const task = storytellerTaskSchema.parse(candidate.input);
+    const result = validateStorytellerResult(task, candidate.output);
+    if (
+      (task.task === 'continuation' ||
+        task.task === 'consequence' ||
+        task.task === 'pending-consequence') &&
+      !('report' in result)
+    ) {
+      const [preparedResolution] = await database.db
+        .select({ operationId: storyResolution.operationId })
+        .from(storyResolution)
+        .where(eq(storyResolution.generationId, id));
+      if (!preparedResolution) throw new StoryError('invalid');
+      const [current] = await database.db
+        .select({
+          rootHash: story.documentRootHash,
+          rootRevision: story.documentRootRevision,
+          revision: story.revision,
+        })
+        .from(story)
+        .where(eq(story.id, task.source.storyId));
+      if (
+        current?.rootHash &&
+        current.revision === task.source.narrativeRevision &&
+        documentStore
+      ) {
+        stagedDocuments = await stageStoryPublicationDocuments({
+          storage: documentStore,
+          storyId: task.source.storyId,
+          passageId: publicationPassageId(id),
+          sequence: task.source.narrativeRevision + 1,
+          operationId: preparedResolution.operationId,
+          rootHash: current.rootHash,
+          rootRevision: current.rootRevision,
+          content: result.scene.content,
+          changes: result.documentChanges,
+        });
+      } else if (result.documentChanges.length) {
+        throw new StoryError('unavailable', 'document_store');
+      }
+    }
+  }
   await database.db.transaction(async (tx) => {
     const [record] = await tx
       .select()
@@ -194,6 +252,13 @@ export async function publishStorytellerResult(
       }
     }
     if (task.task === 'consequence' || task.task === 'pending-consequence') {
+      if (
+        stagedDocuments &&
+        (current.documentRootHash !== stagedDocuments.baseRootHash ||
+          current.documentRootRevision !== stagedDocuments.baseRootRevision)
+      ) {
+        throw new StoryError('conflict', 'document_root');
+      }
       const [campaignState] = await tx
         .select()
         .from(campaign)
@@ -311,7 +376,20 @@ export async function publishStorytellerResult(
           decision: null,
           sourceGenerationPart: 'current',
         },
+        ...(stagedDocuments
+          ? {
+              passageId: stagedDocuments.passageId,
+              contentDocumentHash: stagedDocuments.passageObjectHash,
+            }
+          : {}),
       });
+      if (stagedDocuments) {
+        await commitStagedStoryPublication(tx, {
+          storyId: current.id,
+          operationId: resolution.operationId,
+          staged: stagedDocuments,
+        });
+      }
       await publishStorytellerNotes(tx, {
         storyId: current.id,
         generationId: id,
@@ -382,6 +460,7 @@ export async function publishStorytellerResult(
       completingDecisionPassageId: undefined,
       sourceGenerationId: id,
       restartActiveScene: result.activeScene?.kind === 'restart-at-current',
+      ...(stagedDocuments ? { stagedDocuments } : {}),
     });
     await setPublication(tx, id, 'published');
   });

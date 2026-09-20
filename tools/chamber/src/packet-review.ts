@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
+import type { DispatchReviewView } from '@offscreen/contracts/chamber';
 import { draftSchema } from '@offscreen/contracts/drafts';
 import type { Database } from '@offscreen/db';
 
@@ -51,14 +52,14 @@ export async function captureHeldOpeningPacket(input: {
     method: 'PUT',
     body: JSON.stringify({ expectedRevision: draft.revision }),
   });
-  let captured: unknown;
+  let captured: DispatchReviewView | undefined;
   for (let read = 0; read < 30; read++) {
     const response = await fetch(
       `${input.apiOrigin}/api/chamber-tools/generations/${generationId}/dispatch-review`,
       { headers: { cookie: input.cookie, origin: input.browserOrigin } },
     );
     if (response.ok) {
-      captured = dispatchReviewResponseSchema.parse(await response.json());
+      captured = dispatchReviewResponseSchema.parse(await response.json()).review;
       break;
     }
     await delay(200);
@@ -84,5 +85,5 @@ export async function captureHeldOpeningPacket(input: {
     encoding: 'utf8',
     flag: 'wx',
   });
-  return { evidencePath, generationId } as const;
+  return { evidencePath, draftId, generationId, review: captured } as const;
 }

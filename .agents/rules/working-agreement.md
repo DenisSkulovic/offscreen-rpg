@@ -20,6 +20,8 @@ Documentation describes the current design. Replace or delete obsolete text in p
 
 Use [the code map](../../docs/engineering/code-navigation.md) to locate the owning flow, then read only the relevant package guide and implementation. Do not reload the entire architecture library for every task.
 
+Before substantially designing or revising Storyteller context, retrieval, memory, tools, agent loops, orchestration, tracing or evaluations, consult the [agentic systems field manual](../../docs/engineering/agentic-systems-field-manual.md). It is an evolving source of research-backed patterns and inspiration, not repository policy, final architecture or a substitute for current primary sources and local evidence. The industry changes rapidly and the manual is intentionally non-exhaustive.
+
 When investigation reveals a non-obvious cross-file relationship, authority boundary, retry rule or implementation limitation that another maintainer would otherwise have to rediscover, preserve the useful conclusion beside its owner during the same change. A local comment explains a local invariant; a package README explains entry points and flow; a technical specification owns the design decision; progress owns current coverage; an active feature plan owns unfinished work. Link between them instead of copying the explanation. Do not record exploration diaries or obvious syntax.
 
 Before adding documentation, find its existing owner. Keep one authoritative explanation per decision. Update or remove affected navigation links and stale claims when moving code or changing behavior. Package guides should give a short route from input to authority to output, identify surprising coupling and link to the defining contract. Add file headers only where they explain otherwise hidden responsibility or constraints; no mandatory header on every file, exhaustive import lists, custom tag vocabulary or duplicate FAQ catalogue.
@@ -51,3 +53,11 @@ The owner's preferred division is Codex for investigation, product/technical des
 Keep one active implementation owner for a slice. Before work, inspect Git status and the current feature checkpoint. Preserve unrelated changes. At handoff, record the current phase, exact next step, relevant checks and unresolved blockers in PLAN.md; rewrite this snapshot rather than appending diary entries. Keep handoffs short enough that a fresh model can act without rereading the conversation.
 
 Use existing tools and local substitutes. Paid models, media, hosted integrations and deployment require explicit authorization. Read [Spending](spending.md). Keep private context, credentials and player data out of Git.
+
+## Git checkpoint hygiene
+
+Git is the durable recovery boundary for this shared POC, not a final cleanup step. Inspect status before each substantial slice and preserve unrelated user changes. After a coherent vertical slice has its documentation/checkpoint updated and its chosen verification is complete, create a descriptive commit before beginning another substantial slice. During long sessions, do not allow more than a few independently meaningful slices or a full day of work to accumulate without a checkpoint commit.
+
+Before committing, review the status, diff summary, untracked files and `git diff --check`; confirm generated output, local data, credentials, provider payloads and temporary diagnostics are excluded. Never manufacture a clean tree by discarding unfamiliar changes. Prefer one honest checkpoint commit over pretending a multi-day dirty tree is a narrowly atomic change; return to smaller responsibility-focused commits afterward.
+
+Push completed checkpoint commits to the configured project remote when the current branch is the established shared branch and the push is a normal fast-forward. Do not force-push, rewrite published history, change remotes, create surprise branches or push credentials. If authentication, branch protection, divergence or remote ownership is uncertain, keep the local commit and report the exact blocker. Record the commit and push state in the handoff when work remains in progress.

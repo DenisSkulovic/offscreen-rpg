@@ -29,6 +29,8 @@ Included:
 - offline golden and anti-example fixtures through the production task/admission/publication path;
 - human review evidence captured in the existing QA/Chamber facilities;
 - prompt and result-contract changes needed to make these qualities inspectable.
+- explicit contrast between reactive ordinary-life play and Storyteller-directed narrative pressure, without making a grand narrative mandatory;
+- separation of mutable creative profile/settings from campaign-owned private narrative direction.
 
 Deferred:
 
@@ -36,6 +38,7 @@ Deferred:
 - long-story recall, owned by storyteller memory and situated recall;
 - full combat, arbitrary rules, autonomous absence and multiplayer judgment;
 - an automated model critic or numerical “fun” score.
+- implementation of narrative-direction storage, editing and world-obligation proposal beyond the existing canonical-storage/runtime owners.
 
 The acceptance rubric is not application authority. Human preference cannot make an invalid plan executable, and a validator cannot certify good writing.
 
@@ -46,6 +49,8 @@ The acceptance rubric is not application authority. Human preference cannot make
 - The player can explain how each offered intention differs before seeing its hidden mechanics.
 - A microbe case uses the same task and admission lifecycle while producing nonhuman options.
 - A quiet case may remain quiet; the Storyteller is not rewarded merely for escalating stakes.
+- A directed quiet-life case may introduce a larger pressure unrelated to the player's immediate routine, while preserving the option to ignore it and without predetermining the outcome.
+- A no-grand-narrative case does not acquire a secret arc merely because routine play lasts a long time or the profile changes.
 - Repeated labels, generic “assess/continue” loops, consequence prose that ignores the receipt and options that promise their own success fail the rubric.
 - Offline golden fixtures and anti-examples are inspectable and reproducible, but are not reported as live-model quality evidence.
 - One owner review records what felt specific, arbitrary, constrained, surprising and undesirable before any live evaluation is proposed.
