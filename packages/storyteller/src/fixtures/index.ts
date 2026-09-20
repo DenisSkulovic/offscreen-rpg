@@ -133,7 +133,10 @@ export function scriptedStorytellerResult(
   if (task.context.mechanicalOpening && task.task === 'opening') {
     return validateStorytellerResult(task, scriptedMechanicalOpening(task));
   }
-  if (task.task === 'consequence') {
+  if (
+    task.task === 'consequence' ||
+    task.task === 'pending-consequence'
+  ) {
     const resolution = task.context.resolution;
     if (!resolution || !task.context.current) {
       throw new Error('Missing committed consequence');

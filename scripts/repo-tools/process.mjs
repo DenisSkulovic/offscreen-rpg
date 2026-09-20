@@ -49,18 +49,16 @@ export function dockerExecutable() {
         ]
       : ['docker'];
   for (const candidate of candidates) {
-    const found = spawnSync(
-      candidate,
-      ['version', '--format', '{{.Client.Version}}'],
-      {
-        cwd: root,
-        encoding: 'utf8',
-        stdio: 'pipe',
-        shell: false,
-      },
-    );
-    if (!found.error && found.status === 0) return candidate;
     if (path.isAbsolute(candidate) && !existsSync(candidate)) continue;
+    // CLI discovery must not contact the daemon. `docker version` does, so a
+    // stopped/inaccessible backend used to be misreported as a missing CLI.
+    const found = spawnSync(candidate, ['--version'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      shell: false,
+    });
+    if (!found.error && found.status === 0) return candidate;
   }
   throw new Error(
     'Docker CLI was not found. See docs/development.md#local-dependencies before repairing Docker Desktop.',

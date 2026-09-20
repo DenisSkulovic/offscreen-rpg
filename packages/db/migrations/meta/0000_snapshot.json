@@ -970,6 +970,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "pending_resolution": {
+          "name": "pending_resolution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preparation_generation_id": {
+          "name": "preparation_generation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "start_tick": {
           "name": "start_tick",
           "type": "bigint",
@@ -1023,6 +1035,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "game_action_execution_preparation_generation_id_generation_id_fk": {
+          "name": "game_action_execution_preparation_generation_id_generation_id_fk",
+          "tableFrom": "game_action_execution",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "preparation_generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },

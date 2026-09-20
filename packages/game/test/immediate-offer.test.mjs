@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   authorizeSituation,
+  actionOverlapEligibility,
   consumePreparedActivityPlan,
   immediateActionContentSchema,
   immediateActionAvailable,
@@ -32,6 +33,36 @@ const character = {
   facts: [{ id: 'exposed', value: true }],
   quantities: [],
 };
+
+test('finite action overlap eligibility fails closed around admitted boundaries', () => {
+  assert.deepEqual(
+    actionOverlapEligibility({
+      resolutionKind: 'check',
+      hasInterveningWorldObligation: false,
+      hasTemporalFence: false,
+      hasCompetingAuthority: false,
+    }),
+    { eligible: true },
+  );
+  assert.deepEqual(
+    actionOverlapEligibility({
+      resolutionKind: 'automatic',
+      hasInterveningWorldObligation: true,
+      hasTemporalFence: false,
+      hasCompetingAuthority: false,
+    }),
+    { eligible: false, reason: 'intervening-world-obligation' },
+  );
+  assert.deepEqual(
+    actionOverlapEligibility({
+      resolutionKind: 'process',
+      hasInterveningWorldObligation: false,
+      hasTemporalFence: false,
+      hasCompetingAuthority: false,
+    }),
+    { eligible: false, reason: 'unsupported-resolution' },
+  );
+});
 
 const content = immediateActionContentSchema.parse({
   version: 1,

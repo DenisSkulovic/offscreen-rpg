@@ -1,5 +1,6 @@
 import {
   immediateActionPlanSchema,
+  pendingImmediateActionResolutionSchema,
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
@@ -7,13 +8,20 @@ import { realMsUntilTick } from '@offscreen/game/time';
 import { projectCampaignClock } from './clock';
 import type { CampaignRecord } from './persistence';
 import type { CampaignFollowUpIntent } from './follow-up-intents';
+import {
+  actionResolutionProjectedDigest,
+  actionResolutionSourceDigest,
+} from './action-overlap';
 
 type ActionExecutionTransitionInput = {
   operationId: string;
   plan: unknown;
   revision: number;
+  startTick: number;
   targetTick: number;
   controllingTick?: number;
+  pendingResolution?: unknown;
+  preparationGenerationId?: string | null;
 };
 
 export type ActionExecutionTransition =
@@ -106,13 +114,39 @@ export function decideActionExecutionTransition(args: {
     };
   }
 
-  const receipt = resolveImmediateAction(
-    characterSchema.parse(state.character),
-    storyFactsSchema.parse(state.storyFacts),
-    plan,
-    execution.operationId,
-    args.rollDie,
-  );
+  const pending = execution.pendingResolution
+    ? pendingImmediateActionResolutionSchema.parse(execution.pendingResolution)
+    : null;
+  if (
+    pending &&
+    pending.sourceStateDigest !==
+      actionResolutionSourceDigest({
+        character: state.character,
+        storyFacts: state.storyFacts,
+        startTick: execution.startTick,
+      })
+  ) {
+    throw new Error('Pending action resolution source fence changed');
+  }
+  if (
+    pending &&
+    pending.projectedStateDigest !==
+      actionResolutionProjectedDigest({
+        resolution: pending.resolution,
+        targetTick: execution.targetTick,
+      })
+  ) {
+    throw new Error('Pending action resolution projection is invalid');
+  }
+  const receipt =
+    pending?.resolution ??
+    resolveImmediateAction(
+      characterSchema.parse(state.character),
+      storyFactsSchema.parse(state.storyFacts),
+      plan,
+      execution.operationId,
+      args.rollDie,
+    );
   return {
     state: 'settled',
     campaign: {
@@ -131,11 +165,19 @@ export function decideActionExecutionTransition(args: {
       tick: execution.targetTick,
       label: plan.label,
     },
-    followUps: [
-      {
-        kind: 'prepare-action-consequence',
-        operationId: execution.operationId,
-      },
-    ],
+    followUps: execution.preparationGenerationId
+      ? [
+          {
+            kind: 'publish-prepared-action-consequence' as const,
+            operationId: execution.operationId,
+            generationId: execution.preparationGenerationId,
+          },
+        ]
+      : [
+          {
+            kind: 'prepare-action-consequence' as const,
+            operationId: execution.operationId,
+          },
+        ],
   };
 }

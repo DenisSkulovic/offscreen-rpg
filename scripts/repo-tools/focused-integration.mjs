@@ -44,7 +44,7 @@ try {
   runPnpm(['turbo', 'run', 'build', '--filter=@offscreen/api-integration'], {
     env: providerFreeEnvironment(),
   });
-  resetTestDatabase({ build: false });
+  await resetTestDatabase({ build: false });
   const testArgs = ['--test', '--test-concurrency=1'];
   if (pattern) testArgs.push(`--test-name-pattern=${pattern}`);
   testArgs.push(

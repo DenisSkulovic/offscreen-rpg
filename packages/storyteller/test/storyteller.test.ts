@@ -502,6 +502,18 @@ test('mechanical opening can offer a durable contribution process', () => {
 test('captured schemas expose only the result for the requested task', () => {
   const initial = opening();
   const resolved = consequence();
+  const pending = prepareStorytellerTask({
+    ...resolved,
+    task: 'pending-consequence',
+    source: {
+      storyId: randomUUID(),
+      narrativeRevision: 2,
+      passageId: resolved.source.passageId,
+      executionId: randomUUID(),
+      targetTick: 5,
+      projectedStateDigest: 'a'.repeat(64),
+    },
+  });
   const continuation = prepareStorytellerTask({
     ...resolved,
     task: 'continuation',
@@ -517,13 +529,14 @@ test('captured schemas expose only the result for the requested task', () => {
     [initial, 1],
     [continuation, 2],
     [resolved, 3],
+    [pending, 3],
   ] as const;
   for (const [task, version] of cases) {
     const schema = JSON.parse(JSON.stringify(task.request.outputSchema));
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 8);
+    assert.equal(task.inputVersion, 9);
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,

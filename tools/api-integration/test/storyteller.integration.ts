@@ -2853,6 +2853,9 @@ test(
               .select({
                 state: gameActionExecution.state,
                 revision: gameActionExecution.revision,
+                pendingResolution: gameActionExecution.pendingResolution,
+                preparationGenerationId:
+                  gameActionExecution.preparationGenerationId,
               })
               .from(gameActionExecution)
               .where(eq(gameActionExecution.operationId, operationId));
@@ -2860,6 +2863,7 @@ test(
               .select({
                 outcome: gameActionReceipt.outcome,
                 roll: gameActionReceipt.roll,
+                generationId: gameActionReceipt.generationId,
               })
               .from(gameActionReceipt)
               .where(eq(gameActionReceipt.operationId, operationId));
@@ -2872,7 +2876,11 @@ test(
               .select({ operationId: campaignConsequence.operationId })
               .from(campaignConsequence)
               .where(eq(campaignConsequence.operationId, operationId));
-            assert.deepEqual(executions, [{ state: 'settled', revision: 1 }]);
+            assert.equal(executions.length, 1);
+            assert.equal(executions[0]?.state, 'settled');
+            assert.equal(executions[0]?.revision, 1);
+            assert.ok(executions[0]?.pendingResolution);
+            assert.ok(executions[0]?.preparationGenerationId);
             assert.deepEqual(
               events.map((event) => event.kind),
               ['started', 'settled'],
@@ -2880,7 +2888,27 @@ test(
             assert.equal(receipts.length, 1);
             assert.equal(receipts[0]?.outcome, publishedReceipt?.outcome);
             assert.deepEqual(receipts[0]?.roll, publishedReceipt?.roll);
-            assert.equal(consequences.length, 1);
+            assert.equal(
+              receipts[0]?.generationId,
+              executions[0]?.preparationGenerationId,
+            );
+            assert.equal(consequences.length, 0);
+            const [prepared] = await database.db
+              .select({ input: generation.input })
+              .from(generation)
+              .where(
+                eq(
+                  generation.id,
+                  requireDefined(
+                    executions[0]?.preparationGenerationId,
+                    'Expected one overlapping preparation',
+                  ),
+                ),
+              );
+            assert.equal(
+              storytellerTaskSchema.parse(prepared?.input).task,
+              'pending-consequence',
+            );
 
             await delay(1100);
             const heldDecision = await stories.read({

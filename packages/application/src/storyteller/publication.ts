@@ -4,6 +4,8 @@ import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignReport,
+  gameActionExecution,
+  gameActionReceipt,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
@@ -38,6 +40,8 @@ import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import { transitionStorytellerHoldToDecision } from '../campaign/holds';
+import { pendingImmediateActionResolutionSchema } from '@offscreen/game/immediate-actions';
+import { actionProjectedStateDigest } from '../campaign/action-overlap';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -152,7 +156,45 @@ export async function publishStorytellerResult(
     if (!resolution || resolution.basePassageId !== task.source.passageId) {
       throw new StoryError('invalid');
     }
-    if (task.task === 'consequence') {
+    if (task.task === 'pending-consequence') {
+      const [execution] = await tx
+        .select()
+        .from(gameActionExecution)
+        .where(eq(gameActionExecution.operationId, task.source.executionId));
+      const [receipt] = await tx
+        .select()
+        .from(gameActionReceipt)
+        .where(eq(gameActionReceipt.operationId, task.source.executionId));
+      // Early preparation is valid but remains private until the exact
+      // execution has settled and promoted this generation to its receipt.
+      if (!receipt || execution?.state !== 'settled') return;
+      const pending = pendingImmediateActionResolutionSchema.parse(
+        execution.pendingResolution,
+      );
+      const [campaignState] = await tx
+        .select()
+        .from(campaign)
+        .where(eq(campaign.storyId, current.id));
+      if (
+        !campaignState ||
+        execution.preparationGenerationId !== id ||
+        receipt.generationId !== id ||
+        execution.storyId !== current.id ||
+        execution.targetTick !== task.source.targetTick ||
+        pending.projectedStateDigest !== task.source.projectedStateDigest ||
+        actionProjectedStateDigest({
+          character: campaignState.character,
+          storyFacts: campaignState.storyFacts,
+          tick: campaignState.tick,
+        }) !== task.source.projectedStateDigest
+      ) {
+        throw new StoryError('invalid');
+      }
+    }
+    if (
+      task.task === 'consequence' ||
+      task.task === 'pending-consequence'
+    ) {
       const [campaignState] = await tx
         .select()
         .from(campaign)

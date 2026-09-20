@@ -8,6 +8,10 @@ import type { ActivityRecord, CampaignRecord } from './persistence';
 import { requestActivityReport } from './reports';
 import type { StoryRecord } from '../stories/persistence';
 import type { OutcomeEffect } from '@offscreen/game/effects';
+import { transitionStorytellerIntentToGeneration } from './holds';
+import { enqueue } from '../outbox/index';
+import { storytellerTopic } from '../storyteller/records';
+import { randomUUID } from 'node:crypto';
 
 /**
  * Durable work required by an already-decided campaign transition. These are
@@ -17,6 +21,11 @@ export type CampaignFollowUpIntent =
   | {
       kind: 'prepare-action-consequence';
       operationId: string;
+    }
+  | {
+      kind: 'publish-prepared-action-consequence';
+      operationId: string;
+      generationId: string;
     }
   | {
       kind: 'prepare-activity-consequence';
@@ -60,6 +69,29 @@ export async function applyCampaignFollowUpIntents(
           now,
         );
         await requestActionNarration(tx, intent.operationId);
+        break;
+      case 'publish-prepared-action-consequence':
+        nextState = await holdCampaignForStorytellerIntent(
+          tx,
+          nextState,
+          intent.operationId,
+          now,
+        );
+        nextState = await transitionStorytellerIntentToGeneration(
+          tx,
+          nextState,
+          intent.operationId,
+          intent.generationId,
+          now,
+        );
+        // A fast preparation may already have attempted publication while its
+        // receipt was private. Settlement gives the same generation a fresh,
+        // idempotent publication wake; a slow execution safely sees it too.
+        await enqueue(tx, {
+          id: randomUUID(),
+          operationId: intent.generationId,
+          topic: storytellerTopic,
+        });
         break;
       case 'prepare-activity-consequence':
         nextState = await holdCampaignForStorytellerIntent(

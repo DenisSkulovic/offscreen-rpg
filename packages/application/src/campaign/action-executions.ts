@@ -159,6 +159,7 @@ export async function settleActionExecution(
     effects: transition.receipt.effects,
     declarations: transition.receipt.declarations,
     roll: transition.receipt.roll,
+    generationId: execution.preparationGenerationId,
   });
   await tx
     .update(gameActionExecution)

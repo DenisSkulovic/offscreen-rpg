@@ -28,7 +28,8 @@ When a controlling scene blocks an accepted itinerary, `activitySituation.accept
 
 - **Opening:** prepares a reviewable beginning. A mechanical opening proposes fresh private plans from the captured character/story-fact seed; validation rejects unsupported or currently unavailable plans before review.
 - **Continuation:** resolves a narrative selection into an immediate scene or a prepared timed arrival. It does not adjudicate general mechanical effects.
-- **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to four fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
+- **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to six fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
+- **Pending consequence:** uses the same output shape but a distinct input purpose that identifies a frozen projected result, execution, target tick and projected-state digest. Its output remains private and non-canonical until application settlement links the exact generation to a matching receipt; the task itself cannot advance time or promote its evidence.
 
 Continuation and consequence output may also declare that the newly published current passage starts a fresh active-scene context. This is a proposal, not direct authority: publication may replace the private anchor only in the same transaction that commits that validated passage against the task's revision fence. `continue` or omission retains the prior anchor; reports and opening review cannot change it.
 

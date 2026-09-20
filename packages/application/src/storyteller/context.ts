@@ -67,6 +67,7 @@ export async function loadStorytellerContext(
     notes: unknown;
     activeSceneScope: unknown;
     selected: { id: string; label: string; intention: string };
+    projectTick?: number;
   },
 ) {
   const notes = continuityNotesSchema.parse(input.notes ?? []);
@@ -237,7 +238,7 @@ export async function loadStorytellerContext(
       ? {
           campaignTime: projectWorldTime(
             acceptedSettings.time,
-            settingsRow.tick,
+            input.projectTick ?? settingsRow.tick,
           ),
         }
       : {}),

@@ -6,6 +6,7 @@ export type StorytellerRequestPurpose = Readonly<{
     | 'opening.mechanical'
     | 'scene.continuation'
     | 'activity.consequence'
+    | 'action.pending-consequence'
     | 'history.report';
   inputContract: string;
   outputContract: string;
@@ -42,6 +43,17 @@ const purposes = {
     promptFragments: ['scene-rules', 'continuity-rules', 'consequence-rules'],
     contextPolicy: 'bounded-scene.v3',
   },
+  pendingConsequence: {
+    id: 'action.pending-consequence',
+    inputContract: 'pending-resolution-context.v1',
+    outputContract: 'activity-consequence.v3',
+    promptFragments: [
+      'scene-rules',
+      'continuity-rules',
+      'pending-consequence-rules',
+    ],
+    contextPolicy: 'bounded-scene.v3',
+  },
   report: {
     id: 'history.report',
     inputContract: 'committed-resolution-context.v1',
@@ -67,6 +79,8 @@ export function describeStorytellerRequestPurpose(
       return purposes.continuation;
     case 'consequence':
       return purposes.consequence;
+    case 'pending-consequence':
+      return purposes.pendingConsequence;
     case 'report':
       return purposes.report;
   }

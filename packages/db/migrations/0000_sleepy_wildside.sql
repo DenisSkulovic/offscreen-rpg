@@ -130,6 +130,8 @@ CREATE TABLE "game_action_execution" (
 	"base_revision" integer NOT NULL,
 	"offer" jsonb NOT NULL,
 	"plan" jsonb NOT NULL,
+	"pending_resolution" jsonb,
+	"preparation_generation_id" uuid,
 	"start_tick" bigint NOT NULL,
 	"target_tick" bigint NOT NULL,
 	"state" text DEFAULT 'running' NOT NULL,
@@ -610,6 +612,7 @@ ALTER TABLE "campaign_report" ADD CONSTRAINT "campaign_report_source_passage_id_
 ALTER TABLE "campaign_report" ADD CONSTRAINT "campaign_report_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "campaign_settings" ADD CONSTRAINT "campaign_settings_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_execution" ADD CONSTRAINT "game_action_execution_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "game_action_execution" ADD CONSTRAINT "game_action_execution_preparation_generation_id_generation_id_fk" FOREIGN KEY ("preparation_generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_execution_event" ADD CONSTRAINT "game_action_execution_event_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_execution_event" ADD CONSTRAINT "game_action_execution_event_execution_id_game_action_execution_operation_id_fk" FOREIGN KEY ("execution_id") REFERENCES "public"."game_action_execution"("operation_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_action_receipt" ADD CONSTRAINT "game_action_receipt_story_id_story_id_fk" FOREIGN KEY ("story_id") REFERENCES "public"."story"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

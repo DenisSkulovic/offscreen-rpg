@@ -5,6 +5,7 @@ import type { Database } from '@offscreen/db';
 import {
   campaign,
   campaignConsequence,
+  gameActionExecution,
   gameActionReceipt,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
@@ -27,6 +28,7 @@ import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { rollSchema } from '@offscreen/game/checks';
 import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
+import type { PendingImmediateActionResolution } from '@offscreen/game/immediate-actions';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
 import {
@@ -37,6 +39,107 @@ import {
 import { campaignConsequenceTopic } from './topics';
 
 export { campaignConsequenceTopic } from './topics';
+
+/**
+ * Admits private narration from a frozen result. It deliberately acquires no
+ * campaign hold: the finite execution still owns time until settlement.
+ */
+export async function preparePendingActionNarration(
+  tx: Transaction,
+  current: StoryRecord,
+  input: {
+    executionId: string;
+    targetTick: number;
+    offer: unknown;
+    label: string;
+    intention: string;
+    pending: PendingImmediateActionResolution;
+  },
+) {
+  const [passage] = await tx
+    .select({ id: storyPassage.id })
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, current.id),
+        eq(storyPassage.sequence, current.revision),
+      ),
+    );
+  if (!passage) throw new Error('Missing pending action passage');
+  const context = await loadStorytellerContext(tx, {
+    storyId: current.id,
+    revision: current.revision,
+    premise: current.premise,
+    notes: current.continuityNotes,
+    activeSceneScope: current.activeSceneScope,
+    selected: {
+      id: input.executionId,
+      label: input.label,
+      intention: input.intention,
+    },
+    projectTick: input.targetTick,
+  });
+  const task = prepareAdmittedStorytellerTask(
+    {
+      task: 'pending-consequence',
+      source: {
+        storyId: current.id,
+        narrativeRevision: current.revision,
+        passageId: passage.id,
+        executionId: input.executionId,
+        targetTick: input.targetTick,
+        projectedStateDigest: input.pending.projectedStateDigest,
+      },
+      profile: storytellerProfileSchema.parse(current.storyteller),
+      execution: executionPolicySchema.parse(current.execution),
+      context: contextInputSchema.parse({
+        ...context,
+        resolution: {
+          character: input.pending.resolution.character,
+          storyFacts: input.pending.resolution.storyFacts,
+          tick: input.targetTick,
+          offer: offerSchema.parse(input.offer),
+          receipts: [
+            {
+              id: input.executionId,
+              outcome: input.pending.resolution.outcome,
+              text: input.pending.resolution.text,
+              roll: input.pending.resolution.roll,
+              effects: input.pending.resolution.effects,
+              declarations: input.pending.resolution.declarations,
+            },
+          ],
+        },
+      }),
+    },
+    current.usagePolicy === null
+      ? null
+      : effectiveUsagePolicySchema.parse(current.usagePolicy),
+  );
+  const generationId = randomUUID();
+  await insertStorytellerTask(tx, {
+    id: generationId,
+    ownerId: current.ownerId,
+    task,
+  });
+  await tx.insert(storyResolution).values({
+    generationId,
+    storyId: current.id,
+    basePassageId: passage.id,
+    baseRevision: current.revision,
+    operationId: generationId,
+    submission: {
+      kind: 'pending-action-consequence',
+      executionId: input.executionId,
+      projectedStateDigest: input.pending.projectedStateDigest,
+    },
+  });
+  await tx
+    .update(gameActionExecution)
+    .set({ preparationGenerationId: generationId })
+    .where(eq(gameActionExecution.operationId, input.executionId));
+  return generationId;
+}
 
 const consequenceReceiptSchema = z.discriminatedUnion('kind', [
   z.strictObject({

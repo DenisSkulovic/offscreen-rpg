@@ -67,6 +67,10 @@ Compose defines application PostgreSQL on localhost:5432, Temporal on localhost:
 
 Temporal uses its [development server](https://docs.temporal.io/cli/command-reference/server) with a persistent SQLite file in a separate volume. The volume mounts its existing home directory so the image's non-root user can write the file. This is local infrastructure, not a production deployment. CI starts both containers and waits for their health checks. Local startup is verified on Windows through Docker Desktop's WSL 2 backend. After installing Docker, reopen terminals so the CLI and credential helper are available on PATH. The scripted opening integration suite exercises saved-request processing and duplicate delivery after worker restart.
 
+Repository launchers also resolve Docker Desktop's standard Windows CLI path directly when their inherited process PATH is stale. CLI discovery uses `docker --version` and does not contact the daemon; a stopped backend, inaccessible named pipe or Docker configuration permission error is therefore reported as that actual runtime failure rather than “Docker CLI was not found.”
+
+Focused integration reset connects to the loopback PostgreSQL service directly through the database package's installed driver. It does not require Docker CLI or named-pipe access once the Compose services are running. Infrastructure lifecycle commands still use Docker Compose.
+
 Use host application processes and Compose dependencies first. Kubernetes comes after a working containerized story slice, when a deployment can demonstrate something useful. The production images and cluster manifests will be built against those actual processes.
 
 ## Checks and boundaries

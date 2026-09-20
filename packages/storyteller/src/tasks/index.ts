@@ -129,10 +129,14 @@ const resultSchemas = {
     scene: consequenceSceneSchema,
     arrivalNotes: continuityPatchSchema.max(0),
   }),
+  'pending-consequence': storytellerResultSchema.extend({
+    scene: consequenceSceneSchema,
+    arrivalNotes: continuityPatchSchema.max(0),
+  }),
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.literal(8),
+  inputVersion: z.literal(9),
   promptVersion: z.literal('storyteller.v3'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -161,6 +165,18 @@ export const storytellerTaskSchema = z.discriminatedUnion('task', [
       storyId: z.uuid(),
       narrativeRevision: z.number().int().positive(),
       passageId: z.uuid(),
+    }),
+  }),
+  z.strictObject({
+    ...common,
+    task: z.literal('pending-consequence'),
+    source: z.strictObject({
+      storyId: z.uuid(),
+      narrativeRevision: z.number().int().positive(),
+      passageId: z.uuid(),
+      executionId: z.uuid(),
+      targetTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      projectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/),
     }),
   }),
   z.strictObject({
@@ -229,7 +245,12 @@ const sceneScopeRules = `Set activeScene.kind to continue while the same detaile
 
 function requestFor(
   input: {
-    task: 'opening' | 'continuation' | 'consequence' | 'report';
+    task:
+      | 'opening'
+      | 'continuation'
+      | 'consequence'
+      | 'pending-consequence'
+      | 'report';
     profile: z.infer<typeof storytellerProfileSchema>;
   },
   context: z.infer<typeof contextInputSchema>,
@@ -242,9 +263,12 @@ function requestFor(
   if (input.task === 'report') {
     taskRules =
       'Write one concise historical report of the supplied committed result. Return only version and report content. Describe the source moment as earlier history when later context exists. Do not propose choices, plans, effects, fact changes, continuity notes, arrivals, time advancement or current-scene claims.';
-  } else if (input.task === 'consequence') {
+  } else if (
+    input.task === 'consequence' ||
+    input.task === 'pending-consequence'
+  ) {
     taskRules =
-      'Create a version-3 scene with next.kind action-plans. Narrate only the already committed resolution and current passage. Never reroll, adjudicate, advance time or add effects to the committed result. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.';
+      `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.`;
   } else if (context.mechanicalOpening) {
     taskRules =
       'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Never roll or apply effects. Explicitly set activityAccess to none or select every proposed process/resume key. Set state to available when at least one plan exists, otherwise held. No arrival notes.';
@@ -267,7 +291,9 @@ function requestFor(
             ...profile,
             taskGuidance:
               tasks[
-                input.task === 'consequence' || input.task === 'report'
+                input.task === 'consequence' ||
+                input.task === 'pending-consequence' ||
+                input.task === 'report'
                   ? 'continuation'
                   : input.task
               ],
@@ -328,7 +354,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 8,
+    inputVersion: 9,
     promptVersion: 'storyteller.v3',
     resources,
     request: requestFor(input, context),
@@ -427,7 +453,10 @@ export function validateStorytellerResult(
       }
     }
   }
-  if (task.task === 'consequence') {
+  if (
+    task.task === 'consequence' ||
+    task.task === 'pending-consequence'
+  ) {
     const resolution = task.context.resolution;
     const next = result.scene.next;
     if (
@@ -475,7 +504,11 @@ export function validateStorytellerResult(
     }
   }
   const expectedVersion =
-    task.task === 'consequence' ? 3 : task.task === 'opening' ? 1 : 2;
+    task.task === 'consequence' || task.task === 'pending-consequence'
+      ? 3
+      : task.task === 'opening'
+        ? 1
+        : 2;
   if (result.scene.version !== expectedVersion) {
     throw new Error('Wrong task output version');
   }
@@ -497,6 +530,7 @@ export function validateStorytellerResult(
     );
     if (
       (task.task !== 'consequence' &&
+        task.task !== 'pending-consequence' &&
         !task.context.mechanicalOpening &&
         (next.options.length < 2 || next.options.length > 5)) ||
       new Set(labels).size !== labels.length

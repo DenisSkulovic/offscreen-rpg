@@ -304,6 +304,85 @@ export const qaJourneyCatalog: readonly QaJourneyCase[] = [
     ],
   }),
   defineCase({
+    id: 'finite-action-overlap',
+    version: 1,
+    name: 'Finite action preparation overlap',
+    purpose:
+      'Prove that one frozen finite result may prepare privately during its wait and publishes only after exact mechanical settlement.',
+    risk: 'Speculative prose may leak future state, reroll mechanics, miss an early/late wake, or bypass a due world rule.',
+    costClass: 'offline',
+    availability: {
+      state: 'planned',
+      reason:
+        'Pending evidence, receipt promotion and publication fences exist, but deterministic Chamber delay/release and due-boundary controls are still required for repeatable manual evidence.',
+    },
+    prerequisites: [
+      'Add deterministic generation delay/release controls for a five-second finite action.',
+      'Expose pending execution, generation, receipt and publication identities without exposing the private outcome to the player.',
+    ],
+    initialScenario: 'pineapple-mechanics.v4',
+    drivers: ['manual-chamber', 'browser-automation'],
+    variants: [],
+    stages: [
+      stage({
+        id: 'early-preparation',
+        name: 'Finish preparation before mechanics',
+        importance: 'poc-blocker',
+        preconditions: [
+          'A five-second eligible action uses a two-second scripted preparation delay.',
+        ],
+        action:
+          'Select the action, inspect it after preparation finishes, then wait for its target.',
+        observableExpectation:
+          'No outcome, effect, fact, passage or next choice appears before the target; the settled result and prepared scene then publish promptly.',
+        authoritativeExpectation:
+          'One frozen draw remains private, settlement creates one matching receipt, and the exact preparation generation publishes once.',
+      }),
+      stage({
+        id: 'late-preparation',
+        name: 'Finish preparation after mechanics',
+        importance: 'poc-blocker',
+        preconditions: [
+          'The same action uses a thirty-second scripted preparation delay.',
+        ],
+        action:
+          'Select the action, wait through its target, inspect the held state, then release preparation.',
+        observableExpectation:
+          'The action completes at five seconds and remains visibly awaiting narration without gaining more fictional time; the scene publishes at release.',
+        authoritativeExpectation:
+          'The saved receipt owns the committed result and required-turn hold while the same generation completes; no second draw or task is created.',
+      }),
+      stage({
+        id: 'due-boundary-fallback',
+        name: 'Fall back at a due world boundary',
+        importance: 'poc-blocker',
+        preconditions: [
+          'A world obligation is due no later than the selected action target.',
+        ],
+        action: 'Select the action and advance to the due boundary.',
+        observableExpectation:
+          'The world rule is not hidden or skipped and no future action outcome leaks.',
+        authoritativeExpectation:
+          'Overlap is ineligible; ordered settlement uses the sequential consequence path without a pending resolution or preparation generation.',
+      }),
+    ],
+    evidenceRequirements: [
+      stateEvidence,
+      {
+        kind: 'overlap-readiness',
+        description:
+          'Execution, frozen-result digest, generation, receipt, hold and publication identities with their readiness order.',
+        required: true,
+      },
+    ],
+    resetPolicy:
+      'Use a fresh story and QA run for each timing order and preserve every earlier run.',
+    nonAssertions: [
+      'This case does not claim that activities, travel, general combat or prose-authored schedules are safe to overlap.',
+      'Scripted latency does not establish live provider speed or prose quality.',
+    ],
+  }),
+  defineCase({
     id: 'quiet-activity-lifecycle',
     version: 1,
     name: 'Quiet activity lifecycle',

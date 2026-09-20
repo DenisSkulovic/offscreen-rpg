@@ -1165,7 +1165,11 @@ function frostRoadConsequence(
 
 export function scriptedMechanicalConsequence(task: StorytellerTask) {
   const { current, resolution } = task.context;
-  if (task.task !== 'consequence' || !current || !resolution) {
+  if (
+    (task.task !== 'consequence' && task.task !== 'pending-consequence') ||
+    !current ||
+    !resolution
+  ) {
     throw new Error('Missing committed consequence');
   }
   const evidence = `p${current.sequence}`;

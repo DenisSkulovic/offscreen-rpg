@@ -296,6 +296,11 @@ export const gameActionExecution = pgTable(
     baseRevision: integer('base_revision').notNull(),
     offer: jsonb('offer').notNull().$type<unknown>(),
     plan: jsonb('plan').notNull().$type<unknown>(),
+    pendingResolution: jsonb('pending_resolution').$type<unknown>(),
+    preparationGenerationId: uuid('preparation_generation_id').references(
+      () => generation.id,
+      { onDelete: 'restrict' },
+    ),
     startTick: bigint('start_tick', { mode: 'number' }).notNull(),
     targetTick: bigint('target_tick', { mode: 'number' }).notNull(),
     state: text('state').notNull().default('running'),

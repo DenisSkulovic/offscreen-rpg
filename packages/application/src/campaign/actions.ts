@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { storyResolution } from '@offscreen/db/story-schema';
 import type { Database } from '@offscreen/db';
@@ -13,6 +13,8 @@ import {
   consumePreparedActivityPlan,
   immediateActionAvailable,
   rebindPreparedResume,
+  resolveImmediateAction,
+  actionOverlapEligibility,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
 import {
@@ -48,6 +50,9 @@ import {
   createAcceptedActivityPlan,
   reenterAcceptedActivityPlan,
 } from './accepted-plans';
+import { readPendingWorldObligations } from './world-obligations';
+import { freezePendingActionResolution } from './action-overlap';
+import { preparePendingActionNarration } from './narration';
 
 export function createCampaignActions(database: Database) {
   return async function act(args: {
@@ -386,6 +391,35 @@ export function createCampaignActions(database: Database) {
       }
       const startTick = selectedState.tick;
       const targetTick = startTick + definition.resolution.durationTicks;
+      const interveningObligations = await readPendingWorldObligations(tx, {
+        storyId: current.id,
+        throughTick: targetTick,
+      });
+      const overlap = actionOverlapEligibility({
+        resolutionKind: definition.resolution.kind,
+        hasInterveningWorldObligation: interveningObligations.length > 0,
+        // No generic temporal opportunity contract is admitted yet. When one
+        // is, its typed fences must feed this decision rather than prose.
+        hasTemporalFence: false,
+        // The story lock, consumed offer and single advancing slot currently
+        // exclude other mechanical writers during this finite execution.
+        hasCompetingAuthority: false,
+      });
+      const pendingResolution = overlap.eligible
+        ? freezePendingActionResolution({
+            character: campaignCharacter(selectedState),
+            storyFacts: campaignStoryFacts(selectedState),
+            startTick,
+            targetTick,
+            resolution: resolveImmediateAction(
+              campaignCharacter(selectedState),
+              campaignStoryFacts(selectedState),
+              definition,
+              args.operationId,
+              () => randomInt(1, 21),
+            ),
+          })
+        : null;
       await tx.insert(gameActionExecution).values({
         operationId: args.operationId,
         storyId: current.id,
@@ -394,9 +428,20 @@ export function createCampaignActions(database: Database) {
         baseRevision: current.revision,
         offer,
         plan: definition,
+        pendingResolution,
         startTick,
         targetTick,
       });
+      if (pendingResolution) {
+        await preparePendingActionNarration(tx, current, {
+          executionId: args.operationId,
+          targetTick,
+          offer,
+          label: definition.label,
+          intention: definition.intention,
+          pending: pendingResolution,
+        });
+      }
       await recordActionExecutionEvent(tx, {
         storyId: current.id,
         executionId: args.operationId,
