@@ -5,6 +5,7 @@ import { createActionExecutionControls } from '../campaign/action-execution-cont
 import { createCampaignControls } from '../campaign/controls';
 import { createCampaignActivities } from '../campaign/activities';
 import { createAcceptedPlanControls } from '../campaign/accepted-plan-controls';
+import { createWorldObligationControls } from '../campaign/world-obligation-controls';
 import {
   campaignConsequenceTopic,
   createConsequenceNarration,
@@ -44,6 +45,7 @@ export function createStories(
     actionExecutionControl: createActionExecutionControls(database),
     campaignControl: createCampaignControls(database),
     acceptedPlanControl: createAcceptedPlanControls(database),
+    worldObligationControl: createWorldObligationControls(database),
     advanceCampaignActivity: createCampaignActivities(database).advance,
     advanceCampaignAction: createCampaignActionExecutions(database).advance,
     prepareCampaignConsequence: createConsequenceNarration(database),

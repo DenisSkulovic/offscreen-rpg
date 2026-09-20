@@ -54,11 +54,13 @@ const obligationIdentitySchema = z.strictObject({
   followUp: z.literal('controlling-scene'),
 });
 
+export const worldObligationDueSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('tick'), tick: tickSchema }),
+  z.strictObject({ kind: z.literal('date'), date: worldDateSchema }),
+]);
+
 export const worldObligationProposalSchema = obligationIdentitySchema.extend({
-  due: z.discriminatedUnion('kind', [
-    z.strictObject({ kind: z.literal('tick'), tick: tickSchema }),
-    z.strictObject({ kind: z.literal('date'), date: worldDateSchema }),
-  ]),
+  due: worldObligationDueSchema,
 });
 export type WorldObligationProposal = z.infer<
   typeof worldObligationProposalSchema

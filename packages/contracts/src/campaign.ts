@@ -16,6 +16,7 @@ import {
 import {
   publicWorldObligationSchema,
   worldConditionSchema,
+  worldObligationDueSchema,
   worldObligationProposalSchema,
 } from '@offscreen/game/world-obligations';
 import { storytellerReferenceSchema } from './storytellers';
@@ -326,6 +327,19 @@ export const acceptedActivityPlanControlSchema = z.strictObject({
   expectedRevision: z.number().int().nonnegative(),
   action: z.literal('cancel-pending'),
 });
+export const worldObligationControlSchema = z.discriminatedUnion('action', [
+  z.strictObject({
+    obligationId: z.uuid(),
+    expectedRevision: z.number().int().positive(),
+    action: z.literal('postpone'),
+    due: worldObligationDueSchema,
+  }),
+  z.strictObject({
+    obligationId: z.uuid(),
+    expectedRevision: z.number().int().positive(),
+    action: z.literal('cancel'),
+  }),
+]);
 export const campaignStartSchema = z.strictObject({
   mechanics: z.boolean().default(false),
   locked: z.boolean().default(false),

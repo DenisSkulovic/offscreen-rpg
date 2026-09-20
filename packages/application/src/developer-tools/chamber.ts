@@ -66,6 +66,7 @@ export function createChamber(
     campaignControl: stories.campaignControl,
     actionExecutionControl: stories.actionExecutionControl,
     acceptedPlanControl: stories.acceptedPlanControl,
+    worldObligationControl: stories.worldObligationControl,
     list(args: { ownerId: string; before?: string }) {
       return stories.list(args);
     },

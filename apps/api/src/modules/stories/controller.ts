@@ -160,6 +160,23 @@ export class StoriesController {
       return this.stories.read({ ownerId, storyId });
     });
   }
+  @Put(':id/world-obligation-controls/:operationId')
+  worldObligationControl(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.worldObligationControl({
+        ownerId,
+        storyId,
+        operationId,
+        body,
+      });
+      return this.stories.read({ ownerId, storyId });
+    });
+  }
   @Put(':id/retries/:retryId')
   retry(
     @Req() request: Request,
