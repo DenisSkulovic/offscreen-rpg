@@ -2793,6 +2793,14 @@ test(
               },
             });
 
+            const preparing = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(preparing.resolution?.evidence, 'pending-action');
+            assert.ok(preparing.campaign?.actionExecution);
+            assert.equal(preparing.campaign?.actionReceipts.length, 0);
+
             await restartWorker();
             await delay(1200);
             const [beforeRestart] = await database.db
