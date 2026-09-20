@@ -12,6 +12,7 @@ import {
   canonicalRuleEvidence,
   createStorytellerRuntime,
   loadCanonicalKnowledge,
+  resolveCanonicalRecallCues,
   searchCanonicalKnowledge,
 } from '@offscreen/application/storyteller';
 import {
@@ -192,6 +193,15 @@ registerStoryConcern(
         const abstractOracle = retrievalOracleCase(
           'gradient-life.no-human-economy',
         );
+        const abstractRecall = await resolveCanonicalRecallCues(storage, {
+          storyId,
+          rootHash: firstRootHash,
+          rootRevision: manifest.revision,
+          cues: [],
+          maxCandidates: abstractOracle.budget.maxCandidates,
+        });
+        assert.deepEqual(abstractRecall.candidates, []);
+        assert.deepEqual(abstractRecall.trace.requested, []);
         const abstractDiscovery = await searchCanonicalKnowledge(storage, {
           storyId,
           rootHash: firstRootHash,
@@ -1119,7 +1129,9 @@ registerStoryConcern(
         const returnOracle = retrievalOracleCase(
           'greywake.patient-tide-current',
         );
-        const returnPaths = new Set(returnManifest.entries.map((entry) => entry.path));
+        const returnPaths = new Set(
+          returnManifest.entries.map((entry) => entry.path),
+        );
         assert.ok(
           [
             ...returnOracle.structuredCues.identityPaths,
@@ -1127,6 +1139,40 @@ registerStoryConcern(
             ...returnOracle.structuredCues.threadPaths,
           ].every((path) => returnPaths.has(path)),
         );
+        const cueReasons = [
+          ...returnOracle.structuredCues.identityPaths.map((path) => ({
+            path,
+            reason: 'identity' as const,
+          })),
+          ...returnOracle.structuredCues.placePaths.map((path) => ({
+            path,
+            reason: 'place' as const,
+          })),
+          ...returnOracle.structuredCues.threadPaths.map((path) => ({
+            path,
+            reason: 'thread' as const,
+          })),
+        ];
+        const recall = await resolveCanonicalRecallCues(storage, {
+          storyId,
+          rootHash: returnTask.context.canonicalKnowledge!.rootHash,
+          rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
+          cues: cueReasons.map(({ path, reason }) => ({
+            documentId: returnManifest.entries.find(
+              (entry) => entry.path === path,
+            )!.documentId,
+            reason,
+          })),
+          maxCandidates: returnOracle.budget.maxCandidates,
+        });
+        assert.ok(
+          recall.candidates.some(
+            (candidate) =>
+              candidate.documentId === promotedThreadDocumentId &&
+              candidate.reasons.includes('thread'),
+          ),
+        );
+        assert.deepEqual(recall.trace.unavailable, []);
         const discovery = await searchCanonicalKnowledge(storage, {
           storyId,
           rootHash: returnTask.context.canonicalKnowledge!.rootHash,
@@ -1170,12 +1216,21 @@ registerStoryConcern(
           storyId,
           rootHash: returnTask.context.canonicalKnowledge!.rootHash,
           rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
-          campaignDocumentIds: [discovery.results[0]!.documentId],
+          recallCues: [
+            {
+              documentId: discovery.results[0]!.documentId,
+              reason: 'thread',
+            },
+          ],
         });
         assert.equal(returnOracle.budget.maxReads, 1);
         assert.deepEqual(discoveredKnowledge.documentSelection.requestedDocumentIds, [
           promotedThreadDocumentId,
         ]);
+        assert.deepEqual(
+          discoveredKnowledge.documentSelection.cueResolution.resolvedDocumentIds,
+          [promotedThreadDocumentId],
+        );
         const discoveredEntry = discoveredKnowledge.catalogue.find(
           (entry) => entry.documentId === promotedThreadDocumentId,
         );

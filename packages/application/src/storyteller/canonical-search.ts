@@ -38,6 +38,98 @@ const searchInputSchema = z.strictObject({
 
 export type CanonicalKnowledgeSearchInput = z.input<typeof searchInputSchema>;
 
+const recallCueSchema = z.strictObject({
+  documentId: z.uuid(),
+  reason: z.enum(['identity', 'place', 'thread']),
+});
+const recallInputSchema = z.strictObject({
+  storyId: z.uuid(),
+  rootHash: z.string().min(1),
+  rootRevision: z.number().int().positive(),
+  cues: z.array(recallCueSchema).max(12),
+  maxCandidates: z.number().int().min(1).max(4).default(4),
+});
+export type CanonicalRecallCue = z.infer<typeof recallCueSchema>;
+export type CanonicalRecallInput = z.input<typeof recallInputSchema>;
+
+/** Resolves already-admitted identities against one captured current root. */
+export async function resolveCanonicalRecallCues(
+  storage: DocumentStore,
+  rawInput: CanonicalRecallInput,
+) {
+  const input = recallInputSchema.parse(rawInput);
+  const manifest = await storage.readManifest(input.rootHash);
+  if (
+    manifest.campaignId !== input.storyId ||
+    manifest.revision !== input.rootRevision
+  ) {
+    throw new Error('Canonical recall root does not match its campaign');
+  }
+  const eligible = new Map(
+    manifest.entries
+      .filter(
+        (entry) =>
+          entry.path.endsWith('.md') &&
+          entry.visibility !== 'developer-private' &&
+          canonicalKnowledgeKinds.has(entry.kind),
+      )
+      .map((entry) => [entry.documentId, entry]),
+  );
+  const grouped = new Map<string, CanonicalRecallCue['reason'][]>();
+  for (const cue of input.cues) {
+    const reasons = grouped.get(cue.documentId) ?? [];
+    if (!reasons.includes(cue.reason)) reasons.push(cue.reason);
+    grouped.set(cue.documentId, reasons);
+  }
+  const candidates: Array<{
+    documentId: string;
+    revision: number;
+    path: string;
+    kind: string;
+    authority: string;
+    visibility: string;
+    reasons: CanonicalRecallCue['reason'][];
+  }> = [];
+  const unavailable: Array<{
+    documentId: string;
+    reasons: CanonicalRecallCue['reason'][];
+    reason: 'not-current-or-readable' | 'candidate-limit';
+  }> = [];
+  for (const [documentId, reasons] of grouped) {
+    const entry = eligible.get(documentId);
+    if (!entry) {
+      unavailable.push({
+        documentId,
+        reasons,
+        reason: 'not-current-or-readable',
+      });
+      continue;
+    }
+    if (candidates.length >= input.maxCandidates) {
+      unavailable.push({ documentId, reasons, reason: 'candidate-limit' });
+      continue;
+    }
+    candidates.push({
+      documentId,
+      revision: entry.revision,
+      path: entry.path,
+      kind: entry.kind,
+      authority: entry.authority,
+      visibility: entry.visibility,
+      reasons,
+    });
+  }
+  return {
+    candidates,
+    trace: {
+      requested: input.cues,
+      resolvedDocumentIds: candidates.map((candidate) => candidate.documentId),
+      unavailable,
+      maxCandidates: input.maxCandidates,
+    },
+  };
+}
+
 function normalize(value: string) {
   return value
     .normalize('NFKC')

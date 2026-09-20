@@ -35,6 +35,8 @@ import { readPassageDocument } from '../stories/passage-documents';
 import {
   canonicalKnowledgeKinds,
   canonicalKnowledgePriority,
+  resolveCanonicalRecallCues,
+  type CanonicalRecallCue,
 } from './canonical-search';
 const maximumCanonicalCatalogueEntries = 64;
 const maximumCanonicalDocuments = 8;
@@ -437,6 +439,7 @@ export async function loadCanonicalKnowledge(
     rootRevision: number;
     librarySectionSelection?: CanonicalLibrarySectionSelection;
     campaignDocumentIds?: CanonicalCampaignDocumentSelection;
+    recallCues?: CanonicalRecallCue[];
   },
 ) {
   const manifest = await storage.readManifest(input.rootHash);
@@ -486,9 +489,19 @@ export async function loadCanonicalKnowledge(
       (canonicalKnowledgePriority.get(right.entry.kind) ?? 99);
     return priority || left.entry.path.localeCompare(right.entry.path);
   });
-  const requestedDocumentIds = campaignDocumentSelectionSchema.parse(
-    input.campaignDocumentIds ?? [],
-  );
+  const cueResolution = await resolveCanonicalRecallCues(storage, {
+    storyId: input.storyId,
+    rootHash: input.rootHash,
+    rootRevision: input.rootRevision,
+    cues: input.recallCues ?? [],
+    maxCandidates: maximumSelectedCampaignDocuments,
+  });
+  const requestedDocumentIds = campaignDocumentSelectionSchema.parse([
+    ...new Set([
+      ...cueResolution.candidates.map((candidate) => candidate.documentId),
+      ...(input.campaignDocumentIds ?? []),
+    ]),
+  ]);
   const byDocumentId = new Map(
     records.map((record) => [record.entry.documentId, record]),
   );
@@ -563,6 +576,7 @@ export async function loadCanonicalKnowledge(
     catalogueTruncated: eligible.length > selectedEntries.length,
     documents,
     documentSelection: {
+      cueResolution: cueResolution.trace,
       requestedDocumentIds,
       loadedHandles: requestedRecords
         .filter((record) => loaded.has(record.handle))
@@ -589,6 +603,7 @@ export function canonicalContextDependencies(
   documentStore?: DocumentStore,
   librarySectionSelection?: CanonicalLibrarySectionSelection,
   campaignDocumentIds?: CanonicalCampaignDocumentSelection,
+  recallCues?: CanonicalRecallCue[],
 ) {
   if (!documentStore) {
     return {};
@@ -604,6 +619,7 @@ export function canonicalContextDependencies(
               ? { librarySectionSelection }
               : {}),
             ...(campaignDocumentIds ? { campaignDocumentIds } : {}),
+            ...(recallCues?.length ? { recallCues } : {}),
           },
         }
       : {}),
@@ -649,6 +665,7 @@ export async function loadStorytellerContext(
       rootRevision: number;
       librarySectionSelection?: CanonicalLibrarySectionSelection;
       campaignDocumentIds?: CanonicalCampaignDocumentSelection;
+      recallCues?: CanonicalRecallCue[];
     };
   },
 ) {
@@ -794,6 +811,9 @@ export async function loadStorytellerContext(
           : {}),
         ...(input.canonical.campaignDocumentIds
           ? { campaignDocumentIds: input.canonical.campaignDocumentIds }
+          : {}),
+        ...(input.canonical.recallCues
+          ? { recallCues: input.canonical.recallCues }
           : {}),
       })
     : undefined;

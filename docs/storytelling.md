@@ -26,6 +26,8 @@ Unanticipated returns require discovery rather than permanent prompt inclusion. 
 
 Different questions deserve different memory work. Current possession or health comes from exact state; a returning person or place begins from admitted identity and relationship links; remembered wording expands an exact source; a paraphrased callback may need hybrid search; and a broad “what has shaped this region?” request may justify a separately budgeted synthesis across many records. These routes share canon and provenance but not necessarily cost. A richer tier may investigate more leads; it cannot receive a more favorable or different truth.
 
+When the application already knows that a current character, place or narrative thread is relevant, it supplies that admitted stable identity directly. The current canonical version becomes a deterministic candidate before any text search, and the task records whether each cue resolved and why it was selected. This is not entity extraction from whatever the player happened to type: unknown wording remains an explicit search or exploration problem, and a stale identity cannot silently select a similarly named record.
+
 Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves. Paying for a stronger model should improve the quality of interpretation, not purchase a better chance of success.
 
 ## Developments and choices

@@ -113,6 +113,30 @@ const canonicalLibrarySelectionTraceSchema = z.strictObject({
   usedBytes: z.number().int().nonnegative().max(32 * 1024),
 });
 const canonicalDocumentSelectionTraceSchema = z.strictObject({
+  cueResolution: z.strictObject({
+    requested: z
+      .array(
+        z.strictObject({
+          documentId: z.uuid(),
+          reason: z.enum(['identity', 'place', 'thread']),
+        }),
+      )
+      .max(12),
+    resolvedDocumentIds: z.array(z.uuid()).max(4),
+    unavailable: z
+      .array(
+        z.strictObject({
+          documentId: z.uuid(),
+          reasons: z
+            .array(z.enum(['identity', 'place', 'thread']))
+            .min(1)
+            .max(3),
+          reason: z.enum(['not-current-or-readable', 'candidate-limit']),
+        }),
+      )
+      .max(12),
+    maxCandidates: z.literal(4),
+  }),
   requestedDocumentIds: z.array(z.uuid()).max(4),
   loadedHandles: z
     .array(z.string().regex(/^d[1-9][0-9]*$/))
