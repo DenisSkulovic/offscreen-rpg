@@ -54,6 +54,16 @@ test('story publication stores one source passage and revisioned canonical chang
         body: 'The western wall has collapsed.',
         reason: 'The narrated attack changed the city.',
       },
+      {
+        operation: 'create',
+        path: 'identities/people/ash-watcher.md',
+        kind: 'identity',
+        authority: 'canon',
+        visibility: 'player-known',
+        title: 'The ash watcher',
+        body: 'A soot-covered witness remained beside the western gate.',
+        reason: 'The witness became relevant beyond the passing scene.',
+      },
     ],
   });
   const createdManifest = await storage.readManifest(created.rootHash);
@@ -63,7 +73,16 @@ test('story publication stores one source passage and revisioned canonical chang
   assert.ok(loreEntry);
   assert.equal(createdManifest.previousRootHash, baseRootHash);
   assert.equal(createdManifest.revision, 2);
-  assert.equal(createdManifest.entries.length, 2);
+  assert.equal(createdManifest.entries.length, 3);
+  const identityEntry = createdManifest.entries.find(
+    (entry) => entry.path === 'identities/people/ash-watcher.md',
+  );
+  assert.ok(identityEntry);
+  assert.equal(identityEntry.kind, 'identity');
+  const identity = await storage.readDocument(identityEntry.objectHash);
+  assert.deepEqual(identity.envelope.sources, [
+    { documentId: created.passageId, revision: 1 },
+  ]);
   const lore = await storage.readDocument(loreEntry.objectHash);
   assert.deepEqual(lore.envelope.sources, [
     { documentId: created.passageId, revision: 1 },
@@ -101,7 +120,35 @@ test('story publication stores one source passage and revisioned canonical chang
   assert.ok(revisedEntry);
   assert.equal(revisedEntry.revision, 2);
   assert.equal(revisedManifest.previousRootHash, created.rootHash);
-  assert.equal(revisedManifest.entries.length, 3);
+  assert.equal(revisedManifest.entries.length, 4);
+
+  await assert.rejects(
+    stageStoryPublicationDocuments({
+      storage,
+      storyId,
+      passageId: publicationPassageId(randomUUID()),
+      sequence: 4,
+      operationId: randomUUID(),
+      rootHash: revised.rootHash,
+      rootRevision: 3,
+      content: passage('A malformed promotion'),
+      changes: [
+        {
+          operation: 'revise',
+          documentId: loreEntry.documentId,
+          expectedRevision: 2,
+          path: 'identities/people/emberfall.md',
+          kind: 'identity',
+          authority: 'canon',
+          visibility: 'player-known',
+          title: 'Emberfall is not a person',
+          body: 'A location identity cannot be silently recast as a person.',
+          reason: 'Exercise stable logical document kinds.',
+        },
+      ],
+    }),
+    (error) => error?.reason === 'document_kind',
+  );
 
   await assert.rejects(
     stageStoryPublicationDocuments({

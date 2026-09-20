@@ -128,11 +128,13 @@ export async function stageStoryPublicationDocuments(args: {
       change.operation === 'revise'
         ? entries.get(change.documentId)
         : undefined;
-    if (
-      change.operation === 'revise' &&
-      (!existing || existing.revision !== change.expectedRevision)
-    ) {
-      throw new StoryError('conflict', 'document_revision');
+    if (change.operation === 'revise') {
+      if (!existing || existing.revision !== change.expectedRevision) {
+        throw new StoryError('conflict', 'document_revision');
+      }
+      if (existing.kind !== change.kind || !existing.path.endsWith('.md')) {
+        throw new StoryError('conflict', 'document_kind');
+      }
     }
     const documentId = publicationChangedDocumentId(
       args.operationId,
