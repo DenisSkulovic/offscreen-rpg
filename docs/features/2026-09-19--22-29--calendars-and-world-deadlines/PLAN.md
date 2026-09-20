@@ -49,6 +49,8 @@ Exit: a due condition can interrupt either accepted execution exactly once, incl
 
 ### K2b — Presentation, revisions and connected rehearsal
 
+Status: active. Controlling-scene preparation/publication now reuses the existing consequence lifecycle; schedule revisions, equal-tick coalescing and connected rehearsal remain.
+
 Prepare and publish the obligation's controlling scene under the retained hold, then explicitly revalidate/resume or replace interrupted work. Add typed postpone/cancel revisions, stale-wake rejection, coalescing for equal-tick obligations, optional non-controlling reports, Chamber controls and the connected 55-day deadline/winter rehearsal. Storyteller context receives only relevant visible obligations and active conditions.
 
 Exit: the full K2 acceptance and failure/retry matrix is connected; K2 planned QA variants become available only where their driver can reproduce them.
@@ -63,11 +65,11 @@ Exit: the full K2 acceptance and failure/retry matrix is connected; K2 planned Q
 
 ## Current checkpoint
 
-- Phase: K2a implemented on base `400a143`; K1 remains complete. K2b presentation, schedule revisions and connected rehearsal are next before deliberate-time T3 overlap.
+- Phase: K2b active on base `8547de8`; K1/K2a are complete. Controlling obligation scenes now transfer their hold through the existing consequence generation/publication lifecycle. Implement schedule revisions, equal-tick coalescing and the connected rehearsal next before deliberate-time T3 overlap.
 - Base: implementation followed deliberate-time T2 at `2bb8d10`; this checkpoint is awaiting its K1 commit.
 - Implemented: K1 calendar definitions/projection plus K2a finite authored obligations, compile-once tick/date admission, exact/described/hidden visibility, typed world-condition effects, durable firing receipts, nearest-boundary action/activity wake clamping, hard-cutoff equality ordering, progress-preserving interruption, independent controlling holds, public condition/schedule/history projection and compact Storyteller conditions.
-- Boundary: the monotonic campaign tick remains authority. Obligations advance only with accepted execution; idle and paused campaigns donate no time. K2a intentionally leaves the fired controlling hold unresolved because scene presentation, re-entry, postponement/cancellation and equal-tick coalescing belong to K2b.
+- Boundary: the monotonic campaign tick remains authority. Obligations advance only with accepted execution; idle and paused campaigns donate no time. A fired obligation owns the hold until preparation transfers it to one consequence generation, and publication transfers it to the exact offered decision. Postponement/cancellation and equal-tick coalescing remain K2b work.
 - Benchmark reasoning: the Ember/Rain/Frost fixture proves unequal-month arithmetic and exact 55-day month addition. Ordinal Bloom days and elapsed cell cycles exercise non-Earth and abstract worlds without requiring human calendar concepts.
-- Verification: 32/32 game tests passed, including calendar and obligation admission/visibility/condition policy; the focused application transition test proves hard-cutoff equality prevents finite-action resolution. Game, database, contracts, Storyteller and application builds passed; application and web affected-package typechecks passed. The action/activity database interruption journey has not yet been run. No provider calls were made.
-- Open scope: K2b controlling-scene publication/re-entry, typed postponement/cancellation, equal-tick coalescing, stale-wake recovery and connected Chamber evidence; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
+- Verification: prior K2a evidence remains; 33/33 Storyteller tests and the focused application cutoff test pass after adding obligation consequence tasks. Storyteller and application compile. The connected action/activity database interruption and publication journey has not yet been run. No provider calls were made.
+- Open scope: K2b typed postponement/cancellation, equal-tick coalescing, stale-wake recovery and connected Chamber evidence; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

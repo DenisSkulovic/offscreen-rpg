@@ -123,6 +123,7 @@ export async function settleActionExecution(
     const interruptedCampaign = controllingObligation
       ? await fireWorldObligation(
           tx,
+          current,
           transition.campaign,
           controllingObligation,
           now,

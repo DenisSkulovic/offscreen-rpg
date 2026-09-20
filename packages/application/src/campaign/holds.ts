@@ -130,6 +130,40 @@ export async function transitionStorytellerIntentToGeneration(
   return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
 }
 
+/** Transfer a fired world-event freeze to its exact preparation generation. */
+export async function transitionWorldObligationHoldToGeneration(
+  tx: Transaction,
+  state: CampaignRecord,
+  obligationId: string,
+  generationId: string,
+  now: number,
+) {
+  const holds = campaignHoldsSchema.parse(state.holds);
+  const ownsEvent = holds.some(
+    (hold) =>
+      hold.kind === 'world-obligation' &&
+      hold.obligationId === obligationId,
+  );
+  if (!ownsEvent) {
+    throw new Error('World obligation does not own the campaign hold');
+  }
+  const nextHolds = campaignHoldsSchema.parse([
+    ...holds.filter(
+      (hold) =>
+        !(
+          hold.kind === 'world-obligation' &&
+          hold.obligationId === obligationId
+        ),
+    ),
+    { kind: 'storyteller', generationId, reason: 'required-turn' },
+  ]);
+  await tx
+    .update(campaign)
+    .set({ clockAnchorAt: new Date(now), holds: nextHolds })
+    .where(eq(campaign.storyId, state.storyId));
+  return { ...state, clockAnchorAt: new Date(now), holds: nextHolds };
+}
+
 /** Publication transfers the freeze from model work to the offered player choice. */
 export async function transitionStorytellerHoldToDecision(
   tx: Transaction,

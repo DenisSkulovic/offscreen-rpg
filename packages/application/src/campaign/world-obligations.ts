@@ -2,16 +2,21 @@ import { randomUUID } from 'node:crypto';
 import { and, asc, eq, lte } from 'drizzle-orm';
 import {
   campaign,
+  campaignConsequence,
   worldObligation,
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
+import { storyPassage } from '@offscreen/db/story-schema';
 import {
   applyWorldObligationCondition,
   worldObligationSchema,
 } from '@offscreen/game/world-obligations';
 import type { Transaction } from '../outbox/index';
+import { enqueue } from '../outbox/index';
+import type { StoryRecord } from '../stories/persistence';
 import { campaignHoldsSchema } from './holds';
 import type { CampaignRecord } from './persistence';
+import { campaignConsequenceTopic } from './topics';
 
 export type WorldObligationRecord = typeof worldObligation.$inferSelect;
 
@@ -37,6 +42,7 @@ export async function readNearestPendingWorldObligation(
 /** Commits one due obligation and its controlling hold exactly once. */
 export async function fireWorldObligation(
   tx: Transaction,
+  current: StoryRecord,
   state: CampaignRecord,
   record: WorldObligationRecord,
   now: number,
@@ -80,6 +86,36 @@ export async function fireWorldObligation(
     kind: 'fired',
     label: obligation.label,
     details: { consequence: obligation.consequence },
+  });
+  const [passage] = await tx
+    .select({ id: storyPassage.id })
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, current.id),
+        eq(storyPassage.sequence, current.revision),
+      ),
+    );
+  if (!passage) {
+    throw new Error('Missing current passage for world obligation');
+  }
+  await tx.insert(campaignConsequence).values({
+    operationId: obligation.id,
+    storyId: state.storyId,
+    passageId: passage.id,
+    baseRevision: current.revision,
+    receipt: {
+      kind: 'world-obligation',
+      passageId: passage.id,
+      operationId: obligation.id,
+      label: obligation.label,
+      intention: `${obligation.label}: ${obligation.consequence.condition.label} is now ${String(obligation.consequence.condition.value)}.`,
+    },
+  });
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId: obligation.id,
+    topic: campaignConsequenceTopic,
   });
   await tx
     .update(campaign)

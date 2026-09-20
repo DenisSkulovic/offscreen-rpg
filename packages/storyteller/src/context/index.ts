@@ -118,7 +118,7 @@ export const contextInputSchema = z.strictObject({
       character: characterSchema,
       storyFacts: storyFactsSchema.default([]),
       tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-      offer: offerSchema,
+      offer: offerSchema.nullable(),
       receipts: z
         .array(
           z.strictObject({

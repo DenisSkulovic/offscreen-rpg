@@ -69,6 +69,7 @@ export async function applyCampaignFollowUpIntents(
           now,
         );
         await requestConsequenceNarration(tx, intent.current, {
+          kind: 'activity',
           passageId: intent.passageId,
           operationId: intent.activityId,
           afterSegment: intent.afterSegment,

@@ -630,6 +630,7 @@ export function createCampaignActivities(database: Database) {
           });
           await fireWorldObligation(
             tx,
+            current,
             settled.state,
             controllingObligation,
             now,
