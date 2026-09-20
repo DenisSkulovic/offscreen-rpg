@@ -22,6 +22,7 @@ export function projectCampaignClock(
   eligibility: CampaignClockEligibility,
   held: boolean,
   instantTargetTick = state.tick,
+  controllingTick?: number,
 ): { clock: TickProgress; pace: Pace } {
   const pace = paceSchema.parse(state.clockPace);
   const acceptedActivityOwnsClock =
@@ -41,10 +42,12 @@ export function projectCampaignClock(
         : 'held',
     pace,
     now,
-    maximumTicks:
+    maximumTicks: Math.min(
       eligibility.kind === 'accepted-action' || pace.kind === 'instant'
         ? instantTargetTick
         : Number.MAX_SAFE_INTEGER,
+      controllingTick ?? Number.MAX_SAFE_INTEGER,
+    ),
   });
   if (clock.elapsedTicks < state.tick) {
     throw new Error('Campaign clock is behind its settled frontier');

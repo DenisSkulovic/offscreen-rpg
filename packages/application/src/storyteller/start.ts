@@ -2,7 +2,14 @@ import {
   campaignStartSchema,
   campaignSettingsSchema,
 } from '@offscreen/contracts/campaign';
-import { campaignSettings } from '@offscreen/db/campaign-schema';
+import {
+  campaignSettings,
+  worldObligation,
+} from '@offscreen/db/campaign-schema';
+import {
+  compileWorldObligation,
+  worldObligationSchema,
+} from '@offscreen/game/world-obligations';
 import { isDeepStrictEqual } from 'node:util';
 import { initializeCampaign } from '../campaign/settings';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
@@ -124,10 +131,29 @@ export async function startStorytellerCandidate(
       );
     if (initialSettings) {
       const accepted = campaignSettingsSchema.parse(initialSettings.settings);
+      const acceptedObligations = await tx
+        .select({ definition: worldObligation.definition })
+        .from(worldObligation)
+        .where(eq(worldObligation.storyId, input.storyId));
+      const requestedObligations = options.worldObligations.map((proposal) =>
+        compileWorldObligation({
+          proposal,
+          timeDefinition: accepted.time,
+          originTick: 0,
+        }),
+      );
+      const byIdentity = <T extends { id: string }>(left: T, right: T) =>
+        left.id.localeCompare(right.id);
       if (
         accepted.locked !== options.locked ||
         !isDeepStrictEqual(accepted.pace, options.pace) ||
-        !isDeepStrictEqual(accepted.time, options.time)
+        !isDeepStrictEqual(accepted.time, options.time) ||
+        !isDeepStrictEqual(
+          acceptedObligations
+            .map((entry) => worldObligationSchema.parse(entry.definition))
+            .sort(byIdentity),
+          requestedObligations.sort(byIdentity),
+        )
       ) {
         throw new StoryError('conflict');
       }

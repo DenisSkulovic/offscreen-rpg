@@ -24,7 +24,7 @@ Exit: current time and exact date/duration translations work through captured de
 
 ## K2 — World obligations in ordered execution
 
-Status: follows K1 and deliberate-time T1/T2. Complete before claiming deliberate-time T3 handles timed plots; T3 must consult these boundaries when deciding whether preparation can safely overlap.
+Status: active after K1 and deliberate-time T1/T2. Complete before claiming deliberate-time T3 handles timed plots; T3 must consult these boundaries when deciding whether preparation can safely overlap.
 Outcome: a deadline or winter transition becomes a consequential, replay-safe boundary even during another accepted action.
 
 Owners: game boundary ordering and supported event proposals; application campaign settlement/scheduling, action admission, holds, consequence preparation/publication and reads; DB schedule/receipt persistence; existing outbox/workflow wake; bounded Storyteller/setup schedule admission; Chamber controls and QA catalogue. Keep Temporal payloads as identity/revision hints; authoritative locks/checks remain in application operations.
@@ -39,6 +39,20 @@ Acceptance: 55-day deadline interrupted journey; winter changes one supported ro
 
 Exit: connected offline timed story plus ordinal/custom date variants, truthful UI and QA coverage. Fold remaining useful guidance into permanent docs and remove the feature folder when both phases are delivered. Advanced calendars/seasons remain outside this feature, not unfinished hidden requirements.
 
+### K2a — Exact finite obligations and controlling interruption
+
+Status: implemented; focused domain/build evidence exists, while the connected disposable-database interruption rehearsal belongs to K2b.
+
+Persist one bounded obligation family with immutable source/revision, exact compiled due tick, visibility, supported condition change, follow-up classification and lifecycle. Admit authored start proposals through a validator that compiles dates once. Merge the nearest pending due tick into action and activity wake calculations, settle the obligation first at equality, preserve unfinished work, append a replay-safe receipt and place an independently owned controlling hold. Project public conditions, visible schedules and history without leaking hidden due ticks. No Storyteller arithmetic or provider work.
+
+Exit: a due condition can interrupt either accepted execution exactly once, including after worker redelivery, while idle/paused campaigns do not advance. The controlling hold remains until K2b supplies its presentation/re-entry operation.
+
+### K2b — Presentation, revisions and connected rehearsal
+
+Prepare and publish the obligation's controlling scene under the retained hold, then explicitly revalidate/resume or replace interrupted work. Add typed postpone/cancel revisions, stale-wake rejection, coalescing for equal-tick obligations, optional non-controlling reports, Chamber controls and the connected 55-day deadline/winter rehearsal. Storyteller context receives only relevant visible obligations and active conditions.
+
+Exit: the full K2 acceptance and failure/retry matrix is connected; K2 planned QA variants become available only where their driver can reproduce them.
+
 ## Benchmark reasoning
 
 - Preparing for an arrival: exact admitted deadline consumes world time through short and long actions, even if the visible date is only Day N.
@@ -49,11 +63,11 @@ Exit: connected offline timed story plus ordinal/custom date variants, truthful 
 
 ## Current checkpoint
 
-- Phase: K1 complete. Implement K2 world obligations next before accepting time-sensitive overlap in deliberate-time T3.
+- Phase: K2a implemented on base `400a143`; K1 remains complete. K2b presentation, schedule revisions and connected rehearsal are next before deliberate-time T3 overlap.
 - Base: implementation followed deliberate-time T2 at `2bb8d10`; this checkpoint is awaiting its K1 commit.
-- Implemented: strict elapsed, ordinal-day and fixed unequal-month named-year definitions; deterministic projection/date compilation; day-preserving month addition with invalid-date rejection; duration formatting; immutable capture in versioned campaign settings; public snapshot and play-surface projection; compact server-computed Storyteller time; retry conflict protection; calendar QA catalogue variants.
-- Boundary: the monotonic campaign tick remains authority. Calendar definitions name it and pace changes do not reinterpret it. K1 creates no schedule records, deadlines, seasonal effects or autonomous advancement.
+- Implemented: K1 calendar definitions/projection plus K2a finite authored obligations, compile-once tick/date admission, exact/described/hidden visibility, typed world-condition effects, durable firing receipts, nearest-boundary action/activity wake clamping, hard-cutoff equality ordering, progress-preserving interruption, independent controlling holds, public condition/schedule/history projection and compact Storyteller conditions.
+- Boundary: the monotonic campaign tick remains authority. Obligations advance only with accepted execution; idle and paused campaigns donate no time. K2a intentionally leaves the fired controlling hold unresolved because scene presentation, re-entry, postponement/cancellation and equal-tick coalescing belong to K2b.
 - Benchmark reasoning: the Ember/Rain/Frost fixture proves unequal-month arithmetic and exact 55-day month addition. Ordinal Bloom days and elapsed cell cycles exercise non-Earth and abstract worlds without requiring human calendar concepts.
-- Verification: 29/29 game tests passed, including four calendar policy tests. Game, contracts and Storyteller builds passed; Storyteller, application and web affected-package typechecks passed. No provider calls were made.
-- Open scope: K2 finite world obligations, ordering and recovery; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
+- Verification: 32/32 game tests passed, including calendar and obligation admission/visibility/condition policy; the focused application transition test proves hard-cutoff equality prevents finite-action resolution. Game, database, contracts, Storyteller and application builds passed; application and web affected-package typechecks passed. The action/activity database interruption journey has not yet been run. No provider calls were made.
+- Open scope: K2b controlling-scene publication/re-entry, typed postponement/cancellation, equal-tick coalescing, stale-wake recovery and connected Chamber evidence; optional leap rules, reforms, multiple calendars and dynamic eras remain deferred.
 - Spend: $0 application-provider spend; cumulative account usage unverified.

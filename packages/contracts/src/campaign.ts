@@ -13,6 +13,11 @@ import {
   worldTimeDefinitionSchema,
   worldTimeViewSchema,
 } from '@offscreen/game/calendar';
+import {
+  publicWorldObligationSchema,
+  worldConditionSchema,
+  worldObligationProposalSchema,
+} from '@offscreen/game/world-obligations';
 import { storytellerReferenceSchema } from './storytellers';
 
 export const narrativeTagSchema = z.strictObject({
@@ -184,6 +189,11 @@ export const campaignViewSchema = z.strictObject({
         offerId: z.uuid(),
         reason: z.literal('player-choice'),
       }),
+      z.strictObject({
+        kind: z.literal('world-obligation'),
+        obligationId: z.uuid(),
+        reason: z.literal('controlling-event'),
+      }),
     ]),
   ),
   offer: offerSchema.nullable(),
@@ -213,6 +223,7 @@ export const campaignViewSchema = z.strictObject({
           'paused',
           'resumed',
           'pace-changed',
+          'interrupted',
           'settled',
         ]),
         label: z.string().min(1).max(200),
@@ -225,6 +236,22 @@ export const campaignViewSchema = z.strictObject({
   commitments: z.array(campaignActivityViewSchema).max(20),
   activityEvents: z.array(campaignActivityEventSchema).max(100),
   activityReports: z.array(campaignActivityReportSchema).max(50),
+  worldConditions: z.array(worldConditionSchema).max(64),
+  worldObligations: z.array(publicWorldObligationSchema).max(50),
+  worldObligationEvents: z
+    .array(
+      z.strictObject({
+        id: z.uuid(),
+        ordinal: z.number().int().positive(),
+        obligationId: z.uuid(),
+        obligationRevision: z.number().int().positive(),
+        tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        kind: z.enum(['fired', 'postponed', 'cancelled']),
+        label: z.string().trim().min(1).max(160),
+        createdAt: z.iso.datetime(),
+      }),
+    )
+    .max(100),
   acceptedActivityPlan: acceptedActivityPlanViewSchema.nullable(),
   rolls: z
     .array(
@@ -304,5 +331,6 @@ export const campaignStartSchema = z.strictObject({
   locked: z.boolean().default(false),
   pace: paceSchema.default({ kind: 'rate', ticks: 1, realMs: 1000 }),
   time: worldTimeDefinitionSchema.default(defaultWorldTimeDefinition),
+  worldObligations: z.array(worldObligationProposalSchema).max(50).default([]),
 });
 export type CampaignStart = z.infer<typeof campaignStartSchema>;

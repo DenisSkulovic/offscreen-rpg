@@ -25,6 +25,7 @@ import {
 import { enqueue, type Transaction } from '../outbox/index';
 import {
   lockStoryById,
+  incrementStoryViewVersion,
   readDatabaseClockMs,
   type StoryRecord,
 } from '../stories/persistence';
@@ -55,6 +56,11 @@ import {
   planActivityBoundaryFollowUps,
 } from './activity-follow-up-policy';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
+import {
+  fireWorldObligation,
+  readNearestPendingWorldObligation,
+  type WorldObligationRecord,
+} from './world-obligations';
 
 export { campaignActivityTopic } from './topics';
 
@@ -234,6 +240,7 @@ export async function settleActivity(
   state: CampaignRecord,
   activity: ActivityRecord,
   now: number,
+  controllingObligation?: WorldObligationRecord | null,
 ) {
   const plan = resolvedActivityPlanSchema.parse(activity.plan);
   if (activity.state !== 'running') {
@@ -254,6 +261,9 @@ export async function settleActivity(
     { kind: 'accepted-activity', activityId: activity.id },
     campaignClockHeld(state),
     instantTargetTick,
+    controllingObligation
+      ? Math.max(state.tick, controllingObligation.dueTick)
+      : undefined,
   );
   const availableWorldTicks = clock.elapsedTicks - state.tick;
   let availableEffortTicks = storedProgress.effortTicks + availableWorldTicks;
@@ -295,6 +305,14 @@ export async function settleActivity(
       retainedEffortTicks: storedProgress.effortTicks,
       boundaryEffortTick: boundaryTick,
     });
+    // A hard world cutoff owns equality. Productive effects at that exact tick
+    // remain unapplied and the obligation is committed first by the caller.
+    if (
+      controllingObligation &&
+      worldBoundaryTick >= controllingObligation.dueTick
+    ) {
+      break;
+    }
     boundariesSettled++;
     let processComplete = false;
     if (processBoundaryDue(plan, boundaryTick)) {
@@ -575,7 +593,53 @@ export function createCampaignActivities(database: Database) {
           return null;
         }
         const now = await readDatabaseClockMs(tx, current.id);
-        const settled = await settleActivity(tx, current, state, activity, now);
+        const controllingObligation = await readNearestPendingWorldObligation(
+          tx,
+          {
+            storyId: current.id,
+            throughTick: Number.MAX_SAFE_INTEGER,
+          },
+        );
+        const settled = await settleActivity(
+          tx,
+          current,
+          state,
+          activity,
+          now,
+          controllingObligation,
+        );
+        if (
+          controllingObligation &&
+          settled.state.tick >= controllingObligation.dueTick
+        ) {
+          const interruptedRevision = settled.activity.revision + 1;
+          await tx
+            .update(gameActivity)
+            .set({ state: 'encounter', revision: interruptedRevision })
+            .where(eq(gameActivity.id, settled.activity.id));
+          await recordActivityEvent(tx, {
+            storyId: current.id,
+            activityId: settled.activity.id,
+            activityRevision: interruptedRevision,
+            tick: controllingObligation.dueTick,
+            kind: 'interrupted',
+            causeKey: `world-obligation:${controllingObligation.id}:${controllingObligation.revision}`,
+            label: resolvedActivityPlanSchema.parse(settled.activity.plan)
+              .action.label,
+            summary: `${resolvedActivityPlanSchema.parse(settled.activity.plan).action.label} was interrupted by a due world event.`,
+          });
+          await fireWorldObligation(
+            tx,
+            settled.state,
+            controllingObligation,
+            now,
+          );
+          await incrementStoryViewVersion(tx, {
+            storyId: current.id,
+            viewVersion: current.viewVersion + 1,
+          });
+          return null;
+        }
         if (settled.activity.state !== 'running') {
           return null;
         }
@@ -591,13 +655,26 @@ export function createCampaignActivities(database: Database) {
             activityId: settled.activity.id,
           },
           campaignClockHeld(settled.state),
+          settled.state.tick,
+          controllingObligation
+            ? Math.max(settled.state.tick, controllingObligation.dueTick)
+            : undefined,
         );
         const nextWorldBoundary = worldTickForEffortBoundary({
           campaignTick: settled.state.tick,
           retainedEffortTicks: storedProgress.effortTicks,
           boundaryEffortTick: nextBoundaryTick(plan, plan.resolvedThroughTick),
         });
-        return realMsUntilTick(progress, nextWorldBoundary, pace);
+        return realMsUntilTick(
+          progress,
+          Math.min(
+            nextWorldBoundary,
+            controllingObligation
+              ? Math.max(settled.state.tick, controllingObligation.dueTick)
+              : nextWorldBoundary,
+          ),
+          pace,
+        );
       });
     },
   };

@@ -6,6 +6,7 @@ import {
   campaignSettings,
   campaignCommand,
   storytellerPreset,
+  worldObligation,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
 import {
@@ -16,6 +17,7 @@ import {
   type CampaignStart,
 } from '@offscreen/contracts/campaign';
 import { defaultWorldTimeDefinition } from '@offscreen/game/calendar';
+import { compileWorldObligation } from '@offscreen/game/world-obligations';
 import {
   storytellerCatalogue,
   storytellerProfileSchema,
@@ -105,6 +107,13 @@ export async function initializeCampaign(
     validateActivityAccess(opportunities.plans, activityAccess);
   }
   const now = await readDatabaseClockMs(tx, storyId);
+  const obligations = options.worldObligations.map((proposal) =>
+    compileWorldObligation({
+      proposal,
+      timeDefinition: settings.time,
+      originTick: 0,
+    }),
+  );
   await tx.insert(campaign).values({
     storyId,
     settingsRevision: 1,
@@ -112,6 +121,7 @@ export async function initializeCampaign(
     character,
     content,
     storyFacts,
+    worldConditions: [],
     activityOccurrences: [],
     location: null,
     tick: 0,
@@ -134,6 +144,17 @@ export async function initializeCampaign(
       activityAccess,
     ),
   });
+  if (obligations.length) {
+    await tx.insert(worldObligation).values(
+      obligations.map((obligation) => ({
+        id: obligation.id,
+        storyId,
+        revision: obligation.revision,
+        definition: obligation,
+        dueTick: obligation.dueTick,
+      })),
+    );
+  }
   if (opportunities) {
     await saveOfferPlans(
       tx,
@@ -261,6 +282,7 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
       locked: false,
       pace: { kind: 'rate', ticks: 1, realMs: 1000 },
       time: defaultWorldTimeDefinition,
+      worldObligations: [],
     },
   );
   const [created] = await tx

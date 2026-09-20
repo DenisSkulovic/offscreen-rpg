@@ -47,7 +47,71 @@ export const campaign = pgTable('campaign', {
     .$type<unknown>(),
   activeActivityId: uuid('active_activity_id'),
   activeActionOperationId: uuid('active_action_operation_id'),
+  worldConditions: jsonb('world_conditions')
+    .notNull()
+    .default([])
+    .$type<unknown>(),
 });
+export const worldObligation = pgTable(
+  'world_obligation',
+  {
+    id: uuid('id').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    revision: integer('revision').notNull(),
+    definition: jsonb('definition').notNull().$type<unknown>(),
+    dueTick: bigint('due_tick', { mode: 'number' }).notNull(),
+    state: text('state').notNull().default('pending'),
+    firedAtTick: bigint('fired_at_tick', { mode: 'number' }),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('world_obligation_story_source_revision').on(
+      t.storyId,
+      t.id,
+      t.revision,
+    ),
+    check(
+      'world_obligation_state',
+      sql`${t.state} in ('pending', 'fired', 'cancelled')`,
+    ),
+    check('world_obligation_due_tick', sql`${t.dueTick} > 0`),
+  ],
+);
+export const worldObligationEvent = pgTable(
+  'world_obligation_event',
+  {
+    id: uuid('id').primaryKey(),
+    ordinal: bigserial('ordinal', { mode: 'number' }).notNull(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    obligationId: uuid('obligation_id')
+      .notNull()
+      .references(() => worldObligation.id),
+    obligationRevision: integer('obligation_revision').notNull(),
+    tick: bigint('tick', { mode: 'number' }).notNull(),
+    kind: text('kind').notNull(),
+    label: text('label').notNull(),
+    details: jsonb('details').notNull().$type<unknown>(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('world_obligation_event_revision').on(
+      t.obligationId,
+      t.obligationRevision,
+    ),
+    check(
+      'world_obligation_event_kind',
+      sql`${t.kind} in ('fired', 'postponed', 'cancelled')`,
+    ),
+  ],
+);
 export const campaignSettings = pgTable(
   'campaign_settings',
   {
@@ -248,7 +312,7 @@ export const gameActionExecution = pgTable(
     unique('game_action_execution_offer').on(t.storyId, t.offerId),
     check(
       'game_action_execution_state',
-      sql`${t.state} in ('running', 'paused', 'settled')`,
+      sql`${t.state} in ('running', 'paused', 'interrupted', 'settled')`,
     ),
     check(
       'game_action_execution_ticks',
@@ -282,7 +346,7 @@ export const gameActionExecutionEvent = pgTable(
     ),
     check(
       'game_action_execution_event_kind',
-      sql`${t.kind} in ('started', 'paused', 'resumed', 'pace-changed', 'settled')`,
+      sql`${t.kind} in ('started', 'paused', 'resumed', 'pace-changed', 'interrupted', 'settled')`,
     ),
   ],
 );

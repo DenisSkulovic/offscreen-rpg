@@ -1,5 +1,6 @@
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
 import { worldTimeViewSchema } from '@offscreen/game/calendar';
+import { worldConditionSchema } from '@offscreen/game/world-obligations';
 import {
   immediateActionPlanSchema,
   storyFactDeclarationsSchema,
@@ -134,6 +135,7 @@ export const contextInputSchema = z.strictObject({
     .optional(),
   campaignSettings: storytellerCampaignSettingsSchema.optional(),
   campaignTime: worldTimeViewSchema.optional(),
+  worldConditions: z.array(worldConditionSchema).max(64).optional(),
   premise: premiseContentSchema,
   current: evidencePassageSchema.nullable(),
   items: storyItemsSchema,
@@ -191,6 +193,9 @@ export function contextRequestSections(context: StorytellerContext) {
         ? { campaignSettings: context.campaignSettings }
         : {}),
       ...(context.campaignTime ? { campaignTime: context.campaignTime } : {}),
+      ...(context.worldConditions
+        ? { worldConditions: context.worldConditions }
+        : {}),
       current: context.current
         ? {
             handle: `p${context.current.sequence}`,

@@ -21,10 +21,14 @@ import type { CampaignRecord } from './persistence';
 import { decideActionExecutionTransition } from './action-execution-transition';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
 import { campaignClockHeld } from './holds';
+import {
+  fireWorldObligation,
+  readNearestPendingWorldObligation,
+} from './world-obligations';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
 export type ActionExecutionEventKind =
-  'started' | 'paused' | 'resumed' | 'pace-changed' | 'settled';
+  'started' | 'paused' | 'resumed' | 'pace-changed' | 'interrupted' | 'settled';
 
 export async function recordActionExecutionEvent(
   tx: Transaction,
@@ -67,14 +71,69 @@ export async function settleActionExecution(
   now: number,
 ) {
   const plan = immediateActionPlanSchema.parse(execution.plan);
+  const controllingObligation = await readNearestPendingWorldObligation(tx, {
+    storyId: current.id,
+    throughTick: execution.targetTick,
+  });
   const transition = decideActionExecutionTransition({
     state,
-    execution,
+    execution: {
+      ...execution,
+      ...(controllingObligation
+        ? {
+            controllingTick: Math.max(
+              state.tick,
+              controllingObligation.dueTick,
+            ),
+          }
+        : {}),
+    },
     clockHeld: campaignClockHeld(state),
     now,
     rollDie: () => randomInt(1, 21),
   });
   if (transition.state === 'waiting') return transition;
+
+  if (transition.state === 'interrupted') {
+    await tx
+      .update(gameActionExecution)
+      .set({
+        state: 'interrupted',
+        revision: transition.fact.executionRevision,
+        settledAt: new Date(now),
+      })
+      .where(eq(gameActionExecution.operationId, execution.operationId));
+    await recordActionExecutionEvent(tx, {
+      storyId: current.id,
+      executionId: execution.operationId,
+      executionRevision: transition.fact.executionRevision,
+      tick: transition.fact.tick,
+      kind: transition.fact.kind,
+      label: transition.fact.label,
+    });
+    await tx
+      .update(campaign)
+      .set({
+        tick: transition.campaign.tick,
+        clock: transition.campaign.clock,
+        clockAnchorAt: transition.campaign.clockAnchorAt,
+        activeActionOperationId: null,
+      })
+      .where(eq(campaign.storyId, current.id));
+    const interruptedCampaign = controllingObligation
+      ? await fireWorldObligation(
+          tx,
+          transition.campaign,
+          controllingObligation,
+          now,
+        )
+      : transition.campaign;
+    await incrementStoryViewVersion(tx, {
+      storyId: current.id,
+      viewVersion: current.viewVersion + 1,
+    });
+    return { state: 'interrupted' as const, campaign: interruptedCampaign };
+  }
 
   await tx.insert(gameActionReceipt).values({
     operationId: execution.operationId,

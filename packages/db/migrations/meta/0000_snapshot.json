@@ -1,5 +1,5 @@
 {
-  "id": "513498c5-bca5-4f22-8fd1-5698ec02e887",
+  "id": "ec8dac05-5368-4a18-9cd4-029a07edd2e5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -540,6 +540,13 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "world_conditions": {
+          "name": "world_conditions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
         }
       },
       "indexes": {},
@@ -879,7 +886,7 @@
       "checkConstraints": {
         "game_action_execution_state": {
           "name": "game_action_execution_state",
-          "value": "\"game_action_execution\".\"state\" in ('running', 'paused', 'settled')"
+          "value": "\"game_action_execution\".\"state\" in ('running', 'paused', 'interrupted', 'settled')"
         },
         "game_action_execution_ticks": {
           "name": "game_action_execution_ticks",
@@ -992,7 +999,7 @@
       "checkConstraints": {
         "game_action_execution_event_kind": {
           "name": "game_action_execution_event_kind",
-          "value": "\"game_action_execution_event\".\"kind\" in ('started', 'paused', 'resumed', 'pace-changed', 'settled')"
+          "value": "\"game_action_execution_event\".\"kind\" in ('started', 'paused', 'resumed', 'pace-changed', 'interrupted', 'settled')"
         }
       },
       "isRLSEnabled": false
@@ -1706,6 +1713,217 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.world_obligation": {
+      "name": "world_obligation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_tick": {
+          "name": "due_tick",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "fired_at_tick": {
+          "name": "fired_at_tick",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "world_obligation_story_id_story_id_fk": {
+          "name": "world_obligation_story_id_story_id_fk",
+          "tableFrom": "world_obligation",
+          "tableTo": "story",
+          "columnsFrom": [
+            "story_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "world_obligation_story_source_revision": {
+          "name": "world_obligation_story_source_revision",
+          "nullsNotDistinct": false,
+          "columns": [
+            "story_id",
+            "id",
+            "revision"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "world_obligation_state": {
+          "name": "world_obligation_state",
+          "value": "\"world_obligation\".\"state\" in ('pending', 'fired', 'cancelled')"
+        },
+        "world_obligation_due_tick": {
+          "name": "world_obligation_due_tick",
+          "value": "\"world_obligation\".\"due_tick\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.world_obligation_event": {
+      "name": "world_obligation_event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "bigserial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "story_id": {
+          "name": "story_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obligation_id": {
+          "name": "obligation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obligation_revision": {
+          "name": "obligation_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tick": {
+          "name": "tick",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "details": {
+          "name": "details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "world_obligation_event_story_id_story_id_fk": {
+          "name": "world_obligation_event_story_id_story_id_fk",
+          "tableFrom": "world_obligation_event",
+          "tableTo": "story",
+          "columnsFrom": [
+            "story_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "world_obligation_event_obligation_id_world_obligation_id_fk": {
+          "name": "world_obligation_event_obligation_id_world_obligation_id_fk",
+          "tableFrom": "world_obligation_event",
+          "tableTo": "world_obligation",
+          "columnsFrom": [
+            "obligation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "world_obligation_event_revision": {
+          "name": "world_obligation_event_revision",
+          "nullsNotDistinct": false,
+          "columns": [
+            "obligation_id",
+            "obligation_revision"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "world_obligation_event_kind": {
+          "name": "world_obligation_event_kind",
+          "value": "\"world_obligation_event\".\"kind\" in ('fired', 'postponed', 'cancelled')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.story_draft": {

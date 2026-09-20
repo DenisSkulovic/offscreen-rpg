@@ -71,7 +71,7 @@ export function createActionExecutionControls(database: Database) {
           execution,
           now,
         );
-        if (settlement.state === 'settled') {
+        if (settlement.state !== 'waiting') {
           // The target boundary won the race. Preserve that authoritative
           // result and make replay of this control a no-op.
           await saveCommand(tx, current.id, args.operationId, request);

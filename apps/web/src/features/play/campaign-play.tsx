@@ -3,7 +3,10 @@ import { useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import type { CampaignView } from '@offscreen/contracts/campaign';
 import type { Pace } from '@offscreen/game/time';
-import { formatWorldDuration } from '@offscreen/game/calendar';
+import {
+  formatWorldDuration,
+  projectWorldTime,
+} from '@offscreen/game/calendar';
 import { useCampaignCommand } from './use-campaign-command';
 
 export const paceOptions: { label: string; value: string; pace: Pace }[] = [
@@ -73,10 +76,50 @@ export function CampaignPlay({
               hold.kind === 'storyteller-intent' || hold.kind === 'storyteller',
           )
             ? 'Campaign time is held while the Storyteller prepares a required scene.'
-            : 'Campaign time is held while your choice is open.'}{' '}
+            : campaign.holds.some((hold) => hold.kind === 'world-obligation')
+              ? 'Campaign time is held because a consequential world event requires attention.'
+              : 'Campaign time is held while your choice is open.'}{' '}
           Existing activity progress is preserved and held wall time will not
           become catch-up progress.
         </p>
+      ) : null}
+      {campaign.worldConditions.length ? (
+        <section aria-label="Current world conditions">
+          <h2>Current world conditions</h2>
+          {campaign.worldConditions.map((condition) => (
+            <p key={condition.id}>
+              <strong>{condition.label}</strong>: {String(condition.value)}
+            </p>
+          ))}
+        </section>
+      ) : null}
+      {campaign.worldObligations.some(
+        (obligation) => obligation.state === 'pending',
+      ) ? (
+        <details open>
+          <summary>Known future events</summary>
+          {campaign.worldObligations
+            .filter((obligation) => obligation.state === 'pending')
+            .map((obligation) => (
+              <p key={obligation.id}>
+                <strong>{obligation.label}</strong>
+                {obligation.visibility === 'exact'
+                  ? ` — ${projectWorldTime(campaign.settings.time, obligation.dueTick).label}`
+                  : ` — ${obligation.description}`}
+              </p>
+            ))}
+        </details>
+      ) : null}
+      {campaign.worldObligationEvents.length ? (
+        <details>
+          <summary>World event history</summary>
+          {campaign.worldObligationEvents.map((event) => (
+            <p key={event.id}>
+              <strong>{event.label}</strong> · {event.kind} ·{' '}
+              {projectWorldTime(campaign.settings.time, event.tick).label}
+            </p>
+          ))}
+        </details>
       ) : null}
       {actionExecution ? (
         <div role="status">

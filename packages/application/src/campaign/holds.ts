@@ -21,6 +21,11 @@ export const campaignHoldSchema = z.discriminatedUnion('kind', [
     offerId: z.uuid(),
     reason: z.literal('player-choice'),
   }),
+  z.strictObject({
+    kind: z.literal('world-obligation'),
+    obligationId: z.uuid(),
+    reason: z.literal('controlling-event'),
+  }),
 ]);
 export const campaignHoldsSchema = z
   .array(campaignHoldSchema)
@@ -33,7 +38,9 @@ export const campaignHoldsSchema = z
             ? `storyteller-intent:${hold.operationId}`
             : hold.kind === 'storyteller'
               ? `storyteller:${hold.generationId}`
-              : `decision:${hold.offerId}`,
+              : hold.kind === 'decision'
+                ? `decision:${hold.offerId}`
+                : `world-obligation:${hold.obligationId}`,
         ),
       ).size === holds.length,
     'Campaign hold owners must be unique',
@@ -62,8 +69,7 @@ export async function holdCampaignForStorytellerIntent(
   if (
     holds.some(
       (hold) =>
-        hold.kind === 'storyteller-intent' &&
-        hold.operationId === operationId,
+        hold.kind === 'storyteller-intent' && hold.operationId === operationId,
     )
   ) {
     return state;
@@ -104,14 +110,15 @@ export async function transitionStorytellerIntentToGeneration(
       hold.kind === 'storyteller-intent' && hold.operationId === operationId,
   );
   if (!ownsIntent) {
-    throw new Error('Required Storyteller intent does not own the campaign hold');
+    throw new Error(
+      'Required Storyteller intent does not own the campaign hold',
+    );
   }
   const nextHolds = campaignHoldsSchema.parse([
     ...holds.filter(
       (hold) =>
         !(
-          hold.kind === 'storyteller-intent' &&
-          hold.operationId === operationId
+          hold.kind === 'storyteller-intent' && hold.operationId === operationId
         ),
     ),
     { kind: 'storyteller', generationId, reason: 'required-turn' },

@@ -10,6 +10,8 @@ import {
   gameActivityEvent,
   gameActivityReport,
   gameRoll,
+  worldObligation,
+  worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
@@ -19,6 +21,11 @@ import {
   type CampaignView,
 } from '@offscreen/contracts/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
+import {
+  projectPublicWorldObligation,
+  worldConditionsSchema,
+  worldObligationSchema,
+} from '@offscreen/game/world-obligations';
 import {
   activityProgressSchema,
   estimatedCompletionBoundaryTick,
@@ -116,6 +123,16 @@ export async function readCampaign(
       desc(gameActivityReport.createdAt),
     )
     .limit(50);
+  const obligationRows = await db
+    .select()
+    .from(worldObligation)
+    .where(eq(worldObligation.storyId, storyId));
+  const obligationEvents = await db
+    .select()
+    .from(worldObligationEvent)
+    .where(eq(worldObligationEvent.storyId, storyId))
+    .orderBy(desc(worldObligationEvent.ordinal))
+    .limit(100);
   const actionReceipts = await db
     .select({
       receipt: gameActionReceipt,
@@ -306,6 +323,24 @@ export async function readCampaign(
       report: report.report,
       createdAt: report.createdAt.toISOString(),
       publishedAt: report.publishedAt?.toISOString() ?? null,
+    })),
+    worldConditions: worldConditionsSchema.parse(state.worldConditions),
+    worldObligations: obligationRows.flatMap((row) => {
+      const projected = projectPublicWorldObligation({
+        obligation: worldObligationSchema.parse(row.definition),
+        state: row.state,
+      });
+      return projected ? [projected] : [];
+    }),
+    worldObligationEvents: obligationEvents.map((event) => ({
+      id: event.id,
+      ordinal: event.ordinal,
+      obligationId: event.obligationId,
+      obligationRevision: event.obligationRevision,
+      tick: event.tick,
+      kind: event.kind,
+      label: event.label,
+      createdAt: event.createdAt.toISOString(),
     })),
     acceptedActivityPlan: projectAcceptedActivityPlan(
       readAcceptedActivityPlan(state.acceptedActivityPlan),

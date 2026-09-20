@@ -10,6 +10,7 @@ import { contextInputSchema } from '@offscreen/storyteller/context';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
+import { worldConditionsSchema } from '@offscreen/game/world-obligations';
 import type { Transaction } from '../outbox/index';
 import {
   activityProgressSchema,
@@ -237,6 +238,13 @@ export async function loadStorytellerContext(
           campaignTime: projectWorldTime(
             acceptedSettings.time,
             settingsRow.tick,
+          ),
+        }
+      : {}),
+    ...(settingsRow
+      ? {
+          worldConditions: worldConditionsSchema.parse(
+            settingsRow.worldConditions,
           ),
         }
       : {}),

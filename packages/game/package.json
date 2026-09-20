@@ -27,6 +27,10 @@
       "types": "./dist/src/calendar.d.ts",
       "default": "./dist/src/calendar.js"
     },
+    "./world-obligations": {
+      "types": "./dist/src/world-obligations.d.ts",
+      "default": "./dist/src/world-obligations.js"
+    },
     "./activities": {
       "types": "./dist/src/activities.d.ts",
       "default": "./dist/src/activities.js"
@@ -43,7 +47,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --test test/*.test.mjs"
+    "test": "pnpm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
     "zod": "4.6.5"
