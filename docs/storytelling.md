@@ -20,6 +20,8 @@ Narrative direction is distinct from a Storyteller profile. The profile supplies
 
 Private narrative intent is also distinct from executable future state. A possible invasion, rival or revelation remains noncanonical guidance until introduced. A development that must become due at a supported time or condition uses an admitted world obligation. A current fact is canon. These representations may link to each other, but evocative planning prose cannot schedule itself.
 
+A useful detail must survive more than the immediately following choice. When later play changes that detail, the Storyteller should receive the current admitted version for the eventual return, not both an obsolete description and its correction as equally live facts. Earlier passages and document versions remain inspectable history, while the current canonical record answers what is true now. This applies generically to a collapsed road, a changed relationship, a repaired wall or a revised private possibility; it is not a quest-specific memory system.
+
 Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves. Paying for a stronger model should improve the quality of interpretation, not purchase a better chance of success.
 
 ## Developments and choices

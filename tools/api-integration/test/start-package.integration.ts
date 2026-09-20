@@ -449,6 +449,9 @@ registerStoryConcern(
         let offeredWorldSection: string | undefined;
         let offeredCampaignDocument: string | undefined;
         const promotedThreadPath = 'threads/patient-tide-return.md';
+        const unrelatedMarketPath = 'lore/net-market-weather.md';
+        let promotedThreadDocumentId: string | undefined;
+        let narrativeContinuationPhase = 0;
         const runtime = createStorytellerRuntime(database, {
           realDurationMs: () => 1000,
           documentStore: storage,
@@ -462,25 +465,61 @@ registerStoryConcern(
               'scene' in result &&
               result.scene.next.kind === 'choice'
             ) {
-              result.scene.next.options[0]!.worldSections = [
-                offeredWorldSection,
-              ];
-              result.scene.next.options[0]!.campaignDocuments =
-                offeredCampaignDocument ? [offeredCampaignDocument] : [];
-              result.documentChanges = [
-                {
-                  operation: 'create',
-                  path: promotedThreadPath,
-                  kind: 'narrative-thread',
-                  authority: 'canon',
-                  visibility: 'storyteller-private',
-                  title: 'The patient tide road',
-                  body: 'The newcomer may return at dusk to investigate the exposed stone road.',
-                  reason:
-                    'The current passage established a durable possible return.',
-                },
-              ];
-              result.scene.next.options[0]!.createdDocuments = [0];
+              const option = result.scene.next.options[0]!;
+              if (narrativeContinuationPhase === 0) {
+                option.worldSections = [offeredWorldSection];
+                option.campaignDocuments = offeredCampaignDocument
+                  ? [offeredCampaignDocument]
+                  : [];
+                result.documentChanges = [
+                  {
+                    operation: 'create',
+                    path: promotedThreadPath,
+                    kind: 'narrative-thread',
+                    authority: 'canon',
+                    visibility: 'storyteller-private',
+                    title: 'The patient tide road',
+                    body: 'The newcomer may return at dusk to investigate the exposed stone road.',
+                    reason:
+                      'The current passage established a durable possible return.',
+                  },
+                ];
+                option.createdDocuments = [0];
+              } else if (narrativeContinuationPhase === 1) {
+                result.documentChanges = [
+                  {
+                    operation: 'create',
+                    path: unrelatedMarketPath,
+                    kind: 'lore',
+                    authority: 'canon',
+                    visibility: 'player-known',
+                    title: 'Weather over the net market',
+                    body: 'A brief squall soaked the net market before the awnings were raised.',
+                    reason:
+                      'The intervening passage established an unrelated local detail.',
+                  },
+                ];
+                option.createdDocuments = [0];
+              } else if (narrativeContinuationPhase === 2) {
+                assert.ok(promotedThreadDocumentId);
+                result.documentChanges = [
+                  {
+                    operation: 'revise',
+                    documentId: promotedThreadDocumentId,
+                    expectedRevision: 1,
+                    path: promotedThreadPath,
+                    kind: 'narrative-thread',
+                    authority: 'canon',
+                    visibility: 'storyteller-private',
+                    title: 'The patient tide road',
+                    body: 'The tide road has collapsed beneath the surf; the newcomer must use the cliff stairs to return.',
+                    reason:
+                      'The current passage corrected the route before the later return.',
+                  },
+                ];
+                option.createdDocuments = [0];
+              }
+              narrativeContinuationPhase += 1;
             }
             return result;
           },
@@ -924,6 +963,7 @@ registerStoryConcern(
             (entry) => entry.path === promotedThreadPath,
           );
         assert.ok(promotedThreadEntry?.loaded);
+        promotedThreadDocumentId = promotedThreadEntry.documentId;
         const hintedManifest = await storage.readManifest(
           hintedTask.context.canonicalKnowledge!.rootHash,
         );
@@ -936,6 +976,8 @@ registerStoryConcern(
         );
         assert.equal(promotedThread.envelope.sources.length, 1);
         assert.equal(promotedThread.envelope.sources[0]?.revision, 1);
+        const originalThreadSourceId =
+          promotedThread.envelope.sources[0]!.documentId;
         assert.match(promotedThread.body, /exposed stone road/);
         assert.ok(
           hintedTask.context.canonicalKnowledge?.libraries
@@ -946,6 +988,105 @@ registerStoryConcern(
                 section.body.includes(selectableSection.heading),
             ),
         );
+
+        await runtime.complete(hintedContinuationId);
+        const interveningOffer = await stories.read({ ownerId: owner, storyId });
+        assert.ok(interveningOffer.current.interaction);
+        const interveningOption =
+          interveningOffer.current.interaction.specification.options[0];
+        assert.ok(interveningOption);
+        const interveningContinuationId = randomUUID();
+        await stories.admitResolution({
+          ownerId: owner,
+          storyId,
+          operationId: interveningContinuationId,
+          expectedRevision: interveningOffer.revision,
+          submission: {
+            interactionId: interveningOffer.current.interaction.id,
+            answer: { kind: 'choice.v1', optionId: interveningOption.id },
+          },
+        });
+        const interveningContinuation = await database.db.$client.query(
+          'SELECT input FROM generation WHERE id = $1',
+          [interveningContinuationId],
+        );
+        const interveningTask = storytellerTaskSchema.parse(
+          interveningContinuation.rows[0]?.input,
+        );
+        const unrelatedMarketEntry =
+          interveningTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.path === unrelatedMarketPath,
+          );
+        assert.ok(unrelatedMarketEntry?.loaded);
+        assert.deepEqual(
+          interveningTask.context.canonicalKnowledge?.documentSelection
+            .requestedDocumentIds,
+          [unrelatedMarketEntry.documentId],
+        );
+        assert.ok(
+          !interveningTask.context.canonicalKnowledge?.documentSelection
+            .requestedDocumentIds.includes(promotedThreadDocumentId),
+        );
+
+        await runtime.complete(interveningContinuationId);
+        const correctedOffer = await stories.read({ ownerId: owner, storyId });
+        assert.ok(correctedOffer.current.interaction);
+        const correctedOption =
+          correctedOffer.current.interaction.specification.options[0];
+        assert.ok(correctedOption);
+        const returnContinuationId = randomUUID();
+        await stories.admitResolution({
+          ownerId: owner,
+          storyId,
+          operationId: returnContinuationId,
+          expectedRevision: correctedOffer.revision,
+          submission: {
+            interactionId: correctedOffer.current.interaction.id,
+            answer: { kind: 'choice.v1', optionId: correctedOption.id },
+          },
+        });
+        const returnContinuation = await database.db.$client.query(
+          'SELECT input FROM generation WHERE id = $1',
+          [returnContinuationId],
+        );
+        const returnTask = storytellerTaskSchema.parse(
+          returnContinuation.rows[0]?.input,
+        );
+        assert.deepEqual(
+          returnTask.context.canonicalKnowledge?.documentSelection
+            .requestedDocumentIds,
+          [promotedThreadDocumentId],
+        );
+        const currentThreadEntry =
+          returnTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.documentId === promotedThreadDocumentId,
+          );
+        assert.ok(currentThreadEntry?.loaded);
+        const loadedCurrentThread =
+          returnTask.context.canonicalKnowledge?.documents.find(
+            (document) => document.handle === currentThreadEntry.handle,
+          );
+        assert.ok(loadedCurrentThread);
+        assert.match(loadedCurrentThread.body, /collapsed beneath the surf/);
+        assert.doesNotMatch(loadedCurrentThread.body, /exposed stone road/);
+        const returnManifest = await storage.readManifest(
+          returnTask.context.canonicalKnowledge!.rootHash,
+        );
+        const storedCurrentThread = returnManifest.entries.find(
+          (entry) => entry.documentId === promotedThreadDocumentId,
+        );
+        assert.equal(storedCurrentThread?.revision, 2);
+        assert.ok(storedCurrentThread);
+        const currentThread = await storage.readDocument(
+          storedCurrentThread.objectHash,
+        );
+        assert.equal(currentThread.envelope.sources.length, 1);
+        assert.equal(currentThread.envelope.sources[0]!.revision, 1);
+        assert.notEqual(
+          currentThread.envelope.sources[0]!.documentId,
+          originalThreadSourceId,
+        );
+        assert.match(currentThread.body, /cliff stairs/);
       },
     );
 
