@@ -24,6 +24,8 @@ A useful detail must survive more than the immediately following choice. When la
 
 Unanticipated returns require discovery rather than permanent prompt inclusion. The application may search the captured story's current canonical records using an explicit bounded information need and then load chosen exact records by stable identity. Search candidates are leads, not facts or instructions: their visibility, current revision, match reason and coverage limits remain visible, and consequential narration depends on the exact loaded document or source. The engine must not silently treat arbitrary player wording as a complete retrieval query or promise that a no-match means the history contains no relevant detail.
 
+Different questions deserve different memory work. Current possession or health comes from exact state; a returning person or place begins from admitted identity and relationship links; remembered wording expands an exact source; a paraphrased callback may need hybrid search; and a broad “what has shaped this region?” request may justify a separately budgeted synthesis across many records. These routes share canon and provenance but not necessarily cost. A richer tier may investigate more leads; it cannot receive a more favorable or different truth.
+
 Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves. Paying for a stronger model should improve the quality of interpretation, not purchase a better chance of success.
 
 ## Developments and choices

@@ -6,6 +6,8 @@ To understand the intended gameplay before following code, use the [execution at
 
 For research-backed options around context selection, retrieval, memory, tools, agent loops, observability, cost and evaluation, consult the [agentic systems field manual](agentic-systems-field-manual.md). Treat it as evolving engineering inspiration; product and technical specifications still own this repository's decisions.
 
+For long histories specifically, [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
+
 For the next coding tranche, the [feature route](../features/README.md) points to a bounded file map per slice. Start with A1 rather than every outstanding feature. The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner

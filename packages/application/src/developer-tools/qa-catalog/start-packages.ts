@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 7,
+    version: 8,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -96,6 +96,20 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'The player sees only choice labels; traces show the exact requested identities, and the eventual return contains the corrected complete thread body without presenting its obsolete body as current.',
         authoritativeExpectation:
           'Admission resolves task-local aliases and linked create/revise indexes to stable story document IDs. Each successor loads the current manifest version; invalid handles fail without a retrieval call or prose matching.',
+      }),
+      stage({
+        id: 'retrieval-oracle',
+        name: 'Apply the same retrieval oracle to contrasting worlds',
+        importance: 'major',
+        preconditions: [
+          'The conventional and abstract oracle cases declare mode, structured cues, expected, acceptable and forbidden paths, scope, abstention and fixed budgets.',
+        ],
+        action:
+          'Resolve each oracle against its exact current root and compare the bounded search result with its declared evidence policy.',
+        observableExpectation:
+          'The conventional case finds the corrected route; the abstract case returns no invented tavern, wage or humanoid evidence and remains able to abstain.',
+        authoritativeExpectation:
+          'Both worlds use one generic search contract. Fixture nouns remain expected evidence, never retrieval-policy switches or universal game fields.',
       }),
       stage({
         id: 'lexical-discovery',

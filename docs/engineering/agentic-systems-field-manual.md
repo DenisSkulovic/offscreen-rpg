@@ -6,6 +6,8 @@ The durable objective is not to make the system look more “agentic.” It is t
 
 Research refreshed: **2026-09-21**. Sources are original papers, standards and first-party engineering documentation wherever possible.
 
+For the deeper problem of navigating, reconciling and condensing a very large evolving story corpus, use [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md). It expands this manual's general context/retrieval guidance into query modes, corpus layers, temporal supersession, hierarchical synthesis, cost tiers and an Offscreen-specific implementation ladder.
+
 ## 1. Working model
 
 An agent is a model inside a control loop. The harness gives it instructions and observations, lets it select an action, executes that action through deterministic code, returns the result, and repeats until a bounded stop condition. The useful unit is the whole system:

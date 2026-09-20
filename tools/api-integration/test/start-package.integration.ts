@@ -7,6 +7,7 @@ import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { createDrafts } from '@offscreen/application/drafts';
 import { createScriptedOpenings } from '@offscreen/application/generations';
 import { createStories } from '@offscreen/application/stories';
+import { retrievalOracleCase } from '@offscreen/application/developer-tools';
 import {
   canonicalRuleEvidence,
   createStorytellerRuntime,
@@ -188,6 +189,20 @@ registerStoryConcern(
           manifest.entries.some((entry) => entry.kind === 'character'),
           'the actual microbe protagonist remains explicit campaign data',
         );
+        const abstractOracle = retrievalOracleCase(
+          'gradient-life.no-human-economy',
+        );
+        const abstractDiscovery = await searchCanonicalKnowledge(storage, {
+          storyId,
+          rootHash: firstRootHash,
+          rootRevision: manifest.revision,
+          query: abstractOracle.query,
+          maxResults: abstractOracle.budget.maxCandidates,
+          maxScanBytes: abstractOracle.budget.maxBytes,
+        });
+        assert.equal(abstractDiscovery.trace.coverageComplete, true);
+        assert.deepEqual(abstractDiscovery.results, []);
+        assert.ok(abstractOracle.abstainWhenExpectedMissing);
         const obligations = await database.db.$client.query(
           'SELECT id, due_tick FROM world_obligation WHERE story_id = $1',
           [storyId],
@@ -1101,20 +1116,37 @@ registerStoryConcern(
         );
         assert.match(currentThread.body, /cliff stairs/);
 
+        const returnOracle = retrievalOracleCase(
+          'greywake.patient-tide-current',
+        );
+        const returnPaths = new Set(returnManifest.entries.map((entry) => entry.path));
+        assert.ok(
+          [
+            ...returnOracle.structuredCues.identityPaths,
+            ...returnOracle.structuredCues.placePaths,
+            ...returnOracle.structuredCues.threadPaths,
+          ].every((path) => returnPaths.has(path)),
+        );
         const discovery = await searchCanonicalKnowledge(storage, {
           storyId,
           rootHash: returnTask.context.canonicalKnowledge!.rootHash,
           rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
-          query: 'patient tide road',
-          maxResults: 4,
+          query: returnOracle.query,
+          maxResults: returnOracle.budget.maxCandidates,
+          maxScanBytes: returnOracle.budget.maxBytes,
         });
         assert.equal(discovery.trace.coverageComplete, true);
         assert.equal(discovery.results[0]?.documentId, promotedThreadDocumentId);
         assert.equal(discovery.results[0]?.revision, 2);
         assert.match(discovery.results[0]?.snippet ?? '', /collapsed beneath/);
         assert.ok(
-          discovery.results.every(
-            (result) => result.path !== 'developer/false-tide-road.md',
+          returnOracle.expectedPaths.every((path) =>
+            discovery.results.some((result) => result.path === path),
+          ),
+        );
+        assert.ok(
+          returnOracle.forbiddenPaths.every((path) =>
+            discovery.results.every((result) => result.path !== path),
           ),
         );
         const staleDiscovery = await searchCanonicalKnowledge(storage, {
@@ -1140,6 +1172,7 @@ registerStoryConcern(
           rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
           campaignDocumentIds: [discovery.results[0]!.documentId],
         });
+        assert.equal(returnOracle.budget.maxReads, 1);
         assert.deepEqual(discoveredKnowledge.documentSelection.requestedDocumentIds, [
           promotedThreadDocumentId,
         ]);

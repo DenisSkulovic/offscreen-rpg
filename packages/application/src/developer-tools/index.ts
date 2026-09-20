@@ -3,3 +3,4 @@ export * from './qa-journeys';
 export * from './usage-profiles';
 export * from './storyteller-control';
 export * from './live-evaluation';
+export * from './retrieval-oracle';
