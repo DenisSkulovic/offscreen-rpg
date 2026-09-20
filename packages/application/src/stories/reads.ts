@@ -68,6 +68,15 @@ function publicResolutionState(
   return { state };
 }
 
+function publicResolutionEvidence(submission: unknown) {
+  const parsed = z
+    .object({ kind: z.string() })
+    .safeParse(submission);
+  return parsed.success && parsed.data.kind === 'pending-action-consequence'
+    ? ('pending-action' as const)
+    : ('committed' as const);
+}
+
 function publicResolutionBlocker(
   state: 'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain' | null,
   publication: 'pending' | 'published' | 'stale' | 'blocked' | null,
@@ -279,6 +288,7 @@ export function createStoryReads(
               remainingMs: storyPassage.remainingMs,
               usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
               resolutionState: generation.state,
+              resolutionSubmission: storyResolution.submission,
               resolutionVersion: generation.statusRevision,
               failureCode: generation.failureCode,
               publicationState: storytellerPublication.state,
@@ -410,6 +420,9 @@ export function createStoryReads(
                     );
                     return {
                       ...publicResolutionState(row.resolutionState),
+                      evidence: publicResolutionEvidence(
+                        row.resolutionSubmission,
+                      ),
                       state:
                         row.publicationState === 'blocked' ||
                         row.publicationState === 'stale'

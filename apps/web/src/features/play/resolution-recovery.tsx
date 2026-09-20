@@ -54,7 +54,7 @@ export function ResolutionRecovery({
       <button disabled={pending} onClick={() => void act(false)}>
         Refresh saved state
       </button>
-      {story.resolution.canRetry ? (
+      {story.resolution.canRetry && !story.campaign?.actionExecution ? (
         <button disabled={pending} onClick={() => void act(true)}>
           Retry this intention
         </button>

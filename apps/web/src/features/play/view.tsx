@@ -25,6 +25,21 @@ function resolutionMessage(story: StorySnapshot) {
   if (!story.resolution) {
     return null;
   }
+  const pendingAction =
+    story.resolution.evidence === 'pending-action' &&
+    story.campaign?.actionExecution;
+  if (pendingAction) {
+    if (story.resolution.state === 'uncertain') {
+      return 'Private narration preparation has uncertain provider usage and is stopped. The accepted action is still in progress; its outcome, roll and effects are not current before the target.';
+    }
+    if (story.resolution.state === 'failed') {
+      return 'Private narration preparation failed. The accepted action is still in progress; its outcome, roll and effects are not current before the target. Recovery can reuse the same frozen result after mechanics settle.';
+    }
+    if (story.resolution.state === 'blocked') {
+      return 'Private narration is prepared but cannot publish before the accepted action settles.';
+    }
+    return 'The storyteller is preparing privately while the accepted action runs. No outcome, roll, effect or next choice is current before the target.';
+  }
   const savedOutcome = story.campaign?.character
     ? 'The outcome and dice are saved. '
     : '';
@@ -76,7 +91,8 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     story.resolution?.state === 'pending' ||
     story.resolution?.state === 'running' ||
     waiting != null ||
-    story.campaign?.activity?.state === 'running';
+    story.campaign?.activity?.state === 'running' ||
+    story.campaign?.actionExecution?.state === 'running';
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));

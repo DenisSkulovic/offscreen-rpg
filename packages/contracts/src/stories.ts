@@ -76,6 +76,7 @@ export const storySnapshotSchema = z.strictObject({
   resolution: z
     .strictObject({
       state: z.enum(['pending', 'running', 'failed', 'uncertain', 'blocked']),
+      evidence: z.enum(['committed', 'pending-action']).default('committed'),
       version: z.number().int().nonnegative().optional(),
       reason: z.string().max(80).nullable().optional(),
       blocker: z
