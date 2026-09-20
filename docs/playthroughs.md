@@ -4,6 +4,8 @@ This walkthrough makes the intended experience tangible. Characters, wording, du
 
 The [gameplay execution atlas](technical/playthroughs/README.md) is the technical companion: concrete scenes/options, exact worked dice and timing, activity interruptions/chains, Storyteller context/tools and illustrative token ledgers for every benchmark below, plus SpongeBob and the beacon fixtures. Read these high-level examples for the feeling, then the corresponding trace to examine authority and implementation gaps. The [proposed connected POC](technical/playthroughs/poc.md) selects a small proof without making every example a release requirement.
 
+These playthroughs are a living product reference, not disposable scaffolding for the current implementation. Preserve and maintain them as behavior evolves. Add or extend a benchmark when a new story, world, kind of character, chronology or social arrangement puts a genuinely different assumption under pressure. A benchmark may remain deliberately ahead of the runtime; its gap should stay visible and link to the owning contract rather than being erased or rewritten as though the limitation were intended.
+
 ## 1. Arrive and create
 
 A visitor sees an example of a character's life interrupted by a choice. They select “New story,” sign in through OAuth and reach creation. A returning player instead finds their existing stories and the same creation action. An empty account should not require navigating an empty dashboard first.
