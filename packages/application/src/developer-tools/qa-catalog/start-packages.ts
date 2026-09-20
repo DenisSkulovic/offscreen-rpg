@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 6,
+    version: 7,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -96,6 +96,21 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'The player sees only choice labels; traces show the exact requested identities, and the eventual return contains the corrected complete thread body without presenting its obsolete body as current.',
         authoritativeExpectation:
           'Admission resolves task-local aliases and linked create/revise indexes to stable story document IDs. Each successor loads the current manifest version; invalid handles fail without a retrieval call or prose matching.',
+      }),
+      stage({
+        id: 'lexical-discovery',
+        name: 'Find an uncarried current memory',
+        importance: 'major',
+        preconditions: [
+          'The promoted thread has crossed unrelated play and has a superseding revision.',
+          'A similar noncanonical possibility and an exact developer-private decoy also exist.',
+        ],
+        action:
+          'Search the exact current campaign root for the thread name, inspect the trace, and load the winning stable document ID through canonical context selection.',
+        observableExpectation:
+          'The result identifies revision two with a corrected snippet and explicit scan coverage; the exact loader returns the corrected complete body.',
+        authoritativeExpectation:
+          'Search excludes developer-private and superseded bodies. A candidate remains a lead until its stable ID is loaded from the same current manifest.',
       }),
       stage({
         id: 'retry',

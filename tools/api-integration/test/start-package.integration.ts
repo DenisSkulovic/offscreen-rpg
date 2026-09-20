@@ -11,6 +11,7 @@ import {
   canonicalRuleEvidence,
   createStorytellerRuntime,
   loadCanonicalKnowledge,
+  searchCanonicalKnowledge,
 } from '@offscreen/application/storyteller';
 import {
   prepareStorytellerTask,
@@ -331,6 +332,7 @@ registerStoryConcern(
           'locations',
           'threads',
           'possibilities',
+          'developer',
           'obligations',
         ]) {
           await mkdir(join(source, directory), { recursive: true });
@@ -366,7 +368,11 @@ registerStoryConcern(
           ],
           [
             'possibilities/smugglers.md',
-            '# A possible hidden route\n\nThe exposed road may be used by smugglers, but this is not yet fact.',
+            '# A possible hidden route\n\nThe exposed stone road may be used by smugglers, but this is not yet fact.',
+          ],
+          [
+            'developer/false-tide-road.md',
+            '# Patient tide road\n\nThis developer-only decoy must never appear in Storyteller search results.',
           ],
         ]);
         for (const [path, body] of markdown) {
@@ -430,6 +436,13 @@ registerStoryConcern(
                 activation: 'private-possibility',
                 authority: 'noncanonical',
                 visibility: 'storyteller-private',
+              },
+              {
+                path: 'developer/false-tide-road.md',
+                kind: 'lore',
+                activation: 'initial-canon',
+                authority: 'canon',
+                visibility: 'developer-private',
               },
               {
                 path: 'obligations/shift-bell.json',
@@ -625,7 +638,7 @@ registerStoryConcern(
           referenceData.entries.filter(
             (entry) => entry.activation === 'initial-canon',
           ).length,
-          7,
+          8,
         );
         assert.equal(
           referenceData.entries.filter(
@@ -1087,6 +1100,58 @@ registerStoryConcern(
           originalThreadSourceId,
         );
         assert.match(currentThread.body, /cliff stairs/);
+
+        const discovery = await searchCanonicalKnowledge(storage, {
+          storyId,
+          rootHash: returnTask.context.canonicalKnowledge!.rootHash,
+          rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
+          query: 'patient tide road',
+          maxResults: 4,
+        });
+        assert.equal(discovery.trace.coverageComplete, true);
+        assert.equal(discovery.results[0]?.documentId, promotedThreadDocumentId);
+        assert.equal(discovery.results[0]?.revision, 2);
+        assert.match(discovery.results[0]?.snippet ?? '', /collapsed beneath/);
+        assert.ok(
+          discovery.results.every(
+            (result) => result.path !== 'developer/false-tide-road.md',
+          ),
+        );
+        const staleDiscovery = await searchCanonicalKnowledge(storage, {
+          storyId,
+          rootHash: returnTask.context.canonicalKnowledge!.rootHash,
+          rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
+          query: 'exposed stone road',
+          maxResults: 8,
+        });
+        assert.ok(
+          staleDiscovery.results.every(
+            (result) => result.documentId !== promotedThreadDocumentId,
+          ),
+        );
+        assert.ok(
+          staleDiscovery.results.some(
+            (result) => result.path === 'possibilities/smugglers.md',
+          ),
+        );
+        const discoveredKnowledge = await loadCanonicalKnowledge(storage, {
+          storyId,
+          rootHash: returnTask.context.canonicalKnowledge!.rootHash,
+          rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
+          campaignDocumentIds: [discovery.results[0]!.documentId],
+        });
+        assert.deepEqual(discoveredKnowledge.documentSelection.requestedDocumentIds, [
+          promotedThreadDocumentId,
+        ]);
+        const discoveredEntry = discoveredKnowledge.catalogue.find(
+          (entry) => entry.documentId === promotedThreadDocumentId,
+        );
+        assert.ok(discoveredEntry?.loaded);
+        const discoveredThread = discoveredKnowledge.documents.find(
+          (document) => document.handle === discoveredEntry.handle,
+        );
+        assert.match(discoveredThread?.body ?? '', /cliff stairs/);
+        assert.doesNotMatch(discoveredThread?.body ?? '', /exposed stone road/);
       },
     );
 

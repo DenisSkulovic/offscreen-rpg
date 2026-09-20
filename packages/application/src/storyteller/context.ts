@@ -32,19 +32,10 @@ import {
   type WorldPackageManifest,
 } from '@offscreen/documents';
 import { readPassageDocument } from '../stories/passage-documents';
-
-const canonicalKnowledgeKinds = new Set([
-  'orientation',
-  'identity',
-  'relationship',
-  'narrative-thread',
-  'lore',
-  'private-possibility',
-  'creative-guidance',
-]);
-const canonicalKnowledgePriority = new Map(
-  [...canonicalKnowledgeKinds].map((kind, index) => [kind, index]),
-);
+import {
+  canonicalKnowledgeKinds,
+  canonicalKnowledgePriority,
+} from './canonical-search';
 const maximumCanonicalCatalogueEntries = 64;
 const maximumCanonicalDocuments = 8;
 const maximumCanonicalDocumentBytes = 4 * 1024;
