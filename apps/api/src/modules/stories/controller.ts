@@ -12,12 +12,9 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { createChamber } from '@offscreen/application/developer-tools';
+import type { createStoryApplication } from '@offscreen/application/stories';
 import { StoryError } from '@offscreen/application/stories';
-import {
-  startChamberSchema,
-  startStorySchema,
-} from '@offscreen/contracts/stories';
+import { startStorySchema } from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
 
 export const STORIES = Symbol('STORIES');
@@ -25,7 +22,8 @@ export const STORIES = Symbol('STORIES');
 export class StoriesController {
   constructor(
     @Inject(IdentityService) private readonly identity: IdentityService,
-    @Inject(STORIES) private readonly stories: ReturnType<typeof createChamber>,
+    @Inject(STORIES)
+    private readonly stories: ReturnType<typeof createStoryApplication>,
   ) {}
   private async run<T>(request: Request, work: (owner: string) => Promise<T>) {
     const user = await this.identity.requireUser(request.headers);
@@ -228,25 +226,6 @@ export class StoriesController {
       });
     });
   }
-  @Put(':id/chamber')
-  @HttpCode(200)
-  start(
-    @Req() request: Request,
-    @Param('id') id: string,
-    @Body() body: unknown,
-  ) {
-    return this.run(request, (ownerId) => {
-      const parsed = startChamberSchema.safeParse(body);
-      if (!parsed.success) {
-        throw new StoryError('invalid');
-      }
-      return this.stories.start({
-        ownerId,
-        storyId: id,
-        scenario: parsed.data.scenario,
-      });
-    });
-  }
   @Put(':id/resolutions/:operationId')
   @HttpCode(202)
   admitResolution(
@@ -262,18 +241,6 @@ export class StoriesController {
         operationId,
         body,
       }),
-    );
-  }
-  @Put(':id/responses/:operationId')
-  @HttpCode(200)
-  respond(
-    @Req() request: Request,
-    @Param('id') id: string,
-    @Param('operationId') operationId: string,
-    @Body() body: unknown,
-  ) {
-    return this.run(request, (ownerId) =>
-      this.stories.respond({ ownerId, storyId: id, operationId, body }),
     );
   }
   @Put(':id/controls/:operationId')

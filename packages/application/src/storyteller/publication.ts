@@ -40,8 +40,10 @@ import { continuationSchema } from '../stories/command-policy';
 import { saveOfferPlans } from '../campaign/persistence';
 import { resolvedActivityPlanSchema } from '@offscreen/game/activities';
 import { transitionStorytellerHoldToDecision } from '../campaign/holds';
-import { pendingImmediateActionResolutionSchema } from '@offscreen/game/immediate-actions';
-import { actionProjectedStateDigest } from '../campaign/action-overlap';
+import {
+  actionProjectedStateDigest,
+  pendingImmediateActionResolutionSchema,
+} from '../campaign/action-overlap';
 
 export async function publishStorytellerResult(
   database: Database,
@@ -191,10 +193,7 @@ export async function publishStorytellerResult(
         throw new StoryError('invalid');
       }
     }
-    if (
-      task.task === 'consequence' ||
-      task.task === 'pending-consequence'
-    ) {
+    if (task.task === 'consequence' || task.task === 'pending-consequence') {
       const [campaignState] = await tx
         .select()
         .from(campaign)

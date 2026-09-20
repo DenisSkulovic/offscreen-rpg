@@ -11,6 +11,7 @@ import {
   createConsequenceNarration,
 } from '../campaign/narration';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
+import { respondToStorySchema } from '@offscreen/contracts/stories';
 import { retryStoryteller } from '../storyteller/recovery';
 import type { Database } from '@offscreen/db';
 import { createStoryContinuation } from './continuation';
@@ -18,9 +19,11 @@ import { StoryError } from './errors';
 import { createStoryInitialization } from './initialization';
 import { createStoryReads } from './reads';
 import { createStoryResolution } from './resolution';
-import { createStoryStart } from './start';
+import { createStoryStart, playableOpeningStorySource } from './start';
 import { createStoryTiming } from './timing';
 import type { ReadCacheOptions } from '../cache/read-cache';
+import { story } from '@offscreen/db/story-schema';
+import { and, eq } from 'drizzle-orm';
 
 export {
   controlledIntervalTopic,
@@ -143,6 +146,90 @@ export function createStories(
         ownerId: args.ownerId,
         storyId: args.storyId,
       });
+    },
+  };
+}
+
+export async function readOwnedStorySource(
+  database: Database,
+  identity: { ownerId: string; storyId: string },
+) {
+  const [row] = await database.db
+    .select({ source: story.source })
+    .from(story)
+    .where(
+      and(eq(story.id, identity.storyId), eq(story.ownerId, identity.ownerId)),
+    );
+  if (!row) {
+    throw new StoryError('not_found');
+  }
+  return row.source;
+}
+
+/** Ordinary story application surface. Fixture mutation and inspection belong to Chamber. */
+export function createStoryApplication(
+  database: Database,
+  options: ReadCacheOptions = {},
+) {
+  const stories = createStories(database, options);
+
+  async function read(args: { ownerId: string; storyId: string }) {
+    const snapshot = await stories.read(args);
+    const source = await readOwnedStorySource(database, args);
+    return {
+      ...snapshot,
+      canRespond:
+        source === playableOpeningStorySource &&
+        !snapshot.campaign?.character &&
+        snapshot.current.interaction !== null &&
+        snapshot.resolution === null,
+    };
+  }
+
+  return {
+    ...stories,
+    read,
+    async retryResolution(args: {
+      ownerId: string;
+      storyId: string;
+      retryId: string;
+    }) {
+      await stories.retryResolution(args);
+      return read(args);
+    },
+    async control(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      await stories.controlInterval(args);
+      return read(args);
+    },
+    async startFromCandidate(
+      args: Parameters<typeof stories.startFromCandidate>[0],
+    ) {
+      await stories.startFromCandidate(args);
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
+    },
+    async admitResolution(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+      body: unknown;
+    }) {
+      const parsed = respondToStorySchema.safeParse(args.body);
+      if (!parsed.success) {
+        throw new StoryError('invalid');
+      }
+      await stories.admitResolution({
+        ownerId: args.ownerId,
+        storyId: args.storyId,
+        operationId: args.operationId,
+        expectedRevision: parsed.data.expectedRevision,
+        submission: parsed.data.submission,
+      });
+      return read({ ownerId: args.ownerId, storyId: args.storyId });
     },
   };
 }

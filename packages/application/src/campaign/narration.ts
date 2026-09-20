@@ -28,7 +28,7 @@ import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
 import { rollSchema } from '@offscreen/game/checks';
 import { storyFactDeclarationsSchema } from '@offscreen/game/immediate-actions';
-import type { PendingImmediateActionResolution } from '@offscreen/game/immediate-actions';
+import type { PendingImmediateActionResolution } from './action-overlap';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from '../storyteller/task-admission';
 import {

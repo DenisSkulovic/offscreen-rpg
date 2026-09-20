@@ -1,8 +1,6 @@
 import type { CampaignStart } from '@offscreen/contracts/campaign';
 import { respondToStorySchema } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
-import { story } from '@offscreen/db/story-schema';
-import { and, eq } from 'drizzle-orm';
 import {
   chamberAllowsResponse,
   chamberOpeningFor,
@@ -12,8 +10,9 @@ import {
 } from './chamber-fixtures';
 import { createChamberInspector } from './chamber-inspector';
 import {
-  createStories,
+  createStoryApplication,
   playableOpeningStorySource,
+  readOwnedStorySource,
   StoryError,
 } from '../stories/index';
 import type { ReadCacheOptions } from '../cache/read-cache';
@@ -27,28 +26,12 @@ export function createChamber(
   database: Database,
   options: ReadCacheOptions = {},
 ) {
-  const stories = createStories(database, options);
+  const stories = createStoryApplication(database, options);
   const inspector = createChamberInspector(database);
-
-  async function ownedSource(identity: { ownerId: string; storyId: string }) {
-    const [row] = await database.db
-      .select({ source: story.source })
-      .from(story)
-      .where(
-        and(
-          eq(story.id, identity.storyId),
-          eq(story.ownerId, identity.ownerId),
-        ),
-      );
-    if (!row) {
-      throw new StoryError('not_found');
-    }
-    return row.source;
-  }
 
   async function read(args: { ownerId: string; storyId: string }) {
     const snapshot = await stories.read(args);
-    const source = await ownedSource(args);
+    const source = await readOwnedStorySource(database, args);
     return {
       ...snapshot,
       canRespond:
@@ -102,7 +85,7 @@ export function createChamber(
         throw new StoryError('invalid');
       }
       await stories.read({ ownerId: args.ownerId, storyId: args.storyId });
-      const source = await ownedSource({
+      const source = await readOwnedStorySource(database, {
         ownerId: args.ownerId,
         storyId: args.storyId,
       });
@@ -169,8 +152,7 @@ export function createChamber(
         ownerId: args.ownerId,
         storyId: args.storyId,
         operationId: args.operationId,
-        expectedRevision: parsed.data.expectedRevision,
-        submission: parsed.data.submission,
+        body: parsed.data,
       });
       return read({ ownerId: args.ownerId, storyId: args.storyId });
     },

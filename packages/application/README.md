@@ -66,10 +66,10 @@ The existing `storyteller_attempt` row is the provider-accounting audit grain; d
 
 The worker's [dispatch table](../../apps/worker/src/outbox/dispatch.ts) and [Activity bindings](../../apps/worker/src/activities/index.ts) connect outbox topics to these operations. Temporal payloads identify saved work; they are not alternate sources of story state.
 
-## Other entrances and misleading names
+## Other entrances
 
 - [Stories facade](src/stories/index.ts) exposes lifecycle, reads, campaign operations and timing. [Reads](src/stories/reads.ts) and [persistence](src/stories/persistence.ts) are good starting points for snapshot/revision questions.
-- Ordinary story HTTP routes currently receive [createChamber](src/developer-tools/chamber.ts) from [API composition](../../apps/api/src/app.ts). That wrapper delegates to `createStories` and adds response eligibility and fixture handling. Its directory name does not mean every method is guarded by the developer-tools switch. Separating normal composition from the fixture wrapper is a future structural review, not completed work.
+- Ordinary story HTTP routes receive `createStoryApplication` from [stories](src/stories/index.ts). It adds public response eligibility and command-shaped return values around the internal story operations. [Chamber](src/developer-tools/chamber.ts) separately adds fixture start/response and inspection behavior; API composition constructs and mounts it only when developer tools are enabled.
 - Narrative option resolution enters [stories/resolution](src/stories/resolution.ts), while mechanical selection enters `campaign/actions.ts`. Trace the endpoint before assuming they share one adjudication path.
 - Narrative prepared waits in [stories/timing](src/stories/timing.ts) and mechanical processes in `campaign/activities.ts` are distinct paths. A narrative wait reaches an already prepared passage. A mechanical clock-wait rule applies admitted completion effects after eligible simulation ticks, while contribution completes only from rule-owned earned progress. Do not collapse these into a generic duration.
 - Campaign-clock projection requires an explicit accepted execution identity. An absent hold is not permission to advance, and a stale/dormant activity pointer cannot expose a due time or donate idle wall time when new work starts.

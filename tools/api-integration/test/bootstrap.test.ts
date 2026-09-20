@@ -34,6 +34,24 @@ test('API binds a real HTTP listener and closes cleanly', async () => {
       ).status,
       404,
     );
+    assert.equal(
+      (
+        await fetch(
+          `${origin}/api/stories/00000000-0000-4000-8000-000000000000/chamber`,
+          { method: 'PUT', headers: { origin: 'http://localhost:3000' } },
+        )
+      ).status,
+      404,
+    );
+    assert.equal(
+      (
+        await fetch(
+          `${origin}/api/stories/00000000-0000-4000-8000-000000000000/responses/00000000-0000-4000-8000-000000000001`,
+          { method: 'PUT', headers: { origin: 'http://localhost:3000' } },
+        )
+      ).status,
+      404,
+    );
     const failure = mock.method(auth.api, 'getSession', async () => {
       throw new Error('sensitive-query-parameter');
     });

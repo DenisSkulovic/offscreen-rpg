@@ -1,6 +1,5 @@
 import {
   immediateActionPlanSchema,
-  pendingImmediateActionResolutionSchema,
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
@@ -11,6 +10,7 @@ import type { CampaignFollowUpIntent } from './follow-up-intents';
 import {
   actionResolutionProjectedDigest,
   actionResolutionSourceDigest,
+  pendingImmediateActionResolutionSchema,
 } from './action-overlap';
 
 type ActionExecutionTransitionInput = {

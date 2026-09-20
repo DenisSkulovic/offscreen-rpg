@@ -60,7 +60,7 @@ For continuing-life play, implement bounded-cost B1/B2 and storage C1/C2, then t
 
 The [offline acceptance contract](engineering/offline-poc-acceptance.md) defines the manual flow and responsibility-specific probes. The [trace explorer](features/2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md) remains planned. Contribution-based activities, spatial movement and richer rule domains are separate designs; do not turn an example's duration, anatomy or currency into a universal mechanic.
 
-Navigation follow-up should examine story timing/recovery and database record relationships next. Normal HTTP story composition currently passes through the Chamber wrapper; document its actual authorization and delegation before any later separation. No restructuring is implemented by this note.
+Normal HTTP story composition now uses the ordinary stories facade. Chamber fixture mutation, inspection and manual QA composition are constructed only when developer tooling is enabled. Storyteller recovery rejects a pending-action retry until the exact finite action has settled and promoted the same generation to its receipt; creative settings cannot change while a current resolution owns the narrative revision.
 
 ## What can be tried
 

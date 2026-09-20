@@ -519,35 +519,6 @@ export type ImmediateActionResolution = Readonly<{
   storyFacts: readonly StoryFact[];
 }>;
 
-export const pendingImmediateActionResolutionSchema = z.strictObject({
-  version: z.literal(1),
-  sourceStateDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  projectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  resolution: z.strictObject({
-    outcome: z.enum(['automatic', 'success', 'failure']),
-    text: z.string().max(1000),
-    effects: outcomeEffectsSchema,
-    declarations: storyFactDeclarationsSchema,
-    roll: rollSchema.nullable(),
-    character: characterSchema,
-    storyFacts: storyFactsSchema,
-  }),
-});
-export type PendingImmediateActionResolution = z.infer<
-  typeof pendingImmediateActionResolutionSchema
->;
-
-export type ActionOverlapEligibility =
-  | { eligible: true }
-  | {
-      eligible: false;
-      reason:
-        | 'unsupported-resolution'
-        | 'intervening-world-obligation'
-        | 'temporal-fence'
-        | 'competing-authority';
-    };
-
 /**
  * Fails closed unless every authority that can change a finite result has been
  * ruled out. Callers supply admitted mechanics, never inferences from prose.
@@ -555,22 +526,14 @@ export type ActionOverlapEligibility =
 export function actionOverlapEligibility(input: {
   resolutionKind: ImmediateActionPlan['resolution']['kind'];
   hasInterveningWorldObligation: boolean;
-  hasTemporalFence: boolean;
-  hasCompetingAuthority: boolean;
-}): ActionOverlapEligibility {
+}) {
   if (input.resolutionKind === 'process' || input.resolutionKind === 'resume') {
     return { eligible: false, reason: 'unsupported-resolution' };
   }
   if (input.hasInterveningWorldObligation) {
     return { eligible: false, reason: 'intervening-world-obligation' };
   }
-  if (input.hasTemporalFence) {
-    return { eligible: false, reason: 'temporal-fence' };
-  }
-  if (input.hasCompetingAuthority) {
-    return { eligible: false, reason: 'competing-authority' };
-  }
-  return { eligible: true };
+  return { eligible: true as const };
 }
 
 /** Resolves one already-admitted plan without persistence or implicit retries. */

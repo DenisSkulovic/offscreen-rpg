@@ -41,7 +41,7 @@ The [architecture specification](../technical/architecture.md) also describes in
 | Finite action | Admitted automatic outcome or ability check with a fixed positive duration; persisted as an execution and resolved into one receipt only at its target tick |
 | Activity | Persisted commitment with contribution or wait progress under the campaign clock; broader participation/process families remain feature work |
 | Passage / arrival | Committed narrative versus a prepared future slice; arrival is not current evidence before publication |
-| Chamber | Both local tooling and, currently, a wrapper used by ordinary story routes; inspect wiring rather than assuming everything with this name is developer-only |
+| Chamber | Explicitly enabled local tooling and fixture behavior layered over the ordinary story application facade |
 
 ## Reading discipline
 

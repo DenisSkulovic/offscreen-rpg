@@ -34,8 +34,13 @@ import {
   OpeningsController,
 } from './modules/drafts/openings-controller.js';
 import { createChamber } from '@offscreen/application/developer-tools';
+import { createStoryApplication } from '@offscreen/application/stories';
 import { STORIES, StoriesController } from './modules/stories/controller.js';
-import { ChamberToolsController } from './modules/stories/chamber-tools-controller.js';
+import {
+  CHAMBER,
+  ChamberStoriesController,
+  ChamberToolsController,
+} from './modules/stories/chamber-tools-controller.js';
 import { createQaJourneys } from '@offscreen/application/developer-tools';
 import type { CacheIncident, ReadCache } from '@offscreen/application/cache';
 import {
@@ -115,7 +120,11 @@ export async function createApp(
         OpeningsController,
         StoriesController,
         ...(options.developerTools === true
-          ? [ChamberToolsController, QaJourneysController]
+          ? [
+              ChamberStoriesController,
+              ChamberToolsController,
+              QaJourneysController,
+            ]
           : []),
       ],
       providers: [
@@ -131,31 +140,44 @@ export async function createApp(
         { provide: DRAFTS, useValue: createDrafts(database) },
         {
           provide: OPENINGS,
-            useValue: createScriptedOpenings(
-              database,
-              options.storytellerExecution,
-              options.storytellerUsagePolicy,
-            ),
+          useValue: createScriptedOpenings(
+            database,
+            options.storytellerExecution,
+            options.storytellerUsagePolicy,
+          ),
         },
         {
           provide: STORIES,
-          useValue: createChamber(database, {
+          useValue: createStoryApplication(database, {
             ...(options.readCache ? { cache: options.readCache } : {}),
             ...(options.onCacheIncident
               ? { onCacheIncident: options.onCacheIncident }
               : {}),
           }),
         },
-        {
-          provide: QA_JOURNEYS,
-          useValue: createQaJourneys(
-            database,
-            options.qaContext ?? {
-              git: { commit: 'unrecorded', dirty: true },
-              environment: { identity: 'local-test' },
-            },
-          ),
-        },
+        ...(options.developerTools === true
+          ? [
+              {
+                provide: CHAMBER,
+                useValue: createChamber(database, {
+                  ...(options.readCache ? { cache: options.readCache } : {}),
+                  ...(options.onCacheIncident
+                    ? { onCacheIncident: options.onCacheIncident }
+                    : {}),
+                }),
+              },
+              {
+                provide: QA_JOURNEYS,
+                useValue: createQaJourneys(
+                  database,
+                  options.qaContext ?? {
+                    git: { commit: 'unrecorded', dirty: true },
+                    environment: { identity: 'local-test' },
+                  },
+                ),
+              },
+            ]
+          : []),
       ],
     },
     {

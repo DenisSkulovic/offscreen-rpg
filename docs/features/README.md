@@ -6,16 +6,17 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-Next: implement [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md) safe overlapping preparation on top of the completed [calendar/world-time contract](../technical/calendars-and-world-time.md). Deliberate-time T1/T2 and calendar/world-time K1/K2 are complete.
+Current: complete the bounded [repository-integrity cleanup](2026-09-20--15-42--repository-integrity-cleanup/PLAN.md), which separates ordinary story composition from Chamber fixtures and closes recovery/settings consistency gaps found before further feature growth. Then return to deterministic T3 Chamber evidence rather than adding another gameplay subsystem.
 
 Implementation is active under the owner's instruction. Follow this route one coherent slice at a time and commit/push before the next. Do not launch another agent, enable providers or broaden into unrelated unfinished features.
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
 
-Nearest prepared work: [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md) may now use the completed ordered world-boundary contract when deciding whether narration preparation can overlap timed actions. The remaining [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) recovery matrix consumes the deliberate-time contract; B1, operation/window accounting, dispatch authority and blocker projection already exist. [Canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md) C1/C2 remains independently ready, followed by [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md). Memory Phase 3 cannot precede completed B2 enforcement; B3 integrates with memory rather than creating a second runner. The harbor/return flow remains the acceptance anchor.
+Nearest prepared work after cleanup: [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md) has its overlap mechanics and connected worker-restart proof; its remaining slice is deterministic Chamber delay/release/failure evidence. The remaining [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) recovery matrix consumes that deliberate-time contract. [Canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md) C1/C2 remains independently ready, followed by [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md). The harbor/return flow remains the acceptance anchor.
 
 | Feature | Phases | Ownership |
 | --- | --- | --- |
+| [Repository integrity cleanup](2026-09-20--15-42--repository-integrity-cleanup/FEATURE.md) | R1 project memory → R2 composition → R3 fences → R4 boundary → R5 file concentration | Trustworthy handoff state, production/developer separation, recovery consistency |
 | [Deliberate action time](2026-09-19--22-13--deliberate-action-time/FEATURE.md) | T1 accepted-execution clock → T2 finite actions → T3 safe overlapping preparation | No idle drift, time-bearing story selections, independent execution/narration readiness |
 | [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1a effective profiles → B1b recipes/preflight → B2a accounting/B2b windows and holds → B3 memory integration → B4 evidence | Configurable account/tier/context/model limits, cumulative work/spending, safe pause/reset recovery |
 | [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |

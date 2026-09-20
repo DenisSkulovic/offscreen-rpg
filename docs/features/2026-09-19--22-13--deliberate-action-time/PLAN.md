@@ -36,7 +36,7 @@ Exit: connected offline timed choices, receipts, waits and held next decisions. 
 
 ## T3 — Safe overlapping preparation and readable recovery
 
-Status: next after completed K1/K2; required for the finite-action overlap acceptance, not a general speculative agent runner. The permanent [calendar/world-time contract](../../technical/calendars-and-world-time.md) supplies date interpretation and ordered world obligations. T1/T2 do not depend on elaborate calendar features.
+Status: overlap mechanics and the first connected worker-restart proof are implemented; deterministic Chamber ordering/failure controls remain. This is not a general speculative agent runner. The permanent [calendar/world-time contract](../../technical/calendars-and-world-time.md) supplies date interpretation and ordered world obligations.
 Outcome: eligible closed finite actions can prepare a single next turn during their real wait; early/late results respect the same time contract.
 
 Owners: pure overlap eligibility, durable pending resolution/task schemas, execution settlement, Storyteller admission/context/publication/recovery, snapshot/cache freshness, Chamber failure controls and QA catalogue. [The contract](../../technical/committed-time.md#safe-overlap-for-a-bounded-atomic-action) fixes the ownership: frozen private result and projected state; current mechanics only at completion; publication only against the matching settled receipt. Current consequence packets promise committed evidence and cannot simply be reused for pending evidence.

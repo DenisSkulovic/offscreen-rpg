@@ -398,12 +398,6 @@ export function createCampaignActions(database: Database) {
       const overlap = actionOverlapEligibility({
         resolutionKind: definition.resolution.kind,
         hasInterveningWorldObligation: interveningObligations.length > 0,
-        // No generic temporal opportunity contract is admitted yet. When one
-        // is, its typed fences must feed this decision rather than prose.
-        hasTemporalFence: false,
-        // The story lock, consumed offer and single advancing slot currently
-        // exclude other mechanical writers during this finite execution.
-        hasCompetingAuthority: false,
       });
       const pendingResolution = overlap.eligible
         ? freezePendingActionResolution({

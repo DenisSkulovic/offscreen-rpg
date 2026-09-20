@@ -13,17 +13,79 @@ import type { Request } from 'express';
 import type { createChamber } from '@offscreen/application/developer-tools';
 import { StoryError } from '@offscreen/application/stories';
 import { IdentityService } from '../auth/identity.js';
-import { STORIES } from './controller.js';
 import { OPENINGS } from '../drafts/openings-controller.js';
 import type { createScriptedOpenings } from '@offscreen/application/generations';
 import { DispatchReviewConflictError } from '@offscreen/application/storyteller';
 import { dispatchReviewDecisionRequestSchema } from '@offscreen/contracts/chamber';
+import {
+  respondToStorySchema,
+  startChamberSchema,
+} from '@offscreen/contracts/stories';
+
+export const CHAMBER = Symbol('CHAMBER');
+
+async function runChamber<T>(
+  identity: IdentityService,
+  request: Request,
+  work: (ownerId: string) => Promise<T>,
+) {
+  const user = await identity.requireUser(request.headers);
+  try {
+    return await work(user.id);
+  } catch (error) {
+    if (error instanceof StoryError) {
+      throw new HttpException(
+        { code: error.code },
+        { invalid: 400, not_found: 404, conflict: 409 }[error.code],
+      );
+    }
+    throw new ServiceUnavailableException('Story unavailable');
+  }
+}
+
+@Controller('stories')
+export class ChamberStoriesController {
+  constructor(
+    @Inject(IdentityService) private readonly identity: IdentityService,
+    @Inject(CHAMBER) private readonly chamber: ReturnType<typeof createChamber>,
+  ) {}
+
+  @Put(':id/chamber')
+  start(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = startChamberSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new HttpException({ code: 'invalid' }, 400);
+    }
+    return runChamber(this.identity, request, (ownerId) =>
+      this.chamber.start({ ownerId, storyId, scenario: parsed.data.scenario }),
+    );
+  }
+
+  @Put(':id/responses/:operationId')
+  respond(
+    @Req() request: Request,
+    @Param('id') storyId: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    if (!respondToStorySchema.safeParse(body).success) {
+      throw new HttpException({ code: 'invalid' }, 400);
+    }
+    return runChamber(this.identity, request, (ownerId) =>
+      this.chamber.respond({ ownerId, storyId, operationId, body }),
+    );
+  }
+}
 
 @Controller('chamber-tools')
 export class ChamberToolsController {
   constructor(
     @Inject(IdentityService) private readonly identity: IdentityService,
-    @Inject(STORIES) private readonly stories: ReturnType<typeof createChamber>,
+    @Inject(CHAMBER) private readonly stories: ReturnType<typeof createChamber>,
     @Inject(OPENINGS)
     private readonly openings: ReturnType<typeof createScriptedOpenings>,
   ) {}

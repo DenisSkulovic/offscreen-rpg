@@ -8,6 +8,7 @@ import {
   storytellerPreset,
   worldObligation,
 } from '@offscreen/db/campaign-schema';
+import { storyResolution } from '@offscreen/db/story-schema';
 import { story } from '@offscreen/db/story-schema';
 import {
   campaignSettingsSchema,
@@ -319,6 +320,18 @@ export function createCampaignSettings(database: Database) {
         const request = { kind: 'settings', ...parsed.data };
         if (await commandReceipt(tx, current.id, args.operationId, request))
           return;
+        const [activeResolution] = await tx
+          .select({ generationId: storyResolution.generationId })
+          .from(storyResolution)
+          .where(
+            and(
+              eq(storyResolution.storyId, current.id),
+              eq(storyResolution.baseRevision, current.revision),
+            ),
+          );
+        // A captured Storyteller task owns this narrative revision. Changing its
+        // creative authority underneath it would publish an obsolete profile.
+        if (activeResolution) throw new StoryError('conflict');
         const state = await ensureCampaign(tx, current);
         if (
           state.locked ||

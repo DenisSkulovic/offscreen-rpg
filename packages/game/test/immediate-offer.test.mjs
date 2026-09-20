@@ -39,8 +39,6 @@ test('finite action overlap eligibility fails closed around admitted boundaries'
     actionOverlapEligibility({
       resolutionKind: 'check',
       hasInterveningWorldObligation: false,
-      hasTemporalFence: false,
-      hasCompetingAuthority: false,
     }),
     { eligible: true },
   );
@@ -48,8 +46,6 @@ test('finite action overlap eligibility fails closed around admitted boundaries'
     actionOverlapEligibility({
       resolutionKind: 'automatic',
       hasInterveningWorldObligation: true,
-      hasTemporalFence: false,
-      hasCompetingAuthority: false,
     }),
     { eligible: false, reason: 'intervening-world-obligation' },
   );
@@ -57,8 +53,6 @@ test('finite action overlap eligibility fails closed around admitted boundaries'
     actionOverlapEligibility({
       resolutionKind: 'process',
       hasInterveningWorldObligation: false,
-      hasTemporalFence: false,
-      hasCompetingAuthority: false,
     }),
     { eligible: false, reason: 'unsupported-resolution' },
   );

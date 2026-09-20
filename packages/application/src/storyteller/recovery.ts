@@ -3,12 +3,19 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
 import {
+  gameActionExecution,
+  gameActionReceipt,
+} from '@offscreen/db/campaign-schema';
+import {
   storytellerAttempt,
   storytellerPublication,
   storytellerRetry,
 } from '@offscreen/db/storyteller-schema';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
-import { lockOwnedStory, incrementStoryViewVersion } from '../stories/persistence';
+import {
+  lockOwnedStory,
+  incrementStoryViewVersion,
+} from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import { enqueue } from '../outbox/index';
 import { storytellerKind, storytellerTopic } from './records';
@@ -64,6 +71,33 @@ export async function retryStoryteller(
       throw new StoryError('conflict');
     }
     const task = storytellerTaskSchema.parse(record.input);
+    if (task.task === 'pending-consequence') {
+      const [settled] = await tx
+        .select({
+          state: gameActionExecution.state,
+          preparationGenerationId: gameActionExecution.preparationGenerationId,
+          receiptGenerationId: gameActionReceipt.generationId,
+        })
+        .from(gameActionExecution)
+        .leftJoin(
+          gameActionReceipt,
+          eq(gameActionReceipt.operationId, gameActionExecution.operationId),
+        )
+        .where(
+          and(
+            eq(gameActionExecution.operationId, task.source.executionId),
+            eq(gameActionExecution.storyId, input.storyId),
+          ),
+        );
+      if (
+        !settled ||
+        settled.state !== 'settled' ||
+        settled.preparationGenerationId !== record.id ||
+        settled.receiptGenerationId !== record.id
+      ) {
+        throw new StoryError('conflict');
+      }
+    }
     const [publication] = await tx
       .select()
       .from(storytellerPublication)
