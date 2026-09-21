@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
 import type { CapturedProviderRequest, StorytellerTask } from '../tasks';
-import { describeStorytellerRequestPurpose } from '../tasks';
+import {
+  describeStorytellerRequestPurpose,
+  validateStorytellerResult,
+} from '../tasks';
 import { reservationForRequest } from '../tasks/policy';
 
 export type ProviderUsage = Readonly<{
@@ -324,6 +327,96 @@ const responseSchema = z.object({
     .min(1)
     .max(1),
 });
+
+export type OpenRouterResponseDiagnostic = Readonly<{
+  stage: 'provider-envelope' | 'model-json' | 'task-output' | 'valid';
+  issues: ReadonlyArray<
+    Readonly<{
+      path: string;
+      code: string;
+      message: string;
+    }>
+  >;
+}>;
+
+function diagnosticIssues(
+  error: z.ZodError,
+): OpenRouterResponseDiagnostic['issues'] {
+  return error.issues.slice(0, 12).map((issue) => ({
+    path: issue.path.map(String).join('.'),
+    code: issue.code,
+    message: issue.message.slice(0, 240),
+  }));
+}
+
+/**
+ * Explain a captured response without retaining model prose in the diagnostic.
+ * This is developer evidence only; it never repairs output or changes admission.
+ */
+export function diagnoseOpenRouterResponse(
+  raw: string,
+  task: StorytellerTask,
+): OpenRouterResponseDiagnostic {
+  let envelope: unknown;
+  try {
+    envelope = JSON.parse(raw);
+  } catch {
+    return {
+      stage: 'provider-envelope',
+      issues: [
+        {
+          path: '',
+          code: 'invalid_json',
+          message: 'Provider envelope is not valid JSON',
+        },
+      ],
+    };
+  }
+  const parsedEnvelope = responseSchema.safeParse(envelope);
+  if (!parsedEnvelope.success) {
+    return {
+      stage: 'provider-envelope',
+      issues: diagnosticIssues(parsedEnvelope.error),
+    };
+  }
+  const content = parsedEnvelope.data.choices[0]?.message.content ?? '';
+  let output: unknown;
+  try {
+    output = JSON.parse(content);
+  } catch {
+    return {
+      stage: 'model-json',
+      issues: [
+        {
+          path: '',
+          code: 'invalid_json',
+          message: 'Model content is not valid JSON',
+        },
+      ],
+    };
+  }
+  try {
+    validateStorytellerResult(task, output);
+    return { stage: 'valid', issues: [] };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { stage: 'task-output', issues: diagnosticIssues(error) };
+    }
+    return {
+      stage: 'task-output',
+      issues: [
+        {
+          path: '',
+          code: 'storyteller_policy',
+          message:
+            error instanceof Error
+              ? error.message.slice(0, 240)
+              : 'Storyteller output failed policy validation',
+        },
+      ],
+    };
+  }
+}
 
 async function boundedResponse(response: Response) {
   if (!response.body) {

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Database } from '@offscreen/db';
 import { preflightLiveEvaluation } from '@offscreen/application/developer-tools';
@@ -7,6 +7,8 @@ import type { DispatchReviewView } from '@offscreen/contracts/chamber';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import { openingPreviewSchema } from '@offscreen/contracts/openings';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
+import { diagnoseOpenRouterResponse } from '@offscreen/storyteller/providers/openrouter';
 import { setTimeout as delay } from 'node:timers/promises';
 
 type CreditSnapshot = {
@@ -392,7 +394,7 @@ export async function saveLiveEvaluationReport(input: {
   creditsAfter: CreditSnapshot;
 }) {
   const result = await input.database.db.$client.query(
-    `SELECT g.state AS generation_state, g.failure_code, g.output,
+    `SELECT g.state AS generation_state, g.failure_code, g.output, g.input,
             a.id AS attempt_id, a.state AS attempt_state, a.request_bytes,
             a.prompt_tokens, a.completion_tokens, a.reasoning_tokens,
             a.cached_tokens, a.cache_write_tokens, a.total_tokens,
@@ -404,6 +406,33 @@ export async function saveLiveEvaluationReport(input: {
       WHERE g.id = $1`,
     [input.generationId],
   );
+  const row = result.rows[0] ?? null;
+  let outputDiagnostic = null;
+  if (row?.provider_id && row.input) {
+    const task = storytellerTaskSchema.safeParse(row.input);
+    if (task.success) {
+      try {
+        const artifact = JSON.parse(
+          await readFile(
+            join(
+              input.directory,
+              `provider-response-${String(row.provider_id)}.json`,
+            ),
+            'utf8',
+          ),
+        ) as { raw?: unknown };
+        if (typeof artifact.raw === 'string') {
+          outputDiagnostic = diagnoseOpenRouterResponse(
+            artifact.raw,
+            task.data,
+          );
+        }
+      } catch {
+        // The report still records durable accounting if private raw evidence is unavailable.
+      }
+    }
+  }
+  const { input: _taskInput, ...durable } = row ?? {};
   const report = {
     version: 'live-evaluation-report.v1',
     evaluationId: input.config.id,
@@ -426,7 +455,8 @@ export async function saveLiveEvaluationReport(input: {
         verifiedAt: input.creditsAfter.verifiedAt,
       },
     },
-    durable: result.rows[0] ?? null,
+    durable: row ? durable : null,
+    outputDiagnostic,
     recordedAt: new Date().toISOString(),
   };
   const path = join(

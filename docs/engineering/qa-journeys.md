@@ -154,6 +154,8 @@ Run `pnpm chamber:review` for a headless, authenticated visual pass over the mec
 
 Run `pnpm chamber:packet` for API-only opening-prompt inspection. Verify the exported artifact says `awaiting-review`, reports the immutable SHA-256 and contains both structural contribution data and the exact provider body. The command fails unless the generation has zero provider attempts. Review system instructions, Storyteller-specific guidance, premise/current facts, output schema and per-section bytes before proposing prompt changes; a small packet is not automatically a sufficient packet, and a large schema is not automatically narrative noise.
 
+For a separately authorized `chamber:evaluation-run`, inspect the terminal report before opening private raw response evidence. A failed output should identify `provider-envelope`, `model-json` or `task-output` and list only bounded schema paths, codes and messages. Confirm the report contains no generated prose, the durable attempt is terminal, provider and calculated charges reconcile, the before/after credit snapshot is recorded and no retry occurred. Load the raw artifact only when those compact diagnostics cannot explain the incompatibility.
+
 The same case IDs, stage IDs and commands support browser automation. Automation should record structural evidence only. Human-judgment stages remain for an operator even when surrounding navigation and state assertions are automated.
 
-No live model call was made while implementing this system. Its offline accounting is zero calls, zero tokens, zero charge and no reservation.
+The ordinary Chamber QA workspace remains offline: its accounting is zero calls, zero tokens, zero charge and no reservation. Live evaluation is a separate explicitly authorized command and evidence path.

@@ -23,6 +23,7 @@ import {
 } from '../src/context';
 import {
   createOpenRouterProvider,
+  diagnoseOpenRouterResponse,
   inspectOpenRouterRequest,
   compareOpenRouterRequests,
   usdToMicrousd,
@@ -1321,6 +1322,72 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   );
   assert.equal(usdToMicrousd('1e-7'), 1n);
   assert.equal(usdToMicrousd('0.012345'), 12345n);
+});
+
+test('OpenRouter diagnostics identify compact task-output paths without retaining prose', () => {
+  const task = prepareStorytellerTask(opening());
+  const valid = structuredClone(scriptedStorytellerResult(task)) as Record<
+    string,
+    unknown
+  >;
+  const scene = valid.scene as Record<string, unknown>;
+  const malformed = {
+    version: valid.version,
+    scene: {
+      ...scene,
+      currentNotes: valid.currentNotes,
+      arrivalNotes: valid.arrivalNotes,
+      documentChanges: valid.documentChanges,
+    },
+  };
+  const raw = JSON.stringify({
+    id: 'diagnostic-response',
+    model: 'test/model',
+    usage: {
+      cost: 0,
+      prompt_tokens: 10,
+      completion_tokens: 20,
+      total_tokens: 30,
+    },
+    choices: [
+      {
+        finish_reason: 'stop',
+        message: { content: JSON.stringify(malformed) },
+      },
+    ],
+  });
+
+  const diagnostic = diagnoseOpenRouterResponse(raw, task);
+  assert.equal(diagnostic.stage, 'task-output');
+  assert.ok(diagnostic.issues.some((issue) => issue.path === 'scene'));
+  assert.ok(
+    diagnostic.issues.some(
+      (issue) =>
+        issue.code === 'unrecognized_keys' &&
+        issue.message.includes('currentNotes'),
+    ),
+  );
+  assert.ok(
+    diagnostic.issues.every(
+      (issue) => !issue.message.includes(String(scene.content)),
+    ),
+  );
+
+  const invalidJsonEnvelope = JSON.parse(raw);
+  invalidJsonEnvelope.choices[0].message.content = 'not json';
+  assert.deepEqual(
+    diagnoseOpenRouterResponse(JSON.stringify(invalidJsonEnvelope), task),
+    {
+      stage: 'model-json',
+      issues: [
+        {
+          path: '',
+          code: 'invalid_json',
+          message: 'Model content is not valid JSON',
+        },
+      ],
+    },
+  );
 });
 
 test('request audit reports exact multi-purpose structure without inventing tokens or spend', () => {
