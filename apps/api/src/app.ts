@@ -107,6 +107,7 @@ export type CreateAppOptions = Readonly<{
   onCacheIncident?: (incident: CacheIncident) => void;
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
+  openingContent?: readonly import('@offscreen/application/storyteller').OpeningContentEntry[];
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -156,6 +157,10 @@ export async function createApp(
             database,
             options.storytellerExecution,
             options.storytellerUsagePolicy,
+            {
+              ...(options.documentStore ? { documentStore: options.documentStore } : {}),
+              ...(options.openingContent ? { content: options.openingContent } : {}),
+            },
           ),
         },
         {

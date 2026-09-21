@@ -9,6 +9,7 @@ import {
 } from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
+import type { StartPackageReference } from '@offscreen/contracts/campaign';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { paceOptions } from '@/src/features/play/campaign-play';
 import {
@@ -32,10 +33,13 @@ export function OpeningPreviewPanel({
     id: string;
     revision: number;
     contentId: string | undefined;
+    startPackage: StartPackageReference | undefined;
   } | null>(null);
   const storyId = useRef<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [contentId, setContentId] = useState(initial?.contentId ?? '');
+  const [contentId, setContentId] = useState(
+    initial?.contentId ?? mechanicalContent[0]?.id ?? '',
+  );
   const [locked, setLocked] = useState(false);
   const [pace, setPace] = useState('steady');
   const [dispatchReview, setDispatchReview] =
@@ -133,11 +137,13 @@ export function OpeningPreviewPanel({
             id: preview.id,
             revision: preview.sourceRevision,
             contentId: preview.contentId,
+            startPackage: preview.startPackage,
           }
         : {
             id: crypto.randomUUID(),
             revision: draft.revision,
             contentId: contentId || undefined,
+            startPackage: mechanicalContent.find((entry) => entry.id === contentId)?.startPackage,
           });
     attempt.current = request;
     setPending(true);
@@ -151,6 +157,7 @@ export function OpeningPreviewPanel({
           body: JSON.stringify({
             expectedRevision: request.revision,
             contentId: request.contentId,
+            startPackage: request.startPackage,
           }),
           signal: AbortSignal.timeout(15000),
         },
@@ -210,6 +217,9 @@ export function OpeningPreviewPanel({
             mechanics: Boolean(preview.contentId),
             locked,
             pace: paceOptions.find((option) => option.value === pace)?.pace,
+            ...(preview.startPackage
+              ? { startPackage: preview.startPackage }
+              : {}),
           },
         }),
         signal: AbortSignal.timeout(15000),
@@ -280,7 +290,7 @@ export function OpeningPreviewPanel({
             value={contentId}
             onChange={(event) => setContentId(event.target.value)}
           >
-            <option value="">Narrative rehearsal</option>
+            <option value="">Blank narrative rehearsal</option>
             {mechanicalContent.map((entry) => (
               <option key={entry.id} value={entry.id}>
                 {entry.name}

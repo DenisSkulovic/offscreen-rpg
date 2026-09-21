@@ -16,6 +16,8 @@ import {
 import { enqueue } from '../outbox/index';
 import { validId, GenerationError } from './service';
 import { createDispatchReviewControls } from '../storyteller/dispatch-review';
+import type { DocumentStore, StartPackageReference } from '@offscreen/documents';
+import type { OpeningContentEntry } from '../storyteller/openings';
 export { OpeningInputError } from '@offscreen/storyteller/tasks';
 
 // Versioned, deterministic sample. Keep this kind stable for recovery of admitted work.
@@ -62,8 +64,9 @@ export function createScriptedOpenings(
   database: Database,
   execution: ExecutionPolicy = offlineExecution,
   usagePolicy?: EffectiveUsagePolicy | null,
+  options: { documentStore?: DocumentStore; content?: readonly OpeningContentEntry[] } = {},
 ) {
-  const profiled = createStorytellerOpenings(database, execution, usagePolicy);
+  const profiled = createStorytellerOpenings(database, execution, usagePolicy, options);
   const dispatchReviews = createDispatchReviewControls(database);
   const operations = createOpenings(database, kind, (tx, id) =>
     enqueue(tx, { id, operationId: id, topic: scriptedOpeningTopic }),
@@ -126,11 +129,12 @@ export function createScriptedOpenings(
       id: string,
       revision: number,
       contentId?: string,
+      startPackage?: StartPackageReference,
     ) {
       if (await profiled.handles(owner, draftId, id)) {
-        return profiled.request(owner, draftId, id, revision, contentId);
+        return profiled.request(owner, draftId, id, revision, contentId, startPackage);
       }
-      if (contentId) {
+      if (contentId || startPackage) {
         throw new GenerationError('invalid');
       }
       await operations.request(owner, draftId, id, revision);

@@ -70,6 +70,7 @@ export class OpeningsController {
         id,
         parsed.data.expectedRevision,
         parsed.data.contentId,
+        parsed.data.startPackage,
       );
     });
   }

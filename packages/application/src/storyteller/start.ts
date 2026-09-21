@@ -76,6 +76,9 @@ export async function startStorytellerCandidate(
     throw new StoryError('conflict');
   }
   const options = campaignStartSchema.parse(input.campaign ?? {});
+  if (!isDeepStrictEqual(options.startPackage, task.source.startPackage)) {
+    throw new StoryError('invalid', 'start_reference');
+  }
   if (options.mechanics !== Boolean(task.context.mechanicalOpening)) {
     throw new StoryError('invalid');
   }

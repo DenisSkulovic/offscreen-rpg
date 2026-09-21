@@ -48,6 +48,8 @@ import {
 import {
   LocalDocumentStore,
   importRulePackageDirectory,
+  importWorldPackageDirectory,
+  importStartPackageDirectory,
 } from '@offscreen/documents';
 import { captureHeldMemoryPacket } from './memory-packet-review.js';
 
@@ -419,6 +421,37 @@ const defaultRulePackage = await importRulePackageDirectory(
   documentStore,
   join(workspaceRoot, 'content', 'rules', 'srd-5.2.1-subset'),
 );
+let storyOpeningContent;
+if (storyMode) {
+  const world = await importWorldPackageDirectory(
+    documentStore,
+    {
+      sourceDirectory: join(workspaceRoot, 'content', 'worlds', 'vvardenfell-poc'),
+      worldId: '7c14e5bc-4d72-4f8c-9a6b-97f334b83c11',
+      operationId: '89ec4571-24ee-49da-826c-ce25ad6b3e41',
+      title: 'Vvardenfell POC',
+    },
+  );
+  if (world.rootHash !== '9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb') {
+    throw new Error('Checked-in Vvardenfell package root changed without updating the start package');
+  }
+  const start = await importStartPackageDirectory(
+    documentStore,
+    join(workspaceRoot, 'content', 'starts', 'seyda-neen-prisoner'),
+  );
+  storyOpeningContent = [
+    {
+      id: 'seyda-neen-arrival.v1',
+      name: 'Seyda Neen — prisoner arrival',
+      description: 'Begin aboard the prison ship and pass through the maintained Seyda Neen release sequence.',
+      startPackage: {
+        startPackageId: start.manifest.startPackageId,
+        rootHash: start.rootHash,
+        revision: start.manifest.revision,
+      },
+    },
+  ];
+}
 let chamberUserId: string | undefined;
 const localUserEmail = storyMode
   ? 'story-local@local.invalid'
@@ -446,6 +479,7 @@ const app = await createApp(
       revision: defaultRulePackage.manifest.revision,
       engine: defaultRulePackage.manifest.engine,
     },
+    ...(storyOpeningContent ? { openingContent: storyOpeningContent } : {}),
     developerTools: !storyMode,
     ...(!storyMode ? { chamberStorytellerControl: storytellerControl } : {}),
     ...(packetReview ||

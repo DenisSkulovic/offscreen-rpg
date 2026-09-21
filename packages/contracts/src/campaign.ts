@@ -24,6 +24,8 @@ import {
   startPackageReferenceSchema,
   worldPackageReferenceSchema,
 } from '@offscreen/documents/schema';
+export { startPackageReferenceSchema } from '@offscreen/documents/schema';
+export type { StartPackageReference } from '@offscreen/documents/schema';
 
 export const narrativeTagSchema = z.strictObject({
   id: z.string().regex(/^[a-z0-9-]{1,60}$/),

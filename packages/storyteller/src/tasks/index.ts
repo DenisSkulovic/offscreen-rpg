@@ -32,6 +32,7 @@ import {
 } from '@offscreen/game/immediate-actions';
 import { proposedDocumentChangesSchema } from './document-changes.js';
 import { storytellerNeedsContextSchema } from './memory-exploration.js';
+import { startPackageReferenceSchema } from '@offscreen/contracts/campaign';
 
 export * from './opening';
 export * from './playable';
@@ -218,6 +219,7 @@ export const storytellerTaskSchema = z.discriminatedUnion('task', [
     source: z.strictObject({
       draftId: z.uuid(),
       draftRevision: z.number().int().positive(),
+      startPackage: startPackageReferenceSchema.optional(),
     }),
   }),
   z.strictObject({

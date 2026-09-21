@@ -31,11 +31,24 @@ import {
 } from '../campaign/fixtures/mechanical-content';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
+import type { DocumentStore, StartPackageReference } from '@offscreen/documents';
+import { loadStartPackageKnowledge } from './context';
+
+export type OpeningContentEntry = Readonly<{
+  id: string;
+  name: string;
+  description: string;
+  startPackage?: StartPackageReference;
+}>;
 
 export function createStorytellerOpenings(
   database: Database,
   execution: ExecutionPolicy = offlineExecution,
   usagePolicy?: EffectiveUsagePolicy | null,
+  options: {
+    documentStore?: DocumentStore;
+    content?: readonly OpeningContentEntry[];
+  } = {},
 ) {
   async function read(ownerId: string, id: string) {
     const [row] = await database.db
@@ -102,6 +115,7 @@ export function createStorytellerOpenings(
         latest?.generationId === id,
       mode: task.execution.mode,
       contentId: task.context.mechanicalOpening?.id,
+      startPackage: task.source.startPackage,
       storyteller: storytellerSummary(task.profile),
       state: row.state,
       candidate: presentation?.interaction ? presentation : null,
@@ -111,6 +125,7 @@ export function createStorytellerOpenings(
     catalogue() {
       return mechanicalContentCatalogueSchema.parse({
         entries: mechanicalContentCatalogue(),
+        ...(options.content ? { entries: options.content } : {}),
       });
     },
     async handles(ownerId: string, draftId: string, operationId: string) {
@@ -153,6 +168,7 @@ export function createStorytellerOpenings(
       id: string,
       expectedRevision: number,
       contentId?: string,
+      startPackage?: StartPackageReference,
     ) {
       validId(id);
       validId(draftId);
@@ -180,7 +196,8 @@ export function createStorytellerOpenings(
             original.task !== 'opening' ||
             original.source.draftId !== draftId ||
             original.source.draftRevision !== expectedRevision ||
-            original.context.mechanicalOpening?.id !== contentId
+            original.context.mechanicalOpening?.id !== contentId ||
+            JSON.stringify(original.source.startPackage) !== JSON.stringify(startPackage)
           ) {
             throw new GenerationError('conflict');
           }
@@ -204,16 +221,27 @@ export function createStorytellerOpenings(
           throw new GenerationError('busy');
         }
         const seed = contentId ? mechanicalOpening(contentId) : undefined;
+        if (startPackage && !options.documentStore) {
+          throw new GenerationError('invalid');
+        }
+        const canonicalKnowledge = startPackage
+          ? await loadStartPackageKnowledge(options.documentStore!, startPackage)
+          : undefined;
         const task = prepareAdmittedStorytellerTask(
           {
             task: 'opening',
-            source: { draftId, draftRevision: draft.revision },
+            source: {
+              draftId,
+              draftRevision: draft.revision,
+              ...(startPackage ? { startPackage } : {}),
+            },
             profile: storytellerCatalogue.resolve(draft.storyteller),
             execution,
             context: {
               ...(seed
                 ? { mechanicalOpening: { ...seed, storyFacts: [] } }
                 : {}),
+              ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
               premise: {
                 title: seed?.opening.title ?? draft.title,
                 premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,

@@ -29,6 +29,7 @@ import {
   type DocumentManifest,
   type DocumentStore,
   type RulePackageManifest,
+  type StartPackageReference,
   type WorldPackageManifest,
 } from '@offscreen/documents';
 import { readPassageDocument } from '../stories/passage-documents';
@@ -126,7 +127,10 @@ function projectActivityProgress(plan: unknown, progress: unknown) {
 
 async function loadCanonicalLibraries(
   storage: DocumentStore,
-  campaignManifest: DocumentManifest,
+  references: {
+    worlds: z.infer<typeof worldPackageReferenceSchema>[];
+    rules: z.infer<typeof rulePackageReferenceSchema> | null;
+  },
   selectionInput?: CanonicalLibrarySectionSelection,
 ) {
   const selection = librarySectionSelectionSchema.parse(
@@ -140,38 +144,7 @@ async function loadCanonicalLibraries(
   if (new Set(selection.handles).size !== selection.handles.length) {
     throw new Error('Canonical library section handles must be unique');
   }
-  const worldReferenceEntry = campaignManifest.entries.find(
-    (entry) => entry.path === 'world/references.json',
-  );
-  const ruleReferenceEntry = campaignManifest.entries.find(
-    (entry) => entry.path === 'rules/reference.json',
-  );
-  const worlds = worldReferenceEntry
-    ? z
-        .strictObject({
-          version: z.literal(1),
-          worlds: z.array(worldPackageReferenceSchema).max(8),
-        })
-        .parse(
-          (
-            await storage.readStructuredDocument(
-              worldReferenceEntry.objectHash,
-            )
-          ).data,
-        ).worlds
-    : [];
-  const rules = ruleReferenceEntry
-    ? z
-        .strictObject({
-          version: z.literal(1),
-          rules: rulePackageReferenceSchema,
-        })
-        .parse(
-          (
-            await storage.readStructuredDocument(ruleReferenceEntry.objectHash)
-          ).data,
-        ).rules
-    : null;
+  const { worlds, rules } = references;
   const sources = [
     ...worlds
       .sort((left, right) => left.mount.localeCompare(right.mount))
@@ -567,9 +540,44 @@ export async function loadCanonicalKnowledge(
       body: record.document.body,
     });
   }
+  const worldReferenceEntry = manifest.entries.find(
+    (entry) => entry.path === 'world/references.json',
+  );
+  const ruleReferenceEntry = manifest.entries.find(
+    (entry) => entry.path === 'rules/reference.json',
+  );
   const canonicalLibraries = await loadCanonicalLibraries(
     storage,
-    manifest,
+    {
+      worlds: worldReferenceEntry
+        ? z
+            .strictObject({
+              version: z.literal(1),
+              worlds: z.array(worldPackageReferenceSchema).max(8),
+            })
+            .parse(
+              (
+                await storage.readStructuredDocument(
+                  worldReferenceEntry.objectHash,
+                )
+              ).data,
+            ).worlds
+        : [],
+      rules: ruleReferenceEntry
+        ? z
+            .strictObject({
+              version: z.literal(1),
+              rules: rulePackageReferenceSchema,
+            })
+            .parse(
+              (
+                await storage.readStructuredDocument(
+                  ruleReferenceEntry.objectHash,
+                )
+              ).data,
+            ).rules
+        : null,
+    },
     input.librarySectionSelection,
   );
   return canonicalKnowledgeSchema.parse({
@@ -606,6 +614,92 @@ export async function loadCanonicalKnowledge(
     },
     libraries: canonicalLibraries.libraries,
     librarySelection: canonicalLibraries.selection,
+  });
+}
+
+/** Captures the bounded, immutable authored knowledge used before a Story exists. */
+export async function loadStartPackageKnowledge(
+  storage: DocumentStore,
+  reference: StartPackageReference,
+) {
+  const manifest = await storage.readStartPackageManifest(reference.rootHash);
+  if (
+    manifest.startPackageId !== reference.startPackageId ||
+    manifest.revision !== reference.revision
+  ) {
+    throw new Error('Opening start-package reference does not match its manifest');
+  }
+  const eligible = manifest.entries
+    .filter(
+      (entry) =>
+        entry.path.endsWith('.md') &&
+        entry.visibility !== 'developer-private' &&
+        canonicalKnowledgeKinds.has(entry.kind),
+    )
+    .sort((left, right) => {
+      const priority =
+        (canonicalKnowledgePriority.get(left.kind) ?? 99) -
+        (canonicalKnowledgePriority.get(right.kind) ?? 99);
+      return priority || left.path.localeCompare(right.path);
+    })
+    .slice(0, maximumCanonicalCatalogueEntries);
+  let usedBytes = 0;
+  const documents: Array<{ handle: string; title: string; body: string }> = [];
+  const catalogue = [];
+  for (const [index, entry] of eligible.entries()) {
+    const document = await storage.readDocument(entry.objectHash);
+    const handle = `d${index + 1}`;
+    const bytes = Buffer.byteLength(document.body, 'utf8');
+    const loaded =
+      documents.length < maximumCanonicalDocuments &&
+      bytes <= maximumCanonicalDocumentBytes &&
+      usedBytes + bytes <= maximumCanonicalContextBytes;
+    if (loaded) {
+      usedBytes += bytes;
+      documents.push({ handle, title: document.title, body: document.body });
+    }
+    catalogue.push({
+      handle,
+      documentId: entry.documentId,
+      revision: entry.revision,
+      path: entry.path,
+      kind: entry.kind,
+      authority: entry.authority,
+      visibility: entry.visibility,
+      title: document.title,
+      bytes,
+      loaded,
+    });
+  }
+  const libraries = await loadCanonicalLibraries(
+    storage,
+    { worlds: manifest.worlds, rules: manifest.rules },
+    { handles: [], ruleTopics: [], maxReads: 0, maxBytes: 0 },
+  );
+  return canonicalKnowledgeSchema.parse({
+    rootHash: reference.rootHash,
+    rootRevision: reference.revision,
+    catalogue,
+    catalogueTruncated: manifest.entries.filter((entry) => entry.path.endsWith('.md')).length > eligible.length,
+    documents,
+    documentSelection: {
+      cueResolution: {
+        requested: [],
+        resolvedDocumentIds: [],
+        unavailable: [],
+        excludedDocumentIds: [],
+        maxCandidates: 0,
+      },
+      requestedDocumentIds: [],
+      loadedHandles: [],
+      omitted: [],
+      maxReads: maximumSelectedCampaignDocuments,
+      maxBytes: maximumCanonicalContextBytes,
+      usedReads: 0,
+      usedBytes: 0,
+    },
+    libraries: libraries.libraries,
+    librarySelection: libraries.selection,
   });
 }
 

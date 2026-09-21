@@ -1,5 +1,16 @@
 # Seyda Neen: choose local life without waking the Storyteller
 
+## Player-entry grounding checkpoint (2026-09-21)
+
+Local Story mode now exposes this maintained start in the ordinary opening
+selector. The opening request captures the exact immutable start-package
+reference and bounded start/world/rule knowledge before Storyteller execution;
+Start must present the identical reference. A direct player-flow probe created
+campaign manifest revision 2 with the player character, Socucius Ergalla,
+Sellus Gravius, release-processing thread, source passage and pinned
+start/world/rule references. This proves package-to-Story wiring, not live-model
+quality or later NPC relationship recall.
+
 Status: partly implemented. The maintained `seyda-neen-arrival.v1` mechanical
 opening is the first bounded POC slice: it uses the existing generic facts,
 checks, quantities and clock-based activity contracts for conversation, local
