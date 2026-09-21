@@ -131,3 +131,55 @@ export type StoryRetrievalCandidate = z.infer<
   typeof storyRetrievalCandidateSchema
 >;
 export type StoryRetrievalResult = z.infer<typeof storyRetrievalResultSchema>;
+
+export const evidenceRepresentationLevelSchema = z.enum([
+  'lead',
+  'card',
+  'exact',
+]);
+
+export const packableEvidenceItemSchema = z
+  .strictObject({
+    id: z.string().min(1).max(240),
+    group: z.strictObject({
+      kind: z.enum(['identity', 'place', 'thread', 'event', 'rule', 'other']),
+      key: z.string().min(1).max(240),
+    }),
+    required: z.boolean(),
+    minimumLevel: evidenceRepresentationLevelSchema,
+    relevance: z.number().int().min(0).max(100),
+    representations: z
+      .array(
+        z.strictObject({
+          level: evidenceRepresentationLevelSchema,
+          content: z.string().min(1).max(64 * 1024),
+          sourceKeys: z.array(z.string().min(1).max(240)).min(1).max(32),
+          utility: z.number().int().min(0).max(100),
+        }),
+      )
+      .min(1)
+      .max(3),
+  })
+  .superRefine((item, context) => {
+    const levels = item.representations.map((entry) => entry.level);
+    if (new Set(levels).size !== levels.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['representations'],
+        message: 'Evidence representation levels must be unique',
+      });
+    }
+    const rank = { lead: 0, card: 1, exact: 2 } as const;
+    if (!item.representations.some((entry) => rank[entry.level] >= rank[item.minimumLevel])) {
+      context.addIssue({
+        code: 'custom',
+        path: ['minimumLevel'],
+        message: 'Evidence item must provide its minimum representation level',
+      });
+    }
+  });
+
+export type PackableEvidenceItem = z.infer<typeof packableEvidenceItemSchema>;
+export type EvidenceRepresentationLevel = z.infer<
+  typeof evidenceRepresentationLevelSchema
+>;

@@ -75,6 +75,16 @@ Import and instantiation are exposed through the available `reusable-start-packa
 7. Confirm stale root, invalid handle, read exhaustion and round exhaustion become durable classified failures. Re-entry must return the same code without another Storyteller decision. Keep partial coverage and retained-byte results distinct from terminal failure.
 8. Only after normal generation/provider wiring exists, require a final Storyteller result that uses the recovered evidence without inventing unsupported state. Retrieval/controller plumbing passing today is not evidence for model comprehension or gameplay publication.
 
+### Retrieval evidence-packing checklist
+
+1. Pack the same evidence repeatedly and confirm byte-identical output, selection order and omission reasons.
+2. Admit required current facts and their source references before optional material. If their minimum representations cannot fit, return explicit mandatory overflow instead of silently truncating them.
+3. Run the 20-person/5-place/15-node pressure fixture under minimal, balanced and rich policies. Report required-fact recall, covered groups, selected fidelity, useful unique bytes and duplicate bytes removed; total packet size alone is not a quality result.
+4. Confirm optional selection preserves breadth before adding a second item from an already represented group, subject to relevance and declared per-group limits.
+5. Confirm repeated text and provenance are emitted once and referenced by stable packet-local IDs. Exact wording should appear only when selected as a higher-fidelity representation.
+6. Apply authority, visibility, branch and supersession filters before packing. A compact packet containing private, stale or alternate-branch evidence is still a failure.
+7. Keep compression or generated summaries outside the allocator until separately evaluated for entailment, provenance retention and cost. Shorter output is not automatically better evidence.
+
 The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 
 ### Story-item authority checklist

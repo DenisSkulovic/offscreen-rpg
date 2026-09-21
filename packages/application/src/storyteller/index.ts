@@ -12,3 +12,4 @@ export * from './local-lexical-story-index-store';
 export * from './retrieval-recipes';
 export * from './memory-exploration';
 export * from './memory-exploration-controller';
+export * from './evidence-packing';

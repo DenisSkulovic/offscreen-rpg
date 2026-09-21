@@ -19,6 +19,82 @@ import { buildLexicalStoryIndex } from '../dist/storyteller/lexical-story-index.
 import { LocalLexicalStoryIndexStore } from '../dist/storyteller/local-lexical-story-index-store.js';
 import { resolveStoryRetrievalRecipe } from '../dist/storyteller/retrieval-recipes.js';
 import { createCanonicalMemoryExplorer } from '../dist/storyteller/memory-exploration.js';
+import { packStoryEvidence } from '../dist/storyteller/evidence-packing.js';
+
+test('packs required evidence, group breadth and shared content deterministically', () => {
+  const representation = (level, content, utility) => ({
+    level,
+    content,
+    utility,
+    sourceKeys: [`source:${content.slice(0, 8)}`],
+  });
+  const items = [
+    {
+      id: 'mira-current',
+      group: { kind: 'identity', key: 'mira' },
+      required: true,
+      minimumLevel: 'card',
+      relevance: 100,
+      representations: [
+        representation('lead', 'Mira', 5),
+        representation('card', 'Mira still holds the repaired quay charter.', 40),
+        representation('exact', 'Mira still holds the repaired quay charter. It was returned at tick 880.', 70),
+      ],
+    },
+    {
+      id: 'favor-thread',
+      group: { kind: 'thread', key: 'mira-favor' },
+      required: false,
+      minimumLevel: 'lead',
+      relevance: 90,
+      representations: [representation('lead', 'The old favor remains open.', 20)],
+    },
+    {
+      id: 'favor-thread-source-alias',
+      group: { kind: 'thread', key: 'mira-favor' },
+      required: false,
+      minimumLevel: 'lead',
+      relevance: 80,
+      representations: [representation('lead', 'The old favor remains open.', 20)],
+    },
+    {
+      id: 'greywake-place',
+      group: { kind: 'place', key: 'greywake' },
+      required: false,
+      minimumLevel: 'lead',
+      relevance: 70,
+      representations: [representation('lead', 'Greywake quay is repaired.', 20)],
+    },
+  ];
+  const packed = packStoryEvidence(items, {
+    maxBytes: 4096,
+    maxItems: 3,
+    maxItemsPerGroup: 2,
+  });
+  assert.equal(packed.status, 'packed');
+  assert.deepEqual(
+    packed.selected.map((entry) => entry.itemId),
+    ['mira-current', 'favor-thread', 'greywake-place'],
+  );
+  assert.equal(packed.selected[0].level, 'exact');
+  assert.ok(packed.bytes <= 4096);
+
+  const deduplicated = packStoryEvidence(items.slice(1, 3), {
+    maxBytes: 4096,
+    maxItems: 2,
+    maxItemsPerGroup: 2,
+  });
+  assert.equal(deduplicated.packet.contents.length, 1);
+  assert.equal(deduplicated.packet.sources.length, 1);
+  assert.ok(deduplicated.duplicateContentBytesRemoved > 0);
+
+  const overflow = packStoryEvidence(items.slice(0, 1), {
+    maxBytes: 64,
+    maxItems: 1,
+    maxItemsPerGroup: 1,
+  });
+  assert.equal(overflow.status, 'mandatory-overflow');
+});
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {
   const greywake = buildLongStoryMemoryCorpus('greywake');
