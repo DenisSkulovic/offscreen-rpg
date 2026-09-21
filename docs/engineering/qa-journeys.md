@@ -103,6 +103,8 @@ The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md)
 8. Bind a discovery result to the exact normalized request hash. Reject undeclared lenses, excessive work, wrong-branch evidence, visibility expansion and obsolete evidence when current-only scope was requested. Every lead remains an inferred private possibility even when all its sources are canonical.
 9. Execute lens-labelled searches through the same persisted request, canonical handle and evidence-packing path as factual memory. Crash after request acceptance, then confirm recovery executes it without another Storyteller decision.
 10. Keep final direction records concise: premise, packet item IDs, intended value, compatibility constraints and selected/rejected status. Reject directions citing absent packet items and a selected direction whose evidence was not declared used; replay the accepted set without exposing it to publication.
+11. Admit off/minimal/balanced/rich through the same effective usage-policy path as the parent task. Inspect the immutable task and confirm every creative allowance was narrowed by operation rounds, reads, retained bytes, output, timeout and microusd; insufficient policy captures disabled creative work rather than silently granting capacity.
+12. Attempt `creative_search` with creative work disabled, over the query/lens limits and with too many final directions. Confirm each stops as `creative-limit`, while ordinary factual memory requests remain governed by their parent limits.
 
 ### Story-item authority checklist
 

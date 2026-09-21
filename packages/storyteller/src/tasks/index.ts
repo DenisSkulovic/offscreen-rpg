@@ -6,7 +6,7 @@ import { executionPolicySchema, serializedRequestBytes } from './policy';
 import {
   resourcesForExecution,
   storytellerTaskResourcesSchema,
-  type StorytellerTaskResources,
+  type StorytellerTaskResourcesInput,
   validateResourcesForExecution,
 } from './resources';
 import {
@@ -337,7 +337,7 @@ Return exactly this nesting: {"version":1,"scene":{"version":1,"content":{"versi
 
 /** Caller supplies one authorized snapshot. No storage, tools or provider I/O. */
 export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
-  input: T & { resources?: StorytellerTaskResources },
+  input: T & { resources?: StorytellerTaskResourcesInput },
 ): Extract<StorytellerTask, { task: T['task'] }> {
   const resources = storytellerTaskResourcesSchema.parse(
     input.resources ?? resourcesForExecution(input.execution),

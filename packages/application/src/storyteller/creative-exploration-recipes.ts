@@ -1,6 +1,7 @@
 import {
   creativeExplorationLimitsSchema,
   creativeExplorationRecipeSchema,
+  disabledCreativeExplorationRecipe,
   type CreativeExplorationLimits,
   type CreativeExplorationPosture,
   type CreativeExplorationRecipe,
@@ -94,13 +95,9 @@ export function resolveCreativeExplorationRecipe(input: {
   operationLimits?: PartialLimits;
 }): CreativeExplorationRecipe {
   if (input.posture === 'off') {
-    return creativeExplorationRecipeSchema.parse({
-      format: 'offscreen.creative-exploration-recipe.v1',
-      id: 'creative-off.v1',
-      posture: 'off',
-      enabled: false,
-      limits: zeroLimits,
-    });
+    return creativeExplorationRecipeSchema.parse(
+      disabledCreativeExplorationRecipe,
+    );
   }
   const requested = creativeExplorationLimitsSchema.parse({
     ...profiles[input.posture],
@@ -111,8 +108,10 @@ export function resolveCreativeExplorationRecipe(input: {
     limits.maxLenses > 0 &&
     limits.maxQueries > 0 &&
     limits.maxCandidatesPerQuery > 0 &&
+    limits.maxReads > 0 &&
     limits.maxLeads > 0 &&
     limits.maxCandidateDirections > 0 &&
+    limits.maxRetainedBytes >= 1024 &&
     limits.maxModelRounds > 0 &&
     limits.maxGeneratedTokens > 0 &&
     limits.maxLatencyMs > 0;

@@ -13,6 +13,7 @@ import {
   createStorytellerRuntime,
   loadCanonicalKnowledge,
   resolveCanonicalRecallCues,
+  resolveCreativeExplorationRecipe,
   runScriptedMemoryExploration,
   searchCanonicalKnowledge,
   type MemoryExplorationSnapshot,
@@ -65,6 +66,9 @@ registerStoryConcern(
           ...oneShotTask,
           resources: {
             ...oneShotTask.resources,
+            creativeExploration: resolveCreativeExplorationRecipe({
+              posture: 'minimal',
+            }),
             recipe: {
               version: 'memory-exploration.v1',
               maxModelRounds: 2,
@@ -284,6 +288,59 @@ registerStoryConcern(
           replayed.creativeDirections,
           completed.creativeDirections,
         );
+
+        const disabledCreativeTask = storytellerTaskSchema.parse({
+          ...task,
+          resources: {
+            ...task.resources,
+            creativeExploration: resolveCreativeExplorationRecipe({
+              posture: 'off',
+            }),
+          },
+        });
+        const disabledGenerationId = randomUUID();
+        await database.db.insert(generation).values({
+          id: disabledGenerationId,
+          ownerId: owner,
+          kind: 'storyteller.profiled.v1',
+          input: disabledCreativeTask,
+        });
+        let disabledSourceCalls = 0;
+        const disabledSource: ScriptedMemoryRoundSource = () => {
+          disabledSourceCalls += 1;
+          return {
+            kind: 'needs_context',
+            version: 1,
+            purpose: 'Try creative search without captured authority.',
+            requests: [
+              {
+                requestId: 'r1',
+                operation: 'creative_search',
+                lens: 'relationship',
+                query: 'old promise',
+              },
+            ],
+          };
+        };
+        const disabledInput = {
+          generationId: disabledGenerationId,
+          task: disabledCreativeTask,
+          createExplorer,
+          source: disabledSource,
+        } as const;
+        const assertCreativeLimit = (error: unknown) =>
+          error instanceof MemoryExplorationControllerError &&
+          error.code === 'creative-limit';
+        await assert.rejects(
+          runScriptedMemoryExploration(database, disabledInput),
+          assertCreativeLimit,
+        );
+        assert.equal(disabledSourceCalls, 1);
+        await assert.rejects(
+          runScriptedMemoryExploration(database, disabledInput),
+          assertCreativeLimit,
+        );
+        assert.equal(disabledSourceCalls, 1);
 
         const failedGenerationId = randomUUID();
         await database.db.insert(generation).values({

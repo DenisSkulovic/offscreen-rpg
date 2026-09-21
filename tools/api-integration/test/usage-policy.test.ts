@@ -53,6 +53,32 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
     kind: 'effective-usage-policy',
     policy: resolved.policy,
   });
+  assert.equal(resources.creativeExploration.enabled, false);
+  const creativeResources = resourcesForEffectiveUsagePolicy(
+    execution,
+    resolved.policy,
+    { posture: 'balanced' },
+  );
+  assert.equal(creativeResources.creativeExploration.enabled, true);
+  assert.equal(creativeResources.creativeExploration.posture, 'balanced');
+  assert.equal(creativeResources.recipe.version, 'memory-exploration.v1');
+  assert.equal(creativeResources.recipe.maxModelRounds, 3);
+  assert.equal(creativeResources.recipe.maxReads, 3);
+  assert.equal(
+    creativeResources.creativeExploration.limits.maxGeneratedTokens,
+    700,
+  );
+  assert.equal(
+    creativeResources.creativeExploration.limits.maxCostMicrousd,
+    12,
+  );
+  const noReadCreativeResources = resourcesForEffectiveUsagePolicy(
+    execution,
+    resolved.policy,
+    { posture: 'balanced', requested: { maxReads: 0 } },
+  );
+  assert.equal(noReadCreativeResources.creativeExploration.enabled, false);
+  assert.equal(noReadCreativeResources.recipe.version, 'single-turn.v1');
   assert.throws(
     () =>
       resourcesForEffectiveUsagePolicy(

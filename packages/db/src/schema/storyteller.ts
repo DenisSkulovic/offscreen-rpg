@@ -60,6 +60,7 @@ export const storytellerMemoryExploration = pgTable(
       | 'invalid-handle'
       | 'read-limit'
       | 'round-limit'
+      | 'creative-limit'
       | 'context-limit'
     >(),
     createdAt: timestamp('created_at', {
@@ -83,7 +84,7 @@ export const storytellerMemoryExploration = pgTable(
     ),
     check(
       'storyteller_memory_exploration_output',
-      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','context-limit') AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','creative-limit','context-limit') AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
     ),
     check(
       'storyteller_memory_exploration_pending_request',

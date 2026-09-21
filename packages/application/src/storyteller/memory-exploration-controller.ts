@@ -32,6 +32,7 @@ export type MemoryExplorationFailureCode =
   | 'invalid-handle'
   | 'read-limit'
   | 'round-limit'
+  | 'creative-limit'
   | 'context-limit';
 
 export class MemoryExplorationControllerError extends Error {
@@ -46,6 +47,7 @@ function isFailureCode(value: unknown): value is MemoryExplorationFailureCode {
     value === 'invalid-handle' ||
     value === 'read-limit' ||
     value === 'round-limit' ||
+    value === 'creative-limit' ||
     value === 'context-limit'
   );
 }
@@ -91,8 +93,15 @@ function validateCreativeDirections(
   packet: ReturnType<typeof prepareMemoryEvidenceContext>['evidencePack'],
   evidenceUse: MemoryEvidenceUseReport,
   rawDirections: CreativeDirectionSet,
+  recipe: StorytellerTask['resources']['creativeExploration'],
 ) {
   const directions = creativeDirectionSetSchema.parse(rawDirections);
+  if (
+    directions.directions.length > recipe.limits.maxCandidateDirections ||
+    (!recipe.enabled && directions.directions.length > 0)
+  ) {
+    throw new MemoryExplorationControllerError('creative-limit');
+  }
   const packetItems = new Set(packet.evidence.map((item) => item.itemId));
   const usedItems = new Set(evidenceUse.declaredItemIds);
   for (const direction of directions.directions) {
@@ -109,6 +118,38 @@ function validateCreativeDirections(
     }
   }
   return directions;
+}
+
+function creativeOperations(
+  snapshot: MemoryExplorationSnapshot,
+  pending: ReturnType<typeof storytellerNeedsContextSchema.parse>,
+) {
+  const prior = snapshot.rounds.flatMap((round) => {
+    if (!round || typeof round !== 'object' || Array.isArray(round)) return [];
+    const parsed = storytellerNeedsContextSchema.safeParse(
+      (round as { request?: unknown }).request,
+    );
+    return parsed.success ? parsed.data.requests : [];
+  });
+  return [...prior, ...pending.requests].filter(
+    (operation) => operation.operation === 'creative_search',
+  );
+}
+
+function creativeRequestWithinRecipe(
+  task: StorytellerTask,
+  snapshot: MemoryExplorationSnapshot,
+  request: ReturnType<typeof storytellerNeedsContextSchema.parse>,
+) {
+  const operations = creativeOperations(snapshot, request);
+  if (!operations.length) return true;
+  const recipe = task.resources.creativeExploration;
+  return (
+    recipe.enabled &&
+    operations.length <= recipe.limits.maxQueries &&
+    new Set(operations.map((operation) => operation.lens)).size <=
+      recipe.limits.maxLenses
+  );
 }
 
 function assertSnapshotWithinRecipe(
@@ -337,6 +378,9 @@ export async function runScriptedMemoryExploration(
       ) {
         return fail('read-limit');
       }
+      if (!creativeRequestWithinRecipe(task, snapshot, contextRequest.data)) {
+        return fail('creative-limit');
+      }
       if (!pendingRequest) {
         const requestHash = requestSha256(contextRequest.data);
         const persisted = await database.db
@@ -409,6 +453,7 @@ export async function runScriptedMemoryExploration(
       preparedContext.evidencePack,
       evidenceUse,
       finalResponse.creativeDirections,
+      task.resources.creativeExploration,
     );
     const finalCandidate = {
       format: 'offscreen.memory-final-candidate.v1' as const,

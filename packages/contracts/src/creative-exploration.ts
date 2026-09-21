@@ -69,8 +69,10 @@ export const creativeExplorationRecipeSchema = z
       (recipe.limits.maxLenses === 0 ||
         recipe.limits.maxQueries === 0 ||
         recipe.limits.maxCandidatesPerQuery === 0 ||
+        recipe.limits.maxReads === 0 ||
         recipe.limits.maxLeads === 0 ||
         recipe.limits.maxCandidateDirections === 0 ||
+        recipe.limits.maxRetainedBytes < 1024 ||
         recipe.limits.maxModelRounds === 0 ||
         recipe.limits.maxGeneratedTokens === 0 ||
         recipe.limits.maxLatencyMs === 0)
@@ -82,6 +84,27 @@ export const creativeExplorationRecipeSchema = z
         path: ['limits'],
       });
     }
+  });
+
+export const disabledCreativeExplorationRecipe =
+  creativeExplorationRecipeSchema.parse({
+    format: 'offscreen.creative-exploration-recipe.v1',
+    id: 'creative-off.v1',
+    posture: 'off',
+    enabled: false,
+    limits: {
+      maxLenses: 0,
+      maxQueries: 0,
+      maxCandidatesPerQuery: 0,
+      maxReads: 0,
+      maxLeads: 0,
+      maxCandidateDirections: 0,
+      maxRetainedBytes: 0,
+      maxModelRounds: 0,
+      maxGeneratedTokens: 0,
+      maxLatencyMs: 0,
+      maxCostMicrousd: 0,
+    },
   });
 
 export const creativeExplorationNeedSchema = z

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { effectiveUsagePolicySchema } from '@offscreen/contracts/usage-policy';
+import {
+  creativeExplorationRecipeSchema,
+  disabledCreativeExplorationRecipe,
+} from '@offscreen/contracts/creative-exploration';
 import type { ExecutionPolicy } from './policy';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
@@ -34,6 +38,9 @@ const memoryExplorationRecipeSchema = z
 export const storytellerTaskResourcesSchema = z.strictObject({
   version: z.literal('storyteller-resources.v2'),
   recipe: z.union([oneShotRecipeSchema, memoryExplorationRecipeSchema]),
+  creativeExploration: creativeExplorationRecipeSchema.default(
+    disabledCreativeExplorationRecipe,
+  ),
   envelope: z.strictObject({
     maxSerializedRequestBytes: count.positive().max(1_000_000),
     maxInputTokens: count.positive().max(200_000),
@@ -54,6 +61,9 @@ export const storytellerTaskResourcesSchema = z.strictObject({
   ]),
 });
 export type StorytellerTaskResources = z.infer<
+  typeof storytellerTaskResourcesSchema
+>;
+export type StorytellerTaskResourcesInput = z.input<
   typeof storytellerTaskResourcesSchema
 >;
 
@@ -92,6 +102,25 @@ export function validateResourcesForExecution(
   execution: ExecutionPolicy,
   resources: StorytellerTaskResources,
 ): void {
+  const creative = resources.creativeExploration;
+  const creativeFitsRecipe =
+    !creative.enabled ||
+    (resources.recipe.version === 'memory-exploration.v1' &&
+      creative.limits.maxModelRounds <=
+        resources.recipe.maxModelRounds -
+          resources.recipe.finalAnswerReserveRounds &&
+      creative.limits.maxReads <= resources.recipe.maxReads &&
+      creative.limits.maxRetainedBytes <=
+        resources.recipe.maxRetainedReadBytes);
+  const creativeFitsEnvelope =
+    creative.limits.maxGeneratedTokens <=
+      resources.envelope.maxGeneratedTokens &&
+    creative.limits.maxLatencyMs <= resources.envelope.deadlineMs &&
+    BigInt(creative.limits.maxCostMicrousd) <=
+      BigInt(resources.envelope.maxMicrousd);
+  if (!creativeFitsRecipe || !creativeFitsEnvelope) {
+    throw new Error('invalid_task_resources');
+  }
   if (execution.mode === 'scripted') {
     if (
       resources.authority.kind !== 'offline' ||
