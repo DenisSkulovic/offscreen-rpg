@@ -48,6 +48,8 @@ The separate live-memory command is an explicit supervisor over the persisted co
 
 OpenRouter exposes [generation usage lookup](https://openrouter.ai/docs/api/api-reference/generations/get-generation) only by provider generation ID; successful responses also expose that identity in the body and `X-Generation-Id` response header. A non-streaming client timeout may occur before response headers, leaving no documented identity with which to query a late provider record. Account-credit totals can corroborate that no aggregate charge appeared, but they cannot settle that individual attempt. Such an attempt remains uncertain and blocks further provider work. Before another live-memory attempt, evaluate an early-identity transport (for example, bounded streaming if it preserves constrained-output guarantees) or another provider-supported correlation path; never redispatch the same request merely to obtain an ID.
 
+The adapter now preserves a valid bounded `X-Generation-Id` as soon as a response object exists and returns it in uncertain telemetry if the response body is interrupted, oversized or invalid. This closes the post-header evidence-loss case and permits later lookup without a retry. It does not repair the observed pre-header timeout, prove that bounded streaming preserves this task's constrained-output contract, or authorize another inference call.
+
 ## Analysis and comparison
 
 The Chamber should show a summary before raw JSON:

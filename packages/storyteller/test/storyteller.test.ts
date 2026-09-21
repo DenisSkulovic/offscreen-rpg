@@ -1324,11 +1324,38 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   const missingUsage = createOpenRouterProvider({
     enabled: true,
     apiKey: 'dummy',
-    transport: async () => new Response('{}'),
+    transport: async () =>
+      new Response('{}', {
+        headers: { 'x-generation-id': 'generation-after-headers' },
+      }),
   });
   const missing = await missingUsage(providerTask);
   assert.equal(missing.kind, 'uncertain');
   assert.equal(missing.telemetry.httpStatus, 200);
+  assert.equal(missing.telemetry.providerId, 'generation-after-headers');
+
+  const interruptedBody = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        new ReadableStream({
+          pull(controller) {
+            controller.error(new Error('injected body interruption'));
+          },
+        }),
+        {
+          headers: { 'x-generation-id': 'generation-before-body-failure' },
+        },
+      ),
+  });
+  const interrupted = await interruptedBody(providerTask);
+  assert.equal(interrupted.kind, 'uncertain');
+  assert.equal(interrupted.telemetry.httpStatus, 200);
+  assert.equal(
+    interrupted.telemetry.providerId,
+    'generation-before-body-failure',
+  );
   assert.throws(() =>
     createOpenRouterProvider({ enabled: false, apiKey: 'dummy' }),
   );

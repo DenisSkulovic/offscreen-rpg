@@ -296,8 +296,15 @@ export function usdToMicrousd(value: string | number): bigint {
   const divisor = 10n ** BigInt(-exponent);
   return (digits + divisor - 1n) / divisor;
 }
+const providerIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(200)
+  .regex(/^[\x21-\x7e]+$/);
+
 const responseSchema = z.object({
-  id: z.string().min(1).max(200),
+  id: providerIdSchema,
   model: z.string().min(1).max(200),
   usage: z.object({
     cost: z.union([z.number().finite().nonnegative(), z.string().max(100)]),
@@ -445,6 +452,13 @@ async function boundedResponse(response: Response) {
   return { raw, parsed: JSON.parse(raw) as unknown };
 }
 
+function responseGenerationId(response: Response) {
+  const parsed = providerIdSchema.safeParse(
+    response.headers.get('x-generation-id'),
+  );
+  return parsed.success ? parsed.data : null;
+}
+
 /** Explicit composition only: importing this file cannot read keys or send requests. No retries. */
 export function createOpenRouterProvider(config: {
   enabled: boolean;
@@ -467,6 +481,7 @@ export function createOpenRouterProvider(config: {
     if (!policy) throw new Error('Wrong execution mode');
     const startedAt = Date.now();
     let httpStatus: number | null = null;
+    let providerId: string | null = null;
     try {
       const response = await transport(
         'https://openrouter.ai/api/v1/chat/completions',
@@ -482,6 +497,7 @@ export function createOpenRouterProvider(config: {
         },
       );
       httpStatus = response.status;
+      providerId = responseGenerationId(response);
       // Even HTTP errors may follow a billed attempt. Missing accounting is not zero.
       const bounded = await boundedResponse(response);
       await config.recordResponse?.({
@@ -496,7 +512,7 @@ export function createOpenRouterProvider(config: {
           telemetry: {
             durationMs: Date.now() - startedAt,
             httpStatus,
-            providerId: null,
+            providerId,
             reportedModel: null,
             finishReason: null,
           },
@@ -556,7 +572,7 @@ export function createOpenRouterProvider(config: {
         telemetry: {
           durationMs: Date.now() - startedAt,
           httpStatus,
-          providerId: null,
+          providerId,
           reportedModel: null,
           finishReason: null,
         },
