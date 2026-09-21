@@ -3280,7 +3280,7 @@ test(
               id: runId,
               accountId,
               limitMicrousd: 1000000n,
-              maxAttempts: 4,
+              maxAttempts: 5,
               enabled: true,
             });
             const execution: ExecutionPolicy = {
@@ -3580,6 +3580,125 @@ test(
                 error.code === 'stale-root',
             );
             assert.equal(readFailureCalls, 1);
+
+            const rejectedGenerationId = randomUUID();
+            await database.db.insert(generation).values({
+              id: rejectedGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: task,
+            });
+            let rejectedCalls = 0;
+            const rejectedRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId: rejectedGenerationId,
+              ownerId,
+              task,
+              dispatchAuthority: () => policy,
+              provider: async () => {
+                rejectedCalls += 1;
+                throw new Error('Rejected review must not dispatch');
+              },
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: rejectedGenerationId,
+                task,
+                createExplorer,
+                ...rejectedRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'review-held',
+            );
+            const rejectedReview = await reviews.read(
+              ownerId,
+              rejectedGenerationId,
+            );
+            await reviews.decide(ownerId, {
+              generationId: rejectedGenerationId,
+              attemptId: rejectedReview?.attemptId,
+              decisionId: randomUUID(),
+              expectedRevision: rejectedReview?.revision,
+              packetSha256: rejectedReview?.packetSha256,
+              decision: 'reject',
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: rejectedGenerationId,
+                task,
+                createExplorer,
+                ...rejectedRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'review-stopped',
+            );
+            const [rejectedArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  rejectedGenerationId,
+                ),
+              );
+            assert.equal(rejectedArtifact?.state, 'failed');
+            assert.equal(rejectedArtifact?.failureCode, 'review-stopped');
+            assert.equal(rejectedCalls, 0);
+            assert.equal(
+              (
+                await database.db
+                  .select()
+                  .from(storytellerAttempt)
+                  .where(
+                    eq(storytellerAttempt.generationId, rejectedGenerationId),
+                  )
+              ).length,
+              0,
+            );
+
+            const deniedGenerationId = randomUUID();
+            await database.db.insert(generation).values({
+              id: deniedGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: failedTask,
+            });
+            let deniedCalls = 0;
+            const deniedRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId: deniedGenerationId,
+              ownerId,
+              task: failedTask,
+              dispatchAuthority: () => null,
+              provider: async () => {
+                deniedCalls += 1;
+                throw new Error('Denied authority must not dispatch');
+              },
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: deniedGenerationId,
+                task: failedTask,
+                createExplorer,
+                ...deniedRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'authority-unavailable',
+            );
+            const [deniedAttempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, deniedGenerationId));
+            const [deniedOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, deniedGenerationId));
+            assert.equal(deniedCalls, 0);
+            assert.equal(deniedAttempt?.state, 'unsent');
+            assert.equal(deniedAttempt?.chargedMicrousd, 0n);
+            assert.equal(deniedOperation?.state, 'complete');
+            assert.equal(deniedOperation?.reservedMicrousd, 0n);
 
             const uncertainGenerationId = randomUUID();
             await database.db.insert(generation).values({

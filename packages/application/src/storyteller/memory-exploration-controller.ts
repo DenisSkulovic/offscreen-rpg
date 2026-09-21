@@ -382,6 +382,9 @@ export async function runMemoryExploration(
       ) {
         throw new MemoryExplorationControllerError(interruption.code);
       }
+      if (interruption.state === 'failed') {
+        await input.closeSettledOperation?.(interruption.code);
+      }
       const updated = await database.db
         .update(storytellerMemoryExploration)
         .set({
