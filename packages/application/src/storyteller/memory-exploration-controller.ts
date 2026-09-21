@@ -256,7 +256,7 @@ export function prepareMemoryEvidenceContext(
  * caller still owns generation completion and publication, so a context round
  * can never accidentally become player-visible state.
  */
-export async function runScriptedMemoryExploration(
+export async function runMemoryExploration(
   database: Database,
   input: {
     generationId: string;
@@ -271,11 +271,8 @@ export async function runScriptedMemoryExploration(
 ): Promise<MemoryExplorationControllerResult> {
   const task = storytellerTaskSchema.parse(input.task);
   const recipe = task.resources.recipe;
-  if (
-    task.execution.mode !== 'scripted' ||
-    recipe.version !== 'memory-exploration.v1'
-  ) {
-    throw new Error('Memory exploration requires a scripted exploration task');
+  if (recipe.version !== 'memory-exploration.v1') {
+    throw new Error('Memory exploration requires an exploration task');
   }
 
   const [generationRecord] = await database.db
@@ -656,3 +653,6 @@ export async function runScriptedMemoryExploration(
     };
   }
 }
+
+/** Backward-compatible name for the original provider-free controller API. */
+export const runScriptedMemoryExploration = runMemoryExploration;

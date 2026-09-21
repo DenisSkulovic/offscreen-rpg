@@ -8,13 +8,10 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import type { StorytellerProvider } from '@offscreen/storyteller/providers/openrouter';
-import {
-  effectiveUsagePolicySchema,
-  type EffectiveUsagePolicy,
-} from '@offscreen/contracts/usage-policy';
-import { isDeepStrictEqual } from 'node:util';
+import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareDispatchReview } from './dispatch-review';
+import { retainsCapturedAuthority } from './dispatch-authority';
 import type { DocumentStore } from '@offscreen/documents';
 
 export type StorytellerRuntimeOptions = {
@@ -33,19 +30,6 @@ export type StorytellerRuntimeOptions = {
     task: StorytellerTask;
   }) => EffectiveUsagePolicy | null | Promise<EffectiveUsagePolicy | null>;
 };
-
-function retainsCapturedAuthority(
-  task: StorytellerTask,
-  current: EffectiveUsagePolicy | null,
-) {
-  if (task.resources.authority.kind !== 'effective-usage-policy' || !current) {
-    return false;
-  }
-  return isDeepStrictEqual(
-    task.resources.authority.policy,
-    effectiveUsagePolicySchema.parse(current),
-  );
-}
 
 export function createStorytellerExecution(
   database: Database,

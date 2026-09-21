@@ -16,5 +16,6 @@ export * from './evidence-packing';
 export * from './memory-evidence-packing';
 export * from './memory-evidence-use';
 export * from './memory-provider-preview';
+export * from './memory-provider-runtime';
 export * from './creative-exploration-recipes';
 export * from './creative-discovery';

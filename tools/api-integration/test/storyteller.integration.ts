@@ -40,8 +40,11 @@ import { createStorytellerRuntime } from '@offscreen/application/storyteller';
 import {
   createStorytellerBudget,
   createDispatchReviewControls,
+  createMemoryProviderRoundRuntime,
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
+  runMemoryExploration,
+  type MemoryExplorationSnapshot,
 } from '@offscreen/application/storyteller';
 import {
   createChamber,
@@ -3256,6 +3259,145 @@ test(
             assert.equal(completed?.consumedMicrousd, 20n);
             assert.equal(completed?.consumedInputTokens, 40);
             assert.equal(completed?.consumedGeneratedTokens, 20);
+          },
+        );
+        await t.test(
+          'memory exploration uses reviewed provider attempts and settles its final round',
+          async () => {
+            const accountId = randomUUID();
+            const runId = randomUUID();
+            const generationId = randomUUID();
+            await database.db.insert(storytellerFunding).values({
+              id: accountId,
+              limitMicrousd: 1000000n,
+              stopped: false,
+              verifiedAt: new Date(),
+            });
+            await database.db.insert(storytellerRun).values({
+              id: runId,
+              accountId,
+              limitMicrousd: 1000000n,
+              maxAttempts: 2,
+              enabled: true,
+            });
+            const execution: ExecutionPolicy = {
+              mode: 'provider',
+              accountId,
+              runId,
+              dispatchReview: { mode: 'off' },
+              policy: {
+                version: 'fake',
+                route: 'fake:memory',
+                model: 'fake/model',
+                provider: 'fake',
+                priceVersion: 'memory-round-test',
+                inputMicrousdPerMillion: '1000',
+                outputMicrousdPerMillion: '1000',
+                maxInputTokens: 100000,
+                maxOutputTokens: 2000,
+                timeoutMs: 1000,
+              },
+            };
+            const [sourceGeneration] = await database.db
+              .select()
+              .from(generation)
+              .where(eq(generation.id, first.generationId));
+            assert.ok(sourceGeneration);
+            const sourceTask = storytellerTaskSchema.parse(
+              sourceGeneration.input,
+            );
+            const policy = testUsagePolicy(execution.policy.route, [], {
+              maxModelRoundsPerOperation: 2,
+              maxReadsPerOperation: 1,
+              maxRetainedReadBytes: 4096,
+            });
+            const task = storytellerTaskSchema.parse({
+              ...sourceTask,
+              execution,
+              resources: resourcesForEffectiveUsagePolicy(execution, policy, {
+                posture: 'minimal',
+              }),
+            });
+            await database.db.insert(generation).values({
+              id: generationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: task,
+            });
+            const initialSnapshot: MemoryExplorationSnapshot = {
+              format: 'offscreen.memory-exploration-snapshot.v1',
+              storyId:
+                'storyId' in task.source
+                  ? task.source.storyId
+                  : task.source.draftId,
+              rootHash: 'a'.repeat(64),
+              rootRevision: 1,
+              readsUsed: 0,
+              retainedBytes: 0,
+              memoryHandles: [],
+              sourceHandles: [],
+              rounds: [],
+            };
+            const createExplorer = (saved?: MemoryExplorationSnapshot) => ({
+              execute: async () => {
+                throw new Error('Final-only provider must not request memory');
+              },
+              snapshot: () => saved ?? initialSnapshot,
+            });
+            let providerCalls = 0;
+            const providerRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId,
+              ownerId,
+              task,
+              dispatchAuthority: () => policy,
+              provider: async (providerTask, dispatch) => {
+                providerCalls += 1;
+                assert.ok(dispatch);
+                assert.notDeepEqual(dispatch.request, providerTask.request);
+                return {
+                  kind: 'result',
+                  output: {
+                    result: scriptedStorytellerResult(providerTask),
+                    evidenceUse: { itemIds: [], sourceIds: [] },
+                    creativeDirections: {
+                      format: 'offscreen.creative-direction-set.v1',
+                      directions: [],
+                    },
+                  },
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('fake-memory-provider'),
+                };
+              },
+            });
+            const completed = await runMemoryExploration(database, {
+              generationId,
+              task,
+              createExplorer,
+              ...providerRuntime,
+            });
+            assert.equal(completed.replayed, false);
+            assert.equal(providerCalls, 1);
+            const [attempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, generationId));
+            const [operation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, generationId));
+            assert.equal(attempt?.state, 'settled');
+            assert.equal(attempt?.providerId, 'fake-memory-provider');
+            assert.equal(operation?.state, 'complete');
+            assert.equal(operation?.dispatchedRounds, 1);
+            assert.equal(operation?.consumedMicrousd, 10n);
+            const replayed = await runMemoryExploration(database, {
+              generationId,
+              task,
+              createExplorer,
+              ...providerRuntime,
+            });
+            assert.equal(replayed.replayed, true);
+            assert.equal(providerCalls, 1);
           },
         );
         await t.test(
