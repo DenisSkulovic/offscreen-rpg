@@ -48,6 +48,33 @@ For backend development during the pre-POC/POC stage, prefer application operati
 
 ## Roles, handoffs and cost
 
+### Agent and prompt tuning discipline
+
+Treat a disappointing model result as evidence to classify, not permission to
+edit the nearest shared prompt. Before tuning, identify which layer owns the
+desired behavior:
+
+- shared task instructions own authority, evidence, output shape and universal
+  invariants only;
+- Storyteller profiles own tone, dramatic rhythm, initiative, surprise,
+  consequence style and normal choice character;
+- campaign direction owns whether this particular story cultivates a grand
+  narrative, recurring pressure or deliberately inert/ordinary life;
+- rules and canonical content own fictional facts, available mechanics and
+  time semantics;
+- route/model policy owns capability, latency and cost tradeoffs;
+- presentation owns what the player sees and how generated material is framed.
+
+Do not encode one reviewer preference—more action, fewer choices, greater
+brevity, stronger comedy, less inertia—as a universal task rule unless the
+product contract truly forbids the opposite. Contrast every proposed tuning
+against at least one profile or benchmark that legitimately wants the opposite
+behavior. Change the narrowest owning layer, preserve the original trace, and
+evaluate that change on both the target case and its contrast. If ownership is
+unclear, document the hypothesis and inspect exact saved packets before editing.
+Structural validity, profile adherence, campaign-direction adherence, model
+capability and subjective enjoyment are separate verdicts.
+
 The owner's preferred division is Codex for investigation, product/technical design and review; Cursor for bulk coding and refactoring. Prepare actionable phases instead of starting a large implementation pass in Codex without being asked. Do not launch another task, agent or subscription/model switch automatically.
 
 Keep one active implementation owner for a slice. Before work, inspect Git status and the current feature checkpoint. Preserve unrelated changes. At handoff, record the current phase, exact next step, relevant checks and unresolved blockers in PLAN.md; rewrite this snapshot rather than appending diary entries. Keep handoffs short enough that a fresh model can act without rereading the conversation.

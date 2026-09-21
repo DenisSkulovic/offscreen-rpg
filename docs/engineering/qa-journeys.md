@@ -74,9 +74,12 @@ The catalogue contains:
   for inert summary prose and a menu dominated by variants of one investigation.
   Inspect request allocation as part of this failure—a roughly 48 KB request
   devoted about 22 KB to output schema and pre-authored unused outcomes. The
-  next comparison must use the bounded four-plan/situation-beat contract and an
-  intentionally active profile; do not “pass” the old turn because its JSON and
-  mystery continuity were valid.
+  next comparison must hold the start and situation constant while contrasting
+  Quiet Eerie Mystery with an intentionally active profile such as Driven
+  Adventure or Absurd Action Comedy. Judge whether rhythm, initiative, surprise
+  and choice character visibly separate at the profile layer; do not impose the
+  active profile's preferences on every Storyteller, and do not “pass” the old
+  turn merely because its JSON and mystery continuity were valid.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or

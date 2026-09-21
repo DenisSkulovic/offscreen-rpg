@@ -44,15 +44,17 @@ For the coding handoff, contribute bounded fixture repairs to the [gold-session 
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 4 live taste repair. Fresh owner play
-  has now supplied the decisive review: structurally correct Luna turns scored
-  effectively 0/10 because they read as inert summaries followed by mechanical
-  menus. Rehearse the revised situation-beat contract offline, then run a fresh
-  owner story with Driven Adventure or the strengthened Absurd Action Comedy.
-- Reviewed source: base `f8981cd`; current working changes constrain provider
-  plans to four, require a changed situation beat, strengthen comedy, add Driven
-  Adventure and Character-Driven Drama, and keep operation-local overrun from
-  stopping the shared account after a known bounded settlement.
+- Current phase and exact next action: Phase 4 live profile-separation repair.
+  Fresh owner play supplied an important but profile-specific review: the Quiet
+  Eerie Mystery run read as inert summary followed by a mechanical menu. Hold
+  the start and situation constant and contrast that profile with Driven
+  Adventure or the strengthened Absurd Action Comedy before attributing the
+  result to the shared task, model or mechanics.
+- Reviewed source: base `b3f8340`; current working changes restore a creatively
+  neutral shared task, strengthen comedy, retain the new Driven Adventure and
+  Character-Driven Drama profiles, document prompt-ownership discipline, and
+  keep operation-local overrun from stopping the shared account after a known
+  bounded settlement.
 - Verification: exact saved tasks, raw responses, public snapshot and compact
   session report for story `4820491b-c9e1-4710-a53b-989e58da3b60` were
   inspected. Builds remain to be batched. No provider call occurred in this

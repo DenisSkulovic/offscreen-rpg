@@ -59,10 +59,11 @@ Implementation owner: Codex for the current owner-requested implementation.
   local launcher so its safe unresolved-liability reconciliation and the web
   polling fix take effect, explicitly retry the already settled second action,
   and continue the same story without rerolling.
-- Base/reviewed Git revision and relevant working changes: base `011000f`.
+- Base/reviewed Git revision and relevant working changes: base `b3f8340`.
   Working changes keep intent-owned Storyteller holds polling, project campaign
   offers as live choices in the story list, select committed-time rules for
-  mechanical planning, prefer fewer lived-scene options, and repair stale local
+  mechanical planning, keep creative rhythm and option-count preferences in the
+  selected Storyteller profile rather than the shared task, and repair stale local
   aggregate reservations from actual unresolved attempts at launcher startup.
 - Actual evidence for this revision: owner play, public snapshot, compact
   session report, raw provider responses and exact saved task packets were
