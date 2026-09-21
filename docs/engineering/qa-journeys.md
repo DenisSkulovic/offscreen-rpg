@@ -167,3 +167,5 @@ For a separately authorized `chamber:evaluation-run`, inspect the terminal repor
 The same case IDs, stage IDs and commands support browser automation. Automation should record structural evidence only. Human-judgment stages remain for an operator even when surrounding navigation and state assertions are automated.
 
 The ordinary Chamber QA workspace remains offline: its accounting is zero calls, zero tokens, zero charge and no reservation. Live evaluation is a separate explicitly authorized command and evidence path.
+
+The first actual product proof is defined by the [connected generative POC contract](connected-poc-proof.md). Its session supervisor must first run provider-free through ordinary APIs, pause for an explicit option at each held turn and emit one compact ledger row per committed Storyteller turn. Opening plus one automatically selected first option is only a transport smoke and must never be reported as a playable POC.

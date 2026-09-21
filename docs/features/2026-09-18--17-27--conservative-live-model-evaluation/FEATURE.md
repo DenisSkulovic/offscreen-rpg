@@ -45,6 +45,8 @@ One model, one captured case that fits the conservative envelope, one request an
 
 Only after Gate 1 is accepted: one model, one pineapple story, at most three committed immediate rounds. No parallel runs, fallback model, automatic retry or model judge. Review every round and cumulative accounting before any second case.
 
+This transport/prompt smoke is not the game POC. The maintained [connected proof](../../engineering/connected-poc-proof.md) adds a provider-free session-supervisor rehearsal and then a separately bounded five-turn Seyda Neen run spanning narrative, mechanics, time, canonical change and recall. It reuses these accounting and stop rules rather than creating a looser launcher.
+
 ### Gate 3 — Contrast case
 
 Run either the same premise under the second storyteller or the microbe case, chosen to answer the most important uncertainty observed in Gate 2. Do not automatically run both.
