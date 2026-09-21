@@ -227,9 +227,12 @@ export function createChamberInspector(
         .innerJoin(generation, eq(generation.id, storyResolution.generationId))
         .leftJoin(
           storytellerDispatchReview,
-          eq(
-            storytellerDispatchReview.generationId,
-            storyResolution.generationId,
+          and(
+            eq(
+              storytellerDispatchReview.generationId,
+              storyResolution.generationId,
+            ),
+            eq(storytellerDispatchReview.attemptId, generation.attemptId),
           ),
         )
         .where(
@@ -328,7 +331,10 @@ export function createChamberInspector(
             throw new StoryError('unavailable', 'document_store');
           }
           const content = entry.contentDocumentHash
-            ? await readPassageDocument(documentStore!, entry.contentDocumentHash)
+            ? await readPassageDocument(
+                documentStore!,
+                entry.contentDocumentHash,
+              )
             : passageContentSchema.parse(entry.content);
           return {
             sequence: entry.sequence,

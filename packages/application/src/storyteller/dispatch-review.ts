@@ -9,7 +9,10 @@ import {
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import { inspectOpenRouterRequest } from '@offscreen/storyteller/providers/openrouter';
-import type { StorytellerTask } from '@offscreen/storyteller/tasks';
+import type {
+  CapturedProviderRequest,
+  StorytellerTask,
+} from '@offscreen/storyteller/tasks';
 import { enqueue } from '../outbox/index';
 import { storytellerTopic } from './records';
 
@@ -30,17 +33,20 @@ export class DispatchReviewConflictError extends Error {
 export async function prepareDispatchReview(
   database: Database,
   generationId: string,
+  attemptId: string,
   task: StorytellerTask,
+  request: CapturedProviderRequest = task.request,
 ): Promise<DispatchReviewDisposition> {
   const execution = task.execution;
   if (execution.mode !== 'provider') {
     throw new Error('Dispatch review requires provider execution');
   }
-  const inspection = inspectOpenRouterRequest(task);
+  const inspection = inspectOpenRouterRequest(task, request);
   return database.db.transaction(async (tx) => {
     await tx
       .insert(storytellerDispatchReview)
       .values({
+        attemptId,
         generationId,
         mode: execution.dispatchReview.mode,
         state:
@@ -55,7 +61,7 @@ export async function prepareDispatchReview(
     const [review] = await tx
       .select()
       .from(storytellerDispatchReview)
-      .where(eq(storytellerDispatchReview.generationId, generationId))
+      .where(eq(storytellerDispatchReview.attemptId, attemptId))
       .for('update');
     if (!review) {
       throw new Error('Missing dispatch review');
@@ -64,7 +70,7 @@ export async function prepareDispatchReview(
       if (review.state !== 'superseded') {
         await tx.insert(storytellerDispatchReviewDecision).values({
           id: randomUUID(),
-          generationId,
+          attemptId,
           expectedRevision: review.revision,
           kind: 'supersede',
           packetSha256: review.packetSha256,
@@ -78,7 +84,7 @@ export async function prepareDispatchReview(
           })
           .where(
             and(
-              eq(storytellerDispatchReview.generationId, generationId),
+              eq(storytellerDispatchReview.attemptId, attemptId),
               eq(storytellerDispatchReview.revision, review.revision),
             ),
           );
@@ -95,6 +101,7 @@ export async function prepareDispatchReview(
 
 const dispatchReviewDecisionSchema = z.strictObject({
   generationId: z.uuid(),
+  attemptId: z.uuid(),
   decisionId: z.uuid(),
   expectedRevision: z.number().int().nonnegative(),
   packetSha256: z.string().regex(/^[0-9a-f]{64}$/),
@@ -115,6 +122,7 @@ export function createDispatchReviewControls(database: Database) {
         .where(
           and(
             eq(storytellerDispatchReview.generationId, generationId),
+            eq(storytellerDispatchReview.attemptId, generation.attemptId),
             eq(generation.ownerId, ownerId),
           ),
         );
@@ -133,10 +141,9 @@ export function createDispatchReviewControls(database: Database) {
           )
           .where(
             and(
-              eq(
-                storytellerDispatchReview.generationId,
-                decision.generationId,
-              ),
+              eq(storytellerDispatchReview.generationId, decision.generationId),
+              eq(storytellerDispatchReview.attemptId, decision.attemptId),
+              eq(generation.attemptId, decision.attemptId),
               eq(generation.ownerId, ownerId),
             ),
           )
@@ -152,7 +159,7 @@ export function createDispatchReviewControls(database: Database) {
         }
         await tx.insert(storytellerDispatchReviewDecision).values({
           id: decision.decisionId,
-          generationId: decision.generationId,
+          attemptId: decision.attemptId,
           expectedRevision: decision.expectedRevision,
           kind: decision.decision,
           packetSha256: decision.packetSha256,
@@ -168,14 +175,8 @@ export function createDispatchReviewControls(database: Database) {
           })
           .where(
             and(
-              eq(
-                storytellerDispatchReview.generationId,
-                decision.generationId,
-              ),
-              eq(
-                storytellerDispatchReview.revision,
-                decision.expectedRevision,
-              ),
+              eq(storytellerDispatchReview.attemptId, decision.attemptId),
+              eq(storytellerDispatchReview.revision, decision.expectedRevision),
             ),
           )
           .returning();

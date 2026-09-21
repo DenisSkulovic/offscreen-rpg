@@ -1,5 +1,5 @@
 {
-  "id": "fe9cb3a4-6766-423f-b0fe-18d6e0229271",
+  "id": "704b29d2-86cc-4819-b3be-a67c9edd889a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3697,10 +3697,16 @@
       "name": "storyteller_dispatch_review",
       "schema": "",
       "columns": {
+        "attempt_id": {
+          "name": "attempt_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
         "generation_id": {
           "name": "generation_id",
           "type": "uuid",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "revision": {
@@ -3754,7 +3760,29 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "storyteller_dispatch_review_generation": {
+          "name": "storyteller_dispatch_review_generation",
+          "columns": [
+            {
+              "expression": "generation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "prepared_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "storyteller_dispatch_review_generation_id_generation_id_fk": {
           "name": "storyteller_dispatch_review_generation_id_generation_id_fk",
@@ -3807,8 +3835,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "generation_id": {
-          "name": "generation_id",
+        "attempt_id": {
+          "name": "attempt_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3841,15 +3869,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk": {
-          "name": "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk",
+        "storyteller_dispatch_review_decision_attempt_id_storyteller_dispatch_review_attempt_id_fk": {
+          "name": "storyteller_dispatch_review_decision_attempt_id_storyteller_dispatch_review_attempt_id_fk",
           "tableFrom": "storyteller_dispatch_review_decision",
           "tableTo": "storyteller_dispatch_review",
           "columnsFrom": [
-            "generation_id"
+            "attempt_id"
           ],
           "columnsTo": [
-            "generation_id"
+            "attempt_id"
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
@@ -3861,7 +3889,7 @@
           "name": "storyteller_dispatch_review_decision_revision",
           "nullsNotDistinct": false,
           "columns": [
-            "generation_id",
+            "attempt_id",
             "expected_revision"
           ]
         }

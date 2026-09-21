@@ -100,6 +100,7 @@ export function createScriptedOpenings(
       ownerId: string,
       input: {
         generationId: string;
+        attemptId: string;
         decisionId: string;
         expectedRevision: number;
         packetSha256: string;

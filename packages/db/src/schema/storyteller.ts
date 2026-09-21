@@ -104,8 +104,9 @@ export const storytellerMemoryExploration = pgTable(
 export const storytellerDispatchReview = pgTable(
   'storyteller_dispatch_review',
   {
+    attemptId: uuid('attempt_id').primaryKey(),
     generationId: uuid('generation_id')
-      .primaryKey()
+      .notNull()
       .references(() => generation.id, { onDelete: 'restrict' }),
     revision: integer('revision').notNull().default(0),
     mode: text('mode').notNull().$type<'hold' | 'observe' | 'off'>(),
@@ -129,6 +130,10 @@ export const storytellerDispatchReview = pgTable(
     }),
   },
   (t) => [
+    index('storyteller_dispatch_review_generation').on(
+      t.generationId,
+      t.preparedAt,
+    ),
     check('storyteller_dispatch_review_revision', sql`${t.revision} >= 0`),
     check(
       'storyteller_dispatch_review_mode',
@@ -153,9 +158,9 @@ export const storytellerDispatchReviewDecision = pgTable(
   'storyteller_dispatch_review_decision',
   {
     id: uuid('id').primaryKey(),
-    generationId: uuid('generation_id')
+    attemptId: uuid('attempt_id')
       .notNull()
-      .references(() => storytellerDispatchReview.generationId, {
+      .references(() => storytellerDispatchReview.attemptId, {
         onDelete: 'restrict',
       }),
     expectedRevision: integer('expected_revision').notNull(),
@@ -170,7 +175,7 @@ export const storytellerDispatchReviewDecision = pgTable(
   },
   (t) => [
     unique('storyteller_dispatch_review_decision_revision').on(
-      t.generationId,
+      t.attemptId,
       t.expectedRevision,
     ),
     check(

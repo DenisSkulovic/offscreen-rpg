@@ -3364,6 +3364,7 @@ test(
             assert.equal(attemptBeforeRelease, undefined);
             await reviews.decide(ownerId, {
               generationId: heldId,
+              attemptId: review?.attemptId,
               decisionId: randomUUID(),
               expectedRevision: review?.revision,
               packetSha256: review?.packetSha256,

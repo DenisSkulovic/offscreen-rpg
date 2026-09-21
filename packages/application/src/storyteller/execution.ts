@@ -136,6 +136,7 @@ export function createStorytellerExecution(
     const reviewDisposition = await prepareDispatchReview(
       database,
       record.id,
+      attemptId,
       task,
     );
     if (reviewDisposition !== 'proceed') {

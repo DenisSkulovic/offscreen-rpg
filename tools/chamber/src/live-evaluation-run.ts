@@ -19,7 +19,8 @@ type CreditSnapshot = {
 
 function usdToMicrousd(value: unknown) {
   const amount = Number(value);
-  if (!Number.isFinite(amount) || amount < 0) throw new Error('Invalid OpenRouter credit amount');
+  if (!Number.isFinite(amount) || amount < 0)
+    throw new Error('Invalid OpenRouter credit amount');
   return BigInt(Math.floor(amount * 1_000_000));
 }
 
@@ -28,16 +29,27 @@ export async function verifyOpenRouterAuthority(
   config: EvaluationPacketConfig,
   apiKey: string,
 ): Promise<CreditSnapshot> {
-  if (!apiKey.trim()) throw new Error('OPENROUTER_API_KEY is required for an authorized live evaluation');
+  if (!apiKey.trim())
+    throw new Error(
+      'OPENROUTER_API_KEY is required for an authorized live evaluation',
+    );
   const headers = { authorization: `Bearer ${apiKey}` };
   const [creditsResponse, endpointsResponse] = await Promise.all([
-    fetch('https://openrouter.ai/api/v1/credits', { headers, redirect: 'error' }),
-    fetch(`https://openrouter.ai/api/v1/models/${config.route.model}/endpoints`, {
+    fetch('https://openrouter.ai/api/v1/credits', {
+      headers,
       redirect: 'error',
     }),
+    fetch(
+      `https://openrouter.ai/api/v1/models/${config.route.model}/endpoints`,
+      {
+        redirect: 'error',
+      },
+    ),
   ]);
   if (!creditsResponse.ok || !endpointsResponse.ok) {
-    throw new Error(`OpenRouter authority check failed (${creditsResponse.status}/${endpointsResponse.status})`);
+    throw new Error(
+      `OpenRouter authority check failed (${creditsResponse.status}/${endpointsResponse.status})`,
+    );
   }
   const credits = (await creditsResponse.json()) as {
     data?: { total_credits?: unknown; total_usage?: unknown };
@@ -61,10 +73,16 @@ export async function verifyOpenRouterAuthority(
     !endpoint.supported_parameters.includes('response_format') ||
     (endpoint.context_length ?? 0) < config.route.maxContextTokens
   ) {
-    throw new Error('Configured OpenRouter endpoint no longer satisfies the captured route');
+    throw new Error(
+      'Configured OpenRouter endpoint no longer satisfies the captured route',
+    );
   }
-  const inputPrice = BigInt(Math.ceil(Number(endpoint.pricing?.prompt) * 1_000_000_000_000));
-  const outputPrice = BigInt(Math.ceil(Number(endpoint.pricing?.completion) * 1_000_000_000_000));
+  const inputPrice = BigInt(
+    Math.ceil(Number(endpoint.pricing?.prompt) * 1_000_000_000_000),
+  );
+  const outputPrice = BigInt(
+    Math.ceil(Number(endpoint.pricing?.completion) * 1_000_000_000_000),
+  );
   if (
     inputPrice.toString() !== config.route.inputMicrousdPerMillion ||
     outputPrice.toString() !== config.route.outputMicrousdPerMillion
@@ -111,9 +129,10 @@ export async function provisionAndPreflightLiveEvaluation(input: {
     await input.database.db.$client.query('ROLLBACK');
     throw error;
   }
-  const availableMicrousd = input.credits.availableMicrousd < localLimit
-    ? input.credits.availableMicrousd
-    : localLimit;
+  const availableMicrousd =
+    input.credits.availableMicrousd < localLimit
+      ? input.credits.availableMicrousd
+      : localLimit;
   const preflight = preflightLiveEvaluation({
     manifest: input.manifest,
     now: new Date().toISOString(),
@@ -127,7 +146,9 @@ export async function provisionAndPreflightLiveEvaluation(input: {
     traceReady: true,
   });
   if (!preflight.eligible) {
-    throw new Error(`Live evaluation preflight failed: ${preflight.failures.join(', ')}`);
+    throw new Error(
+      `Live evaluation preflight failed: ${preflight.failures.join(', ')}`,
+    );
   }
   return preflight.manifest;
 }
@@ -155,7 +176,9 @@ export function preflightAdditionalLiveEvaluation(input: {
     traceReady: true,
   });
   if (!preflight.eligible) {
-    throw new Error(`Additional packet preflight failed: ${preflight.failures.join(', ')}`);
+    throw new Error(
+      `Additional packet preflight failed: ${preflight.failures.join(', ')}`,
+    );
   }
   return preflight.manifest;
 }
@@ -176,7 +199,8 @@ async function apiRequest(
       ...init?.headers,
     },
   });
-  if (!response.ok) throw new Error(`Live-flow API failed: ${response.status} ${path}`);
+  if (!response.ok)
+    throw new Error(`Live-flow API failed: ${response.status} ${path}`);
   return response.json();
 }
 
@@ -194,6 +218,7 @@ export async function releaseHeldPacket(input: {
     {
       method: 'PUT',
       body: JSON.stringify({
+        attemptId: input.review.attemptId,
         decisionId: crypto.randomUUID(),
         expectedRevision: input.review.revision,
         packetSha256: input.review.packetSha256,
@@ -203,14 +228,18 @@ export async function releaseHeldPacket(input: {
   );
 }
 
-export async function waitForGenerationTerminal(database: Database, generationId: string) {
+export async function waitForGenerationTerminal(
+  database: Database,
+  generationId: string,
+) {
   for (let read = 0; read < 240; read++) {
     const status = await database.db.$client.query(
       'SELECT state FROM generation WHERE id = $1',
       [generationId],
     );
     const state = status.rows[0]?.state as string | undefined;
-    if (state && ['succeeded', 'failed', 'uncertain'].includes(state)) return state;
+    if (state && ['succeeded', 'failed', 'uncertain'].includes(state))
+      return state;
     await delay(250);
   }
   throw new Error('Evaluation did not reach a terminal state');
@@ -233,7 +262,10 @@ export async function captureHeldContinuation(input: {
       `/api/drafts/${input.draftId}/openings/latest`,
     ),
   );
-  if (preview.id !== input.openingGenerationId || preview.state !== 'succeeded') {
+  if (
+    preview.id !== input.openingGenerationId ||
+    preview.state !== 'succeeded'
+  ) {
     throw new Error('Opening was not the current successful candidate');
   }
   const storyId = crypto.randomUUID();
@@ -292,7 +324,9 @@ export async function captureHeldContinuation(input: {
     input.evidenceDirectory,
     `continuation-request-${generationId}.json`,
   );
-  await writeFile(evidencePath, `${JSON.stringify(review, null, 2)}\n`, { flag: 'wx' });
+  await writeFile(evidencePath, `${JSON.stringify(review, null, 2)}\n`, {
+    flag: 'wx',
+  });
   return {
     storyId,
     generationId,
@@ -302,7 +336,10 @@ export async function captureHeldContinuation(input: {
   } as const;
 }
 
-export async function enableSingleLiveAttempt(database: Database, config: EvaluationPacketConfig) {
+export async function enableSingleLiveAttempt(
+  database: Database,
+  config: EvaluationPacketConfig,
+) {
   await database.db.$client.query('BEGIN');
   try {
     const account = await database.db.$client.query(
@@ -323,7 +360,10 @@ export async function enableSingleLiveAttempt(database: Database, config: Evalua
   }
 }
 
-export async function closeSingleLiveAttempt(database: Database, config: EvaluationPacketConfig) {
+export async function closeSingleLiveAttempt(
+  database: Database,
+  config: EvaluationPacketConfig,
+) {
   await database.db.$client.query('BEGIN');
   try {
     await database.db.$client.query(
@@ -370,13 +410,15 @@ export async function saveLiveEvaluationReport(input: {
     recipe: input.config.recipe,
     providerCredits: {
       before: {
-        totalCreditsMicrousd: input.creditsBefore.totalCreditsMicrousd.toString(),
+        totalCreditsMicrousd:
+          input.creditsBefore.totalCreditsMicrousd.toString(),
         totalUsageMicrousd: input.creditsBefore.totalUsageMicrousd.toString(),
         availableMicrousd: input.creditsBefore.availableMicrousd.toString(),
         verifiedAt: input.creditsBefore.verifiedAt,
       },
       after: {
-        totalCreditsMicrousd: input.creditsAfter.totalCreditsMicrousd.toString(),
+        totalCreditsMicrousd:
+          input.creditsAfter.totalCreditsMicrousd.toString(),
         totalUsageMicrousd: input.creditsAfter.totalUsageMicrousd.toString(),
         availableMicrousd: input.creditsAfter.availableMicrousd.toString(),
         verifiedAt: input.creditsAfter.verifiedAt,
@@ -385,7 +427,10 @@ export async function saveLiveEvaluationReport(input: {
     durable: result.rows[0] ?? null,
     recordedAt: new Date().toISOString(),
   };
-  const path = join(input.directory, `evaluation-report-${input.generationId}.json`);
+  const path = join(
+    input.directory,
+    `evaluation-report-${input.generationId}.json`,
+  );
   await writeFile(path, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
   return { path, report };
 }

@@ -509,7 +509,8 @@ CREATE TABLE "storyteller_attempt" (
 );
 --> statement-breakpoint
 CREATE TABLE "storyteller_dispatch_review" (
-	"generation_id" uuid PRIMARY KEY NOT NULL,
+	"attempt_id" uuid PRIMARY KEY NOT NULL,
+	"generation_id" uuid NOT NULL,
 	"revision" integer DEFAULT 0 NOT NULL,
 	"mode" text NOT NULL,
 	"state" text NOT NULL,
@@ -527,12 +528,12 @@ CREATE TABLE "storyteller_dispatch_review" (
 --> statement-breakpoint
 CREATE TABLE "storyteller_dispatch_review_decision" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"generation_id" uuid NOT NULL,
+	"attempt_id" uuid NOT NULL,
 	"expected_revision" integer NOT NULL,
 	"kind" text NOT NULL,
 	"packet_sha256" text NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "storyteller_dispatch_review_decision_revision" UNIQUE("generation_id","expected_revision"),
+	CONSTRAINT "storyteller_dispatch_review_decision_revision" UNIQUE("attempt_id","expected_revision"),
 	CONSTRAINT "storyteller_dispatch_review_decision_revision_value" CHECK ("storyteller_dispatch_review_decision"."expected_revision" >= 0),
 	CONSTRAINT "storyteller_dispatch_review_decision_kind" CHECK ("storyteller_dispatch_review_decision"."kind" IN ('release','reject','supersede')),
 	CONSTRAINT "storyteller_dispatch_review_decision_hash" CHECK ("storyteller_dispatch_review_decision"."packet_sha256" ~ '^[0-9a-f]{64}$')
@@ -690,7 +691,7 @@ ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_generation
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_attempt" ADD CONSTRAINT "storyteller_attempt_run_id_storyteller_run_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."storyteller_run"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_dispatch_review" ADD CONSTRAINT "storyteller_dispatch_review_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "storyteller_dispatch_review_decision" ADD CONSTRAINT "storyteller_dispatch_review_decision_generation_id_storyteller_dispatch_review_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."storyteller_dispatch_review"("generation_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "storyteller_dispatch_review_decision" ADD CONSTRAINT "storyteller_dispatch_review_decision_attempt_id_storyteller_dispatch_review_attempt_id_fk" FOREIGN KEY ("attempt_id") REFERENCES "public"."storyteller_dispatch_review"("attempt_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_memory_exploration" ADD CONSTRAINT "storyteller_memory_exploration_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "storyteller_operation" ADD CONSTRAINT "storyteller_operation_account_id_storyteller_funding_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."storyteller_funding"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -709,5 +710,6 @@ CREATE INDEX "story_fork_source" ON "story" USING btree ("forked_from_story_id",
 CREATE INDEX "storyteller_attempt_account_created" ON "storyteller_attempt" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING btree ("story_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");--> statement-breakpoint
+CREATE INDEX "storyteller_dispatch_review_generation" ON "storyteller_dispatch_review" USING btree ("generation_id","prepared_at");--> statement-breakpoint
 CREATE INDEX "storyteller_operation_account_created" ON "storyteller_operation" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_usage_allocation_window" ON "storyteller_usage_allocation" USING btree ("scope","scope_key","window_id","window_version","attributed_at");

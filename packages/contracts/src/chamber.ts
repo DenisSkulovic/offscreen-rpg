@@ -66,6 +66,7 @@ export function listChamberScenarios() {
 const isoDateTime = z.iso.datetime();
 
 export const dispatchReviewViewSchema = z.strictObject({
+  attemptId: z.uuid(),
   generationId: z.uuid(),
   revision: z.number().int().nonnegative(),
   mode: z.enum(['hold', 'observe', 'off']),
@@ -86,6 +87,7 @@ export const dispatchReviewResponseSchema = z.strictObject({
   review: dispatchReviewViewSchema,
 });
 export const dispatchReviewDecisionRequestSchema = z.strictObject({
+  attemptId: z.uuid(),
   decisionId: z.uuid(),
   expectedRevision: z.number().int().nonnegative(),
   packetSha256: z.string().regex(/^[0-9a-f]{64}$/),
@@ -125,7 +127,10 @@ export const chamberInspectorHistoryLimit = 20;
 
 export const chamberInspectorSchema = z.strictObject({
   documents: z.strictObject({
-    rootHash: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+    rootHash: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/)
+      .nullable(),
     rootRevision: z.number().int().nonnegative(),
   }),
   costAccounting: z.strictObject({
