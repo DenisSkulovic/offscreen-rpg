@@ -56,6 +56,9 @@ export const capturedProviderRequestSchema = z.strictObject({
   ]),
   outputSchema: z.json(),
 });
+export type CapturedProviderRequest = z.infer<
+  typeof capturedProviderRequestSchema
+>;
 
 // Persist the exact request as well as its source, so a later prompt edit cannot
 // change an already accepted operation during recovery.

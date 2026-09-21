@@ -32,8 +32,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: P3; add the provider-request dry-run adapter for this controller input and stage-separated evidence-use reporting before enabling multi-round dispatch.
-- Base/reviewed Git revision and relevant uncommitted changes: `7066fe2`; the controller now supplies the deterministic evidence packet and exact serialized task-plus-packet bytes to every fresh decision under one envelope. Accepted-request crash replay still executes before recomposition. A new durable `context-limit` failure refuses mandatory overflow.
-- Actual checks/results for this revision: database, application and integration builds pass; the focused disposable-database `start-package` suite passes 5/5. Its crash/recovery case proves the first decision sees an empty packet, the recovered final decision sees the discovered canonical lead and the composed request stays inside the captured envelope.
-- Unresolved findings/blockers: the ordinary provider adapter does not yet serialize or dispatch multi-round controller input, and downstream evidence use is not yet scored. Route-specific token counts remain unknown until a tokenizer is verified.
+- Current phase and exact next action: P3; add stage-separated evidence-use reporting, then connect reviewed requests to durable multi-round accounting before any live dispatch.
+- Base/reviewed Git revision and relevant uncommitted changes: `b62ffb0`; the provider-facing composer now embeds the factored pack as a named user section, switches from context-request-or-final to final-only output schema at the reserved round and feeds the existing OpenRouter body inspector through a no-transport preview.
+- Actual checks/results for this revision: contracts, Storyteller, application and integration builds pass; Storyteller tests pass 35/35 and focused memory tests pass 3/3. The canonical Greywake preview contains current and historical evidence, exposes compact message/section/schema hashes and bytes, reports no transport/zero charge and remains inside the shared envelope.
+- Unresolved findings/blockers: multi-round provider transport/accounting remains disconnected and downstream evidence use is not yet scored. Token counts remain explicitly unknown until a route-specific tokenizer is verified.
 - Provider spend and accounting certainty: $0; no provider call.

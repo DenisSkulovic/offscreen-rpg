@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { LocalDocumentStore } from '@offscreen/documents';
+import { createRequestAuditFixtureCases } from '@offscreen/storyteller/providers/request-audit-fixtures';
+import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import {
   buildLongStoryMemoryCorpus,
   materializeLongStoryMemoryCorpus,
@@ -24,6 +26,7 @@ import {
   buildPackableMemoryEvidence,
   packMemoryExplorationEvidence,
 } from '../dist/storyteller/memory-evidence-packing.js';
+import { inspectMemoryExplorationProviderRequest } from '../dist/storyteller/memory-provider-preview.js';
 import {
   buildEvidencePackingPressureFixture,
   evaluateEvidencePackingPressure,
@@ -453,6 +456,57 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
         rounds: [{ malformed: true }],
       }),
     /round cannot be packed/,
+  );
+  const providerBase = createRequestAuditFixtureCases({
+    caseIds: ['scene-continuation'],
+  })[0].task;
+  const providerTask = storytellerTaskSchema.parse({
+    ...providerBase,
+    resources: {
+      ...providerBase.resources,
+      recipe: {
+        version: 'memory-exploration.v1',
+        maxModelRounds: 2,
+        maxReads: 4,
+        maxRetainedReadBytes: 12 * 1024,
+        tools: 'memory-read.v1',
+        automaticEscalation: false,
+        finalAnswerReserveRounds: 1,
+      },
+      authority: {
+        ...providerBase.resources.authority,
+        policy: {
+          ...providerBase.resources.authority.policy,
+          limits: {
+            ...providerBase.resources.authority.policy.limits,
+            maxModelRoundsPerOperation: 2,
+            maxReadsPerOperation: 4,
+            maxRetainedReadBytes: 12 * 1024,
+          },
+        },
+      },
+    },
+  });
+  const providerPreview = inspectMemoryExplorationProviderRequest(
+    providerTask,
+    resumedExplorer.snapshot(),
+    2,
+  );
+  assert.equal(providerPreview.transportPerformed, false);
+  assert.equal(providerPreview.providerChargeMicrousd, '0');
+  assert.equal(providerPreview.canRequestContext, false);
+  assert.ok(providerPreview.evidence.selected.length >= 2);
+  assert.ok(
+    providerPreview.boundedRequestBytes <=
+      providerTask.resources.envelope.maxSerializedRequestBytes,
+  );
+  assert.equal(
+    providerPreview.inspection.userSections.at(-1)?.key,
+    'memoryExploration',
+  );
+  assert.match(
+    JSON.stringify(providerPreview.inspection.body.messages),
+    /still owes Mira Vale/,
   );
 
   const indexStore = new LocalLexicalStoryIndexStore(

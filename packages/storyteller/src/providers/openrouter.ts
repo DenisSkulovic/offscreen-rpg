@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
-import type { StorytellerTask } from '../tasks';
+import type { CapturedProviderRequest, StorytellerTask } from '../tasks';
 import { describeStorytellerRequestPurpose } from '../tasks';
 import { reservationForRequest } from '../tasks/policy';
 
@@ -43,19 +43,22 @@ export type StorytellerProvider = (
  * inspection and live dispatch must share this function so reviewed evidence
  * cannot differ from the eventual request through adapter-only decoration.
  */
-export function buildOpenRouterRequest(task: StorytellerTask) {
+export function buildOpenRouterRequest(
+  task: StorytellerTask,
+  capturedRequest: CapturedProviderRequest = task.request,
+) {
   if (task.execution.mode !== 'provider') {
     throw new Error('Wrong execution mode');
   }
   const policy = task.execution.policy;
   reservationForRequest(
-    task.request,
+    capturedRequest,
     policy,
     task.resources.envelope.maxSerializedRequestBytes,
   );
   return {
     model: policy.model,
-    messages: task.request.messages,
+    messages: capturedRequest.messages,
     stream: false,
     max_tokens: task.resources.envelope.maxGeneratedTokens,
     reasoning: { enabled: false, exclude: true },
@@ -73,15 +76,18 @@ export function buildOpenRouterRequest(task: StorytellerTask) {
       json_schema: {
         name: 'storyteller_result',
         strict: true,
-        schema: task.request.outputSchema,
+        schema: capturedRequest.outputSchema,
       },
     },
   };
 }
 
 /** Exact packet facts only; token counts remain unknown without a verified tokenizer. */
-export function inspectOpenRouterRequest(task: StorytellerTask) {
-  const body = buildOpenRouterRequest(task);
+export function inspectOpenRouterRequest(
+  task: StorytellerTask,
+  capturedRequest: CapturedProviderRequest = task.request,
+) {
+  const body = buildOpenRouterRequest(task, capturedRequest);
   const serialized = JSON.stringify(body);
   const userMessage = body.messages.find((message) => message.role === 'user');
   let userSections: ReadonlyArray<{
@@ -136,15 +142,15 @@ export function inspectOpenRouterRequest(task: StorytellerTask) {
     sha256: createHash('sha256').update(serialized).digest('hex'),
     serializedBytes: Buffer.byteLength(serialized, 'utf8'),
     capturedRequestBytes: Buffer.byteLength(
-      JSON.stringify(task.request),
+      JSON.stringify(capturedRequest),
       'utf8',
     ),
     outputSchemaBytes: Buffer.byteLength(
-      JSON.stringify(task.request.outputSchema),
+      JSON.stringify(capturedRequest.outputSchema),
       'utf8',
     ),
     outputSchemaSha256: createHash('sha256')
-      .update(JSON.stringify(task.request.outputSchema))
+      .update(JSON.stringify(capturedRequest.outputSchema))
       .digest('hex'),
     messages: body.messages.map((message, index) => ({
       index,

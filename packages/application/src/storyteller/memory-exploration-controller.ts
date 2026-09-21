@@ -5,6 +5,8 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
+  composeMemoryExplorationDecisionRequest,
+  serializedRequestBytes,
   storytellerNeedsContextSchema,
   storytellerTaskSchema,
   validateStorytellerResult,
@@ -52,7 +54,8 @@ export type ScriptedMemoryRoundSource = (input: {
   round: number;
   snapshot: MemoryExplorationSnapshot;
   request: ReturnType<typeof prepareMemoryEvidenceContext>['request'];
-  serializedRequestBytes: number;
+  capturedRequestBytes: number;
+  boundedRequestBytes: number;
 }) => unknown | Promise<unknown>;
 
 export type MemoryExplorationControllerResult = Readonly<{
@@ -92,49 +95,48 @@ export function prepareMemoryEvidenceContext(
   if (recipe.version !== 'memory-exploration.v1') {
     throw new Error('Memory evidence requires an exploration recipe');
   }
-  const emptyWrapperBytes = Buffer.byteLength(
-    JSON.stringify({
-      format: 'offscreen.memory-exploration-decision-request.v1',
-      round,
-      task,
-      evidencePack: null,
-    }),
-    'utf8',
-  );
-  const availablePacketBytes = Math.min(
+  const canRequestContext =
+    round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds;
+  let availablePacketBytes = Math.min(
     recipe.maxRetainedReadBytes,
-    task.resources.envelope.maxSerializedRequestBytes - emptyWrapperBytes,
+    task.resources.envelope.maxSerializedRequestBytes,
   );
-  if (availablePacketBytes <= 0) {
-    throw new MemoryExplorationControllerError('context-limit');
+  while (availablePacketBytes > 0) {
+    const packed = packMemoryExplorationEvidence(snapshot, {
+      maxBytes: availablePacketBytes,
+      maxItems: 64,
+      maxItemsPerGroup: 8,
+    });
+    if (packed.status === 'mandatory-overflow') break;
+    const request = composeMemoryExplorationDecisionRequest({
+      request: task.request,
+      round,
+      canRequestContext,
+      evidencePack: packed.packet,
+    });
+    const capturedRequestBytes = Buffer.byteLength(
+      JSON.stringify(request),
+      'utf8',
+    );
+    const boundedRequestBytes = serializedRequestBytes(request);
+    const overflow =
+      boundedRequestBytes -
+      task.resources.envelope.maxSerializedRequestBytes;
+    if (overflow <= 0) {
+      return {
+        request,
+        capturedRequestBytes,
+        boundedRequestBytes,
+        selected: packed.selected,
+        omitted: packed.omitted,
+      };
+    }
+    availablePacketBytes = Math.min(
+      availablePacketBytes - Math.max(1, overflow),
+      packed.bytes - 1,
+    );
   }
-  const packed = packMemoryExplorationEvidence(snapshot, {
-    maxBytes: availablePacketBytes,
-    maxItems: 64,
-    maxItemsPerGroup: 8,
-  });
-  if (packed.status === 'mandatory-overflow') {
-    throw new MemoryExplorationControllerError('context-limit');
-  }
-  const request = {
-    format: 'offscreen.memory-exploration-decision-request.v1' as const,
-    round,
-    task,
-    evidencePack: packed.packet,
-  };
-  const serializedRequestBytes = Buffer.byteLength(JSON.stringify(request), 'utf8');
-  if (
-    serializedRequestBytes >
-    task.resources.envelope.maxSerializedRequestBytes
-  ) {
-    throw new MemoryExplorationControllerError('context-limit');
-  }
-  return {
-    request,
-    serializedRequestBytes,
-    selected: packed.selected,
-    omitted: packed.omitted,
-  };
+  throw new MemoryExplorationControllerError('context-limit');
 }
 
 /**
@@ -266,7 +268,8 @@ export async function runScriptedMemoryExploration(
         round,
         snapshot,
         request: preparedContext.request,
-        serializedRequestBytes: preparedContext.serializedRequestBytes,
+        capturedRequestBytes: preparedContext.capturedRequestBytes,
+        boundedRequestBytes: preparedContext.boundedRequestBytes,
       });
     }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);

@@ -162,16 +162,21 @@ registerStoryConcern(
         const composedContexts: Array<
           Pick<
             Parameters<ScriptedMemoryRoundSource>[0],
-            'request' | 'serializedRequestBytes'
+            'request' | 'capturedRequestBytes' | 'boundedRequestBytes'
           >
         > = [];
         const source: ScriptedMemoryRoundSource = ({
           round,
           request,
-          serializedRequestBytes,
+          capturedRequestBytes,
+          boundedRequestBytes,
         }) => {
           sourceCalls += 1;
-          composedContexts.push({ request, serializedRequestBytes });
+          composedContexts.push({
+            request,
+            capturedRequestBytes,
+            boundedRequestBytes,
+          });
           return round === 1
             ? {
                 kind: 'needs_context',
@@ -210,14 +215,21 @@ registerStoryConcern(
         const finalContext = composedContexts[1];
         assert.ok(initialContext);
         assert.ok(finalContext);
-        assert.equal(initialContext.request.evidencePack.evidence.length, 0);
+        const initialUser = JSON.parse(initialContext.request.messages[1].content);
+        const finalUser = JSON.parse(finalContext.request.messages[1].content);
+        assert.equal(
+          initialUser.memoryExploration.evidencePack.evidence.length,
+          0,
+        );
         assert.match(
-          finalContext.request.evidencePack.contents[0]?.text ?? '',
+          finalUser.memoryExploration.evidencePack.contents[0]?.text ?? '',
           /old promise remains unresolved/i,
         );
-        assert.equal(finalContext.request.round, 2);
+        assert.equal(finalUser.memoryExploration.round, 2);
+        assert.equal(finalUser.memoryExploration.canRequestContext, false);
+        assert.ok(finalContext.capturedRequestBytes < finalContext.boundedRequestBytes);
         assert.ok(
-          finalContext.serializedRequestBytes <=
+          finalContext.boundedRequestBytes <=
             task.resources.envelope.maxSerializedRequestBytes,
         );
 

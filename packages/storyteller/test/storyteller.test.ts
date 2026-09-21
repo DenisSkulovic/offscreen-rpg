@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
+import type { EvidencePacket } from '@offscreen/contracts/story-retrieval';
 import {
   createStorytellerCatalogue,
   storytellerCatalogue,
 } from '../src/profiles';
 import {
+  composeMemoryExplorationDecisionRequest,
   prepareStorytellerTask,
   storytellerNeedsContextSchema,
   storytellerRoundOutputSchema,
@@ -31,6 +33,63 @@ import {
   selectStorytellerRequestSections,
 } from '../src/providers/request-audit';
 import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
+
+test('memory exploration request preview embeds evidence without transport', () => {
+  const fixture = createRequestAuditFixtureCases({
+    caseIds: ['scene-continuation'],
+  })[0];
+  assert.ok(fixture);
+  const { task } = fixture;
+  const evidencePack: EvidencePacket = {
+    format: 'offscreen.evidence-pack.v1',
+    contents: [{ id: 'c1', text: 'The old promise remains unresolved.' }],
+    sources: [
+      {
+        id: 's1',
+        key: `canonical:${randomUUID()}@1#sha256:${'a'.repeat(64)}`,
+      },
+    ],
+    evidence: [
+      {
+        itemId: 'old-promise',
+        group: { kind: 'thread', key: 'old-promise' },
+        required: true,
+        level: 'card',
+        contentId: 'c1',
+        sourceIds: ['s1'],
+      },
+    ],
+  };
+  const request = composeMemoryExplorationDecisionRequest({
+    request: task.request,
+    round: 2,
+    canRequestContext: false,
+    evidencePack,
+  });
+  const user = JSON.parse(request.messages[1].content);
+  assert.deepEqual(user.memoryExploration, {
+    round: 2,
+    canRequestContext: false,
+    evidencePack,
+  });
+  assert.deepEqual(request.outputSchema, task.request.outputSchema);
+  const inspection = inspectOpenRouterRequest(task, request);
+  assert.equal(inspection.userSections.at(-1)?.key, 'memoryExploration');
+  assert.equal(inspection.body.messages, request.messages);
+  assert.ok(inspection.serializedBytes > inspection.capturedRequestBytes);
+  const exploratoryRequest = composeMemoryExplorationDecisionRequest({
+    request: task.request,
+    round: 1,
+    canRequestContext: true,
+    evidencePack: { ...evidencePack, contents: [], sources: [], evidence: [] },
+  });
+  assert.ok(
+    exploratoryRequest.outputSchema &&
+      typeof exploratoryRequest.outputSchema === 'object' &&
+      'anyOf' in exploratoryRequest.outputSchema &&
+      Array.isArray(exploratoryRequest.outputSchema.anyOf),
+  );
+});
 
 function providerResources(route: string) {
   const source = [{ source: 'test', value: 100000 }];

@@ -183,3 +183,68 @@ export type PackableEvidenceItem = z.infer<typeof packableEvidenceItemSchema>;
 export type EvidenceRepresentationLevel = z.infer<
   typeof evidenceRepresentationLevelSchema
 >;
+
+export const evidencePacketSchema = z.strictObject({
+  format: z.literal('offscreen.evidence-pack.v1'),
+  contents: z
+    .array(
+      z.strictObject({
+        id: z.string().regex(/^c[1-9][0-9]*$/),
+        text: z.string().min(1).max(64 * 1024),
+      }),
+    )
+    .max(64),
+  sources: z
+    .array(
+      z.strictObject({
+        id: z.string().regex(/^s[1-9][0-9]*$/),
+        key: z.string().min(1).max(240),
+      }),
+    )
+    .max(2048),
+  evidence: z.array(
+    z.strictObject({
+      itemId: z.string().min(1).max(240),
+      group: z.strictObject({
+        kind: z.enum(['identity', 'place', 'thread', 'event', 'rule', 'other']),
+        key: z.string().min(1).max(240),
+      }),
+      required: z.boolean(),
+      level: evidenceRepresentationLevelSchema,
+      contentId: z.string().regex(/^c[1-9][0-9]*$/),
+      sourceIds: z.array(z.string().regex(/^s[1-9][0-9]*$/)).max(32),
+    }),
+  ).max(64),
+}).superRefine((packet, context) => {
+  const unique = (values: readonly string[]) =>
+    new Set(values).size === values.length;
+  const contentIds = packet.contents.map((entry) => entry.id);
+  const sourceIds = packet.sources.map((entry) => entry.id);
+  const itemIds = packet.evidence.map((entry) => entry.itemId);
+  if (!unique(contentIds) || !unique(sourceIds) || !unique(itemIds)) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Evidence packet identities must be unique',
+    });
+  }
+  const knownContents = new Set(contentIds);
+  const knownSources = new Set(sourceIds);
+  packet.evidence.forEach((entry, index) => {
+    if (!knownContents.has(entry.contentId)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['evidence', index, 'contentId'],
+        message: 'Evidence content reference is missing',
+      });
+    }
+    if (entry.sourceIds.some((id) => !knownSources.has(id))) {
+      context.addIssue({
+        code: 'custom',
+        path: ['evidence', index, 'sourceIds'],
+        message: 'Evidence source reference is missing',
+      });
+    }
+  });
+});
+
+export type EvidencePacket = z.infer<typeof evidencePacketSchema>;
