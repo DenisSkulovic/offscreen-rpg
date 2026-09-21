@@ -21,6 +21,7 @@ import {
   type ScriptedMemoryRoundSource,
 } from '@offscreen/application/storyteller';
 import { generation } from '@offscreen/db/generation-schema';
+import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
   prepareStorytellerTask,
   storytellerTaskSchema,
@@ -166,10 +167,14 @@ registerStoryConcern(
         const composedContexts: Array<
           Pick<
             Parameters<ScriptedMemoryRoundSource>[0],
-            'request' | 'capturedRequestBytes' | 'boundedRequestBytes'
+            | 'attemptId'
+            | 'request'
+            | 'capturedRequestBytes'
+            | 'boundedRequestBytes'
           >
         > = [];
-        const source: ScriptedMemoryRoundSource = ({
+        const source: ScriptedMemoryRoundSource = async ({
+          attemptId,
           round,
           request,
           capturedRequestBytes,
@@ -177,10 +182,17 @@ registerStoryConcern(
         }) => {
           sourceCalls += 1;
           composedContexts.push({
+            attemptId,
             request,
             capturedRequestBytes,
             boundedRequestBytes,
           });
+          const pendingRound = (
+            await database.db.select().from(storytellerMemoryExploration)
+          ).find((row) => row.generationId === generationId);
+          assert.equal(pendingRound?.pendingModelAttemptId, attemptId);
+          assert.deepEqual(pendingRound?.pendingModelRequest, request);
+          assert.equal(pendingRound?.pendingModelOutput, null);
           if (round === 1) {
             return {
               kind: 'needs_context',
@@ -251,6 +263,7 @@ registerStoryConcern(
         const finalContext = composedContexts[1];
         assert.ok(initialContext);
         assert.ok(finalContext);
+        assert.notEqual(initialContext.attemptId, finalContext.attemptId);
         const initialUser = JSON.parse(
           initialContext.request.messages[1].content,
         );

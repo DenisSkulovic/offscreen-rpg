@@ -1,12 +1,13 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
   composeMemoryExplorationDecisionRequest,
+  capturedProviderRequestSchema,
   creativeDirectionSetSchema,
   memoryExplorationFinalResponseSchema,
   serializedRequestBytes,
@@ -61,6 +62,7 @@ type CanonicalMemoryExplorer = Readonly<{
 }>;
 
 export type ScriptedMemoryRoundSource = (input: {
+  attemptId: string;
   task: StorytellerTask;
   round: number;
   snapshot: MemoryExplorationSnapshot;
@@ -89,6 +91,8 @@ const storedFinalCandidateSchema = z.strictObject({
   }),
   creativeDirections: creativeDirectionSetSchema,
 });
+
+const storedModelOutputSchema = z.strictObject({ value: z.json() });
 
 function validateCreativeDirections(
   packet: ReturnType<typeof prepareMemoryEvidenceContext>['evidencePack'],
@@ -322,6 +326,10 @@ export async function runScriptedMemoryExploration(
         .set({
           revision: artifact.revision + 1,
           state: 'failed',
+          pendingModelAttemptId: null,
+          pendingModelRequestSha256: null,
+          pendingModelRequest: null,
+          pendingModelOutput: null,
           pendingRequestSha256: null,
           pendingRequest: null,
           failureCode: code,
@@ -370,14 +378,96 @@ export async function runScriptedMemoryExploration(
         }
         throw error;
       }
-      rawOutput = await input.source({
-        task,
-        round,
-        snapshot,
-        request: preparedContext.request,
-        capturedRequestBytes: preparedContext.capturedRequestBytes,
-        boundedRequestBytes: preparedContext.boundedRequestBytes,
-      });
+      const pendingModelRequest = artifact.pendingModelRequest
+        ? capturedProviderRequestSchema.parse(artifact.pendingModelRequest)
+        : null;
+      if (
+        (pendingModelRequest === null) !==
+          (artifact.pendingModelAttemptId === null) ||
+        (pendingModelRequest === null) !==
+          (artifact.pendingModelRequestSha256 === null)
+      ) {
+        throw new Error('Memory exploration pending model round is invalid');
+      }
+      if (!pendingModelRequest) {
+        const attemptId = randomUUID();
+        const requestHash = requestSha256(preparedContext.request);
+        const persisted = await database.db
+          .update(storytellerMemoryExploration)
+          .set({
+            revision: artifact.revision + 1,
+            pendingModelAttemptId: attemptId,
+            pendingModelRequestSha256: requestHash,
+            pendingModelRequest: preparedContext.request,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(
+            and(
+              eq(storytellerMemoryExploration.generationId, input.generationId),
+              eq(storytellerMemoryExploration.revision, artifact.revision),
+              eq(storytellerMemoryExploration.state, 'exploring'),
+              sql`${storytellerMemoryExploration.pendingModelAttemptId} IS NULL`,
+            ),
+          )
+          .returning({
+            generationId: storytellerMemoryExploration.generationId,
+          });
+        if (!persisted.length) {
+          throw new Error('Memory exploration artifact changed concurrently');
+        }
+        continue;
+      }
+      if (
+        requestSha256(pendingModelRequest) !==
+          artifact.pendingModelRequestSha256 ||
+        !isDeepStrictEqual(pendingModelRequest, preparedContext.request)
+      ) {
+        throw new Error('Memory exploration pending model request mismatch');
+      }
+      if (artifact.pendingModelOutput !== null) {
+        rawOutput = storedModelOutputSchema.parse(
+          artifact.pendingModelOutput,
+        ).value;
+      } else {
+        rawOutput = await input.source({
+          attemptId: artifact.pendingModelAttemptId!,
+          task,
+          round,
+          snapshot,
+          request: pendingModelRequest,
+          capturedRequestBytes: preparedContext.capturedRequestBytes,
+          boundedRequestBytes: preparedContext.boundedRequestBytes,
+        });
+        const storedOutput = storedModelOutputSchema.parse({
+          value: rawOutput,
+        });
+        const persisted = await database.db
+          .update(storytellerMemoryExploration)
+          .set({
+            revision: artifact.revision + 1,
+            pendingModelOutput: storedOutput,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(
+            and(
+              eq(storytellerMemoryExploration.generationId, input.generationId),
+              eq(storytellerMemoryExploration.revision, artifact.revision),
+              eq(storytellerMemoryExploration.state, 'exploring'),
+              eq(
+                storytellerMemoryExploration.pendingModelAttemptId,
+                artifact.pendingModelAttemptId!,
+              ),
+              sql`${storytellerMemoryExploration.pendingModelOutput} IS NULL`,
+            ),
+          )
+          .returning({
+            generationId: storytellerMemoryExploration.generationId,
+          });
+        if (!persisted.length) {
+          throw new Error('Memory exploration artifact changed concurrently');
+        }
+        continue;
+      }
     }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
     if (contextRequest.success) {
@@ -399,6 +489,10 @@ export async function runScriptedMemoryExploration(
           .update(storytellerMemoryExploration)
           .set({
             revision: artifact.revision + 1,
+            pendingModelAttemptId: null,
+            pendingModelRequestSha256: null,
+            pendingModelRequest: null,
+            pendingModelOutput: null,
             pendingRequestSha256: requestHash,
             pendingRequest: contextRequest.data,
             updatedAt: sql`clock_timestamp()`,
@@ -486,6 +580,10 @@ export async function runScriptedMemoryExploration(
       .set({
         revision: artifact.revision + 1,
         state: 'final-ready',
+        pendingModelAttemptId: null,
+        pendingModelRequestSha256: null,
+        pendingModelRequest: null,
+        pendingModelOutput: null,
         finalOutput: finalCandidate,
         updatedAt: sql`clock_timestamp()`,
       })

@@ -52,6 +52,10 @@ export const storytellerMemoryExploration = pgTable(
       .default('exploring')
       .$type<'exploring' | 'final-ready' | 'failed'>(),
     snapshot: jsonb('snapshot').notNull().$type<unknown>(),
+    pendingModelAttemptId: uuid('pending_model_attempt_id'),
+    pendingModelRequestSha256: text('pending_model_request_sha256'),
+    pendingModelRequest: jsonb('pending_model_request').$type<unknown>(),
+    pendingModelOutput: jsonb('pending_model_output').$type<unknown>(),
     pendingRequestSha256: text('pending_request_sha256'),
     pendingRequest: jsonb('pending_request').$type<unknown>(),
     finalOutput: jsonb('final_output').$type<unknown>(),
@@ -84,7 +88,11 @@ export const storytellerMemoryExploration = pgTable(
     ),
     check(
       'storyteller_memory_exploration_output',
-      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','creative-limit','context-limit') AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','creative-limit','context-limit') AND ${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+    ),
+    check(
+      'storyteller_memory_exploration_pending_model',
+      sql`(${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL) OR (${t.pendingModelAttemptId} IS NOT NULL AND ${t.pendingModelRequest} IS NOT NULL AND ${t.pendingModelRequestSha256} ~ '^[0-9a-f]{64}$')`,
     ),
     check(
       'storyteller_memory_exploration_pending_request',
@@ -104,11 +112,7 @@ export const storytellerDispatchReview = pgTable(
     state: text('state')
       .notNull()
       .$type<
-        | 'awaiting-review'
-        | 'not-held'
-        | 'released'
-        | 'rejected'
-        | 'superseded'
+        'awaiting-review' | 'not-held' | 'released' | 'rejected' | 'superseded'
       >(),
     packetSha256: text('packet_sha256').notNull(),
     packet: jsonb('packet').notNull().$type<unknown>(),
@@ -155,9 +159,7 @@ export const storytellerDispatchReviewDecision = pgTable(
         onDelete: 'restrict',
       }),
     expectedRevision: integer('expected_revision').notNull(),
-    kind: text('kind')
-      .notNull()
-      .$type<'release' | 'reject' | 'supersede'>(),
+    kind: text('kind').notNull().$type<'release' | 'reject' | 'supersede'>(),
     packetSha256: text('packet_sha256').notNull(),
     createdAt: timestamp('created_at', {
       withTimezone: true,
