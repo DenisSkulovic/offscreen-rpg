@@ -14,6 +14,7 @@ import {
   loadCanonicalKnowledge,
   resolveCanonicalRecallCues,
   resolveCreativeExplorationRecipe,
+  resourcesForEffectiveUsagePolicy,
   runScriptedMemoryExploration,
   searchCanonicalKnowledge,
   type MemoryExplorationSnapshot,
@@ -21,8 +22,13 @@ import {
   type ScriptedMemoryRoundSource,
 } from '@offscreen/application/storyteller';
 import { generation } from '@offscreen/db/generation-schema';
-import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
+  storytellerFunding,
+  storytellerMemoryExploration,
+  storytellerRun,
+} from '@offscreen/db/storyteller-schema';
+import {
+  type ExecutionPolicy,
   prepareStorytellerTask,
   storytellerTaskSchema,
 } from '@offscreen/storyteller/tasks';
@@ -36,6 +42,25 @@ import {
   startPackageManifestSchema,
 } from '@offscreen/documents';
 import { registerStoryConcern } from './helpers/story-suite.js';
+import { createTestUsagePolicy } from './helpers/usage-policy.js';
+
+const fakeUsage = (reportedCostMicrousd: bigint) => ({
+  reportedCostMicrousd,
+  promptTokens: 20,
+  completionTokens: 10,
+  totalTokens: 30,
+  reasoningTokens: 0,
+  cachedTokens: 0,
+  cacheWriteTokens: 0,
+});
+
+const fakeTelemetry = (providerId: string) => ({
+  durationMs: 25,
+  httpStatus: 200,
+  providerId,
+  reportedModel: 'fake/model',
+  finishReason: 'stop',
+});
 
 registerStoryConcern(
   import.meta.url,
@@ -1771,6 +1796,165 @@ registerStoryConcern(
         );
         assert.match(discoveredThread?.body ?? '', /cliff stairs/);
         assert.doesNotMatch(discoveredThread?.body ?? '', /exposed stone road/);
+
+        const accountId = randomUUID();
+        const runId = randomUUID();
+        const route = 'fake:connected-memory';
+        await database.db.insert(storytellerFunding).values({
+          id: accountId,
+          limitMicrousd: 1000000n,
+          stopped: false,
+          verifiedAt: new Date(),
+        });
+        await database.db.insert(storytellerRun).values({
+          id: runId,
+          accountId,
+          limitMicrousd: 1000000n,
+          maxAttempts: 2,
+          enabled: true,
+        });
+        const execution: ExecutionPolicy = {
+          mode: 'provider',
+          accountId,
+          runId,
+          dispatchReview: { mode: 'off' },
+          policy: {
+            version: 'fake',
+            route,
+            model: 'fake/model',
+            provider: 'fake',
+            priceVersion: 'connected-memory-test',
+            inputMicrousdPerMillion: '1000',
+            outputMicrousdPerMillion: '1000',
+            maxInputTokens: 100000,
+            maxOutputTokens: 2000,
+            timeoutMs: 1000,
+          },
+        };
+        const policy = createTestUsagePolicy(route, [], {
+          maxModelRoundsPerOperation: 2,
+          maxReadsPerOperation: 1,
+          maxRetainedReadBytes: 4096,
+        });
+        const connectedTask = storytellerTaskSchema.parse({
+          ...returnTask,
+          execution,
+          resources: resourcesForEffectiveUsagePolicy(execution, policy, {
+            posture: 'minimal',
+          }),
+        });
+        await database.db.$client.query(
+          'UPDATE generation SET input = $2::jsonb WHERE id = $1',
+          [returnContinuationId, JSON.stringify(connectedTask)],
+        );
+        let providerRounds = 0;
+        const requestBytes: number[] = [];
+        let finalEvidenceItems = 0;
+        const connectedRuntime = createStorytellerRuntime(database, {
+          realDurationMs: () => 1000,
+          documentStore: storage,
+          dispatchAuthority: () => policy,
+          provider: async (providerTask, dispatch) => {
+            providerRounds += 1;
+            assert.ok(dispatch);
+            requestBytes.push(
+              Buffer.byteLength(JSON.stringify(dispatch.request), 'utf8'),
+            );
+            if (providerRounds === 1) {
+              return {
+                kind: 'result',
+                output: {
+                  kind: 'needs_context',
+                  version: 1,
+                  purpose: 'Recover the current route before narrating return.',
+                  requests: [
+                    {
+                      requestId: 'route',
+                      operation: 'ask_memory',
+                      intent: 'evidence',
+                      question:
+                        'What changed after the warning about the patient tide road?',
+                    },
+                  ],
+                },
+                usage: fakeUsage(0n),
+                telemetry: fakeTelemetry('fake-connected-memory-search'),
+              };
+            }
+            const user = JSON.parse(dispatch.request.messages[1].content) as {
+              memoryExploration: {
+                evidencePack: {
+                  evidence: Array<{ itemId: string; sourceIds: string[] }>;
+                  contents: Array<{ text: string }>;
+                };
+              };
+            };
+            const packet = user.memoryExploration.evidencePack;
+            finalEvidenceItems = packet.evidence.length;
+            assert.match(
+              packet.contents.map((content) => content.text).join('\n'),
+              /collapsed beneath the surf|cliff stairs/i,
+            );
+            const result = structuredClone(
+              scriptedStorytellerResult(providerTask),
+            );
+            if (!('scene' in result)) {
+              throw new Error('Expected connected continuation result');
+            }
+            result.scene.content.paragraphs = [
+              'Remembering the collapsed tide road, you turn toward the cliff stairs instead.',
+            ];
+            const itemIds = packet.evidence.map((item) => item.itemId);
+            const sourceIds = [
+              ...new Set(packet.evidence.flatMap((item) => item.sourceIds)),
+            ];
+            return {
+              kind: 'result',
+              output: {
+                result,
+                evidenceUse: { itemIds, sourceIds },
+                creativeDirections: {
+                  format: 'offscreen.creative-direction-set.v1',
+                  directions: [],
+                },
+              },
+              usage: fakeUsage(0n),
+              telemetry: fakeTelemetry('fake-connected-memory-final'),
+            };
+          },
+        });
+        await connectedRuntime.complete(returnContinuationId);
+        assert.equal(providerRounds, 2);
+        const connectedReturn = await stories.read({ ownerId: owner, storyId });
+        assert.match(
+          connectedReturn.current.content.paragraphs.join('\n'),
+          /collapsed tide road.*cliff stairs/i,
+        );
+        const connectedArtifacts = await database.db.$client.query(
+          'SELECT state, model_rounds_used, snapshot FROM storyteller_memory_exploration WHERE generation_id = $1',
+          [returnContinuationId],
+        );
+        const connectedArtifact = connectedArtifacts.rows[0];
+        assert.equal(connectedArtifact?.state, 'final-ready');
+        assert.equal(Number(connectedArtifact?.model_rounds_used), 2);
+        assert.equal(
+          (connectedArtifact?.snapshot as MemoryExplorationSnapshot).rounds
+            .length,
+          1,
+        );
+        assert.equal(requestBytes.length, 2);
+        assert.ok(requestBytes.every((bytes) => bytes > 0));
+        assert.ok(finalEvidenceItems >= 1);
+        const connectedAccounting = await database.db.$client.query(
+          'SELECT state, dispatched_rounds, consumed_microusd FROM storyteller_operation WHERE generation_id = $1',
+          [returnContinuationId],
+        );
+        assert.equal(connectedAccounting.rows[0]?.state, 'complete');
+        assert.equal(Number(connectedAccounting.rows[0]?.dispatched_rounds), 2);
+        assert.equal(
+          BigInt(connectedAccounting.rows[0]?.consumed_microusd),
+          0n,
+        );
       },
     );
 

@@ -1,6 +1,6 @@
 # Greywake long-story memory exploration
 
-Status: mixed current/target regression trace. Private exploration rounds, durable snapshot storage, reserved final-candidate acceptance and replay are implemented without a provider. Evidence-aware Storyteller composition, normal generation/provider wiring and runtime publication remain target behavior.
+Status: mixed current/target regression trace. Private exploration rounds, durable snapshot storage, reserved final-candidate acceptance/replay and ordinary generation/publication transfer are implemented. A connected deterministic fake-provider return uses retrieved current evidence and publishes through the real campaign path. Cheap/free-model comprehension and quality remain target evidence.
 
 This trace answers a narrow but product-critical question: after roughly 200 scenes, can a turn recover an old favor and its original exchange without dumping the entire history into model context or confusing an obsolete/private decoy for canon?
 
@@ -63,25 +63,25 @@ A scripted round controller now reserves the final round, rejects a late `needs_
 
 Every fresh controller decision now receives a captured provider-facing request containing the factored evidence packet as a named `memoryExploration` user section. It reports exact captured bytes plus the repository's conservative 1 KiB reservation overhead. Packet bytes share the task's existing `maxSerializedRequestBytes` envelope and the recipe's retained-read ceiling; they are not extra capacity. Exploration-capable rounds accept either one bounded context request or a final private wrapper; the reserved final round accepts only that wrapper. The wrapper contains the ordinary task result once plus item/source IDs the model claims it used. Unknown or incomplete packet references fail; valid references and required-but-uncited items persist beside the final candidate and replay unchanged, while only the ordinary task result can proceed toward publication. If required evidence cannot fit, the controller durably records `context-limit` instead of truncating canon or calling the round source. A crash-replayed accepted read request bypasses recomposition and executes first.
 
-A pure OpenRouter preview serializes that exact captured request through the same body builder used by live one-shot transport. Its compact inspection exposes body/message/section/schema byte counts and SHA-256 identities, reports transport as false and charge as zero, and can reveal the exact packet only through the existing bounded section-selection style. It cannot access credentials or dispatch. Multi-round live dispatch remains disconnected.
+A pure OpenRouter preview serializes that exact captured request through the same body builder used by live one-shot transport. Its compact inspection exposes body/message/section/schema byte counts and SHA-256 identities, reports transport as false and charge as zero, and can reveal the exact packet only through the existing bounded section-selection style. It cannot access credentials or dispatch. Normal execution now uses the same persisted multi-round request/settlement boundary when an admitted task carries the memory recipe.
 
-The remaining connected behavior is dispatching this reviewed request through durable multi-round accounting and evaluating whether cited evidence was actually used correctly. Self-citation is not semantic proof. The result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
+The conventional-start integration now drives one admitted Greywake return through durable multi-round accounting and ordinary publication. Its first deterministic provider response asks what changed after the road warning; the canonical lexical route returns the revised collapsed-road/cliff-stairs thread rather than its obsolete wording; the second response declares the supplied evidence and publishes a passage choosing the cliff stairs. The trace records two model rounds, one retrieval round, positive serialized request sizes, at least one packed evidence item and zero reported microusd. This proves the connected mechanics and authority fence, not model comprehension: the deterministic provider was authored to use the evidence. Self-citation remains structural evidence rather than semantic proof.
 
 The same persisted request boundary now accepts an ordinary-language `ask_memory` possibilities question. In the provider-free controller fixture, a question about how the old promise could matter is durably accepted before execution, survives the injected crash, runs through the internal broad-discovery route, returns through the canonical memory handle path and becomes a packet lead. The final private response records a concise selected direction that cites that packet item, declares it used and preserves the player's ability to ignore the promise. The direction set is stored and replayed with the final candidate but is not player-visible or canonical. Rejected alternatives use the same bounded artifact rather than storing hidden reasoning. This demonstrates orchestration and provenance only; the fixture did not creatively discover the direction.
 
 The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
 
-Snapshot-to-pack adaptation and final-candidate control/replay are implemented; evidence-aware model composition and generation/publication transfer are not. Passing GW-01/GW-02 and packet/controller checks proves bounded retrieval mechanics, not model comprehension, narrative quality or successful gameplay publication.
+Snapshot-to-pack adaptation, final-candidate control/replay and one evidence-aware connected publication are implemented. Passing GW-01/GW-02 and the connected deterministic return proves bounded retrieval and publication mechanics, not live-model comprehension or narrative quality.
 
 ## Failure matrix and ownership
 
 | Condition | Required outcome | Status |
 | --- | --- | --- |
-| No matching memory | Return explicit no-match/coverage; final prose, once connected, admits uncertainty | Search behavior current; final behavior target |
+| No matching memory | Return explicit no-match/coverage; final prose admits uncertainty | Search behavior current; connected no-match composition target |
 | Invalid or undiscovered handle | Reject the read without leaking body content | Current protocol/dispatcher boundary |
 | Private or superseded decoy | Exclude it from eligible canonical evidence | Current retrieval boundary |
-| Captured root becomes stale | Refuse mixed-era read/publication | Read fence current; publication fence target |
-| Read or retained-byte ceiling exhausted | Stop optional exploration while preserving final reserve | Limits current; connected final reserve target |
+| Captured root becomes stale | Refuse mixed-era read/publication | Read and ordinary publication fences current |
+| Read or retained-byte ceiling exhausted | Stop optional exploration while preserving final reserve | Limits and connected final reserve current |
 | Required final packet exceeds the shared serialized request envelope | Persist `context-limit`; do not truncate required evidence or invoke another decision | Current controller boundary |
 | Crash after request acceptance | Replay the hashed request without another Storyteller decision; accept its counters once | Current controller recovery |
 | Crash after reads but before snapshot commit | The same read-only lookup may repeat; accepted counters and handles advance once | Current controller recovery |

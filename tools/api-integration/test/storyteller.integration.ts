@@ -24,7 +24,6 @@ import {
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
-import type { UsageLimits } from '@offscreen/contracts/usage-policy';
 import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
@@ -44,7 +43,6 @@ import {
   createMemoryProviderRoundRuntime,
   CanonicalMemoryExplorationError,
   MemoryExplorationControllerError,
-  resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
   runMemoryExploration,
   type MemoryExplorationSnapshot,
@@ -61,6 +59,7 @@ import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
+import { createTestUsagePolicy } from './helpers/usage-policy.js';
 import {
   LocalDocumentStore,
   importRulePackageDirectory,
@@ -86,71 +85,6 @@ const fakeTelemetry = (providerId: string) => ({
   reportedModel: 'fake/model',
   finishReason: 'stop',
 });
-
-function testUsagePolicy(
-  route: string,
-  windows: Array<{
-    id: string;
-    version: number;
-    scope: 'platform' | 'account' | 'story';
-    metric:
-      | 'requests'
-      | 'input_tokens'
-      | 'generated_tokens'
-      | 'microusd'
-      | 'background_jobs';
-    limit: string;
-    window: { kind: 'rolling'; durationSeconds: number };
-  }> = [],
-  limitOverrides: Partial<UsageLimits> = {},
-) {
-  const profile = {
-    schemaVersion: 1 as const,
-    id: 'test-provider',
-    revision: 1,
-    enabled: true,
-    allowedRoutes: [route],
-    defaultRoute: route,
-    fundingModes: ['prepaid' as const],
-    recovery: 'explicit-resume' as const,
-    limits: {
-      maxInputTokensPerRequest: 100000,
-      maxSerializedBytesPerRequest: 400000,
-      maxGeneratedTokensPerRequest: 2000,
-      maxReasoningTokensPerRequest: 0,
-      maxInputTokensPerOperation: 100000,
-      maxGeneratedTokensPerOperation: 2000,
-      maxModelRoundsPerOperation: 1,
-      maxReadsPerOperation: 0,
-      maxRetainedReadBytes: 0,
-      maxMicrousdPerOperation: '1000000',
-      maxInFlightDispatches: 1,
-      maxBackgroundJobsPerWindow: 0,
-      ...limitOverrides,
-    },
-    windows: [],
-  };
-  const result = resolveEffectiveUsagePolicy({
-    platform: profile,
-    entitlement: profile,
-    restrictions: windows.length
-      ? [
-          {
-            schemaVersion: 1,
-            id: 'test-window',
-            revision: 1,
-            limits: {},
-            windows,
-          },
-        ]
-      : [],
-    requestedRoute: route,
-    requestedFundingMode: 'prepaid',
-  });
-  assert.equal(result.kind, 'allowed');
-  if (result.kind !== 'allowed') throw new Error('test policy denied');
-  return result.policy;
-}
 
 // All sources and provider responses in this suite are local. No credentials are read.
 test(
@@ -3044,7 +2978,7 @@ test(
             );
             const resources = resourcesForEffectiveUsagePolicy(
               execution,
-              testUsagePolicy(execution.policy.route, [
+              createTestUsagePolicy(execution.policy.route, [
                 {
                   id: 'account-cost-burst',
                   version: 1,
@@ -3185,7 +3119,7 @@ test(
             const sourceTask = storytellerTaskSchema.parse(
               sourceGeneration.input,
             );
-            const policy = testUsagePolicy(execution.policy.route, [], {
+            const policy = createTestUsagePolicy(execution.policy.route, [], {
               maxModelRoundsPerOperation: 2,
               maxReadsPerOperation: 2,
               maxRetainedReadBytes: 4096,
@@ -3309,7 +3243,7 @@ test(
             const sourceTask = storytellerTaskSchema.parse(
               sourceGeneration.input,
             );
-            const policy = testUsagePolicy(execution.policy.route, [], {
+            const policy = createTestUsagePolicy(execution.policy.route, [], {
               maxModelRoundsPerOperation: 2,
               maxReadsPerOperation: 1,
               maxRetainedReadBytes: 4096,
@@ -3866,7 +3800,7 @@ test(
             const profiled = createStorytellerOpenings(
               database,
               execution,
-              testUsagePolicy(execution.policy.route),
+              createTestUsagePolicy(execution.policy.route),
             );
             let calls = 0;
             const source = createStorytellerRuntime(database, {
@@ -3899,7 +3833,7 @@ test(
             const heldProfiled = createStorytellerOpenings(
               database,
               heldExecution,
-              testUsagePolicy(execution.policy.route),
+              createTestUsagePolicy(execution.policy.route),
             );
             const heldId = randomUUID();
             await heldProfiled.request(ownerId, draftId, heldId, 1);
@@ -4108,7 +4042,7 @@ test(
               await createStorytellerOpenings(
                 database,
                 execution,
-                testUsagePolicy(execution.policy.route),
+                createTestUsagePolicy(execution.policy.route),
               ).request(ownerId, draftId, openingId, 1);
               await createStorytellerRuntime(database, {
                 dispatchAuthority: ({ task }) =>
