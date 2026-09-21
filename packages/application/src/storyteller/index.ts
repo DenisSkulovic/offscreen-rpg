@@ -9,3 +9,4 @@ export * from './dispatch-review';
 export * from './canonical-search';
 export * from './lexical-story-index';
 export * from './local-lexical-story-index-store';
+export * from './retrieval-recipes';

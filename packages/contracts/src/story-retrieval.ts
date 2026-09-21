@@ -3,6 +3,34 @@ import { z } from 'zod';
 const hashSchema = z.string().regex(/^[0-9a-f]{64}$/);
 const pathSchema = z.string().min(1).max(320);
 
+export const storyRetrievalTuningSchema = z
+  .strictObject({
+    id: z.string().regex(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/),
+    version: z.number().int().positive(),
+    maxQueryTerms: z.number().int().min(1).max(32),
+    includeSourcePassages: z.boolean(),
+    fieldWeights: z.strictObject({
+      title: z.number().min(0).max(20),
+      path: z.number().min(0).max(20),
+      context: z.number().min(0).max(20),
+      body: z.number().min(0).max(20),
+    }),
+    maxBodyTermFrequency: z.number().int().min(1).max(20),
+  })
+  .refine(
+    (tuning) => Object.values(tuning.fieldWeights).some((weight) => weight > 0),
+    { message: 'At least one retrieval field weight must be positive' },
+  );
+
+export const balancedStoryRetrievalTuning = {
+  id: 'balanced-lexical',
+  version: 1,
+  maxQueryTerms: 16,
+  includeSourcePassages: true,
+  fieldWeights: { title: 5, path: 3, context: 2, body: 1 },
+  maxBodyTermFrequency: 3,
+} as const;
+
 export const storyRetrievalQuerySchema = z.strictObject({
   storyId: z.uuid(),
   rootHash: hashSchema,
@@ -10,8 +38,19 @@ export const storyRetrievalQuerySchema = z.strictObject({
   query: z.string().trim().min(2).max(200),
   maxResults: z.number().int().min(1).max(12).default(5),
   maxExaminedUnits: z.number().int().min(1).max(4096).default(128),
-  maxExaminedBytes: z.number().int().min(1024).max(4 * 1024 * 1024).default(128 * 1024),
-  maxUnitBytes: z.number().int().min(256).max(512 * 1024).default(16 * 1024),
+  maxExaminedBytes: z
+    .number()
+    .int()
+    .min(1024)
+    .max(4 * 1024 * 1024)
+    .default(128 * 1024),
+  maxUnitBytes: z
+    .number()
+    .int()
+    .min(256)
+    .max(512 * 1024)
+    .default(16 * 1024),
+  tuning: storyRetrievalTuningSchema.default(balancedStoryRetrievalTuning),
 });
 
 export const storyRetrievalUnitSchema = z.strictObject({
@@ -37,8 +76,11 @@ export const storyRetrievalUnitSchema = z.strictObject({
 export const storyRetrievalCandidateSchema = z.strictObject({
   unit: storyRetrievalUnitSchema,
   snippet: z.string().max(400),
-  matchedFields: z.array(z.enum(['title', 'path', 'heading', 'context', 'body'])).min(1).max(5),
-  matchedTerms: z.array(z.string().min(1).max(100)).max(16),
+  matchedFields: z
+    .array(z.enum(['title', 'path', 'heading', 'context', 'body']))
+    .min(1)
+    .max(5),
+  matchedTerms: z.array(z.string().min(1).max(100)).max(32),
   score: z.strictObject({
     provider: z.string().min(1).max(80),
     value: z.number(),
@@ -56,10 +98,26 @@ export const storyRetrievalResultSchema = z.strictObject({
     eligibleUnits: z.number().int().nonnegative(),
     examinedUnits: z.number().int().nonnegative(),
     examinedBytes: z.number().int().nonnegative(),
-    omissions: z.array(z.enum(['unit-limit', 'byte-limit', 'oversized-unit', 'index-unavailable'])).max(4),
+    omissions: z
+      .array(
+        z.enum([
+          'unit-limit',
+          'byte-limit',
+          'oversized-unit',
+          'index-unavailable',
+        ]),
+      )
+      .max(4),
   }),
   diagnostics: z.strictObject({
-    normalizedTerms: z.array(z.string().min(1).max(100)).max(16),
+    tuning: storyRetrievalTuningSchema.nullable(),
+    limits: z.strictObject({
+      maxResults: z.number().int().positive(),
+      maxExaminedUnits: z.number().int().positive(),
+      maxExaminedBytes: z.number().int().positive(),
+      maxUnitBytes: z.number().int().positive(),
+    }),
+    normalizedTerms: z.array(z.string().min(1).max(100)).max(32),
     termsTruncated: z.boolean(),
     matchedUnits: z.number().int().nonnegative(),
     returnedUnits: z.number().int().nonnegative(),
@@ -67,6 +125,7 @@ export const storyRetrievalResultSchema = z.strictObject({
 });
 
 export type StoryRetrievalQuery = z.input<typeof storyRetrievalQuerySchema>;
+export type StoryRetrievalTuning = z.infer<typeof storyRetrievalTuningSchema>;
 export type StoryRetrievalUnit = z.infer<typeof storyRetrievalUnitSchema>;
 export type StoryRetrievalCandidate = z.infer<
   typeof storyRetrievalCandidateSchema

@@ -10,6 +10,7 @@ import type { StoryRetrievalResult } from '@offscreen/contracts/story-retrieval'
 import type { DocumentStore } from '@offscreen/documents';
 import { searchCanonicalKnowledge } from '../storyteller/canonical-search';
 import type { LexicalStoryIndex } from '../storyteller/lexical-story-index';
+import type { ResolvedStoryRetrievalRecipe } from '../storyteller/retrieval-recipes';
 
 function stageEvidence(query: MemoryOracleQuery, observed: readonly string[]) {
   const expected = new Set(query.expectedEvidence);
@@ -130,6 +131,7 @@ async function observeMemoryRetrieval(args: {
   search: (
     query: MemoryOracleQuery,
   ) => Promise<StoryRetrievalResult> | StoryRetrievalResult;
+  assemblyLimits?: { maxReads: number; maxBytes: number };
 }): Promise<MemoryEvaluationObservation> {
   const query = args.corpus.queries.find((entry) => entry.id === args.queryId);
   if (!query) throw new Error('Unknown memory evaluation query');
@@ -148,7 +150,21 @@ async function observeMemoryRetrieval(args: {
           : Buffer.byteLength(labelled.body, 'utf8'),
     };
   });
-  const assembled = retrieved.slice(0, query.budget.maxReads);
+  const maxReads = Math.min(
+    query.budget.maxReads,
+    args.assemblyLimits?.maxReads ?? query.budget.maxReads,
+  );
+  const maxBytes = Math.min(
+    query.budget.maxBytes,
+    args.assemblyLimits?.maxBytes ?? query.budget.maxBytes,
+  );
+  const assembled: Array<(typeof retrieved)[number]> = [];
+  let assembledBytes = 0;
+  for (const candidate of retrieved.slice(0, maxReads)) {
+    if (assembledBytes + candidate.bodyBytes > maxBytes) break;
+    assembled.push(candidate);
+    assembledBytes += candidate.bodyBytes;
+  }
   return memoryEvaluationObservationSchema.parse({
     format: 'offscreen.memory-evaluation-observation.v1',
     corpusId: args.corpus.id,
@@ -161,7 +177,7 @@ async function observeMemoryRetrieval(args: {
     },
     assembly: {
       evidenceKeys: assembled.map((entry) => entry.key),
-      bytes: assembled.reduce((total, entry) => total + entry.bodyBytes, 0),
+      bytes: assembledBytes,
       duplicateBytes: 0,
     },
     generation: { disposition: 'not-run', usedEvidenceKeys: [] },
@@ -172,19 +188,31 @@ export async function observeIndexedMemoryRetrieval(args: {
   index: LexicalStoryIndex;
   corpus: LongStoryMemoryCorpus;
   queryId: string;
+  recipe?: ResolvedStoryRetrievalRecipe;
 }): Promise<MemoryEvaluationObservation> {
+  const recipe = args.recipe;
   return observeMemoryRetrieval({
     corpus: args.corpus,
     queryId: args.queryId,
+    ...(recipe ? { assemblyLimits: recipe.assembly } : {}),
     search: (query) =>
       args.index.search({
         storyId: args.corpus.campaignId,
         rootHash: args.index.rootHash,
         rootRevision: args.index.rootRevision,
         query: query.query,
-        maxResults: query.budget.maxCandidates,
-        maxExaminedUnits: 256,
-        maxExaminedBytes: 512 * 1024,
+        maxResults: Math.min(
+          query.budget.maxCandidates,
+          recipe?.query.maxResults ?? query.budget.maxCandidates,
+        ),
+        maxExaminedUnits: recipe?.query.maxExaminedUnits ?? 256,
+        maxExaminedBytes: recipe?.query.maxExaminedBytes ?? 512 * 1024,
+        ...(recipe
+          ? {
+              maxUnitBytes: recipe.query.maxUnitBytes,
+              tuning: recipe.query.tuning,
+            }
+          : {}),
       }),
   });
 }
@@ -203,6 +231,7 @@ export async function evaluateLinearMemoryBaseline(args: {
 export async function evaluateIndexedMemoryRetrieval(args: {
   index: LexicalStoryIndex;
   corpus: LongStoryMemoryCorpus;
+  recipe?: ResolvedStoryRetrievalRecipe;
 }) {
   return evaluateMemorySuite(args.corpus, (queryId) =>
     observeIndexedMemoryRetrieval({ ...args, queryId }),

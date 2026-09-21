@@ -137,6 +137,7 @@ function snippet(body: string, queryTerms: readonly string[]) {
 
 export class LexicalStoryIndex {
   private readonly postings = new Map<string, number[]>();
+  private readonly sourcePassageUnits: number;
 
   constructor(
     readonly storyId: string,
@@ -144,6 +145,9 @@ export class LexicalStoryIndex {
     readonly rootRevision: number,
     private readonly units: readonly IndexedUnit[],
   ) {
+    this.sourcePassageUnits = units.filter(
+      (unit) => unit.unit.kind === 'source-passage',
+    ).length;
     units.forEach((unit, index) => {
       const indexedTerms = new Set([
         ...unit.title.keys(),
@@ -186,12 +190,22 @@ export class LexicalStoryIndex {
       throw new Error('Lexical index does not match the captured story root');
     }
     const allTerms = terms(query.query);
-    const queryTerms = allTerms.slice(0, 16);
+    const queryTerms = allTerms.slice(0, query.tuning.maxQueryTerms);
+    const eligibleUnitCount =
+      this.units.length -
+      (query.tuning.includeSourcePassages ? 0 : this.sourcePassageUnits);
     if (!queryTerms.length)
       throw new Error('Story retrieval query has no searchable terms');
     const documentFrequency = new Map<string, number>();
     for (const term of queryTerms) {
-      documentFrequency.set(term, this.postings.get(term)?.length ?? 0);
+      documentFrequency.set(
+        term,
+        (this.postings.get(term) ?? []).filter(
+          (index) =>
+            query.tuning.includeSourcePassages ||
+            this.units[index]?.unit.kind !== 'source-passage',
+        ).length,
+      );
     }
     const scored: StoryRetrievalCandidate[] = [];
     const candidateIndexes = new Set(
@@ -200,9 +214,19 @@ export class LexicalStoryIndex {
     for (const index of candidateIndexes) {
       const indexed = this.units[index];
       if (!indexed) continue;
+      if (
+        !query.tuning.includeSourcePassages &&
+        indexed.unit.kind === 'source-passage'
+      ) {
+        continue;
+      }
       const matchedFields = (
         ['title', 'path', 'context', 'body'] as const
-      ).filter((field) => queryTerms.some((term) => indexed[field].has(term)));
+      ).filter(
+        (field) =>
+          query.tuning.fieldWeights[field] > 0 &&
+          queryTerms.some((term) => indexed[field].has(term)),
+      );
       const matchedTerms = queryTerms.filter((term) =>
         matchedFields.some((field) => indexed[field].has(term)),
       );
@@ -210,15 +234,20 @@ export class LexicalStoryIndex {
       const score = matchedTerms.reduce((total, term) => {
         const idf = Math.log(
           1 +
-            (this.units.length + 1) / ((documentFrequency.get(term) ?? 0) + 1),
+            (eligibleUnitCount + 1) / ((documentFrequency.get(term) ?? 0) + 1),
         );
         return (
           total +
           idf *
-            ((indexed.title.get(term) ?? 0) * 5 +
-              (indexed.path.get(term) ?? 0) * 3 +
-              (indexed.context.get(term) ?? 0) * 2 +
-              Math.min(indexed.body.get(term) ?? 0, 3))
+            ((indexed.title.get(term) ?? 0) * query.tuning.fieldWeights.title +
+              (indexed.path.get(term) ?? 0) * query.tuning.fieldWeights.path +
+              (indexed.context.get(term) ?? 0) *
+                query.tuning.fieldWeights.context +
+              Math.min(
+                indexed.body.get(term) ?? 0,
+                query.tuning.maxBodyTermFrequency,
+              ) *
+                query.tuning.fieldWeights.body)
         );
       }, 0);
       scored.push({
@@ -264,12 +293,19 @@ export class LexicalStoryIndex {
         state: omissions.length ? 'partial' : 'complete',
         rootHash: this.rootHash,
         indexedThroughRevision: this.rootRevision,
-        eligibleUnits: this.units.length,
+        eligibleUnits: eligibleUnitCount,
         examinedUnits: examined.length,
         examinedBytes,
         omissions,
       },
       diagnostics: {
+        tuning: query.tuning,
+        limits: {
+          maxResults: query.maxResults,
+          maxExaminedUnits: query.maxExaminedUnits,
+          maxExaminedBytes: query.maxExaminedBytes,
+          maxUnitBytes: query.maxUnitBytes,
+        },
         normalizedTerms: queryTerms,
         termsTruncated: allTerms.length > queryTerms.length,
         matchedUnits: scored.length,

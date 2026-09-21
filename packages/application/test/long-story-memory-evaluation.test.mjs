@@ -17,6 +17,7 @@ import {
 import { searchCanonicalKnowledge } from '../dist/storyteller/canonical-search.js';
 import { buildLexicalStoryIndex } from '../dist/storyteller/lexical-story-index.js';
 import { LocalLexicalStoryIndexStore } from '../dist/storyteller/local-lexical-story-index-store.js';
+import { resolveStoryRetrievalRecipe } from '../dist/storyteller/retrieval-recipes.js';
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {
   const greywake = buildLongStoryMemoryCorpus('greywake');
@@ -188,6 +189,36 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   assert.ok(
     indexedSuite.summary.meanExpectedRecall > suite.summary.meanExpectedRecall,
   );
+  const profileReports = {};
+  for (const posture of ['minimal', 'balanced', 'rich']) {
+    const recipe = resolveStoryRetrievalRecipe({ posture });
+    profileReports[posture] = await evaluateIndexedMemoryRetrieval({
+      index,
+      corpus: greywake,
+      recipe,
+    });
+  }
+  assert.equal(profileReports.minimal.summary.queries, 12);
+  assert.equal(profileReports.balanced.summary.queries, 12);
+  assert.equal(profileReports.rich.summary.queries, 12);
+  assert.ok(
+    profileReports.balanced.summary.meanExpectedRecall >=
+      profileReports.minimal.summary.meanExpectedRecall,
+  );
+  const noReadRecipe = resolveStoryRetrievalRecipe({
+    posture: 'rich',
+    operationLimits: { maxReads: 0, maxRetainedBytes: 0 },
+  });
+  assert.deepEqual(noReadRecipe.assembly, { maxReads: 0, maxBytes: 0 });
+  const minimalSearch = index.search({
+    storyId: materialized.storyId,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+    query: 'patient tide road',
+    ...resolveStoryRetrievalRecipe({ posture: 'minimal' }).query,
+  });
+  assert.equal(minimalSearch.diagnostics.tuning.id, 'minimal-lexical');
+  assert.equal(minimalSearch.coverage.eligibleUnits, 8);
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),

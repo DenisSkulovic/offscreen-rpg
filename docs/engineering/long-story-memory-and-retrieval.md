@@ -233,6 +233,8 @@ All tiers retain the same canon and source history. They differ in optional work
 
 Every recipe caps candidate counts, reads, bytes/tokens, rounds, latency and attributable cost. Cache/index work has a version and budget. A million-token model is permission to include more useful evidence, not to dump a million tokens automatically.
 
+The implemented lexical recipe boundary has three named postures. Minimal favors a small candidate/read/context packet and reduced lexical work; balanced is the normal benchmark posture; rich admits more terms, sources, candidates and retained evidence while remaining finite. Resolution intersects the posture with stricter operation read/byte ceilings. These are starting points for measurement, not product tiers or promises that rich always scores better: additional candidates can reduce precision or crowd assembly, and a latency-sensitive task may deliberately select minimal even when the account permits more.
+
 ## Evaluation: test the memory system, not its confidence
 
 [LongMemEval](https://arxiv.org/abs/2410.10813) separates extraction, multi-session reasoning, temporal reasoning, knowledge updates and abstention, and reports a substantial degradation across long histories. [LongMemEval-V2](https://arxiv.org/abs/2605.12493) evaluates context gathering over histories up to 115 million tokens and finds file-navigation agents competitive but expensive. [RAGChecker](https://arxiv.org/abs/2408.08067) separates retrieval claim recall/context precision from generator context use, noise sensitivity, hallucination and faithfulness. These are useful shapes for our own oracle; their scores do not transfer directly to a game.

@@ -8,6 +8,7 @@ import {
 } from '../../packages/application/dist/developer-tools/long-story-memory-corpus.js';
 import { evaluateIndexedMemoryRetrieval } from '../../packages/application/dist/developer-tools/memory-evaluator.js';
 import { buildLexicalStoryIndex } from '../../packages/application/dist/storyteller/lexical-story-index.js';
+import { resolveStoryRetrievalRecipe } from '../../packages/application/dist/storyteller/retrieval-recipes.js';
 
 const requested = process.argv.slice(2).map(Number);
 const sceneCounts = requested.length ? requested : [200, 2000];
@@ -38,14 +39,24 @@ for (const sceneCount of sceneCounts) {
       rootRevision: materialized.rootRevision,
     });
     const buildMs = performance.now() - buildStarted;
-    const queryStarted = performance.now();
-    const evaluation = await evaluateIndexedMemoryRetrieval({ index, corpus });
+    const evaluations = {};
+    for (const posture of ['minimal', 'balanced', 'rich']) {
+      const queryStarted = performance.now();
+      const evaluation = await evaluateIndexedMemoryRetrieval({
+        index,
+        corpus,
+        recipe: resolveStoryRetrievalRecipe({ posture }),
+      });
+      evaluations[posture] = {
+        querySuiteMs: performance.now() - queryStarted,
+        summary: evaluation.summary,
+      };
+    }
     reports.push({
       sceneCount,
       indexedUnits: index.snapshot().units.length,
       buildMs,
-      querySuiteMs: performance.now() - queryStarted,
-      summary: evaluation.summary,
+      evaluations,
     });
   } finally {
     await rm(directory, { recursive: true, force: true });

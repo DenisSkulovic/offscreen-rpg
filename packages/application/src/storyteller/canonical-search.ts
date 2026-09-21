@@ -151,9 +151,13 @@ function bestSnippet(body: string, phrase: string, terms: readonly string[]) {
           matchingTerms(segment, terms).length,
       };
     })
-    .sort((left, right) => right.score - left.score || left.index - right.index);
+    .sort(
+      (left, right) => right.score - left.score || left.index - right.index,
+    );
   const selected = ranked[0]?.segment ?? '';
-  return selected.length <= 280 ? selected : `${selected.slice(0, 277).trimEnd()}...`;
+  return selected.length <= 280
+    ? selected
+    : `${selected.slice(0, 277).trimEnd()}...`;
 }
 
 /**
@@ -226,15 +230,14 @@ export async function searchCanonicalKnowledge(
       path: normalize(entry.path),
       body: normalize(document.body),
     };
-    const matchedFields = (Object.keys(fields) as Array<keyof typeof fields>)
-      .filter((field) =>
-        terms.some((term) => ` ${fields[field]} `.includes(` ${term} `)),
-      );
+    const matchedFields = (
+      Object.keys(fields) as Array<keyof typeof fields>
+    ).filter((field) =>
+      terms.some((term) => ` ${fields[field]} `.includes(` ${term} `)),
+    );
     if (!matchedFields.length) continue;
     const matchedTerms = terms.filter((term) =>
-      Object.values(fields).some((value) =>
-        ` ${value} `.includes(` ${term} `),
-      ),
+      Object.values(fields).some((value) => ` ${value} `.includes(` ${term} `)),
     );
     if (matchedTerms.length !== terms.length) continue;
     const score =
@@ -302,6 +305,13 @@ export async function searchCanonicalKnowledge(
       omissions,
     },
     diagnostics: {
+      tuning: null,
+      limits: {
+        maxResults: input.maxResults,
+        maxExaminedUnits: input.maxExaminedUnits,
+        maxExaminedBytes: input.maxExaminedBytes,
+        maxUnitBytes: input.maxUnitBytes,
+      },
       normalizedTerms: terms,
       termsTruncated: allTerms.length > terms.length,
       matchedUnits: candidates.length,

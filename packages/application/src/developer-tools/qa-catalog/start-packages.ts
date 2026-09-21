@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 11,
+    version: 12,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -126,6 +126,21 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'The result identifies revision two with a corrected snippet and explicit scan coverage; the exact loader returns the corrected complete body.',
         authoritativeExpectation:
           'Search excludes developer-private and superseded bodies. A candidate remains a lead until its stable ID is loaded from the same current manifest.',
+      }),
+      stage({
+        id: 'retrieval-cost-postures',
+        name: 'Compare bounded retrieval cost postures',
+        importance: 'major',
+        preconditions: [
+          'The same exact story root and information needs are available to minimal, balanced and rich retrieval recipes.',
+          'A stricter operation envelope is available for intersection.',
+        ],
+        action:
+          'Run the maintained memory evaluator under all three postures, then resolve rich under zero read and retained-byte limits.',
+        observableExpectation:
+          'The report shows each posture’s recall, precision, assembly and timing separately; it does not call a larger recipe universally better.',
+        authoritativeExpectation:
+          'Recipe changes affect only bounded optional evidence work. The effective recipe never exceeds operation limits, and visibility, current-root, authority and branch filters remain identical.',
       }),
       stage({
         id: 'retry',

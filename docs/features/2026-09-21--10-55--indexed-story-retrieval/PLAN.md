@@ -29,10 +29,17 @@ Implementation owner: Codex under the owner's continuing instruction.
 - `pnpm memory:index-benchmark` reconstructs the actual raw-passage corpus at 200 and 2,000 scenes, reports indexed-unit/build/query-suite measurements and makes zero provider calls.
 - Exit: restart/rebuild preserves results and source links; query work is no longer proportional to total bodies.
 
+### L4 — Configurable retrieval recipes — implemented and focused-verified
+
+- Outcome: named minimal, balanced and rich recipes resolve retrieval breadth, source-passage participation, query-term/ranking effort, assembly reads and retained bytes under stricter operation ceilings.
+- Recipe identity and effective values remain inspectable in results/evaluation. Privacy, visibility, root freshness and canonical authority are invariant and cannot be weakened by a tier or player preference.
+- Minimal is allowed to trade recall/texture for compute and context cost; rich is allowed broader evidence but remains bounded. Balanced preserves the current behavior.
+- Exit: the same corpus can be evaluated under every recipe, effective limits never exceed the operation envelope, and measured quality/cost differences remain visible rather than described as universally better.
+
 ## Current checkpoint
 
-- Current phase and exact next action: indexed lexical L1–L3 are complete; connect the shared result contract to bounded Storyteller exploration rather than tuning this small oracle further.
-- Base/reviewed Git revision and relevant uncommitted changes: `47bc230`; L3 raw-source indexing, honest noise accounting, snapshots/store, scale command and documentation are uncommitted.
-- Actual checks/results for this revision: application build, focused corpus/evaluator test and reproducible benchmark pass. The corrected index covers 208 permitted units at 200 scenes and 2,008 at 2,000 scenes. The latest run took about `432 ms`/`3,447 ms` to build and `79 ms`/`411 ms` for all twelve queries. Both sizes produced `9/12` retrieval passes, `6/12` assembly passes, mean expected recall `0.8889` and mean context precision `0.2972`. Times are workstation observations, not stable thresholds.
-- Unresolved findings/blockers: the snapshot store is a local POC adapter, not a multi-process publication consumer. Inverted postings avoid a full-unit query scan, but deliberately broad/common terms can still yield large posting lists. Relationship-heavy and ambiguity cases remain visible failures.
+- Current phase and exact next action: indexed lexical L1–L4 are complete; connect the resolved recipe and shared retrieval result to bounded Storyteller exploration.
+- Base/reviewed Git revision and relevant uncommitted changes: `d94b474`; L4 recipe contract, resolver, evaluator/benchmark comparison, QA and documentation are uncommitted.
+- Actual checks/results for this revision: contracts/application builds, focused corpus/evaluator test and reproducible benchmark pass. At 2,000 scenes minimal produced `7/12` retrieval passes, recall `0.7778` and precision `0.5417` in about `5 ms`; balanced produced `9/12`, `0.8889` and `0.2972` in about `29 ms`; rich matched balanced quality in about `26 ms`. Single-run timings are noisy observations, not ordering guarantees. The test proves a rich recipe resolves to zero assembly reads/bytes under a stricter zero-read operation envelope.
+- Unresolved findings/blockers: rich currently earns no quality improvement over balanced on this small lexical oracle, which is useful evidence against spending its larger allowance by default. Recipe selection is not yet wired into Storyteller task admission or user-tier policy. Relationship-heavy and ambiguity cases remain visible failures.
 - Provider spend and accounting certainty: $0; local deterministic work only.

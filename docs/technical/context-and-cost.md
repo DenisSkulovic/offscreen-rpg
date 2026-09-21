@@ -127,6 +127,8 @@ History, current exact state and attributed claims have distinct roles. Current 
 
 Request purposes select their own templates, schemas and limits. Existing opening, continuation, consequence and report tasks remain one-shot. Separate models or agents are optional implementations of a demonstrated need, not a fixed pipeline every decision must traverse. All future retrieval, repair and maintenance consumes the existing attributable operation budget.
 
+Memory retrieval uses a named server-resolved recipe rather than exposing backend scoring knobs as entitlement. Minimal, balanced and rich postures select bounded candidate breadth, source-passage participation, query-term/ranking effort, exact reads and retained evidence bytes. The effective recipe intersects those defaults with the stricter task/usage envelope and is frozen into the retrieval trace. A campaign preference or user tier may choose among permitted postures, and a task may deliberately choose a cheaper posture, but none may relax story-root freshness, visibility, authority or branch isolation. More allowance permits more optional evidence work; it never grants a different canon or forces the system to fill the allowance.
+
 Measure scene-wide cost as cumulative requests, repeated input, generated output and attributable maintenance. Preserve exact bytes and unknown token estimates until a tokenizer is verified. Potential common-prefix reuse is an offline structural fact; a provider cache hit or discount requires provider evidence. Rebuilding from durable evidence can preserve identical prefixes without preserving a server-side conversation.
 
 | Cache | What it saves | Correctness rule |
