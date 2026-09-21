@@ -6,7 +6,7 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Phases
 
-### X1 — Protocol and scripted round trip
+### X1 — Protocol and scripted round trip — protocol implemented
 
 - Outcome: result union distinguishes `needs_context` from final publication; task recipes declare supported operations and cumulative limits.
 - Owners: Storyteller task/result schemas and prompts; application execution/admission/recovery; existing canonical read/search operations.
@@ -28,8 +28,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: X1 after the oracle/result contracts; define the provider-neutral result union and persisted round state without adding dispatch.
-- Base/reviewed Git revision and relevant uncommitted changes: `a38076c`; planning files only.
-- Actual checks/results for this revision; checks not run: source/design review only.
-- Unresolved findings/blockers: tuning waits for baseline measurements; architecture is resolved.
+- Current phase and exact next action: X1; implement the application-owned scripted round runner and canonical operation dispatcher, persisting/replaying its artifacts without enabling provider dispatch.
+- Base/reviewed Git revision and relevant uncommitted changes: `46b11c1`; provider-neutral request/result union, exploration resource recipe and documentation are uncommitted.
+- Actual checks/results for this revision; checks not run: focused Storyteller build/test pending. Existing tasks still parse as unchanged one-shot recipes.
+- Unresolved findings/blockers: the protocol alone cannot execute reads or publish; application round persistence and exact-root tool dispatch remain required for X1 exit.
 - Provider spend and accounting certainty: $0; scripted implementation first.

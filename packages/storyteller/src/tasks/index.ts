@@ -31,6 +31,7 @@ import {
   validateImmediateActionProposal,
 } from '@offscreen/game/immediate-actions';
 import { proposedDocumentChangesSchema } from './document-changes.js';
+import { storytellerNeedsContextSchema } from './memory-exploration.js';
 
 export * from './opening';
 export * from './playable';
@@ -38,6 +39,7 @@ export * from './policy';
 export * from './purpose';
 export * from './resources';
 export * from './document-changes.js';
+export * from './memory-exploration.js';
 
 const actionPlanNextSchema = z
   .strictObject({
@@ -107,6 +109,13 @@ export const storytellerOutputSchema = z.union([
   storytellerResultSchema,
   storytellerReportResultSchema,
 ]);
+export const storytellerRoundOutputSchema = z.union([
+  storytellerNeedsContextSchema,
+  storytellerOutputSchema,
+]);
+export type StorytellerRoundOutput = z.infer<
+  typeof storytellerRoundOutputSchema
+>;
 // Provider guidance and local parsing share the same task-specific structural contract.
 const openingProviderResultSchema = z.strictObject({
   version: z.literal(1),

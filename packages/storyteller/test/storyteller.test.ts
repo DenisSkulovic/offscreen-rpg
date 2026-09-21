@@ -7,7 +7,11 @@ import {
 } from '../src/profiles';
 import {
   prepareStorytellerTask,
+  storytellerNeedsContextSchema,
+  storytellerRoundOutputSchema,
+  storytellerTaskResourcesSchema,
   validateStorytellerResult,
+  validateResourcesForExecution,
 } from '../src/tasks';
 import { scriptedStorytellerResult } from '../src/fixtures';
 import { applyContinuityPatch } from '../src/context/continuity';
@@ -90,6 +94,56 @@ function providerResources(route: string) {
     },
   };
 }
+
+test('memory exploration requests are private, bounded and reserve a final round', () => {
+  const request = storytellerNeedsContextSchema.parse({
+    kind: 'needs_context',
+    version: 1,
+    purpose: 'Verify the old favor before portraying the return.',
+    requests: [
+      { requestId: 'r1', operation: 'search_memory', query: 'old favor' },
+      { requestId: 'r2', operation: 'query_registry', query: 'Mira Vale' },
+    ],
+  });
+  assert.deepEqual(storytellerRoundOutputSchema.parse(request), request);
+  assert.equal(request.kind, 'needs_context');
+  assert.throws(
+    () =>
+      storytellerNeedsContextSchema.parse({
+        ...request,
+        requests: [request.requests[0], request.requests[0]],
+      }),
+    /unique within a round/,
+  );
+
+  const resources = storytellerTaskResourcesSchema.parse({
+    version: 'storyteller-resources.v2',
+    recipe: {
+      version: 'memory-exploration.v1',
+      maxModelRounds: 3,
+      maxReads: 6,
+      maxRetainedReadBytes: 12 * 1024,
+      tools: 'memory-read.v1',
+      automaticEscalation: false,
+      finalAnswerReserveRounds: 1,
+    },
+    envelope: {
+      maxSerializedRequestBytes: 48 * 1024,
+      maxInputTokens: 12_288,
+      maxGeneratedTokens: 8_000,
+      maxReasoningTokens: 0,
+      maxMicrousd: '0',
+      deadlineMs: 120_000,
+    },
+    authority: { kind: 'offline', version: 'offline-rehearsal.v1' },
+  });
+  validateResourcesForExecution(
+    { mode: 'scripted', version: 'offline-rehearsal.v1' },
+    resources,
+  );
+  assert.equal(resources.recipe.maxModelRounds, 3);
+  assert.equal(resources.recipe.finalAnswerReserveRounds, 1);
+});
 
 function opening() {
   return prepareStorytellerTask({

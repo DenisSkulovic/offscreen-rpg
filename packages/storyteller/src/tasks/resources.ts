@@ -4,15 +4,36 @@ import type { ExecutionPolicy } from './policy';
 
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 
+const oneShotRecipeSchema = z.strictObject({
+  version: z.literal('single-turn.v1'),
+  maxModelRounds: z.literal(1),
+  maxReads: z.literal(0),
+  tools: z.literal('disabled'),
+  automaticEscalation: z.literal(false),
+});
+
+const memoryExplorationRecipeSchema = z
+  .strictObject({
+    version: z.literal('memory-exploration.v1'),
+    maxModelRounds: z.number().int().min(2).max(3),
+    maxReads: z.number().int().min(1).max(6),
+    maxRetainedReadBytes: z
+      .number()
+      .int()
+      .min(1024)
+      .max(48 * 1024),
+    tools: z.literal('memory-read.v1'),
+    automaticEscalation: z.literal(false),
+    finalAnswerReserveRounds: z.literal(1),
+  })
+  .refine(
+    (recipe) => recipe.maxModelRounds > recipe.finalAnswerReserveRounds,
+    'Exploration must leave a final-answer round',
+  );
+
 export const storytellerTaskResourcesSchema = z.strictObject({
   version: z.literal('storyteller-resources.v2'),
-  recipe: z.strictObject({
-    version: z.literal('single-turn.v1'),
-    maxModelRounds: z.literal(1),
-    maxReads: z.literal(0),
-    tools: z.literal('disabled'),
-    automaticEscalation: z.literal(false),
-  }),
+  recipe: z.union([oneShotRecipeSchema, memoryExplorationRecipeSchema]),
   envelope: z.strictObject({
     maxSerializedRequestBytes: count.positive().max(1_000_000),
     maxInputTokens: count.positive().max(200_000),
@@ -83,6 +104,13 @@ export function validateResourcesForExecution(
   if (
     resources.authority.kind !== 'effective-usage-policy' ||
     resources.authority.policy.route !== execution.policy.route ||
+    resources.recipe.maxModelRounds >
+      resources.authority.policy.limits.maxModelRoundsPerOperation ||
+    resources.recipe.maxReads >
+      resources.authority.policy.limits.maxReadsPerOperation ||
+    (resources.recipe.version === 'memory-exploration.v1' &&
+      resources.recipe.maxRetainedReadBytes >
+        resources.authority.policy.limits.maxRetainedReadBytes) ||
     resources.envelope.maxInputTokens > execution.policy.maxInputTokens ||
     resources.envelope.maxGeneratedTokens > execution.policy.maxOutputTokens ||
     resources.envelope.deadlineMs > execution.policy.timeoutMs
