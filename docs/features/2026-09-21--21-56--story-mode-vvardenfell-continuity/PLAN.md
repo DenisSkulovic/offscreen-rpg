@@ -55,13 +55,15 @@ Implementation owner: Codex for the current owner-requested implementation.
 
 ## Current checkpoint
 
-- Current phase and exact next action: S3/S4 player observation. Story creation
-  now follows foundation → player role → Storyteller → review → opening. The
-  prepared Seyda experience and custom story are separate routes, a character
-  name reaches both Storyteller input and prepared mechanical state, and the
-  player-facing opening screen distinguishes queued, running, failed,
-  billing-uncertain and succeeded states. Reset the smoke-test database, leave
-  Story mode running, and inspect the owner's actual choices and continuations.
+- Current phase and exact next action: S4 live-play repair. The owner's first
+  ordinary Story-mode opening succeeded, and selecting `cooperate-release`
+  exposed a transport-contract failure before inference. OpenAI rejected the
+  continuation JSON Schema because the document path pattern used lookaround.
+  Project unsupported pattern hints out of the OpenAI transport schema while
+  retaining application validation, classify a confirmed schema rejection as
+  zero-charge failure even when OpenRouter supplies a request id, reconcile the
+  affected local attempt, then resume the exact saved action without rerolling
+  or duplicating its receipt.
 - Base/reviewed Git revision and relevant uncommitted changes: base `2fee4ee`;
   provider-only Story mode and the player-screen information architecture are
   implemented locally.
@@ -73,12 +75,42 @@ Implementation owner: Codex for the current owner-requested implementation.
   Seyda Neen” opening and four distinct executable choices.
 - Unresolved findings/blockers: visual automation could not initialize because
   its local kernel-assets path was missing, so the owner remains the decisive
-  human UX review. Subsequent continuation quality and canonical mutations are
-  not yet proven.
+  human UX review. The live continuation has not yet produced prose or
+  canonical mutations. The failure was incorrectly recorded as financially
+  uncertain because the adapter treated OpenRouter's request id as possible
+  inference despite the explicit `invalid_json_schema` rejection. Mechanics
+  correctly produced one automatic receipt and advanced tick 0 → 1, but the
+  required Storyteller hold is now stuck pending operator reconciliation. All
+  evidence exists, but reconstructing one journey currently needs multiple raw
+  SQL queries; add a bounded story-session report before longer playthroughs.
 - Provider spend and accounting certainty: the first schema-valid but
   application-invalid smoke cost provider-reported USD 0.00255815. The
   successful smoke cost ledger-rounded USD 0.002247. After the provider's brief
   reporting delay, an authenticated read at 2026-09-21T20:59:04Z reported total
   account usage USD 0.004825326 and available USD 9.995174674, consistent with
-  the two attempts within microusd rounding. No automatic retries or fallback
-  calls occurred.
+  the two attempts within microusd rounding. The owner's opening then used
+  5,576 prompt + 795 completion tokens and cost provider-reported USD
+  0.00174847. The following HTTP 400 schema rejection performed no inference
+  and reported no usage, but the local ledger conservatively retains a 9,716
+  microusd uncertain reservation until explicit reconciliation. No automatic
+  retries or fallback calls occurred.
+
+## First owner play evidence — 2026-09-22
+
+- Story `838e5172-32ec-4de3-9945-90ee1b125dbe`, character Bob, Absurd Action
+  Comedy profile, GPT-5.6 Luna via OpenRouter.
+- Opening generation `4b89f776-0bad-4aed-b754-0393a3cd71c4` published one
+  passage with five distinct choices. Exact request size was 33,438 bytes;
+  provider usage was 6,371 tokens and USD 0.00174847.
+- Start produced canonical root revision 2 with 14 entries: structured player,
+  Sellus and Socucius identities, premise, release thread, settings, rule/time/
+  world references, private direction, start orientation and source passage.
+- Selecting `cooperate-release` produced execution
+  `a1365562-91af-4a32-a1bc-4960be26325d`, one automatic receipt, no roll or
+  effects, and advanced the campaign to tick 1. Generation
+  `d2e1c3d6-8b03-4542-ad9f-4aebd480243f` sent a 44,863-byte continuation
+  request but OpenAI rejected its schema before inference. No passage 2 or
+  canonical document mutation exists.
+- The public snapshot honestly shows the old passage, the committed receipt,
+  the required Storyteller hold and an operator-only uncertain blocker. This is
+  durable but not player-recoverable and appeared frozen in the UI.

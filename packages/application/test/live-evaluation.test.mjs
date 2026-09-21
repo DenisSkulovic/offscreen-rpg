@@ -31,6 +31,7 @@ const manifest = {
     model: 'test/model',
     priceVersion: 'verified-test-price',
     outputProtocol: 'native-json-schema',
+    responseTransport: 'buffered-json',
     inputMicrousdPerMillion: '1000',
     outputMicrousdPerMillion: '2000',
     supportsStructuredOutput: true,

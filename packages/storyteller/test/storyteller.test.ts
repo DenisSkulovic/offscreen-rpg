@@ -26,6 +26,7 @@ import {
   diagnoseOpenRouterResponse,
   inspectOpenRouterRequest,
   compareOpenRouterRequests,
+  projectOpenAiStrictSchema,
   usdToMicrousd,
 } from '../src/providers/openrouter';
 import {
@@ -1191,6 +1192,23 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(inspection.body.provider.allow_fallbacks, false);
   assert.match(inspection.sha256, /^[a-f0-9]{64}$/);
   assert.ok(inspection.serializedBytes > inspection.outputSchemaBytes);
+
+  const projectedSchema = projectOpenAiStrictSchema({
+    type: 'object',
+    properties: {
+      safe: { type: 'string', pattern: '^[a-z]+$' },
+      domainOnly: {
+        type: 'string',
+        pattern: '^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$)).+\\.md$',
+      },
+    },
+  }) as {
+    properties: Record<string, { pattern?: string }>;
+    required: string[];
+  };
+  assert.equal(projectedSchema.properties.safe?.pattern, '^[a-z]+$');
+  assert.equal(projectedSchema.properties.domainOnly?.pattern, undefined);
+  assert.deepEqual(projectedSchema.required, ['safe', 'domainOnly']);
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
   assert.ok(
@@ -1321,6 +1339,34 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     assert.equal(result.telemetry.reportedModel, 'test/model');
   }
   assert.equal(calls, 1);
+  const rejectedSchema = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message: 'Provider returned error',
+            code: 400,
+            metadata: {
+              provider_error_code: 'invalid_json_schema',
+            },
+          },
+        }),
+        {
+          status: 400,
+          headers: { 'x-generation-id': 'rejected-request-id' },
+        },
+      ),
+  });
+  const rejected = await rejectedSchema(providerTask);
+  assert.equal(rejected.kind, 'failed');
+  if (rejected.kind === 'failed') {
+    assert.equal(rejected.failureCode, 'invalid_output');
+    assert.equal(rejected.usage.reportedCostMicrousd, 0n);
+    assert.equal(rejected.telemetry.providerId, null);
+    assert.equal(rejected.telemetry.finishReason, 'invalid-json-schema');
+  }
   const missingUsage = createOpenRouterProvider({
     enabled: true,
     apiKey: 'dummy',

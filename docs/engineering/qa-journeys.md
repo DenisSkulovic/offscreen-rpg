@@ -45,7 +45,13 @@ The catalogue contains:
   one bounded paid work process and route-gated travel through generic
   mechanics. A passing journey still requires the finite supervisor, five
   committed Storyteller turns, canonical change and later recall; catalogue
-  presence alone is not evidence.
+  presence alone is not evidence. The first owner-driven live run on
+  2026-09-22 proved ordinary Story creation, one generated opening, canonical
+  start materialization, selection, one deterministic receipt and a required
+  continuation hold. It then failed before continuation inference because an
+  OpenAI strict-schema request retained unsupported regex lookaround. Keep this
+  run as failed evidence: one passage and tick 1 are durable; no continuation
+  prose or document mutation was produced.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or
@@ -179,5 +185,12 @@ For a separately authorized `chamber:evaluation-run`, inspect the terminal repor
 The same case IDs, stage IDs and commands support browser automation. Automation should record structural evidence only. Human-judgment stages remain for an operator even when surrounding navigation and state assertions are automated.
 
 The ordinary Chamber QA workspace remains offline: its accounting is zero calls, zero tokens, zero charge and no reservation. Live evaluation is a separate explicitly authorized command and evidence path.
+
+For ordinary local Story sessions, run `pnpm story:inspect [story-id]` before
+opening raw artifacts. Its bounded JSON report joins the narrative revision,
+holds, passage/generation/publication state, mechanical execution and receipt,
+attempt accounting, pending outbox work, current public projection and only the
+names/sizes/timestamps of nearby provider evidence. Use the raw response file
+only when that compact report cannot classify the failure.
 
 The first actual product proof is defined by the [connected generative POC contract](connected-poc-proof.md). Its session supervisor must first run provider-free through ordinary APIs, pause for an explicit option at each held turn and emit one compact ledger row per committed Storyteller turn. Opening plus one automatically selected first option is only a transport smoke and must never be reported as a playable POC.

@@ -5,7 +5,10 @@ import {
   storytellerSummary,
 } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import {
+  storytellerAttempt,
+  storytellerPublication,
+} from '@offscreen/db/storyteller-schema';
 import { storyListSchema } from '@offscreen/contracts/stories';
 import {
   storyHistorySchema,
@@ -103,6 +106,7 @@ function publicResolutionBlocker(
   publication: 'pending' | 'published' | 'stale' | 'blocked' | null,
   failureCode: string | null,
   sourceMode: 'scripted' | 'provider',
+  attemptState: string | null,
 ) {
   // Public categories are deliberately stable and coarse. Provider/account
   // identifiers and internal policy sources remain in the accounting audit.
@@ -126,7 +130,9 @@ function publicResolutionBlocker(
   return {
     kind: 'generation' as const,
     recovery:
-      sourceMode === 'scripted' ? ('retry' as const) : ('none' as const),
+      sourceMode === 'scripted' || attemptState === 'unsent'
+        ? ('retry' as const)
+        : ('none' as const),
   };
 }
 
@@ -171,6 +177,7 @@ export function createStoryReads(
         failureCode: generation.failureCode,
         publicationState: storytellerPublication.state,
         publicationFailure: storytellerPublication.failureCode,
+        attemptState: storytellerAttempt.state,
         usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
       })
       .from(story)
@@ -190,6 +197,10 @@ export function createStoryReads(
         ),
       )
       .leftJoin(generation, eq(generation.id, storyResolution.generationId))
+      .leftJoin(
+        storytellerAttempt,
+        eq(storytellerAttempt.id, generation.attemptId),
+      )
       .leftJoin(
         storytellerPublication,
         eq(storytellerPublication.generationId, generation.id),
@@ -325,6 +336,7 @@ export function createStoryReads(
               failureCode: generation.failureCode,
               publicationState: storytellerPublication.state,
               publicationFailure: storytellerPublication.failureCode,
+              attemptState: storytellerAttempt.state,
             })
             .from(story)
             .innerJoin(
@@ -347,6 +359,10 @@ export function createStoryReads(
               eq(generation.id, storyResolution.generationId),
             )
             .leftJoin(
+              storytellerAttempt,
+              eq(storytellerAttempt.id, generation.attemptId),
+            )
+            .leftJoin(
               storytellerPublication,
               eq(storytellerPublication.generationId, generation.id),
             )
@@ -366,6 +382,7 @@ export function createStoryReads(
             failureCode: row.failureCode,
             publicationState: row.publicationState,
             publicationFailure: row.publicationFailure,
+            attemptState: row.attemptState,
             usage: row.usage,
           };
           const content = await resolvePassageContent(
@@ -463,6 +480,7 @@ export function createStoryReads(
                       row.execution == null
                         ? 'scripted'
                         : executionPolicySchema.parse(row.execution).mode,
+                      row.attemptState,
                     );
                     return {
                       ...publicResolutionState(row.resolutionState),
@@ -543,10 +561,7 @@ export function createStoryReads(
         entries.slice(0, 20).map(async (entry) => ({
           id: entry.id,
           sequence: entry.sequence,
-          content: await resolvePassageContent(
-            entry,
-            options.documentStore,
-          ),
+          content: await resolvePassageContent(entry, options.documentStore),
         })),
       );
       return storyHistorySchema.parse({

@@ -81,6 +81,16 @@ export function projectOpenAiStrictSchema(value: unknown): unknown {
   const projected: Record<string, unknown> = {};
   for (const [key, child] of Object.entries(source)) {
     if (key === 'default') continue;
+    // OpenAI's strict subset accepts ordinary ECMA-262 patterns but rejects
+    // lookaround. The application validator remains authoritative, so omit an
+    // unsupported transport hint instead of weakening the domain contract.
+    if (
+      key === 'pattern' &&
+      typeof child === 'string' &&
+      /\(\?(?:[=!]|<[=!])/.test(child)
+    ) {
+      continue;
+    }
     projected[key === 'oneOf' ? 'anyOf' : key] =
       projectOpenAiStrictSchema(child);
   }
@@ -607,6 +617,9 @@ export function createOpenRouterProvider(config: {
     raw: string;
     httpStatus: number;
     receivedAt: string;
+    providerId: string | null;
+    requestSha256: string;
+    purpose: ReturnType<typeof describeStorytellerRequestPurpose>;
   }) => void | Promise<void>;
 }): StorytellerProvider {
   if (!config.enabled || !config.apiKey.trim()) {
@@ -646,13 +659,17 @@ export function createOpenRouterProvider(config: {
         raw: bounded.raw,
         httpStatus,
         receivedAt: new Date().toISOString(),
+        providerId,
+        requestSha256: createHash('sha256')
+          .update(JSON.stringify(request))
+          .digest('hex'),
+        purpose: describeStorytellerRequestPurpose(task),
       });
       const parsed = responseSchema.safeParse(bounded.parsed);
       if (!parsed.success) {
         const rejected = rejectedSchemaEnvelope.safeParse(bounded.parsed);
         if (
           response.status === 400 &&
-          !providerId &&
           rejected.success &&
           rejected.data.error.metadata?.provider_error_code ===
             'invalid_json_schema'
