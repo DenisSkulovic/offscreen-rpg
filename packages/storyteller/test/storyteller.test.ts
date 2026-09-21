@@ -86,7 +86,11 @@ test('memory exploration request preview embeds evidence without transport', () 
     request.outputSchema.properties.result,
     task.request.outputSchema,
   );
-  assert.deepEqual(request.outputSchema.required, ['result', 'evidenceUse']);
+  assert.deepEqual(request.outputSchema.required, [
+    'result',
+    'evidenceUse',
+    'creativeDirections',
+  ]);
   const inspection = inspectOpenRouterRequest(task, request);
   assert.equal(inspection.userSections.at(-1)?.key, 'memoryExploration');
   assert.equal(inspection.body.messages, request.messages);

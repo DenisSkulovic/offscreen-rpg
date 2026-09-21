@@ -16,9 +16,7 @@ type EvidenceHandle = Readonly<{
 }>;
 
 export type CanonicalMemoryExplorationFailureCode =
-  | 'stale-root'
-  | 'invalid-handle'
-  | 'read-limit';
+  'stale-root' | 'invalid-handle' | 'read-limit';
 
 export class CanonicalMemoryExplorationError extends Error {
   constructor(readonly code: CanonicalMemoryExplorationFailureCode) {
@@ -204,6 +202,7 @@ export function createCanonicalMemoryExplorer(input: {
       readsUsed += 1;
       if (
         operation.operation === 'search_memory' ||
+        operation.operation === 'creative_search' ||
         operation.operation === 'query_registry'
       ) {
         const registry = operation.operation === 'query_registry';
@@ -236,6 +235,7 @@ export function createCanonicalMemoryExplorer(input: {
         results.push({
           requestId: operation.requestId,
           operation: operation.operation,
+          ...('lens' in operation ? { lens: operation.lens } : {}),
           state: result.candidates.length ? 'ok' : 'no-match',
           coverage: result.coverage,
           candidates: result.candidates.map((candidate) =>

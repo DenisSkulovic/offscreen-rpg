@@ -7,6 +7,7 @@ import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
   composeMemoryExplorationDecisionRequest,
+  creativeDirectionSetSchema,
   memoryExplorationFinalResponseSchema,
   serializedRequestBytes,
   storytellerNeedsContextSchema,
@@ -14,6 +15,7 @@ import {
   validateStorytellerResult,
   type StorytellerOutput,
   type StorytellerTask,
+  type CreativeDirectionSet,
 } from '@offscreen/storyteller/tasks';
 import {
   CanonicalMemoryExplorationError,
@@ -67,6 +69,7 @@ export type ScriptedMemoryRoundSource = (input: {
 export type MemoryExplorationControllerResult = Readonly<{
   output: StorytellerOutput;
   evidenceUse: MemoryEvidenceUseReport;
+  creativeDirections: CreativeDirectionSet;
   replayed: boolean;
   explorationRounds: number;
 }>;
@@ -81,7 +84,32 @@ const storedFinalCandidateSchema = z.strictObject({
     requiredItemIds: z.array(z.string()),
     requiredUnusedItemIds: z.array(z.string()),
   }),
+  creativeDirections: creativeDirectionSetSchema,
 });
+
+function validateCreativeDirections(
+  packet: ReturnType<typeof prepareMemoryEvidenceContext>['evidencePack'],
+  evidenceUse: MemoryEvidenceUseReport,
+  rawDirections: CreativeDirectionSet,
+) {
+  const directions = creativeDirectionSetSchema.parse(rawDirections);
+  const packetItems = new Set(packet.evidence.map((item) => item.itemId));
+  const usedItems = new Set(evidenceUse.declaredItemIds);
+  for (const direction of directions.directions) {
+    if (direction.evidenceItemIds.some((itemId) => !packetItems.has(itemId))) {
+      throw new Error(
+        'Creative direction cites evidence outside the final packet',
+      );
+    }
+    if (
+      direction.status === 'selected' &&
+      direction.evidenceItemIds.some((itemId) => !usedItems.has(itemId))
+    ) {
+      throw new Error('Selected creative direction evidence was not used');
+    }
+  }
+  return directions;
+}
 
 function assertSnapshotWithinRecipe(
   snapshot: MemoryExplorationSnapshot,
@@ -223,6 +251,7 @@ export async function runScriptedMemoryExploration(
       return {
         output: validateStorytellerResult(task, finalCandidate.output),
         evidenceUse: finalCandidate.evidenceUse,
+        creativeDirections: finalCandidate.creativeDirections,
         replayed: true,
         explorationRounds: snapshot.rounds.length,
       };
@@ -376,10 +405,16 @@ export async function runScriptedMemoryExploration(
       preparedContext.evidencePack,
       finalResponse.evidenceUse,
     );
+    const creativeDirections = validateCreativeDirections(
+      preparedContext.evidencePack,
+      evidenceUse,
+      finalResponse.creativeDirections,
+    );
     const finalCandidate = {
       format: 'offscreen.memory-final-candidate.v1' as const,
       output,
       evidenceUse,
+      creativeDirections,
     };
     const updated = await database.db
       .update(storytellerMemoryExploration)
@@ -403,6 +438,7 @@ export async function runScriptedMemoryExploration(
     return {
       output,
       evidenceUse,
+      creativeDirections,
       replayed: false,
       explorationRounds: snapshot.rounds.length,
     };

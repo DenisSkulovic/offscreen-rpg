@@ -101,6 +101,8 @@ The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md)
 6. Keep human taste not-run during structural fixtures. Later blind review records specificity, coherence, surprise, restraint, continuity payoff and desire-to-continue; no aggregate automatic score certifies “wow.”
 7. Capture every creative allowance explicitly: lenses, queries, candidates, reads, leads, candidate directions, retained bytes, model rounds, generated tokens, latency and microusd. Zero may disable one posture entirely; missing configuration never means unlimited work.
 8. Bind a discovery result to the exact normalized request hash. Reject undeclared lenses, excessive work, wrong-branch evidence, visibility expansion and obsolete evidence when current-only scope was requested. Every lead remains an inferred private possibility even when all its sources are canonical.
+9. Execute lens-labelled searches through the same persisted request, canonical handle and evidence-packing path as factual memory. Crash after request acceptance, then confirm recovery executes it without another Storyteller decision.
+10. Keep final direction records concise: premise, packet item IDs, intended value, compatibility constraints and selected/rejected status. Reject directions citing absent packet items and a selected direction whose evidence was not declared used; replay the accepted set without exposing it to publication.
 
 ### Story-item authority checklist
 

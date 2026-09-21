@@ -128,7 +128,8 @@ registerStoryConcern(
                 results: [
                   {
                     requestId: 'r1',
-                    operation: 'search_memory',
+                    operation: 'creative_search',
+                    lens: 'relationship',
                     state: 'ok',
                     candidates: [
                       {
@@ -183,7 +184,8 @@ registerStoryConcern(
               requests: [
                 {
                   requestId: 'r1',
-                  operation: 'search_memory',
+                  operation: 'creative_search',
+                  lens: 'relationship',
                   query: 'old promise',
                 },
               ],
@@ -197,6 +199,21 @@ registerStoryConcern(
             evidenceUse: {
               itemIds: [evidence.itemId],
               sourceIds: evidence.sourceIds,
+            },
+            creativeDirections: {
+              format: 'offscreen.creative-direction-set.v1',
+              directions: [
+                {
+                  id: 'd1',
+                  premise:
+                    'Let the old promise touch the current return without forcing a commitment.',
+                  evidenceItemIds: [evidence.itemId],
+                  intendedValue:
+                    'Create a specific relationship callback while preserving player agency.',
+                  constraints: ['The promise remains unresolved.'],
+                  status: 'selected',
+                },
+              ],
             },
           };
         };
@@ -220,6 +237,10 @@ registerStoryConcern(
         assert.equal(completed.explorationRounds, 1);
         assert.equal(completed.evidenceUse.declaredItemIds.length, 1);
         assert.deepEqual(completed.evidenceUse.requiredUnusedItemIds, []);
+        assert.equal(
+          completed.creativeDirections.directions[0]?.status,
+          'selected',
+        );
         assert.equal(sourceCalls, 2);
         const initialContext = composedContexts[0];
         const finalContext = composedContexts[1];
@@ -259,6 +280,10 @@ registerStoryConcern(
         assert.equal(replayed.explorationRounds, 1);
         assert.deepEqual(replayed.output, completed.output);
         assert.deepEqual(replayed.evidenceUse, completed.evidenceUse);
+        assert.deepEqual(
+          replayed.creativeDirections,
+          completed.creativeDirections,
+        );
 
         const failedGenerationId = randomUUID();
         await database.db.insert(generation).values({

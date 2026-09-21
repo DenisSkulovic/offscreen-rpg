@@ -21,7 +21,7 @@ Implementation owner: Cursor by default; reviewer: Codex.
 - Extend recipes with independent creative rounds, queries, reads, candidate-direction count, bytes, output tokens, latency and money. Zero means disabled; all work shares the parent operation envelope.
 - Exit: provider-free fixtures prove branch/visibility/currentness filtering, partial/no-useful results, stable replay and no authority promotion.
 
-### C2 — Diverge/converge orchestration
+### C2 — Diverge/converge orchestration — implementing
 
 - Outcome: a bounded Storyteller operation may widen through several lenses, inspect exact sources, produce a small private direction set and compose one final candidate.
 - Reuse the persisted memory-exploration controller and evidence pack; do not create a second agent runtime. Persist normalized requests/results before side effects and reserve final-composition capacity.
@@ -44,8 +44,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Current checkpoint
 
-- Current phase and exact next action: C0/C1 are complete; implement C2 by projecting admitted creative searches through the existing persisted memory controller, then persist a bounded private direction set before one ordinary final candidate.
-- Base/reviewed Git revision and relevant uncommitted changes: `d0668bd`; C1 adds provider-neutral need/request/result contracts, continuous captured limits, named defaults, strict operation narrowing and request-bound result validation.
-- Actual checks/results for this revision: contracts and application builds pass; the two focused creative benchmark/contract cases pass 2/2. They cover disabled work, custom/narrowed limits, stable request replay, partial/no-useful result shape, private-possibility status and rejection of mismatched hash, branch, visibility/currentness scope. No creative model output or human preference is verified.
-- Unresolved findings/blockers: creative requests are not yet executed by the persisted controller and no direction artifact exists. C0's eight-lens vocabulary remains a benchmark/control vocabulary, not proof every lens deserves a runtime search strategy. One-round-versus-separate-ideation remains a later fixed-budget comparison.
+- Current phase and exact next action: C2 has connected creative search and final direction capture; next decide through provider-free comparison whether direction generation deserves its own persisted ideation round, then bind the selected creative recipe into ordinary task admission/accounting.
+- Base/reviewed Git revision and relevant uncommitted changes: `08dfe3c`; `creative_search` now executes through the existing persisted memory request/read/replay loop and packs its candidates into the same final evidence envelope. The private final wrapper records one selected and bounded rejected directions or an empty set.
+- Actual checks/results for this revision: Storyteller, application and API-integration builds pass; Storyteller tests pass 35/35, three focused memory/creative cases pass 3/3, and the disposable-database creative-search crash/replay/final-candidate case passes 1/1. The integration proves selected-direction evidence belongs to the exact final packet, is declared used and replays unchanged. No provider call or human taste judgment occurred.
+- Unresolved findings/blockers: directions are currently produced in the final composition round and persisted atomically with the final candidate, not as a separately persisted pre-composition artifact. This deliberately tests the cheaper one-round shape first; it does not yet satisfy C2's alternative separate-ideation route or connect creative posture to normal task admission/accounting. C0's eight-lens vocabulary remains a benchmark/control vocabulary, not proof every lens deserves a distinct retrieval strategy.
 - Provider spend and accounting certainty: $0; no provider call.

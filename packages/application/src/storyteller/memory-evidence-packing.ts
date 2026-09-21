@@ -11,7 +11,10 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function groupKind(kind: string, path: string): PackableEvidenceItem['group']['kind'] {
+function groupKind(
+  kind: string,
+  path: string,
+): PackableEvidenceItem['group']['kind'] {
   if (kind === 'identity') return 'identity';
   if (kind === 'source-passage') return 'event';
   if (
@@ -32,7 +35,9 @@ function groupKind(kind: string, path: string): PackableEvidenceItem['group']['k
   return 'other';
 }
 
-function sourceKey(unit: MemoryExplorationSnapshot['memoryHandles'][number]['unit']) {
+function sourceKey(
+  unit: MemoryExplorationSnapshot['memoryHandles'][number]['unit'],
+) {
   return `canonical:${unit.documentId}@${unit.revision}#sha256:${unit.sourceHash}`;
 }
 
@@ -72,8 +77,9 @@ export function buildPackableMemoryEvidence(
       }
       if (result.state !== 'ok') continue;
       if (
-        (result.operation === 'search_memory' ||
-          result.operation === 'query_registry')
+        result.operation === 'search_memory' ||
+        result.operation === 'creative_search' ||
+        result.operation === 'query_registry'
       ) {
         if (!Array.isArray(result.candidates)) {
           throw new Error('Memory exploration candidates cannot be packed');
@@ -98,7 +104,10 @@ export function buildPackableMemoryEvidence(
         }
         continue;
       }
-      if (result.operation === 'inspect_memory' || result.operation === 'read_source') {
+      if (
+        result.operation === 'inspect_memory' ||
+        result.operation === 'read_source'
+      ) {
         if (
           typeof result.handle !== 'string' ||
           typeof result.title !== 'string' ||
@@ -125,7 +134,8 @@ export function buildPackableMemoryEvidence(
       const discovery = discoveries.get(handle);
       const read = reads.get(handle);
       const title = read?.title ?? discovery?.title ?? unit.title;
-      const lead = discovery?.snippet?.trim() || `${title} — ${unit.contextualKey}`;
+      const lead =
+        discovery?.snippet?.trim() || `${title} — ${unit.contextualKey}`;
       const provenance = [sourceKey(unit)];
       const representations: PackableEvidenceItem['representations'] = [
         {

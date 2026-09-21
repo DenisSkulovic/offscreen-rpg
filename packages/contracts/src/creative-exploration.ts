@@ -1,8 +1,18 @@
 import { z } from 'zod';
-import { creativeLensSchema } from './creative-exploration-evaluation.js';
 
 const hashSchema = z.string().regex(/^[0-9a-f]{64}$/);
 const keySchema = z.string().regex(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
+
+export const creativeLensSchema = z.enum([
+  'echo',
+  'contrast',
+  'consequence',
+  'relationship',
+  'dormant-thread',
+  'setting-affordance',
+  'thematic-resonance',
+  'serendipity',
+]);
 
 export const creativeExplorationPostureSchema = z.enum([
   'off',
@@ -231,6 +241,7 @@ export const creativeDiscoveryResultSchema = z
 export type CreativeExplorationPosture = z.infer<
   typeof creativeExplorationPostureSchema
 >;
+export type CreativeLens = z.infer<typeof creativeLensSchema>;
 export type CreativeExplorationLimits = z.infer<
   typeof creativeExplorationLimitsSchema
 >;

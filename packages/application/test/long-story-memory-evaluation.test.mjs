@@ -679,13 +679,19 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     version: 1,
     purpose: 'Recover the old favor and identify Mira before the return.',
     requests: [
-      { requestId: 'r1', operation: 'search_memory', query: 'quiet favor' },
+      {
+        requestId: 'r1',
+        operation: 'creative_search',
+        lens: 'relationship',
+        query: 'quiet favor',
+      },
       { requestId: 'r2', operation: 'query_registry', query: 'Mira Vale' },
     ],
   });
   const favorCandidate = discovery.results[0].candidates.find(
     (candidate) => candidate.path === 'relationships/mira-vale-favor.md',
   );
+  assert.equal(discovery.results[0].lens, 'relationship');
   assert.ok(favorCandidate);
   const sourceHandle = favorCandidate.linkedSources[0]?.handle;
   assert.ok(sourceHandle);

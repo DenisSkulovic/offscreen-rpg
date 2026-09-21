@@ -1,21 +1,11 @@
 import { z } from 'zod';
+import { creativeLensSchema } from './creative-exploration.js';
 
 const keySchema = z.string().regex(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
 const uniqueKeysSchema = z
   .array(keySchema)
   .max(64)
   .refine((keys) => new Set(keys).size === keys.length, 'Keys must be unique');
-
-export const creativeLensSchema = z.enum([
-  'echo',
-  'contrast',
-  'consequence',
-  'relationship',
-  'dormant-thread',
-  'setting-affordance',
-  'thematic-resonance',
-  'serendipity',
-]);
 
 export const creativeExplorationBenchmarkCaseSchema = z
   .strictObject({
