@@ -700,6 +700,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
     assert.equal(task.inputVersion, 10);
+    assert.equal(task.promptVersion, 'storyteller.v7');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -710,6 +711,17 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(task.resources.envelope.maxSerializedRequestBytes, 48 * 1024);
     assert.equal(task.resources.envelope.maxMicrousd, '0');
   }
+  const openingSchema = JSON.parse(
+    JSON.stringify(initial.request.outputSchema),
+  );
+  assert.deepEqual(openingSchema.required, ['version', 'scene']);
+  const openingInstructions = initial.request.messages[0]?.content ?? '';
+  assert.match(
+    openingInstructions,
+    /Return exactly this complete nesting: \{"version":1,"scene":/,
+  );
+  assert.doesNotMatch(openingInstructions, /"currentNotes":\[\]/);
+  assert.match(openingInstructions, /do not add root keys not shown/);
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
 });

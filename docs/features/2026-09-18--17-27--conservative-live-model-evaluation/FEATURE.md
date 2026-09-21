@@ -1,6 +1,6 @@
 # Conservative live-model evaluation
 
-Status: Proposed design. Implementation does not authorize a provider call; every live run still requires the owner to reopen evaluation deliberately.
+Status: Active developer tooling. Verified-zero-price runs use the owner's standing bounded authorization; every paid run still requires separate explicit authorization.
 
 ## Intended outcome
 
