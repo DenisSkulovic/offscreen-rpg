@@ -191,7 +191,7 @@ export const memoryEvaluationManifestSchema = z.strictObject({
   id: z.uuid(),
   gate: z.literal('bounded-memory-operation'),
   case: z.strictObject({ id: z.string().min(1), version: z.string().min(1) }),
-  firstPacket: z.strictObject({
+  packet: z.strictObject({
     generationId: z.uuid(),
     attemptId: z.uuid(),
     sha256,

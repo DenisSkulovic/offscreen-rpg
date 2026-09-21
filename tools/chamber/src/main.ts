@@ -37,6 +37,7 @@ import {
   verifyOpenRouterAuthority,
   waitForGenerationTerminal,
 } from './live-evaluation-run.js';
+import { runMemoryEvaluation } from './memory-evaluation-run.js';
 import {
   evaluationPacketAuthority,
   evaluationPacketInspectionSchema,
@@ -51,7 +52,8 @@ import {
 import { captureHeldMemoryPacket } from './memory-packet-review.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
-// Does not load .env or .env.openrouter and has no model/provider dependency.
+// It never loads dotenv files; only the two explicitly authorized run modes
+// construct provider transport from an already-present process credential.
 const smoke = process.argv.includes('--smoke');
 const review = process.argv.includes('--review');
 const packetReview = process.argv.includes('--packet-review');
@@ -59,6 +61,7 @@ const memoryPacketReview = process.argv.includes('--memory-packet-review');
 const memoryEvaluationPacket = process.argv.includes(
   '--memory-evaluation-packet',
 );
+const memoryEvaluationRun = process.argv.includes('--memory-evaluation-run');
 const evaluationPacket = process.argv.includes('--evaluation-packet');
 const evaluationRun = process.argv.includes('--evaluation-run');
 const resetDatabase = process.argv.includes('--reset-database');
@@ -74,6 +77,7 @@ const runModes = [
   packetReview,
   memoryPacketReview,
   memoryEvaluationPacket,
+  memoryEvaluationRun,
   evaluationPacket,
   evaluationRun,
 ].filter(Boolean);
@@ -89,6 +93,7 @@ if (
           '--packet-review',
           '--memory-packet-review',
           '--memory-evaluation-packet',
+          '--memory-evaluation-run',
           '--evaluation-packet',
           '--evaluation-run',
           '--reset-database',
@@ -103,8 +108,10 @@ if (
   );
 }
 if (
-  (evaluationPacket || evaluationRun || memoryEvaluationPacket) !==
-  Boolean(configArgument)
+  (evaluationPacket ||
+    evaluationRun ||
+    memoryEvaluationPacket ||
+    memoryEvaluationRun) !== Boolean(configArgument)
 ) {
   throw new Error('Evaluation modes require exactly one --config=<path>.');
 }
@@ -202,14 +209,14 @@ const memoryDryRunExecution: ExecutionPolicy = {
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 const evaluationConfig = configArgument
-  ? memoryEvaluationPacket
+  ? memoryEvaluationPacket || memoryEvaluationRun
     ? null
     : await readEvaluationPacketConfig(
         resolve(workspaceRoot, configArgument.slice('--config='.length)),
       )
   : null;
 const memoryEvaluationConfig =
-  memoryEvaluationPacket && configArgument
+  (memoryEvaluationPacket || memoryEvaluationRun) && configArgument
     ? await readMemoryEvaluationPacketConfig(
         resolve(workspaceRoot, configArgument.slice('--config='.length)),
       )
@@ -226,6 +233,15 @@ if (
 ) {
   throw new Error(
     '--evaluation-run requires --authorize=<evaluation-id> matching the config.',
+  );
+}
+if (
+  memoryEvaluationRun &&
+  authorizationArgument?.slice('--authorize='.length) !==
+    memoryEvaluationConfig?.id
+) {
+  throw new Error(
+    '--memory-evaluation-run requires --authorize=<evaluation-id> matching the config.',
   );
 }
 const evaluationPolicy =
@@ -256,6 +272,12 @@ if (memoryEvaluationPolicy?.kind === 'denied') {
     `Memory evaluation usage policy denied: ${memoryEvaluationPolicy.reason}`,
   );
 }
+const liveDispatchPolicy =
+  evaluationPolicy?.kind === 'allowed'
+    ? evaluationPolicy.policy
+    : memoryEvaluationPolicy?.kind === 'allowed'
+      ? memoryEvaluationPolicy.policy
+      : null;
 const gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: workspaceRoot,
   encoding: 'utf8',
@@ -340,13 +362,19 @@ await applyMigrations(
   fileURLToPath(new URL('../../../../packages/db/migrations', import.meta.url)),
 );
 const database = createDatabase(config, () => {});
-const openRouterApiKey = evaluationRun
-  ? (process.env['OPENROUTER_API_KEY'] ?? '')
-  : '';
+const openRouterApiKey =
+  evaluationRun || memoryEvaluationRun
+    ? (process.env['OPENROUTER_API_KEY'] ?? '')
+    : '';
 const creditsBefore =
   evaluationRun && evaluationConfig
     ? await verifyOpenRouterAuthority(evaluationConfig, openRouterApiKey)
-    : null;
+    : memoryEvaluationRun && memoryEvaluationConfig
+      ? await verifyOpenRouterAuthority(
+          memoryEvaluationConfig,
+          openRouterApiKey,
+        )
+      : null;
 const storytellerControl = createChamberStorytellerControl();
 const authConfig = {
   origin,
@@ -395,6 +423,7 @@ const app = await createApp(
     ...(packetReview ||
     memoryPacketReview ||
     memoryEvaluationPacket ||
+    memoryEvaluationRun ||
     evaluationPacket ||
     evaluationRun
       ? {
@@ -468,7 +497,7 @@ try {
       taskQueue: 'local-chamber',
     },
     () => {},
-    evaluationRun && evaluationPolicy?.kind === 'allowed'
+    (evaluationRun || memoryEvaluationRun) && liveDispatchPolicy
       ? {
           provider: createOpenRouterProvider({
             enabled: true,
@@ -489,7 +518,7 @@ try {
               );
             },
           }),
-          dispatchAuthority: () => evaluationPolicy.policy,
+          dispatchAuthority: () => liveDispatchPolicy,
           documentStore,
         }
       : memoryPacketReview || memoryEvaluationPacket
@@ -507,7 +536,7 @@ try {
           }
         : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
-  if (memoryPacketReview || memoryEvaluationPacket) {
+  if (memoryPacketReview || memoryEvaluationPacket || memoryEvaluationRun) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');
@@ -574,14 +603,35 @@ try {
       }
       const manifestPath = join(
         dirname(captured.evidencePath),
-        `memory-evaluation-manifest-${captured.generationId}.json`,
+        `memory-evaluation-manifest-${captured.review.attemptId}.json`,
       );
       await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, {
         flag: 'wx',
       });
-      console.log(
-        `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}. Verified: memory state held, zero provider attempts. Model spend: $0 (no provider call).`,
-      );
+      if (memoryEvaluationRun && creditsBefore) {
+        console.log(
+          `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}. No provider attempt has occurred; beginning the explicitly authorized run.`,
+        );
+        const saved = await runMemoryEvaluation({
+          apiOrigin: 'http://127.0.0.1:3001',
+          browserOrigin: origin,
+          cookie,
+          database,
+          directory: dirname(captured.evidencePath),
+          config: memoryEvaluationConfig,
+          firstManifest: manifest,
+          firstReview: captured.review,
+          creditsBefore,
+          apiKey: openRouterApiKey,
+        });
+        console.log(
+          `Memory live evaluation report saved to ${saved.path}. No retry is permitted.`,
+        );
+      } else {
+        console.log(
+          `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}. Verified: memory state held, zero provider attempts. Model spend: $0 (no provider call).`,
+        );
+      }
     } else {
       console.log(
         `Held memory packet saved to ${captured.evidencePath}. Corpus: ${captured.corpus.scenes} passages, ${captured.corpus.evidence} canonical records. Verified: memory state held, zero provider attempts. Model spend: $0.`,

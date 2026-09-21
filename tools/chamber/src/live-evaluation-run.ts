@@ -2,7 +2,10 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Database } from '@offscreen/db';
 import { preflightLiveEvaluation } from '@offscreen/application/developer-tools';
-import type { EvaluationPacketConfig } from '@offscreen/contracts/live-evaluation';
+import type {
+  EvaluationPacketConfig,
+  MemoryEvaluationPacketConfig,
+} from '@offscreen/contracts/live-evaluation';
 import type { DispatchReviewView } from '@offscreen/contracts/chamber';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import { openingPreviewSchema } from '@offscreen/contracts/openings';
@@ -11,7 +14,7 @@ import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { diagnoseOpenRouterResponse } from '@offscreen/storyteller/providers/openrouter';
 import { setTimeout as delay } from 'node:timers/promises';
 
-type CreditSnapshot = {
+export type CreditSnapshot = {
   totalCreditsMicrousd: bigint;
   totalUsageMicrousd: bigint;
   availableMicrousd: bigint;
@@ -28,7 +31,7 @@ function usdToMicrousd(value: unknown) {
 
 /** Fresh authoritative checks only. This function never writes the credential to evidence. */
 export async function verifyOpenRouterAuthority(
-  config: EvaluationPacketConfig,
+  config: EvaluationPacketConfig | MemoryEvaluationPacketConfig,
   apiKey: string,
 ): Promise<CreditSnapshot> {
   if (!apiKey.trim())
@@ -342,7 +345,7 @@ export async function captureHeldContinuation(input: {
 
 export async function enableSingleLiveAttempt(
   database: Database,
-  config: EvaluationPacketConfig,
+  config: Pick<EvaluationPacketConfig, 'accountId' | 'runId'>,
 ) {
   await database.db.$client.query('BEGIN');
   try {
@@ -366,7 +369,7 @@ export async function enableSingleLiveAttempt(
 
 export async function closeSingleLiveAttempt(
   database: Database,
-  config: EvaluationPacketConfig,
+  config: Pick<EvaluationPacketConfig, 'accountId' | 'runId'>,
 ) {
   await database.db.$client.query('BEGIN');
   try {

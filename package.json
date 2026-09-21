@@ -30,6 +30,7 @@
     "chamber:packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --packet-review",
     "chamber:memory-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --memory-packet-review",
     "chamber:memory-evaluation-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --memory-evaluation-packet",
+    "chamber:memory-evaluation-run": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --memory-evaluation-run",
     "chamber:evaluation-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-packet",
     "chamber:evaluation-run": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-run",
     "storyteller:packet-audit": "pnpm --filter @offscreen/storyteller build && node scripts/repo-tools/storyteller-request-audit.mjs",

@@ -24,7 +24,7 @@ export async function readMemoryEvaluationPacketConfig(path: string) {
 }
 
 export function evaluationPacketAuthority(config: EvaluationPacketConfig): {
-  execution: ExecutionPolicy;
+  execution: Extract<ExecutionPolicy, { mode: 'provider' }>;
   profile: UsageEntitlementProfile;
 } {
   const { recipe, route } = config;
@@ -80,7 +80,10 @@ export function evaluationPacketAuthority(config: EvaluationPacketConfig): {
 
 export function memoryEvaluationPacketAuthority(
   config: MemoryEvaluationPacketConfig,
-): { execution: ExecutionPolicy; profile: UsageEntitlementProfile } {
+): {
+  execution: Extract<ExecutionPolicy, { mode: 'provider' }>;
+  profile: UsageEntitlementProfile;
+} {
   const { recipe, route } = config;
   return {
     execution: {
@@ -114,12 +117,10 @@ export function memoryEvaluationPacketAuthority(
       limits: {
         maxInputTokensPerRequest: recipe.maxInputTokensPerRound,
         maxSerializedBytesPerRequest: recipe.maxSerializedBytesPerRequest,
-        maxGeneratedTokensPerRequest:
-          recipe.maxGeneratedTokensPerOperation,
+        maxGeneratedTokensPerRequest: recipe.maxGeneratedTokensPerOperation,
         maxReasoningTokensPerRequest: 0,
         maxInputTokensPerOperation: recipe.maxInputTokensPerOperation,
-        maxGeneratedTokensPerOperation:
-          recipe.maxGeneratedTokensPerOperation,
+        maxGeneratedTokensPerOperation: recipe.maxGeneratedTokensPerOperation,
         maxModelRoundsPerOperation: recipe.modelRounds,
         maxReadsPerOperation: recipe.retrievalReads,
         maxRetainedReadBytes: recipe.maxRetainedReadBytes,

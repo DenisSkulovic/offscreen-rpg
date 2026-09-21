@@ -27,8 +27,7 @@ export function createLiveEvaluationManifest(input: {
   // deliberately conservative compatibility bound, not provider metering.
   const inputTokenUpperBound = input.review.serializedBytes;
   const pricedMillionthsOfMicrousd =
-    BigInt(inputTokenUpperBound) *
-      BigInt(input.route.inputMicrousdPerMillion) +
+    BigInt(inputTokenUpperBound) * BigInt(input.route.inputMicrousdPerMillion) +
     BigInt(input.recipe.maxGeneratedTokens) *
       BigInt(input.route.outputMicrousdPerMillion);
   const reservationMicrousd = (
@@ -197,7 +196,7 @@ export function createMemoryEvaluationManifest(input: {
     id: input.config.id,
     gate: 'bounded-memory-operation',
     case: input.config.case,
-    firstPacket: {
+    packet: {
       generationId: input.review.generationId,
       attemptId: input.review.attemptId,
       sha256: input.review.packetSha256,
@@ -244,9 +243,9 @@ export function preflightMemoryEvaluation(input: {
     failures.push('packet_not_held');
   }
   if (
-    input.review.generationId !== manifest.firstPacket.generationId ||
-    input.review.attemptId !== manifest.firstPacket.attemptId ||
-    input.review.packetSha256 !== manifest.firstPacket.sha256
+    input.review.generationId !== manifest.packet.generationId ||
+    input.review.attemptId !== manifest.packet.attemptId ||
+    input.review.packetSha256 !== manifest.packet.sha256
   ) {
     failures.push('packet_identity_mismatch');
   }
@@ -264,10 +263,9 @@ export function preflightMemoryEvaluation(input: {
     failures.push('route_not_free');
   }
   if (
-    manifest.firstPacket.serializedBytes >
+    manifest.packet.serializedBytes >
       manifest.recipe.maxSerializedBytesPerRequest ||
-    manifest.firstPacket.reservedInputTokens >
-      manifest.recipe.maxInputTokensPerRound
+    manifest.packet.reservedInputTokens > manifest.recipe.maxInputTokensPerRound
   ) {
     failures.push('packet_limit_exceeded');
   }

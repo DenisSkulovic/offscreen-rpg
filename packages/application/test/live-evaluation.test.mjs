@@ -165,7 +165,7 @@ test('builds and preflights one held verified-free memory operation', () => {
     createdAt: now,
     review,
   });
-  assert.equal(memoryManifest.firstPacket.reservedInputTokens, 12_000);
+  assert.equal(memoryManifest.packet.reservedInputTokens, 12_000);
   assert.equal(memoryManifest.reservationMicrousd, '0');
   assert.deepEqual(
     preflightMemoryEvaluation({
