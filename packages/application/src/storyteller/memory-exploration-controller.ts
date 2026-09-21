@@ -344,6 +344,9 @@ export async function runMemoryExploration(
     );
     const snapshot = explorer.snapshot();
     assertSnapshotWithinRecipe(snapshot, recipe);
+    if (artifact.modelRoundsUsed > recipe.maxModelRounds) {
+      throw new Error('Memory exploration model rounds exceed its recipe');
+    }
     if (
       !creativeSnapshotWithinRecipe(
         snapshot,
@@ -437,7 +440,10 @@ export async function runMemoryExploration(
       throw new MemoryExplorationControllerError(code);
     };
 
-    const round = snapshot.rounds.length + 1;
+    const round =
+      artifact.pendingRequest !== null || artifact.pendingModelOutput !== null
+        ? artifact.modelRoundsUsed
+        : artifact.modelRoundsUsed + 1;
     if (round > recipe.maxModelRounds) {
       return fail('round-limit');
     }
@@ -542,6 +548,7 @@ export async function runMemoryExploration(
           .update(storytellerMemoryExploration)
           .set({
             revision: artifact.revision + 1,
+            modelRoundsUsed: artifact.modelRoundsUsed + 1,
             state: 'exploring',
             failureCode: null,
             pendingModelOutput: storedOutput,
@@ -572,6 +579,36 @@ export async function runMemoryExploration(
       }
     }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
+    const validatedFinalCandidate = (() => {
+      if (contextRequest.success || !preparedContext) return null;
+      const parsed = memoryExplorationFinalResponseSchema.safeParse(rawOutput);
+      if (!parsed.success) return null;
+      try {
+        const output = validateStorytellerResult(task, parsed.data.result);
+        const evidenceUse = validateMemoryEvidenceUse(
+          preparedContext.evidencePack,
+          parsed.data.evidenceUse,
+        );
+        const creativeDirections = validateCreativeDirections(
+          preparedContext.evidencePack,
+          evidenceUse,
+          parsed.data.creativeDirections,
+          task.resources.creativeExploration,
+        );
+        return {
+          format: 'offscreen.memory-final-candidate.v1' as const,
+          output,
+          evidenceUse,
+          creativeDirections,
+        };
+      } catch {
+        return null;
+      }
+    })();
+    const repairableInvalidFinal =
+      !contextRequest.success &&
+      validatedFinalCandidate === null &&
+      artifact.modelRoundsUsed < recipe.maxModelRounds;
     const admissibleContextRequest =
       contextRequest.success &&
       round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds &&
@@ -594,7 +631,10 @@ export async function runMemoryExploration(
           task,
           round,
           delivery,
-          operationOutcome: admissibleContextRequest ? 'continue' : 'complete',
+          operationOutcome:
+            admissibleContextRequest || repairableInvalidFinal
+              ? 'continue'
+              : 'complete',
         });
       } catch (error) {
         return interrupt(error);
@@ -684,27 +724,38 @@ export async function runMemoryExploration(
       continue;
     }
 
+    if (!validatedFinalCandidate) {
+      if (!repairableInvalidFinal) {
+        return fail('invalid-output');
+      }
+      const repaired = await database.db
+        .update(storytellerMemoryExploration)
+        .set({
+          revision: artifact.revision + 1,
+          pendingModelAttemptId: null,
+          pendingModelRequestSha256: null,
+          pendingModelRequest: null,
+          pendingModelOutput: null,
+          updatedAt: sql`clock_timestamp()`,
+        })
+        .where(
+          and(
+            eq(storytellerMemoryExploration.generationId, input.generationId),
+            eq(storytellerMemoryExploration.revision, artifact.revision),
+            eq(storytellerMemoryExploration.state, 'exploring'),
+          ),
+        )
+        .returning({ generationId: storytellerMemoryExploration.generationId });
+      if (!repaired.length) {
+        throw new Error('Memory exploration artifact changed concurrently');
+      }
+      continue;
+    }
+
     if (!preparedContext) {
       throw new Error('Final memory response is missing its evidence context');
     }
-    const finalResponse = memoryExplorationFinalResponseSchema.parse(rawOutput);
-    const output = validateStorytellerResult(task, finalResponse.result);
-    const evidenceUse = validateMemoryEvidenceUse(
-      preparedContext.evidencePack,
-      finalResponse.evidenceUse,
-    );
-    const creativeDirections = validateCreativeDirections(
-      preparedContext.evidencePack,
-      evidenceUse,
-      finalResponse.creativeDirections,
-      task.resources.creativeExploration,
-    );
-    const finalCandidate = {
-      format: 'offscreen.memory-final-candidate.v1' as const,
-      output,
-      evidenceUse,
-      creativeDirections,
-    };
+    const finalCandidate = validatedFinalCandidate;
     const updated = await database.db
       .update(storytellerMemoryExploration)
       .set({
@@ -729,9 +780,9 @@ export async function runMemoryExploration(
       throw new Error('Memory exploration artifact changed concurrently');
     }
     return {
-      output,
-      evidenceUse,
-      creativeDirections,
+      output: finalCandidate.output,
+      evidenceUse: finalCandidate.evidenceUse,
+      creativeDirections: finalCandidate.creativeDirections,
       replayed: false,
       explorationRounds: snapshot.rounds.length,
     };

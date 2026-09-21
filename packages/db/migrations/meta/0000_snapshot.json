@@ -1,5 +1,5 @@
 {
-  "id": "704b29d2-86cc-4819-b3be-a67c9edd889a",
+  "id": "92d79b16-8f34-418c-981f-e6eb00fa724b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3985,6 +3985,13 @@
           "notNull": true,
           "default": 0
         },
+        "model_rounds_used": {
+          "name": "model_rounds_used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "state": {
           "name": "state",
           "type": "text",
@@ -4084,6 +4091,10 @@
         "storyteller_memory_exploration_revision": {
           "name": "storyteller_memory_exploration_revision",
           "value": "\"storyteller_memory_exploration\".\"revision\" >= 0"
+        },
+        "storyteller_memory_exploration_model_rounds": {
+          "name": "storyteller_memory_exploration_model_rounds",
+          "value": "\"storyteller_memory_exploration\".\"model_rounds_used\" >= 0"
         },
         "storyteller_memory_exploration_state": {
           "name": "storyteller_memory_exploration_state",

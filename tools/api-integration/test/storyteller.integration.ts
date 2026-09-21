@@ -3280,7 +3280,7 @@ test(
               id: runId,
               accountId,
               limitMicrousd: 1000000n,
-              maxAttempts: 5,
+              maxAttempts: 20,
               enabled: true,
             });
             const execution: ExecutionPolicy = {
@@ -3433,6 +3433,72 @@ test(
             });
             assert.equal(replayed.replayed, true);
             assert.equal(providerCalls, 1);
+
+            const repairGenerationId = randomUUID();
+            const repairTask = storytellerTaskSchema.parse({
+              ...task,
+              execution: {
+                ...execution,
+                dispatchReview: { mode: 'off' },
+              },
+            });
+            await database.db.insert(generation).values({
+              id: repairGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: repairTask,
+            });
+            let repairCalls = 0;
+            const repairRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId: repairGenerationId,
+              ownerId,
+              task: repairTask,
+              dispatchAuthority: () => policy,
+              provider: async (providerTask) => {
+                repairCalls += 1;
+                return {
+                  kind: 'result',
+                  output:
+                    repairCalls === 1
+                      ? { malformed: 'final candidate' }
+                      : {
+                          result: scriptedStorytellerResult(providerTask),
+                          evidenceUse: { itemIds: [], sourceIds: [] },
+                          creativeDirections: {
+                            format: 'offscreen.creative-direction-set.v1',
+                            directions: [],
+                          },
+                        },
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry(`fake-memory-repair-${repairCalls}`),
+                };
+              },
+            });
+            const repaired = await runMemoryExploration(database, {
+              generationId: repairGenerationId,
+              task: repairTask,
+              createExplorer,
+              ...repairRuntime,
+            });
+            assert.equal(repaired.replayed, false);
+            assert.equal(repairCalls, 2);
+            const [repairArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  repairGenerationId,
+                ),
+              );
+            assert.equal(repairArtifact?.state, 'final-ready');
+            assert.equal(repairArtifact?.modelRoundsUsed, 2);
+            const [repairOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, repairGenerationId));
+            assert.equal(repairOperation?.state, 'complete');
+            assert.equal(repairOperation?.dispatchedRounds, 2);
 
             const failedGenerationId = randomUUID();
             const failedTask = storytellerTaskSchema.parse({

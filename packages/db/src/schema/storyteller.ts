@@ -47,6 +47,7 @@ export const storytellerMemoryExploration = pgTable(
       .primaryKey()
       .references(() => generation.id, { onDelete: 'restrict' }),
     revision: integer('revision').notNull().default(0),
+    modelRoundsUsed: integer('model_rounds_used').notNull().default(0),
     state: text('state')
       .notNull()
       .default('exploring')
@@ -90,6 +91,10 @@ export const storytellerMemoryExploration = pgTable(
   },
   (t) => [
     check('storyteller_memory_exploration_revision', sql`${t.revision} >= 0`),
+    check(
+      'storyteller_memory_exploration_model_rounds',
+      sql`${t.modelRoundsUsed} >= 0`,
+    ),
     check(
       'storyteller_memory_exploration_state',
       sql`${t.state} IN ('exploring','held','final-ready','failed','uncertain')`,

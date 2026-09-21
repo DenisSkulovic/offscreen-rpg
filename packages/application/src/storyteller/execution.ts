@@ -13,6 +13,14 @@ import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareDispatchReview } from './dispatch-review';
 import { retainsCapturedAuthority } from './dispatch-authority';
 import type { DocumentStore } from '@offscreen/documents';
+import { buildLexicalStoryIndex } from './lexical-story-index';
+import { createCanonicalMemoryExplorer } from './memory-exploration';
+import {
+  MemoryExplorationControllerError,
+  runMemoryExploration,
+} from './memory-exploration-controller';
+import { createMemoryProviderRoundRuntime } from './memory-provider-runtime';
+import { resolveStoryRetrievalRecipe } from './retrieval-recipes';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
@@ -115,6 +123,79 @@ export function createStorytellerExecution(
         return;
       }
       await saveOutcome(record.id, attemptId, { state: 'succeeded', output });
+      return;
+    }
+    if (task.resources.recipe.version === 'memory-exploration.v1') {
+      if (!options.provider || !options.documentStore) {
+        await saveOutcome(record.id, attemptId, {
+          state: 'failed',
+          failureCode: options.provider
+            ? 'memory_store_disabled'
+            : 'provider_disabled',
+        });
+        return;
+      }
+      if (!('storyId' in task.source) || !task.context.canonicalKnowledge) {
+        await saveOutcome(record.id, attemptId, {
+          state: 'failed',
+          failureCode: 'memory_context_unavailable',
+        });
+        return;
+      }
+      const root = task.context.canonicalKnowledge;
+      const retrievalRecipe = resolveStoryRetrievalRecipe({
+        posture:
+          task.resources.creativeExploration.posture === 'off'
+            ? 'minimal'
+            : task.resources.creativeExploration.posture,
+        operationLimits: {
+          maxReads: task.resources.recipe.maxReads,
+          maxRetainedBytes: task.resources.recipe.maxRetainedReadBytes,
+        },
+      });
+      const index = await buildLexicalStoryIndex(options.documentStore, {
+        storyId: task.source.storyId,
+        rootHash: root.rootHash,
+        rootRevision: root.rootRevision,
+      });
+      const providerRuntime = createMemoryProviderRoundRuntime(database, {
+        generationId: record.id,
+        ownerId: record.ownerId,
+        task,
+        provider: options.provider,
+        dispatchAuthority: async (input) =>
+          (await options.dispatchAuthority?.(input)) ?? null,
+      });
+      try {
+        const completed = await runMemoryExploration(database, {
+          generationId: record.id,
+          task,
+          createExplorer: (snapshot) =>
+            createCanonicalMemoryExplorer({
+              storage: options.documentStore!,
+              index,
+              recipe: retrievalRecipe,
+              creativeExploration: task.resources.creativeExploration,
+              ...(snapshot ? { snapshot } : {}),
+            }),
+          ...providerRuntime,
+        });
+        await saveOutcome(record.id, attemptId, {
+          state: 'succeeded',
+          output: completed.output,
+        });
+      } catch (error) {
+        if (!(error instanceof MemoryExplorationControllerError)) throw error;
+        if (error.code === 'review-held') return 'held' as const;
+        await saveOutcome(record.id, attemptId, {
+          state:
+            error.code === 'usage-uncertain' ||
+            error.code === 'provider-uncertain'
+              ? 'uncertain'
+              : 'failed',
+          failureCode: error.code.replaceAll('-', '_'),
+        });
+      }
       return;
     }
     const reviewDisposition = await prepareDispatchReview(
