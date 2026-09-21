@@ -18,6 +18,7 @@ import { searchCanonicalKnowledge } from '../dist/storyteller/canonical-search.j
 import { buildLexicalStoryIndex } from '../dist/storyteller/lexical-story-index.js';
 import { LocalLexicalStoryIndexStore } from '../dist/storyteller/local-lexical-story-index-store.js';
 import { resolveStoryRetrievalRecipe } from '../dist/storyteller/retrieval-recipes.js';
+import { createCanonicalMemoryExplorer } from '../dist/storyteller/memory-exploration.js';
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {
   const greywake = buildLongStoryMemoryCorpus('greywake');
@@ -219,6 +220,54 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   });
   assert.equal(minimalSearch.diagnostics.tuning.id, 'minimal-lexical');
   assert.equal(minimalSearch.coverage.eligibleUnits, 8);
+
+  const explorationRecipe = resolveStoryRetrievalRecipe({ posture: 'rich' });
+  const explorer = createCanonicalMemoryExplorer({
+    storage,
+    index,
+    recipe: explorationRecipe,
+  });
+  const discovery = await explorer.execute({
+    kind: 'needs_context',
+    version: 1,
+    purpose: 'Recover the old favor and identify Mira before the return.',
+    requests: [
+      { requestId: 'r1', operation: 'search_memory', query: 'quiet favor' },
+      { requestId: 'r2', operation: 'query_registry', query: 'Mira Vale' },
+    ],
+  });
+  const favorCandidate = discovery.results[0].candidates.find(
+    (candidate) => candidate.path === 'relationships/mira-vale-favor.md',
+  );
+  assert.ok(favorCandidate);
+  const sourceHandle = favorCandidate.linkedSources[0]?.handle;
+  assert.ok(sourceHandle);
+  const resumedExplorer = createCanonicalMemoryExplorer({
+    storage,
+    index,
+    recipe: explorationRecipe,
+    snapshot: explorer.snapshot(),
+  });
+  const evidenceRound = await resumedExplorer.execute({
+    kind: 'needs_context',
+    version: 1,
+    purpose: 'Inspect the exact current favor and its original source.',
+    requests: [
+      {
+        requestId: 'r3',
+        operation: 'inspect_memory',
+        handle: favorCandidate.handle,
+      },
+      { requestId: 'r4', operation: 'read_source', handle: sourceHandle },
+    ],
+  });
+  assert.match(evidenceRound.results[0].body, /still owes Mira Vale/);
+  assert.match(
+    evidenceRound.results[1].body,
+    /promised Mira Vale a quiet favor/,
+  );
+  assert.equal(resumedExplorer.snapshot().readsUsed, 4);
+  assert.equal(resumedExplorer.snapshot().rounds.length, 2);
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),

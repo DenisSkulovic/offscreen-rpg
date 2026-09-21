@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 12,
+    version: 13,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -141,6 +141,21 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'The report shows each posture’s recall, precision, assembly and timing separately; it does not call a larger recipe universally better.',
         authoritativeExpectation:
           'Recipe changes affect only bounded optional evidence work. The effective recipe never exceeds operation limits, and visibility, current-root, authority and branch filters remain identical.',
+      }),
+      stage({
+        id: 'scripted-memory-exploration',
+        name: 'Follow retrieved memory to its canonical source',
+        importance: 'major',
+        preconditions: [
+          'A captured Greywake root contains the current favor record and its original source passage.',
+          'A rich bounded retrieval recipe permits at least four reads.',
+        ],
+        action:
+          'Batch memory search and registry lookup, snapshot and restore the private exploration state, then batch inspection of the returned favor handle with its source read.',
+        observableExpectation:
+          'The trace exposes compact candidates followed by the exact current favor and original promise passage; no prose is published.',
+        authoritativeExpectation:
+          'Every body read rechecks the captured manifest identity, task-local handles survive snapshot restoration, and the trace records four reads within its retained-byte ceiling.',
       }),
       stage({
         id: 'retry',
