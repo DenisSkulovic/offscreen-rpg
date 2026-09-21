@@ -75,6 +75,7 @@ export function buildOpenRouterRequest(
   }
   const selected = providerDispatch(task, dispatch);
   const policy = task.execution.policy;
+  const outputProtocol = policy.outputProtocol ?? 'native-json-schema';
   reservationForRequest(
     selected.request,
     policy,
@@ -97,14 +98,17 @@ export function buildOpenRouterRequest(
       allow_fallbacks: false,
       require_parameters: true,
     },
-    response_format: {
-      type: 'json_schema' as const,
-      json_schema: {
-        name: 'storyteller_result',
-        strict: true,
-        schema: selected.request.outputSchema,
-      },
-    },
+    response_format:
+      outputProtocol === 'native-json-schema'
+        ? {
+            type: 'json_schema' as const,
+            json_schema: {
+              name: 'storyteller_result',
+              strict: true,
+              schema: selected.request.outputSchema,
+            },
+          }
+        : { type: 'json_object' as const },
   };
 }
 
@@ -165,6 +169,10 @@ export function inspectOpenRouterRequest(
     purpose: describeStorytellerRequestPurpose(task),
     promptVersion: task.promptVersion,
     contextPolicyVersion: task.contextManifest.policyVersion,
+    outputProtocol:
+      task.execution.mode === 'provider'
+        ? (task.execution.policy.outputProtocol ?? 'native-json-schema')
+        : 'native-json-schema',
     body,
     sha256: createHash('sha256').update(serialized).digest('hex'),
     serializedBytes: Buffer.byteLength(serialized, 'utf8'),

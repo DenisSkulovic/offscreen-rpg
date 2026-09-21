@@ -31,6 +31,7 @@ export function evaluationPacketAuthority(config: EvaluationPacketConfig): {
       model: route.model,
       provider: route.endpointProvider,
       priceVersion: route.priceVersion,
+      outputProtocol: route.outputProtocol,
       inputMicrousdPerMillion: route.inputMicrousdPerMillion,
       outputMicrousdPerMillion: route.outputMicrousdPerMillion,
       maxInputTokens: Math.min(recipe.maxInputTokens, route.maxContextTokens),

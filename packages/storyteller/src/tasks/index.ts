@@ -160,7 +160,7 @@ const resultSchemas = {
 };
 const common = {
   inputVersion: z.literal(10),
-  promptVersion: z.literal('storyteller.v5'),
+  promptVersion: z.literal('storyteller.v6'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -284,7 +284,7 @@ function requestFor(
   let taskRules =
     input.task === 'opening'
       ? `Create a version-1 opening with a choice. Establish the starting situation; do not advance time.
-Return exactly this nesting: {"version":1,"scene":{"version":1,"content":{"version":1,"title":"meaningful title","paragraphs":["prose"]},"next":{"kind":"choice","prompt":"meaningful question","options":[{"id":"stable-id","label":"specific visible action","intention":"complete attempted intention","worldSections":[],"campaignDocuments":[],"createdDocuments":[]}]}}}. Do not move title, content or next to another level. Do not use placeholder or one-letter prompt, label or intention text.`
+Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content":{"version":1,"title":"meaningful title","paragraphs":["prose"]},"next":{"kind":"choice","prompt":"meaningful question","options":[{"id":"stable-id","label":"specific visible action","intention":"complete attempted intention","worldSections":[],"campaignDocuments":[],"createdDocuments":[]}]}},"currentNotes":[],"arrivalNotes":[],"documentChanges":[]}. Do not move title, content or next to another level. Include every shown top-level array even when empty. Do not use placeholder or one-letter prompt, label or intention text.`
       : 'Create a version-2 continuation. Use choice for immediate exchanges or interval for meaningful fictional duration. Supply only gameDurationMs and one prepared arrival with choices.';
   if (input.task === 'report') {
     taskRules =
@@ -380,7 +380,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     context,
     contextManifest,
     inputVersion: 10,
-    promptVersion: 'storyteller.v5',
+    promptVersion: 'storyteller.v6',
     resources,
     request: requestFor(input, context),
   });

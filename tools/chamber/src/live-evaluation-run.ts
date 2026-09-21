@@ -67,10 +67,12 @@ export async function verifyOpenRouterAuthority(
   const endpoint = endpoints.data?.endpoints?.find(
     (candidate) => candidate.provider_name === config.route.endpointProvider,
   );
+  const supportedParameters = endpoint?.supported_parameters ?? [];
   if (
     !endpoint ||
-    !endpoint.supported_parameters?.includes('structured_outputs') ||
-    !endpoint.supported_parameters.includes('response_format') ||
+    !supportedParameters.includes('response_format') ||
+    (config.route.outputProtocol === 'native-json-schema' &&
+      !supportedParameters.includes('structured_outputs')) ||
     (endpoint.context_length ?? 0) < config.route.maxContextTokens
   ) {
     throw new Error(

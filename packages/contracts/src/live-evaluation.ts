@@ -34,6 +34,10 @@ export const evaluationPacketConfigSchema = z
       route: z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/),
       model: z.string().min(1).max(160),
       priceVersion: z.string().min(1).max(100),
+      outputProtocol: z.enum([
+        'native-json-schema',
+        'json-object-local-validation',
+      ]),
       inputMicrousdPerMillion: unsignedIntegerString,
       outputMicrousdPerMillion: unsignedIntegerString,
       supportsStructuredOutput: z.literal(true),
@@ -59,7 +63,8 @@ export const evaluationPacketConfigSchema = z
       context.addIssue({
         code: 'custom',
         path: ['recipe'],
-        message: 'Live POC runs permit one to three primary calls and no optional calls',
+        message:
+          'Live POC runs permit one to three primary calls and no optional calls',
       });
     }
     if (config.recipe.maxInputTokens > config.route.maxContextTokens) {
@@ -78,10 +83,13 @@ export const evaluationPacketConfigSchema = z
       context.addIssue({
         code: 'custom',
         path: ['recipe', 'primaryCalls'],
-        message: 'Short playable loops are restricted to verified zero-price routes',
+        message:
+          'Short playable loops are restricted to verified zero-price routes',
       });
     }
-    if (Date.parse(config.route.validUntil) <= Date.parse(config.route.verifiedAt)) {
+    if (
+      Date.parse(config.route.validUntil) <= Date.parse(config.route.verifiedAt)
+    ) {
       context.addIssue({
         code: 'custom',
         path: ['route', 'validUntil'],
@@ -119,6 +127,10 @@ export const liveEvaluationManifestSchema = z
       route: z.string().min(1),
       model: z.string().min(1),
       priceVersion: z.string().min(1),
+      outputProtocol: z.enum([
+        'native-json-schema',
+        'json-object-local-validation',
+      ]),
       inputMicrousdPerMillion: unsignedIntegerString,
       outputMicrousdPerMillion: unsignedIntegerString,
       supportsStructuredOutput: z.boolean(),
@@ -131,14 +143,19 @@ export const liveEvaluationManifestSchema = z
     createdAt: z.iso.datetime(),
   })
   .superRefine((manifest, context) => {
-    if (manifest.packet.inputTokenUpperBound < manifest.packet.serializedBytes) {
+    if (
+      manifest.packet.inputTokenUpperBound < manifest.packet.serializedBytes
+    ) {
       context.addIssue({
         code: 'custom',
         path: ['packet', 'inputTokenUpperBound'],
         message: 'UTF-8 byte upper bound cannot be smaller than packet bytes',
       });
     }
-    if (Date.parse(manifest.route.validUntil) <= Date.parse(manifest.route.verifiedAt)) {
+    if (
+      Date.parse(manifest.route.validUntil) <=
+      Date.parse(manifest.route.verifiedAt)
+    ) {
       context.addIssue({
         code: 'custom',
         path: ['route', 'validUntil'],

@@ -1221,6 +1221,44 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     ),
   );
   assert.equal(comparison.estimatedSharedInputTokens, null);
+  const localValidationTask = prepareStorytellerTask({
+    ...task,
+    execution: {
+      ...providerExecution,
+      policy: {
+        ...providerExecution.policy,
+        outputProtocol: 'json-object-local-validation' as const,
+      },
+    },
+    resources: providerResources(providerExecution.policy.route),
+  });
+  const localValidationInspection =
+    inspectOpenRouterRequest(localValidationTask);
+  assert.equal(
+    localValidationInspection.outputProtocol,
+    'json-object-local-validation',
+  );
+  assert.deepEqual(localValidationInspection.body.response_format, {
+    type: 'json_object',
+  });
+  assert.deepEqual(
+    localValidationInspection.body.messages,
+    inspection.body.messages,
+  );
+  assert.equal(
+    localValidationInspection.outputSchemaSha256,
+    inspection.outputSchemaSha256,
+  );
+  assert.ok(
+    localValidationInspection.serializedBytes < inspection.serializedBytes,
+  );
+  const protocolComparison = compareOpenRouterRequests(
+    inspection,
+    localValidationInspection,
+  );
+  assert.equal(protocolComparison.samePacket, false);
+  assert.equal(protocolComparison.sameOutputSchema, true);
+  assert.ok(protocolComparison.potentialReusableMessageContentBytes > 0);
   let calls = 0;
   const provider = createOpenRouterProvider({
     enabled: true,

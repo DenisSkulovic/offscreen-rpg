@@ -8,6 +8,10 @@ export const modelPolicySchema = z.strictObject({
   model: z.string().min(1).max(160),
   provider: z.string().min(1).max(100),
   priceVersion: z.string().min(1).max(100),
+  /** Provider output constraint; application validation remains authoritative. */
+  outputProtocol: z
+    .enum(['native-json-schema', 'json-object-local-validation'])
+    .optional(),
   inputMicrousdPerMillion: microusdSchema,
   outputMicrousdPerMillion: microusdSchema,
   maxInputTokens: z.number().int().positive().max(100000),

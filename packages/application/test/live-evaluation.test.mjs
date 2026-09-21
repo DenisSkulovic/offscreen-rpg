@@ -27,6 +27,7 @@ const manifest = {
     route: 'openrouter:test/model',
     model: 'test/model',
     priceVersion: 'verified-test-price',
+    outputProtocol: 'native-json-schema',
     inputMicrousdPerMillion: '1000',
     outputMicrousdPerMillion: '2000',
     supportsStructuredOutput: true,
