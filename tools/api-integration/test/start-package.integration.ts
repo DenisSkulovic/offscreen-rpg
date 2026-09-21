@@ -556,7 +556,14 @@ registerStoryConcern(
                     recallAs: 'thread',
                   },
                 ];
-                result.activeScene = { kind: 'restart-at-current' };
+                const quay = storytellerTask.context.canonicalKnowledge?.catalogue.find(
+                  (entry) => entry.path === 'locations/quay.md',
+                );
+                assert.ok(quay);
+                result.activeScene = {
+                  kind: 'restart-at-current',
+                  recallDocuments: [{ handle: quay.handle, reason: 'place' }],
+                };
               }
               narrativeContinuationPhase += 1;
             }
@@ -1091,15 +1098,23 @@ registerStoryConcern(
         const returnTask = storytellerTaskSchema.parse(
           returnContinuation.rows[0]?.input,
         );
+        const recalledQuay =
+          returnTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.path === 'locations/quay.md',
+          );
+        assert.ok(recalledQuay?.loaded);
         assert.deepEqual(
           returnTask.context.canonicalKnowledge?.documentSelection
             .requestedDocumentIds,
-          [promotedThreadDocumentId],
+          [recalledQuay.documentId, promotedThreadDocumentId],
         );
         assert.deepEqual(
           returnTask.context.canonicalKnowledge?.documentSelection
             .cueResolution.requested,
-          [{ documentId: promotedThreadDocumentId, reason: 'thread' }],
+          [
+            { documentId: recalledQuay.documentId, reason: 'place' },
+            { documentId: promotedThreadDocumentId, reason: 'thread' },
+          ],
         );
         const currentThreadEntry =
           returnTask.context.canonicalKnowledge?.catalogue.find(

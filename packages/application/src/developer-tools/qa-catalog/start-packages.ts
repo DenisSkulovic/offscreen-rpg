@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 10,
+    version: 11,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -89,14 +89,14 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'One private choice names an exact world-section handle and an unloaded campaign-document handle from its captured catalogues.',
           'The same result creates a source-backed descriptive thread and links that change index to the choice.',
           'Intervening play creates an unrelated passage and document before a later result revises the promoted thread.',
-          'The correcting result restarts the active situation and marks the revised thread as its explicit recall cue.',
+          'The correcting result restarts the active situation, marks the revised thread as a change cue and attaches the existing quay through its captured catalogue handle.',
         ],
         action:
           'Select the linked choices through the intervening play and correction, then inspect each admitted Storyteller task and the player-facing offers.',
         observableExpectation:
           'The player sees only choice labels; traces show the exact requested identities, and the eventual return contains the corrected complete thread body without presenting its obsolete body as current.',
         authoritativeExpectation:
-          'Admission resolves task-local aliases and linked create indexes to stable story document IDs. The restarted active-scene anchor carries the revised thread as a typed stable-ID cue, and each successor loads the current manifest version without a retrieval call or prose matching.',
+          'Admission resolves local aliases to stable story document IDs. The restarted scene carries the revised thread and unchanged quay as typed cues; successors load their current versions without a rewrite, retrieval call or prose matching.',
       }),
       stage({
         id: 'retrieval-oracle',

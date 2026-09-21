@@ -59,8 +59,17 @@ import type { ProposedDocumentChange } from '@offscreen/storyteller/tasks';
 function activeSceneRecallCues(
   changes: readonly ProposedDocumentChange[],
   operationId: string,
+  existing: readonly {
+    handle: string;
+    documentId: string;
+    kind: string;
+  }[],
+  requested: readonly {
+    handle: string;
+    reason: 'identity' | 'place' | 'thread';
+  }[],
 ) {
-  return changes.flatMap((change, index) =>
+  const changed = changes.flatMap((change, index) =>
     change.recallAs
       ? [
           {
@@ -74,6 +83,19 @@ function activeSceneRecallCues(
         ]
       : [],
   );
+  const existingByHandle = new Map(
+    existing.map((entry) => [entry.handle, entry]),
+  );
+  const selected = requested.map((recall) => {
+    const entry = existingByHandle.get(recall.handle);
+    if (!entry) throw new StoryError('invalid');
+    return { documentId: entry.documentId, reason: recall.reason };
+  });
+  return [
+    ...new Map(
+      [...selected, ...changed].map((cue) => [cue.documentId, cue]),
+    ).values(),
+  ];
 }
 
 export async function publishStorytellerResult(
@@ -428,6 +450,8 @@ export async function publishStorytellerResult(
           recallCues: activeSceneRecallCues(
             result.documentChanges,
             resolution.operationId,
+            task.context.canonicalKnowledge?.catalogue ?? [],
+            result.activeScene.recallDocuments,
           ),
         });
       }
@@ -491,6 +515,8 @@ export async function publishStorytellerResult(
             activeSceneRecallCues: activeSceneRecallCues(
               result.documentChanges,
               resolution.operationId,
+              task.context.canonicalKnowledge?.catalogue ?? [],
+              result.activeScene.recallDocuments,
             ),
           }
         : {}),

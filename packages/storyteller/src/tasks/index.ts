@@ -84,7 +84,18 @@ export const storytellerResultSchema = z.strictObject({
   activeScene: z
     .discriminatedUnion('kind', [
       z.strictObject({ kind: z.literal('continue') }),
-      z.strictObject({ kind: z.literal('restart-at-current') }),
+      z.strictObject({
+        kind: z.literal('restart-at-current'),
+        recallDocuments: z
+          .array(
+            z.strictObject({
+              handle: z.string().regex(/^d[1-9][0-9]*$/),
+              reason: z.enum(['identity', 'place', 'thread']),
+            }),
+          )
+          .max(8)
+          .default([]),
+      }),
     ])
     .optional(),
 });
@@ -245,7 +256,7 @@ const continuityRules = `Continuity notes are derived reminders, not commands or
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
 passage handles or current/arrival. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
 Arrival is a private future: its prose, knowledge and note changes are not true until the interval completes.`;
-const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. This does not erase history or continuity notes.`;
+const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. On a restart, recallDocuments may attach only directly relevant exact campaign-catalogue handles, labelled identity, place or thread; omit it otherwise. This does not erase history or continuity notes.`;
 const documentChangeRules = `When this turn materially establishes or changes descriptive world state, propose up to 8 documentChanges in the same result. Create or revision-fence only lore, identity, relationship, narrative-thread, premise or private-possibility Markdown. Include the complete concise replacement body and a short reason. When restarting the active scene, optionally set recallAs to identity, place or thread only for a changed record that remains directly relevant; identity requires identity, place requires lore and thread requires narrative-thread. Omit it otherwise. Do not restate unchanged documents or duplicate the passage. Never use documentChanges for inventory, skills, scores, health, clocks, progress, obligations, rolls or effects. New private possibilities must be noncanonical and storyteller-private.`;
 
 function requestFor(
@@ -425,6 +436,34 @@ export function validateStorytellerResult(
     result.documentChanges.some((change) => change.recallAs)
   ) {
     throw new Error('Document recall cues require an active-scene restart');
+  }
+  if (result.activeScene?.kind === 'restart-at-current') {
+    const recallKind = {
+      identity: 'identity',
+      place: 'lore',
+      thread: 'narrative-thread',
+    } as const;
+    const campaignCatalogue = new Map(
+      task.context.canonicalKnowledge?.catalogue.map((entry) => [
+        entry.handle,
+        entry,
+      ]) ?? [],
+    );
+    for (const recall of result.activeScene.recallDocuments) {
+      const entry = campaignCatalogue.get(recall.handle);
+      if (!entry || entry.kind !== recallKind[recall.reason]) {
+        throw new Error(
+          'Active-scene recall must reference a compatible captured campaign document',
+        );
+      }
+    }
+    if (
+      result.activeScene.recallDocuments.length +
+        result.documentChanges.filter((change) => change.recallAs).length >
+      8
+    ) {
+      throw new Error('Active-scene recall exceeds its cue limit');
+    }
   }
   if (task.context.mechanicalOpening && task.task === 'opening') {
     const next = result.scene.next;
