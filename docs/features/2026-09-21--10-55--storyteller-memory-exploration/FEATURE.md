@@ -31,4 +31,4 @@ Tune default limits only after E1/L1 measurements. Initial ceiling remains three
 
 ## Owning specifications
 
-[Memory feature](../2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md), [context and cost](../../technical/context-and-cost.md), [Storyteller runtime](../../technical/storyteller-runtime.md), and [indexed retrieval](../2026-09-21--10-55--indexed-story-retrieval/FEATURE.md).
+[Memory feature](../2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md), [context and cost](../../technical/context-and-cost.md), [Storyteller runtime](../../technical/storyteller-runtime.md), and [long-story memory](../../engineering/long-story-memory-and-retrieval.md).

@@ -1,6 +1,6 @@
 # Storyteller memory and situated recall
 
-Status: Prepared for implementation; not implemented. The owner requested durable memory/exploration and canonical files, then explicitly requested implementation feature files on 2026-09-19. [Canonical storage](../2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) owns persistence and creative bundles; this feature owns extraction, context selection, retrieval, exploration and admitted memory updates. The shared contract is [canonical files](../../technical/canonical-files.md). No paid services or live inference are enabled.
+Status: Implementation active. The oracle/evaluator, indexed lexical retrieval, evidence packing and part of bounded exploration are implemented; durable linked episode/identity memory and connected generation use remain unfinished. [Canonical storage](../2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) owns persistence and creative bundles; this feature owns extraction, context selection, retrieval, exploration and admitted memory updates. The shared contract is [canonical files](../../technical/canonical-files.md). No paid services or live inference are enabled.
 
 ## Intended outcome
 

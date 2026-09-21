@@ -322,6 +322,15 @@ Evaluate a local embedding model and optional reranker against the same oracle. 
 
 Evaluate explicit-link traversal for multi-hop returns. Add derived graph/community or hierarchical summaries only for benchmark cases where simpler routes fail and the cost/quality trade-off wins. Keep global synthesis optional and separately budgeted.
 
+### Promotion gates for the remaining progression
+
+These are durable acceptance gates, not standing implementation folders:
+
+- Episodic/source memory earns implementation when connected return evidence needs lived details that current state plus exact sources cannot select economically. Cards remain source-grounded derived records with visible coverage, stable identity/branch boundaries, and no authority over mechanical truth.
+- Semantic retrieval is adopted only when a local, versioned route improves labelled paraphrase recall over the lexical baseline under the same final context budget without unacceptable forbidden/noise regression. Disabled, unavailable or stale semantic coverage must fall back visibly; hosted processing requires separate authorization.
+- Relational or global synthesis is adopted only when explicit multi-hop or broad-synthesis oracle cases materially beat flat retrieval within declared work and context budgets. Begin with admitted links and query-focused synthesis; graph/community or hierarchy machinery must independently earn its maintenance cost.
+- Scale evidence includes the 2,000-scene profile and a connected playable return. Report query work, candidates, reads, bytes, rounds, latency, provider spend and retrieval/assembly/generation-use failures separately. Synthetic success is not model comprehension or enjoyable play.
+
 ## What not to copy blindly
 
 - A vector database as the source of truth.
