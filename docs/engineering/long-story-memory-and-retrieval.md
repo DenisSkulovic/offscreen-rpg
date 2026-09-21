@@ -189,6 +189,14 @@ The Storyteller may follow a lead by reading the complete small record or a boun
 
 ## Condensation without a telephone game
 
+### Pack before compressing
+
+When a turn needs many people, places and events, optimize **unique decision-relevant claims with provenance per byte**, not terseness alone. Retrieval candidates should offer multiple source-linked representations: a compact lead for orientation, a bounded current card or episode for working context, and an exact coherent source for details whose wording or completeness matters. The assembler chooses among these under one packet budget; it does not generate the same information twice or blindly load every full body.
+
+Allocate required current facts and authority/provenance first. Then preserve breadth across relevant identity, place and thread groups before spending remaining bytes upgrading selected items with texture or exact source. Factor repeated labels, relationships and source metadata once, and measure duplicate bytes explicitly. Optional texture is reduced before current state, contradiction markers or cited evidence.
+
+Prompt-compression work such as [LongLLMLingua](https://arxiv.org/abs/2310.06839) reports substantial task-dependent token reduction, but token pruning is lossy and model-dependent. Treat it as a later evaluated representation producer, never the first authority layer. Query-focused map/reduce and hierarchical/community summaries address broad synthesis rather than exact local state; Microsoft's [dynamic GraphRAG selection](https://www.microsoft.com/en-us/research/blog/graphrag-improving-global-search-via-dynamic-community-selection/) likewise demonstrates that pruning irrelevant summaries before reduction can materially reduce token cost. These results motivate measurement, not automatic adoption.
+
 ### Prefer query-focused synthesis
 
 Condense for a concrete job: “prepare the return to Greywake,” not “rewrite the entire story shorter.” A useful synthesis names what is current, what happened then, what remains open, what is disputed, and which sources support each point.

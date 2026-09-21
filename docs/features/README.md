@@ -11,11 +11,12 @@ Next program: long-story memory and retrieval. The owner made this the product-c
 1. [Long-story memory evaluation corpus](2026-09-21--10-55--long-story-memory-evaluation/FEATURE.md) E1/E2 establishes the fixed oracle and stage-separated measurements.
 2. [Indexed story retrieval](2026-09-21--10-55--indexed-story-retrieval/FEATURE.md) L1/L2 replaces lifetime linear scans with filtered field-aware lexical discovery.
 3. [Bounded Storyteller memory exploration](2026-09-21--10-55--storyteller-memory-exploration/FEATURE.md) X1/X2 connects persisted search/read/final rounds.
-4. [Episodic memory and source navigation](2026-09-21--10-55--episodic-memory-and-source-navigation/FEATURE.md) M1/M2 preserves lived continuity and exact source expansion.
-5. [Hybrid semantic story retrieval](2026-09-21--10-55--hybrid-semantic-story-retrieval/FEATURE.md) evaluates and adopts a local semantic route only if it wins against the fixed baseline.
-6. [Relational and global story synthesis](2026-09-21--10-55--relational-and-global-story-synthesis/FEATURE.md) adds multi-hop and broad synthesis only after local recall works and benchmarks justify it.
+4. [Retrieval evidence packing](2026-09-21--13-00--retrieval-evidence-packing/FEATURE.md) selects a dense, source-linked multi-resolution working set under configurable packet budgets.
+5. [Episodic memory and source navigation](2026-09-21--10-55--episodic-memory-and-source-navigation/FEATURE.md) M1/M2 preserves lived continuity and exact source expansion.
+6. [Hybrid semantic story retrieval](2026-09-21--10-55--hybrid-semantic-story-retrieval/FEATURE.md) evaluates and adopts a local semantic route only if it wins against the fixed baseline.
+7. [Relational and global story synthesis](2026-09-21--10-55--relational-and-global-story-synthesis/FEATURE.md) adds multi-hop and broad synthesis only after local recall works and benchmarks justify it.
 
-The existing [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) remains the shared product/authority umbrella. Its former broad phases are delivered by the six folders above; do not implement a parallel memory store or second exploration runner from that older phase wording. The first exact implementation action is evaluation E1, not an embedding database or GraphRAG deployment.
+The existing [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) remains the shared product/authority umbrella. Its former broad phases are delivered by the seven folders above; do not implement a parallel memory store or second exploration runner from that older phase wording. The first exact implementation action is evaluation E1, not an embedding database or GraphRAG deployment.
 
 The earlier browser/gold-session route remains useful acceptance evidence after the first connected memory return exists; it is no longer the next coding action. The bounded Phase 1 slice of [token-efficient diagnostics](2026-09-20--16-19--token-efficient-diagnostics/PLAN.md), [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md), and the essential [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) retry boundary are implemented.
 
