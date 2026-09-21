@@ -6,7 +6,7 @@ Implementation owner: Codex under the owner's continuing implementation instruct
 
 ## Phases
 
-### E1 — Oracle schema and 200-scene corpus
+### E1 — Oracle schema and 200-scene corpus — implemented and focused-verified
 
 - Outcome: deterministic corpus and query records with expected/acceptable/forbidden handles, scope, abstention and fixed budgets.
 - Owners: `@offscreen/contracts` for artifact schemas, developer tooling for generation/inspection, canonical document fixtures for source truth.
@@ -28,8 +28,8 @@ Implementation owner: Codex under the owner's continuing implementation instruct
 
 ## Current checkpoint
 
-- Current phase and exact next action: E1; define the compact corpus declaration and oracle schema beside the existing conventional/abstract memory oracle.
-- Base/reviewed Git revision and relevant uncommitted changes: `a38076c`; planning files only.
-- Actual checks/results for this revision; checks not run: source/design review only; no checks yet.
+- Current phase and exact next action: begin E2's stage-separated evaluator against the linear baseline, keeping thresholds unset until its first report.
+- Base/reviewed Git revision and relevant uncommitted changes: `f92bf5e`; E1 contract, deterministic builders/materializer, focused test and documentation are uncommitted.
+- Actual checks/results for this revision; checks not run: contracts and application builds pass; the focused provider-free corpus test passes with deterministic main/fork/abstract identities, 200 scenes per corpus, all thirteen query classes, real store materialization, corrected current search, private-decoy exclusion and abstract no-human-default abstention.
 - Unresolved findings/blockers: initial thresholds await baseline measurement.
 - Provider spend and accounting certainty: $0; no provider call planned.

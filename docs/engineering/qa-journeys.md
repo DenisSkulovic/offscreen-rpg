@@ -20,6 +20,8 @@ Credential-free provider-packet inspection belongs in this loop once the corresp
 
 ## Case catalogue
 
+The long-story memory evaluation foundation provides deterministic 200-scene conventional and abstract corpora without provider calls. Its first structural probe must confirm reproducible stable identities, all thirteen query classes, real canonical-store materialization, current corrected lexical discovery, developer-private exclusion and no human/economy evidence in the abstract contrast. Later evaluator phases own quality thresholds and generation-use scoring; corpus construction alone is not evidence of good recall.
+
 The [offline POC acceptance matrix](offline-poc-acceptance.md) covers context, mechanics, agent tools, recovery and end-to-end play. It distinguishes checks possible now from those blocked on the DM runner; it does not change catalogue availability or claim those checks have been performed.
 
 Cases are versioned TypeScript data validated by `@offscreen/contracts/qa`. A case declares its cost class, availability, prerequisites, supported driver modes, variants, ordered stages, evidence requirements, reset policy and limits. A stage separates the player-visible expectation from the authoritative saved-state expectation.

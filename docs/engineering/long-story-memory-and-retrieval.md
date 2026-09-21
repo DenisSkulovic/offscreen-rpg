@@ -266,6 +266,10 @@ Evaluate fixed context budgets. More retrieved candidates can raise recall while
 
 ## Recommended Offscreen progression
 
+### Implemented evaluation foundation
+
+The provider-free `offscreen.memory-evaluation-corpus.v1` artifact deterministically generates conventional Greywake, an independently identified Greywake destruction fork, and abstract gradient-life histories at a requested scale, initially 200 scenes each. It assigns stable campaign, branch, source and evidence identities; records parent/fork scope; publishes sources and current evidence through the ordinary immutable document-store manifest; and carries labelled expected, acceptable and forbidden evidence under fixed candidate/read/byte/round budgets. Across the contrasts the oracle covers exact current state, alias disambiguation, exact wording, paraphrased callback, multi-hop relation, temporal update, attributed claim, private decoy, low-drama detail, broad synthesis, absence, abstract-world contrast and branch isolation. This establishes corpus/schema plumbing, not retrieval quality: numerical gates and stage-separated scoring remain E2.
+
 ### R1 — Oracle and structured cues
 
 Create a durable benchmark corpus and query set before tuning retrieval. Add stable identity/alias/place/thread cues to canonical metadata and task context. Prove current-version, privacy, branch and time filters.

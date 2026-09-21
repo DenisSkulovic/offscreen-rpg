@@ -42,6 +42,10 @@
     "./live-evaluation": {
       "types": "./dist/src/live-evaluation.d.ts",
       "default": "./dist/src/live-evaluation.js"
+    },
+    "./memory-evaluation": {
+      "types": "./dist/src/memory-evaluation.d.ts",
+      "default": "./dist/src/memory-evaluation.js"
     }
   },
   "scripts": {
