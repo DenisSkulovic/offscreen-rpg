@@ -42,6 +42,29 @@ Creating an opening and starting its real-time progression are different user ac
 
 Support a written premise, a few editable examples, basic storyteller preferences, a solo start or a small invited group, and a coherent opening. Defer exhaustive world generation, a preset marketplace, public discovery and elaborate character construction. World generation quality and cost remain important demonstrations even with a deliberately small initial world.
 
+For the connected POC, creation may also offer a maintained authored start
+whose exact world, rules and initial campaign documents are inspectable before
+or after Start. Selecting a familiar setting does not authorize the model to
+fill missing lore from memory: the opening is grounded in the pinned package,
+and anything outside its coverage remains an interpretation or explicit
+unknown. This authored route complements freeform creation; it does not make
+fantasy geography or seeded NPCs mandatory for other stories.
+
+## Progressive people and other entities
+
+Creation should not pre-generate a database record and full statistics for
+every noun in a large world. It should seed stable records for the player,
+immediate places and people whose expected participation or continuity is part
+of the selected start. Incidental mentions may remain only in lore or passage
+evidence until the player interacts meaningfully, a future turn depends on
+them, or a supported mechanic needs current state. At that boundary the
+application admits a stable registration or promotion with source provenance.
+
+This is a continuity boundary, not a humanoid ontology. A nonhuman or abstract
+story may register organisms, signals, collectives or nothing analogous. Full
+mechanical state is introduced only when needed by supported rules; a spoken
+name alone does not invent combat statistics.
+
 ## Selected profile and captured candidate
 
 Creation saves an optional catalogue reference while a draft is incomplete. Generating a playable storyteller candidate requires a selected profile. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story; subsequent catalogue changes do not alter it. New profiles are data files, not resolvers.

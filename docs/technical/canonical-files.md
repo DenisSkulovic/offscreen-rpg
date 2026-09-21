@@ -203,6 +203,23 @@ Explicit dependencies of the selected player choice take priority within the sha
 
 Entity and world event histories are useful indexes, not substitutes for current state. A material change can append a compact source-linked event and update the entity's current document in the same admitted change set. Retrieval may read the current entity first and expand into its event/source history only when needed. Do not emit bookkeeping for every adjective or restate unchanged files after every turn; record changes with future continuity value.
 
+Entity materialization is progressive. A name may exist only in world lore or
+a passage; registration adds a stable ID, aliases, kind and source;
+continuity-active status adds a compact current identity/relationship record;
+mechanically active status adds only the structured fields required by an
+admitted rule. Expected start participants may enter at the registered or
+continuity level immediately. Meaningful interaction, planned return or a
+mechanical target can promote an incidental entity, but generic code never
+creates a full character sheet merely because prose contains a proper noun.
+
+Current controlling state has a non-negotiable context floor. Alive/dead,
+location, possession, hostility, active conditions and other facts that govern
+the requested action are loaded by exact identity before optional episode
+texture. A cheap policy may reduce supporting passages, secondary
+relationships and creative associations; it may not silently omit required
+state and invite contradiction. If mandatory state cannot fit or is not
+supported, preparation stops with explicit coverage/limit evidence.
+
 Canonical storage is also the narrative read boundary, not an archival side channel. Once a content kind moves to documents, task construction and developer inspection read the committed document version or a derived index that cites it; they do not continue treating an independently editable SQL body as truth. Capture the manifest root used by each task. Load focused orientation/current-scene material automatically, then use bounded listing, exact reads and search for additional evidence. Changes flow back through typed proposals and admission against expected roots/revisions. Mechanical state continues to come from its transactional owner rather than being reverse-engineered from prose.
 
 1. Capture the campaign's state/receipt fence, committed document-root revision, selected Storyteller bundle and viewer knowledge scope. Narrative sequence alone is insufficient while quiet work changes mechanics.

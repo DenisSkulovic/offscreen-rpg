@@ -64,6 +64,7 @@ const memoryEvaluationPacket = process.argv.includes(
 const memoryEvaluationRun = process.argv.includes('--memory-evaluation-run');
 const evaluationPacket = process.argv.includes('--evaluation-packet');
 const evaluationRun = process.argv.includes('--evaluation-run');
+const storyMode = process.argv.includes('--story-mode');
 const resetDatabase = process.argv.includes('--reset-database');
 const configArgument = process.argv
   .slice(2)
@@ -80,6 +81,7 @@ const runModes = [
   memoryEvaluationRun,
   evaluationPacket,
   evaluationRun,
+  storyMode,
 ].filter(Boolean);
 if (
   runModes.length > 1 ||
@@ -96,6 +98,7 @@ if (
           '--memory-evaluation-run',
           '--evaluation-packet',
           '--evaluation-run',
+          '--story-mode',
           '--reset-database',
           '--',
         ].includes(arg) &&
@@ -287,18 +290,23 @@ const gitDirty =
     cwd: workspaceRoot,
     encoding: 'utf8',
   }).trim().length > 0;
-const databaseURL =
-  process.env['CHAMBER_DATABASE_URL'] ??
-  'postgresql://offscreen:local-development-only@127.0.0.1:5432/offscreen_chamber';
+const localDatabaseName = storyMode
+  ? 'offscreen_story_local'
+  : 'offscreen_chamber';
+const databaseURL = storyMode
+  ? (process.env['STORY_LOCAL_DATABASE_URL'] ??
+    `postgresql://offscreen:local-development-only@127.0.0.1:5432/${localDatabaseName}`)
+  : (process.env['CHAMBER_DATABASE_URL'] ??
+    `postgresql://offscreen:local-development-only@127.0.0.1:5432/${localDatabaseName}`);
 const parsedURL = new URL(databaseURL);
 if (
   !['postgres:', 'postgresql:'].includes(parsedURL.protocol) ||
   !['127.0.0.1', 'localhost'].includes(parsedURL.hostname) ||
-  parsedURL.pathname !== '/offscreen_chamber' ||
+  parsedURL.pathname !== `/${localDatabaseName}` ||
   parsedURL.search
 ) {
   throw new Error(
-    'Chamber requires the local offscreen_chamber database, without connection query overrides.',
+    `Local ${storyMode ? 'Story mode' : 'Chamber'} requires the ${localDatabaseName} database, without connection query overrides.`,
   );
 }
 function sessionCookiesFromLogin(
@@ -343,15 +351,16 @@ const admin = createDatabase(
 try {
   if (resetDatabase) {
     await admin.db.$client.query(
-      'DROP DATABASE IF EXISTS offscreen_chamber WITH (FORCE)',
+      `DROP DATABASE IF EXISTS ${localDatabaseName} WITH (FORCE)`,
     );
-    console.log('Reset disposable local Chamber database.');
+    console.log(`Reset disposable local ${localDatabaseName} database.`);
   }
   const exists = await admin.db.$client.query(
-    "SELECT 1 FROM pg_database WHERE datname = 'offscreen_chamber'",
+    'SELECT 1 FROM pg_database WHERE datname = $1',
+    [localDatabaseName],
   );
   if (!exists.rowCount) {
-    await admin.db.$client.query('CREATE DATABASE offscreen_chamber');
+    await admin.db.$client.query(`CREATE DATABASE ${localDatabaseName}`);
   }
 } finally {
   await admin.close();
@@ -400,20 +409,27 @@ const provisioner = betterAuth({
   ],
 });
 const documentStore = new LocalDocumentStore(
-  join(workspaceRoot, 'data', 'chamber-documents'),
+  join(
+    workspaceRoot,
+    'data',
+    storyMode ? 'story-local-documents' : 'chamber-documents',
+  ),
 );
 const defaultRulePackage = await importRulePackageDirectory(
   documentStore,
   join(workspaceRoot, 'content', 'rules', 'srd-5.2.1-subset'),
 );
 let chamberUserId: string | undefined;
+const localUserEmail = storyMode
+  ? 'story-local@local.invalid'
+  : 'chamber@local.invalid';
 const chamberIdentity = {
   async requireUser() {
     if (!chamberUserId) throw new Error('Chamber identity is not provisioned');
     return {
       id: chamberUserId,
       name: 'Local Player',
-      email: 'chamber@local.invalid',
+      email: localUserEmail,
     };
   },
 };
@@ -430,8 +446,8 @@ const app = await createApp(
       revision: defaultRulePackage.manifest.revision,
       engine: defaultRulePackage.manifest.engine,
     },
-    developerTools: true,
-    chamberStorytellerControl: storytellerControl,
+    developerTools: !storyMode,
+    ...(!storyMode ? { chamberStorytellerControl: storytellerControl } : {}),
     ...(packetReview ||
     memoryPacketReview ||
     memoryEvaluationPacket ||
@@ -487,7 +503,7 @@ try {
   ).test;
   const existing = await database.db.$client.query(
     'SELECT id FROM "user" WHERE email = $1',
-    ['chamber@local.invalid'],
+    [localUserEmail],
   );
   const userId =
     (existing.rows[0]?.id as string | undefined) ??
@@ -495,7 +511,7 @@ try {
       await helpers.saveUser(
         helpers.createUser({
           name: 'Local Player',
-          email: 'chamber@local.invalid',
+          email: localUserEmail,
         }),
       )
     ).id;
@@ -871,11 +887,13 @@ try {
       sessionCookiesFromLogin(login.headers.get('cookie'), origin),
     );
     const page = await context.newPage();
-    await page.goto(`${origin}/chamber`);
-    await page
-      .getByRole('button', { name: 'Start scripted chamber' })
-      .waitFor();
-    await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+    await page.goto(`${origin}${storyMode ? '/stories' : '/chamber'}`);
+    if (!storyMode) {
+      await page
+        .getByRole('button', { name: 'Start scripted chamber' })
+        .waitFor();
+      await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+    }
     if (review) {
       const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
       await mkdir(evidenceDirectory, { recursive: true });
@@ -966,7 +984,7 @@ try {
       if (
         !localIdentity.ok ||
         (await localIdentity.json() as { email?: unknown }).email !==
-          'chamber@local.invalid'
+          localUserEmail
       ) {
         throw new Error('Chamber local identity was not available.');
       }
@@ -975,7 +993,9 @@ try {
       );
     } else {
       console.log(
-        packetReview
+        storyMode
+          ? 'Local Story mode opened at http://127.0.0.1:3100/stories. It uses ordinary player pages, a dedicated persistent local database and no Chamber tools. Model spend: $0; no provider calls.'
+          : packetReview
           ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
           : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
       );

@@ -140,6 +140,15 @@ Use [implementation overview](progress.md) for the next slice rather than inferr
 
 ## Local scripted launcher without OAuth
 
+For the ordinary player-facing product surface, run `pnpm story:local`. It uses
+the normal `/stories`, creation, preview and play pages with a fixed loopback
+identity, a dedicated persistent `offscreen_story_local` database and
+`data/story-local-documents`. It does not mount Chamber scenarios, inspectors,
+fault controls or QA endpoints. Provider execution remains disabled, so this
+first launcher exercises the real Story flow with the scripted Storyteller at
+zero model spend. Normal non-loopback application startup still requires real
+authentication.
+
 With the Compose services running, dependencies installed and Playwright Chromium available, run `pnpm chamber`. It builds the web/API and opens a separate Chromium window as a local fixture user. No GitHub or model credentials are needed. The Chamber API injects that fixed identity only in this loopback-only developer process, so any browser on the workstation can open `http://127.0.0.1:3100/stories` without a cookie or OAuth redirect. Ordinary application startup still requires real authentication. Chamber uses only loopback ports 3001 and 3100 and refuses occupied ports; stop other API/test processes before starting it. `/demo` on port 3000 remains a separate in-memory prototype.
 
 The launcher creates and migrates the dedicated local `offscreen_chamber` database, retains its stories, starts the API/web/Temporal worker and provisions the stable local fixture user. The served API uses a Chamber-injected identity resolver; no login route or provisioning plugin is mounted, and this behavior is absent from ordinary API construction. `CHAMBER_DATABASE_URL` may change local database credentials, but must still target that exact database on localhost/127.0.0.1; no remote database or URL query overrides are allowed. The default uses the Compose development credentials. Creating the database requires the local role's create-database privilege.
