@@ -3,15 +3,15 @@ import { storytellerSummarySchema } from './storytellers';
 import { z } from 'zod';
 import { interactionSchema, interactionSubmissionSchema } from './interactions';
 
-const itemReference = z
+export const storyItemReferenceSchema = z
   .string()
   .min(1)
   .max(100)
   .regex(/^[a-zA-Z0-9_-]+$/);
 export const storyItemSchema = z.strictObject({
-  key: itemReference,
+  key: storyItemReferenceSchema,
   label: z.string().min(1).max(160),
-  holderKey: itemReference,
+  holderKey: storyItemReferenceSchema,
 });
 export const storyItemsSchema = z
   .array(storyItemSchema)
@@ -23,14 +23,24 @@ export const storyItemsSchema = z
 export const itemTransferSchema = z
   .strictObject({
     kind: z.literal('item.transfer.v1'),
-    itemKey: itemReference,
-    fromHolder: itemReference,
-    toHolder: itemReference,
+    itemKey: storyItemReferenceSchema,
+    fromHolder: storyItemReferenceSchema,
+    toHolder: storyItemReferenceSchema,
   })
   .refine(
     (effect) => effect.fromHolder !== effect.toHolder,
     'Transfer must change holder',
   );
+export const itemCreateSchema = z.strictObject({
+  kind: z.literal('item.create.v1'),
+  itemKey: storyItemReferenceSchema,
+  label: z.string().min(1).max(160),
+  holderKey: storyItemReferenceSchema,
+});
+export const storyItemEffectSchema = z.discriminatedUnion('kind', [
+  itemCreateSchema,
+  itemTransferSchema,
+]);
 export const passageContentSchema = z.strictObject({
   version: z.literal(1),
   title: z.string().min(1).max(160),

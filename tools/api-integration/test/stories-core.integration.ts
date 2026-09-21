@@ -558,6 +558,71 @@ export async function checkStoryCore({
           .holderKey,
         'sender',
       );
+      const createdTransition = randomUUID();
+      const createAndTransfer = {
+        expectedRevision: 2,
+        content: {
+          version: 1 as const,
+          title: 'A token changes hands',
+          paragraphs: ['A brass token is made and handed to the receiver.'],
+        },
+        interaction: null,
+        effects: [
+          {
+            kind: 'item.create.v1' as const,
+            itemKey: 'brass_token',
+            label: 'Brass token',
+            holderKey: 'maker',
+          },
+          {
+            kind: 'item.transfer.v1' as const,
+            itemKey: 'brass_token',
+            fromHolder: 'maker',
+            toHolder: 'receiver',
+          },
+        ],
+      };
+      const created = await stories.append({
+        ownerId: owner,
+        storyId: id,
+        transitionId: createdTransition,
+        proposed: createAndTransfer,
+      });
+      assert.deepEqual(
+        created.items.find((item) => item.key === 'brass_token'),
+        {
+          key: 'brass_token',
+          label: 'Brass token',
+          holderKey: 'receiver',
+        },
+      );
+      assert.deepEqual(
+        await stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: createdTransition,
+          proposed: createAndTransfer,
+        }),
+        created,
+      );
+      await assert.rejects(
+        stories.append({
+          ownerId: owner,
+          storyId: id,
+          transitionId: randomUUID(),
+          proposed: {
+            ...createAndTransfer,
+            expectedRevision: 3,
+            effects: [createAndTransfer.effects[0]],
+          },
+        }),
+        (error: unknown) =>
+          error instanceof StoryError && error.code === 'conflict',
+      );
+      assert.deepEqual(
+        await stories.read({ ownerId: owner, storyId: id }),
+        created,
+      );
       const forbidden = await fetch(`${origin}/api/stories/${id}`, {
         headers: { cookie: otherCookie },
       });

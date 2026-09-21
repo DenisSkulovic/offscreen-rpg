@@ -18,7 +18,7 @@ import {
 import { StoryError, parseStoryIdentifier } from './errors';
 import {
   advanceStoryView,
-  applyItemTransfers,
+  applyStoryItemEffects,
   enqueueContinuationNotices,
   findPassageByTransition,
   insertContinuationPassage,
@@ -170,8 +170,8 @@ export async function commitStoryContinuation(
     expectedRevision: current.revision,
   });
   // The story lock serializes this bounded effect list with its narrative commit.
-  // A failed precondition rolls back every preceding transfer in the transaction.
-  await applyItemTransfers(tx, {
+  // A failed precondition rolls back every item change and the prose together.
+  await applyStoryItemEffects(tx, {
     storyId: args.storyId,
     effects: args.input.effects,
   });

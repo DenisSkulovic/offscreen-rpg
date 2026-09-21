@@ -8,6 +8,8 @@ The initial implementation uses a small, explicitly versioned D&D-style rules su
 
 The DM interprets intent, proposes applicable challenges and narrates outcomes. Code validates the challenge, rolls dice, determines results and applies supported effects. A model cannot choose a die face, reroll a failure, award an unsupported resource or narrate away a committed result. The player's character, resources and completed history survive changes of storyteller.
 
+Narrative continuation currently supports a small authoritative story-item vocabulary. `item.create.v1` introduces one bounded, uniquely keyed item with a label and current holder; `item.transfer.v1` moves an existing item only when its declared prior holder still matches. Ordered effects and the passage commit in one transaction, so a turn may create and then hand over an item without asking the Storyteller to describe it twice. Prose and descriptive canonical-document changes alone never create or transfer possessions.
+
 ## Rule libraries and executable adapters
 
 Rules are a reusable, immutable canonical library pinned by exact root and revision when a campaign starts. The default library documents the implemented SRD 5.2.1 subset; a campaign may later adopt another compatible revision or a different supported ruleset explicitly. Campaign-local rulings and optional guidance live in versioned overlays rather than editing the shared library or relying on model memory.

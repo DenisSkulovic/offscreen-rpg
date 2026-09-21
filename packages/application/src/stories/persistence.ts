@@ -163,11 +163,55 @@ export function requiredIntervalDueAtMs(interval: PassageRecord) {
   return interval.dueAt.getTime();
 }
 
-export async function applyItemTransfers(
+export async function applyStoryItemEffects(
   tx: Transaction,
   args: { storyId: string; effects: StoryContinuation['effects'] },
 ) {
+  const currentItems = await tx
+    .select({
+      key: storyItem.key,
+      label: storyItem.label,
+      holderKey: storyItem.holderKey,
+    })
+    .from(storyItem)
+    .where(eq(storyItem.storyId, args.storyId));
+  const projectedItems = new Map(currentItems.map((item) => [item.key, item]));
+
+  // Validate the complete ordered change set before writing. This permits a
+  // newly created item to be transferred later in the same continuation while
+  // preserving all-or-nothing behavior and the registry's bounded size.
   for (const effect of args.effects) {
+    if (effect.kind === 'item.create.v1') {
+      if (projectedItems.has(effect.itemKey) || projectedItems.size >= 50) {
+        throw new StoryError('conflict');
+      }
+      projectedItems.set(effect.itemKey, {
+        key: effect.itemKey,
+        label: effect.label,
+        holderKey: effect.holderKey,
+      });
+      continue;
+    }
+    const item = projectedItems.get(effect.itemKey);
+    if (!item || item.holderKey !== effect.fromHolder) {
+      throw new StoryError('conflict');
+    }
+    projectedItems.set(effect.itemKey, {
+      ...item,
+      holderKey: effect.toHolder,
+    });
+  }
+
+  for (const effect of args.effects) {
+    if (effect.kind === 'item.create.v1') {
+      await tx.insert(storyItem).values({
+        storyId: args.storyId,
+        key: effect.itemKey,
+        label: effect.label,
+        holderKey: effect.holderKey,
+      });
+      continue;
+    }
     const updated = await tx
       .update(storyItem)
       .set({ holderKey: effect.toHolder })

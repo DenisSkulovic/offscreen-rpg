@@ -59,6 +59,13 @@ This checklist remains a durable acceptance target while its Chamber case is bei
 
 Until import and instantiation are exposed through the QA catalogue, record these as focused storage/application evidence. A schema-only fixture is not evidence that campaign creation, retry fencing or obligation scheduling works.
 
+### Story-item authority checklist
+
+1. Commit a continuation that creates a new item with a stable key and immediately transfers it to another holder. Confirm the saved passage and final holder appear together and the intermediate holder does not survive as current state.
+2. Retry the exact transition identity and payload. Confirm no duplicate item or passage appears. Reuse the identity with different effects and confirm conflict without mutation.
+3. Attempt a duplicate key, stale prior holder, missing item and a multi-effect list whose later operation fails. Confirm the passage and every earlier item effect roll back together.
+4. Until canonical projection synchronization is implemented, inspect gameplay through the authoritative story snapshot and explicitly record that `state/story-items.json` is bootstrap-only. Do not report that file as current after a mutation.
+
 ## Run lifecycle
 
 The Chamber launcher captures the Git commit, dirty-tree state and non-secret local environment identity. The client supplies the case/version, variant, driver and known scenario/profile/settings identities. The server snapshots the complete case definition into the run, fixes execution to offline, and initializes provider accounting to verified zero use.

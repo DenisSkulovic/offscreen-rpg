@@ -11,8 +11,8 @@ import {
 } from '@offscreen/contracts/interactions';
 import {
   controlIntervalSchema,
-  itemTransferSchema,
   passageContentSchema,
+  storyItemEffectSchema,
   storyItemsSchema,
 } from '@offscreen/contracts/stories';
 import type { storyPassage } from '@offscreen/db/story-schema';
@@ -46,7 +46,7 @@ export const initialStorySchema = z
 export const continuationSchema = z
   .strictObject({
     expectedRevision: z.number().int().positive().max(2147483646),
-    effects: z.array(itemTransferSchema).max(20).default([]),
+    effects: z.array(storyItemEffectSchema).max(20).default([]),
     content: passageContentSchema,
     interaction: interactionSpecificationSchema.nullable(),
     response: interactionSubmissionSchema.nullable().default(null),
