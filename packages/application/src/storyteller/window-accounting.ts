@@ -30,12 +30,12 @@ function reservedValue(
   metric: UsageWindowDefinition['metric'],
   task: StorytellerTask,
   reservedMicrousd: bigint,
+  reservedInputTokens: number,
+  reservedGeneratedTokens: number,
 ) {
   if (metric === 'requests') return 1n;
-  if (metric === 'input_tokens')
-    return BigInt(task.resources.envelope.maxInputTokens);
-  if (metric === 'generated_tokens')
-    return BigInt(task.resources.envelope.maxGeneratedTokens);
+  if (metric === 'input_tokens') return BigInt(reservedInputTokens);
+  if (metric === 'generated_tokens') return BigInt(reservedGeneratedTokens);
   if (metric === 'microusd') return reservedMicrousd;
   return task.task === 'report' ? 1n : 0n;
 }
@@ -61,6 +61,8 @@ export async function reserveUsageWindows(
     task: StorytellerTask;
     policy: EffectiveUsagePolicy;
     reservedMicrousd: bigint;
+    reservedInputTokens: number;
+    reservedGeneratedTokens: number;
   },
 ) {
   const [clock] = await tx
@@ -101,6 +103,8 @@ export async function reserveUsageWindows(
       window.metric,
       args.task,
       args.reservedMicrousd,
+      args.reservedInputTokens,
+      args.reservedGeneratedTokens,
     );
     if (used + reserved > BigInt(window.limit))
       throw new UsageWindowError(window.id);

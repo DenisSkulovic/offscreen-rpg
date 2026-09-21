@@ -11,6 +11,7 @@ import {
   executionPolicySchema,
   reservationForRequest,
   serializedRequestBytes,
+  type CapturedProviderRequest,
   type ExecutionPolicy,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
@@ -39,6 +40,46 @@ export class StorytellerBudgetError extends Error {
   }
 }
 type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
+
+export type StorytellerDispatchReservation = {
+  request: CapturedProviderRequest;
+  maxSerializedRequestBytes: number;
+  maxInputTokens: number;
+  maxGeneratedTokens: number;
+  maxReasoningTokens: number;
+};
+
+function dispatchReservation(
+  task: StorytellerTask,
+  dispatch?: StorytellerDispatchReservation,
+): StorytellerDispatchReservation {
+  const reservation = dispatch ?? {
+    request: task.request,
+    maxSerializedRequestBytes:
+      task.resources.envelope.maxSerializedRequestBytes,
+    maxInputTokens: task.resources.envelope.maxInputTokens,
+    maxGeneratedTokens: task.resources.envelope.maxGeneratedTokens,
+    maxReasoningTokens: task.resources.envelope.maxReasoningTokens,
+  };
+  const envelope = task.resources.envelope;
+  const integerLimits = [
+    reservation.maxSerializedRequestBytes,
+    reservation.maxInputTokens,
+    reservation.maxGeneratedTokens,
+    reservation.maxReasoningTokens,
+  ];
+  if (
+    integerLimits.some((value) => !Number.isSafeInteger(value) || value < 0) ||
+    reservation.maxSerializedRequestBytes >
+      envelope.maxSerializedRequestBytes ||
+    reservation.maxInputTokens > envelope.maxInputTokens ||
+    reservation.maxGeneratedTokens > envelope.maxGeneratedTokens ||
+    reservation.maxReasoningTokens > envelope.maxReasoningTokens
+  ) {
+    throw new StorytellerBudgetError('budget_unavailable');
+  }
+  return reservation;
+}
 
 function taskAttribution(task: StorytellerTask) {
   return {
@@ -72,19 +113,19 @@ function calculatedCharge(
 function estimatedCharge(
   execution: ProviderExecution,
   requestBytes: number,
-  resources: StorytellerTask['resources'],
+  reservation: StorytellerDispatchReservation,
 ) {
   // A tokenizer token represents at least one encoded byte. This is a useful
   // labelled input upper bound, not provider metering or a route tokenizer.
   const estimatedInputTokens = Math.min(
     execution.policy.maxInputTokens,
-    resources.envelope.maxInputTokens,
+    reservation.maxInputTokens,
     requestBytes,
   );
   const amount =
     BigInt(estimatedInputTokens) *
       BigInt(execution.policy.inputMicrousdPerMillion) +
-    BigInt(resources.envelope.maxGeneratedTokens) *
+    BigInt(reservation.maxGeneratedTokens) *
       BigInt(execution.policy.outputMicrousdPerMillion);
   return {
     inputTokens: estimatedInputTokens,
@@ -121,20 +162,22 @@ export function createStorytellerBudget(database: Database) {
       generationId: string;
       ownerId: string;
       task: StorytellerTask;
+      dispatch?: StorytellerDispatchReservation;
     }) {
       const { task } = input;
       const execution = executionPolicySchema.parse(task.execution);
       if (execution.mode !== 'provider') {
         throw new StorytellerBudgetError('budget_unavailable');
       }
+      const dispatch = dispatchReservation(task, input.dispatch);
       let amount: bigint;
       try {
         amount = reservationForRequest(
-          task.request,
+          dispatch.request,
           execution.policy,
-          task.resources.envelope.maxSerializedRequestBytes,
-          task.resources.envelope.maxInputTokens,
-          task.resources.envelope.maxGeneratedTokens,
+          dispatch.maxSerializedRequestBytes,
+          dispatch.maxInputTokens,
+          dispatch.maxGeneratedTokens,
         );
       } catch {
         throw new StorytellerBudgetError('context_too_large');
@@ -153,6 +196,11 @@ export function createStorytellerBudget(database: Database) {
             prior.generationId !== input.generationId ||
             prior.accountId !== execution.accountId ||
             prior.runId !== execution.runId ||
+            prior.requestBytes !== serializedRequestBytes(dispatch.request) ||
+            prior.reservedInputTokens !== dispatch.maxInputTokens ||
+            prior.reservedGeneratedTokens !== dispatch.maxGeneratedTokens ||
+            prior.reservedReasoningTokens !== dispatch.maxReasoningTokens ||
+            prior.reservedMicrousd !== amount ||
             !isDeepStrictEqual(prior.policy, execution.policy)
           ) {
             throw new StorytellerBudgetError('budget_unavailable');
@@ -199,15 +247,15 @@ export function createStorytellerBudget(database: Database) {
             operationRecord.maxModelRounds ||
           operationRecord.reservedInputTokens +
             operationRecord.consumedInputTokens +
-            envelope.maxInputTokens >
+            dispatch.maxInputTokens >
             operationRecord.maxInputTokens ||
           operationRecord.reservedGeneratedTokens +
             operationRecord.consumedGeneratedTokens +
-            envelope.maxGeneratedTokens >
+            dispatch.maxGeneratedTokens >
             operationRecord.maxGeneratedTokens ||
           operationRecord.reservedReasoningTokens +
             operationRecord.consumedReasoningTokens +
-            envelope.maxReasoningTokens >
+            dispatch.maxReasoningTokens >
             operationRecord.maxReasoningTokens ||
           operationRecord.reservedMicrousd +
             operationRecord.consumedMicrousd +
@@ -241,12 +289,8 @@ export function createStorytellerBudget(database: Database) {
           throw new StorytellerBudgetError('budget_unavailable');
         }
         const attribution = taskAttribution(task);
-        const requestBytes = serializedRequestBytes(task.request);
-        const estimate = estimatedCharge(
-          execution,
-          requestBytes,
-          task.resources,
-        );
+        const requestBytes = serializedRequestBytes(dispatch.request);
+        const estimate = estimatedCharge(execution, requestBytes, dispatch);
         await tx.insert(attempt).values({
           id: input.id,
           generationId: input.generationId,
@@ -268,9 +312,9 @@ export function createStorytellerBudget(database: Database) {
           attribution,
           state: 'reserved',
           reservedMicrousd: amount,
-          reservedInputTokens: envelope.maxInputTokens,
-          reservedGeneratedTokens: envelope.maxGeneratedTokens,
-          reservedReasoningTokens: envelope.maxReasoningTokens,
+          reservedInputTokens: dispatch.maxInputTokens,
+          reservedGeneratedTokens: dispatch.maxGeneratedTokens,
+          reservedReasoningTokens: dispatch.maxReasoningTokens,
           estimatedMicrousd: estimate.microusd,
           estimatedInputTokens: estimate.inputTokens,
           estimationMethod: estimate.method,
@@ -283,13 +327,13 @@ export function createStorytellerBudget(database: Database) {
           .set({
             reservedRounds: operationRecord.reservedRounds + 1,
             reservedInputTokens:
-              operationRecord.reservedInputTokens + envelope.maxInputTokens,
+              operationRecord.reservedInputTokens + dispatch.maxInputTokens,
             reservedGeneratedTokens:
               operationRecord.reservedGeneratedTokens +
-              envelope.maxGeneratedTokens,
+              dispatch.maxGeneratedTokens,
             reservedReasoningTokens:
               operationRecord.reservedReasoningTokens +
-              envelope.maxReasoningTokens,
+              dispatch.maxReasoningTokens,
             reservedMicrousd: operationRecord.reservedMicrousd + amount,
             updatedAt: sql`clock_timestamp()`,
           })
@@ -304,6 +348,8 @@ export function createStorytellerBudget(database: Database) {
             task,
             policy: task.resources.authority.policy,
             reservedMicrousd: amount,
+            reservedInputTokens: dispatch.maxInputTokens,
+            reservedGeneratedTokens: dispatch.maxGeneratedTokens,
           });
         } catch (error) {
           if (error instanceof UsageWindowError) {
@@ -475,9 +521,14 @@ export function createStorytellerBudget(database: Database) {
         output: unknown;
         failureCode: string | null;
       };
+      operationOutcome?: 'continue' | 'complete';
     }) {
       if (input.usage.reportedCostMicrousd < 0n) {
         throw new Error('Invalid charge');
+      }
+      const operationOutcome = input.operationOutcome ?? 'complete';
+      if (operationOutcome === 'continue' && input.generationOutcome) {
+        throw new Error('Intermediate settlement cannot finish generation');
       }
       return database.db.transaction(async (tx) => {
         const { account, allowance } = await lockAllowance(tx, input.execution);
@@ -604,7 +655,11 @@ export function createStorytellerBudget(database: Database) {
         await tx
           .update(operation)
           .set({
-            state: operationExceeded ? 'exhausted' : 'complete',
+            state: operationExceeded
+              ? 'exhausted'
+              : operationOutcome === 'complete'
+                ? 'complete'
+                : 'open',
             reservedInputTokens:
               operationRecord.reservedInputTokens - record.reservedInputTokens,
             consumedInputTokens,
