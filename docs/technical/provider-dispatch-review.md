@@ -1,6 +1,6 @@
 # Provider dispatch review and dry-run analysis
 
-Status: implemented for the offline POC. Exact packet construction, attempt-owned durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. Live release still requires the separate spending and evaluation preflight.
+Status: implemented for the offline POC. Exact packet construction, attempt-owned durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. `pnpm chamber:memory-packet` materializes the maintained Greywake long-story corpus and captures the ordinary memory controller's exact first-round packet at the same zero-spend boundary. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. Live release still requires the separate spending and evaluation preflight.
 
 ## Product contract
 
@@ -37,6 +37,8 @@ Creating the record happens before budget reservation. The one-shot runtime uses
 Rejecting a packet is a safe terminal developer decision, not provider failure and not zero-cost model evidence. A held packet keeps the gameplay reason visible without consuming a provider attempt. Long-held review must not create fictional elapsed time.
 
 Developer tools expose `GET` and `PUT /api/chamber-tools/generations/:id/dispatch-review` only when the API is explicitly composed with developer tools. GET resolves the generation's current attempt. The decision body carries that attempt ID, a fresh decision ID, expected review revision, exact packet hash and `release` or `reject`. The normal API composition does not mount these routes. Release is merely the first gate: it re-enters current funding, usage-window, authority and provider checks and cannot make an unpriced Chamber route dispatchable.
+
+The memory packet command is Gate-0 structural evidence, not a synthetic prompt preview and not a playable-story or model-quality result. It builds an admitted continuation task with the normal resource resolver, reads the canonical corpus through the document store, persists a generation, invokes the ordinary durable memory executor and stops its first model attempt in `awaiting-review`. Its provider implementation is a tripwire that fails if transport is reached. The command must observe memory state `held`, one held review and zero provider attempts before exporting evidence. It neither provisions funding nor releases the packet.
 
 ## Analysis and comparison
 

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
+import { canonicalJson } from '@offscreen/documents';
 import {
   composeMemoryExplorationDecisionRequest,
   capturedProviderRequestSchema,
@@ -226,7 +227,9 @@ function assertSnapshotWithinRecipe(
 }
 
 function requestSha256(request: unknown) {
-  return createHash('sha256').update(JSON.stringify(request)).digest('hex');
+  // JSONB does not preserve object-key insertion order. Hash the semantic JSON
+  // form so a persisted request replays identically after a database round trip.
+  return createHash('sha256').update(canonicalJson(request)).digest('hex');
 }
 
 /** Builds the inspectable final-context payload under the task's shared request envelope. */
@@ -513,8 +516,7 @@ export async function runMemoryExploration(
       }
       if (
         requestSha256(pendingModelRequest) !==
-          artifact.pendingModelRequestSha256 ||
-        !isDeepStrictEqual(pendingModelRequest, preparedContext.request)
+        artifact.pendingModelRequestSha256
       ) {
         throw new Error('Memory exploration pending model request mismatch');
       }

@@ -44,12 +44,14 @@ import {
   LocalDocumentStore,
   importRulePackageDirectory,
 } from '@offscreen/documents';
+import { captureHeldMemoryPacket } from './memory-packet-review.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // Does not load .env or .env.openrouter and has no model/provider dependency.
 const smoke = process.argv.includes('--smoke');
 const review = process.argv.includes('--review');
 const packetReview = process.argv.includes('--packet-review');
+const memoryPacketReview = process.argv.includes('--memory-packet-review');
 const evaluationPacket = process.argv.includes('--evaluation-packet');
 const evaluationRun = process.argv.includes('--evaluation-run');
 const resetDatabase = process.argv.includes('--reset-database');
@@ -63,6 +65,7 @@ const runModes = [
   smoke,
   review,
   packetReview,
+  memoryPacketReview,
   evaluationPacket,
   evaluationRun,
 ].filter(Boolean);
@@ -76,6 +79,7 @@ if (
           '--smoke',
           '--review',
           '--packet-review',
+          '--memory-packet-review',
           '--evaluation-packet',
           '--evaluation-run',
           '--reset-database',
@@ -148,6 +152,40 @@ const dryRunExecution: ExecutionPolicy = {
     maxInputTokens: 8_000,
     maxOutputTokens: 1_024,
     timeoutMs: 30_000,
+  },
+};
+const memoryDryRunProfile = {
+  ...dryRunProfile,
+  id: 'chamber-memory-dry-run.v1',
+  limits: {
+    ...dryRunProfile.limits,
+    maxInputTokensPerRequest: 12_000,
+    maxSerializedBytesPerRequest: 48_000,
+    maxGeneratedTokensPerRequest: 2_048,
+    maxInputTokensPerOperation: 24_000,
+    maxGeneratedTokensPerOperation: 4_096,
+    maxModelRoundsPerOperation: 2,
+    maxReadsPerOperation: 1,
+    maxRetainedReadBytes: 4_096,
+  },
+};
+const memoryDryRunPolicy = resolveEffectiveUsagePolicy({
+  platform: memoryDryRunProfile,
+  entitlement: memoryDryRunProfile,
+  restrictions: [],
+  requestedRoute: dryRunRoute,
+  requestedFundingMode: 'prepaid',
+});
+if (memoryDryRunPolicy.kind !== 'allowed') {
+  throw new Error('Chamber memory dry-run policy is invalid');
+}
+const memoryDryRunExecution: ExecutionPolicy = {
+  ...dryRunExecution,
+  policy: {
+    ...dryRunExecution.policy,
+    version: 'chamber-memory-dry-run.v1',
+    maxInputTokens: 12_000,
+    maxOutputTokens: 2_048,
   },
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -316,14 +354,17 @@ const app = await createApp(
     },
     developerTools: true,
     chamberStorytellerControl: storytellerControl,
-    ...(packetReview || evaluationPacket || evaluationRun
+    ...(packetReview || memoryPacketReview || evaluationPacket || evaluationRun
       ? {
           storytellerExecution:
-            evaluationAuthority?.execution ?? dryRunExecution,
+            evaluationAuthority?.execution ??
+            (memoryPacketReview ? memoryDryRunExecution : dryRunExecution),
           storytellerUsagePolicy:
             evaluationPolicy?.kind === 'allowed'
               ? evaluationPolicy.policy
-              : dryRunPolicy.policy,
+              : memoryPacketReview
+                ? memoryDryRunPolicy.policy
+                : dryRunPolicy.policy,
         }
       : {}),
     qaContext: {
@@ -406,9 +447,34 @@ try {
           dispatchAuthority: () => evaluationPolicy.policy,
           documentStore,
         }
-      : { scriptedGate: storytellerControl.evaluate, documentStore },
+      : memoryPacketReview
+        ? {
+            provider: async () => {
+              throw new Error('Held memory packet attempted provider transport');
+            },
+            dispatchAuthority: () => memoryDryRunPolicy.policy,
+            documentStore,
+          }
+        : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
-  if (packetReview || evaluationPacket || evaluationRun) {
+  if (memoryPacketReview) {
+    const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
+      .map(({ name, value }) => `${name}=${value}`)
+      .join('; ');
+    const captured = await captureHeldMemoryPacket({
+      apiOrigin: 'http://127.0.0.1:3001',
+      browserOrigin: origin,
+      cookie,
+      database,
+      documentStore,
+      ownerId: userId,
+      execution: memoryDryRunExecution,
+      usagePolicy: memoryDryRunPolicy.policy,
+    });
+    console.log(
+      `Held memory packet saved to ${captured.evidencePath}. Corpus: ${captured.corpus.scenes} passages, ${captured.corpus.evidence} canonical records. Verified: memory state held, zero provider attempts. Model spend: $0.`,
+    );
+  } else if (packetReview || evaluationPacket || evaluationRun) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');
