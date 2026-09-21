@@ -10,10 +10,12 @@ import {
 } from '../dist/developer-tools/long-story-memory-corpus.js';
 import {
   evaluateMemoryObservation,
+  evaluateIndexedMemoryRetrieval,
   evaluateLinearMemoryBaseline,
   observeLinearMemoryBaseline,
 } from '../dist/developer-tools/memory-evaluator.js';
 import { searchCanonicalKnowledge } from '../dist/storyteller/canonical-search.js';
+import { buildLexicalStoryIndex } from '../dist/storyteller/lexical-story-index.js';
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {
   const greywake = buildLongStoryMemoryCorpus('greywake');
@@ -129,6 +131,53 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   assert.ok(suite.summary.retrievalPassed > 0);
   assert.ok(suite.summary.retrievalPassed < suite.summary.queries);
 
+  const index = await buildLexicalStoryIndex(storage, {
+    storyId: materialized.storyId,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+  });
+  const indexed = index.search({
+    storyId: materialized.storyId,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+    query: 'patient tide road',
+    maxResults: 6,
+    maxExaminedUnits: 256,
+    maxExaminedBytes: 128 * 1024,
+  });
+  assert.equal(
+    indexed.candidates[0]?.unit.path,
+    'threads/patient-tide-return.md',
+  );
+  assert.equal(indexed.candidates[0]?.score.provider, 'field-lexical.v1');
+  assert.ok(
+    indexed.candidates.every(
+      (entry) => entry.unit.visibility !== 'developer-private',
+    ),
+  );
+  assert.throws(
+    () =>
+      index.search({
+        storyId: materialized.storyId,
+        rootHash: '0'.repeat(64),
+        rootRevision: materialized.rootRevision,
+        query: 'patient tide road',
+      }),
+    /does not match the captured story root/,
+  );
+
+  const indexedSuite = await evaluateIndexedMemoryRetrieval({
+    index,
+    corpus: greywake,
+  });
+  assert.equal(indexedSuite.summary.queries, suite.summary.queries);
+  assert.ok(
+    indexedSuite.summary.retrievalPassed > suite.summary.retrievalPassed,
+  );
+  assert.ok(
+    indexedSuite.summary.meanExpectedRecall > suite.summary.meanExpectedRecall,
+  );
+
   const abstractStorage = new LocalDocumentStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-abstract-')),
   );
@@ -144,6 +193,20 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   });
   assert.deepEqual(humanDefaults.candidates, []);
   assert.equal(humanDefaults.coverage.state, 'complete');
+  const abstractIndex = await buildLexicalStoryIndex(abstractStorage, {
+    storyId: abstract.storyId,
+    rootHash: abstract.rootHash,
+    rootRevision: abstract.rootRevision,
+  });
+  const indexedHumanDefaults = abstractIndex.search({
+    storyId: abstract.storyId,
+    rootHash: abstract.rootHash,
+    rootRevision: abstract.rootRevision,
+    query: 'tavern wage humanoid',
+  });
+  assert.equal(indexedHumanDefaults.candidates.length, 1);
+  assert.deepEqual(indexedHumanDefaults.candidates[0]?.matchedTerms, ['humanoid']);
+  assert.match(indexedHumanDefaults.candidates[0]?.snippet ?? '', /without humanoid/);
   const abstractSuite = await evaluateLinearMemoryBaseline({
     storage: abstractStorage,
     corpus: gradient,

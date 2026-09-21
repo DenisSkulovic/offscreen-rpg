@@ -7,3 +7,4 @@ export * from './usage-policy';
 export * from './task-admission';
 export * from './dispatch-review';
 export * from './canonical-search';
+export * from './lexical-story-index';
