@@ -19,6 +19,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import {
   CanonicalMemoryExplorationError,
+  creativeSnapshotWithinRecipe,
   type MemoryExplorationSnapshot,
 } from './memory-exploration';
 import { packMemoryExplorationEvidence } from './memory-evidence-packing';
@@ -285,6 +286,14 @@ export async function runScriptedMemoryExploration(
     );
     const snapshot = explorer.snapshot();
     assertSnapshotWithinRecipe(snapshot, recipe);
+    if (
+      !creativeSnapshotWithinRecipe(
+        snapshot,
+        task.resources.creativeExploration,
+      )
+    ) {
+      throw new Error('Stored creative exploration artifact exceeds its recipe');
+    }
     if (artifact.state === 'final-ready') {
       const finalCandidate = storedFinalCandidateSchema.parse(
         artifact.finalOutput,
@@ -417,6 +426,14 @@ export async function runScriptedMemoryExploration(
       }
       const nextSnapshot = explorer.snapshot();
       assertSnapshotWithinRecipe(nextSnapshot, recipe);
+      if (
+        !creativeSnapshotWithinRecipe(
+          nextSnapshot,
+          task.resources.creativeExploration,
+        )
+      ) {
+        return fail('creative-limit');
+      }
       const updated = await database.db
         .update(storytellerMemoryExploration)
         .set({

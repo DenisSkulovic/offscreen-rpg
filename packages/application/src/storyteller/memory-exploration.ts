@@ -1,4 +1,11 @@
 import type {
+  CreativeExplorationRecipe,
+} from '@offscreen/contracts/creative-exploration';
+import {
+  creativeExplorationRecipeSchema,
+  disabledCreativeExplorationRecipe,
+} from '@offscreen/contracts/creative-exploration';
+import type {
   StoryRetrievalCandidate,
   StoryRetrievalUnit,
 } from '@offscreen/contracts/story-retrieval';
@@ -16,7 +23,7 @@ type EvidenceHandle = Readonly<{
 }>;
 
 export type CanonicalMemoryExplorationFailureCode =
-  'stale-root' | 'invalid-handle' | 'read-limit';
+  'stale-root' | 'invalid-handle' | 'read-limit' | 'creative-limit';
 
 export class CanonicalMemoryExplorationError extends Error {
   constructor(readonly code: CanonicalMemoryExplorationFailureCode) {
@@ -36,8 +43,88 @@ export type MemoryExplorationSnapshot = Readonly<{
   rounds: readonly unknown[];
 }>;
 
-function normalize(value: string) {
-  return value.normalize('NFKC').toLocaleLowerCase('en-US').trim();
+function record(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+export function measureCreativeSnapshotUsage(
+  snapshot: Pick<MemoryExplorationSnapshot, 'rounds'>,
+) {
+  let queries = 0;
+  let leads = 0;
+  let maxCandidatesInQuery = 0;
+  const lenses = new Set<string>();
+  for (const rawRound of snapshot.rounds) {
+    const round = record(rawRound);
+    const parsedRequest = storytellerNeedsContextSchema.safeParse(
+      round?.request,
+    );
+    if (!parsedRequest.success) continue;
+    const creativeRequests = parsedRequest.data.requests.filter(
+      (request) => request.operation === 'creative_search',
+    );
+    if (!creativeRequests.length) {
+      if (
+        round &&
+        Array.isArray(round.results) &&
+        round.results.some(
+          (rawResult) => record(rawResult)?.operation === 'creative_search',
+        )
+      ) {
+        return null;
+      }
+      continue;
+    }
+    if (!round || !Array.isArray(round.results)) return null;
+    const requestsById = new Map(
+      creativeRequests.map((request) => [request.requestId, request]),
+    );
+    const returnedRequestIds = new Set<string>();
+    for (const rawResult of round.results) {
+      const result = record(rawResult);
+      if (result?.operation !== 'creative_search') continue;
+      const request =
+        typeof result.requestId === 'string'
+          ? requestsById.get(result.requestId)
+          : undefined;
+      if (
+        !request ||
+        returnedRequestIds.has(request.requestId) ||
+        result.lens !== request.lens ||
+        !Array.isArray(result.candidates)
+      ) {
+        return null;
+      }
+      returnedRequestIds.add(request.requestId);
+      queries += 1;
+      lenses.add(request.lens);
+      leads += result.candidates.length;
+      maxCandidatesInQuery = Math.max(
+        maxCandidatesInQuery,
+        result.candidates.length,
+      );
+    }
+    if (returnedRequestIds.size !== creativeRequests.length) return null;
+  }
+  return { queries, lenses: lenses.size, leads, maxCandidatesInQuery };
+}
+
+export function creativeSnapshotWithinRecipe(
+  snapshot: Pick<MemoryExplorationSnapshot, 'rounds'>,
+  recipe: CreativeExplorationRecipe,
+) {
+  const usage = measureCreativeSnapshotUsage(snapshot);
+  if (!usage) return false;
+  if (!usage.queries) return true;
+  return (
+    recipe.enabled &&
+    usage.queries <= recipe.limits.maxQueries &&
+    usage.lenses <= recipe.limits.maxLenses &&
+    usage.leads <= recipe.limits.maxLeads &&
+    usage.maxCandidatesInQuery <= recipe.limits.maxCandidatesPerQuery
+  );
 }
 
 /**
@@ -48,9 +135,13 @@ export function createCanonicalMemoryExplorer(input: {
   storage: DocumentStore;
   index: LexicalStoryIndex;
   recipe: ResolvedStoryRetrievalRecipe;
+  creativeExploration?: CreativeExplorationRecipe;
   snapshot?: MemoryExplorationSnapshot;
 }) {
   const { storage, index, recipe } = input;
+  const creativeExploration = creativeExplorationRecipeSchema.parse(
+    input.creativeExploration ?? disabledCreativeExplorationRecipe,
+  );
   const initial = input.snapshot;
   const validHandleSet = (entries: readonly EvidenceHandle[], prefix: string) =>
     entries.every((entry) =>
@@ -67,6 +158,7 @@ export function createCanonicalMemoryExplorer(input: {
       initial.retainedBytes > recipe.assembly.maxBytes ||
       !validHandleSet(initial.memoryHandles, 'm') ||
       !validHandleSet(initial.sourceHandles, 's') ||
+      !creativeSnapshotWithinRecipe(initial, creativeExploration) ||
       initial.storyId !== index.storyId ||
       initial.rootHash !== index.rootHash ||
       initial.rootRevision !== index.rootRevision)
@@ -197,6 +289,37 @@ export function createCanonicalMemoryExplorer(input: {
     if (readsUsed + request.requests.length > recipe.assembly.maxReads) {
       throw new CanonicalMemoryExplorationError('read-limit');
     }
+    const priorCreativeUsage = measureCreativeSnapshotUsage({ rounds });
+    if (!priorCreativeUsage) {
+      throw new Error('Invalid creative exploration snapshot');
+    }
+    const requestedCreative = request.requests.filter(
+      (operation) => operation.operation === 'creative_search',
+    );
+    const requestedLenses = new Set([
+      ...rounds.flatMap((rawRound) => {
+        const round = record(rawRound);
+        const parsed = storytellerNeedsContextSchema.safeParse(round?.request);
+        return parsed.success
+          ? parsed.data.requests.flatMap((operation) =>
+              operation.operation === 'creative_search'
+                ? [operation.lens]
+                : [],
+            )
+          : [];
+      }),
+      ...requestedCreative.map((operation) => operation.lens),
+    ]);
+    if (
+      requestedCreative.length > 0 &&
+      (!creativeExploration.enabled ||
+        priorCreativeUsage.queries + requestedCreative.length >
+          creativeExploration.limits.maxQueries ||
+        requestedLenses.size > creativeExploration.limits.maxLenses)
+    ) {
+      throw new CanonicalMemoryExplorationError('creative-limit');
+    }
+    let creativeLeadsUsed = priorCreativeUsage.leads;
     const results = [];
     for (const operation of request.requests) {
       readsUsed += 1;
@@ -206,6 +329,26 @@ export function createCanonicalMemoryExplorer(input: {
         operation.operation === 'query_registry'
       ) {
         const registry = operation.operation === 'query_registry';
+        const creativeCandidateLimit =
+          operation.operation === 'creative_search'
+            ? Math.min(
+                creativeExploration.limits.maxCandidatesPerQuery,
+                creativeExploration.limits.maxLeads - creativeLeadsUsed,
+              )
+            : null;
+        if (
+          creativeCandidateLimit === 0 &&
+          operation.operation === 'creative_search'
+        ) {
+          results.push({
+            requestId: operation.requestId,
+            operation: operation.operation,
+            lens: operation.lens,
+            state: 'lead-limit',
+            candidates: [],
+          });
+          continue;
+        }
         const tuning = registry
           ? {
               ...recipe.query.tuning,
@@ -223,6 +366,14 @@ export function createCanonicalMemoryExplorer(input: {
           rootRevision: index.rootRevision,
           query: operation.query,
           ...recipe.query,
+          ...(creativeCandidateLimit === null
+            ? {}
+            : {
+                maxResults: Math.min(
+                  recipe.query.maxResults,
+                  creativeCandidateLimit,
+                ),
+              }),
           tuning,
         });
         const manifest = await storage.readManifest(index.rootHash);
@@ -242,6 +393,9 @@ export function createCanonicalMemoryExplorer(input: {
             candidateResult(candidate, registry, manifest),
           ),
         });
+        if (operation.operation === 'creative_search') {
+          creativeLeadsUsed += result.candidates.length;
+        }
         continue;
       }
       const handles =

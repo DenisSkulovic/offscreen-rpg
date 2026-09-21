@@ -68,6 +68,7 @@ registerStoryConcern(
             ...oneShotTask.resources,
             creativeExploration: resolveCreativeExplorationRecipe({
               posture: 'minimal',
+              requested: { maxCandidatesPerQuery: 1, maxLeads: 1 },
             }),
             recipe: {
               version: 'memory-exploration.v1',
@@ -341,6 +342,85 @@ registerStoryConcern(
           assertCreativeLimit,
         );
         assert.equal(disabledSourceCalls, 1);
+
+        const overflowGenerationId = randomUUID();
+        await database.db.insert(generation).values({
+          id: overflowGenerationId,
+          ownerId: owner,
+          kind: 'storyteller.profiled.v1',
+          input: task,
+        });
+        let overflowSourceCalls = 0;
+        const overflowSource: ScriptedMemoryRoundSource = () => {
+          overflowSourceCalls += 1;
+          return {
+            kind: 'needs_context',
+            version: 1,
+            purpose: 'Try to return more creative leads than admitted.',
+            requests: [
+              {
+                requestId: 'r1',
+                operation: 'creative_search',
+                lens: 'relationship',
+                query: 'old promise',
+              },
+            ],
+          };
+        };
+        const createOverflowExplorer = (saved?: MemoryExplorationSnapshot) => {
+          let snapshot = saved ?? initialSnapshot;
+          return {
+            execute: async (request: { requests: readonly unknown[] }) => {
+              const candidate = {
+                handle: 'm1',
+                documentId: memoryUnit.documentId,
+                revision: 1,
+                title: 'Old promise',
+                path: memoryUnit.path,
+                kind: memoryUnit.kind,
+                linkedSources: [],
+                snippet: 'The old promise remains unresolved.',
+              };
+              snapshot = {
+                ...snapshot,
+                readsUsed: snapshot.readsUsed + request.requests.length,
+                memoryHandles: [{ handle: 'm1', unit: memoryUnit }],
+                rounds: [
+                  ...snapshot.rounds,
+                  {
+                    request,
+                    results: [
+                      {
+                        requestId: 'r1',
+                        operation: 'creative_search',
+                        lens: 'relationship',
+                        state: 'ok',
+                        candidates: [candidate, candidate],
+                      },
+                    ],
+                  },
+                ],
+              };
+            },
+            snapshot: () => snapshot,
+          };
+        };
+        const overflowInput = {
+          generationId: overflowGenerationId,
+          task,
+          createExplorer: createOverflowExplorer,
+          source: overflowSource,
+        } as const;
+        await assert.rejects(
+          runScriptedMemoryExploration(database, overflowInput),
+          assertCreativeLimit,
+        );
+        assert.equal(overflowSourceCalls, 1);
+        await assert.rejects(
+          runScriptedMemoryExploration(database, overflowInput),
+          assertCreativeLimit,
+        );
+        assert.equal(overflowSourceCalls, 1);
 
         const failedGenerationId = randomUUID();
         await database.db.insert(generation).values({

@@ -672,10 +672,14 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   assert.equal(minimalSearch.coverage.eligibleUnits, 8);
 
   const explorationRecipe = resolveStoryRetrievalRecipe({ posture: 'rich' });
+  const creativeRecipe = resolveCreativeExplorationRecipe({
+    posture: 'minimal',
+  });
   const explorer = createCanonicalMemoryExplorer({
     storage,
     index,
     recipe: explorationRecipe,
+    creativeExploration: creativeRecipe,
   });
   const discovery = await explorer.execute({
     kind: 'needs_context',
@@ -702,6 +706,7 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     storage,
     index,
     recipe: explorationRecipe,
+    creativeExploration: creativeRecipe,
     snapshot: explorer.snapshot(),
   });
   const evidenceRound = await resumedExplorer.execute({
@@ -724,6 +729,38 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   );
   assert.equal(resumedExplorer.snapshot().readsUsed, 4);
   assert.equal(resumedExplorer.snapshot().rounds.length, 2);
+  const leadCappedExplorer = createCanonicalMemoryExplorer({
+    storage,
+    index,
+    recipe: explorationRecipe,
+    creativeExploration: resolveCreativeExplorationRecipe({
+      posture: 'balanced',
+      requested: { maxCandidatesPerQuery: 1, maxLeads: 1 },
+    }),
+  });
+  const leadCappedRound = await leadCappedExplorer.execute({
+    kind: 'needs_context',
+    version: 1,
+    purpose: 'Prove creative lead accounting before handle allocation.',
+    requests: [
+      {
+        requestId: 'r1',
+        operation: 'creative_search',
+        lens: 'relationship',
+        query: 'quiet favor',
+      },
+      {
+        requestId: 'r2',
+        operation: 'creative_search',
+        lens: 'echo',
+        query: 'old storm',
+      },
+    ],
+  });
+  assert.equal(leadCappedRound.results[0].candidates.length, 1);
+  assert.equal(leadCappedRound.results[1].state, 'lead-limit');
+  assert.deepEqual(leadCappedRound.results[1].candidates, []);
+  assert.equal(leadCappedExplorer.snapshot().memoryHandles.length, 1);
   const packableEvidence = buildPackableMemoryEvidence(
     resumedExplorer.snapshot(),
   );
@@ -872,10 +909,10 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   );
   assert.equal(
     orchestrationComparison.separate.retransmissionDeltaBytes,
-    11_025,
+    10_532,
   );
-  assert.equal(orchestrationComparison.inline.capturedRequestBytes, 20_749);
-  assert.equal(orchestrationComparison.separate.capturedRequestBytes, 31_774);
+  assert.equal(orchestrationComparison.inline.capturedRequestBytes, 20_256);
+  assert.equal(orchestrationComparison.separate.capturedRequestBytes, 30_788);
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),
