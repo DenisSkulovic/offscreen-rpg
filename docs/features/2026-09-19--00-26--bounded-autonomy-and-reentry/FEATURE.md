@@ -99,4 +99,4 @@ Prepared options and fallbacks must be rechecked against current state at resolu
 
 ## Owning specifications
 
-[Vision](../../vision.md), [playthroughs](../../playthroughs.md), [time and autonomy](../../time-and-autonomy.md), [player experience](../../player-experience.md), [notifications](../../technical/notifications.md), and [earned-time playable loop](../2026-09-19--00-26--earned-time-playable-loop/FEATURE.md).
+[Vision](../../vision.md), [playthroughs](../../playthroughs.md), [time and autonomy](../../time-and-autonomy.md), [player experience](../../player-experience.md), [notifications](../../technical/notifications.md), and the permanent [gold-session playthrough](../../technical/playthroughs/harbor-session.md).
