@@ -12,6 +12,9 @@ const evaluationRouteSchema = z.strictObject({
     'native-json-schema',
     'json-object-local-validation',
   ]),
+  responseTransport: z
+    .enum(['buffered-json', 'streaming-sse'])
+    .default('buffered-json'),
   inputMicrousdPerMillion: unsignedIntegerString,
   outputMicrousdPerMillion: unsignedIntegerString,
   supportsStructuredOutput: z.literal(true),
@@ -238,6 +241,7 @@ export const liveEvaluationManifestSchema = z
         'native-json-schema',
         'json-object-local-validation',
       ]),
+      responseTransport: z.enum(['buffered-json', 'streaming-sse']),
       inputMicrousdPerMillion: unsignedIntegerString,
       outputMicrousdPerMillion: unsignedIntegerString,
       supportsStructuredOutput: z.boolean(),

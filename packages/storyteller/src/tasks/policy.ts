@@ -12,6 +12,8 @@ export const modelPolicySchema = z.strictObject({
   outputProtocol: z
     .enum(['native-json-schema', 'json-object-local-validation'])
     .optional(),
+  /** Response framing is captured because it changes the reviewed provider packet. */
+  responseTransport: z.enum(['buffered-json', 'streaming-sse']).optional(),
   inputMicrousdPerMillion: microusdSchema,
   outputMicrousdPerMillion: microusdSchema,
   maxInputTokens: z.number().int().positive().max(100000),

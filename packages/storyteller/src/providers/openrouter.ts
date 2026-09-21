@@ -79,6 +79,7 @@ export function buildOpenRouterRequest(
   const selected = providerDispatch(task, dispatch);
   const policy = task.execution.policy;
   const outputProtocol = policy.outputProtocol ?? 'native-json-schema';
+  const responseTransport = policy.responseTransport ?? 'buffered-json';
   reservationForRequest(
     selected.request,
     policy,
@@ -89,7 +90,10 @@ export function buildOpenRouterRequest(
   return {
     model: policy.model,
     messages: selected.request.messages,
-    stream: false,
+    stream: responseTransport === 'streaming-sse',
+    ...(responseTransport === 'streaming-sse'
+      ? { stream_options: { include_usage: true } }
+      : {}),
     max_tokens: selected.maxGeneratedTokens,
     reasoning: { enabled: false, exclude: true },
     plugins: [
@@ -176,6 +180,10 @@ export function inspectOpenRouterRequest(
       task.execution.mode === 'provider'
         ? (task.execution.policy.outputProtocol ?? 'native-json-schema')
         : 'native-json-schema',
+    responseTransport:
+      task.execution.mode === 'provider'
+        ? (task.execution.policy.responseTransport ?? 'buffered-json')
+        : 'buffered-json',
     body,
     sha256: createHash('sha256').update(serialized).digest('hex'),
     serializedBytes: Buffer.byteLength(serialized, 'utf8'),
@@ -303,24 +311,26 @@ const providerIdSchema = z
   .max(200)
   .regex(/^[\x21-\x7e]+$/);
 
+const usageSchema = z.object({
+  cost: z.union([z.number().finite().nonnegative(), z.string().max(100)]),
+  prompt_tokens: z.number().int().nonnegative(),
+  completion_tokens: z.number().int().nonnegative(),
+  total_tokens: z.number().int().nonnegative(),
+  prompt_tokens_details: z
+    .object({
+      cached_tokens: z.number().int().nonnegative().optional(),
+      cache_write_tokens: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
+  completion_tokens_details: z
+    .object({ reasoning_tokens: z.number().int().nonnegative().optional() })
+    .optional(),
+});
+
 const responseSchema = z.object({
   id: providerIdSchema,
   model: z.string().min(1).max(200),
-  usage: z.object({
-    cost: z.union([z.number().finite().nonnegative(), z.string().max(100)]),
-    prompt_tokens: z.number().int().nonnegative(),
-    completion_tokens: z.number().int().nonnegative(),
-    total_tokens: z.number().int().nonnegative(),
-    prompt_tokens_details: z
-      .object({
-        cached_tokens: z.number().int().nonnegative().optional(),
-        cache_write_tokens: z.number().int().nonnegative().optional(),
-      })
-      .optional(),
-    completion_tokens_details: z
-      .object({ reasoning_tokens: z.number().int().nonnegative().optional() })
-      .optional(),
-  }),
+  usage: usageSchema,
   choices: z
     .array(
       z.object({
@@ -332,6 +342,23 @@ const responseSchema = z.object({
       }),
     )
     .min(1)
+    .max(1),
+});
+
+const streamChunkSchema = z.object({
+  id: providerIdSchema.optional(),
+  model: z.string().min(1).max(200).optional(),
+  usage: usageSchema.nullable().optional(),
+  choices: z
+    .array(
+      z.object({
+        finish_reason: z.string().nullable().optional(),
+        delta: z.object({
+          content: z.string().nullable().optional(),
+          refusal: z.string().nullable().optional(),
+        }),
+      }),
+    )
     .max(1),
 });
 
@@ -425,7 +452,62 @@ export function diagnoseOpenRouterResponse(
   }
 }
 
-async function boundedResponse(response: Response) {
+function parseSseResponse(raw: string, headerProviderId: string | null) {
+  let providerId = headerProviderId;
+  let model: string | null = null;
+  let usage: z.infer<typeof usageSchema> | null = null;
+  let content = '';
+  let refusal: string | null = null;
+  let finishReason: string | null = null;
+  let done = false;
+
+  for (const event of raw.split(/\r?\n\r?\n/)) {
+    const data = event
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.slice(5).trimStart())
+      .join('\n');
+    if (!data) continue;
+    if (data === '[DONE]') {
+      done = true;
+      continue;
+    }
+    const chunk = streamChunkSchema.parse(JSON.parse(data) as unknown);
+    if (chunk.id && providerId && chunk.id !== providerId) {
+      throw new Error('Streaming response generation identity changed');
+    }
+    if (chunk.model && model && chunk.model !== model) {
+      throw new Error('Streaming response model identity changed');
+    }
+    providerId ??= chunk.id ?? null;
+    model ??= chunk.model ?? null;
+    usage = chunk.usage ?? usage;
+    const choice = chunk.choices[0];
+    content += choice?.delta.content ?? '';
+    refusal = choice?.delta.refusal ?? refusal;
+    finishReason = choice?.finish_reason ?? finishReason;
+  }
+  if (!done || !providerId || !model || !usage) {
+    throw new Error('Incomplete streaming response');
+  }
+  return {
+    id: providerId,
+    model,
+    usage,
+    choices: [
+      {
+        finish_reason: finishReason,
+        message: { content, refusal },
+      },
+    ],
+  };
+}
+
+async function boundedResponse(
+  response: Response,
+  responseTransport: 'buffered-json' | 'streaming-sse',
+  headerProviderId: string | null,
+) {
   if (!response.body) {
     throw new Error('Missing response');
   }
@@ -449,7 +531,13 @@ async function boundedResponse(response: Response) {
     reader.releaseLock();
   }
   const raw = Buffer.concat(chunks).toString('utf8');
-  return { raw, parsed: JSON.parse(raw) as unknown };
+  return {
+    raw,
+    parsed:
+      responseTransport === 'streaming-sse'
+        ? parseSseResponse(raw, headerProviderId)
+        : (JSON.parse(raw) as unknown),
+  };
 }
 
 function responseGenerationId(response: Response) {
@@ -499,7 +587,11 @@ export function createOpenRouterProvider(config: {
       httpStatus = response.status;
       providerId = responseGenerationId(response);
       // Even HTTP errors may follow a billed attempt. Missing accounting is not zero.
-      const bounded = await boundedResponse(response);
+      const bounded = await boundedResponse(
+        response,
+        policy.responseTransport ?? 'buffered-json',
+        providerId,
+      );
       await config.recordResponse?.({
         raw: bounded.raw,
         httpStatus,

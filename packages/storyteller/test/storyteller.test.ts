@@ -1356,6 +1356,95 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     interrupted.telemetry.providerId,
     'generation-before-body-failure',
   );
+
+  const streamingTask = prepareStorytellerTask({
+    ...task,
+    execution: {
+      ...providerExecution,
+      policy: {
+        ...providerExecution.policy,
+        responseTransport: 'streaming-sse' as const,
+      },
+    },
+    resources: providerResources(providerExecution.policy.route),
+  });
+  const streamingInspection = inspectOpenRouterRequest(streamingTask);
+  assert.equal(streamingInspection.responseTransport, 'streaming-sse');
+  assert.equal(streamingInspection.body.stream, true);
+  assert.deepEqual(streamingInspection.body.stream_options, {
+    include_usage: true,
+  });
+  const streamedContent = JSON.stringify(scriptedStorytellerResult(task));
+  const streamingProvider = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        [
+          `data: ${JSON.stringify({
+            id: 'stream-generation',
+            model: 'test/model',
+            choices: [
+              {
+                finish_reason: null,
+                delta: { content: streamedContent.slice(0, 80) },
+              },
+            ],
+          })}`,
+          `data: ${JSON.stringify({
+            id: 'stream-generation',
+            model: 'test/model',
+            choices: [
+              {
+                finish_reason: 'stop',
+                delta: { content: streamedContent.slice(80) },
+              },
+            ],
+          })}`,
+          `data: ${JSON.stringify({
+            id: 'stream-generation',
+            model: 'test/model',
+            choices: [],
+            usage: {
+              cost: 0,
+              prompt_tokens: 10,
+              completion_tokens: 20,
+              total_tokens: 30,
+            },
+          })}`,
+          'data: [DONE]',
+          '',
+        ].join('\n\n'),
+        { headers: { 'x-generation-id': 'stream-generation' } },
+      ),
+  });
+  const streamed = await streamingProvider(streamingTask);
+  assert.equal(streamed.kind, 'result');
+  assert.equal(streamed.telemetry.providerId, 'stream-generation');
+  assert.equal(streamed.telemetry.finishReason, 'stop');
+  if (streamed.kind === 'result') {
+    assert.equal(streamed.usage.totalTokens, 30);
+  }
+  const incompleteStreamingProvider = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        `data: ${JSON.stringify({
+          model: 'test/model',
+          choices: [
+            { finish_reason: null, delta: { content: streamedContent } },
+          ],
+        })}\n\n`,
+        { headers: { 'x-generation-id': 'incomplete-stream-generation' } },
+      ),
+  });
+  const incompleteStream = await incompleteStreamingProvider(streamingTask);
+  assert.equal(incompleteStream.kind, 'uncertain');
+  assert.equal(
+    incompleteStream.telemetry.providerId,
+    'incomplete-stream-generation',
+  );
   assert.throws(() =>
     createOpenRouterProvider({ enabled: false, apiKey: 'dummy' }),
   );
