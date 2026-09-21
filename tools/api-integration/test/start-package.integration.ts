@@ -16,6 +16,7 @@ import {
   runScriptedMemoryExploration,
   searchCanonicalKnowledge,
   type MemoryExplorationSnapshot,
+  type ScriptedMemoryRoundSource,
 } from '@offscreen/application/storyteller';
 import { generation } from '@offscreen/db/generation-schema';
 import {
@@ -93,12 +94,17 @@ registerStoryConcern(
           sourceHandles: [],
           rounds: [],
         };
+        let failNextRead = true;
         const createExplorer = (saved?: MemoryExplorationSnapshot) => {
           let snapshot = saved ?? initialSnapshot;
           return {
             execute: async (request: {
               requests: readonly unknown[];
             }) => {
+              if (failNextRead) {
+                failNextRead = false;
+                throw new Error('simulated crash after request persistence');
+              }
               const round = { request, results: [] };
               snapshot = {
                 ...snapshot,
@@ -111,28 +117,39 @@ registerStoryConcern(
           };
         };
         let sourceCalls = 0;
-        const completed = await runScriptedMemoryExploration(database, {
+        const source: ScriptedMemoryRoundSource = ({ round }) => {
+          sourceCalls += 1;
+          return round === 1
+            ? {
+                kind: 'needs_context',
+                version: 1,
+                purpose: 'Find the old promise before composing.',
+                requests: [
+                  {
+                    requestId: 'r1',
+                    operation: 'search_memory',
+                    query: 'old promise',
+                  },
+                ],
+              }
+            : scriptedStorytellerResult(task);
+        };
+        const controllerInput = {
           generationId,
           task,
           createExplorer,
-          source: ({ round }) => {
-            sourceCalls += 1;
-            return round === 1
-              ? {
-                  kind: 'needs_context',
-                  version: 1,
-                  purpose: 'Find the old promise before composing.',
-                  requests: [
-                    {
-                      requestId: 'r1',
-                      operation: 'search_memory',
-                      query: 'old promise',
-                    },
-                  ],
-                }
-              : scriptedStorytellerResult(task);
-          },
-        });
+          source,
+        } as const;
+        await assert.rejects(
+          runScriptedMemoryExploration(database, controllerInput),
+          /simulated crash/,
+        );
+        assert.equal(sourceCalls, 1);
+
+        const completed = await runScriptedMemoryExploration(
+          database,
+          controllerInput,
+        );
         assert.equal(completed.replayed, false);
         assert.equal(completed.explorationRounds, 1);
         assert.equal(sourceCalls, 2);

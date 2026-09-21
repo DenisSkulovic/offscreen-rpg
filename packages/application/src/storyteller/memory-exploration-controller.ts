@@ -1,5 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
+import { createHash } from 'node:crypto';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
@@ -46,6 +47,10 @@ function assertSnapshotWithinRecipe(
   ) {
     throw new Error('Memory exploration artifact exceeds its recipe');
   }
+}
+
+function requestSha256(request: unknown) {
+  return createHash('sha256').update(JSON.stringify(request)).digest('hex');
 }
 
 /**
@@ -118,7 +123,18 @@ export async function runScriptedMemoryExploration(
     if (round > recipe.maxModelRounds) {
       throw new Error('Memory exploration final round exhausted');
     }
-    const rawOutput = await input.source({ task, round, snapshot });
+    const pendingRequest = artifact.pendingRequest
+      ? storytellerNeedsContextSchema.parse(artifact.pendingRequest)
+      : null;
+    if (
+      pendingRequest &&
+      requestSha256(pendingRequest) !== artifact.pendingRequestSha256
+    ) {
+      throw new Error('Memory exploration pending request hash mismatch');
+    }
+    const rawOutput = pendingRequest
+      ? pendingRequest
+      : await input.source({ task, round, snapshot });
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
     if (contextRequest.success) {
       if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {
@@ -130,6 +146,35 @@ export async function runScriptedMemoryExploration(
       ) {
         throw new Error('Memory exploration read limit exceeded');
       }
+      if (!pendingRequest) {
+        const requestHash = requestSha256(contextRequest.data);
+        const persisted = await database.db
+          .update(storytellerMemoryExploration)
+          .set({
+            revision: artifact.revision + 1,
+            pendingRequestSha256: requestHash,
+            pendingRequest: contextRequest.data,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(
+            and(
+              eq(
+                storytellerMemoryExploration.generationId,
+                input.generationId,
+              ),
+              eq(storytellerMemoryExploration.revision, artifact.revision),
+              eq(storytellerMemoryExploration.state, 'exploring'),
+              sql`${storytellerMemoryExploration.pendingRequest} IS NULL`,
+            ),
+          )
+          .returning({
+            generationId: storytellerMemoryExploration.generationId,
+          });
+        if (!persisted.length) {
+          throw new Error('Memory exploration artifact changed concurrently');
+        }
+        continue;
+      }
       await explorer.execute(contextRequest.data);
       const nextSnapshot = explorer.snapshot();
       assertSnapshotWithinRecipe(nextSnapshot, recipe);
@@ -138,6 +183,8 @@ export async function runScriptedMemoryExploration(
         .set({
           revision: artifact.revision + 1,
           snapshot: nextSnapshot,
+          pendingRequestSha256: null,
+          pendingRequest: null,
           updatedAt: sql`clock_timestamp()`,
         })
         .where(

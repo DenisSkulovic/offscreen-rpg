@@ -53,7 +53,7 @@ Acceptance:
 - the result distinguishes current state from historical evidence;
 - nothing has yet been published to the player.
 
-The restored value is stored in a generation-owned private artifact after an accepted round. A completed final candidate is stored there and replayed without another scripted decision. A crash inside a round can still recompute its read-only work; duplicate accepted-request reuse and stronger crash recovery remain X2.
+The normalized context request and its SHA-256 identity are stored before its reads begin. Recovery executes that request before asking for another Storyteller decision. The resulting snapshot is accepted atomically, so a crash may repeat the same read-only lookup but cannot double-count it. A completed final candidate is stored in the same generation-owned private artifact and replayed without another scripted decision.
 
 ## GW-03 — bounded final candidate — current mechanics, target composition
 
@@ -74,7 +74,8 @@ Final-candidate control/replay is implemented; evidence-aware model composition 
 | Private or superseded decoy | Exclude it from eligible canonical evidence | Current retrieval boundary |
 | Captured root becomes stale | Refuse mixed-era read/publication | Read fence current; publication fence target |
 | Read or retained-byte ceiling exhausted | Stop optional exploration while preserving final reserve | Limits current; connected final reserve target |
-| Duplicate request or crash after reads | Reuse the accepted artifact without extra mechanics or hidden work | Target X2 recovery |
+| Crash after request acceptance | Replay the hashed request without another Storyteller decision; accept its counters once | Current controller recovery |
+| Crash after reads but before snapshot commit | The same read-only lookup may repeat; accepted counters and handles advance once | Current controller recovery |
 | Valid retrieval, ignored evidence | Retrieval/assembly pass; generation-use fails | Current evaluator attribution |
 
-The executable acceptance stages live in `reusable-start-package` version 15: `retrieval-oracle`, `lexical-discovery`, `retrieval-cost-postures` and `scripted-memory-exploration`. [QA journeys](../../engineering/qa-journeys.md#long-story-memory-checklist) explains how evidence is recorded. [Storyteller requests and cost](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) owns the model-side budget and round distinction. The [exploration feature](../../features/2026-09-21--10-55--storyteller-memory-exploration/PLAN.md) owns implementation status.
+The executable acceptance stages live in `reusable-start-package` version 16: `retrieval-oracle`, `lexical-discovery`, `retrieval-cost-postures` and `scripted-memory-exploration`. [QA journeys](../../engineering/qa-journeys.md#long-story-memory-checklist) explains how evidence is recorded. [Storyteller requests and cost](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) owns the model-side budget and round distinction. The [exploration feature](../../features/2026-09-21--10-55--storyteller-memory-exploration/PLAN.md) owns implementation status.

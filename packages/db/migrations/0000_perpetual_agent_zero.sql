@@ -694,12 +694,15 @@ CREATE TABLE "storyteller_memory_exploration" (
 	"revision" integer DEFAULT 0 NOT NULL,
 	"state" text DEFAULT 'exploring' NOT NULL,
 	"snapshot" jsonb NOT NULL,
+	"pending_request_sha256" text,
+	"pending_request" jsonb,
 	"final_output" jsonb,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "storyteller_memory_exploration_revision" CHECK ("storyteller_memory_exploration"."revision" >= 0),
 	CONSTRAINT "storyteller_memory_exploration_state" CHECK ("storyteller_memory_exploration"."state" IN ('exploring','final-ready')),
-	CONSTRAINT "storyteller_memory_exploration_output" CHECK (("storyteller_memory_exploration"."state" = 'exploring' AND "storyteller_memory_exploration"."final_output" IS NULL) OR ("storyteller_memory_exploration"."state" = 'final-ready' AND "storyteller_memory_exploration"."final_output" IS NOT NULL))
+	CONSTRAINT "storyteller_memory_exploration_output" CHECK (("storyteller_memory_exploration"."state" = 'exploring' AND "storyteller_memory_exploration"."final_output" IS NULL) OR ("storyteller_memory_exploration"."state" = 'final-ready' AND "storyteller_memory_exploration"."final_output" IS NOT NULL AND "storyteller_memory_exploration"."pending_request" IS NULL AND "storyteller_memory_exploration"."pending_request_sha256" IS NULL)),
+	CONSTRAINT "storyteller_memory_exploration_pending_request" CHECK (("storyteller_memory_exploration"."pending_request" IS NULL AND "storyteller_memory_exploration"."pending_request_sha256" IS NULL) OR ("storyteller_memory_exploration"."pending_request" IS NOT NULL AND "storyteller_memory_exploration"."pending_request_sha256" ~ '^[0-9a-f]{64}$'))
 );
 --> statement-breakpoint
 ALTER TABLE "storyteller_memory_exploration" ADD CONSTRAINT "storyteller_memory_exploration_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;

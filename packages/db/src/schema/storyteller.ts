@@ -52,6 +52,8 @@ export const storytellerMemoryExploration = pgTable(
       .default('exploring')
       .$type<'exploring' | 'final-ready'>(),
     snapshot: jsonb('snapshot').notNull().$type<unknown>(),
+    pendingRequestSha256: text('pending_request_sha256'),
+    pendingRequest: jsonb('pending_request').$type<unknown>(),
     finalOutput: jsonb('final_output').$type<unknown>(),
     createdAt: timestamp('created_at', {
       withTimezone: true,
@@ -74,7 +76,11 @@ export const storytellerMemoryExploration = pgTable(
     ),
     check(
       'storyteller_memory_exploration_output',
-      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL)`,
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+    ),
+    check(
+      'storyteller_memory_exploration_pending_request',
+      sql`(${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.pendingRequest} IS NOT NULL AND ${t.pendingRequestSha256} ~ '^[0-9a-f]{64}$')`,
     ),
   ],
 );

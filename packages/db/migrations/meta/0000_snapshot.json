@@ -1,6 +1,6 @@
 {
-  "id": "e73e6654-1eaa-400d-8830-6eb6239a6e8d",
-  "prevId": "3756cccb-9b05-4322-a7dd-5320ec54a458",
+  "id": "f11385f5-68b1-478a-81e4-c90fa41b9c3c",
+  "prevId": "e73e6654-1eaa-400d-8830-6eb6239a6e8d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3970,6 +3970,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "pending_request_sha256": {
+          "name": "pending_request_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pending_request": {
+          "name": "pending_request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "final_output": {
           "name": "final_output",
           "type": "jsonb",
@@ -4021,7 +4033,11 @@
         },
         "storyteller_memory_exploration_output": {
           "name": "storyteller_memory_exploration_output",
-          "value": "(\"storyteller_memory_exploration\".\"state\" = 'exploring' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'final-ready' AND \"storyteller_memory_exploration\".\"final_output\" IS NOT NULL)"
+          "value": "(\"storyteller_memory_exploration\".\"state\" = 'exploring' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'final-ready' AND \"storyteller_memory_exploration\".\"final_output\" IS NOT NULL AND \"storyteller_memory_exploration\".\"pending_request\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" IS NULL)"
+        },
+        "storyteller_memory_exploration_pending_request": {
+          "name": "storyteller_memory_exploration_pending_request",
+          "value": "(\"storyteller_memory_exploration\".\"pending_request\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" IS NULL) OR (\"storyteller_memory_exploration\".\"pending_request\" IS NOT NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" ~ '^[0-9a-f]{64}$')"
         }
       },
       "isRLSEnabled": false
