@@ -159,3 +159,27 @@ Implementation owner: Codex for the current owner-requested implementation.
   aggregate reservation from the earlier confirmed-unsent schema rejection.
   This action remains eligible for explicit same-generation retry after safe
   local reconciliation and must not be rerolled.
+
+## Fourth owner play evidence — 2026-09-22
+
+- Fresh story `4820491b-c9e1-4710-a53b-989e58da3b60` used Quiet Eerie Mystery.
+  Opening and first consequence were valid one-attempt calls costing USD
+  0.002940 and USD 0.003647 respectively. The first action rolled successfully,
+  published passage two and advanced tick 0 → 1; the selected road action then
+  settled automatically and advanced tick 1 → 3.
+- Time-rule selection changed generated durations from the previous universal
+  one tick to a mix of one and two ticks. The consequence returned four rather
+  than six plans and created two source-linked continuity notes. These are real
+  structural improvements, not evidence of enjoyable play.
+- The narrative established a coherent faint-stamp/contradictory-road-marker
+  mystery, but mostly described the same static situation and divided one clue
+  investigation into menu variants. The owner rated the resulting experience
+  effectively 0/10. Exact packet inspection shows the consequence request was
+  47,914 bytes with a 22,052-byte schema and produced only two short scene
+  paragraphs while pre-authoring four unused outcome branches.
+- The third required generation `b2e863f9-71aa-491d-99e4-40d43fd96af0`
+  again failed before attempt creation with `budget_unavailable`; no provider
+  call or charge occurred. The account had zero reserved liability and all
+  stored operation usage was inside its limits, but the shared stop flag was
+  true after the preceding known settlement. Operation-local exhaustion must
+  remain local when the settled charge stayed inside shared reservations.

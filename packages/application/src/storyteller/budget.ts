@@ -682,10 +682,13 @@ export function createStorytellerBudget(database: Database) {
           record.id,
           input.usage,
         );
+        // A known operation-local overrun exhausts that immutable operation,
+        // but its already bounded, settled charge is not an unresolved account
+        // liability. Stop shared funding only when the provider exceeded the
+        // monetary reservation or a shared usage-window reservation.
         if (
           input.usage.reportedCostMicrousd > record.reservedMicrousd ||
-          exceededUsageWindow ||
-          operationExceeded
+          exceededUsageWindow
         ) {
           await tx.update(funding).set({ stopped: true });
         }

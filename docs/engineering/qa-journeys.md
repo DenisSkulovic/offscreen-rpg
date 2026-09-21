@@ -68,6 +68,15 @@ The catalogue contains:
   but made no provider call because stale local accounting stopped admission.
   Preserve these as polling, projection, time-context, creative-quality and
   accounting findings rather than attributing all of them to model quality.
+  A fourth run with Quiet Eerie Mystery proved mixed one/two-tick plans, four
+  consequence options and source-linked clue notes, yet received an owner taste
+  score effectively equal to zero: coherent clue continuity did not compensate
+  for inert summary prose and a menu dominated by variants of one investigation.
+  Inspect request allocation as part of this failure—a roughly 48 KB request
+  devoted about 22 KB to output schema and pre-authored unused outcomes. The
+  next comparison must use the bounded four-plan/situation-beat contract and an
+  intentionally active profile; do not “pass” the old turn because its JSON and
+  mystery continuity were valid.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or

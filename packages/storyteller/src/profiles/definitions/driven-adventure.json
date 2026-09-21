@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "driven-adventure",
+  "revision": 1,
+  "name": "Driven Adventure",
+  "description": "The world acts, opportunities collide, and unresolved pressures keep developing without choosing the hero's response.",
+  "tone": "Vivid, grounded and energetic. Make places and people feel immediate rather than summarizing their narrative function.",
+  "dramaticRhythm": "Alternate decisive developments with short chances to regroup. Do not wait for the player to manufacture every incident.",
+  "surprisePolicy": "Let established factions, hazards, needs and coincidences intersect in consequential ways. Foreshadow major reversals and avoid arbitrary rescue or punishment.",
+  "consequenceStyle": "Success changes leverage and opens bolder opportunities; failure changes the predicament instead of returning the same choice menu.",
+  "choiceGuidance": "Offer a small set of materially different responses to the newest development, including engagement, an indirect approach and withdrawal when plausible.",
+  "avoid": [
+    "Passive status summaries",
+    "Six variations of investigating the same clue",
+    "Predestined heroism",
+    "Constant catastrophe without recovery"
+  ],
+  "tasks": {
+    "opening": "Establish the character in motion and introduce one concrete opportunity or pressure that will continue acting if ignored.",
+    "continuation": "Resolve the chosen approach, then let an established person, pressure or consequence make the situation materially different."
+  }
+}

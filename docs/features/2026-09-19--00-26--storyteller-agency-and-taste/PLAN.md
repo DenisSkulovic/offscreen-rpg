@@ -44,9 +44,36 @@ For the coding handoff, contribute bounded fixture repairs to the [gold-session 
 
 ## Current checkpoint
 
-- Current phase and exact next action: structural evidence exists; taste review remains outstanding. Follow the feature-index route and make the bounded failure/menu fixture repairs during gold-session integration, then review SB/GS with the owner. Do not block the selected clock/authority implementation on another abstract taste discussion or launch a broad prompt/UI rewrite.
-- Reviewed source: `f77ed42`; this pass adds documentation only. Earlier implementation/evidence revisions are `5bed48b`, `891a012` and `5116833`; no fresh runtime claim is made by the atlas.
-- Verification: current pass used source/design inspection; no builds/tests or provider calls. Earlier game tests, focused 9/9 Storyteller integration and wide/narrow authenticated review established structural behavior, not enjoyment or current live-model quality.
-- Unresolved findings: the current failed Gary reassurance has no mechanical effects and returns the opening-plan family when facts remain unchanged; the advertised deeper alarm is not a durable state change. The resolved-parcel branch returns no plans and is not yet a continuing-life handoff. Preserve meaningful changed approaches and a valid quiet path; don't fix either by forcing drama or merely renaming the same check. Owner taste review remains outstanding.
-- Narrative-direction finding: profile/style mutation cannot own the campaign's long-range intent. Product and storage contracts now distinguish an optional campaign-owned private direction from creative defaults, private possibilities, canon and executable obligations. Extend the eventual taste review with two fishing branches from the same quiet mechanics: directed pressure may reveal an approaching meteor without choosing the response, while explicit no-grand-narrative play remains ordinary life. Runtime/storage implementation belongs after the current canonical context slice; do not fake it by treating encounter frequency or arbitrary guidance text as an agenda.
-- Provider spend and accounting certainty: $0; cumulative OpenRouter usage not verified.
+- Current phase and exact next action: Phase 4 live taste repair. Fresh owner play
+  has now supplied the decisive review: structurally correct Luna turns scored
+  effectively 0/10 because they read as inert summaries followed by mechanical
+  menus. Rehearse the revised situation-beat contract offline, then run a fresh
+  owner story with Driven Adventure or the strengthened Absurd Action Comedy.
+- Reviewed source: base `f8981cd`; current working changes constrain provider
+  plans to four, require a changed situation beat, strengthen comedy, add Driven
+  Adventure and Character-Driven Drama, and keep operation-local overrun from
+  stopping the shared account after a known bounded settlement.
+- Verification: exact saved tasks, raw responses, public snapshot and compact
+  session report for story `4820491b-c9e1-4710-a53b-989e58da3b60` were
+  inspected. Builds remain to be batched. No provider call occurred in this
+  repair pass.
+- Live quality finding: Quiet Eerie Mystery coherently introduced a repeated
+  road-marker/paper-stamp discrepancy, so profile transport and basic continuity
+  worked. The experience still failed: the opening emitted six plans, the scene
+  mostly reframed existing choices, and one request devoted roughly 22 KB to
+  output schema versus two short narrative paragraphs. The current cheap mode
+  pre-authors mechanics and outcome prose for every offered branch; this saves a
+  later adjudication call but biases weak models toward schema-safe menu design
+  and wastes output on branches the player never selects. Prompt repair can
+  improve the immediate POC, but a configurable richer intent-first/two-stage
+  mode remains a legitimate architectural candidate, not a model-upgrade excuse.
+- Narrative-direction finding: profiles own rhythm and initiative preference,
+  not a campaign's long-range agenda. The Vvardenfell start currently exposes
+  only a noncanonical generic larger-pressure possibility and explicitly allows
+  ordinary life. Driven Adventure can demand active local developments, but a
+  sustained grand narrative still requires the already-specified campaign-owned
+  private direction and admitted world developments.
+- Provider spend and accounting certainty: this story spent settled USD
+  0.006587 across two successful calls (16,602 tokens). Its third selected
+  action settled mechanically but made no provider attempt. No call or charge
+  occurred during this repair pass.

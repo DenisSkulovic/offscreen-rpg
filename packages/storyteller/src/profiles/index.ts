@@ -4,6 +4,8 @@ import {
   storytellerSummarySchema,
 } from '@offscreen/contracts/storytellers';
 import comedy from './definitions/absurd-action-comedy.json';
+import drama from './definitions/character-driven-drama.json';
+import adventure from './definitions/driven-adventure.json';
 import mystery from './definitions/quiet-eerie-mystery.json';
 
 const guidance = z.string().min(1).max(1200);
@@ -63,5 +65,7 @@ export function storytellerSummary(profile: StorytellerProfile) {
 }
 export const storytellerCatalogue = createStorytellerCatalogue([
   comedy,
+  drama,
+  adventure,
   mystery,
 ]);

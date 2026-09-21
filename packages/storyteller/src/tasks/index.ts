@@ -46,10 +46,10 @@ const actionPlanNextSchema = z
   .strictObject({
     kind: z.literal('action-plans'),
     state: z.enum(['available', 'held']),
-    // Six matches the game offer and accepted-itinerary boundary. Profiles may
-    // still ask for fewer choices, but authored mechanics must not become
-    // structurally invalid merely because they expose a fuller local menu.
-    plans: z.array(immediateActionPlanSchema).max(6),
+    // The game can represent larger authored menus, but the provider-facing
+    // Storyteller contract stays deliberately smaller so scene craft is not
+    // displaced by unused counterfactual branches.
+    plans: z.array(immediateActionPlanSchema).max(4),
     activityAccess: activityAccessSchema,
   })
   .superRefine((next, context) => {
@@ -133,7 +133,7 @@ const mechanicalOpeningProviderResultSchema = z.strictObject({
     next: z.strictObject({
       kind: z.literal('action-plans'),
       state: z.enum(['available', 'held']),
-      plans: z.array(openingImmediateActionPlanSchema).max(6),
+      plans: z.array(openingImmediateActionPlanSchema).max(4),
       activityAccess: activityAccessSchema,
     }),
   }),
@@ -355,10 +355,10 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
     const evidenceHandles = context.evidence.map(
       (passage) => `p${passage.sequence}`,
     );
-    taskRules = `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Write a concrete lived scene, not a status summary or menu preamble; visibly realize the profile through situation, voice and consequence rather than isolated jokes. The selected intention has just resolved: carry its receipt forward and do not offer the same step again unless the receipt clearly leaves a genuinely repeatable action available. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Prefer two to four consequentially distinct plans; use five or six only when the situation genuinely warrants that breadth. Every plan evidence array must be [] or contain only these exact handles: ${evidenceHandles.length ? evidenceHandles.join(', ') : '(none)'}. Never put prose, facts or descriptions in an evidence array. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities and fact declarations must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Choose each duration from its fictional effort under the supplied time rules; do not copy one duration across unrelated actions merely because earlier plans used it. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. No interval or arrival notes.`;
+    taskRules = `Create a version-3 scene with next.kind action-plans. Begin from the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add typed effects beyond the supplied result. After making that result concrete, advance the situation by at least one profile-appropriate beat: an NPC acts, information changes, a consequence becomes tangible, an opportunity arrives, the environment changes, or a complication develops. The beat may be subtle for a quiet profile, but it must change what the player understands or can meaningfully pursue. Do not merely describe inertia, summarize status, or turn the existing menu into prose. Visibly realize the profile through situation, voice, rhythm and consequence rather than isolated jokes or adjectives. The selected intention has just resolved: carry its receipt forward and do not offer the same step again unless the receipt clearly leaves a genuinely repeatable action available. Propose zero to four fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Prefer two or three consequentially distinct plans; use four only when the situation genuinely warrants that breadth. Every plan evidence array must be [] or contain only these exact handles: ${evidenceHandles.length ? evidenceHandles.join(', ') : '(none)'}. Never put prose, facts or descriptions in an evidence array. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities and fact declarations must use the supplied contracts exactly. Distinct plans must respond to the changed situation rather than partition one investigation into cosmetic variants. Choose each duration from its fictional effort under the supplied time rules; do not copy one duration across unrelated actions merely because earlier plans used it. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. No interval or arrival notes.`;
   } else if (context.mechanicalOpening) {
     taskRules =
-      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and write a concrete lived opening, not a premise summary or menu preamble. Propose one to six fresh immediate-action.v1 plans grounded in its character and story facts; prefer two to four consequentially distinct plans and use greater breadth only when the situation warrants it. Set evidence to [] on every opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Choose each duration from its fictional effort under the supplied time rules; do not assign one tick to unrelated actions by default. Explicitly set activityAccess to none or select every proposed process key. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.';
+      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and write a concrete lived opening, not a premise summary or menu preamble. Propose one to four fresh immediate-action.v1 plans grounded in its character and story facts; prefer two or three consequentially distinct plans and use four only when the situation warrants it. Set evidence to [] on every opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Choose each duration from its fictional effort under the supplied time rules; do not assign one tick to unrelated actions by default. Explicitly set activityAccess to none or select every proposed process key. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.';
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';

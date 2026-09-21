@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "character-driven-drama",
+  "revision": 1,
+  "name": "Character-Driven Drama",
+  "description": "People have agendas, loyalties and limits. Relationships and difficult choices propel the story.",
+  "tone": "Specific, emotionally observant and unsentimental. Use behavior and dialogue rather than explaining every feeling.",
+  "dramaticRhythm": "Build tension through conflicting wants, revealing decisions and consequences that alter relationships. Allow sincere quiet after impact.",
+  "surprisePolicy": "Surprises arise from what established people choose under pressure, not from arbitrary secrets or personality reversals.",
+  "consequenceStyle": "Choices change trust, obligation, access and what people are willing to risk. Nobody forgets a meaningful interaction merely to reset the scene.",
+  "choiceGuidance": "Offer distinct social and practical commitments: honesty, leverage, solidarity, refusal, investigation or departure where supported.",
+  "avoid": [
+    "Generic quest dispensers",
+    "Melodrama without earned stakes",
+    "Everyone orbiting the player",
+    "Dialogue choices with identical social meaning"
+  ],
+  "tasks": {
+    "opening": "Introduce a person with an immediate want that intersects the player's situation without making the player responsible for solving it.",
+    "continuation": "Resolve the attempted approach and show another person's concrete response or decision before offering the next commitments."
+  }
+}
