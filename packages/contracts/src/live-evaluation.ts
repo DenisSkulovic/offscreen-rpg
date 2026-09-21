@@ -2,6 +2,24 @@ import { z } from 'zod';
 
 const unsignedIntegerString = z.string().regex(/^\d+$/);
 const sha256 = z.string().regex(/^[0-9a-f]{64}$/);
+const evaluationRouteSchema = z.strictObject({
+  provider: z.literal('openrouter'),
+  endpointProvider: z.string().min(1).max(100),
+  route: z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/),
+  model: z.string().min(1).max(160),
+  priceVersion: z.string().min(1).max(100),
+  outputProtocol: z.enum([
+    'native-json-schema',
+    'json-object-local-validation',
+  ]),
+  inputMicrousdPerMillion: unsignedIntegerString,
+  outputMicrousdPerMillion: unsignedIntegerString,
+  supportsStructuredOutput: z.literal(true),
+  reasoning: z.literal('disabled'),
+  verifiedAt: z.iso.datetime(),
+  validUntil: z.iso.datetime(),
+  maxContextTokens: z.number().int().positive(),
+});
 
 export const liveEvaluationRecipeSchema = z.strictObject({
   primaryCalls: z.number().int().min(1).max(3),
@@ -28,24 +46,7 @@ export const evaluationPacketConfigSchema = z
       id: z.string().min(1),
       version: z.string().min(1),
     }),
-    route: z.strictObject({
-      provider: z.literal('openrouter'),
-      endpointProvider: z.string().min(1).max(100),
-      route: z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/),
-      model: z.string().min(1).max(160),
-      priceVersion: z.string().min(1).max(100),
-      outputProtocol: z.enum([
-        'native-json-schema',
-        'json-object-local-validation',
-      ]),
-      inputMicrousdPerMillion: unsignedIntegerString,
-      outputMicrousdPerMillion: unsignedIntegerString,
-      supportsStructuredOutput: z.literal(true),
-      reasoning: z.literal('disabled'),
-      verifiedAt: z.iso.datetime(),
-      validUntil: z.iso.datetime(),
-      maxContextTokens: z.number().int().positive(),
-    }),
+    route: evaluationRouteSchema,
     recipe: liveEvaluationRecipeSchema,
   })
   .superRefine((config, context) => {
@@ -99,6 +100,102 @@ export const evaluationPacketConfigSchema = z
   });
 export type EvaluationPacketConfig = z.infer<
   typeof evaluationPacketConfigSchema
+>;
+
+export const memoryEvaluationRecipeSchema = z.strictObject({
+  modelRounds: z.literal(2),
+  retrievalReads: z.literal(1),
+  maxInFlightCalls: z.literal(1),
+  repairCalls: z.literal(0),
+  judgeCalls: z.literal(0),
+  comparisonCalls: z.literal(0),
+  backgroundCalls: z.literal(0),
+  maxInputTokensPerRound: z.number().int().positive(),
+  maxInputTokensPerOperation: z.number().int().positive(),
+  maxSerializedBytesPerRequest: z.number().int().positive(),
+  maxRetainedReadBytes: z.number().int().min(1024),
+  maxGeneratedTokensPerOperation: z.number().int().positive(),
+  maxReasoningTokensPerRequest: z.literal(0),
+  maxMicrousd: z.literal('0'),
+});
+
+export const memoryEvaluationPacketConfigSchema = z
+  .strictObject({
+    version: z.literal('memory-evaluation-packet.v1'),
+    id: z.uuid(),
+    accountId: z.uuid(),
+    runId: z.uuid(),
+    case: z.strictObject({
+      id: z.string().min(1),
+      version: z.string().min(1),
+    }),
+    route: evaluationRouteSchema,
+    recipe: memoryEvaluationRecipeSchema,
+  })
+  .superRefine((config, context) => {
+    if (
+      config.route.inputMicrousdPerMillion !== '0' ||
+      config.route.outputMicrousdPerMillion !== '0'
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['route'],
+        message: 'Memory evaluation is restricted to verified-zero-price routes',
+      });
+    }
+    if (
+      config.recipe.maxInputTokensPerOperation <
+      config.recipe.maxInputTokensPerRound * config.recipe.modelRounds
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['recipe', 'maxInputTokensPerOperation'],
+        message: 'Memory operation input must cover both admitted rounds',
+      });
+    }
+    if (
+      config.recipe.maxInputTokensPerRound > config.route.maxContextTokens
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['recipe', 'maxInputTokensPerRound'],
+        message: 'Per-round input exceeds the captured route context capacity',
+      });
+    }
+    if (
+      Date.parse(config.route.validUntil) <= Date.parse(config.route.verifiedAt)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['route', 'validUntil'],
+        message: 'Route metadata validity must end after verification',
+      });
+    }
+  });
+export type MemoryEvaluationPacketConfig = z.infer<
+  typeof memoryEvaluationPacketConfigSchema
+>;
+
+export const memoryEvaluationManifestSchema = z.strictObject({
+  version: z.literal('memory-live-evaluation.v1'),
+  id: z.uuid(),
+  gate: z.literal('bounded-memory-operation'),
+  case: z.strictObject({ id: z.string().min(1), version: z.string().min(1) }),
+  firstPacket: z.strictObject({
+    generationId: z.uuid(),
+    attemptId: z.uuid(),
+    sha256,
+    serializedBytes: z.number().int().positive(),
+    reservedInputTokens: z.number().int().positive(),
+    inputBoundMethod: z.literal('utf8-byte-capped-by-route'),
+  }),
+  route: evaluationRouteSchema.omit({ maxContextTokens: true }),
+  recipe: memoryEvaluationRecipeSchema,
+  reservationMicrousd: z.literal('0'),
+  createdAt: z.iso.datetime(),
+});
+export type MemoryEvaluationManifest = z.infer<
+  typeof memoryEvaluationManifestSchema
 >;
 
 export const evaluationPacketInspectionSchema = z.object({

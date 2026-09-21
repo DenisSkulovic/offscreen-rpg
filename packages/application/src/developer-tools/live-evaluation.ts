@@ -1,7 +1,10 @@
 import {
   liveEvaluationManifestSchema,
+  memoryEvaluationManifestSchema,
   type LiveEvaluationManifest,
   type LiveEvaluationRecipe,
+  type MemoryEvaluationManifest,
+  type MemoryEvaluationPacketConfig,
 } from '@offscreen/contracts/live-evaluation';
 
 export function createLiveEvaluationManifest(input: {
@@ -166,4 +169,111 @@ export function preflightLiveEvaluation(input: {
   return failures.length === 0
     ? { eligible: true, manifest }
     : { eligible: false, manifest, failures };
+}
+
+export function createMemoryEvaluationManifest(input: {
+  config: MemoryEvaluationPacketConfig;
+  createdAt: string;
+  review: {
+    generationId: string;
+    attemptId: string;
+    packetSha256: string;
+    state: string;
+    serializedBytes: number;
+  };
+}): MemoryEvaluationManifest {
+  if (input.review.state !== 'awaiting-review') {
+    throw new Error('Memory evaluation packet must be awaiting review');
+  }
+  if (
+    input.review.serializedBytes >
+    input.config.recipe.maxSerializedBytesPerRequest
+  ) {
+    throw new Error('Memory evaluation packet exceeds its serialized limit');
+  }
+  const { maxContextTokens: _maxContextTokens, ...route } = input.config.route;
+  return memoryEvaluationManifestSchema.parse({
+    version: 'memory-live-evaluation.v1',
+    id: input.config.id,
+    gate: 'bounded-memory-operation',
+    case: input.config.case,
+    firstPacket: {
+      generationId: input.review.generationId,
+      attemptId: input.review.attemptId,
+      sha256: input.review.packetSha256,
+      serializedBytes: input.review.serializedBytes,
+      reservedInputTokens: Math.min(
+        input.review.serializedBytes,
+        input.config.recipe.maxInputTokensPerRound,
+      ),
+      inputBoundMethod: 'utf8-byte-capped-by-route',
+    },
+    route,
+    recipe: input.config.recipe,
+    reservationMicrousd: '0',
+    createdAt: input.createdAt,
+  });
+}
+
+export type MemoryEvaluationPreflightFailure =
+  | 'packet_not_held'
+  | 'packet_identity_mismatch'
+  | 'route_verification_stale'
+  | 'route_not_free'
+  | 'packet_limit_exceeded'
+  | 'accounting_not_ready'
+  | 'trace_not_ready';
+
+/** Credential-free review of the first attempt; it cannot release either round. */
+export function preflightMemoryEvaluation(input: {
+  manifest: unknown;
+  now: string;
+  review: {
+    generationId: string;
+    attemptId: string;
+    packetSha256: string;
+    state: string;
+  };
+  accountingReady: boolean;
+  traceReady: boolean;
+}) {
+  const manifest = memoryEvaluationManifestSchema.parse(input.manifest);
+  const failures: MemoryEvaluationPreflightFailure[] = [];
+  const now = Date.parse(input.now);
+  if (input.review.state !== 'awaiting-review') {
+    failures.push('packet_not_held');
+  }
+  if (
+    input.review.generationId !== manifest.firstPacket.generationId ||
+    input.review.attemptId !== manifest.firstPacket.attemptId ||
+    input.review.packetSha256 !== manifest.firstPacket.sha256
+  ) {
+    failures.push('packet_identity_mismatch');
+  }
+  if (
+    Date.parse(manifest.route.verifiedAt) > now ||
+    Date.parse(manifest.route.validUntil) <= now
+  ) {
+    failures.push('route_verification_stale');
+  }
+  if (
+    manifest.route.inputMicrousdPerMillion !== '0' ||
+    manifest.route.outputMicrousdPerMillion !== '0' ||
+    manifest.reservationMicrousd !== '0'
+  ) {
+    failures.push('route_not_free');
+  }
+  if (
+    manifest.firstPacket.serializedBytes >
+      manifest.recipe.maxSerializedBytesPerRequest ||
+    manifest.firstPacket.reservedInputTokens >
+      manifest.recipe.maxInputTokensPerRound
+  ) {
+    failures.push('packet_limit_exceeded');
+  }
+  if (!input.accountingReady) failures.push('accounting_not_ready');
+  if (!input.traceReady) failures.push('trace_not_ready');
+  return failures.length === 0
+    ? { eligible: true as const, manifest }
+    : { eligible: false as const, manifest, failures };
 }

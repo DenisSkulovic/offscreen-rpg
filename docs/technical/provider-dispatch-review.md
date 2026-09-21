@@ -40,6 +40,8 @@ Developer tools expose `GET` and `PUT /api/chamber-tools/generations/:id/dispatc
 
 The memory packet command is Gate-0 structural evidence, not a synthetic prompt preview and not a playable-story or model-quality result. It builds an admitted continuation task with the normal resource resolver, reads the canonical corpus through the document store, persists a generation, invokes the ordinary durable memory executor and stops its first model attempt in `awaiting-review`. The Greywake task asks for an exact old hiding-place detail that is present in passage history but not stated by the compact canonical records already in context; this makes a memory request useful without forcing the controller to retrieve. Its provider implementation is a tripwire that fails if transport is reached. The command must observe memory state `held`, one held review and zero provider attempts before exporting evidence. It neither provisions funding nor releases the packet.
 
+Live memory evaluation must not reinterpret the ordinary one-shot configuration. Its sibling configuration and manifest name the two-round operation ceiling, one-read allowance, per-round serialized and token ceilings, cumulative input/generated ceilings and a verified-zero-price route. Gate-0 preflight binds the first held attempt and exact hash but grants no authority to a later packet. If the first result requests memory, deterministic retrieval may prepare a second attempt only inside the captured operation; that attempt requires its own held-packet inspection, current route verification, release and settlement reconciliation.
+
 ## Analysis and comparison
 
 The Chamber should show a summary before raw JSON:

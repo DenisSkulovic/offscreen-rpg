@@ -3,8 +3,11 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import {
   createLiveEvaluationManifest,
+  createMemoryEvaluationManifest,
+  preflightMemoryEvaluation,
   preflightLiveEvaluation,
 } from '../dist/developer-tools/live-evaluation.js';
+import { memoryEvaluationPacketConfigSchema } from '@offscreen/contracts/live-evaluation';
 
 const now = '2026-09-20T15:00:00.000Z';
 const generationId = randomUUID();
@@ -116,4 +119,101 @@ test('reports independent optional-call, identity, funding and trace failures', 
     'accounting_not_ready',
     'trace_not_ready',
   ]);
+});
+
+test('builds and preflights one held verified-free memory operation', () => {
+  const attemptId = randomUUID();
+  const config = memoryEvaluationPacketConfigSchema.parse({
+    version: 'memory-evaluation-packet.v1',
+    id: randomUUID(),
+    accountId: randomUUID(),
+    runId: randomUUID(),
+    case: { id: 'greywake-exact-key-place', version: '1' },
+    route: {
+      ...manifest.route,
+      route: 'openrouter:test-model',
+      inputMicrousdPerMillion: '0',
+      outputMicrousdPerMillion: '0',
+      maxContextTokens: 32_000,
+    },
+    recipe: {
+      modelRounds: 2,
+      retrievalReads: 1,
+      maxInFlightCalls: 1,
+      repairCalls: 0,
+      judgeCalls: 0,
+      comparisonCalls: 0,
+      backgroundCalls: 0,
+      maxInputTokensPerRound: 12_000,
+      maxInputTokensPerOperation: 24_000,
+      maxSerializedBytesPerRequest: 48_000,
+      maxRetainedReadBytes: 4_096,
+      maxGeneratedTokensPerOperation: 2_048,
+      maxReasoningTokensPerRequest: 0,
+      maxMicrousd: '0',
+    },
+  });
+  const review = {
+    generationId,
+    attemptId,
+    packetSha256,
+    state: 'awaiting-review',
+    serializedBytes: 23_352,
+  };
+  const memoryManifest = createMemoryEvaluationManifest({
+    config,
+    createdAt: now,
+    review,
+  });
+  assert.equal(memoryManifest.firstPacket.reservedInputTokens, 12_000);
+  assert.equal(memoryManifest.reservationMicrousd, '0');
+  assert.deepEqual(
+    preflightMemoryEvaluation({
+      manifest: memoryManifest,
+      now,
+      review,
+      accountingReady: true,
+      traceReady: true,
+    }),
+    { eligible: true, manifest: memoryManifest },
+  );
+});
+
+test('memory evaluation rejects paid routes and insufficient operation input', () => {
+  const base = {
+    version: 'memory-evaluation-packet.v1',
+    id: randomUUID(),
+    accountId: randomUUID(),
+    runId: randomUUID(),
+    case: { id: 'greywake-exact-key-place', version: '1' },
+    route: {
+      ...manifest.route,
+      route: 'openrouter:test-model',
+      maxContextTokens: 32_000,
+    },
+    recipe: {
+      modelRounds: 2,
+      retrievalReads: 1,
+      maxInFlightCalls: 1,
+      repairCalls: 0,
+      judgeCalls: 0,
+      comparisonCalls: 0,
+      backgroundCalls: 0,
+      maxInputTokensPerRound: 12_000,
+      maxInputTokensPerOperation: 12_000,
+      maxSerializedBytesPerRequest: 48_000,
+      maxRetainedReadBytes: 4_096,
+      maxGeneratedTokensPerOperation: 2_048,
+      maxReasoningTokensPerRequest: 0,
+      maxMicrousd: '0',
+    },
+  };
+  const parsed = memoryEvaluationPacketConfigSchema.safeParse(base);
+  assert.equal(parsed.success, false);
+  if (!parsed.success) {
+    assert.deepEqual(
+      parsed.error.issues.map((issue) => issue.path.join('.')).sort(),
+      ['recipe.maxInputTokensPerOperation', 'route'],
+    );
+  }
 });
