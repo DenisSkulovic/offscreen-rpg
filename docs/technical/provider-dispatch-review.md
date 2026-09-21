@@ -24,6 +24,8 @@ API keys, authorization headers and arbitrary environment data are never part of
 
 Each review record is owned by the exact model-attempt UUID and linked to its generation; one generation may therefore retain several immutable round packets. Decisions are append-only and address the same attempt:
 
+Review decisions lock the exact review and generation first. When the attempt belongs to a bounded memory round rather than the generation's one-shot attempt, its optional memory artifact is validated and locked separately. This preserves one transactional ownership check without applying PostgreSQL `FOR UPDATE` to the nullable side of an outer join.
+
 ```text
 prepared -> awaiting-review -> released -> reserved -> dispatched
                           \-> rejected

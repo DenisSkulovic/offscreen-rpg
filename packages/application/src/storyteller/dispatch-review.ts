@@ -147,37 +147,54 @@ export function createDispatchReviewControls(database: Database) {
       const decision = dispatchReviewDecisionSchema.parse(input);
       return database.db.transaction(async (tx) => {
         const [row] = await tx
-          .select({ review: storytellerDispatchReview })
+          .select({
+            review: storytellerDispatchReview,
+            generationAttemptId: generation.attemptId,
+          })
           .from(storytellerDispatchReview)
           .innerJoin(
             generation,
             eq(generation.id, storytellerDispatchReview.generationId),
           )
-          .leftJoin(
-            storytellerMemoryExploration,
-            eq(
-              storytellerMemoryExploration.generationId,
-              storytellerDispatchReview.generationId,
-            ),
-          )
           .where(
             and(
               eq(storytellerDispatchReview.generationId, decision.generationId),
               eq(storytellerDispatchReview.attemptId, decision.attemptId),
-              or(
-                eq(generation.attemptId, decision.attemptId),
-                eq(
-                  storytellerMemoryExploration.pendingModelAttemptId,
-                  decision.attemptId,
-                ),
-              ),
               eq(generation.ownerId, ownerId),
             ),
           )
           .for('update');
         const review = row?.review;
+        // PostgreSQL cannot apply an unqualified FOR UPDATE across the nullable
+        // side of a left join. Lock and validate the optional memory owner in a
+        // second query while the exact review row remains locked.
+        let memoryOwnsAttempt = false;
+        if (row && row.generationAttemptId !== decision.attemptId) {
+          const [memory] = await tx
+            .select({
+              pendingModelAttemptId:
+                storytellerMemoryExploration.pendingModelAttemptId,
+            })
+            .from(storytellerMemoryExploration)
+            .where(
+              and(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  decision.generationId,
+                ),
+                eq(
+                  storytellerMemoryExploration.pendingModelAttemptId,
+                  decision.attemptId,
+                ),
+              ),
+            )
+            .for('update');
+          memoryOwnsAttempt = Boolean(memory);
+        }
         if (
           !review ||
+          (row.generationAttemptId !== decision.attemptId &&
+            !memoryOwnsAttempt) ||
           review.state !== 'awaiting-review' ||
           review.revision !== decision.expectedRevision ||
           review.packetSha256 !== decision.packetSha256
