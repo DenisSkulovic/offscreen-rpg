@@ -8,6 +8,11 @@ import {
   buildLongStoryMemoryCorpus,
   materializeLongStoryMemoryCorpus,
 } from '../dist/developer-tools/long-story-memory-corpus.js';
+import {
+  evaluateMemoryObservation,
+  evaluateLinearMemoryBaseline,
+  observeLinearMemoryBaseline,
+} from '../dist/developer-tools/memory-evaluator.js';
 import { searchCanonicalKnowledge } from '../dist/storyteller/canonical-search.js';
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {
@@ -63,6 +68,64 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     ),
   );
 
+  const baseline = await observeLinearMemoryBaseline({
+    storage,
+    corpus: greywake,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+    queryId: 'greywake.no-deadline',
+  });
+  const baselineReport = evaluateMemoryObservation(greywake, baseline);
+  assert.equal(baselineReport.retrieval.status, 'passed');
+  assert.equal(baselineReport.assembly.status, 'passed');
+  assert.equal(baselineReport.generation.status, 'not-run');
+
+  const emptyStages = {
+    format: 'offscreen.memory-evaluation-observation.v1',
+    corpusId: greywake.id,
+    queryId: 'greywake.current-route',
+    retrieval: {
+      evidenceKeys: [],
+      coverage: 'complete',
+      candidatesExamined: 0,
+      durationMs: 0,
+    },
+    assembly: { evidenceKeys: [], bytes: 0, duplicateBytes: 0 },
+    generation: { disposition: 'not-run', usedEvidenceKeys: [] },
+  };
+  const brokenRetrieval = evaluateMemoryObservation(greywake, emptyStages);
+  assert.equal(brokenRetrieval.retrieval.status, 'failed');
+  assert.equal(brokenRetrieval.retrieval.expectedRecall, 0);
+
+  const ignoredContext = evaluateMemoryObservation(greywake, {
+    ...emptyStages,
+    retrieval: {
+      ...emptyStages.retrieval,
+      evidenceKeys: ['thread.patient-tide-current'],
+      candidatesExamined: 1,
+    },
+    assembly: {
+      evidenceKeys: ['thread.patient-tide-current'],
+      bytes: 96,
+      duplicateBytes: 0,
+    },
+    generation: { disposition: 'answered', usedEvidenceKeys: [] },
+  });
+  assert.equal(ignoredContext.retrieval.status, 'passed');
+  assert.equal(ignoredContext.assembly.status, 'passed');
+  assert.equal(ignoredContext.generation.status, 'failed');
+
+  const suite = await evaluateLinearMemoryBaseline({
+    storage,
+    corpus: greywake,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+  });
+  assert.equal(suite.summary.queries, 12);
+  assert.equal(suite.summary.generationNotRun, 12);
+  assert.ok(suite.summary.retrievalPassed > 0);
+  assert.ok(suite.summary.retrievalPassed < suite.summary.queries);
+
   const abstractStorage = new LocalDocumentStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-abstract-')),
   );
@@ -78,4 +141,12 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   });
   assert.deepEqual(humanDefaults.results, []);
   assert.equal(humanDefaults.trace.coverageComplete, true);
+  const abstractSuite = await evaluateLinearMemoryBaseline({
+    storage: abstractStorage,
+    corpus: gradient,
+    rootHash: abstract.rootHash,
+    rootRevision: abstract.rootRevision,
+  });
+  assert.equal(abstractSuite.summary.queries, 1);
+  assert.equal(abstractSuite.summary.generationNotRun, 1);
 });

@@ -146,3 +146,79 @@ export const longStoryMemoryCorpusSchema = z
 
 export type LongStoryMemoryCorpus = z.infer<typeof longStoryMemoryCorpusSchema>;
 export type MemoryOracleQuery = z.infer<typeof memoryOracleQuerySchema>;
+
+const uniqueKeysSchema = z
+  .array(keySchema)
+  .max(64)
+  .refine((keys) => new Set(keys).size === keys.length, 'Evidence keys must be unique');
+
+export const memoryEvaluationObservationSchema = z.strictObject({
+  format: z.literal('offscreen.memory-evaluation-observation.v1'),
+  corpusId: keySchema,
+  queryId: keySchema,
+  retrieval: z.strictObject({
+    evidenceKeys: uniqueKeysSchema,
+    coverage: z.enum(['complete', 'partial', 'not-indexed']),
+    candidatesExamined: z.number().int().nonnegative(),
+    durationMs: z.number().nonnegative(),
+  }),
+  assembly: z.strictObject({
+    evidenceKeys: uniqueKeysSchema,
+    bytes: z.number().int().nonnegative(),
+    duplicateBytes: z.number().int().nonnegative(),
+  }),
+  generation: z.discriminatedUnion('disposition', [
+    z.strictObject({ disposition: z.literal('not-run'), usedEvidenceKeys: z.tuple([]) }),
+    z.strictObject({
+      disposition: z.enum(['answered', 'abstained']),
+      usedEvidenceKeys: uniqueKeysSchema,
+    }),
+  ]),
+});
+
+export const memoryEvaluationStageSchema = z.strictObject({
+  status: z.enum(['passed', 'failed', 'not-run']),
+  missingExpected: uniqueKeysSchema,
+  forbiddenObserved: uniqueKeysSchema,
+  unexpectedObserved: uniqueKeysSchema,
+});
+
+export const memoryEvaluationReportSchema = z.strictObject({
+  format: z.literal('offscreen.memory-evaluation-report.v1'),
+  corpusId: keySchema,
+  queryId: keySchema,
+  retrieval: memoryEvaluationStageSchema.extend({
+    expectedRecall: z.number().min(0).max(1),
+    contextPrecision: z.number().min(0).max(1),
+    coverage: z.enum(['complete', 'partial', 'not-indexed']),
+    candidatesExamined: z.number().int().nonnegative(),
+    durationMs: z.number().nonnegative(),
+  }),
+  assembly: memoryEvaluationStageSchema.extend({
+    bytes: z.number().int().nonnegative(),
+    duplicateBytes: z.number().int().nonnegative(),
+  }),
+  generation: memoryEvaluationStageSchema.extend({
+    disposition: z.enum(['answered', 'abstained', 'not-run']),
+  }),
+});
+
+export const memoryEvaluationSuiteReportSchema = z.strictObject({
+  format: z.literal('offscreen.memory-evaluation-suite-report.v1'),
+  corpusId: keySchema,
+  reports: z.array(memoryEvaluationReportSchema).min(1).max(64),
+  summary: z.strictObject({
+    queries: z.number().int().positive(),
+    retrievalPassed: z.number().int().nonnegative(),
+    assemblyPassed: z.number().int().nonnegative(),
+    generationPassed: z.number().int().nonnegative(),
+    generationNotRun: z.number().int().nonnegative(),
+    meanExpectedRecall: z.number().min(0).max(1),
+    meanContextPrecision: z.number().min(0).max(1),
+  }),
+});
+
+export type MemoryEvaluationObservation = z.infer<
+  typeof memoryEvaluationObservationSchema
+>;
+export type MemoryEvaluationReport = z.infer<typeof memoryEvaluationReportSchema>;
