@@ -74,6 +74,7 @@ Import and instantiation are exposed through the available `reusable-start-packa
 6. Accept a structurally valid final candidate before the round ceiling, then rerun the controller. Confirm it returns the stored candidate without another scripted decision or canonical read and still publishes nothing.
 7. Confirm stale root, invalid handle, read exhaustion and round exhaustion become durable classified failures. Re-entry must return the same code without another Storyteller decision. Keep partial coverage and retained-byte results distinct from terminal failure.
 8. Only after normal generation/provider wiring exists, require a final Storyteller result that uses the recovered evidence without inventing unsupported state. Retrieval/controller plumbing passing today is not evidence for model comprehension or gameplay publication.
+9. Give cheap/free candidate models the same plain-language memory questions on conventional, quiet and abstract checkpoints. Compare the conversational `ask_memory`/`read_memory` facade against direct backend-shaped operations on valid action rate, unnecessary rounds, useful source coverage, final evidence use, latency and accepted-turn cost. A frontier model succeeding with the more complex interface does not make that interface acceptable.
 
 ### Retrieval evidence-packing checklist
 

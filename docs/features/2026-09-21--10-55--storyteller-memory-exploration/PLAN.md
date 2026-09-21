@@ -8,9 +8,10 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ### X1 — Protocol and scripted round trip — completed
 
-- Outcome: result union distinguishes `needs_context` from final publication; task recipes declare supported operations and cumulative limits.
+- Outcome: result union distinguishes `needs_context` from final publication; task recipes declare supported operations and cumulative limits. The provider-facing contract exposes `ask_memory` with at most two ordinary-language questions plus optional `read_memory` handles. Backend-shaped operations remain dispatcher primitives, not model-facing cognitive overhead.
 - Owners: Storyteller task/result schemas and prompts; application execution/admission/recovery; existing canonical read/search operations.
 - A context request publishes nothing. Validate task-local handles, authorization, visibility and captured root before dispatching reads.
+- Return compact grouped findings with stable handles, source/coverage status, truncation and correctable empty/error states. Do not make the model select ranking algorithms, indexes, file families or backend filters that application policy can select deterministically.
 - Exit: scripted search + registry batch, exact source follow-up and final result persist and replay without a provider. Status: follows E1 and L1 contracts.
 
 ### X2 — Context lifecycle and recovery
