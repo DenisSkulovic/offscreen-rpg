@@ -1,6 +1,6 @@
 # What the Storyteller receives, returns and costs
 
-This is the model-side companion to every trace. Current implementation is source-grounded at `f77ed42`; target exploration and report-only behavior are proposals. All text and token examples below are authored offline. They are not measured model output, pricing quotes or permission to enable inference.
+This is the model-side companion to every trace. Current one-shot tasks, report-only behavior, provider-neutral exploration contracts and canonical read dispatch are implemented; runtime provider-driven exploration and final-round publication are not. All text and token examples below are authored offline. They are not measured model output, pricing quotes or permission to enable inference.
 
 The readiness [solo contract](../solo-gameplay-contract.md#boundary-follow-ups-and-task-contracts) now fixes the first task/publication boundaries; the [gold session ledger](harbor-session.md#gs-07-outcome-return-and-exact-ledger) counts a connected path. Historical reports have no plans, effects or note patches; interactive publication explicitly supplies current activity authorization. Definition/package preparation may enlarge the old envelopes and must be measured from actual captured requests later, without live inference merely to count tokens.
 
@@ -42,7 +42,7 @@ This sketch is not the literal serialized JSON. The exact artifact includes repe
 
 Current context projects narrative evidence to `p#` handles. Do not assume every identity is removed: `resolution` currently passes through its captured structure, including receipt identities. Context should be inspected at the actual provider projection, not inferred from the internal TypeScript type or a generic claim that all IDs are hidden.
 
-The model does **not** get a live browser, every database row, every future scene, or the entire lifetime. Mechanical context carries the captured character/story facts and resolution; selective relevance-based entity retrieval is not implemented yet. Player prose, note prose and retrieved evidence are data, not higher-priority instructions.
+The model does **not** get a live browser, every database row, every future scene, or the entire lifetime. Mechanical context carries the captured character/story facts and resolution. Indexed lexical retrieval and canonical entity/source reads now exist behind a provider-neutral exploration dispatcher, but ordinary runtime tasks do not yet invoke that dispatcher. Player prose, note prose and retrieved evidence are data, not higher-priority instructions.
 
 ## What a useful response would mean
 
@@ -68,17 +68,19 @@ The current contract permits up to 20 retained notes. The current passage and al
 
 Retiring a note does not delete chronology, but without archive lookup it can remove the only path that loads an old relevant passage. A continuing-life example therefore cannot be defended merely by pointing at the notes array. Nor is it enough to make summaries more eloquent while losing provenance or current-state authority.
 
-## Target discovery before composition
+## Discovery before composition: current mechanics and missing connection
 
-The [memory feature](../../features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) owns this extension. Example: the character returns to an inn after forty scenes. The orientation bundle includes exact current state, visible scene/entity cards, open threads and compact historical leads. The Storyteller may need to find whether Mira still holds the key and whether the bridge rumor was corrected.
+The [memory feature](../../features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) owns this extension. The result protocol can currently express private `needs_context` requests for `query_registry`, `search_memory`, `inspect_memory` and `read_source`. The application can execute those operations against one captured canonical root, assign task-local handles, enforce read/byte ceilings, and serialize and restore the private exploration state. The [Greywake trace](greywake-memory.md) follows that implemented provider-free path.
+
+What remains target behavior is the round controller that persists those artifacts durably, dispatches them through an actual Storyteller task, reserves the final round and validates/publishes the final result. Existing opening, continuation, consequence and report tasks remain one-shot and receive no callable runtime tools.
 
 Illustrative bounded interaction:
 
 | Round | What the model sees/asks | What the server does |
 | --- | --- | --- |
-| 1 | Current situation and leads; requests `query_registry` for the known inn and `search_memory` for Mira/key | Read-only, story/visibility-scoped, snapshot-consistent results with opaque evidence handles. Unknown names are not automatic world creation. |
-| 2 | Compact relevant hits; requests `inspect_memory` and, if necessary, `read_source` for the later correction | Reads only discovered/authorized handles. Provenance is not permission to load unlimited raw history. |
-| 3 | Final scene/options grounded in the returned facts | Validate then publish separately. No remaining repair round in this three-round path. |
+| 1 — current provider-free mechanics | Current situation and leads request `query_registry` for the known inn and `search_memory` for Mira/key | Read-only, story/visibility-scoped, snapshot-consistent results with opaque evidence handles. Unknown names are not automatic world creation. |
+| 2 — current provider-free mechanics | Compact relevant hits request `inspect_memory` and, if necessary, `read_source` for the later correction | Reads only discovered/authorized handles. Provenance is not permission to load unlimited raw history. |
+| 3 — target connection | Final scene/options grounded in the returned facts | Validate then publish separately. No remaining repair round in this three-round path. |
 
 Prepared bounds for the evidence-seeking recipe: at most three total model rounds, six read calls and one invalid-final repair **only if capacity remains**. Ordinary grounded turns default to one shot without model tools. The [whole-operation policy](../context-and-cost.md#bounded-work-not-an-open-ended-agent) additionally caps cumulative transmitted input, generated/reasoning tokens, money and deadline, and reserves final-answer capacity. Exploration and repair share the budget. A two-round discovery path followed by invalid final output cannot secretly get a fourth call. Tool reads can be local/$0, but their returned text increases subsequent model input; search is not free in token terms. Tools must never expose another campaign, inaccessible knowledge, credentials or arbitrary SQL/files.
 
@@ -96,7 +98,7 @@ See [Red Mountain](red-mountain.md) for the same arrival configured three ways. 
 
 ## Context differences across the actual examples
 
-This table describes the **target decision packet**, not fields already present in today's schema. Shared instructions/profile/output schema still consume input in each call. Only decision-relevant material should be loaded; selective actor/entity/activity retrieval remains unfinished.
+This table describes the **target decision packet**, not fields already present in today's schema. Shared instructions/profile/output schema still consume input in each call. Only decision-relevant material should be loaded; automatic task-level actor/entity/activity selection remains unfinished even though bounded canonical search/read mechanics now exist.
 
 | Scene/task | Exact authority that must be supplied | Useful evidence to retrieve | What must not be invented by composing prose |
 | --- | --- | --- | --- |

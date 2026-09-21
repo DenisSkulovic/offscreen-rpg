@@ -29,7 +29,7 @@ Implementation owner: Codex under the owner's continuing instruction.
 ## Current checkpoint
 
 - Current phase and exact next action: X1; wrap the canonical dispatcher in a scripted round controller that reserves/finalizes the last round and stores its snapshot through a durable application artifact.
-- Base/reviewed Git revision and relevant uncommitted changes: `d1214a4`; canonical dispatcher, snapshot/replay path, focused Greywake flow and documentation are uncommitted.
+- Base/reviewed Git revision and relevant uncommitted changes: `c1e7c8e`; QA catalogue version 14 and the maintained Greywake technical trace now describe the implemented private rounds and explicitly keep final composition/recovery as targets.
 - Actual checks/results for this revision: Storyteller/application builds and the focused 200-scene memory test pass. The scripted flow batches search plus registry, snapshots/restores, then batches exact current-favor inspection with its original source read and records four reads across two exploration rounds without provider access.
 - Unresolved findings/blockers: snapshots are serializable values but are not yet saved in the generation/application store; no controller currently enforces final-round reservation or accepts a final Storyteller result. Duplicate request reuse and crash recovery remain X2.
 - Provider spend and accounting certainty: $0; scripted implementation first.

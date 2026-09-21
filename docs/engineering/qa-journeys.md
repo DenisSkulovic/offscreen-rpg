@@ -43,6 +43,7 @@ The catalogue contains:
 - exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` exercises an actual pre-story opening and preserves its credential-free packet under a generation-scoped filename. Developer-only GET/PUT endpoints expose owner-scoped inspection and exact hash/revision release or rejection; the offline QA case uses rejection and never authorizes live release.
 - alternate-continuity rehearsal: preserve a supported first decision as a fork, take a different option in each story, and confirm both histories, current passages and lineage remain independently readable. Phase 1 exercises only narrative revision-one checkpoints; a blocked mechanical or historical position is evidence that snapshot coverage is still missing, not permission to copy newer state backward.
 - reusable start package: both the abstract/microbe and conventional rich-content variants are available through the focused provider-free API driver. Together they prove imported-package admission, one final campaign root, exact references/provenance, distinct activation classes, campaign-specific obligation identity, idempotent retry and revision pinning after a reusable package publishes revision two.
+- long-story memory inside the reusable start-package case: version 14 preserves the contrasting-world oracle, current-root lexical discovery, configurable retrieval postures and the provider-free Greywake search → restored snapshot → exact source-read path. These stages prove retrieval plumbing and authority boundaries, not a model's comprehension or a published Storyteller turn.
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
@@ -61,7 +62,18 @@ This checklist remains a durable acceptance target while its Chamber case is bei
 5. Reject a possibility declared as initial canon, prose declared as an executable obligation, a missing `START.md`, duplicate paths, a path escape, a symbolic link, malformed structured JSON and a rules adapter mismatch.
 6. Export and inspect the resulting campaign root. Shared world/rule bodies remain referenced rather than copied, campaign-owned documents cite package provenance, and no provider attempt, token usage or charge exists.
 
-Until import and instantiation are exposed through the QA catalogue, record these as focused storage/application evidence. A schema-only fixture is not evidence that campaign creation, retry fencing or obligation scheduling works.
+Import and instantiation are exposed through the available `reusable-start-package` catalogue case and its provider-free API driver. Record run evidence there; focused storage/application tests remain supporting evidence, not a replacement for the connected campaign path. A schema-only fixture is not evidence that campaign creation, retry fencing or obligation scheduling works.
+
+### Long-story memory checklist
+
+1. Materialize the fixed Greywake and abstract 200-scene corpora into the real canonical store. Confirm stable identities, exact selected roots, current/superseded authority, visibility and all declared oracle cases before comparing retrievers.
+2. Run the same oracle against each retrieval posture. Report retrieval, assembly and generation-use stages separately; a broader recipe is not automatically better, and a lexical match inside negating text is not a positive fact.
+3. Search Greywake for the old favor and query the relevant registry in one private batch. Confirm only compact candidates and task-local handles return, with explicit root/index coverage and no publishable prose.
+4. Serialize and restore the exploration snapshot, then inspect the discovered current favor and read its authorized original source. Confirm exact manifest identity is rechecked, four reads remain within the recipe ceiling and private/obsolete material is excluded.
+5. Exercise no-match, invalid handle, stale root, partial coverage, duplicate request, retained-byte exhaustion and crash recovery as X2 becomes available. Record unavailable cases as blocked; do not simulate success or loosen the expected boundary.
+6. Only after the connected round controller exists, require a final Storyteller result that uses the recovered evidence without inventing unsupported state. Retrieval plumbing passing today is not evidence for this final step.
+
+The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 
 ### Story-item authority checklist
 

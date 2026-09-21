@@ -1,6 +1,6 @@
 # Gameplay execution atlas
 
-Status: design reference, grounded in source at `f77ed42`. These are worked examples, not recorded sessions or proof of implemented behavior. No model was called to write or evaluate them.
+Status: maintained design and regression reference. Each trace labels current, target and fixture behavior; authored examples are not recorded sessions or proof of model quality. No model was called to write or evaluate them.
 
 The [product playthroughs](../../playthroughs.md) describe the feeling. This atlas follows particular choices all the way through time, rules, state, model requests and recovery. Its purpose is to make “is this the game we mean?” answerable before more subsystems are built.
 
@@ -14,7 +14,8 @@ For the coding handoff, start with the [gold harbor session](harbor-session.md),
 2. [SpongeBob](spongebob.md): a minute-by-minute active session, including a failed check, different options and proposed quiet work. Closest look at what the player actually reads.
 3. [Beacon](beacon.md): exact dice, contributions, interruption, B then A, and the chronology defect that must be fixed.
 4. [Storyteller requests and cost](storyteller.md): concrete input/output, discovery tools, limits, validation and illustrative token ledgers.
-5. [POC selection and acceptance](poc.md): the small connected experience to implement, what would invalidate it, and where the larger examples fit.
+5. [Greywake memory exploration](greywake-memory.md): the provider-free current retrieval/exploration path, its exact authority boundaries and the still-missing final composition round.
+6. [POC selection and acceptance](poc.md): the small connected experience to implement, what would invalidate it, and where the larger examples fit.
 
 Then use the contrasts when designing a change:
 
@@ -45,6 +46,6 @@ This atlas owns **worked examples and their observable acceptance**. [Rules and 
 
 Maintain this atlas as a living regression map for product assumptions. When shared behavior changes, update affected traces without removing the pressure they were designed to apply. When a proposed story cannot be explained by an existing trace without hand-waving, add a focused benchmark or contrast and identify the new assumption explicitly. Keep unsupported target behavior visible, keep source-grounded status honest, and prefer extending an existing trace over creating near-duplicate examples. Examples challenge the architecture; they do not become hardcoded runtime branches or mandatory mechanics merely by being documented.
 
-The [activity foundation](../../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) and [bounded autonomy](../../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) remain unfinished. Their design checkpoints use this atlas; writing the examples does not complete those features or authorize their entire implementation. Multiplayer, general combat, transformation, traversal and long-life memory remain design probes, not prerequisites for demonstrating the next solo slice.
+The [activity foundation](../../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) and [bounded autonomy](../../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) remain unfinished. Their design checkpoints use this atlas; writing the examples does not complete those features or authorize their entire implementation. Multiplayer, general combat, transformation and traversal remain design probes, not prerequisites for demonstrating the next solo slice. Long-life memory now has provider-free corpus, evaluation, indexed retrieval and bounded exploration infrastructure, but a fresh Storyteller turn that uses the recovered evidence remains an unproved product target.
 
 The atlas deliberately does not settle combat rounds, world geography, notification channels, model selection or commercial pricing. It does make failures visible: free narrated travel, unexplained lost progress, repeated identical choices, silently stalled overnight plans, and invented memories all violate the intended experience even when the JSON is valid.

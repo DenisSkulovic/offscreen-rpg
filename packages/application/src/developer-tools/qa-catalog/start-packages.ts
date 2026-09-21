@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 13,
+    version: 14,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -108,7 +108,7 @@ export const startPackageCases: readonly QaJourneyCase[] = [
         action:
           'Resolve admitted stable identity, place and thread cues against the exact current root, then compare bounded search with the same declared evidence policy.',
         observableExpectation:
-          'The conventional case finds the corrected route; the abstract case returns no invented tavern, wage or humanoid evidence and remains able to abstain.',
+          'The conventional case finds the corrected route; the abstract case asserts no positive tavern, wage or humanoid fact and remains able to abstain. A lexical hit on negating text such as "without humanoid anatomy" stays visible as evidence and must not be interpreted as a positive fact.',
         authoritativeExpectation:
           'Both worlds use one generic cue and search contract. The cue trace records stable IDs and reasons; fixture nouns remain expected evidence, never retrieval-policy switches or universal game fields.',
       }),
@@ -123,7 +123,7 @@ export const startPackageCases: readonly QaJourneyCase[] = [
         action:
           'Search the exact current campaign root for the thread name, inspect the trace, and load the winning stable document ID through canonical context selection.',
         observableExpectation:
-          'The result identifies revision two with a corrected snippet and explicit scan coverage; the exact loader returns the corrected complete body.',
+          'The result identifies revision two with a corrected snippet and explicit root/index coverage; the exact loader returns the corrected complete body.',
         authoritativeExpectation:
           'Search excludes developer-private and superseded bodies. A candidate remains a lead until its stable ID is loaded from the same current manifest.',
       }),
