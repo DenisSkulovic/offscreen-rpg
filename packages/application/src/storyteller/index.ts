@@ -13,3 +13,4 @@ export * from './retrieval-recipes';
 export * from './memory-exploration';
 export * from './memory-exploration-controller';
 export * from './evidence-packing';
+export * from './memory-evidence-packing';

@@ -55,15 +55,17 @@ Acceptance:
 
 The normalized context request and its SHA-256 identity are stored before its reads begin. Recovery executes that request before asking for another Storyteller decision. The resulting snapshot is accepted atomically, so a crash may repeat the same read-only lookup but cannot double-count it. A completed final candidate is stored in the same generation-owned private artifact and replayed without another scripted decision.
 
-## GW-03 — bounded final candidate — current mechanics, target composition
+## GW-03 — packed evidence and bounded final candidate — current mechanics, target composition
+
+The restored Greywake snapshot now deterministically adapts admitted evidence into the common packer without another read or model call. Search and registry hits remain optional leads. The explicitly inspected current favor is a required card; the explicitly read historical passage is required exact evidence. Both cite the captured canonical document/revision/hash, and malformed persisted rounds fail closed instead of silently dropping context. The tested 12 KiB pack contains the current “still owes” state and original “promised” wording while excluding the destroyed-fork and developer decoys.
 
 A scripted round controller now reserves the final round, rejects a late `needs_context` request, validates the final candidate under the captured task and stores it separately from publication. Re-entry returns that candidate without rerunning scripted inference or reads.
 
-The missing connected behavior is supplying the retained evidence through normal task/provider composition. That final result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
+The missing connected behavior is supplying that pack through normal task/provider composition. That final result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
 
 The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
 
-Final-candidate control/replay is implemented; evidence-aware model composition and generation/publication transfer are not. Passing GW-01/GW-02 and controller replay proves bounded retrieval mechanics, not model comprehension, narrative quality or successful gameplay publication.
+Snapshot-to-pack adaptation and final-candidate control/replay are implemented; evidence-aware model composition and generation/publication transfer are not. Passing GW-01/GW-02 and packet/controller checks proves bounded retrieval mechanics, not model comprehension, narrative quality or successful gameplay publication.
 
 ## Failure matrix and ownership
 

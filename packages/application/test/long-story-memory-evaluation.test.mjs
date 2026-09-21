@@ -21,6 +21,10 @@ import { resolveStoryRetrievalRecipe } from '../dist/storyteller/retrieval-recip
 import { createCanonicalMemoryExplorer } from '../dist/storyteller/memory-exploration.js';
 import { packStoryEvidence } from '../dist/storyteller/evidence-packing.js';
 import {
+  buildPackableMemoryEvidence,
+  packMemoryExplorationEvidence,
+} from '../dist/storyteller/memory-evidence-packing.js';
+import {
   buildEvidencePackingPressureFixture,
   evaluateEvidencePackingPressure,
 } from '../dist/developer-tools/evidence-packing-evaluator.js';
@@ -405,6 +409,51 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   );
   assert.equal(resumedExplorer.snapshot().readsUsed, 4);
   assert.equal(resumedExplorer.snapshot().rounds.length, 2);
+  const packableEvidence = buildPackableMemoryEvidence(
+    resumedExplorer.snapshot(),
+  );
+  const requiredEvidence = packableEvidence.filter((item) => item.required);
+  assert.equal(requiredEvidence.length, 2);
+  assert.deepEqual(
+    requiredEvidence.map((item) => item.minimumLevel).sort(),
+    ['card', 'exact'],
+  );
+  assert.ok(
+    requiredEvidence.every((item) =>
+      item.representations.every((representation) =>
+        representation.sourceKeys.every((source) =>
+          /^canonical:[0-9a-f-]+@[1-9][0-9]*#sha256:[0-9a-f]{64}$/.test(
+            source,
+          ),
+        ),
+      ),
+    ),
+  );
+  const greywakePack = packMemoryExplorationEvidence(
+    resumedExplorer.snapshot(),
+    { maxBytes: 12 * 1024, maxItems: 12, maxItemsPerGroup: 4 },
+  );
+  assert.equal(greywakePack.status, 'packed');
+  assert.match(
+    greywakePack.packet.contents.map((content) => content.text).join('\n'),
+    /still owes Mira Vale/,
+  );
+  assert.match(
+    greywakePack.packet.contents.map((content) => content.text).join('\n'),
+    /promised Mira Vale a quiet favor/,
+  );
+  assert.doesNotMatch(
+    JSON.stringify(greywakePack.packet),
+    /Destroyed Greywake|False tide road/,
+  );
+  assert.throws(
+    () =>
+      buildPackableMemoryEvidence({
+        ...resumedExplorer.snapshot(),
+        rounds: [{ malformed: true }],
+      }),
+    /round cannot be packed/,
+  );
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),
