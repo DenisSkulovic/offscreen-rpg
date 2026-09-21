@@ -6,7 +6,7 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Phases
 
-### X1 — Protocol and scripted round trip — protocol and canonical reads implemented
+### X1 — Protocol and scripted round trip — completed
 
 - Outcome: result union distinguishes `needs_context` from final publication; task recipes declare supported operations and cumulative limits.
 - Owners: Storyteller task/result schemas and prompts; application execution/admission/recovery; existing canonical read/search operations.
@@ -28,8 +28,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: X1; wrap the canonical dispatcher in a scripted round controller that reserves/finalizes the last round and stores its snapshot through a durable application artifact.
-- Base/reviewed Git revision and relevant uncommitted changes: `c1e7c8e`; QA catalogue version 14 and the maintained Greywake technical trace now describe the implemented private rounds and explicitly keep final composition/recovery as targets.
-- Actual checks/results for this revision: Storyteller/application builds and the focused 200-scene memory test pass. The scripted flow batches search plus registry, snapshots/restores, then batches exact current-favor inspection with its original source read and records four reads across two exploration rounds without provider access.
-- Unresolved findings/blockers: snapshots are serializable values but are not yet saved in the generation/application store; no controller currently enforces final-round reservation or accepts a final Storyteller result. Duplicate request reuse and crash recovery remain X2.
-- Provider spend and accounting certainty: $0; scripted implementation first.
+- Current phase and exact next action: X2; give each accepted private request a stable round/request identity so delivery after a crash reuses its stored result rather than repeating reads, then make exhaustion and stale-root outcomes durable.
+- Base/reviewed Git revision and relevant uncommitted changes: `c316cdf`; X1 adds the generation-owned exploration artifact, final-round controller, final-candidate replay, baseline schema update, focused database-backed integration path, QA catalogue version 15 and maintained technical traces.
+- Actual checks/results for this revision: database, application and API-integration TypeScript builds pass. The focused disposable-database start-package case passes: the existing provider-free Greywake path exercises real canonical search/source reads, while the new integration path stores a private round, accepts a final candidate and returns it on re-entry without invoking its source again.
+- Unresolved findings/blockers: normal generation/provider execution does not yet feed exploration rounds or promote the stored final candidate into generation output/publication. A crash between a read and artifact update may recompute read-only work; duplicate request reuse, durable exhaustion/stale-root outcomes and invalid-final repair remain X2.
+- Provider spend and accounting certainty: $0; no provider call.

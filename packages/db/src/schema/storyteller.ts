@@ -34,6 +34,51 @@ export const storytellerPublication = pgTable(
   ],
 );
 
+/**
+ * Private, restart-safe working state for one bounded memory-exploration
+ * operation. A final candidate is only input to eventual generation
+ * completion; this row never grants story authority or replaces
+ * storytellerPublication.
+ */
+export const storytellerMemoryExploration = pgTable(
+  'storyteller_memory_exploration',
+  {
+    generationId: uuid('generation_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    revision: integer('revision').notNull().default(0),
+    state: text('state')
+      .notNull()
+      .default('exploring')
+      .$type<'exploring' | 'final-ready'>(),
+    snapshot: jsonb('snapshot').notNull().$type<unknown>(),
+    finalOutput: jsonb('final_output').$type<unknown>(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('storyteller_memory_exploration_revision', sql`${t.revision} >= 0`),
+    check(
+      'storyteller_memory_exploration_state',
+      sql`${t.state} IN ('exploring','final-ready')`,
+    ),
+    check(
+      'storyteller_memory_exploration_output',
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL)`,
+    ),
+  ],
+);
+
 export const storytellerDispatchReview = pgTable(
   'storyteller_dispatch_review',
   {

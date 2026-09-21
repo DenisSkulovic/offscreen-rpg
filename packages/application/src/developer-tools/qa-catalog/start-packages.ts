@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 14,
+    version: 15,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -151,11 +151,11 @@ export const startPackageCases: readonly QaJourneyCase[] = [
           'A rich bounded retrieval recipe permits at least four reads.',
         ],
         action:
-          'Batch memory search and registry lookup, snapshot and restore the private exploration state, then batch inspection of the returned favor handle with its source read.',
+          'Batch memory search and registry lookup, persist and restore the private exploration state, batch inspection of the returned favor handle with its source read, then accept and replay a validated final candidate through the scripted controller.',
         observableExpectation:
-          'The trace exposes compact candidates followed by the exact current favor and original promise passage; no prose is published.',
+          'The trace exposes compact candidates followed by the exact current favor and original promise passage. The final candidate is stored and replayed without another scripted decision; no prose is published.',
         authoritativeExpectation:
-          'Every body read rechecks the captured manifest identity, task-local handles survive snapshot restoration, and the trace records four reads within its retained-byte ceiling.',
+          'Every body read rechecks the captured manifest identity, task-local handles survive durable snapshot restoration, four reads remain within the retained-byte ceiling, and a context request cannot consume the reserved final round.',
       }),
       stage({
         id: 'retry',

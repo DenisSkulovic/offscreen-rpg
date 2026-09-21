@@ -1,6 +1,6 @@
 # What the Storyteller receives, returns and costs
 
-This is the model-side companion to every trace. Current one-shot tasks, report-only behavior, provider-neutral exploration contracts and canonical read dispatch are implemented; runtime provider-driven exploration and final-round publication are not. All text and token examples below are authored offline. They are not measured model output, pricing quotes or permission to enable inference.
+This is the model-side companion to every trace. Current one-shot tasks, report-only behavior, provider-neutral exploration contracts, canonical read dispatch and durable scripted final-candidate control are implemented; runtime provider-driven exploration and publication are not. All text and token examples below are authored offline. They are not measured model output, pricing quotes or permission to enable inference.
 
 The readiness [solo contract](../solo-gameplay-contract.md#boundary-follow-ups-and-task-contracts) now fixes the first task/publication boundaries; the [gold session ledger](harbor-session.md#gs-07-outcome-return-and-exact-ledger) counts a connected path. Historical reports have no plans, effects or note patches; interactive publication explicitly supplies current activity authorization. Definition/package preparation may enlarge the old envelopes and must be measured from actual captured requests later, without live inference merely to count tokens.
 
@@ -72,7 +72,7 @@ Retiring a note does not delete chronology, but without archive lookup it can re
 
 The [memory feature](../../features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) owns this extension. The result protocol can currently express private `needs_context` requests for `query_registry`, `search_memory`, `inspect_memory` and `read_source`. The application can execute those operations against one captured canonical root, assign task-local handles, enforce read/byte ceilings, and serialize and restore the private exploration state. The [Greywake trace](greywake-memory.md) follows that implemented provider-free path.
 
-What remains target behavior is the round controller that persists those artifacts durably, dispatches them through an actual Storyteller task, reserves the final round and validates/publishes the final result. Existing opening, continuation, consequence and report tasks remain one-shot and receive no callable runtime tools.
+The scripted controller now persists private snapshots under the generation, preserves the final round, validates and stores a final candidate, and replays it without another scripted decision. What remains target behavior is normal provider/task dispatch with retained evidence and transfer of that candidate into ordinary generation completion and fenced publication. Existing opening, continuation, consequence and report tasks remain one-shot and receive no callable runtime tools.
 
 Illustrative bounded interaction:
 

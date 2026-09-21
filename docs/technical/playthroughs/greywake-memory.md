@@ -1,6 +1,6 @@
 # Greywake long-story memory exploration
 
-Status: mixed current/target regression trace. The two private exploration rounds are implemented and exercised without a provider. Final Storyteller composition, durable round storage and runtime publication remain target behavior.
+Status: mixed current/target regression trace. Private exploration rounds, durable snapshot storage, reserved final-candidate acceptance and replay are implemented without a provider. Evidence-aware Storyteller composition, normal generation/provider wiring and runtime publication remain target behavior.
 
 This trace answers a narrow but product-critical question: after roughly 200 scenes, can a turn recover an old favor and its original exchange without dumping the entire history into model context or confusing an obsolete/private decoy for canon?
 
@@ -53,15 +53,17 @@ Acceptance:
 - the result distinguishes current state from historical evidence;
 - nothing has yet been published to the player.
 
-The restored value is currently an application snapshot, not a durable generation artifact. A process crash can therefore still lose the round even though deterministic in-memory replay works.
+The restored value is stored in a generation-owned private artifact after an accepted round. A completed final candidate is stored there and replayed without another scripted decision. A crash inside a round can still recompute its read-only work; duplicate accepted-request reuse and stronger crash recovery remain X2.
 
-## GW-03 — grounded final turn — target
+## GW-03 — bounded final candidate — current mechanics, target composition
 
-A connected round controller supplies the retained evidence to the final Storyteller round. The final result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
+A scripted round controller now reserves the final round, rejects a late `needs_context` request, validates the final candidate under the captured task and stores it separately from publication. Re-entry returns that candidate without rerunning scripted inference or reads.
+
+The missing connected behavior is supplying the retained evidence through normal task/provider composition. That final result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
 
 The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
 
-This step is not implemented. Passing GW-01/GW-02 proves bounded retrieval mechanics, not model comprehension, narrative quality or successful gameplay publication.
+Final-candidate control/replay is implemented; evidence-aware model composition and generation/publication transfer are not. Passing GW-01/GW-02 and controller replay proves bounded retrieval mechanics, not model comprehension, narrative quality or successful gameplay publication.
 
 ## Failure matrix and ownership
 
@@ -75,4 +77,4 @@ This step is not implemented. Passing GW-01/GW-02 proves bounded retrieval mecha
 | Duplicate request or crash after reads | Reuse the accepted artifact without extra mechanics or hidden work | Target X2 recovery |
 | Valid retrieval, ignored evidence | Retrieval/assembly pass; generation-use fails | Current evaluator attribution |
 
-The executable acceptance stages live in `reusable-start-package` version 14: `retrieval-oracle`, `lexical-discovery`, `retrieval-cost-postures` and `scripted-memory-exploration`. [QA journeys](../../engineering/qa-journeys.md#long-story-memory-checklist) explains how evidence is recorded. [Storyteller requests and cost](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) owns the model-side budget and round distinction. The [exploration feature](../../features/2026-09-21--10-55--storyteller-memory-exploration/PLAN.md) owns implementation status.
+The executable acceptance stages live in `reusable-start-package` version 15: `retrieval-oracle`, `lexical-discovery`, `retrieval-cost-postures` and `scripted-memory-exploration`. [QA journeys](../../engineering/qa-journeys.md#long-story-memory-checklist) explains how evidence is recorded. [Storyteller requests and cost](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) owns the model-side budget and round distinction. The [exploration feature](../../features/2026-09-21--10-55--storyteller-memory-exploration/PLAN.md) owns implementation status.

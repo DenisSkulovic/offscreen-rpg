@@ -13,8 +13,11 @@ import {
   createStorytellerRuntime,
   loadCanonicalKnowledge,
   resolveCanonicalRecallCues,
+  runScriptedMemoryExploration,
   searchCanonicalKnowledge,
+  type MemoryExplorationSnapshot,
 } from '@offscreen/application/storyteller';
+import { generation } from '@offscreen/db/generation-schema';
 import {
   prepareStorytellerTask,
   storytellerTaskSchema,
@@ -34,6 +37,120 @@ registerStoryConcern(
   import.meta.url,
   'reusable start package',
   async ({ t, database, owner }) => {
+    await t.test(
+      'memory exploration persists private rounds and replays its final candidate',
+      async () => {
+        const drafts = createDrafts(database);
+        const openings = createScriptedOpenings(database);
+        const draftId = randomUUID();
+        await drafts.save(owner, draftId, {
+          title: 'Memory exploration controller',
+          premise: 'A traveler returns after a long absence.',
+          storytellingDirection: 'Use recovered evidence conservatively.',
+          storyteller: { id: 'absurd-action-comedy', revision: 1 },
+          expectedRevision: 0,
+        });
+        const openingId = randomUUID();
+        await openings.request(owner, draftId, openingId, 1);
+        const generated = await database.db.$client.query(
+          'SELECT input FROM generation WHERE id = $1',
+          [openingId],
+        );
+        const oneShotTask = storytellerTaskSchema.parse(
+          generated.rows[0]?.input,
+        );
+        const task = storytellerTaskSchema.parse({
+          ...oneShotTask,
+          resources: {
+            ...oneShotTask.resources,
+            recipe: {
+              version: 'memory-exploration.v1',
+              maxModelRounds: 2,
+              maxReads: 2,
+              maxRetainedReadBytes: 4096,
+              tools: 'memory-read.v1',
+              automaticEscalation: false,
+              finalAnswerReserveRounds: 1,
+            },
+          },
+        });
+        const generationId = randomUUID();
+        await database.db.insert(generation).values({
+          id: generationId,
+          ownerId: owner,
+          kind: 'storyteller.profiled.v1',
+          input: task,
+        });
+
+        const initialSnapshot: MemoryExplorationSnapshot = {
+          format: 'offscreen.memory-exploration-snapshot.v1',
+          storyId: draftId,
+          rootHash: 'a'.repeat(64),
+          rootRevision: 1,
+          readsUsed: 0,
+          retainedBytes: 0,
+          memoryHandles: [],
+          sourceHandles: [],
+          rounds: [],
+        };
+        const createExplorer = (saved?: MemoryExplorationSnapshot) => {
+          let snapshot = saved ?? initialSnapshot;
+          return {
+            execute: async (request: {
+              requests: readonly unknown[];
+            }) => {
+              const round = { request, results: [] };
+              snapshot = {
+                ...snapshot,
+                readsUsed: snapshot.readsUsed + request.requests.length,
+                rounds: [...snapshot.rounds, round],
+              };
+              return round;
+            },
+            snapshot: () => snapshot,
+          };
+        };
+        let sourceCalls = 0;
+        const completed = await runScriptedMemoryExploration(database, {
+          generationId,
+          task,
+          createExplorer,
+          source: ({ round }) => {
+            sourceCalls += 1;
+            return round === 1
+              ? {
+                  kind: 'needs_context',
+                  version: 1,
+                  purpose: 'Find the old promise before composing.',
+                  requests: [
+                    {
+                      requestId: 'r1',
+                      operation: 'search_memory',
+                      query: 'old promise',
+                    },
+                  ],
+                }
+              : scriptedStorytellerResult(task);
+          },
+        });
+        assert.equal(completed.replayed, false);
+        assert.equal(completed.explorationRounds, 1);
+        assert.equal(sourceCalls, 2);
+
+        const replayed = await runScriptedMemoryExploration(database, {
+          generationId,
+          task,
+          createExplorer,
+          source: () => {
+            throw new Error('A completed exploration must not run again');
+          },
+        });
+        assert.equal(replayed.replayed, true);
+        assert.equal(replayed.explorationRounds, 1);
+        assert.deepEqual(replayed.output, completed.output);
+      },
+    );
+
     await t.test(
       'abstract start publishes one final root and one obligation across retry',
       async () => {

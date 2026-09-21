@@ -1,6 +1,6 @@
 {
-  "id": "3756cccb-9b05-4322-a7dd-5320ec54a458",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "e73e6654-1eaa-400d-8830-6eb6239a6e8d",
+  "prevId": "3756cccb-9b05-4322-a7dd-5320ec54a458",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3936,6 +3936,92 @@
         "storyteller_funding_nonnegative": {
           "name": "storyteller_funding_nonnegative",
           "value": "\"storyteller_funding\".\"limit_microusd\" >= 0 AND \"storyteller_funding\".\"settled_microusd\" >= 0 AND \"storyteller_funding\".\"reserved_microusd\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.storyteller_memory_exploration": {
+      "name": "storyteller_memory_exploration",
+      "schema": "",
+      "columns": {
+        "generation_id": {
+          "name": "generation_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'exploring'"
+        },
+        "snapshot": {
+          "name": "snapshot",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "final_output": {
+          "name": "final_output",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "storyteller_memory_exploration_generation_id_generation_id_fk": {
+          "name": "storyteller_memory_exploration_generation_id_generation_id_fk",
+          "tableFrom": "storyteller_memory_exploration",
+          "tableTo": "generation",
+          "columnsFrom": [
+            "generation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "storyteller_memory_exploration_revision": {
+          "name": "storyteller_memory_exploration_revision",
+          "value": "\"storyteller_memory_exploration\".\"revision\" >= 0"
+        },
+        "storyteller_memory_exploration_state": {
+          "name": "storyteller_memory_exploration_state",
+          "value": "\"storyteller_memory_exploration\".\"state\" IN ('exploring','final-ready')"
+        },
+        "storyteller_memory_exploration_output": {
+          "name": "storyteller_memory_exploration_output",
+          "value": "(\"storyteller_memory_exploration\".\"state\" = 'exploring' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'final-ready' AND \"storyteller_memory_exploration\".\"final_output\" IS NOT NULL)"
         }
       },
       "isRLSEnabled": false

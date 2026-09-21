@@ -688,3 +688,19 @@ CREATE INDEX "storyteller_attempt_story_created" ON "storyteller_attempt" USING 
 CREATE INDEX "storyteller_attempt_purpose_created" ON "storyteller_attempt" USING btree ("purpose","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_operation_account_created" ON "storyteller_operation" USING btree ("account_id","created_at");--> statement-breakpoint
 CREATE INDEX "storyteller_usage_allocation_window" ON "storyteller_usage_allocation" USING btree ("scope","scope_key","window_id","window_version","attributed_at");
+--> statement-breakpoint
+CREATE TABLE "storyteller_memory_exploration" (
+	"generation_id" uuid PRIMARY KEY NOT NULL,
+	"revision" integer DEFAULT 0 NOT NULL,
+	"state" text DEFAULT 'exploring' NOT NULL,
+	"snapshot" jsonb NOT NULL,
+	"final_output" jsonb,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "storyteller_memory_exploration_revision" CHECK ("storyteller_memory_exploration"."revision" >= 0),
+	CONSTRAINT "storyteller_memory_exploration_state" CHECK ("storyteller_memory_exploration"."state" IN ('exploring','final-ready')),
+	CONSTRAINT "storyteller_memory_exploration_output" CHECK (("storyteller_memory_exploration"."state" = 'exploring' AND "storyteller_memory_exploration"."final_output" IS NULL) OR ("storyteller_memory_exploration"."state" = 'final-ready' AND "storyteller_memory_exploration"."final_output" IS NOT NULL))
+);
+--> statement-breakpoint
+ALTER TABLE "storyteller_memory_exploration" ADD CONSTRAINT "storyteller_memory_exploration_generation_id_generation_id_fk" FOREIGN KEY ("generation_id") REFERENCES "public"."generation"("id") ON DELETE restrict ON UPDATE no action;
+--> statement-breakpoint

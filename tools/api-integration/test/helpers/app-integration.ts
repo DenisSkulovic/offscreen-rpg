@@ -258,6 +258,10 @@ export async function withAppIntegration(
           [user.id],
         );
         await database.db.$client.query(
+          'DELETE FROM storyteller_memory_exploration WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
           'DELETE FROM generation WHERE owner_id = $1',
           [user.id],
         );

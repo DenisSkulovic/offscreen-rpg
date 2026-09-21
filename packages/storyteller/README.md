@@ -33,7 +33,7 @@ When a controlling scene blocks an accepted itinerary, `activitySituation.accept
 
 Continuation and consequence output may also declare that the newly published current passage starts a fresh active-scene context. This is a proposal, not direct authority: publication may replace the private anchor only in the same transaction that commits that validated passage against the task's revision fence. `continue` or omission retains the prior anchor; reports and opening review cannot change it.
 
-There is no tool-using or multi-round planner yet. The current one-shot offline DM turn is enough for the short playable loop; pre-narrative retrieval remains the separate memory proposal. Task/schema versions and the authored content graph must not be mistaken for demonstrated live-model quality.
+Ordinary Storyteller execution has no tool-using or multi-round provider loop yet. The task contracts can express bounded private memory requests, and the application has a provider-free scripted controller with durable private-round artifacts and a reserved final candidate, but that controller is not wired into normal generation completion or publication. The current one-shot offline DM turn remains the short playable loop. Task/schema versions and the authored content graph must not be mistaken for demonstrated live-model quality.
 
 ## Content and rules
 
