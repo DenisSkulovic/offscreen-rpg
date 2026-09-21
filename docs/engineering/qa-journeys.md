@@ -84,6 +84,7 @@ Import and instantiation are exposed through the available `reusable-start-packa
 5. Confirm repeated text and provenance are emitted once and referenced by stable packet-local IDs. Exact wording should appear only when selected as a higher-fidelity representation.
 6. Apply authority, visibility, branch and supersession filters before packing. A compact packet containing private, stale or alternate-branch evidence is still a failure.
 7. Keep compression or generated summaries outside the allocator until separately evaluated for entailment, provenance retention and cost. Shorter output is not automatically better evidence.
+8. Compose the captured task and factored evidence packet under one serialized request envelope. Confirm overflow becomes durable `context-limit`, invokes no new Storyteller decision and replays as the same terminal failure.
 
 The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 

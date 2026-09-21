@@ -15,12 +15,14 @@ import {
   CanonicalMemoryExplorationError,
   type MemoryExplorationSnapshot,
 } from './memory-exploration';
+import { packMemoryExplorationEvidence } from './memory-evidence-packing';
 
 export type MemoryExplorationFailureCode =
   | 'stale-root'
   | 'invalid-handle'
   | 'read-limit'
-  | 'round-limit';
+  | 'round-limit'
+  | 'context-limit';
 
 export class MemoryExplorationControllerError extends Error {
   constructor(readonly code: MemoryExplorationFailureCode) {
@@ -33,7 +35,8 @@ function isFailureCode(value: unknown): value is MemoryExplorationFailureCode {
     value === 'stale-root' ||
     value === 'invalid-handle' ||
     value === 'read-limit' ||
-    value === 'round-limit'
+    value === 'round-limit' ||
+    value === 'context-limit'
   );
 }
 
@@ -48,6 +51,8 @@ export type ScriptedMemoryRoundSource = (input: {
   task: StorytellerTask;
   round: number;
   snapshot: MemoryExplorationSnapshot;
+  request: ReturnType<typeof prepareMemoryEvidenceContext>['request'];
+  serializedRequestBytes: number;
 }) => unknown | Promise<unknown>;
 
 export type MemoryExplorationControllerResult = Readonly<{
@@ -75,6 +80,61 @@ function assertSnapshotWithinRecipe(
 
 function requestSha256(request: unknown) {
   return createHash('sha256').update(JSON.stringify(request)).digest('hex');
+}
+
+/** Builds the inspectable final-context payload under the task's shared request envelope. */
+export function prepareMemoryEvidenceContext(
+  task: StorytellerTask,
+  snapshot: MemoryExplorationSnapshot,
+  round: number,
+) {
+  const recipe = task.resources.recipe;
+  if (recipe.version !== 'memory-exploration.v1') {
+    throw new Error('Memory evidence requires an exploration recipe');
+  }
+  const emptyWrapperBytes = Buffer.byteLength(
+    JSON.stringify({
+      format: 'offscreen.memory-exploration-decision-request.v1',
+      round,
+      task,
+      evidencePack: null,
+    }),
+    'utf8',
+  );
+  const availablePacketBytes = Math.min(
+    recipe.maxRetainedReadBytes,
+    task.resources.envelope.maxSerializedRequestBytes - emptyWrapperBytes,
+  );
+  if (availablePacketBytes <= 0) {
+    throw new MemoryExplorationControllerError('context-limit');
+  }
+  const packed = packMemoryExplorationEvidence(snapshot, {
+    maxBytes: availablePacketBytes,
+    maxItems: 64,
+    maxItemsPerGroup: 8,
+  });
+  if (packed.status === 'mandatory-overflow') {
+    throw new MemoryExplorationControllerError('context-limit');
+  }
+  const request = {
+    format: 'offscreen.memory-exploration-decision-request.v1' as const,
+    round,
+    task,
+    evidencePack: packed.packet,
+  };
+  const serializedRequestBytes = Buffer.byteLength(JSON.stringify(request), 'utf8');
+  if (
+    serializedRequestBytes >
+    task.resources.envelope.maxSerializedRequestBytes
+  ) {
+    throw new MemoryExplorationControllerError('context-limit');
+  }
+  return {
+    request,
+    serializedRequestBytes,
+    selected: packed.selected,
+    omitted: packed.omitted,
+  };
 }
 
 /**
@@ -187,9 +247,28 @@ export async function runScriptedMemoryExploration(
     ) {
       throw new Error('Memory exploration pending request hash mismatch');
     }
-    const rawOutput = pendingRequest
-      ? pendingRequest
-      : await input.source({ task, round, snapshot });
+    let rawOutput: unknown = pendingRequest;
+    if (!pendingRequest) {
+      let preparedContext: ReturnType<typeof prepareMemoryEvidenceContext>;
+      try {
+        preparedContext = prepareMemoryEvidenceContext(task, snapshot, round);
+      } catch (error) {
+        if (
+          error instanceof MemoryExplorationControllerError &&
+          error.code === 'context-limit'
+        ) {
+          return fail('context-limit');
+        }
+        throw error;
+      }
+      rawOutput = await input.source({
+        task,
+        round,
+        snapshot,
+        request: preparedContext.request,
+        serializedRequestBytes: preparedContext.serializedRequestBytes,
+      });
+    }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
     if (contextRequest.success) {
       if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {

@@ -61,7 +61,9 @@ The restored Greywake snapshot now deterministically adapts admitted evidence in
 
 A scripted round controller now reserves the final round, rejects a late `needs_context` request, validates the final candidate under the captured task and stores it separately from publication. Re-entry returns that candidate without rerunning scripted inference or reads.
 
-The missing connected behavior is supplying that pack through normal task/provider composition. That final result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
+Every fresh controller decision now receives the factored evidence packet and its exact serialized request size. Packet bytes share the task's existing `maxSerializedRequestBytes` envelope and the recipe's retained-read ceiling; they are not extra capacity. If required evidence plus the captured task cannot fit, the controller durably records `context-limit` instead of truncating canon or calling the round source. A crash-replayed accepted read request bypasses recomposition and executes first. The provider adapter still does not dispatch this multi-round path.
+
+The remaining connected behavior is translating this controller input into the normal provider request and tracing which evidence the final result actually used. That result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
 
 The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
 
@@ -76,6 +78,7 @@ Snapshot-to-pack adaptation and final-candidate control/replay are implemented; 
 | Private or superseded decoy | Exclude it from eligible canonical evidence | Current retrieval boundary |
 | Captured root becomes stale | Refuse mixed-era read/publication | Read fence current; publication fence target |
 | Read or retained-byte ceiling exhausted | Stop optional exploration while preserving final reserve | Limits current; connected final reserve target |
+| Required final packet exceeds the shared serialized request envelope | Persist `context-limit`; do not truncate required evidence or invoke another decision | Current controller boundary |
 | Crash after request acceptance | Replay the hashed request without another Storyteller decision; accept its counters once | Current controller recovery |
 | Crash after reads but before snapshot commit | The same read-only lookup may repeat; accepted counters and handles advance once | Current controller recovery |
 | Stale root, invalid handle or read/round exhaustion | Persist a classified terminal failure; re-entry returns it without another decision | Current controller recovery |

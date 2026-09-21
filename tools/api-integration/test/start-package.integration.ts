@@ -95,6 +95,25 @@ registerStoryConcern(
           sourceHandles: [],
           rounds: [],
         };
+        const memoryUnit = {
+          unitId: `${randomUUID()}@1#root`,
+          documentId: randomUUID(),
+          revision: 1,
+          sourceHash: 'b'.repeat(64),
+          path: 'relationships/old-promise.md',
+          kind: 'relationship',
+          authority: 'canon',
+          visibility: 'player-known',
+          branchKey: 'main',
+          current: true,
+          headingPath: [],
+          linkedDocumentIds: [],
+          effectiveFromTick: null,
+          effectiveThroughTick: null,
+          title: 'Old promise',
+          contextualKey: 'relationship old promise',
+          bodyBytes: 64,
+        };
         let failNextRead = true;
         const createExplorer = (saved?: MemoryExplorationSnapshot) => {
           let snapshot = saved ?? initialSnapshot;
@@ -106,10 +125,32 @@ registerStoryConcern(
                 failNextRead = false;
                 throw new Error('simulated crash after request persistence');
               }
-              const round = { request, results: [] };
+              const round = {
+                request,
+                results: [
+                  {
+                    requestId: 'r1',
+                    operation: 'search_memory',
+                    state: 'ok',
+                    candidates: [
+                      {
+                        handle: 'm1',
+                        documentId: memoryUnit.documentId,
+                        revision: 1,
+                        title: 'Old promise',
+                        path: memoryUnit.path,
+                        kind: memoryUnit.kind,
+                        linkedSources: [],
+                        snippet: 'The old promise remains unresolved.',
+                      },
+                    ],
+                  },
+                ],
+              };
               snapshot = {
                 ...snapshot,
                 readsUsed: snapshot.readsUsed + request.requests.length,
+                memoryHandles: [{ handle: 'm1', unit: memoryUnit }],
                 rounds: [...snapshot.rounds, round],
               };
               return round;
@@ -118,8 +159,19 @@ registerStoryConcern(
           };
         };
         let sourceCalls = 0;
-        const source: ScriptedMemoryRoundSource = ({ round }) => {
+        const composedContexts: Array<
+          Pick<
+            Parameters<ScriptedMemoryRoundSource>[0],
+            'request' | 'serializedRequestBytes'
+          >
+        > = [];
+        const source: ScriptedMemoryRoundSource = ({
+          round,
+          request,
+          serializedRequestBytes,
+        }) => {
           sourceCalls += 1;
+          composedContexts.push({ request, serializedRequestBytes });
           return round === 1
             ? {
                 kind: 'needs_context',
@@ -154,6 +206,20 @@ registerStoryConcern(
         assert.equal(completed.replayed, false);
         assert.equal(completed.explorationRounds, 1);
         assert.equal(sourceCalls, 2);
+        const initialContext = composedContexts[0];
+        const finalContext = composedContexts[1];
+        assert.ok(initialContext);
+        assert.ok(finalContext);
+        assert.equal(initialContext.request.evidencePack.evidence.length, 0);
+        assert.match(
+          finalContext.request.evidencePack.contents[0]?.text ?? '',
+          /old promise remains unresolved/i,
+        );
+        assert.equal(finalContext.request.round, 2);
+        assert.ok(
+          finalContext.serializedRequestBytes <=
+            task.resources.envelope.maxSerializedRequestBytes,
+        );
 
         const replayed = await runScriptedMemoryExploration(database, {
           generationId,

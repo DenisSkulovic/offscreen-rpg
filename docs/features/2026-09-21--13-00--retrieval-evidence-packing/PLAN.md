@@ -32,8 +32,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: P3; supply the deterministic exploration evidence pack to the final-round request composer, account for its complete serialized bytes inside the task envelope and trace which packet evidence the final output uses.
-- Base/reviewed Git revision and relevant uncommitted changes: `f654451`; the first P3 slice adapts a captured exploration snapshot into optional discovery leads, required inspected cards and required exact source reads without inference, new reads or provider work.
-- Actual checks/results for this revision: application build and focused provider-free memory test pass. The real canonical Greywake path packs the inspected current favor and original promise with document/revision/hash provenance inside 12 KiB, excludes fork/developer decoys and rejects malformed persisted rounds.
-- Unresolved findings/blockers: the adapter is not yet called by normal final request composition; packet plus base-task byte/token accounting needs one shared envelope rather than treating the pack budget as extra capacity. Route-specific token counts remain unknown until a tokenizer is verified.
+- Current phase and exact next action: P3; add the provider-request dry-run adapter for this controller input and stage-separated evidence-use reporting before enabling multi-round dispatch.
+- Base/reviewed Git revision and relevant uncommitted changes: `7066fe2`; the controller now supplies the deterministic evidence packet and exact serialized task-plus-packet bytes to every fresh decision under one envelope. Accepted-request crash replay still executes before recomposition. A new durable `context-limit` failure refuses mandatory overflow.
+- Actual checks/results for this revision: database, application and integration builds pass; the focused disposable-database `start-package` suite passes 5/5. Its crash/recovery case proves the first decision sees an empty packet, the recovered final decision sees the discovered canonical lead and the composed request stays inside the captured envelope.
+- Unresolved findings/blockers: the ordinary provider adapter does not yet serialize or dispatch multi-round controller input, and downstream evidence use is not yet scored. Route-specific token counts remain unknown until a tokenizer is verified.
 - Provider spend and accounting certainty: $0; no provider call.
