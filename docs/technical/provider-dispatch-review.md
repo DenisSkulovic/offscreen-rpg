@@ -42,6 +42,8 @@ The memory packet command is Gate-0 structural evidence, not a synthetic prompt 
 
 Live memory evaluation must not reinterpret the ordinary one-shot configuration. Its sibling configuration and manifest name the two-round operation ceiling, one-read allowance, per-round serialized and token ceilings, cumulative input/generated ceilings and a verified-zero-price route. Gate-0 preflight binds the first held attempt and exact hash but grants no authority to a later packet. If the first result requests memory, deterministic retrieval may prepare a second attempt only inside the captured operation; that attempt requires its own held-packet inspection, current route verification, release and settlement reconciliation.
 
+The credential-free Chamber packet command applies that configuration before task admission, so the route in the hashed provider body, captured task authority and manifest are the same route rather than a post-hoc annotation. It installs a failing provider transport, requires held memory state with zero attempts, and writes the manifest next to the exact request evidence. It cannot provision funding or release a review.
+
 ## Analysis and comparison
 
 The Chamber should show a summary before raw JSON:

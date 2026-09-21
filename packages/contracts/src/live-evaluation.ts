@@ -140,22 +140,32 @@ export const memoryEvaluationPacketConfigSchema = z
       context.addIssue({
         code: 'custom',
         path: ['route'],
-        message: 'Memory evaluation is restricted to verified-zero-price routes',
+        message:
+          'Memory evaluation is restricted to verified-zero-price routes',
       });
     }
     if (
-      config.recipe.maxInputTokensPerOperation <
+      config.recipe.maxInputTokensPerOperation !==
       config.recipe.maxInputTokensPerRound * config.recipe.modelRounds
     ) {
       context.addIssue({
         code: 'custom',
         path: ['recipe', 'maxInputTokensPerOperation'],
-        message: 'Memory operation input must cover both admitted rounds',
+        message: 'Memory operation input must equal both admitted rounds',
       });
     }
     if (
-      config.recipe.maxInputTokensPerRound > config.route.maxContextTokens
+      config.recipe.maxSerializedBytesPerRequest >
+      config.recipe.maxInputTokensPerRound * 4
     ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['recipe', 'maxSerializedBytesPerRequest'],
+        message:
+          'Serialized request limit exceeds the route input byte upper bound',
+      });
+    }
+    if (config.recipe.maxInputTokensPerRound > config.route.maxContextTokens) {
       context.addIssue({
         code: 'custom',
         path: ['recipe', 'maxInputTokensPerRound'],

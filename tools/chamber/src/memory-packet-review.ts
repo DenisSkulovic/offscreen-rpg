@@ -131,7 +131,9 @@ export async function captureHeldMemoryPacket(input: {
   if (!response.ok) {
     throw new Error(`Memory packet review was unavailable: ${response.status}`);
   }
-  const review = dispatchReviewResponseSchema.parse(await response.json()).review;
+  const review = dispatchReviewResponseSchema.parse(
+    await response.json(),
+  ).review;
   const accounting = await input.database.db.$client.query(
     `SELECT
        (SELECT count(*) FROM storyteller_attempt WHERE generation_id = $1) AS attempts,
@@ -140,8 +142,14 @@ export async function captureHeldMemoryPacket(input: {
     [generationId],
   );
   const row = accounting.rows[0];
-  if (row?.attempts !== '0' || row?.held !== '1' || row?.memory_state !== 'held') {
-    throw new Error('Memory packet did not stop cleanly before provider accounting');
+  if (
+    row?.attempts !== '0' ||
+    row?.held !== '1' ||
+    row?.memory_state !== 'held'
+  ) {
+    throw new Error(
+      'Memory packet did not stop cleanly before provider accounting',
+    );
   }
 
   const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-packet-review');
@@ -150,26 +158,29 @@ export async function captureHeldMemoryPacket(input: {
     evidenceDirectory,
     `memory-request-${generationId}.json`,
   );
+  const allowance = {
+    modelRounds: task.resources.recipe.maxModelRounds,
+    perRoundInputTokenCeiling: Math.min(
+      input.execution.policy.maxInputTokens,
+      input.usagePolicy.limits.maxInputTokensPerRequest,
+    ),
+    operationInputTokenCeiling: task.resources.envelope.maxInputTokens,
+    perRequestSerializedByteCeiling:
+      task.resources.envelope.maxSerializedRequestBytes,
+    operationGeneratedTokenCeiling: task.resources.envelope.maxGeneratedTokens,
+    reads: task.resources.recipe.maxReads,
+    retainedReadByteCeiling:
+      task.resources.recipe.version === 'memory-exploration.v1'
+        ? task.resources.recipe.maxRetainedReadBytes
+        : 0,
+  };
   await writeFile(
     evidencePath,
     `${JSON.stringify(
       {
         corpus: materialized,
         generationId,
-        allowance: {
-          modelRounds: task.resources.recipe.maxModelRounds,
-          perRoundInputTokenCeiling: Math.min(
-            input.execution.policy.maxInputTokens,
-            input.usagePolicy.limits.maxInputTokensPerRequest,
-          ),
-          operationInputTokenCeiling:
-            task.resources.envelope.maxInputTokens,
-          perRequestSerializedByteCeiling:
-            task.resources.envelope.maxSerializedRequestBytes,
-          operationGeneratedTokenCeiling:
-            task.resources.envelope.maxGeneratedTokens,
-          reads: task.resources.recipe.maxReads,
-        },
+        allowance,
         accounting: { attempts: 0, heldReviews: 1, memoryState: 'held' },
         review,
       },
@@ -178,5 +189,11 @@ export async function captureHeldMemoryPacket(input: {
     )}\n`,
     { encoding: 'utf8', flag: 'wx' },
   );
-  return { evidencePath, generationId, review, corpus: materialized } as const;
+  return {
+    evidencePath,
+    generationId,
+    review,
+    corpus: materialized,
+    allowance,
+  } as const;
 }

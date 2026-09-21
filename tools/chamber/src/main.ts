@@ -18,6 +18,8 @@ import { resolveEffectiveUsagePolicy } from '@offscreen/application/storyteller'
 import {
   createChamberStorytellerControl,
   createLiveEvaluationManifest,
+  createMemoryEvaluationManifest,
+  preflightMemoryEvaluation,
 } from '@offscreen/application/developer-tools';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 import { authOptions, createAuth } from '@offscreen/api/auth';
@@ -38,7 +40,9 @@ import {
 import {
   evaluationPacketAuthority,
   evaluationPacketInspectionSchema,
+  memoryEvaluationPacketAuthority,
   readEvaluationPacketConfig,
+  readMemoryEvaluationPacketConfig,
 } from './evaluation-config.js';
 import {
   LocalDocumentStore,
@@ -52,6 +56,9 @@ const smoke = process.argv.includes('--smoke');
 const review = process.argv.includes('--review');
 const packetReview = process.argv.includes('--packet-review');
 const memoryPacketReview = process.argv.includes('--memory-packet-review');
+const memoryEvaluationPacket = process.argv.includes(
+  '--memory-evaluation-packet',
+);
 const evaluationPacket = process.argv.includes('--evaluation-packet');
 const evaluationRun = process.argv.includes('--evaluation-run');
 const resetDatabase = process.argv.includes('--reset-database');
@@ -66,6 +73,7 @@ const runModes = [
   review,
   packetReview,
   memoryPacketReview,
+  memoryEvaluationPacket,
   evaluationPacket,
   evaluationRun,
 ].filter(Boolean);
@@ -80,6 +88,7 @@ if (
           '--review',
           '--packet-review',
           '--memory-packet-review',
+          '--memory-evaluation-packet',
           '--evaluation-packet',
           '--evaluation-run',
           '--reset-database',
@@ -90,10 +99,13 @@ if (
     )
 ) {
   throw new Error(
-    'Use at most one run mode; --evaluation-packet also requires --config=<path>.',
+    'Use at most one run mode; evaluation packet modes also require --config=<path>.',
   );
 }
-if ((evaluationPacket || evaluationRun) !== Boolean(configArgument)) {
+if (
+  (evaluationPacket || evaluationRun || memoryEvaluationPacket) !==
+  Boolean(configArgument)
+) {
   throw new Error('Evaluation modes require exactly one --config=<path>.');
 }
 const origin = 'http://127.0.0.1:3100';
@@ -190,12 +202,23 @@ const memoryDryRunExecution: ExecutionPolicy = {
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 const evaluationConfig = configArgument
-  ? await readEvaluationPacketConfig(
-      resolve(workspaceRoot, configArgument.slice('--config='.length)),
-    )
+  ? memoryEvaluationPacket
+    ? null
+    : await readEvaluationPacketConfig(
+        resolve(workspaceRoot, configArgument.slice('--config='.length)),
+      )
   : null;
+const memoryEvaluationConfig =
+  memoryEvaluationPacket && configArgument
+    ? await readMemoryEvaluationPacketConfig(
+        resolve(workspaceRoot, configArgument.slice('--config='.length)),
+      )
+    : null;
 const evaluationAuthority = evaluationConfig
   ? evaluationPacketAuthority(evaluationConfig)
+  : null;
+const memoryEvaluationAuthority = memoryEvaluationConfig
+  ? memoryEvaluationPacketAuthority(memoryEvaluationConfig)
   : null;
 if (
   evaluationRun &&
@@ -215,8 +238,23 @@ const evaluationPolicy =
         requestedFundingMode: 'prepaid',
       })
     : null;
+const memoryEvaluationPolicy =
+  memoryEvaluationAuthority && memoryEvaluationConfig
+    ? resolveEffectiveUsagePolicy({
+        platform: memoryEvaluationAuthority.profile,
+        entitlement: memoryEvaluationAuthority.profile,
+        restrictions: [],
+        requestedRoute: memoryEvaluationConfig.route.route,
+        requestedFundingMode: 'prepaid',
+      })
+    : null;
 if (evaluationPolicy?.kind === 'denied') {
   throw new Error(`Evaluation usage policy denied: ${evaluationPolicy.reason}`);
+}
+if (memoryEvaluationPolicy?.kind === 'denied') {
+  throw new Error(
+    `Memory evaluation usage policy denied: ${memoryEvaluationPolicy.reason}`,
+  );
 }
 const gitCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: workspaceRoot,
@@ -354,17 +392,24 @@ const app = await createApp(
     },
     developerTools: true,
     chamberStorytellerControl: storytellerControl,
-    ...(packetReview || memoryPacketReview || evaluationPacket || evaluationRun
+    ...(packetReview ||
+    memoryPacketReview ||
+    memoryEvaluationPacket ||
+    evaluationPacket ||
+    evaluationRun
       ? {
           storytellerExecution:
             evaluationAuthority?.execution ??
+            memoryEvaluationAuthority?.execution ??
             (memoryPacketReview ? memoryDryRunExecution : dryRunExecution),
           storytellerUsagePolicy:
             evaluationPolicy?.kind === 'allowed'
               ? evaluationPolicy.policy
-              : memoryPacketReview
-                ? memoryDryRunPolicy.policy
-                : dryRunPolicy.policy,
+              : memoryEvaluationPolicy?.kind === 'allowed'
+                ? memoryEvaluationPolicy.policy
+                : memoryPacketReview
+                  ? memoryDryRunPolicy.policy
+                  : dryRunPolicy.policy,
         }
       : {}),
     qaContext: {
@@ -447,17 +492,22 @@ try {
           dispatchAuthority: () => evaluationPolicy.policy,
           documentStore,
         }
-      : memoryPacketReview
+      : memoryPacketReview || memoryEvaluationPacket
         ? {
             provider: async () => {
-              throw new Error('Held memory packet attempted provider transport');
+              throw new Error(
+                'Held memory packet attempted provider transport',
+              );
             },
-            dispatchAuthority: () => memoryDryRunPolicy.policy,
+            dispatchAuthority: () =>
+              memoryEvaluationPolicy?.kind === 'allowed'
+                ? memoryEvaluationPolicy.policy
+                : memoryDryRunPolicy.policy,
             documentStore,
           }
         : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
-  if (memoryPacketReview) {
+  if (memoryPacketReview || memoryEvaluationPacket) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');
@@ -468,12 +518,75 @@ try {
       database,
       documentStore,
       ownerId: userId,
-      execution: memoryDryRunExecution,
-      usagePolicy: memoryDryRunPolicy.policy,
+      execution: memoryEvaluationAuthority?.execution ?? memoryDryRunExecution,
+      usagePolicy:
+        memoryEvaluationPolicy?.kind === 'allowed'
+          ? memoryEvaluationPolicy.policy
+          : memoryDryRunPolicy.policy,
     });
-    console.log(
-      `Held memory packet saved to ${captured.evidencePath}. Corpus: ${captured.corpus.scenes} passages, ${captured.corpus.evidence} canonical records. Verified: memory state held, zero provider attempts. Model spend: $0.`,
-    );
+    if (memoryEvaluationConfig) {
+      const expectedAllowance = {
+        modelRounds: memoryEvaluationConfig.recipe.modelRounds,
+        perRoundInputTokenCeiling:
+          memoryEvaluationConfig.recipe.maxInputTokensPerRound,
+        operationInputTokenCeiling:
+          memoryEvaluationConfig.recipe.maxInputTokensPerOperation,
+        perRequestSerializedByteCeiling:
+          memoryEvaluationConfig.recipe.maxSerializedBytesPerRequest,
+        operationGeneratedTokenCeiling:
+          memoryEvaluationConfig.recipe.maxGeneratedTokensPerOperation,
+        reads: memoryEvaluationConfig.recipe.retrievalReads,
+        retainedReadByteCeiling:
+          memoryEvaluationConfig.recipe.maxRetainedReadBytes,
+      };
+      if (
+        JSON.stringify(captured.allowance) !== JSON.stringify(expectedAllowance)
+      ) {
+        throw new Error(
+          'Captured memory task allowance does not match evaluation configuration',
+        );
+      }
+      const inspection = evaluationPacketInspectionSchema.parse(
+        captured.review.inspection,
+      );
+      const manifest = createMemoryEvaluationManifest({
+        config: memoryEvaluationConfig,
+        createdAt: new Date().toISOString(),
+        review: {
+          generationId: captured.review.generationId,
+          attemptId: captured.review.attemptId,
+          packetSha256: captured.review.packetSha256,
+          state: captured.review.state,
+          serializedBytes: inspection.serializedBytes,
+        },
+      });
+      const preflight = preflightMemoryEvaluation({
+        manifest,
+        now: new Date().toISOString(),
+        review: captured.review,
+        accountingReady: true,
+        traceReady: true,
+      });
+      if (!preflight.eligible) {
+        throw new Error(
+          `Memory evaluation preflight failed: ${preflight.failures.join(', ')}`,
+        );
+      }
+      const manifestPath = join(
+        dirname(captured.evidencePath),
+        `memory-evaluation-manifest-${captured.generationId}.json`,
+      );
+      await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, {
+        flag: 'wx',
+      });
+      console.log(
+        `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}. Verified: memory state held, zero provider attempts. Model spend: $0 (no provider call).`,
+      );
+    } else {
+      console.log(
+        `Held memory packet saved to ${captured.evidencePath}. Corpus: ${captured.corpus.scenes} passages, ${captured.corpus.evidence} canonical records. Verified: memory state held, zero provider attempts. Model spend: $0.`,
+      );
+    }
   } else if (packetReview || evaluationPacket || evaluationRun) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
