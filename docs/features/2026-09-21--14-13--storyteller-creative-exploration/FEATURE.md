@@ -57,8 +57,9 @@ Boundaries:
 ## Decisions still needed
 
 - Which smallest first lens set provides useful diversity without prompting several cosmetic variations of the same beat.
-- Whether the first POC generates candidate directions inside the final Storyteller round or uses one separately metered private ideation round. The answer should follow fixed-budget comparisons, not architectural preference.
 - What lightweight derived orientation is worth maintaining before episodic cards and explicit links are complete; generated themes or inferred edges must never become required authority.
+
+The first POC generates candidate directions inside final composition. An exact provider-free Greywake comparison held the total output allowance constant and measured 20,749 captured request bytes for inline composition versus 31,774 bytes and two calls for separate ideation plus composition. The separate shape did not ask final composition to regenerate the directions. It remains available as a future rich-route experiment, but requires a forked live taste win before adoption because structural inspection alone cannot measure creative quality.
 
 ## Owning specifications
 

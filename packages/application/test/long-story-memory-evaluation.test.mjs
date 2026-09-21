@@ -26,7 +26,10 @@ import {
   buildPackableMemoryEvidence,
   packMemoryExplorationEvidence,
 } from '../dist/storyteller/memory-evidence-packing.js';
-import { inspectMemoryExplorationProviderRequest } from '../dist/storyteller/memory-provider-preview.js';
+import {
+  compareCreativeIdeationOrchestration,
+  inspectMemoryExplorationProviderRequest,
+} from '../dist/storyteller/memory-provider-preview.js';
 import { validateMemoryEvidenceUse } from '../dist/storyteller/memory-evidence-use.js';
 import {
   buildEvidencePackingPressureFixture,
@@ -815,6 +818,64 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     JSON.stringify(providerPreview.inspection.body.messages),
     /still owes Mira Vale/,
   );
+  const directionEvidenceIds = greywakePack.packet.contents
+    .slice(0, 2)
+    .map((item) => item.id);
+  assert.equal(directionEvidenceIds.length, 2);
+  const orchestrationComparison = compareCreativeIdeationOrchestration({
+    task: providerTask,
+    snapshot: resumedExplorer.snapshot(),
+    round: 2,
+    ideationGeneratedTokens: 512,
+    creativeDirections: {
+      format: 'offscreen.creative-direction-set.v1',
+      directions: [
+        {
+          id: 'd1',
+          premise: 'Mira quietly invokes the old favor during routine quay work.',
+          evidenceItemIds: [directionEvidenceIds[0]],
+          intendedValue: 'Connect routine play to an unresolved relationship.',
+          constraints: ['Do not prevent the selected fishing activity.'],
+          status: 'selected',
+        },
+        {
+          id: 'd2',
+          premise: 'A past storm detail resurfaces as local texture.',
+          evidenceItemIds: [directionEvidenceIds[1]],
+          intendedValue: 'Reward long-memory continuity without escalation.',
+          constraints: ['Do not manufacture a new urgent threat.'],
+          status: 'rejected',
+          reason: 'The relationship direction better fits the current evidence.',
+        },
+      ],
+    },
+  });
+  assert.equal(orchestrationComparison.transportPerformed, false);
+  assert.equal(orchestrationComparison.providerChargeMicrousd, '0');
+  assert.equal(orchestrationComparison.inline.modelRounds, 1);
+  assert.equal(orchestrationComparison.separate.modelRounds, 2);
+  assert.equal(
+    orchestrationComparison.separate.generatedTokenAllowance,
+    orchestrationComparison.inline.generatedTokenAllowance,
+  );
+  assert.ok(
+    orchestrationComparison.separate.retransmissionDeltaBytes > 0,
+  );
+  assert.deepEqual(
+    orchestrationComparison.separate.final.body.response_format.json_schema
+      .schema.required,
+    ['result', 'evidenceUse'],
+  );
+  assert.equal(
+    orchestrationComparison.separate.final.userSections.at(-1)?.key,
+    'creativeIdeation',
+  );
+  assert.equal(
+    orchestrationComparison.separate.retransmissionDeltaBytes,
+    11_025,
+  );
+  assert.equal(orchestrationComparison.inline.capturedRequestBytes, 20_749);
+  assert.equal(orchestrationComparison.separate.capturedRequestBytes, 31_774);
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),
