@@ -1,0 +1,60 @@
+{
+  "format": "offscreen.start-package-source.v1",
+  "startPackageId": "6d5e6ae5-e0b2-4689-b780-3c8e0e1711f5",
+  "authorOperationId": "ab74b3ee-5bd8-49c0-b0f8-69f36a22fbe5",
+  "title": "Prisoner arrival at Seyda Neen",
+  "worlds": [
+    {
+      "worldId": "7c14e5bc-4d72-4f8c-9a6b-97f334b83c11",
+      "rootHash": "9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb",
+      "revision": 1,
+      "mount": "vvardenfell"
+    }
+  ],
+  "rules": {
+    "ruleSetId": "d73c2a94-1f5b-5a83-91c3-3a9f9897e6bb",
+    "rootHash": "89baa1a75a6852d06a9cc3c9ca863fb91121f5407bd29fac0cbd7cdca7d636f3",
+    "revision": 1,
+    "engine": {
+      "adapterId": "srd-5.2.1-subset",
+      "adapterVersion": 1
+    }
+  },
+  "documents": [
+    {
+      "path": "START.md",
+      "kind": "orientation",
+      "activation": "initial-canon",
+      "authority": "canon",
+      "visibility": "player-known"
+    },
+    {
+      "path": "identities/socucius-ergalla.md",
+      "kind": "identity",
+      "activation": "initial-canon",
+      "authority": "canon",
+      "visibility": "player-known"
+    },
+    {
+      "path": "identities/sellus-gravius.md",
+      "kind": "identity",
+      "activation": "initial-canon",
+      "authority": "canon",
+      "visibility": "player-known"
+    },
+    {
+      "path": "threads/release-processing.md",
+      "kind": "narrative-thread",
+      "activation": "initial-canon",
+      "authority": "canon",
+      "visibility": "player-known"
+    },
+    {
+      "path": "possibilities/larger-vvardenfell-pressure.md",
+      "kind": "private-possibility",
+      "activation": "private-possibility",
+      "authority": "noncanonical",
+      "visibility": "storyteller-private"
+    }
+  ]
+}

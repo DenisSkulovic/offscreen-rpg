@@ -54,21 +54,25 @@ Implementation owner: Codex for the current owner-requested implementation.
 
 ## Current checkpoint
 
-- Current phase and exact next action: S2; inspect the existing world/start
-  importer descriptors and add the smallest maintained Vvardenfell/Seyda Neen
-  directories, then seed them into local Story mode and expose selection in
-  ordinary creation.
+- Current phase and exact next action: S2; extend opening request/candidate
+  capture with an exact start-package reference, seed the validated maintained
+  Vvardenfell package at local Story startup, and expose that paired
+  start/mechanical selection in ordinary creation. Do not attach the package
+  only after opening generation, because that would not ground the opening.
 - Base/reviewed Git revision and relevant uncommitted changes: base `4cfff33`;
   S1 code, feature/plan and permanent specification edits are in progress.
 - Actual checks/results for this revision; checks not run: Chamber typecheck
   passed. The dedicated launcher created/used `offscreen_story_local`, served
   cookie-free `/stories` with HTTP 200 and returned 404 for a Chamber-only QA
   endpoint. No broad suite was run.
-- Unresolved findings/blockers: current checked-in content contains only the
-  default rule package; Vvardenfell world/start package and Story selection do
-  not yet exist. Existing active canonical-storage and memory features remain
-  the component owners; this feature composes their contracts into the player
-  flow rather than creating parallel storage/retrieval.
+- Unresolved findings/blockers: the checked-in Vvardenfell world and start
+  directories import successfully (four world entries, five start entries,
+  exact rule/world roots), but startup seeding and Story selection are not yet
+  connected. The current opening request has no start-package reference, so
+  applying the package only at Start would leave the generated opening
+  ungrounded. Existing active canonical-storage and memory features remain the
+  component owners; this feature composes their contracts into the player flow
+  rather than creating parallel storage/retrieval.
 - Provider spend and accounting certainty: no calls in this work. A previous
   memory-provider attempt remains uncertain, so all provider inference stays
   stopped.
