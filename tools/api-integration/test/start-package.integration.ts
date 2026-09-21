@@ -134,7 +134,7 @@ registerStoryConcern(
                   {
                     requestId: 'r1',
                     operation: 'creative_search',
-                    lens: 'relationship',
+                    lens: 'serendipity',
                     state: 'ok',
                     candidates: [
                       {
@@ -189,9 +189,9 @@ registerStoryConcern(
               requests: [
                 {
                   requestId: 'r1',
-                  operation: 'creative_search',
-                  lens: 'relationship',
-                  query: 'old promise',
+                  operation: 'ask_memory',
+                  intent: 'possibilities',
+                  question: 'How could the old promise matter here?',
                 },
               ],
             };
@@ -316,9 +316,9 @@ registerStoryConcern(
             requests: [
               {
                 requestId: 'r1',
-                operation: 'creative_search',
-                lens: 'relationship',
-                query: 'old promise',
+                operation: 'ask_memory',
+                intent: 'possibilities',
+                question: 'How could the old promise matter here?',
               },
             ],
           };
@@ -360,9 +360,9 @@ registerStoryConcern(
             requests: [
               {
                 requestId: 'r1',
-                operation: 'creative_search',
-                lens: 'relationship',
-                query: 'old promise',
+                operation: 'ask_memory',
+                intent: 'possibilities',
+                question: 'How could the old promise matter here?',
               },
             ],
           };
@@ -393,7 +393,7 @@ registerStoryConcern(
                       {
                         requestId: 'r1',
                         operation: 'creative_search',
-                        lens: 'relationship',
+                        lens: 'serendipity',
                         state: 'ok',
                         candidates: [candidate, candidate],
                       },
@@ -437,9 +437,19 @@ registerStoryConcern(
             version: 1,
             purpose: 'Request more reads than this operation permits.',
             requests: [
-              { requestId: 'r1', operation: 'search_memory', query: 'one' },
-              { requestId: 'r2', operation: 'search_memory', query: 'two' },
-              { requestId: 'r3', operation: 'search_memory', query: 'three' },
+              {
+                requestId: 'r1',
+                operation: 'ask_memory',
+                intent: 'evidence',
+                question: 'What established fact is relevant to one?',
+              },
+              {
+                requestId: 'r2',
+                operation: 'ask_memory',
+                intent: 'evidence',
+                question: 'What established fact is relevant to two?',
+              },
+              { requestId: 'r3', operation: 'read_memory', handle: 'm1' },
             ],
           };
         };

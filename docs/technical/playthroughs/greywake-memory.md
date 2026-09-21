@@ -23,10 +23,10 @@ Acceptance:
 
 The scripted private result requests two independent operations in one round:
 
-1. `search_memory` for the old Greywake favor;
-2. `query_registry` for the relevant established identity.
+1. `ask_memory` an evidence question about the old Greywake favor;
+2. `ask_memory` an evidence question identifying the relevant established person.
 
-The application searches the captured root/index and returns compact candidates through task-local `m#` handles; linked canonical sources use `s#` handles. Exact handle ordinals are task-local implementation details and are not acceptance fixtures. The trace records query reasons, coverage, candidates, retained bytes and read usage.
+The application searches the captured root/index and returns compact candidates through task-local `m#` handles; linked canonical sources use `x#` handles. Evidence packet `s#` values are provenance citations rather than readable handles. Exact handle ordinals are task-local implementation details and are not acceptance fixtures. The trace records query reasons, coverage, candidates, retained bytes and read usage.
 
 No narration, choices, effects or state changes are publishable from this round. A candidate is a lead, not truth. A lexical hit containing “without humanoid anatomy” remains a truthful negating snippet; neither the evaluator nor a later model may turn the matched word into evidence that humanoids exist.
 
@@ -67,7 +67,7 @@ A pure OpenRouter preview serializes that exact captured request through the sam
 
 The remaining connected behavior is dispatching this reviewed request through durable multi-round accounting and evaluating whether cited evidence was actually used correctly. Self-citation is not semantic proof. The result may acknowledge the old favor and the current repaired-bridge state, but it may not revive a superseded rumor, manufacture a second favor or treat the historical passage as present state.
 
-The same persisted request boundary now accepts a lens-labelled `creative_search`. In the provider-free controller fixture, a relationship search for the old promise is durably accepted before execution, survives the injected crash, returns through the canonical memory handle path and becomes a packet lead. The final private response records a concise selected direction that cites that packet item, declares it used and preserves the player's ability to ignore the promise. The direction set is stored and replayed with the final candidate but is not player-visible or canonical. Rejected alternatives use the same bounded artifact rather than storing hidden reasoning. This demonstrates orchestration and provenance only; the fixture did not creatively discover the direction.
+The same persisted request boundary now accepts an ordinary-language `ask_memory` possibilities question. In the provider-free controller fixture, a question about how the old promise could matter is durably accepted before execution, survives the injected crash, runs through the internal broad-discovery route, returns through the canonical memory handle path and becomes a packet lead. The final private response records a concise selected direction that cites that packet item, declares it used and preserves the player's ability to ignore the promise. The direction set is stored and replayed with the final candidate but is not player-visible or canonical. Rejected alternatives use the same bounded artifact rather than storing hidden reasoning. This demonstrates orchestration and provenance only; the fixture did not creatively discover the direction.
 
 The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
 

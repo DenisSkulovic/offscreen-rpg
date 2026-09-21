@@ -688,20 +688,30 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     requests: [
       {
         requestId: 'r1',
-        operation: 'creative_search',
-        lens: 'relationship',
-        query: 'quiet favor',
+        operation: 'ask_memory',
+        intent: 'possibilities',
+        question: 'What quiet favor could naturally matter here?',
       },
-      { requestId: 'r2', operation: 'query_registry', query: 'Mira Vale' },
+      {
+        requestId: 'r2',
+        operation: 'ask_memory',
+        intent: 'evidence',
+        question: 'Who is Mira Vale in this history?',
+      },
     ],
   });
   const favorCandidate = discovery.results[0].candidates.find(
     (candidate) => candidate.path === 'relationships/mira-vale-favor.md',
   );
-  assert.equal(discovery.results[0].lens, 'relationship');
+  assert.equal(discovery.results[0].lens, 'serendipity');
   assert.ok(favorCandidate);
   const sourceHandle = favorCandidate.linkedSources[0]?.handle;
   assert.ok(sourceHandle);
+  assert.ok(
+    buildPackableMemoryEvidence(explorer.snapshot()).some((item) =>
+      item.id.startsWith(`${sourceHandle}:`),
+    ),
+  );
   const resumedExplorer = createCanonicalMemoryExplorer({
     storage,
     index,
@@ -716,10 +726,10 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     requests: [
       {
         requestId: 'r3',
-        operation: 'inspect_memory',
+        operation: 'read_memory',
         handle: favorCandidate.handle,
       },
-      { requestId: 'r4', operation: 'read_source', handle: sourceHandle },
+      { requestId: 'r4', operation: 'read_memory', handle: sourceHandle },
     ],
   });
   assert.match(evidenceRound.results[0].body, /still owes Mira Vale/);
@@ -745,15 +755,15 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     requests: [
       {
         requestId: 'r1',
-        operation: 'creative_search',
-        lens: 'relationship',
-        query: 'quiet favor',
+        operation: 'ask_memory',
+        intent: 'possibilities',
+        question: 'What quiet favor could naturally matter here?',
       },
       {
         requestId: 'r2',
-        operation: 'creative_search',
-        lens: 'echo',
-        query: 'old storm',
+        operation: 'ask_memory',
+        intent: 'possibilities',
+        question: 'What old storm could echo without forcing a plot?',
       },
     ],
   });
@@ -869,7 +879,8 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
       directions: [
         {
           id: 'd1',
-          premise: 'Mira quietly invokes the old favor during routine quay work.',
+          premise:
+            'Mira quietly invokes the old favor during routine quay work.',
           evidenceItemIds: [directionEvidenceIds[0]],
           intendedValue: 'Connect routine play to an unresolved relationship.',
           constraints: ['Do not prevent the selected fishing activity.'],
@@ -882,7 +893,8 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
           intendedValue: 'Reward long-memory continuity without escalation.',
           constraints: ['Do not manufacture a new urgent threat.'],
           status: 'rejected',
-          reason: 'The relationship direction better fits the current evidence.',
+          reason:
+            'The relationship direction better fits the current evidence.',
         },
       ],
     },
@@ -895,9 +907,7 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     orchestrationComparison.separate.generatedTokenAllowance,
     orchestrationComparison.inline.generatedTokenAllowance,
   );
-  assert.ok(
-    orchestrationComparison.separate.retransmissionDeltaBytes > 0,
-  );
+  assert.ok(orchestrationComparison.separate.retransmissionDeltaBytes > 0);
   assert.deepEqual(
     orchestrationComparison.separate.final.body.response_format.json_schema
       .schema.required,

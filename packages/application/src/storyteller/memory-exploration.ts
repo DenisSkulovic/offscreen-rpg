@@ -1,6 +1,4 @@
-import type {
-  CreativeExplorationRecipe,
-} from '@offscreen/contracts/creative-exploration';
+import type { CreativeExplorationRecipe } from '@offscreen/contracts/creative-exploration';
 import {
   creativeExplorationRecipeSchema,
   disabledCreativeExplorationRecipe,
@@ -63,7 +61,9 @@ export function measureCreativeSnapshotUsage(
     );
     if (!parsedRequest.success) continue;
     const creativeRequests = parsedRequest.data.requests.filter(
-      (request) => request.operation === 'creative_search',
+      (request) =>
+        request.operation === 'ask_memory' &&
+        request.intent === 'possibilities',
     );
     if (!creativeRequests.length) {
       if (
@@ -92,14 +92,14 @@ export function measureCreativeSnapshotUsage(
       if (
         !request ||
         returnedRequestIds.has(request.requestId) ||
-        result.lens !== request.lens ||
+        result.lens !== 'serendipity' ||
         !Array.isArray(result.candidates)
       ) {
         return null;
       }
       returnedRequestIds.add(request.requestId);
       queries += 1;
-      lenses.add(request.lens);
+      lenses.add('serendipity');
       leads += result.candidates.length;
       maxCandidatesInQuery = Math.max(
         maxCandidatesInQuery,
@@ -157,7 +157,7 @@ export function createCanonicalMemoryExplorer(input: {
       initial.retainedBytes < 0 ||
       initial.retainedBytes > recipe.assembly.maxBytes ||
       !validHandleSet(initial.memoryHandles, 'm') ||
-      !validHandleSet(initial.sourceHandles, 's') ||
+      !validHandleSet(initial.sourceHandles, 'x') ||
       !creativeSnapshotWithinRecipe(initial, creativeExploration) ||
       initial.storyId !== index.storyId ||
       initial.rootHash !== index.rootHash ||
@@ -185,7 +185,7 @@ export function createCanonicalMemoryExplorer(input: {
     unit: StoryRetrievalUnit,
     handles: Map<string, StoryRetrievalUnit>,
     byUnit: Map<string, string>,
-    prefix: 'm' | 's',
+    prefix: 'm' | 'x',
   ) {
     const existing = byUnit.get(unit.unitId);
     if (existing) return existing;
@@ -243,7 +243,7 @@ export function createCanonicalMemoryExplorer(input: {
       };
       return [
         {
-          handle: handleFor(sourceUnit, sourceHandles, sourceHandleByUnit, 's'),
+          handle: handleFor(sourceUnit, sourceHandles, sourceHandleByUnit, 'x'),
           documentId: entry.documentId,
           revision: entry.revision,
         },
@@ -253,7 +253,6 @@ export function createCanonicalMemoryExplorer(input: {
 
   function candidateResult(
     candidate: StoryRetrievalCandidate,
-    registry: boolean,
     manifest: Awaited<ReturnType<DocumentStore['readManifest']>>,
   ) {
     return {
@@ -264,7 +263,7 @@ export function createCanonicalMemoryExplorer(input: {
       path: candidate.unit.path,
       kind: candidate.unit.kind,
       linkedSources: linkedSourceHandles(candidate.unit, manifest),
-      ...(registry ? {} : { snippet: candidate.snippet }),
+      snippet: candidate.snippet,
     };
   }
 
@@ -294,7 +293,9 @@ export function createCanonicalMemoryExplorer(input: {
       throw new Error('Invalid creative exploration snapshot');
     }
     const requestedCreative = request.requests.filter(
-      (operation) => operation.operation === 'creative_search',
+      (operation) =>
+        operation.operation === 'ask_memory' &&
+        operation.intent === 'possibilities',
     );
     const requestedLenses = new Set([
       ...rounds.flatMap((rawRound) => {
@@ -302,13 +303,14 @@ export function createCanonicalMemoryExplorer(input: {
         const parsed = storytellerNeedsContextSchema.safeParse(round?.request);
         return parsed.success
           ? parsed.data.requests.flatMap((operation) =>
-              operation.operation === 'creative_search'
-                ? [operation.lens]
+              operation.operation === 'ask_memory' &&
+              operation.intent === 'possibilities'
+                ? ['serendipity' as const]
                 : [],
             )
           : [];
       }),
-      ...requestedCreative.map((operation) => operation.lens),
+      ...requestedCreative.map(() => 'serendipity' as const),
     ]);
     if (
       requestedCreative.length > 0 &&
@@ -323,48 +325,33 @@ export function createCanonicalMemoryExplorer(input: {
     const results = [];
     for (const operation of request.requests) {
       readsUsed += 1;
-      if (
-        operation.operation === 'search_memory' ||
-        operation.operation === 'creative_search' ||
-        operation.operation === 'query_registry'
-      ) {
-        const registry = operation.operation === 'query_registry';
-        const creativeCandidateLimit =
-          operation.operation === 'creative_search'
-            ? Math.min(
-                creativeExploration.limits.maxCandidatesPerQuery,
-                creativeExploration.limits.maxLeads - creativeLeadsUsed,
-              )
-            : null;
-        if (
-          creativeCandidateLimit === 0 &&
-          operation.operation === 'creative_search'
-        ) {
+      if (operation.operation === 'ask_memory') {
+        const creative = operation.intent === 'possibilities';
+        const resultOperation = creative
+          ? ('creative_search' as const)
+          : ('search_memory' as const);
+        const creativeCandidateLimit = creative
+          ? Math.min(
+              creativeExploration.limits.maxCandidatesPerQuery,
+              creativeExploration.limits.maxLeads - creativeLeadsUsed,
+            )
+          : null;
+        if (creativeCandidateLimit === 0 && creative) {
           results.push({
             requestId: operation.requestId,
-            operation: operation.operation,
-            lens: operation.lens,
+            operation: resultOperation,
+            lens: 'serendipity' as const,
+            question: operation.question,
             state: 'lead-limit',
             candidates: [],
           });
           continue;
         }
-        const tuning = registry
-          ? {
-              ...recipe.query.tuning,
-              id: `${recipe.query.tuning.id}.registry`,
-              includeSourcePassages: false,
-              fieldWeights: {
-                ...recipe.query.tuning.fieldWeights,
-                body: 0,
-              },
-            }
-          : recipe.query.tuning;
         const result = index.search({
           storyId: index.storyId,
           rootHash: index.rootHash,
           rootRevision: index.rootRevision,
-          query: operation.query,
+          query: operation.question,
           ...recipe.query,
           ...(creativeCandidateLimit === null
             ? {}
@@ -374,7 +361,7 @@ export function createCanonicalMemoryExplorer(input: {
                   creativeCandidateLimit,
                 ),
               }),
-          tuning,
+          tuning: recipe.query.tuning,
         });
         const manifest = await storage.readManifest(index.rootHash);
         if (
@@ -385,23 +372,22 @@ export function createCanonicalMemoryExplorer(input: {
         }
         results.push({
           requestId: operation.requestId,
-          operation: operation.operation,
-          ...('lens' in operation ? { lens: operation.lens } : {}),
+          operation: resultOperation,
+          ...(creative ? { lens: 'serendipity' as const } : {}),
+          question: operation.question,
           state: result.candidates.length ? 'ok' : 'no-match',
           coverage: result.coverage,
           candidates: result.candidates.map((candidate) =>
-            candidateResult(candidate, registry, manifest),
+            candidateResult(candidate, manifest),
           ),
         });
-        if (operation.operation === 'creative_search') {
+        if (creative) {
           creativeLeadsUsed += result.candidates.length;
         }
         continue;
       }
-      const handles =
-        operation.operation === 'inspect_memory'
-          ? memoryHandles
-          : sourceHandles;
+      const readingSource = operation.handle.startsWith('x');
+      const handles = readingSource ? sourceHandles : memoryHandles;
       const unit = handles.get(operation.handle);
       if (!unit) {
         throw new CanonicalMemoryExplorationError('invalid-handle');
@@ -411,7 +397,7 @@ export function createCanonicalMemoryExplorer(input: {
       if (retainedBytes + bytes > recipe.assembly.maxBytes) {
         results.push({
           requestId: operation.requestId,
-          operation: operation.operation,
+          operation: readingSource ? 'read_source' : 'inspect_memory',
           state: 'byte-limit',
           handle: operation.handle,
           bytes,
@@ -423,7 +409,7 @@ export function createCanonicalMemoryExplorer(input: {
       const linkedSources = linkedSourceHandles(unit, manifest);
       results.push({
         requestId: operation.requestId,
-        operation: operation.operation,
+        operation: readingSource ? 'read_source' : 'inspect_memory',
         state: 'ok',
         handle: operation.handle,
         title: loaded.title,

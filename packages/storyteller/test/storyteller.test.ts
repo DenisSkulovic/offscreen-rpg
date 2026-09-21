@@ -178,8 +178,18 @@ test('memory exploration requests are private, bounded and reserve a final round
     version: 1,
     purpose: 'Verify the old favor before portraying the return.',
     requests: [
-      { requestId: 'r1', operation: 'search_memory', query: 'old favor' },
-      { requestId: 'r2', operation: 'query_registry', query: 'Mira Vale' },
+      {
+        requestId: 'r1',
+        operation: 'ask_memory',
+        intent: 'evidence',
+        question: 'What established old favor matters here?',
+      },
+      {
+        requestId: 'r2',
+        operation: 'ask_memory',
+        intent: 'evidence',
+        question: 'Who is Mira Vale in this history?',
+      },
     ],
   });
   assert.deepEqual(storytellerRoundOutputSchema.parse(request), request);
@@ -191,6 +201,22 @@ test('memory exploration requests are private, bounded and reserve a final round
         requests: [request.requests[0], request.requests[0]],
       }),
     /unique within a round/,
+  );
+  assert.throws(
+    () =>
+      storytellerNeedsContextSchema.parse({
+        ...request,
+        requests: [
+          ...request.requests,
+          {
+            requestId: 'r3',
+            operation: 'ask_memory',
+            intent: 'possibilities',
+            question: 'What distant detail could fit this moment?',
+          },
+        ],
+      }),
+    /at most two memory questions/,
   );
 
   const resources = storytellerTaskResourcesSchema.parse({

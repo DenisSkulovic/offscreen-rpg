@@ -101,6 +101,22 @@ export function buildPackableMemoryEvidence(
               : {}),
             order: order++,
           });
+          if (Array.isArray(candidate.linkedSources)) {
+            for (const rawSource of candidate.linkedSources) {
+              const source = record(rawSource);
+              if (
+                !source ||
+                typeof source.handle !== 'string' ||
+                discoveries.has(source.handle)
+              ) {
+                continue;
+              }
+              discoveries.set(source.handle, {
+                title: `${candidate.title} — exact source`,
+                order: order++,
+              });
+            }
+          }
         }
         continue;
       }

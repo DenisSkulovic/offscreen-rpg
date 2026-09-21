@@ -133,7 +133,9 @@ function creativeOperations(
     return parsed.success ? parsed.data.requests : [];
   });
   return [...prior, ...pending.requests].filter(
-    (operation) => operation.operation === 'creative_search',
+    (operation) =>
+      operation.operation === 'ask_memory' &&
+      operation.intent === 'possibilities',
   );
 }
 
@@ -148,8 +150,7 @@ function creativeRequestWithinRecipe(
   return (
     recipe.enabled &&
     operations.length <= recipe.limits.maxQueries &&
-    new Set(operations.map((operation) => operation.lens)).size <=
-      recipe.limits.maxLenses
+    recipe.limits.maxLenses >= 1
   );
 }
 
@@ -292,7 +293,9 @@ export async function runScriptedMemoryExploration(
         task.resources.creativeExploration,
       )
     ) {
-      throw new Error('Stored creative exploration artifact exceeds its recipe');
+      throw new Error(
+        'Stored creative exploration artifact exceeds its recipe',
+      );
     }
     if (artifact.state === 'final-ready') {
       const finalCandidate = storedFinalCandidateSchema.parse(
