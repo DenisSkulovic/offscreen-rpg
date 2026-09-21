@@ -725,6 +725,21 @@ test('captured schemas expose only the result for the requested task', () => {
   assert.match(openingInstructions, /do not add root keys not shown/);
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
+  for (const task of [resolved, pending]) {
+    const constrained = JSON.parse(JSON.stringify(task.request.outputSchema));
+    assert.deepEqual(
+      constrained.properties.scene.properties.next.properties.plans.items
+        .properties.evidence.items.enum,
+      ['p2'],
+    );
+    const instructions = task.request.messages[0]?.content ?? '';
+    assert.match(
+      instructions,
+      /evidence array must be \[\] or contain only these exact handles: p2/,
+    );
+    assert.match(instructions, /selected intention has just resolved/);
+    assert.match(instructions, /Visibly realize the supplied profile tone/);
+  }
 });
 
 test('historical reports have a strict prose-only task boundary', () => {
@@ -1339,6 +1354,38 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     assert.equal(result.telemetry.reportedModel, 'test/model');
   }
   assert.equal(calls, 1);
+  let capturedDiagnostic:
+    ReturnType<typeof diagnoseOpenRouterResponse> | undefined;
+  const invalidTaskOutput = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    recordDiagnostic: async ({ diagnostic }) => {
+      capturedDiagnostic = diagnostic;
+    },
+    transport: async () =>
+      new Response(
+        JSON.stringify({
+          id: 'invalid-task-output',
+          model: 'test/model',
+          usage: {
+            cost: 0.000001,
+            prompt_tokens: 10,
+            completion_tokens: 2,
+            total_tokens: 12,
+          },
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: '{}' },
+            },
+          ],
+        }),
+      ),
+  });
+  const invalid = await invalidTaskOutput(providerTask);
+  assert.equal(invalid.kind, 'result');
+  assert.equal(capturedDiagnostic?.stage, 'task-output');
+  assert.ok(capturedDiagnostic?.issues.length);
   const rejectedSchema = createOpenRouterProvider({
     enabled: true,
     apiKey: 'dummy',

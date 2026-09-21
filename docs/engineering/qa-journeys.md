@@ -51,7 +51,13 @@ The catalogue contains:
   continuation hold. It then failed before continuation inference because an
   OpenAI strict-schema request retained unsupported regex lookaround. Keep this
   run as failed evidence: one passage and tick 1 are durable; no continuation
-  prose or document mutation was produced.
+  prose or document mutation was produced. A second fresh run reached the model
+  for both opening and consequence. It retained the selected Absurd Action
+  Comedy profile but produced weakly styled prose, then failed consequence
+  admission after writing prose instead of exact evidence handles and repeating
+  the consumed intention. This establishes separate profile-adherence,
+  structured-contract usability and fresh-choice quality failures; do not
+  collapse them into one generic “model bad” result.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or

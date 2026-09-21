@@ -751,6 +751,24 @@ try {
                 { flag: 'wx' },
               );
             },
+            recordDiagnostic: async (evidence) => {
+              const directory = join(
+                workspaceRoot,
+                'data',
+                'story-local-evidence',
+              );
+              await mkdir(directory, { recursive: true });
+              const evidenceId =
+                evidence.providerId &&
+                /^[a-zA-Z0-9_-]{1,200}$/.test(evidence.providerId)
+                  ? evidence.providerId
+                  : crypto.randomUUID();
+              await writeFile(
+                join(directory, `provider-diagnostic-${evidenceId}.json`),
+                `${JSON.stringify(evidence, null, 2)}\n`,
+                { flag: 'wx' },
+              );
+            },
           }),
           dispatchAuthority: () => storyAuthority.usagePolicy,
           documentStore,

@@ -114,3 +114,33 @@ Implementation owner: Codex for the current owner-requested implementation.
 - The public snapshot honestly shows the old passage, the committed receipt,
   the required Storyteller hold and an operator-only uncertain blocker. This is
   durable but not player-recoverable and appeared frozen in the UI.
+
+## Second owner play evidence — 2026-09-22
+
+- Fresh story `8840d1fe-48c8-45e2-9017-22ac08d71354` proved that the strict
+  schema transport fix works. Its opening cost USD 0.00245705 (5,576 prompt,
+  886 completion tokens); the selected consequence cost USD 0.0022552 (7,567
+  prompt, 303 completion tokens). Both provider responses were HTTP 200 with
+  exact request/provider identities and no retry.
+- The complete Absurd Action Comedy profile was present in both saved tasks.
+  The opening was nevertheless almost neutral, and the continuation expressed
+  the profile only faintly as “the bright, hostile clarity of administration.”
+  This is weak model/profile adherence, not missing configuration wiring.
+- The consequence output was JSON/schema-shaped but failed policy admission:
+  Luna put prose descriptions and facts, including control characters, in a
+  plan `evidence` array instead of exact task-local handle `p1`. It also offered
+  `cooperate-release` again after that selected intention had supposedly
+  resolved. No passage or canonical mutation published; the one automatic
+  receipt and tick 1 remain authoritative.
+- Offline response: constrain action/declaration evidence items in each
+  consequence request schema to that task's exact handles, state the handle
+  rule and post-resolution freshness plainly, strengthen visible profile-use
+  guidance, and save a compact provider-linked validation diagnostic beside
+  raw response evidence. Do not spend another call merely to debug these
+  contracts.
+- Remaining product blocker: a charged, invalid model result honestly cannot
+  use the existing same-operation retry because its one-round allowance was
+  consumed. The UI therefore has no way forward. A future explicit paid repair
+  must be a separately admitted generation that reuses the committed receipt
+  without rerolling or rewriting it; do not disguise it as an unsent attempt or
+  silently fall back to scripted prose.

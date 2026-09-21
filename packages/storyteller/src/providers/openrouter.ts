@@ -621,6 +621,12 @@ export function createOpenRouterProvider(config: {
     requestSha256: string;
     purpose: ReturnType<typeof describeStorytellerRequestPurpose>;
   }) => void | Promise<void>;
+  recordDiagnostic?: (evidence: {
+    providerId: string | null;
+    requestSha256: string;
+    diagnostic: OpenRouterResponseDiagnostic;
+    recordedAt: string;
+  }) => void | Promise<void>;
 }): StorytellerProvider {
   if (!config.enabled || !config.apiKey.trim()) {
     throw new Error('Live provider is disabled');
@@ -740,6 +746,17 @@ export function createOpenRouterProvider(config: {
         };
       }
       try {
+        const diagnostic = diagnoseOpenRouterResponse(bounded.raw, task);
+        if (diagnostic.stage !== 'valid') {
+          await config.recordDiagnostic?.({
+            providerId: parsed.data.id,
+            requestSha256: createHash('sha256')
+              .update(JSON.stringify(request))
+              .digest('hex'),
+            diagnostic,
+            recordedAt: new Date().toISOString(),
+          });
+        }
         return {
           kind: 'result',
           output: JSON.parse(choice.message.content ?? ''),
