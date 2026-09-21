@@ -12,6 +12,7 @@ import { retainsCapturedAuthority } from './dispatch-authority';
 import { prepareDispatchReview } from './dispatch-review';
 import type {
   CapturedMemoryRoundDelivery,
+  MemoryRoundInterruption,
   PersistedMemoryRoundSettlement,
   ScriptedMemoryRoundSource,
 } from './memory-exploration-controller';
@@ -129,6 +130,7 @@ export function createMemoryProviderRoundRuntime(
   source: ScriptedMemoryRoundSource;
   captureDelivery: (raw: unknown) => CapturedMemoryRoundDelivery;
   settlePersistedRound: PersistedMemoryRoundSettlement;
+  classifyRoundError: (error: unknown) => MemoryRoundInterruption | null;
 } {
   if (input.task.execution.mode !== 'provider') {
     throw new Error('Memory provider runtime requires provider execution');
@@ -267,5 +269,26 @@ export function createMemoryProviderRoundRuntime(
     }
   };
 
-  return { source, captureDelivery: captureOutcome, settlePersistedRound };
+  const classifyRoundError = (
+    error: unknown,
+  ): MemoryRoundInterruption | null => {
+    if (!(error instanceof MemoryProviderRoundError)) return null;
+    if (error.code === 'review-held') {
+      return { state: 'held', code: error.code };
+    }
+    if (
+      error.code === 'usage-uncertain' ||
+      error.code === 'provider-uncertain'
+    ) {
+      return { state: 'uncertain', code: error.code };
+    }
+    return { state: 'failed', code: error.code };
+  };
+
+  return {
+    source,
+    captureDelivery: captureOutcome,
+    settlePersistedRound,
+    classifyRoundError,
+  };
 }

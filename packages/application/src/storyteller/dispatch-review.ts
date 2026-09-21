@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   storytellerDispatchReview,
   storytellerDispatchReviewDecision,
+  storytellerMemoryExploration,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import {
@@ -119,10 +120,23 @@ export function createDispatchReviewControls(database: Database) {
           generation,
           eq(generation.id, storytellerDispatchReview.generationId),
         )
+        .leftJoin(
+          storytellerMemoryExploration,
+          eq(
+            storytellerMemoryExploration.generationId,
+            storytellerDispatchReview.generationId,
+          ),
+        )
         .where(
           and(
             eq(storytellerDispatchReview.generationId, generationId),
-            eq(storytellerDispatchReview.attemptId, generation.attemptId),
+            or(
+              eq(storytellerDispatchReview.attemptId, generation.attemptId),
+              eq(
+                storytellerDispatchReview.attemptId,
+                storytellerMemoryExploration.pendingModelAttemptId,
+              ),
+            ),
             eq(generation.ownerId, ownerId),
           ),
         );
@@ -139,11 +153,24 @@ export function createDispatchReviewControls(database: Database) {
             generation,
             eq(generation.id, storytellerDispatchReview.generationId),
           )
+          .leftJoin(
+            storytellerMemoryExploration,
+            eq(
+              storytellerMemoryExploration.generationId,
+              storytellerDispatchReview.generationId,
+            ),
+          )
           .where(
             and(
               eq(storytellerDispatchReview.generationId, decision.generationId),
               eq(storytellerDispatchReview.attemptId, decision.attemptId),
-              eq(generation.attemptId, decision.attemptId),
+              or(
+                eq(generation.attemptId, decision.attemptId),
+                eq(
+                  storytellerMemoryExploration.pendingModelAttemptId,
+                  decision.attemptId,
+                ),
+              ),
               eq(generation.ownerId, ownerId),
             ),
           )

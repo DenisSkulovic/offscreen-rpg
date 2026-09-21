@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -35,7 +35,31 @@ export type MemoryExplorationFailureCode =
   | 'read-limit'
   | 'round-limit'
   | 'creative-limit'
-  | 'context-limit';
+  | 'context-limit'
+  | 'review-held'
+  | 'review-stopped'
+  | 'authority-unavailable'
+  | 'budget-unavailable'
+  | 'usage-uncertain'
+  | 'provider-refusal'
+  | 'invalid-output'
+  | 'provider-uncertain';
+
+export type MemoryRoundInterruption =
+  | Readonly<{ state: 'held'; code: 'review-held' }>
+  | Readonly<{
+      state: 'failed';
+      code:
+        | 'review-stopped'
+        | 'authority-unavailable'
+        | 'budget-unavailable'
+        | 'provider-refusal'
+        | 'invalid-output';
+    }>
+  | Readonly<{
+      state: 'uncertain';
+      code: 'usage-uncertain' | 'provider-uncertain';
+    }>;
 
 export class MemoryExplorationControllerError extends Error {
   constructor(readonly code: MemoryExplorationFailureCode) {
@@ -50,7 +74,15 @@ function isFailureCode(value: unknown): value is MemoryExplorationFailureCode {
     value === 'read-limit' ||
     value === 'round-limit' ||
     value === 'creative-limit' ||
-    value === 'context-limit'
+    value === 'context-limit' ||
+    value === 'review-held' ||
+    value === 'review-stopped' ||
+    value === 'authority-unavailable' ||
+    value === 'budget-unavailable' ||
+    value === 'usage-uncertain' ||
+    value === 'provider-refusal' ||
+    value === 'invalid-output' ||
+    value === 'provider-uncertain'
   );
 }
 
@@ -267,6 +299,7 @@ export async function runMemoryExploration(
     source: ScriptedMemoryRoundSource;
     captureDelivery?: (rawOutput: unknown) => CapturedMemoryRoundDelivery;
     settlePersistedRound?: PersistedMemoryRoundSettlement;
+    classifyRoundError?: (error: unknown) => MemoryRoundInterruption | null;
   },
 ): Promise<MemoryExplorationControllerResult> {
   const task = storytellerTaskSchema.parse(input.task);
@@ -330,12 +363,43 @@ export async function runMemoryExploration(
         explorationRounds: snapshot.rounds.length,
       };
     }
-    if (artifact.state === 'failed') {
+    if (artifact.state === 'failed' || artifact.state === 'uncertain') {
       if (!isFailureCode(artifact.failureCode)) {
         throw new Error('Memory exploration failure artifact is invalid');
       }
       throw new MemoryExplorationControllerError(artifact.failureCode);
     }
+
+    const interrupt = async (error: unknown): Promise<never> => {
+      const interruption = input.classifyRoundError?.(error);
+      if (!interruption) throw error;
+      if (
+        artifact.state === interruption.state &&
+        artifact.failureCode === interruption.code
+      ) {
+        throw new MemoryExplorationControllerError(interruption.code);
+      }
+      const updated = await database.db
+        .update(storytellerMemoryExploration)
+        .set({
+          revision: artifact.revision + 1,
+          state: interruption.state,
+          failureCode: interruption.code,
+          updatedAt: sql`clock_timestamp()`,
+        })
+        .where(
+          and(
+            eq(storytellerMemoryExploration.generationId, input.generationId),
+            eq(storytellerMemoryExploration.revision, artifact.revision),
+            inArray(storytellerMemoryExploration.state, ['exploring', 'held']),
+          ),
+        )
+        .returning({ generationId: storytellerMemoryExploration.generationId });
+      if (!updated.length) {
+        throw new Error('Memory exploration artifact changed concurrently');
+      }
+      throw new MemoryExplorationControllerError(interruption.code);
+    };
 
     const fail = async (code: MemoryExplorationFailureCode): Promise<never> => {
       const updated = await database.db
@@ -446,15 +510,19 @@ export async function runMemoryExploration(
           artifact.pendingModelOutput,
         ).output;
       } else {
-        rawOutput = await input.source({
-          attemptId: artifact.pendingModelAttemptId!,
-          task,
-          round,
-          snapshot,
-          request: pendingModelRequest,
-          capturedRequestBytes: preparedContext.capturedRequestBytes,
-          boundedRequestBytes: preparedContext.boundedRequestBytes,
-        });
+        try {
+          rawOutput = await input.source({
+            attemptId: artifact.pendingModelAttemptId!,
+            task,
+            round,
+            snapshot,
+            request: pendingModelRequest,
+            capturedRequestBytes: preparedContext.capturedRequestBytes,
+            boundedRequestBytes: preparedContext.boundedRequestBytes,
+          });
+        } catch (error) {
+          return interrupt(error);
+        }
         const captured = input.captureDelivery?.(rawOutput) ?? {
           output: rawOutput,
           settlement: null,
@@ -467,6 +535,8 @@ export async function runMemoryExploration(
           .update(storytellerMemoryExploration)
           .set({
             revision: artifact.revision + 1,
+            state: 'exploring',
+            failureCode: null,
             pendingModelOutput: storedOutput,
             updatedAt: sql`clock_timestamp()`,
           })
@@ -474,7 +544,10 @@ export async function runMemoryExploration(
             and(
               eq(storytellerMemoryExploration.generationId, input.generationId),
               eq(storytellerMemoryExploration.revision, artifact.revision),
-              eq(storytellerMemoryExploration.state, 'exploring'),
+              inArray(storytellerMemoryExploration.state, [
+                'exploring',
+                'held',
+              ]),
               eq(
                 storytellerMemoryExploration.pendingModelAttemptId,
                 artifact.pendingModelAttemptId!,
@@ -508,13 +581,17 @@ export async function runMemoryExploration(
       const delivery = storedModelOutputSchema.parse(
         artifact.pendingModelOutput,
       );
-      await input.settlePersistedRound({
-        attemptId: artifact.pendingModelAttemptId,
-        task,
-        round,
-        delivery,
-        operationOutcome: admissibleContextRequest ? 'continue' : 'complete',
-      });
+      try {
+        await input.settlePersistedRound({
+          attemptId: artifact.pendingModelAttemptId,
+          task,
+          round,
+          delivery,
+          operationOutcome: admissibleContextRequest ? 'continue' : 'complete',
+        });
+      } catch (error) {
+        return interrupt(error);
+      }
     }
     if (contextRequest.success) {
       if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {

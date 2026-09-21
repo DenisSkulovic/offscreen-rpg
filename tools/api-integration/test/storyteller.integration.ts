@@ -29,6 +29,7 @@ import { story } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
   storytellerFunding,
+  storytellerMemoryExploration,
   storytellerOperation,
   storytellerRun,
   storytellerUsageAllocation,
@@ -41,6 +42,7 @@ import {
   createStorytellerBudget,
   createDispatchReviewControls,
   createMemoryProviderRoundRuntime,
+  MemoryExplorationControllerError,
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
   runMemoryExploration,
@@ -3153,7 +3155,7 @@ test(
               id: runId,
               accountId,
               limitMicrousd: 1000n,
-              maxAttempts: 2,
+              maxAttempts: 3,
               enabled: true,
             });
             const execution = {
@@ -3284,7 +3286,7 @@ test(
               mode: 'provider',
               accountId,
               runId,
-              dispatchReview: { mode: 'off' },
+              dispatchReview: { mode: 'hold' },
               policy: {
                 version: 'fake',
                 route: 'fake:memory',
@@ -3369,6 +3371,38 @@ test(
                 };
               },
             });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId,
+                task,
+                createExplorer,
+                ...providerRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'review-held',
+            );
+            assert.equal(providerCalls, 0);
+            const [heldArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(storytellerMemoryExploration.generationId, generationId),
+              );
+            assert.equal(heldArtifact?.state, 'held');
+            assert.equal(heldArtifact?.failureCode, 'review-held');
+            assert.equal(heldArtifact?.pendingModelOutput, null);
+            const reviews = createDispatchReviewControls(database);
+            const review = await reviews.read(ownerId, generationId);
+            assert.equal(review?.state, 'awaiting-review');
+            await reviews.decide(ownerId, {
+              generationId,
+              attemptId: review?.attemptId,
+              decisionId: randomUUID(),
+              expectedRevision: review?.revision,
+              packetSha256: review?.packetSha256,
+              decision: 'release',
+            });
             const completed = await runMemoryExploration(database, {
               generationId,
               task,
@@ -3398,6 +3432,127 @@ test(
             });
             assert.equal(replayed.replayed, true);
             assert.equal(providerCalls, 1);
+
+            const failedGenerationId = randomUUID();
+            const failedTask = storytellerTaskSchema.parse({
+              ...task,
+              execution: {
+                ...execution,
+                dispatchReview: { mode: 'off' },
+              },
+            });
+            await database.db.insert(generation).values({
+              id: failedGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: failedTask,
+            });
+            const failedRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId: failedGenerationId,
+              ownerId,
+              task: failedTask,
+              dispatchAuthority: () => policy,
+              provider: async () => ({
+                kind: 'failed',
+                failureCode: 'invalid_output',
+                usage: fakeUsage(7n),
+                telemetry: fakeTelemetry('fake-invalid-memory-provider'),
+              }),
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: failedGenerationId,
+                task: failedTask,
+                createExplorer,
+                ...failedRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'invalid-output',
+            );
+            const [failedArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  failedGenerationId,
+                ),
+              );
+            assert.equal(failedArtifact?.state, 'failed');
+            assert.equal(failedArtifact?.failureCode, 'invalid-output');
+            assert.ok(failedArtifact?.pendingModelOutput);
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: failedGenerationId,
+                task: failedTask,
+                createExplorer,
+                ...failedRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'invalid-output',
+            );
+
+            const uncertainGenerationId = randomUUID();
+            await database.db.insert(generation).values({
+              id: uncertainGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: failedTask,
+            });
+            let uncertainCalls = 0;
+            const uncertainRuntime = createMemoryProviderRoundRuntime(
+              database,
+              {
+                generationId: uncertainGenerationId,
+                ownerId,
+                task: failedTask,
+                dispatchAuthority: () => policy,
+                provider: async () => {
+                  uncertainCalls += 1;
+                  return {
+                    kind: 'uncertain',
+                    telemetry: fakeTelemetry('fake-uncertain-memory-provider'),
+                  };
+                },
+              },
+            );
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: uncertainGenerationId,
+                task: failedTask,
+                createExplorer,
+                ...uncertainRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'provider-uncertain',
+            );
+            const [uncertainArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  uncertainGenerationId,
+                ),
+              );
+            assert.equal(uncertainArtifact?.state, 'uncertain');
+            assert.equal(uncertainArtifact?.failureCode, 'provider-uncertain');
+            assert.ok(uncertainArtifact?.pendingModelOutput);
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: uncertainGenerationId,
+                task: failedTask,
+                createExplorer,
+                ...uncertainRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'provider-uncertain',
+            );
+            assert.equal(uncertainCalls, 1);
           },
         );
         await t.test(

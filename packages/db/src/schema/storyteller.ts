@@ -50,7 +50,7 @@ export const storytellerMemoryExploration = pgTable(
     state: text('state')
       .notNull()
       .default('exploring')
-      .$type<'exploring' | 'final-ready' | 'failed'>(),
+      .$type<'exploring' | 'held' | 'final-ready' | 'failed' | 'uncertain'>(),
     snapshot: jsonb('snapshot').notNull().$type<unknown>(),
     pendingModelAttemptId: uuid('pending_model_attempt_id'),
     pendingModelRequestSha256: text('pending_model_request_sha256'),
@@ -66,6 +66,14 @@ export const storytellerMemoryExploration = pgTable(
       | 'round-limit'
       | 'creative-limit'
       | 'context-limit'
+      | 'review-held'
+      | 'review-stopped'
+      | 'authority-unavailable'
+      | 'budget-unavailable'
+      | 'usage-uncertain'
+      | 'provider-refusal'
+      | 'invalid-output'
+      | 'provider-uncertain'
     >(),
     createdAt: timestamp('created_at', {
       withTimezone: true,
@@ -84,11 +92,11 @@ export const storytellerMemoryExploration = pgTable(
     check('storyteller_memory_exploration_revision', sql`${t.revision} >= 0`),
     check(
       'storyteller_memory_exploration_state',
-      sql`${t.state} IN ('exploring','final-ready','failed')`,
+      sql`${t.state} IN ('exploring','held','final-ready','failed','uncertain')`,
     ),
     check(
       'storyteller_memory_exploration_output',
-      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','creative-limit','context-limit') AND ${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'held' AND ${t.finalOutput} IS NULL AND ${t.failureCode} = 'review-held' AND ${t.pendingModelAttemptId} IS NOT NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingModelAttemptId} IS NULL AND ${t.pendingModelRequest} IS NULL AND ${t.pendingModelRequestSha256} IS NULL AND ${t.pendingModelOutput} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit','creative-limit','context-limit','review-stopped','authority-unavailable','budget-unavailable','provider-refusal','invalid-output')) OR (${t.state} = 'uncertain' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('usage-uncertain','provider-uncertain') AND ${t.pendingModelAttemptId} IS NOT NULL AND ${t.pendingRequest} IS NULL)`,
     ),
     check(
       'storyteller_memory_exploration_pending_model',
