@@ -171,16 +171,115 @@ function summarizeRecord(value) {
   );
 }
 
+function summarizeCanonicalKnowledge(value) {
+  if (!value || typeof value !== 'object') return null;
+  return {
+    rootRevision: value.rootRevision ?? null,
+    catalogueCount: value.catalogue?.length ?? 0,
+    catalogueOnly: (value.catalogue ?? [])
+      .filter((entry) => !entry.loaded)
+      .map((entry) => ({
+        handle: entry.handle,
+        kind: entry.kind,
+        title: entry.title,
+        path: entry.path,
+        bytes: entry.bytes,
+      })),
+    loadedDocuments: (value.documents ?? []).map((entry) => ({
+      handle: entry.handle,
+      title: entry.title,
+      bytes: Buffer.byteLength(entry.body ?? '', 'utf8'),
+    })),
+    documentSelection: value.documentSelection ?? null,
+    libraries: (value.libraries ?? []).map((library) => ({
+      handle: library.handle,
+      kind: library.kind,
+      title: library.title,
+      orientation: library.orientation
+        ? {
+            handle: library.orientation.documentHandle,
+            title: library.orientation.title,
+            bytes: Buffer.byteLength(library.orientation.body ?? '', 'utf8'),
+          }
+        : null,
+      catalogueOnly: (library.catalogue ?? []).map((entry) => ({
+        handle: entry.handle,
+        kind: entry.kind,
+        path: entry.path,
+        loaded: entry.loaded,
+        sectionHandles: (entry.sections ?? []).map((section) => section.handle),
+      })).filter((entry) => !entry.loaded),
+      catalogueCount: library.catalogue?.length ?? 0,
+      selectedSections: (library.selectedSections ?? []).map((section) => ({
+        handle: section.handle,
+        title: section.title,
+        heading: section.heading,
+        bytes: section.bytes,
+      })),
+    })),
+    librarySelection: value.librarySelection ?? null,
+  };
+}
+
+function summarizeResult(value) {
+  if (!value || typeof value !== 'object') return null;
+  const next = value.scene?.next;
+  const choices =
+    next?.kind === 'choice'
+      ? next.options ?? []
+      : next?.kind === 'action-plans'
+        ? next.plans ?? []
+        : [];
+  return {
+    title: value.scene?.content?.title ?? null,
+    paragraphCount: value.scene?.content?.paragraphs?.length ?? 0,
+    nextKind: next?.kind ?? null,
+    choiceCount: choices.length,
+    contextDependencies: choices
+      .map((choice) => ({
+        key: choice.id ?? choice.key ?? null,
+        worldSections: choice.worldSections ?? [],
+        campaignDocuments: choice.campaignDocuments ?? [],
+        createdDocuments: choice.createdDocuments ?? [],
+      }))
+      .filter(
+        (choice) =>
+          choice.worldSections.length ||
+          choice.campaignDocuments.length ||
+          choice.createdDocuments.length,
+      ),
+    documentChanges: (value.documentChanges ?? []).map((change, index) => ({
+      index,
+      operation: change.operation ?? null,
+      kind: change.kind ?? null,
+      path: change.path ?? null,
+      title: change.title ?? null,
+      recallAs: change.recallAs ?? null,
+    })),
+    activeScene: value.activeScene ?? null,
+    currentNoteChanges: value.currentNotes?.length ?? 0,
+    arrivalNoteChanges: value.arrivalNotes?.length ?? 0,
+  };
+}
+
 const contextComposition = journey.generations.map(({ generationId }) => {
   const input = JSON.parse(
     sql(`select input::text from generation where id='${generationId}'`),
   );
   const request = input.request ?? {};
+  const outputText = sql(
+    `select coalesce(output::text, 'null') from generation where id='${generationId}'`,
+  );
+  const output = JSON.parse(outputText);
   return {
     generationId,
     taskInput: summarize(input),
     taskSections: summarizeRecord(input),
     contextSections: summarizeRecord(input.context),
+    canonicalKnowledge: summarizeCanonicalKnowledge(
+      input.context?.canonicalKnowledge,
+    ),
+    result: summarizeResult(output),
     request: {
       complete: summarize(request),
       outputSchema: summarize(request.outputSchema ?? null),
@@ -194,6 +293,28 @@ const contextComposition = journey.generations.map(({ generationId }) => {
     },
   };
 });
+
+const funding = JSON.parse(
+  sql(`
+select jsonb_build_object(
+  'accounts', coalesce((select jsonb_agg(jsonb_build_object(
+    'id', f.id, 'limitMicrousd', f.limit_microusd,
+    'settledMicrousd', f.settled_microusd,
+    'reservedMicrousd', f.reserved_microusd,
+    'stopped', f.stopped, 'verifiedAt', f.verified_at
+  )) from storyteller_funding f), '[]'::jsonb),
+  'runs', coalesce((select jsonb_agg(jsonb_build_object(
+    'id', r.id, 'enabled', r.enabled, 'maxAttempts', r.max_attempts,
+    'admittedAttempts', r.admitted_attempts,
+    'limitMicrousd', r.limit_microusd,
+    'settledMicrousd', r.settled_microusd,
+    'reservedMicrousd', r.reserved_microusd
+  )) from storyteller_run r), '[]'::jsonb),
+  'uncertainAttempts', coalesce((select jsonb_agg(jsonb_build_object(
+    'id', a.id, 'generationId', a.generation_id, 'storyId', a.story_id
+  )) from storyteller_attempt a where a.state='uncertain'), '[]'::jsonb)
+)::text;`),
+);
 
 let snapshot = null;
 try {
@@ -247,6 +368,7 @@ console.log(
     {
       format: 'offscreen.story-session-report.v1',
       journey,
+      funding,
       contextComposition,
       snapshot,
       recentEvidence,

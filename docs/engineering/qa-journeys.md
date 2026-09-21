@@ -80,6 +80,13 @@ The catalogue contains:
   and choice character visibly separate at the profile layer; do not impose the
   active profile's preferences on every Storyteller, and do not “pass” the old
   turn merely because its JSON and mystery continuity were valid.
+- Canonical-use inspection for live Story mode: distinguish complete campaign
+  documents and selected world/rule sections from catalogue-only entries. Record
+  whether the result authored choice-specific dependencies or document changes;
+  catalogue visibility alone is not a successful read, exploration or state
+  update. Mechanical action plans presently lack the narrative-choice retrieval
+  sidecar, so this limitation must remain visible until the connected flow is
+  repaired.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or

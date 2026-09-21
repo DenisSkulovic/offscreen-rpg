@@ -483,6 +483,11 @@ export function createStorytellerBudget(database: Database) {
             ),
           )
           .for('update');
+        // A duplicate/racing uncertainty callback that no longer owns a
+        // dispatched attempt has no liability to classify. Previously it
+        // stopped every funding account despite leaving no uncertain attempt,
+        // making the stop impossible to explain or recover safely.
+        if (!record) return;
         await tx
           .update(attempt)
           .set({
@@ -502,13 +507,14 @@ export function createStorytellerBudget(database: Database) {
             ),
           );
         await markUsageWindows(tx, id, 'uncertain');
-        if (record) {
-          await tx
-            .update(operation)
-            .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
-            .where(eq(operation.generationId, record.generationId));
-        }
-        await tx.update(funding).set({ stopped: true });
+        await tx
+          .update(operation)
+          .set({ state: 'uncertain', updatedAt: sql`clock_timestamp()` })
+          .where(eq(operation.generationId, record.generationId));
+        await tx
+          .update(funding)
+          .set({ stopped: true })
+          .where(eq(funding.id, execution.accountId));
       });
     },
     async settle(input: {
