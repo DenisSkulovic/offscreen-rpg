@@ -406,11 +406,23 @@ const defaultRulePackage = await importRulePackageDirectory(
   documentStore,
   join(workspaceRoot, 'content', 'rules', 'srd-5.2.1-subset'),
 );
+let chamberUserId: string | undefined;
+const chamberIdentity = {
+  async requireUser() {
+    if (!chamberUserId) throw new Error('Chamber identity is not provisioned');
+    return {
+      id: chamberUserId,
+      name: 'Local Player',
+      email: 'chamber@local.invalid',
+    };
+  },
+};
 const app = await createApp(
   database,
   createAuth(database, authConfig),
   origin,
   {
+    identity: chamberIdentity,
     documentStore,
     defaultRules: {
       ruleSetId: defaultRulePackage.manifest.ruleSetId,
@@ -487,6 +499,7 @@ try {
         }),
       )
     ).id;
+  chamberUserId = userId;
   const login = await helpers.login({ userId });
   await app.listen(3001, '127.0.0.1');
   runtime = await startRuntime(
@@ -949,12 +962,16 @@ try {
         .getByRole('region', { name: 'Inspector' })
         .getByText('held by caretaker', { exact: false })
         .waitFor();
-      const unauthenticated = await fetch(`${origin}/api/me`);
-      if (unauthenticated.status !== 401) {
-        throw new Error('Anonymous access was not rejected.');
+      const localIdentity = await fetch(`${origin}/api/me`);
+      if (
+        !localIdentity.ok ||
+        (await localIdentity.json() as { email?: unknown }).email !==
+          'chamber@local.invalid'
+      ) {
+        throw new Error('Chamber local identity was not available.');
       }
       console.log(
-        'Local launcher smoke passed: authenticated play, inspector, transfer, reload and anonymous rejection. Model spend: $0; no provider calls.',
+        'Local launcher smoke passed: loopback identity, play, inspector, transfer and reload. Model spend: $0; no provider calls.',
       );
     } else {
       console.log(

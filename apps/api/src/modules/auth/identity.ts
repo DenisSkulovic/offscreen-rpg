@@ -13,8 +13,18 @@ import type { Auth } from './auth.js';
 
 export const AUTH = Symbol('AUTH');
 
+export type AuthenticatedUser = Readonly<{
+  id: string;
+  name: string;
+  email: string;
+}>;
+
+export interface IdentityResolver {
+  requireUser(headers: Request['headers']): Promise<AuthenticatedUser>;
+}
+
 @Injectable()
-export class IdentityService {
+export class IdentityService implements IdentityResolver {
   constructor(@Inject(AUTH) private readonly auth: Auth) {}
 
   async requireUser(headers: Request['headers']) {

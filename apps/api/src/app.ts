@@ -25,6 +25,7 @@ import {
   AUTH,
   IdentityController,
   IdentityService,
+  type IdentityResolver,
 } from './modules/auth/identity.js';
 import { createDrafts } from '@offscreen/application/drafts';
 import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
@@ -95,6 +96,8 @@ class HealthController {
 class AppModule {}
 
 export type CreateAppOptions = Readonly<{
+  /** Loopback harnesses may supply a fixed identity without changing normal auth. */
+  identity?: IdentityResolver;
   developerTools?: boolean;
   chamberStorytellerControl?: ChamberStorytellerControl;
   storytellerExecution?: ExecutionPolicy;
@@ -135,7 +138,9 @@ export async function createApp(
           : []),
       ],
       providers: [
-        IdentityService,
+        options.identity
+          ? { provide: IdentityService, useValue: options.identity }
+          : IdentityService,
         DatabaseLifecycle,
         CacheLifecycle,
         { provide: DATABASE, useValue: database },
