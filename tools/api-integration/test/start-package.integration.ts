@@ -234,12 +234,57 @@ registerStoryConcern(
             },
           };
         };
+        let settlementCalls = 0;
         const controllerInput = {
           generationId,
           task,
           createExplorer,
           source,
+          captureDelivery: (output: unknown) => ({
+            output,
+            settlement: { kind: 'fake-provider-accounting' },
+          }),
+          settlePersistedRound: async ({
+            attemptId,
+            delivery,
+          }: {
+            attemptId: string;
+            delivery: { settlement: unknown | null };
+          }) => {
+            settlementCalls += 1;
+            const pendingRound = (
+              await database.db.select().from(storytellerMemoryExploration)
+            ).find((row) => row.generationId === generationId);
+            assert.equal(pendingRound?.pendingModelAttemptId, attemptId);
+            assert.equal(
+              (
+                pendingRound?.pendingModelOutput as {
+                  format?: unknown;
+                }
+              )?.format,
+              'offscreen.memory-round-delivery.v1',
+            );
+            assert.deepEqual(
+              (
+                pendingRound?.pendingModelOutput as {
+                  settlement?: unknown;
+                }
+              )?.settlement,
+              { kind: 'fake-provider-accounting' },
+            );
+            assert.deepEqual(delivery.settlement, {
+              kind: 'fake-provider-accounting',
+            });
+            if (settlementCalls === 1) {
+              throw new Error('simulated crash after delivery persistence');
+            }
+          },
         } as const;
+        await assert.rejects(
+          runScriptedMemoryExploration(database, controllerInput),
+          /simulated crash after delivery persistence/,
+        );
+        assert.equal(sourceCalls, 1);
         await assert.rejects(
           runScriptedMemoryExploration(database, controllerInput),
           /simulated crash/,
@@ -259,6 +304,7 @@ registerStoryConcern(
           'selected',
         );
         assert.equal(sourceCalls, 2);
+        assert.equal(settlementCalls, 3);
         const initialContext = composedContexts[0];
         const finalContext = composedContexts[1];
         assert.ok(initialContext);

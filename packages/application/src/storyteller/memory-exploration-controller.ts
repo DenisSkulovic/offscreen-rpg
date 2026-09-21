@@ -71,6 +71,20 @@ export type ScriptedMemoryRoundSource = (input: {
   boundedRequestBytes: number;
 }) => unknown | Promise<unknown>;
 
+export type CapturedMemoryRoundDelivery = Readonly<{
+  output: unknown;
+  /** JSON-safe provider usage/telemetry needed by an idempotent settlement hook. */
+  settlement: unknown | null;
+}>;
+
+export type PersistedMemoryRoundSettlement = (input: {
+  attemptId: string;
+  task: StorytellerTask;
+  round: number;
+  delivery: CapturedMemoryRoundDelivery;
+  operationOutcome: 'continue' | 'complete';
+}) => void | Promise<void>;
+
 export type MemoryExplorationControllerResult = Readonly<{
   output: StorytellerOutput;
   evidenceUse: MemoryEvidenceUseReport;
@@ -92,7 +106,11 @@ const storedFinalCandidateSchema = z.strictObject({
   creativeDirections: creativeDirectionSetSchema,
 });
 
-const storedModelOutputSchema = z.strictObject({ value: z.json() });
+const storedModelOutputSchema = z.strictObject({
+  format: z.literal('offscreen.memory-round-delivery.v1'),
+  output: z.json(),
+  settlement: z.json().nullable(),
+});
 
 function validateCreativeDirections(
   packet: ReturnType<typeof prepareMemoryEvidenceContext>['evidencePack'],
@@ -247,6 +265,8 @@ export async function runScriptedMemoryExploration(
       snapshot?: MemoryExplorationSnapshot,
     ) => CanonicalMemoryExplorer;
     source: ScriptedMemoryRoundSource;
+    captureDelivery?: (rawOutput: unknown) => CapturedMemoryRoundDelivery;
+    settlePersistedRound?: PersistedMemoryRoundSettlement;
   },
 ): Promise<MemoryExplorationControllerResult> {
   const task = storytellerTaskSchema.parse(input.task);
@@ -427,7 +447,7 @@ export async function runScriptedMemoryExploration(
       if (artifact.pendingModelOutput !== null) {
         rawOutput = storedModelOutputSchema.parse(
           artifact.pendingModelOutput,
-        ).value;
+        ).output;
       } else {
         rawOutput = await input.source({
           attemptId: artifact.pendingModelAttemptId!,
@@ -438,8 +458,13 @@ export async function runScriptedMemoryExploration(
           capturedRequestBytes: preparedContext.capturedRequestBytes,
           boundedRequestBytes: preparedContext.boundedRequestBytes,
         });
+        const captured = input.captureDelivery?.(rawOutput) ?? {
+          output: rawOutput,
+          settlement: null,
+        };
         const storedOutput = storedModelOutputSchema.parse({
-          value: rawOutput,
+          format: 'offscreen.memory-round-delivery.v1',
+          ...captured,
         });
         const persisted = await database.db
           .update(storytellerMemoryExploration)
@@ -470,6 +495,30 @@ export async function runScriptedMemoryExploration(
       }
     }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
+    const admissibleContextRequest =
+      contextRequest.success &&
+      round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds &&
+      snapshot.readsUsed + contextRequest.data.requests.length <=
+        recipe.maxReads &&
+      creativeRequestWithinRecipe(task, snapshot, contextRequest.data);
+    if (!pendingRequest && input.settlePersistedRound) {
+      if (
+        !artifact.pendingModelAttemptId ||
+        artifact.pendingModelOutput === null
+      ) {
+        throw new Error('Memory exploration settlement lacks a saved delivery');
+      }
+      const delivery = storedModelOutputSchema.parse(
+        artifact.pendingModelOutput,
+      );
+      await input.settlePersistedRound({
+        attemptId: artifact.pendingModelAttemptId,
+        task,
+        round,
+        delivery,
+        operationOutcome: admissibleContextRequest ? 'continue' : 'complete',
+      });
+    }
     if (contextRequest.success) {
       if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {
         return fail('round-limit');
