@@ -136,6 +136,9 @@ export function createMemoryProviderRoundRuntime(
   if (input.task.execution.mode !== 'provider') {
     throw new Error('Memory provider runtime requires provider execution');
   }
+  if (input.task.resources.authority.kind !== 'effective-usage-policy') {
+    throw new Error('Memory provider runtime requires usage authority');
+  }
   const budget = createStorytellerBudget(database);
   const execution = input.task.execution;
   const rounds = input.task.resources.recipe.maxModelRounds;
@@ -145,6 +148,10 @@ export function createMemoryProviderRoundRuntime(
   );
   const maxReasoningTokens = Math.floor(
     input.task.resources.envelope.maxReasoningTokens / rounds,
+  );
+  const maxInputTokensPerRound = Math.min(
+    execution.policy.maxInputTokens,
+    input.task.resources.authority.policy.limits.maxInputTokensPerRequest,
   );
 
   const source: ScriptedMemoryRoundSource = async (round) => {
@@ -175,7 +182,12 @@ export function createMemoryProviderRoundRuntime(
         dispatch: {
           request: round.request,
           maxSerializedRequestBytes: round.boundedRequestBytes,
-          maxInputTokens: round.boundedRequestBytes,
+          // Serialized bytes are a tokenizer-independent upper bound, but a
+          // round cannot consume more input tokens than its captured route.
+          maxInputTokens: Math.min(
+            round.boundedRequestBytes,
+            maxInputTokensPerRound,
+          ),
           maxGeneratedTokens,
           maxReasoningTokens,
         },

@@ -156,6 +156,20 @@ export async function captureHeldMemoryPacket(input: {
       {
         corpus: materialized,
         generationId,
+        allowance: {
+          modelRounds: task.resources.recipe.maxModelRounds,
+          perRoundInputTokenCeiling: Math.min(
+            input.execution.policy.maxInputTokens,
+            input.usagePolicy.limits.maxInputTokensPerRequest,
+          ),
+          operationInputTokenCeiling:
+            task.resources.envelope.maxInputTokens,
+          perRequestSerializedByteCeiling:
+            task.resources.envelope.maxSerializedRequestBytes,
+          operationGeneratedTokenCeiling:
+            task.resources.envelope.maxGeneratedTokens,
+          reads: task.resources.recipe.maxReads,
+        },
         accounting: { attempts: 0, heldReviews: 1, memoryState: 'held' },
         review,
       },

@@ -140,7 +140,14 @@ export function validateResourcesForExecution(
     (resources.recipe.version === 'memory-exploration.v1' &&
       resources.recipe.maxRetainedReadBytes >
         resources.authority.policy.limits.maxRetainedReadBytes) ||
-    resources.envelope.maxInputTokens > execution.policy.maxInputTokens ||
+    resources.envelope.maxInputTokens >
+      Math.min(
+        200_000,
+        resources.authority.policy.limits.maxInputTokensPerOperation,
+        resources.authority.policy.limits.maxInputTokensPerRequest *
+          resources.recipe.maxModelRounds,
+        execution.policy.maxInputTokens * resources.recipe.maxModelRounds,
+      ) ||
     resources.envelope.maxGeneratedTokens > execution.policy.maxOutputTokens ||
     resources.envelope.deadlineMs > execution.policy.timeoutMs
   ) {

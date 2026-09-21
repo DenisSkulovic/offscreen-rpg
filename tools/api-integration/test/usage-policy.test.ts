@@ -65,6 +65,15 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
   assert.equal(creativeResources.recipe.maxModelRounds, 3);
   assert.equal(creativeResources.recipe.maxReads, 3);
   assert.equal(
+    creativeResources.envelope.maxInputTokens,
+    Math.min(
+      200_000,
+      resolved.policy.limits.maxInputTokensPerOperation,
+      resolved.policy.limits.maxInputTokensPerRequest * 3,
+      execution.policy.maxInputTokens * 3,
+    ),
+  );
+  assert.equal(
     creativeResources.creativeExploration.limits.maxGeneratedTokens,
     700,
   );

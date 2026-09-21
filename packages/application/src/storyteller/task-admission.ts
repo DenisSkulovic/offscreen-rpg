@@ -120,9 +120,10 @@ export function resourcesForEffectiveUsagePolicy(
         execution.policy.maxInputTokens * 4,
       ),
       maxInputTokens: Math.min(
-        policy.limits.maxInputTokensPerRequest,
+        200_000,
         policy.limits.maxInputTokensPerOperation,
-        execution.policy.maxInputTokens,
+        policy.limits.maxInputTokensPerRequest * recipe.maxModelRounds,
+        execution.policy.maxInputTokens * recipe.maxModelRounds,
       ),
       maxGeneratedTokens,
       maxReasoningTokens: Math.min(
