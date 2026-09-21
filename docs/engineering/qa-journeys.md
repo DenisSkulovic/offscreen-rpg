@@ -86,6 +86,8 @@ Import and instantiation are exposed through the available `reusable-start-packa
 7. Keep compression or generated summaries outside the allocator until separately evaluated for entailment, provenance retention and cost. Shorter output is not automatically better evidence.
 8. Compose the captured task and factored evidence packet under one serialized request envelope. Confirm overflow becomes durable `context-limit`, invokes no new Storyteller decision and replays as the same terminal failure.
 9. Inspect the no-dispatch provider preview by message and section metadata before loading exact content. Confirm the evidence section hash/bytes match the controller request, the final round cannot request more context, transport is false and charge is zero.
+10. Require the final private response to cite packet item/source IDs without regenerating the task result in another format. Reject unknown items, sources not attached to cited items and omitted provenance for a cited item; preserve required-but-uncited IDs as a generation-use diagnostic.
+11. Confirm citations never enter player-visible narration or publication. Empty citations may be structurally honest and must remain observable; they do not pass a case whose expected evidence was required for the answer. Treat self-citation as an audit signal, not proof that prose is entailed by evidence.
 
 The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 

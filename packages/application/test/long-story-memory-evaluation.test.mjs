@@ -27,10 +27,47 @@ import {
   packMemoryExplorationEvidence,
 } from '../dist/storyteller/memory-evidence-packing.js';
 import { inspectMemoryExplorationProviderRequest } from '../dist/storyteller/memory-provider-preview.js';
+import { validateMemoryEvidenceUse } from '../dist/storyteller/memory-evidence-use.js';
 import {
   buildEvidencePackingPressureFixture,
   evaluateEvidencePackingPressure,
 } from '../dist/developer-tools/evidence-packing-evaluator.js';
+
+test('validates private evidence-use references and reports required omissions', () => {
+  const packet = {
+    format: 'offscreen.evidence-pack.v1',
+    contents: [{ id: 'c1', text: 'The quay charter was returned.' }],
+    sources: [{ id: 's1', key: 'canonical:charter@2' }],
+    evidence: [
+      {
+        itemId: 'charter-current',
+        group: { kind: 'thread', key: 'charter' },
+        required: true,
+        level: 'card',
+        contentId: 'c1',
+        sourceIds: ['s1'],
+      },
+    ],
+  };
+  const unused = validateMemoryEvidenceUse(packet, {
+    itemIds: [],
+    sourceIds: [],
+  });
+  assert.deepEqual(unused.requiredUnusedItemIds, ['charter-current']);
+  const used = validateMemoryEvidenceUse(packet, {
+    itemIds: ['charter-current'],
+    sourceIds: ['s1'],
+  });
+  assert.deepEqual(used.requiredUnusedItemIds, []);
+  assert.throws(
+    () =>
+      validateMemoryEvidenceUse(packet, {
+        itemIds: ['charter-current'],
+        sourceIds: ['s2'],
+      }),
+    /not attached to a cited item/,
+  );
+});
 
 test('packs required evidence, group breadth and shared content deterministically', () => {
   const representation = (level, content, utility) => ({
@@ -48,8 +85,16 @@ test('packs required evidence, group breadth and shared content deterministicall
       relevance: 100,
       representations: [
         representation('lead', 'Mira', 5),
-        representation('card', 'Mira still holds the repaired quay charter.', 40),
-        representation('exact', 'Mira still holds the repaired quay charter. It was returned at tick 880.', 70),
+        representation(
+          'card',
+          'Mira still holds the repaired quay charter.',
+          40,
+        ),
+        representation(
+          'exact',
+          'Mira still holds the repaired quay charter. It was returned at tick 880.',
+          70,
+        ),
       ],
     },
     {
@@ -58,7 +103,9 @@ test('packs required evidence, group breadth and shared content deterministicall
       required: false,
       minimumLevel: 'lead',
       relevance: 90,
-      representations: [representation('lead', 'The old favor remains open.', 20)],
+      representations: [
+        representation('lead', 'The old favor remains open.', 20),
+      ],
     },
     {
       id: 'favor-thread-source-alias',
@@ -66,7 +113,9 @@ test('packs required evidence, group breadth and shared content deterministicall
       required: false,
       minimumLevel: 'lead',
       relevance: 80,
-      representations: [representation('lead', 'The old favor remains open.', 20)],
+      representations: [
+        representation('lead', 'The old favor remains open.', 20),
+      ],
     },
     {
       id: 'greywake-place',
@@ -74,7 +123,9 @@ test('packs required evidence, group breadth and shared content deterministicall
       required: false,
       minimumLevel: 'lead',
       relevance: 70,
-      representations: [representation('lead', 'Greywake quay is repaired.', 20)],
+      representations: [
+        representation('lead', 'Greywake quay is repaired.', 20),
+      ],
     },
   ];
   const packed = packStoryEvidence(items, {
@@ -417,17 +468,15 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
   );
   const requiredEvidence = packableEvidence.filter((item) => item.required);
   assert.equal(requiredEvidence.length, 2);
-  assert.deepEqual(
-    requiredEvidence.map((item) => item.minimumLevel).sort(),
-    ['card', 'exact'],
-  );
+  assert.deepEqual(requiredEvidence.map((item) => item.minimumLevel).sort(), [
+    'card',
+    'exact',
+  ]);
   assert.ok(
     requiredEvidence.every((item) =>
       item.representations.every((representation) =>
         representation.sourceKeys.every((source) =>
-          /^canonical:[0-9a-f-]+@[1-9][0-9]*#sha256:[0-9a-f]{64}$/.test(
-            source,
-          ),
+          /^canonical:[0-9a-f-]+@[1-9][0-9]*#sha256:[0-9a-f]{64}$/.test(source),
         ),
       ),
     ),

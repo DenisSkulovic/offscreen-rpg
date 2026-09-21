@@ -14,4 +14,5 @@ export * from './memory-exploration';
 export * from './memory-exploration-controller';
 export * from './evidence-packing';
 export * from './memory-evidence-packing';
+export * from './memory-evidence-use';
 export * from './memory-provider-preview';

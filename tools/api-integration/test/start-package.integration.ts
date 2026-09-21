@@ -118,9 +118,7 @@ registerStoryConcern(
         const createExplorer = (saved?: MemoryExplorationSnapshot) => {
           let snapshot = saved ?? initialSnapshot;
           return {
-            execute: async (request: {
-              requests: readonly unknown[];
-            }) => {
+            execute: async (request: { requests: readonly unknown[] }) => {
               if (failNextRead) {
                 failNextRead = false;
                 throw new Error('simulated crash after request persistence');
@@ -177,20 +175,30 @@ registerStoryConcern(
             capturedRequestBytes,
             boundedRequestBytes,
           });
-          return round === 1
-            ? {
-                kind: 'needs_context',
-                version: 1,
-                purpose: 'Find the old promise before composing.',
-                requests: [
-                  {
-                    requestId: 'r1',
-                    operation: 'search_memory',
-                    query: 'old promise',
-                  },
-                ],
-              }
-            : scriptedStorytellerResult(task);
+          if (round === 1) {
+            return {
+              kind: 'needs_context',
+              version: 1,
+              purpose: 'Find the old promise before composing.',
+              requests: [
+                {
+                  requestId: 'r1',
+                  operation: 'search_memory',
+                  query: 'old promise',
+                },
+              ],
+            };
+          }
+          const user = JSON.parse(request.messages[1].content);
+          const evidence = user.memoryExploration.evidencePack.evidence[0];
+          assert.ok(evidence);
+          return {
+            result: scriptedStorytellerResult(task),
+            evidenceUse: {
+              itemIds: [evidence.itemId],
+              sourceIds: evidence.sourceIds,
+            },
+          };
         };
         const controllerInput = {
           generationId,
@@ -210,12 +218,16 @@ registerStoryConcern(
         );
         assert.equal(completed.replayed, false);
         assert.equal(completed.explorationRounds, 1);
+        assert.equal(completed.evidenceUse.declaredItemIds.length, 1);
+        assert.deepEqual(completed.evidenceUse.requiredUnusedItemIds, []);
         assert.equal(sourceCalls, 2);
         const initialContext = composedContexts[0];
         const finalContext = composedContexts[1];
         assert.ok(initialContext);
         assert.ok(finalContext);
-        const initialUser = JSON.parse(initialContext.request.messages[1].content);
+        const initialUser = JSON.parse(
+          initialContext.request.messages[1].content,
+        );
         const finalUser = JSON.parse(finalContext.request.messages[1].content);
         assert.equal(
           initialUser.memoryExploration.evidencePack.evidence.length,
@@ -227,7 +239,9 @@ registerStoryConcern(
         );
         assert.equal(finalUser.memoryExploration.round, 2);
         assert.equal(finalUser.memoryExploration.canRequestContext, false);
-        assert.ok(finalContext.capturedRequestBytes < finalContext.boundedRequestBytes);
+        assert.ok(
+          finalContext.capturedRequestBytes < finalContext.boundedRequestBytes,
+        );
         assert.ok(
           finalContext.boundedRequestBytes <=
             task.resources.envelope.maxSerializedRequestBytes,
@@ -244,6 +258,7 @@ registerStoryConcern(
         assert.equal(replayed.replayed, true);
         assert.equal(replayed.explorationRounds, 1);
         assert.deepEqual(replayed.output, completed.output);
+        assert.deepEqual(replayed.evidenceUse, completed.evidenceUse);
 
         const failedGenerationId = randomUUID();
         await database.db.insert(generation).values({
@@ -389,13 +404,7 @@ registerStoryConcern(
           expectedRevision: 0,
         });
         const candidateId = randomUUID();
-        await openings.request(
-          owner,
-          draftId,
-          candidateId,
-          1,
-          'microbe.v3',
-        );
+        await openings.request(owner, draftId, candidateId, 1, 'microbe.v3');
         await runtime.complete(candidateId);
         const storyId = randomUUID();
         const campaign: CampaignStart = {
@@ -816,9 +825,10 @@ registerStoryConcern(
                     recallAs: 'thread',
                   },
                 ];
-                const quay = storytellerTask.context.canonicalKnowledge?.catalogue.find(
-                  (entry) => entry.path === 'locations/quay.md',
-                );
+                const quay =
+                  storytellerTask.context.canonicalKnowledge?.catalogue.find(
+                    (entry) => entry.path === 'locations/quay.md',
+                  );
                 assert.ok(quay);
                 result.activeScene = {
                   kind: 'restart-at-current',
@@ -838,17 +848,13 @@ registerStoryConcern(
         await drafts.save(owner, draftId, {
           title: 'Conventional start integration',
           premise: 'A newcomer arrives at the working harbor of Greywake.',
-          storytellingDirection: 'Keep authored facts and possibilities distinct.',
+          storytellingDirection:
+            'Keep authored facts and possibilities distinct.',
           storyteller: { id: 'absurd-action-comedy', revision: 1 },
           expectedRevision: 0,
         });
         const candidateId = randomUUID();
-        await openings.request(
-          owner,
-          draftId,
-          candidateId,
-          1,
-        );
+        await openings.request(owner, draftId, candidateId, 1);
         await runtime.complete(candidateId);
         const storyId = randomUUID();
         const campaign: CampaignStart = {
@@ -1203,7 +1209,8 @@ registerStoryConcern(
         await runtime.complete(continuationId);
         const offered = await stories.read({ ownerId: owner, storyId });
         assert.ok(offered.current.interaction);
-        const hintedOption = offered.current.interaction.specification.options[0];
+        const hintedOption =
+          offered.current.interaction.specification.options[0];
         assert.ok(hintedOption);
         const hintedContinuationId = randomUUID();
         await stories.admitResolution({
@@ -1244,12 +1251,12 @@ registerStoryConcern(
         );
         const reloadedCampaignEntry =
           hintedTask.context.canonicalKnowledge?.catalogue.find(
-            (entry) =>
-              entry.documentId === unloadedCampaignDocument.documentId,
+            (entry) => entry.documentId === unloadedCampaignDocument.documentId,
           );
         assert.ok(reloadedCampaignEntry?.loaded);
         assert.deepEqual(
-          hintedTask.context.canonicalKnowledge?.documentSelection.loadedHandles,
+          hintedTask.context.canonicalKnowledge?.documentSelection
+            .loadedHandles,
           [
             reloadedCampaignEntry.handle,
             hintedTask.context.canonicalKnowledge?.catalogue.find(
@@ -1296,7 +1303,10 @@ registerStoryConcern(
         );
 
         await runtime.complete(hintedContinuationId);
-        const interveningOffer = await stories.read({ ownerId: owner, storyId });
+        const interveningOffer = await stories.read({
+          ownerId: owner,
+          storyId,
+        });
         assert.ok(interveningOffer.current.interaction);
         const interveningOption =
           interveningOffer.current.interaction.specification.options[0];
@@ -1330,8 +1340,9 @@ registerStoryConcern(
           [unrelatedMarketEntry.documentId],
         );
         assert.ok(
-          !interveningTask.context.canonicalKnowledge?.documentSelection
-            .requestedDocumentIds.includes(promotedThreadDocumentId),
+          !interveningTask.context.canonicalKnowledge?.documentSelection.requestedDocumentIds.includes(
+            promotedThreadDocumentId,
+          ),
         );
 
         await runtime.complete(interveningContinuationId);
@@ -1369,8 +1380,8 @@ registerStoryConcern(
           [recalledQuay.documentId, promotedThreadDocumentId],
         );
         assert.deepEqual(
-          returnTask.context.canonicalKnowledge?.documentSelection
-            .cueResolution.requested,
+          returnTask.context.canonicalKnowledge?.documentSelection.cueResolution
+            .requested,
           [
             { documentId: recalledQuay.documentId, reason: 'place' },
             { documentId: promotedThreadDocumentId, reason: 'thread' },
@@ -1463,9 +1474,15 @@ registerStoryConcern(
           maxExaminedBytes: returnOracle.budget.maxBytes,
         });
         assert.equal(discovery.coverage.state, 'complete');
-        assert.equal(discovery.candidates[0]?.unit.documentId, promotedThreadDocumentId);
+        assert.equal(
+          discovery.candidates[0]?.unit.documentId,
+          promotedThreadDocumentId,
+        );
         assert.equal(discovery.candidates[0]?.unit.revision, 2);
-        assert.match(discovery.candidates[0]?.snippet ?? '', /collapsed beneath/);
+        assert.match(
+          discovery.candidates[0]?.snippet ?? '',
+          /collapsed beneath/,
+        );
         assert.ok(
           returnOracle.expectedPaths.every((path) =>
             discovery.candidates.some((result) => result.unit.path === path),
@@ -1505,11 +1522,13 @@ registerStoryConcern(
           ],
         });
         assert.equal(returnOracle.budget.maxReads, 1);
-        assert.deepEqual(discoveredKnowledge.documentSelection.requestedDocumentIds, [
-          promotedThreadDocumentId,
-        ]);
         assert.deepEqual(
-          discoveredKnowledge.documentSelection.cueResolution.resolvedDocumentIds,
+          discoveredKnowledge.documentSelection.requestedDocumentIds,
+          [promotedThreadDocumentId],
+        );
+        assert.deepEqual(
+          discoveredKnowledge.documentSelection.cueResolution
+            .resolvedDocumentIds,
           [promotedThreadDocumentId],
         );
         const discoveredEntry = discoveredKnowledge.catalogue.find(
@@ -1626,9 +1645,7 @@ registerStoryConcern(
               'SELECT generation_id FROM campaign_consequence WHERE operation_id = $1',
               [activityId],
             );
-            consequenceGenerationId = String(
-              prepared.rows[0]?.generation_id,
-            );
+            consequenceGenerationId = String(prepared.rows[0]?.generation_id);
             break;
           }
         }

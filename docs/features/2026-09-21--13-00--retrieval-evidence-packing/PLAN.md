@@ -22,18 +22,19 @@ Implementation owner: Codex under the owner's continuing instruction.
 - Posture comparison keeps the fixture fixed and varies only explicit byte/item/group limits. Reports include fidelity and omission counts so a larger packet cannot appear better merely because it contains more bytes.
 - Exit: minimal, balanced and rich postures show explicit breadth/fidelity tradeoffs under fixed final packet caps.
 
-### P3 — Cards, episodes and exact expansion
+### P3 — Cards, episodes and exact expansion — implemented and focused-verified
 
 - Outcome: feed source-grounded identity/place/thread/episode cards into the packer and expand exact sources only for declared needs.
 - Adapt only evidence already admitted by the captured exploration root: search/registry results provide optional leads, explicit memory reads provide required cards and explicit source reads provide required exact evidence. The adapter performs no inference, summarization or provider call.
 - Stable document/revision/hash identity is the packet provenance. Logical kind selects only a generic packing group; it does not create game entities or reinterpret lore as mechanical state.
 - Optional query-focused synthesis is a separately budgeted representation producer, not an invisible packer side effect.
 - Exit: the connected Greywake return uses a packed final context and traces downstream evidence use.
+- The final provider contract returns the ordinary task result once, wrapped with a private evidence-use claim. The application validates every cited item against the exact transmitted packet and requires its complete packet source set. It stores cited IDs, required IDs and required-but-uncited IDs beside the private final candidate; publication still receives only the validated task result. Empty citations are valid and observable because self-citation is a structural signal, not proof of semantic grounding.
 
 ## Current checkpoint
 
-- Current phase and exact next action: P3; add stage-separated evidence-use reporting, then connect reviewed requests to durable multi-round accounting before any live dispatch.
-- Base/reviewed Git revision and relevant uncommitted changes: `b62ffb0`; the provider-facing composer now embeds the factored pack as a named user section, switches from context-request-or-final to final-only output schema at the reserved round and feeds the existing OpenRouter body inspector through a no-transport preview.
-- Actual checks/results for this revision: contracts, Storyteller, application and integration builds pass; Storyteller tests pass 35/35 and focused memory tests pass 3/3. The canonical Greywake preview contains current and historical evidence, exposes compact message/section/schema hashes and bytes, reports no transport/zero charge and remains inside the shared envelope.
-- Unresolved findings/blockers: multi-round provider transport/accounting remains disconnected and downstream evidence use is not yet scored. Token counts remain explicitly unknown until a route-specific tokenizer is verified.
+- Current phase and exact next action: P3 is complete; connect reviewed requests to durable multi-round accounting before any live dispatch.
+- Base/reviewed Git revision and relevant uncommitted changes: `e9327f4`; final memory responses now carry a private result-plus-evidence-use wrapper, with packet-bound reference validation and a replay-stable stored audit report.
+- Actual checks/results for this revision: Storyteller, application and API-integration builds pass; Storyteller tests pass 35/35, focused memory tests pass 4/4 and the focused database-backed memory-exploration integration passes 1/1 through the repository launcher. The first direct integration invocation correctly refused to run without the disposable database URL; the documented focused launcher recreated the isolated database and completed the case. No provider call was made.
+- Unresolved findings/blockers: multi-round provider transport/accounting remains disconnected. Self-citation can expose missing or impossible references but cannot prove the generated prose faithfully used the cited evidence; scripted, human or explicitly funded judge evaluation owns that later claim. Token counts remain explicitly unknown until a route-specific tokenizer is verified.
 - Provider spend and accounting certainty: $0; no provider call.

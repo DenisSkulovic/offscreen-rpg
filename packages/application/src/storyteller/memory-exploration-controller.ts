@@ -1,11 +1,13 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
 import { createHash } from 'node:crypto';
+import { z } from 'zod';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import { storytellerMemoryExploration } from '@offscreen/db/storyteller-schema';
 import {
   composeMemoryExplorationDecisionRequest,
+  memoryExplorationFinalResponseSchema,
   serializedRequestBytes,
   storytellerNeedsContextSchema,
   storytellerTaskSchema,
@@ -18,6 +20,10 @@ import {
   type MemoryExplorationSnapshot,
 } from './memory-exploration';
 import { packMemoryExplorationEvidence } from './memory-evidence-packing';
+import {
+  validateMemoryEvidenceUse,
+  type MemoryEvidenceUseReport,
+} from './memory-evidence-use';
 
 export type MemoryExplorationFailureCode =
   | 'stale-root'
@@ -60,9 +66,22 @@ export type ScriptedMemoryRoundSource = (input: {
 
 export type MemoryExplorationControllerResult = Readonly<{
   output: StorytellerOutput;
+  evidenceUse: MemoryEvidenceUseReport;
   replayed: boolean;
   explorationRounds: number;
 }>;
+
+const storedFinalCandidateSchema = z.strictObject({
+  format: z.literal('offscreen.memory-final-candidate.v1'),
+  output: z.json(),
+  evidenceUse: z.strictObject({
+    format: z.literal('offscreen.memory-evidence-use.v1'),
+    declaredItemIds: z.array(z.string()),
+    declaredSourceIds: z.array(z.string()),
+    requiredItemIds: z.array(z.string()),
+    requiredUnusedItemIds: z.array(z.string()),
+  }),
+});
 
 function assertSnapshotWithinRecipe(
   snapshot: MemoryExplorationSnapshot,
@@ -120,11 +139,11 @@ export function prepareMemoryEvidenceContext(
     );
     const boundedRequestBytes = serializedRequestBytes(request);
     const overflow =
-      boundedRequestBytes -
-      task.resources.envelope.maxSerializedRequestBytes;
+      boundedRequestBytes - task.resources.envelope.maxSerializedRequestBytes;
     if (overflow <= 0) {
       return {
         request,
+        evidencePack: packed.packet,
         capturedRequestBytes,
         boundedRequestBytes,
         selected: packed.selected,
@@ -198,8 +217,12 @@ export async function runScriptedMemoryExploration(
     const snapshot = explorer.snapshot();
     assertSnapshotWithinRecipe(snapshot, recipe);
     if (artifact.state === 'final-ready') {
+      const finalCandidate = storedFinalCandidateSchema.parse(
+        artifact.finalOutput,
+      );
       return {
-        output: validateStorytellerResult(task, artifact.finalOutput),
+        output: validateStorytellerResult(task, finalCandidate.output),
+        evidenceUse: finalCandidate.evidenceUse,
         replayed: true,
         explorationRounds: snapshot.rounds.length,
       };
@@ -250,8 +273,10 @@ export async function runScriptedMemoryExploration(
       throw new Error('Memory exploration pending request hash mismatch');
     }
     let rawOutput: unknown = pendingRequest;
+    let preparedContext: ReturnType<
+      typeof prepareMemoryEvidenceContext
+    > | null = null;
     if (!pendingRequest) {
-      let preparedContext: ReturnType<typeof prepareMemoryEvidenceContext>;
       try {
         preparedContext = prepareMemoryEvidenceContext(task, snapshot, round);
       } catch (error) {
@@ -295,10 +320,7 @@ export async function runScriptedMemoryExploration(
           })
           .where(
             and(
-              eq(
-                storytellerMemoryExploration.generationId,
-                input.generationId,
-              ),
+              eq(storytellerMemoryExploration.generationId, input.generationId),
               eq(storytellerMemoryExploration.revision, artifact.revision),
               eq(storytellerMemoryExploration.state, 'exploring'),
               sql`${storytellerMemoryExploration.pendingRequest} IS NULL`,
@@ -345,13 +367,26 @@ export async function runScriptedMemoryExploration(
       continue;
     }
 
-    const output = validateStorytellerResult(task, rawOutput);
+    if (!preparedContext) {
+      throw new Error('Final memory response is missing its evidence context');
+    }
+    const finalResponse = memoryExplorationFinalResponseSchema.parse(rawOutput);
+    const output = validateStorytellerResult(task, finalResponse.result);
+    const evidenceUse = validateMemoryEvidenceUse(
+      preparedContext.evidencePack,
+      finalResponse.evidenceUse,
+    );
+    const finalCandidate = {
+      format: 'offscreen.memory-final-candidate.v1' as const,
+      output,
+      evidenceUse,
+    };
     const updated = await database.db
       .update(storytellerMemoryExploration)
       .set({
         revision: artifact.revision + 1,
         state: 'final-ready',
-        finalOutput: output,
+        finalOutput: finalCandidate,
         updatedAt: sql`clock_timestamp()`,
       })
       .where(
@@ -367,6 +402,7 @@ export async function runScriptedMemoryExploration(
     }
     return {
       output,
+      evidenceUse,
       replayed: false,
       explorationRounds: snapshot.rounds.length,
     };
