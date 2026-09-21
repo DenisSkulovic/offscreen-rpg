@@ -83,10 +83,10 @@ export async function captureHeldMemoryPacket(input: {
         },
         current,
         selected: {
-          id: 'repair-nets',
-          label: 'Repair fishing nets quietly on the quay',
+          id: 'ask-key-hiding-place',
+          label: 'Ask Mira where she hid the brass key',
           intention:
-            'Spend the next stretch quietly repairing nets without accepting a larger commitment.',
+            'Ask Mira Vale to repeat the exact old hiding place she named for the brass key, without guessing from the current ledger or forcing a larger commitment.',
         },
         items: [],
         notes: [],

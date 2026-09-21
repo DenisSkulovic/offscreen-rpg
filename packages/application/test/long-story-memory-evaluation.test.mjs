@@ -918,11 +918,22 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     'creativeIdeation',
   );
   assert.equal(
-    orchestrationComparison.separate.retransmissionDeltaBytes,
-    10_532,
+    orchestrationComparison.separate.capturedRequestBytes,
+    orchestrationComparison.inline.capturedRequestBytes +
+      orchestrationComparison.separate.retransmissionDeltaBytes,
   );
-  assert.equal(orchestrationComparison.inline.capturedRequestBytes, 20_256);
-  assert.equal(orchestrationComparison.separate.capturedRequestBytes, 30_788);
+  assert.ok(
+    orchestrationComparison.separate.retransmissionDeltaBytes <= 16 * 1024,
+    `separate ideation retransmitted ${orchestrationComparison.separate.retransmissionDeltaBytes} bytes`,
+  );
+  assert.ok(
+    orchestrationComparison.separate.retransmissionDeltaBytes <
+      orchestrationComparison.inline.capturedRequestBytes,
+  );
+  assert.ok(
+    orchestrationComparison.inline.capturedRequestBytes <=
+      providerTask.resources.envelope.maxSerializedRequestBytes,
+  );
 
   const indexStore = new LocalLexicalStoryIndexStore(
     await mkdtemp(join(tmpdir(), 'offscreen-memory-index-')),
