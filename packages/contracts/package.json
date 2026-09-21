@@ -51,6 +51,10 @@
       "types": "./dist/src/creative-exploration-evaluation.d.ts",
       "default": "./dist/src/creative-exploration-evaluation.js"
     },
+    "./creative-exploration": {
+      "types": "./dist/src/creative-exploration.d.ts",
+      "default": "./dist/src/creative-exploration.js"
+    },
     "./story-retrieval": {
       "types": "./dist/src/story-retrieval.d.ts",
       "default": "./dist/src/story-retrieval.js"

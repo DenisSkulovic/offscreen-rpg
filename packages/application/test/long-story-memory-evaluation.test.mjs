@@ -37,6 +37,193 @@ import {
   buildCreativeExplorationFixtureObservations,
   evaluateCreativeExplorationObservation,
 } from '../dist/developer-tools/creative-exploration-evaluator.js';
+import { resolveCreativeExplorationRecipe } from '../dist/storyteller/creative-exploration-recipes.js';
+import {
+  creativeDiscoveryRequestHash,
+  validateCreativeDiscoveryResult,
+} from '../dist/storyteller/creative-discovery.js';
+import {
+  creativeDiscoveryRequestSchema,
+  creativeDiscoveryResultSchema,
+} from '@offscreen/contracts/creative-exploration';
+
+test('bounds provider-neutral creative discovery without promoting possibilities', () => {
+  const off = resolveCreativeExplorationRecipe({ posture: 'off' });
+  assert.equal(off.enabled, false);
+  assert.ok(Object.values(off.limits).every((value) => value === 0));
+
+  const bounded = resolveCreativeExplorationRecipe({
+    posture: 'rich',
+    requested: { maxLenses: 8, maxQueries: 10, maxCostMicrousd: 50_000 },
+    operationLimits: {
+      maxLenses: 2,
+      maxQueries: 2,
+      maxReads: 1,
+      maxRetainedBytes: 4096,
+      maxModelRounds: 2,
+      maxGeneratedTokens: 768,
+      maxLatencyMs: 15_000,
+      maxCostMicrousd: 0,
+    },
+  });
+  assert.equal(bounded.enabled, true);
+  assert.equal(bounded.limits.maxLenses, 2);
+  assert.equal(bounded.limits.maxQueries, 2);
+  assert.equal(bounded.limits.maxReads, 1);
+  assert.equal(bounded.limits.maxRetainedBytes, 4096);
+  assert.equal(bounded.limits.maxGeneratedTokens, 768);
+  assert.equal(bounded.limits.maxCostMicrousd, 0);
+
+  const disabledByOperation = resolveCreativeExplorationRecipe({
+    posture: 'balanced',
+    operationLimits: { maxQueries: 0 },
+  });
+  assert.equal(disabledByOperation.enabled, false);
+  assert.ok(
+    Object.values(disabledByOperation.limits).every((value) => value === 0),
+  );
+
+  const need = {
+    format: 'offscreen.creative-exploration-need.v1',
+    purpose: 'Find grounded possibilities for a quiet return.',
+    situation: 'The traveler repairs fishing nets on Greywake quay.',
+    playerIntention: 'Continue repairing nets without accepting a quest.',
+    narrativeMode: 'no-grand-narrative',
+    lenses: ['relationship', 'consequence'],
+    scope: {
+      storyId: '00000000-0000-5000-8000-000000000001',
+      rootHash: 'a'.repeat(64),
+      rootRevision: 17,
+      branchKey: 'main',
+      currentVersionsOnly: true,
+      visibilities: ['player-known'],
+      time: 'any',
+    },
+  };
+  const request = creativeDiscoveryRequestSchema.parse({
+    format: 'offscreen.creative-discovery-request.v1',
+    need,
+    searches: [
+      {
+        id: 'q1',
+        lens: 'relationship',
+        query: 'quiet favor work on Greywake quay',
+      },
+      {
+        id: 'q2',
+        lens: 'consequence',
+        query: 'repaired route changed quay life',
+      },
+    ],
+    limits: bounded.limits,
+  });
+  assert.deepEqual(
+    creativeDiscoveryRequestSchema.parse(JSON.parse(JSON.stringify(request))),
+    request,
+  );
+
+  const result = creativeDiscoveryResultSchema.parse({
+    format: 'offscreen.creative-discovery-result.v1',
+    requestHash: creativeDiscoveryRequestHash(request),
+    coverage: {
+      state: 'partial',
+      searchedQueries: 2,
+      candidatesExamined: 9,
+      omissions: ['candidate-limit'],
+    },
+    leads: [
+      {
+        id: 'l1',
+        lens: 'relationship',
+        status: 'private-possibility',
+        connection: {
+          basis: 'inferred',
+          summary:
+            'Quiet quay work may create a natural moment for the old favor.',
+        },
+        potential:
+          'Let the relationship touch the routine without forcing a commitment.',
+        constraints: [
+          'The favor has no deadline.',
+          'The player may continue repairing nets.',
+        ],
+        evidence: [
+          {
+            documentId: '00000000-0000-5000-8000-000000000002',
+            revision: 2,
+            sourceHash: 'c'.repeat(64),
+            path: 'relationships/mira-vale-favor.md',
+            authority: 'canon',
+            visibility: 'player-known',
+            branchKey: 'main',
+            current: true,
+          },
+        ],
+      },
+    ],
+  });
+  assert.equal(result.leads[0]?.status, 'private-possibility');
+  assert.equal(result.leads[0]?.connection.basis, 'inferred');
+  assert.deepEqual(validateCreativeDiscoveryResult(request, result), result);
+  assert.throws(
+    () =>
+      validateCreativeDiscoveryResult(request, {
+        ...result,
+        requestHash: 'd'.repeat(64),
+      }),
+    /does not match its request/,
+  );
+  assert.throws(
+    () =>
+      validateCreativeDiscoveryResult(request, {
+        ...result,
+        leads: result.leads.map((lead) => ({
+          ...lead,
+          evidence: lead.evidence.map((entry) => ({
+            ...entry,
+            branchKey: 'destroyed-fork',
+          })),
+        })),
+      }),
+    /crosses branch scope/,
+  );
+  assert.throws(
+    () =>
+      validateCreativeDiscoveryResult(request, {
+        ...result,
+        leads: result.leads.map((lead) => ({
+          ...lead,
+          evidence: lead.evidence.map((entry) => ({
+            ...entry,
+            visibility: 'storyteller-private',
+          })),
+        })),
+      }),
+    /exceeds visibility scope/,
+  );
+  assert.throws(
+    () =>
+      validateCreativeDiscoveryResult(request, {
+        ...result,
+        leads: result.leads.map((lead) => ({
+          ...lead,
+          evidence: lead.evidence.map((entry) => ({
+            ...entry,
+            current: false,
+          })),
+        })),
+      }),
+    /is not current/,
+  );
+  assert.throws(
+    () =>
+      creativeDiscoveryResultSchema.parse({
+        ...result,
+        coverage: { ...result.coverage, state: 'no-useful-leads' },
+      }),
+    /No-useful-leads coverage cannot contain leads/,
+  );
+});
 
 test('separates literal recall, noisy novelty and grounded creative breadth', () => {
   const benchmarks = buildCreativeExplorationBenchmarkCases();

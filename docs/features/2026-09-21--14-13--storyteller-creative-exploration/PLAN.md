@@ -14,7 +14,7 @@ Implementation owner: Cursor by default; reviewer: Codex.
 - Use story forks so alternative directions begin from the identical canonical checkpoint.
 - Exit: a literal factual route, a deliberately noisy “creative” route and a curated offline direction set fail/pass different stages for understandable reasons.
 
-### C1 — Generic creative-discovery contract
+### C1 — Generic creative-discovery contract — implemented and focused-verified
 
 - Outcome: one provider-neutral contract describes a creative need, lens, scope and bounded result without hard-coding quests or human narrative concepts.
 - Add typed lens requests over existing search/read/traversal owners. Results expose source-linked leads plus concise inferred connection/potential fields whose noncanonical status is explicit.
@@ -44,8 +44,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Current checkpoint
 
-- Current phase and exact next action: C0 is complete; implement C1's provider-neutral creative-need/lens/result contract over the existing memory owners without adding another runtime.
-- Base/reviewed Git revision and relevant uncommitted changes: `82cb46c`; C0 adds typed benchmark/observation/report contracts, three fixed checkpoints, literal/noisy/curated fixture observations and a structural evaluator.
-- Actual checks/results for this revision: contracts and application builds pass; the focused creative-exploration evaluator case passes 1/1. It proves stage attribution and fixture integrity, not generated-model creativity or human preference.
-- Unresolved findings/blockers: current `needs_context` operations still support registry/lexical/read discovery but not creative lenses, direction alternatives or adaptive relational/global exploration. C0 selects an initial eight-lens vocabulary for benchmarking, not as proof every lens deserves runtime support. One-round-versus-separate-ideation remains a later fixed-budget comparison.
+- Current phase and exact next action: C0/C1 are complete; implement C2 by projecting admitted creative searches through the existing persisted memory controller, then persist a bounded private direction set before one ordinary final candidate.
+- Base/reviewed Git revision and relevant uncommitted changes: `d0668bd`; C1 adds provider-neutral need/request/result contracts, continuous captured limits, named defaults, strict operation narrowing and request-bound result validation.
+- Actual checks/results for this revision: contracts and application builds pass; the two focused creative benchmark/contract cases pass 2/2. They cover disabled work, custom/narrowed limits, stable request replay, partial/no-useful result shape, private-possibility status and rejection of mismatched hash, branch, visibility/currentness scope. No creative model output or human preference is verified.
+- Unresolved findings/blockers: creative requests are not yet executed by the persisted controller and no direction artifact exists. C0's eight-lens vocabulary remains a benchmark/control vocabulary, not proof every lens deserves a runtime search strategy. One-round-versus-separate-ideation remains a later fixed-budget comparison.
 - Provider spend and accounting certainty: $0; no provider call.

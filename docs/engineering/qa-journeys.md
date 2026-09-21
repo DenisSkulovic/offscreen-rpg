@@ -99,6 +99,8 @@ The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md)
 4. Include directed, explicit no-grand-narrative and abstract/nonhuman positions. The same contract must permit pressure, quiet continuity and nonhuman recurrence without universal quest, person, calendar or escalation assumptions.
 5. Treat direction families as benchmark annotations, not application truth. Generated connections and candidate directions remain private possibilities until ordinary validation/publication admits their result.
 6. Keep human taste not-run during structural fixtures. Later blind review records specificity, coherence, surprise, restraint, continuity payoff and desire-to-continue; no aggregate automatic score certifies “wow.”
+7. Capture every creative allowance explicitly: lenses, queries, candidates, reads, leads, candidate directions, retained bytes, model rounds, generated tokens, latency and microusd. Zero may disable one posture entirely; missing configuration never means unlimited work.
+8. Bind a discovery result to the exact normalized request hash. Reject undeclared lenses, excessive work, wrong-branch evidence, visibility expansion and obsolete evidence when current-only scope was requested. Every lead remains an inferred private possibility even when all its sources are canonical.
 
 ### Story-item authority checklist
 
