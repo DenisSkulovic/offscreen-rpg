@@ -691,6 +691,54 @@ export function createStorytellerBudget(database: Database) {
         }
       });
     },
+    /**
+     * Close a multi-round operation after deterministic work fails between
+     * paid rounds. This never releases or reconciles an attempt liability.
+     */
+    async completeOperation(
+      generationId: string,
+      execution: ProviderExecution,
+    ) {
+      return database.db.transaction(async (tx) => {
+        const { account, allowance } = await lockAllowance(tx, execution);
+        const [record] = await tx
+          .select()
+          .from(operation)
+          .where(eq(operation.generationId, generationId))
+          .for('update');
+        if (!record) return 'missing' as const;
+        if (record.accountId !== account.id || record.runId !== allowance.id) {
+          throw new StorytellerBudgetError('budget_unavailable');
+        }
+        if (record.state === 'complete') return 'complete' as const;
+        if (record.state !== 'open') {
+          throw new StorytellerBudgetError(
+            record.state === 'uncertain'
+              ? 'usage_uncertain'
+              : 'budget_unavailable',
+          );
+        }
+        if (
+          record.reservedRounds !== 0 ||
+          record.reservedInputTokens !== 0 ||
+          record.reservedGeneratedTokens !== 0 ||
+          record.reservedReasoningTokens !== 0 ||
+          record.reservedMicrousd !== 0n
+        ) {
+          throw new StorytellerBudgetError('usage_uncertain');
+        }
+        await tx
+          .update(operation)
+          .set({ state: 'complete', updatedAt: sql`clock_timestamp()` })
+          .where(
+            and(
+              eq(operation.generationId, generationId),
+              eq(operation.state, 'open'),
+            ),
+          );
+        return 'complete' as const;
+      });
+    },
     async attemptState(id: string) {
       const [record] = await database.db
         .select({ state: attempt.state })

@@ -42,6 +42,7 @@ import {
   createStorytellerBudget,
   createDispatchReviewControls,
   createMemoryProviderRoundRuntime,
+  CanonicalMemoryExplorationError,
   MemoryExplorationControllerError,
   resolveEffectiveUsagePolicy,
   resourcesForEffectiveUsagePolicy,
@@ -3279,7 +3280,7 @@ test(
               id: runId,
               accountId,
               limitMicrousd: 1000000n,
-              maxAttempts: 2,
+              maxAttempts: 4,
               enabled: true,
             });
             const execution: ExecutionPolicy = {
@@ -3493,6 +3494,92 @@ test(
                 error instanceof MemoryExplorationControllerError &&
                 error.code === 'invalid-output',
             );
+
+            const readFailureGenerationId = randomUUID();
+            await database.db.insert(generation).values({
+              id: readFailureGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: failedTask,
+            });
+            let readFailureCalls = 0;
+            const readFailureRuntime = createMemoryProviderRoundRuntime(
+              database,
+              {
+                generationId: readFailureGenerationId,
+                ownerId,
+                task: failedTask,
+                dispatchAuthority: () => policy,
+                provider: async () => {
+                  readFailureCalls += 1;
+                  return {
+                    kind: 'result',
+                    output: {
+                      kind: 'needs_context',
+                      version: 1,
+                      purpose: 'Recover one exact fact before answering.',
+                      requests: [
+                        {
+                          requestId: 'r1',
+                          operation: 'ask_memory',
+                          intent: 'evidence',
+                          question: 'What exact fact constrains this return?',
+                        },
+                      ],
+                    },
+                    usage: fakeUsage(5n),
+                    telemetry: fakeTelemetry('fake-read-failure-provider'),
+                  };
+                },
+              },
+            );
+            const createFailingExplorer = (
+              saved?: MemoryExplorationSnapshot,
+            ) => ({
+              execute: async () => {
+                throw new CanonicalMemoryExplorationError('stale-root');
+              },
+              snapshot: () => saved ?? initialSnapshot,
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: readFailureGenerationId,
+                task: failedTask,
+                createExplorer: createFailingExplorer,
+                ...readFailureRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'stale-root',
+            );
+            const [closedAfterReadFailure] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(
+                eq(storytellerOperation.generationId, readFailureGenerationId),
+              );
+            assert.equal(closedAfterReadFailure?.state, 'complete');
+            assert.equal(closedAfterReadFailure?.reservedMicrousd, 0n);
+            assert.equal(closedAfterReadFailure?.consumedMicrousd, 5n);
+            assert.equal(
+              await createStorytellerBudget(database).completeOperation(
+                readFailureGenerationId,
+                execution,
+              ),
+              'complete',
+            );
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: readFailureGenerationId,
+                task: failedTask,
+                createExplorer: createFailingExplorer,
+                ...readFailureRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'stale-root',
+            );
+            assert.equal(readFailureCalls, 1);
 
             const uncertainGenerationId = randomUUID();
             await database.db.insert(generation).values({

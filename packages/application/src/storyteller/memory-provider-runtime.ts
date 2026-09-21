@@ -131,6 +131,7 @@ export function createMemoryProviderRoundRuntime(
   captureDelivery: (raw: unknown) => CapturedMemoryRoundDelivery;
   settlePersistedRound: PersistedMemoryRoundSettlement;
   classifyRoundError: (error: unknown) => MemoryRoundInterruption | null;
+  closeSettledOperation: () => Promise<void>;
 } {
   if (input.task.execution.mode !== 'provider') {
     throw new Error('Memory provider runtime requires provider execution');
@@ -285,10 +286,15 @@ export function createMemoryProviderRoundRuntime(
     return { state: 'failed', code: error.code };
   };
 
+  const closeSettledOperation = async () => {
+    await budget.completeOperation(input.generationId, execution);
+  };
+
   return {
     source,
     captureDelivery: captureOutcome,
     settlePersistedRound,
     classifyRoundError,
+    closeSettledOperation,
   };
 }

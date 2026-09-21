@@ -300,6 +300,9 @@ export async function runMemoryExploration(
     captureDelivery?: (rawOutput: unknown) => CapturedMemoryRoundDelivery;
     settlePersistedRound?: PersistedMemoryRoundSettlement;
     classifyRoundError?: (error: unknown) => MemoryRoundInterruption | null;
+    closeSettledOperation?: (
+      failureCode: MemoryExplorationFailureCode,
+    ) => void | Promise<void>;
   },
 ): Promise<MemoryExplorationControllerResult> {
   const task = storytellerTaskSchema.parse(input.task);
@@ -402,6 +405,7 @@ export async function runMemoryExploration(
     };
 
     const fail = async (code: MemoryExplorationFailureCode): Promise<never> => {
+      await input.closeSettledOperation?.(code);
       const updated = await database.db
         .update(storytellerMemoryExploration)
         .set({
