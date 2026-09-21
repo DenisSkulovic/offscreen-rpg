@@ -553,9 +553,10 @@ registerStoryConcern(
                     body: 'The tide road has collapsed beneath the surf; the newcomer must use the cliff stairs to return.',
                     reason:
                       'The current passage corrected the route before the later return.',
+                    recallAs: 'thread',
                   },
                 ];
-                option.createdDocuments = [0];
+                result.activeScene = { kind: 'restart-at-current' };
               }
               narrativeContinuationPhase += 1;
             }
@@ -1094,6 +1095,11 @@ registerStoryConcern(
           returnTask.context.canonicalKnowledge?.documentSelection
             .requestedDocumentIds,
           [promotedThreadDocumentId],
+        );
+        assert.deepEqual(
+          returnTask.context.canonicalKnowledge?.documentSelection
+            .cueResolution.requested,
+          [{ documentId: promotedThreadDocumentId, reason: 'thread' }],
         );
         const currentThreadEntry =
           returnTask.context.canonicalKnowledge?.catalogue.find(

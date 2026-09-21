@@ -49,10 +49,32 @@ import {
 } from '../campaign/action-overlap';
 import type { DocumentStore } from '@offscreen/documents';
 import {
+  publicationChangedDocumentId,
   publicationPassageId,
   stageStoryPublicationDocuments,
   type StagedStoryPublication,
 } from '../stories/passage-documents';
+import type { ProposedDocumentChange } from '@offscreen/storyteller/tasks';
+
+function activeSceneRecallCues(
+  changes: readonly ProposedDocumentChange[],
+  operationId: string,
+) {
+  return changes.flatMap((change, index) =>
+    change.recallAs
+      ? [
+          {
+            documentId: publicationChangedDocumentId(
+              operationId,
+              index,
+              change,
+            ),
+            reason: change.recallAs,
+          },
+        ]
+      : [],
+  );
+}
 
 export async function publishStorytellerResult(
   database: Database,
@@ -403,6 +425,10 @@ export async function publishStorytellerResult(
           storyId: current.id,
           sequence: current.revision + 1,
           passageId,
+          recallCues: activeSceneRecallCues(
+            result.documentChanges,
+            resolution.operationId,
+          ),
         });
       }
       await saveOfferPlans(
@@ -460,6 +486,14 @@ export async function publishStorytellerResult(
       completingDecisionPassageId: undefined,
       sourceGenerationId: id,
       restartActiveScene: result.activeScene?.kind === 'restart-at-current',
+      ...(result.activeScene?.kind === 'restart-at-current'
+        ? {
+            activeSceneRecallCues: activeSceneRecallCues(
+              result.documentChanges,
+              resolution.operationId,
+            ),
+          }
+        : {}),
       ...(stagedDocuments ? { stagedDocuments } : {}),
     });
     await setPublication(tx, id, 'published');

@@ -82,6 +82,15 @@ const activeSceneAnchorSchema = z.strictObject({
   version: z.literal('active-scene-anchor.v1'),
   fromSequence: z.number().int().positive(),
   requiredPassageIds: z.array(z.uuid()).max(40),
+  recallCues: z
+    .array(
+      z.strictObject({
+        documentId: z.uuid(),
+        reason: z.enum(['identity', 'place', 'thread']),
+      }),
+    )
+    .max(8)
+    .default([]),
 });
 
 function projectActivityProgress(plan: unknown, progress: unknown) {
@@ -489,17 +498,22 @@ export async function loadCanonicalKnowledge(
       (canonicalKnowledgePriority.get(right.entry.kind) ?? 99);
     return priority || left.entry.path.localeCompare(right.entry.path);
   });
+  const selectedCampaignDocumentIds = campaignDocumentSelectionSchema.parse(
+    input.campaignDocumentIds ?? [],
+  );
   const cueResolution = await resolveCanonicalRecallCues(storage, {
     storyId: input.storyId,
     rootHash: input.rootHash,
     rootRevision: input.rootRevision,
     cues: input.recallCues ?? [],
-    maxCandidates: maximumSelectedCampaignDocuments,
+    excludedDocumentIds: selectedCampaignDocumentIds,
+    maxCandidates:
+      maximumSelectedCampaignDocuments - selectedCampaignDocumentIds.length,
   });
   const requestedDocumentIds = campaignDocumentSelectionSchema.parse([
     ...new Set([
+      ...selectedCampaignDocumentIds,
       ...cueResolution.candidates.map((candidate) => candidate.documentId),
-      ...(input.campaignDocumentIds ?? []),
     ]),
   ]);
   const byDocumentId = new Map(
@@ -812,9 +826,10 @@ export async function loadStorytellerContext(
         ...(input.canonical.campaignDocumentIds
           ? { campaignDocumentIds: input.canonical.campaignDocumentIds }
           : {}),
-        ...(input.canonical.recallCues
-          ? { recallCues: input.canonical.recallCues }
-          : {}),
+        recallCues: [
+          ...(activeScene?.recallCues ?? []),
+          ...(input.canonical.recallCues ?? []),
+        ],
       })
     : undefined;
   const activitySituation = settingsRow

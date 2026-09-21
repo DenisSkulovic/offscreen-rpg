@@ -131,11 +131,16 @@ const canonicalDocumentSelectionTraceSchema = z.strictObject({
             .array(z.enum(['identity', 'place', 'thread']))
             .min(1)
             .max(3),
-          reason: z.enum(['not-current-or-readable', 'candidate-limit']),
+          reason: z.enum([
+            'not-current-or-readable',
+            'candidate-limit',
+            'already-selected',
+          ]),
         }),
       )
       .max(12),
-    maxCandidates: z.literal(4),
+    excludedDocumentIds: z.array(z.uuid()).max(4),
+    maxCandidates: z.number().int().min(0).max(4),
   }),
   requestedDocumentIds: z.array(z.uuid()).max(4),
   loadedHandles: z

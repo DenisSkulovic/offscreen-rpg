@@ -19,6 +19,10 @@ import {
 
 export type StoryRecord = typeof story.$inferSelect;
 export type PassageRecord = typeof storyPassage.$inferSelect;
+export type ActiveSceneRecallCue = Readonly<{
+  documentId: string;
+  reason: 'identity' | 'place' | 'thread';
+}>;
 
 export async function lockOwnedStory(
   tx: Transaction,
@@ -239,7 +243,12 @@ export async function advanceStoryView(
 /** Replace only at a committed publication boundary; earlier passages remain history. */
 export async function restartActiveSceneAtPassage(
   tx: Transaction,
-  args: { storyId: string; sequence: number; passageId: string },
+  args: {
+    storyId: string;
+    sequence: number;
+    passageId: string;
+    recallCues?: readonly ActiveSceneRecallCue[];
+  },
 ) {
   await tx
     .update(story)
@@ -248,6 +257,7 @@ export async function restartActiveSceneAtPassage(
         version: 'active-scene-anchor.v1',
         fromSequence: args.sequence,
         requiredPassageIds: [args.passageId],
+        recallCues: args.recallCues ?? [],
       },
     })
     .where(eq(story.id, args.storyId));

@@ -23,6 +23,7 @@ const proposedContentSchema = z.strictObject({
   title: z.string().trim().min(1).max(240),
   body: z.string().trim().min(1).max(6000),
   reason: z.string().trim().min(1).max(240),
+  recallAs: z.enum(['identity', 'place', 'thread']).optional(),
 });
 
 export const proposedDocumentChangeSchema = z
@@ -37,6 +38,17 @@ export const proposedDocumentChangeSchema = z
     }),
   ])
   .superRefine((change, context) => {
+    const expectedRecallKind = {
+      identity: 'identity',
+      place: 'lore',
+      thread: 'narrative-thread',
+    } as const;
+    if (change.recallAs && change.kind !== expectedRecallKind[change.recallAs]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recall cue role must match the descriptive document kind',
+      });
+    }
     if (
       change.kind === 'private-possibility' &&
       (change.authority !== 'noncanonical' ||

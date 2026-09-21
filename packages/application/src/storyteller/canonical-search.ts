@@ -47,7 +47,8 @@ const recallInputSchema = z.strictObject({
   rootHash: z.string().min(1),
   rootRevision: z.number().int().positive(),
   cues: z.array(recallCueSchema).max(12),
-  maxCandidates: z.number().int().min(1).max(4).default(4),
+  excludedDocumentIds: z.array(z.uuid()).max(4).default([]),
+  maxCandidates: z.number().int().min(0).max(4).default(4),
 });
 export type CanonicalRecallCue = z.infer<typeof recallCueSchema>;
 export type CanonicalRecallInput = z.input<typeof recallInputSchema>;
@@ -93,9 +94,14 @@ export async function resolveCanonicalRecallCues(
   const unavailable: Array<{
     documentId: string;
     reasons: CanonicalRecallCue['reason'][];
-    reason: 'not-current-or-readable' | 'candidate-limit';
+    reason: 'not-current-or-readable' | 'candidate-limit' | 'already-selected';
   }> = [];
+  const excluded = new Set(input.excludedDocumentIds);
   for (const [documentId, reasons] of grouped) {
+    if (excluded.has(documentId)) {
+      unavailable.push({ documentId, reasons, reason: 'already-selected' });
+      continue;
+    }
     const entry = eligible.get(documentId);
     if (!entry) {
       unavailable.push({
@@ -125,6 +131,7 @@ export async function resolveCanonicalRecallCues(
       requested: input.cues,
       resolvedDocumentIds: candidates.map((candidate) => candidate.documentId),
       unavailable,
+      excludedDocumentIds: input.excludedDocumentIds,
       maxCandidates: input.maxCandidates,
     },
   };

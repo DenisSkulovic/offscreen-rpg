@@ -154,7 +154,10 @@ export async function withAppIntegration(
     );
     exited = once(web, 'exit');
     let ready = false;
-    for (let attempt = 0; attempt < 50; attempt++) {
+    // Production Next startup can exceed ten seconds on the supported slower
+    // development laptop even after a successful build. Keep polling bounded,
+    // but do not misclassify normal local startup as an integration failure.
+    for (let attempt = 0; attempt < 150; attempt++) {
       try {
         if ((await fetch(`${origin}/sign-in`)).ok) {
           ready = true;

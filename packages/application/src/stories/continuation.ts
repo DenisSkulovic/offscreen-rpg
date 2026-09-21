@@ -26,6 +26,7 @@ import {
   readDatabaseClockMs,
   requireCurrentPassage,
   restartActiveSceneAtPassage,
+  type ActiveSceneRecallCue,
 } from './persistence';
 import type { StagedStoryPublication } from './passage-documents';
 import { story, storyDocumentCommit } from '@offscreen/db/story-schema';
@@ -42,6 +43,7 @@ type CommitContinuation = Readonly<{
   completingDecisionPassageId: string | undefined;
   sourceGenerationId?: string | null;
   restartActiveScene?: boolean;
+  activeSceneRecallCues?: readonly ActiveSceneRecallCue[];
   stagedDocuments?: StagedStoryPublication;
 }>;
 
@@ -215,6 +217,9 @@ export async function commitStoryContinuation(
       storyId: args.storyId,
       sequence: nextRevision,
       passageId,
+      ...(args.activeSceneRecallCues
+        ? { recallCues: args.activeSceneRecallCues }
+        : {}),
     });
   }
   await advanceStoryView(tx, {
