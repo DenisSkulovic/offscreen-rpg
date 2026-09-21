@@ -2,6 +2,56 @@
   "version": 1,
   "entries": [
     {
+      "id": "seyda-neen-arrival.v1",
+      "name": "Seyda Neen — released prisoner",
+      "description": "A maintained POC opening with conversation, a local work shift and onward travel expressed through generic mechanics.",
+      "character": {
+        "name": "A newly released prisoner",
+        "scores": {
+          "strength": 10,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 12,
+          "charisma": 12
+        },
+        "applicableAbilities": [
+          "strength",
+          "dexterity",
+          "constitution",
+          "intelligence",
+          "wisdom",
+          "charisma"
+        ],
+        "skills": [
+          { "id": "persuasion", "label": "Persuasion" },
+          { "id": "perception", "label": "Perception" },
+          { "id": "athletics", "label": "Athletics" },
+          { "id": "survival", "label": "Survival" }
+        ],
+        "proficientSkills": ["perception", "survival"],
+        "proficiencyBonus": 2,
+        "hp": 10,
+        "maxHp": 10,
+        "quantities": [
+          { "id": "septims", "label": "Septims", "value": 0 }
+        ],
+        "facts": [
+          { "id": "location", "value": "seyda-neen" },
+          { "id": "release-papers", "value": true },
+          { "id": "warehouse-shift-available", "value": true },
+          { "id": "balmora-route-known", "value": false }
+        ]
+      },
+      "opening": {
+        "version": 1,
+        "title": "Released at Seyda Neen",
+        "paragraphs": [
+          "The census office releases you into Seyda Neen with stamped papers and no coin. The warehouse is taking hands for a short shift, while the road north leaves the settlement through the marsh."
+        ]
+      }
+    },
+    {
       "id": "pineapple-mechanics.v4",
       "name": "Pineapple — dice and consequences",
       "description": "An absurd domestic scene used to inspect distinct intentions and state-shaped consequences.",

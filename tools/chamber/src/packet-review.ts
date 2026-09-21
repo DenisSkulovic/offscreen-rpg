@@ -17,6 +17,7 @@ export async function captureHeldOpeningPacket(input: {
   browserOrigin: string;
   cookie: string;
   database: Database;
+  contentId?: string;
 }) {
   const draftId = crypto.randomUUID();
   const generationId = crypto.randomUUID();
@@ -50,7 +51,10 @@ export async function captureHeldOpeningPacket(input: {
   );
   await request(`/api/drafts/${draftId}/openings/${generationId}`, {
     method: 'PUT',
-    body: JSON.stringify({ expectedRevision: draft.revision }),
+    body: JSON.stringify({
+      expectedRevision: draft.revision,
+      ...(input.contentId ? { contentId: input.contentId } : {}),
+    }),
   });
   let captured: DispatchReviewView | undefined;
   for (let read = 0; read < 30; read++) {

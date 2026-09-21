@@ -650,6 +650,9 @@ try {
       browserOrigin: origin,
       cookie,
       database,
+      ...(evaluationConfig
+        ? { contentId: 'seyda-neen-arrival.v1' }
+        : {}),
     });
     if (evaluationConfig) {
       const inspection = evaluationPacketInspectionSchema.parse(

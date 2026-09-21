@@ -68,7 +68,10 @@ Implemented foundations include exact held packets, strict structured results, o
 The proof is **not ready or passed**:
 
 - the live runner stops after opening plus one automatically selected first option, even though its recipe schema permits three primary calls;
-- its Seyda Neen draft requests a narrative opening without a mechanical content identity; the current mechanical catalogue contains Pineapple, Beacon, Microbe and Frost Road but no Seyda Neen seed, so that path cannot currently admit D&D actions or activities regardless of model quality;
+- the maintained `seyda-neen-arrival.v1` seed now supplies an ordinary
+  character, conversation check, bounded warehouse work and gated travel
+  through existing generic contracts, and evaluation packet capture selects it;
+  this is implementation foundation rather than connected-session evidence;
 - it has no durable session/turn ledger or operator choice checkpoint;
 - no connected live run has exercised mechanical action, activity/time, canonical change and later recall together;
 - cheap-model adherence and narrative quality remain unknown beyond isolated failed/single-turn evidence;
@@ -76,8 +79,7 @@ The proof is **not ready or passed**:
 
 The next implementation tranche is provider-free:
 
-1. add a maintained Seyda Neen POC start/mechanical package containing an ordinary character seed and a small set of content-authored opportunities suitable for conversation, a D&D check and elapsed-time work/travel; shared policy must consume the same generic contracts as every contrasting fixture;
-2. generalize the Chamber evaluator into a finite session supervisor that captures a held packet per generated turn, pauses for explicit option selection, traverses narrative and mechanical interaction types, enforces one cumulative run allowance and emits the compact ledger;
-3. exercise the five-turn shape end to end with scripted generation, including canonical change and later context inspection.
+1. generalize the Chamber evaluator into a finite session supervisor that captures a held packet per generated turn, pauses for explicit option selection, traverses narrative and mechanical interaction types, enforces one cumulative run allowance and emits the compact ledger;
+2. exercise the five-turn shape end to end with scripted generation, including canonical change and later context inspection.
 
 Do not issue another live request until the uncertain attempt is explicitly reconciled.

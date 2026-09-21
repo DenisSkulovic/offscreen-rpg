@@ -40,6 +40,12 @@ The catalogue contains:
 - storyteller contrast, available for offline comparison;
 - failure and recovery, visible but planned until controlled fault injection exists;
 - conservative live quality probe, visible but unavailable until the separate live-evaluation gates pass.
+- connected Seyda Neen POC, not yet available as a complete journey: the
+  maintained `seyda-neen-arrival.v1` opening now provides a conversation check,
+  one bounded paid work process and route-gated travel through generic
+  mechanics. A passing journey still requires the finite supervisor, five
+  committed Storyteller turns, canonical change and later recall; catalogue
+  presence alone is not evidence.
 - exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` exercises an actual pre-story opening and preserves its credential-free packet under a generation-scoped filename. Developer-only GET/PUT endpoints expose owner-scoped inspection and exact hash/revision release or rejection; the offline QA case uses rejection and never authorizes live release.
 - alternate-continuity rehearsal: preserve a supported first decision as a fork, take a different option in each story, and confirm both histories, current passages and lineage remain independently readable. Phase 1 exercises only narrative revision-one checkpoints; a blocked mechanical or historical position is evidence that snapshot coverage is still missing, not permission to copy newer state backward.
 - reusable start package: both the abstract/microbe and conventional rich-content variants are available through the focused provider-free API driver. Together they prove imported-package admission, one final campaign root, exact references/provenance, distinct activation classes, campaign-specific obligation identity, idempotent retry and revision pinning after a reusable package publishes revision two.

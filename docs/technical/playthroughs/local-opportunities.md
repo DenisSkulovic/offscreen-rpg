@@ -1,6 +1,19 @@
 # Seyda Neen: choose local life without waking the Storyteller
 
-Status: target design, not existing runtime behavior. This extends the [Vvardenfell trace](vvardenfell.md) with the owner's distinction between prepared local opportunities and a preselected queue. Exact values are fixtures. The reusable contract lives in [rules and activities](../rules-and-activities.md#prepared-local-opportunities-proposed).
+Status: partly implemented. The maintained `seyda-neen-arrival.v1` mechanical
+opening is the first bounded POC slice: it uses the existing generic facts,
+checks, quantities and clock-based activity contracts for conversation, local
+work and travel. The richer dormant local-opportunity lifecycle below remains
+target design. This extends the [Vvardenfell trace](vvardenfell.md) with the
+owner's distinction between prepared local opportunities and a preselected
+queue. Exact values are fixtures. The reusable contract lives in [rules and
+activities](../rules-and-activities.md#prepared-local-opportunities-proposed).
+
+The POC seed deliberately does not introduce a warehouse subsystem, a Tamriel
+calendar or a universal job board. `location`, `warehouse-shift-available` and
+similar identifiers are content-authored facts interpreted through generic
+requirements and effects. A different world may supply different facts or no
+calendar, settlement, employment or travel concepts at all.
 
 ## LO-01: prepare the relevant place, not every possible future
 
