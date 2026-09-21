@@ -1,17 +1,47 @@
 import {
   storyRetrievalQuerySchema,
   storyRetrievalResultSchema,
+  storyRetrievalUnitSchema,
   type StoryRetrievalCandidate,
   type StoryRetrievalQuery,
   type StoryRetrievalUnit,
 } from '@offscreen/contracts/story-retrieval';
 import type { DocumentStore } from '@offscreen/documents';
+import { z } from 'zod';
 import { canonicalKnowledgeKinds } from './canonical-search';
 
 const stopWords = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'did', 'do', 'does',
-  'for', 'from', 'how', 'in', 'is', 'it', 'of', 'on', 'or', 'that', 'the',
-  'this', 'to', 'was', 'what', 'when', 'which', 'who', 'with', 'without',
+  'a',
+  'an',
+  'and',
+  'are',
+  'as',
+  'at',
+  'be',
+  'by',
+  'did',
+  'do',
+  'does',
+  'for',
+  'from',
+  'how',
+  'in',
+  'is',
+  'it',
+  'of',
+  'on',
+  'or',
+  'that',
+  'the',
+  'this',
+  'to',
+  'was',
+  'what',
+  'when',
+  'which',
+  'who',
+  'with',
+  'without',
 ]);
 
 function normalize(value: string) {
@@ -49,26 +79,102 @@ type IndexedUnit = Readonly<{
   bodyText: string;
 }>;
 
+const frequencySchema = z.record(
+  z.string().min(1).max(100),
+  z.number().int().positive(),
+);
+
+export const lexicalStoryIndexSnapshotSchema = z.strictObject({
+  format: z.literal('offscreen.lexical-story-index.v1'),
+  storyId: z.uuid(),
+  rootHash: z.string().regex(/^[0-9a-f]{64}$/),
+  rootRevision: z.number().int().positive(),
+  units: z
+    .array(
+      z.strictObject({
+        unit: storyRetrievalUnitSchema,
+        title: frequencySchema,
+        path: frequencySchema,
+        context: frequencySchema,
+        body: frequencySchema,
+        bodyText: z.string().max(512 * 1024),
+      }),
+    )
+    .max(100_000),
+});
+
+export type LexicalStoryIndexSnapshot = z.infer<
+  typeof lexicalStoryIndexSnapshotSchema
+>;
+
+function frequencyRecord(frequencies: ReadonlyMap<string, number>) {
+  return Object.fromEntries(
+    [...frequencies].sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
 function snippet(body: string, queryTerms: readonly string[]) {
-  const segments = body.split(/\r?\n+/).map((value) => value.trim()).filter(Boolean);
-  const selected = segments
-    .map((value, index) => ({
-      value,
-      index,
-      matches: queryTerms.filter((term) => normalize(value).includes(term)).length,
-    }))
-    .sort((left, right) => right.matches - left.matches || left.index - right.index)[0]
-    ?.value ?? '';
-  return selected.length <= 280 ? selected : `${selected.slice(0, 277).trimEnd()}...`;
+  const segments = body
+    .split(/\r?\n+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const selected =
+    segments
+      .map((value, index) => ({
+        value,
+        index,
+        matches: queryTerms.filter((term) => normalize(value).includes(term))
+          .length,
+      }))
+      .sort(
+        (left, right) =>
+          right.matches - left.matches || left.index - right.index,
+      )[0]?.value ?? '';
+  return selected.length <= 280
+    ? selected
+    : `${selected.slice(0, 277).trimEnd()}...`;
 }
 
 export class LexicalStoryIndex {
+  private readonly postings = new Map<string, number[]>();
+
   constructor(
     readonly storyId: string,
     readonly rootHash: string,
     readonly rootRevision: number,
     private readonly units: readonly IndexedUnit[],
-  ) {}
+  ) {
+    units.forEach((unit, index) => {
+      const indexedTerms = new Set([
+        ...unit.title.keys(),
+        ...unit.path.keys(),
+        ...unit.context.keys(),
+        ...unit.body.keys(),
+      ]);
+      for (const term of indexedTerms) {
+        const entries = this.postings.get(term) ?? [];
+        entries.push(index);
+        this.postings.set(term, entries);
+      }
+    });
+  }
+
+  snapshot(): LexicalStoryIndexSnapshot {
+    return lexicalStoryIndexSnapshotSchema.parse({
+      format: 'offscreen.lexical-story-index.v1',
+      storyId: this.storyId,
+      rootHash: this.rootHash,
+      rootRevision: this.rootRevision,
+      units: this.units.map((indexed) => ({
+        unit: indexed.unit,
+        title: frequencyRecord(indexed.title),
+        path: frequencyRecord(indexed.path),
+        context: frequencyRecord(indexed.context),
+        body: frequencyRecord(indexed.body),
+        bodyText: indexed.bodyText,
+      })),
+    });
+  }
 
   search(rawQuery: StoryRetrievalQuery) {
     const query = storyRetrievalQuerySchema.parse(rawQuery);
@@ -81,27 +187,31 @@ export class LexicalStoryIndex {
     }
     const allTerms = terms(query.query);
     const queryTerms = allTerms.slice(0, 16);
-    if (!queryTerms.length) throw new Error('Story retrieval query has no searchable terms');
+    if (!queryTerms.length)
+      throw new Error('Story retrieval query has no searchable terms');
     const documentFrequency = new Map<string, number>();
     for (const term of queryTerms) {
-      documentFrequency.set(
-        term,
-        this.units.filter((unit) =>
-          [unit.title, unit.path, unit.context, unit.body].some((field) => field.has(term)),
-        ).length,
-      );
+      documentFrequency.set(term, this.postings.get(term)?.length ?? 0);
     }
     const scored: StoryRetrievalCandidate[] = [];
-    for (const indexed of this.units) {
-      const matchedFields = (['title', 'path', 'context', 'body'] as const).filter(
-        (field) => queryTerms.some((term) => indexed[field].has(term)),
-      );
+    const candidateIndexes = new Set(
+      queryTerms.flatMap((term) => this.postings.get(term) ?? []),
+    );
+    for (const index of candidateIndexes) {
+      const indexed = this.units[index];
+      if (!indexed) continue;
+      const matchedFields = (
+        ['title', 'path', 'context', 'body'] as const
+      ).filter((field) => queryTerms.some((term) => indexed[field].has(term)));
       const matchedTerms = queryTerms.filter((term) =>
         matchedFields.some((field) => indexed[field].has(term)),
       );
       if (!matchedTerms.length) continue;
       const score = matchedTerms.reduce((total, term) => {
-        const idf = Math.log(1 + (this.units.length + 1) / ((documentFrequency.get(term) ?? 0) + 1));
+        const idf = Math.log(
+          1 +
+            (this.units.length + 1) / ((documentFrequency.get(term) ?? 0) + 1),
+        );
         return (
           total +
           idf *
@@ -169,24 +279,53 @@ export class LexicalStoryIndex {
   }
 }
 
+export function restoreLexicalStoryIndex(rawSnapshot: unknown) {
+  const snapshot = lexicalStoryIndexSnapshotSchema.parse(rawSnapshot);
+  return new LexicalStoryIndex(
+    snapshot.storyId,
+    snapshot.rootHash,
+    snapshot.rootRevision,
+    snapshot.units.map((indexed) => ({
+      unit: indexed.unit,
+      title: new Map(Object.entries(indexed.title)),
+      path: new Map(Object.entries(indexed.path)),
+      context: new Map(Object.entries(indexed.context)),
+      body: new Map(Object.entries(indexed.body)),
+      bodyText: indexed.bodyText,
+    })),
+  );
+}
+
 export async function buildLexicalStoryIndex(
   storage: DocumentStore,
   identity: { storyId: string; rootHash: string; rootRevision: number },
 ) {
   const manifest = await storage.readManifest(identity.rootHash);
-  if (manifest.campaignId !== identity.storyId || manifest.revision !== identity.rootRevision) {
+  if (
+    manifest.campaignId !== identity.storyId ||
+    manifest.revision !== identity.rootRevision
+  ) {
     throw new Error('Lexical index root does not match its campaign');
   }
   const units: IndexedUnit[] = [];
   for (const entry of manifest.entries
     .filter(
       (candidate) =>
-        candidate.path.endsWith('.md') &&
         candidate.visibility !== 'developer-private' &&
-        canonicalKnowledgeKinds.has(candidate.kind),
+        ((candidate.path.endsWith('.md') &&
+          canonicalKnowledgeKinds.has(candidate.kind)) ||
+          (candidate.path.endsWith('.json') &&
+            candidate.kind === 'source-passage')),
     )
     .sort((left, right) => left.path.localeCompare(right.path))) {
-    const document = await storage.readDocument(entry.objectHash);
+    const document =
+      entry.kind === 'source-passage'
+        ? await storage.readSourcePassage(entry.objectHash).then((passage) => ({
+            envelope: passage.envelope,
+            title: passage.content.title,
+            body: passage.content.paragraphs.join('\n\n'),
+          }))
+        : await storage.readDocument(entry.objectHash);
     if (
       document.envelope.documentId !== entry.documentId ||
       document.envelope.revision !== entry.revision ||
@@ -206,8 +345,12 @@ export async function buildLexicalStoryIndex(
       kind: entry.kind,
       authority: entry.authority,
       visibility: entry.visibility,
-      branchKey: null, current: true, headingPath: [],
-      linkedDocumentIds: document.envelope.sources.map((source) => source.documentId),
+      branchKey: null,
+      current: true,
+      headingPath: [],
+      linkedDocumentIds: document.envelope.sources.map(
+        (source) => source.documentId,
+      ),
       effectiveFromTick: document.envelope.coverage?.fromTick ?? null,
       effectiveThroughTick: document.envelope.coverage?.throughTick ?? null,
       title: document.title,
@@ -223,5 +366,10 @@ export async function buildLexicalStoryIndex(
       bodyText: document.body,
     });
   }
-  return new LexicalStoryIndex(identity.storyId, identity.rootHash, identity.rootRevision, units);
+  return new LexicalStoryIndex(
+    identity.storyId,
+    identity.rootHash,
+    identity.rootRevision,
+    units,
+  );
 }

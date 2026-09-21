@@ -31,6 +31,7 @@
     "chamber:evaluation-packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-packet",
     "chamber:evaluation-run": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --evaluation-run",
     "storyteller:packet-audit": "pnpm --filter @offscreen/storyteller build && node scripts/repo-tools/storyteller-request-audit.mjs",
+    "memory:index-benchmark": "pnpm --filter @offscreen/documents build && pnpm --filter @offscreen/application build && node scripts/repo-tools/memory-index-benchmark.mjs",
     "chamber:review": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber review",
     "lint:quality": "eslint --config eslint.quality.config.mjs . --max-warnings 0"
   },

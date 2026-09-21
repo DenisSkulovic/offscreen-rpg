@@ -49,7 +49,8 @@ export function evaluateMemoryObservation(
       query.acceptableEvidence.includes(key),
   ).length;
   const expectedRecall = query.expectedEvidence.length
-    ? (query.expectedEvidence.length - retrievalEvidence.missingExpected.length) /
+    ? (query.expectedEvidence.length -
+        retrievalEvidence.missingExpected.length) /
       query.expectedEvidence.length
     : 1;
   const contextPrecision = observation.retrieval.evidenceKeys.length
@@ -137,9 +138,16 @@ async function observeMemoryRetrieval(args: {
   const evidenceByPath = new Map(
     args.corpus.evidence.map((entry) => [entry.path, entry]),
   );
-  const retrieved = result.candidates
-    .map((entry) => evidenceByPath.get(entry.unit.path))
-    .filter((entry) => entry !== undefined);
+  const retrieved = result.candidates.map((candidate) => {
+    const labelled = evidenceByPath.get(candidate.unit.path);
+    return {
+      key: labelled?.key ?? `unlabelled.${candidate.unit.documentId}`,
+      bodyBytes:
+        labelled === undefined
+          ? candidate.unit.bodyBytes
+          : Buffer.byteLength(labelled.body, 'utf8'),
+    };
+  });
   const assembled = retrieved.slice(0, query.budget.maxReads);
   return memoryEvaluationObservationSchema.parse({
     format: 'offscreen.memory-evaluation-observation.v1',
@@ -153,10 +161,7 @@ async function observeMemoryRetrieval(args: {
     },
     assembly: {
       evidenceKeys: assembled.map((entry) => entry.key),
-      bytes: assembled.reduce(
-        (total, entry) => total + Buffer.byteLength(entry.body, 'utf8'),
-        0,
-      ),
+      bytes: assembled.reduce((total, entry) => total + entry.bodyBytes, 0),
       duplicateBytes: 0,
     },
     generation: { disposition: 'not-run', usedEvidenceKeys: [] },
