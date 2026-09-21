@@ -92,7 +92,11 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     story.resolution?.state === 'running' ||
     waiting != null ||
     story.campaign?.activity?.state === 'running' ||
-    story.campaign?.actionExecution?.state === 'running';
+    story.campaign?.actionExecution?.state === 'running' ||
+    story.campaign?.holds.some(
+      (hold) =>
+        hold.kind === 'storyteller' || hold.kind === 'storyteller-intent',
+    ) === true;
 
   function acceptSnapshot(next: StorySnapshot) {
     setStory((prior) => preferNewerSnapshot(prior, next));

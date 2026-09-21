@@ -58,6 +58,16 @@ The catalogue contains:
   the consumed intention. This establishes separate profile-adherence,
   structured-contract usability and fresh-choice quality failures; do not
   collapse them into one generic “model bad” result.
+  A third run published both opening and first consequence successfully and
+  proved exact-handle validation, one roll, tick advancement, canonical-root
+  revision and a six-option follow-up. It also exposed four independent gaps:
+  the browser required manual state refresh during the intent-owned hold, the
+  story list labelled the live campaign concluded, all unrelated plans copied
+  a one-tick duration without receiving the time rule, and prose/profile use
+  remained mild and menu-like. A second selected action then settled locally
+  but made no provider call because stale local accounting stopped admission.
+  Preserve these as polling, projection, time-context, creative-quality and
+  accounting findings rather than attributing all of them to model quality.
 - Story-creation dependency order, not yet available: choose the prepared Seyda
   experience before entering compatible role details, then select the
   Storyteller and review one setup summary. The custom route must not expose or

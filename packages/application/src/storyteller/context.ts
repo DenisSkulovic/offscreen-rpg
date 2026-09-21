@@ -621,6 +621,7 @@ export async function loadCanonicalKnowledge(
 export async function loadStartPackageKnowledge(
   storage: DocumentStore,
   reference: StartPackageReference,
+  librarySectionSelection?: CanonicalLibrarySectionSelection,
 ) {
   const manifest = await storage.readStartPackageManifest(reference.rootHash);
   if (
@@ -674,7 +675,12 @@ export async function loadStartPackageKnowledge(
   const libraries = await loadCanonicalLibraries(
     storage,
     { worlds: manifest.worlds, rules: manifest.rules },
-    { handles: [], ruleTopics: [], maxReads: 0, maxBytes: 0 },
+    librarySectionSelection ?? {
+      handles: [],
+      ruleTopics: [],
+      maxReads: 0,
+      maxBytes: 0,
+    },
   );
   return canonicalKnowledgeSchema.parse({
     rootHash: reference.rootHash,

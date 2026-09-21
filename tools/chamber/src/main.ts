@@ -519,6 +519,31 @@ if (storyAuthority) {
      ON CONFLICT (id) DO UPDATE SET enabled = true`,
     [storyRunId, storyAccountId, '1000000', 250],
   );
+  // The disposable Story-mode ledger can outlive a development process. Keep
+  // its aggregate reservation equal to actual unresolved transport liability;
+  // an operator-reclassified unsent attempt must not strand later play.
+  await database.db.$client.query(
+    `UPDATE storyteller_funding
+     SET reserved_microusd = COALESCE((
+       SELECT sum(a.reserved_microusd)
+       FROM storyteller_attempt a
+       WHERE a.account_id = $1
+         AND a.state IN ('reserved', 'dispatched', 'uncertain')
+     ), 0)
+     WHERE id = $1`,
+    [storyAccountId],
+  );
+  await database.db.$client.query(
+    `UPDATE storyteller_run
+     SET reserved_microusd = COALESCE((
+       SELECT sum(a.reserved_microusd)
+       FROM storyteller_attempt a
+       WHERE a.run_id = $1
+         AND a.state IN ('reserved', 'dispatched', 'uncertain')
+     ), 0)
+     WHERE id = $1`,
+    [storyRunId],
+  );
 }
 const openRouterApiKey =
   evaluationRun || memoryEvaluationRun

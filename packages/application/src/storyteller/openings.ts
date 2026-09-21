@@ -35,7 +35,10 @@ import type {
   DocumentStore,
   StartPackageReference,
 } from '@offscreen/documents';
-import { loadStartPackageKnowledge } from './context';
+import {
+  canonicalRuleEvidence,
+  loadStartPackageKnowledge,
+} from './context';
 
 export type OpeningContentEntry = Readonly<{
   id: string;
@@ -245,6 +248,7 @@ export function createStorytellerOpenings(
           ? await loadStartPackageKnowledge(
               options.documentStore!,
               effectiveStartPackage,
+              seed ? canonicalRuleEvidence(['time']) : undefined,
             )
           : undefined;
         const task = prepareAdmittedStorytellerTask(

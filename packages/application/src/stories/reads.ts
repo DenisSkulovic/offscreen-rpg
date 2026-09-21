@@ -17,6 +17,7 @@ import {
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
+import { campaign } from '@offscreen/db/campaign-schema';
 import {
   story,
   storyPassage,
@@ -140,11 +141,18 @@ function listStoryStatus(row: {
   wait: unknown;
   remaining: number | null;
   interaction: unknown;
+  campaignOffer: unknown;
+  hasCurrentResolution: boolean;
 }) {
   if (row.wait) {
     return row.remaining === null ? 'Waiting' : 'Paused';
   }
-  return row.interaction ? 'A choice awaits' : 'Concluded';
+  if (row.hasCurrentResolution) {
+    return 'Storyteller needs attention';
+  }
+  return row.interaction || row.campaignOffer
+    ? 'A choice awaits'
+    : 'Concluded';
 }
 
 const snapshotCacheContract = 'story-snapshot.v1';
@@ -249,6 +257,12 @@ export function createStoryReads(
           content: storyPassage.content,
           contentDocumentHash: storyPassage.contentDocumentHash,
           interaction: storyPassage.interaction,
+          campaignOffer: campaign.offer,
+          hasCurrentResolution: sql<boolean>`EXISTS (
+            SELECT 1 FROM story_resolution r
+            WHERE r.story_id = ${story.id}
+              AND r.base_revision = ${story.revision}
+          )`,
           activityState: sql<
             string | null
           >`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id} AND c.tick IS NOT NULL)`,
@@ -263,6 +277,7 @@ export function createStoryReads(
             eq(storyPassage.sequence, story.revision),
           ),
         )
+        .leftJoin(campaign, eq(campaign.storyId, story.id))
         .where(and(eq(story.ownerId, ownerId), boundary))
         .orderBy(desc(story.createdAt), desc(story.id))
         .limit(21);

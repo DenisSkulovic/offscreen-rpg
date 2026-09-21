@@ -55,45 +55,33 @@ Implementation owner: Codex for the current owner-requested implementation.
 
 ## Current checkpoint
 
-- Current phase and exact next action: S4 live-play repair. The owner's first
-  ordinary Story-mode opening succeeded, and selecting `cooperate-release`
-  exposed a transport-contract failure before inference. OpenAI rejected the
-  continuation JSON Schema because the document path pattern used lookaround.
-  Project unsupported pattern hints out of the OpenAI transport schema while
-  retaining application validation, classify a confirmed schema rejection as
-  zero-charge failure even when OpenRouter supplies a request id, reconcile the
-  affected local attempt, then resume the exact saved action without rerolling
-  or duplicating its receipt.
-- Base/reviewed Git revision and relevant uncommitted changes: base `2fee4ee`;
-  provider-only Story mode and the player-screen information architecture are
-  implemented locally.
-- Actual checks/results for this revision: all seven affected package builds and
-  the production web build passed. The exact OpenAI transport projection has no
-  `oneOf`, defaults or missing required object fields. The first live smoke
-  exposed an evidence-contract mismatch; after narrowing opening evidence to an
-  empty list, the second live smoke succeeded with a persisted “Released at
-  Seyda Neen” opening and four distinct executable choices.
-- Unresolved findings/blockers: visual automation could not initialize because
-  its local kernel-assets path was missing, so the owner remains the decisive
-  human UX review. The live continuation has not yet produced prose or
-  canonical mutations. The failure was incorrectly recorded as financially
-  uncertain because the adapter treated OpenRouter's request id as possible
-  inference despite the explicit `invalid_json_schema` rejection. Mechanics
-  correctly produced one automatic receipt and advanced tick 0 → 1, but the
-  required Storyteller hold is now stuck pending operator reconciliation. All
-  evidence exists, but reconstructing one journey currently needs multiple raw
-  SQL queries; add a bounded story-session report before longer playthroughs.
-- Provider spend and accounting certainty: the first schema-valid but
-  application-invalid smoke cost provider-reported USD 0.00255815. The
-  successful smoke cost ledger-rounded USD 0.002247. After the provider's brief
-  reporting delay, an authenticated read at 2026-09-21T20:59:04Z reported total
-  account usage USD 0.004825326 and available USD 9.995174674, consistent with
-  the two attempts within microusd rounding. The owner's opening then used
-  5,576 prompt + 795 completion tokens and cost provider-reported USD
-  0.00174847. The following HTTP 400 schema rejection performed no inference
-  and reported no usage, but the local ledger conservatively retains a 9,716
-  microusd uncertain reservation until explicit reconciliation. No automatic
-  retries or fallback calls occurred.
+- Current phase and exact next action: S4 connected-play repair. Restart the
+  local launcher so its safe unresolved-liability reconciliation and the web
+  polling fix take effect, explicitly retry the already settled second action,
+  and continue the same story without rerolling.
+- Base/reviewed Git revision and relevant working changes: base `011000f`.
+  Working changes keep intent-owned Storyteller holds polling, project campaign
+  offers as live choices in the story list, select committed-time rules for
+  mechanical planning, prefer fewer lived-scene options, and repair stale local
+  aggregate reservations from actual unresolved attempts at launcher startup.
+- Actual evidence for this revision: owner play, public snapshot, compact
+  session report, raw provider responses and exact saved task packets were
+  inspected. No provider call was made during this repair pass. Focused builds
+  remain to be batched once before restarting the launcher.
+- Unresolved findings/blockers: the Vvardenfell start still uses abstract
+  simulation ticks without a setting-specific fictional scale, so better rule
+  selection alone cannot produce credible minutes/hours. Absurd Action Comedy
+  reached both successful calls but remained mild and menu-like. Determine
+  whether the revised prompt/time context materially improves Luna before
+  paying for a stronger route. Visual automation still cannot initialize its
+  missing kernel-assets path; owner play remains the human UX evidence.
+- Provider spend and accounting certainty: story
+  `3346efc0-0210-43dc-a2b4-823d2382b82c` spent ledger-settled USD 0.007323
+  across exactly two successful calls (17,016 total tokens). The next action
+  made no provider attempt and has no charge; it failed local admission because
+  the shared funding row was stopped with a stale USD 0.009716 aggregate
+  reservation from an older now-unsent schema rejection. No retry or fallback
+  call occurred.
 
 ## First owner play evidence — 2026-09-22
 
@@ -144,3 +132,30 @@ Implementation owner: Codex for the current owner-requested implementation.
   must be a separately admitted generation that reuses the committed receipt
   without rerolling or rewriting it; do not disguise it as an unsent attempt or
   silently fall back to scripted prose.
+
+## Third owner play evidence — 2026-09-22
+
+- Story `3346efc0-0210-43dc-a2b4-823d2382b82c` published a live opening and
+  first consequence. Generation `991a383c-5db8-4e80-bd6c-f9b7ed1d1360`
+  used 7,368 tokens / USD 0.003517; generation
+  `c44cc539-1c13-42f7-bc05-0c787f4c0d08` used 9,648 tokens / USD 0.003806.
+  Both were one-attempt HTTP 200 responses with valid settlement.
+- `negotiate-work` rolled 15 against DC 11, advanced tick 0 → 1 and published
+  “Warehouse Offer, Terms Unsettled” plus six valid fresh plans. Canonical root
+  revision advanced 2 → 3. Exact evidence handle enforcement worked.
+- The browser did not keep polling through the brief intent-owned hold between
+  action settlement and visible generation, so the owner had to press Refresh
+  state. The story-list projection also called the live campaign “Concluded”
+  because it considered only legacy passage interactions, not campaign offers.
+- Both outputs carried the complete Absurd Action Comedy profile but produced
+  mostly procedural two-paragraph prose with mild jokes. All twelve generated
+  actions used one tick. The saved packets show mechanical planning loaded
+  ability-check rules but omitted committed-time rules and showed the model six
+  one-tick examples before it generated six more.
+- Selecting `negotiate-warehouse-terms` settled a second receipt and tick 1 → 2
+  but generation `cf189271-de52-4c0e-aae1-8740beb2de28` failed before attempt
+  creation with `budget_unavailable`. The configured run permits 250 attempts;
+  the actual blocker was a stopped shared funding row plus a stale USD 0.009716
+  aggregate reservation from the earlier confirmed-unsent schema rejection.
+  This action remains eligible for explicit same-generation retry after safe
+  local reconciliation and must not be rerolled.

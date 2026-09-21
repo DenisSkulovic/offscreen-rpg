@@ -87,9 +87,9 @@ export async function preparePendingActionNarration(
     ...canonicalContextDependencies(
       current,
       documentStore,
-      input.pending.resolution.roll
-        ? canonicalRuleEvidence(['ability-check'])
-        : undefined,
+      canonicalRuleEvidence(
+        input.pending.resolution.roll ? ['time', 'ability-check'] : ['time'],
+      ),
     ),
   });
   const task = prepareAdmittedStorytellerTask(
@@ -247,7 +247,9 @@ async function admitActionNarration(
     ...canonicalContextDependencies(
       current,
       documentStore,
-      receipt.roll ? canonicalRuleEvidence(['ability-check']) : undefined,
+      canonicalRuleEvidence(
+        receipt.roll ? ['time', 'ability-check'] : ['time'],
+      ),
     ),
   });
   const task = prepareAdmittedStorytellerTask(
@@ -365,9 +367,11 @@ async function admitConsequenceNarration(
     ...canonicalContextDependencies(
       current,
       documentStore,
-      rolls.length
-        ? canonicalRuleEvidence(['contribution', 'ability-check'])
-        : undefined,
+      canonicalRuleEvidence(
+        rolls.length
+          ? ['time', 'contribution', 'ability-check']
+          : ['time'],
+      ),
     ),
   });
   const task = prepareAdmittedStorytellerTask(
