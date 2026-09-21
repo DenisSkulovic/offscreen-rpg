@@ -584,9 +584,14 @@ registerStoryConcern(
         };
         const source = join(fixtureRoot, 'abstract-start');
         await mkdir(join(source, 'obligations'), { recursive: true });
+        await mkdir(join(source, 'adaptations'), { recursive: true });
         await writeFile(
           join(source, 'START.md'),
           '# Gradient life\n\nThere are no people here, only a living response to chemical gradients.',
+        );
+        await writeFile(
+          join(source, 'adaptations', 'membrane.md'),
+          '# Membrane adaptation\n\nWhen the iron gradient steepens, the organism slows exchange across its membrane.',
         );
         const packageObligationId = randomUUID();
         await writeFile(
@@ -626,6 +631,13 @@ registerStoryConcern(
               {
                 path: 'START.md',
                 kind: 'orientation',
+                activation: 'initial-canon',
+                authority: 'canon',
+                visibility: 'player-known',
+              },
+              {
+                path: 'adaptations/membrane.md',
+                kind: 'lore',
                 activation: 'initial-canon',
                 authority: 'canon',
                 visibility: 'player-known',
@@ -831,6 +843,161 @@ registerStoryConcern(
             ?.requestedTopics,
           ['ability-check'],
         );
+
+        const accountId = randomUUID();
+        const runId = randomUUID();
+        const route = 'fake:abstract-memory';
+        await database.db.insert(storytellerFunding).values({
+          id: accountId,
+          limitMicrousd: 1000000n,
+          stopped: false,
+          verifiedAt: new Date(),
+        });
+        await database.db.insert(storytellerRun).values({
+          id: runId,
+          accountId,
+          limitMicrousd: 1000000n,
+          maxAttempts: 2,
+          enabled: true,
+        });
+        const execution: ExecutionPolicy = {
+          mode: 'provider',
+          accountId,
+          runId,
+          dispatchReview: { mode: 'off' },
+          policy: {
+            version: 'fake',
+            route,
+            model: 'fake/model',
+            provider: 'fake',
+            priceVersion: 'abstract-memory-test',
+            inputMicrousdPerMillion: '1000',
+            outputMicrousdPerMillion: '1000',
+            maxInputTokens: 100000,
+            maxOutputTokens: 2000,
+            timeoutMs: 1000,
+          },
+        };
+        const policy = createTestUsagePolicy(route, [], {
+          maxModelRoundsPerOperation: 2,
+          maxReadsPerOperation: 1,
+          maxRetainedReadBytes: 4096,
+        });
+        const connectedTask = storytellerTaskSchema.parse({
+          ...preparedTask,
+          execution,
+          resources: resourcesForEffectiveUsagePolicy(execution, policy, {
+            posture: 'minimal',
+          }),
+        });
+        const connectedGenerationId = randomUUID();
+        await database.db.insert(generation).values({
+          id: connectedGenerationId,
+          ownerId: owner,
+          kind: 'storyteller.profiled.v1',
+          input: connectedTask,
+        });
+        let providerRounds = 0;
+        const connectedRuntime = createStorytellerRuntime(database, {
+          realDurationMs: () => 1000,
+          documentStore: storage,
+          dispatchAuthority: () => policy,
+          provider: async (providerTask, dispatch) => {
+            providerRounds += 1;
+            assert.ok(dispatch);
+            if (providerRounds === 1) {
+              return {
+                kind: 'result',
+                output: {
+                  kind: 'needs_context',
+                  version: 1,
+                  purpose:
+                    'Recover the organism adaptation relevant to the gradient.',
+                  requests: [
+                    {
+                      requestId: 'adaptation',
+                      operation: 'ask_memory',
+                      intent: 'evidence',
+                      question:
+                        'What membrane adaptation applies when the iron gradient steepens?',
+                    },
+                  ],
+                },
+                usage: fakeUsage(0n),
+                telemetry: fakeTelemetry('fake-abstract-memory-search'),
+              };
+            }
+            const user = JSON.parse(dispatch.request.messages[1].content) as {
+              memoryExploration: {
+                evidencePack: {
+                  evidence: Array<{ itemId: string; sourceIds: string[] }>;
+                  contents: Array<{ text: string }>;
+                };
+              };
+            };
+            const packet = user.memoryExploration.evidencePack;
+            const evidenceText = packet.contents
+              .map((content) => content.text)
+              .join('\n');
+            assert.match(evidenceText, /slows exchange across its membrane/i);
+            assert.doesNotMatch(
+              evidenceText,
+              /\b(?:person|tavern|wage|calendar|quest)\b/i,
+            );
+            const result = structuredClone(
+              scriptedStorytellerResult(providerTask),
+            );
+            if (!('scene' in result)) {
+              throw new Error('Expected abstract pending-consequence result');
+            }
+            result.scene.content.paragraphs = [
+              'The iron gradient steepens; exchange across the membrane slows.',
+            ];
+            return {
+              kind: 'result',
+              output: {
+                result,
+                evidenceUse: {
+                  itemIds: packet.evidence.map((item) => item.itemId),
+                  sourceIds: [
+                    ...new Set(
+                      packet.evidence.flatMap((item) => item.sourceIds),
+                    ),
+                  ],
+                },
+                creativeDirections: {
+                  format: 'offscreen.creative-direction-set.v1',
+                  directions: [],
+                },
+              },
+              usage: fakeUsage(0n),
+              telemetry: fakeTelemetry('fake-abstract-memory-final'),
+            };
+          },
+        });
+        await connectedRuntime.complete(connectedGenerationId);
+        assert.equal(providerRounds, 2);
+        const abstractArtifacts = await database.db.$client.query(
+          'SELECT state, model_rounds_used, snapshot FROM storyteller_memory_exploration WHERE generation_id = $1',
+          [connectedGenerationId],
+        );
+        assert.equal(abstractArtifacts.rows[0]?.state, 'final-ready');
+        assert.equal(Number(abstractArtifacts.rows[0]?.model_rounds_used), 2);
+        assert.equal(
+          (abstractArtifacts.rows[0]?.snapshot as MemoryExplorationSnapshot)
+            .rounds.length,
+          1,
+        );
+        const preparedResult = await database.db.$client.query(
+          'SELECT output FROM generation WHERE id = $1',
+          [connectedGenerationId],
+        );
+        const preparedOutput = JSON.stringify(preparedResult.rows[0]?.output);
+        assert.match(preparedOutput, /exchange across the membrane slows/i);
+        assert.doesNotMatch(
+          preparedOutput,
+          /\b(?:person|tavern|wage|calendar|quest)\b/i,
+        );
       },
     );
 
@@ -902,19 +1069,19 @@ registerStoryConcern(
           ],
           [
             'identities/keeper.md',
-            '# Warehouse keeper Sera\n\nSera runs two finite shifts and never staffs the warehouse around the clock.',
+            '# Warehouse keeper Sera\n\nIn Greywake, Sera runs two finite shifts and never staffs the warehouse around the clock.',
           ],
           [
             'locations/quay.md',
-            '# Greywake quay\n\nA public landing bordered by customs sheds.',
+            '# Greywake quay\n\nA public Greywake landing bordered by customs sheds.',
           ],
           [
             'locations/warehouse.md',
-            '# Salt warehouse\n\nA guarded storehouse that closes between shifts.',
+            '# Salt warehouse\n\nA guarded Greywake storehouse that closes between shifts.',
           ],
           [
             'threads/work.md',
-            '# Work at the warehouse\n\nSera is openly seeking one careful hand for the late shift.',
+            '# Work at the warehouse\n\nIn Greywake, Sera is openly seeking one careful hand for the late shift.',
           ],
           [
             'possibilities/smugglers.md',
@@ -1796,6 +1963,56 @@ registerStoryConcern(
         );
         assert.match(discoveredThread?.body ?? '', /cliff stairs/);
         assert.doesNotMatch(discoveredThread?.body ?? '', /exposed stone road/);
+
+        const minimalRecipe = resolveCreativeExplorationRecipe({
+          posture: 'minimal',
+        });
+        const balancedRecipe = resolveCreativeExplorationRecipe({
+          posture: 'balanced',
+        });
+        const compareRetrieval = (maxResults: number) =>
+          searchCanonicalKnowledge(storage, {
+            storyId,
+            rootHash: returnTask.context.canonicalKnowledge!.rootHash,
+            rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
+            query: 'Greywake',
+            maxResults,
+            maxExaminedBytes: returnOracle.budget.maxBytes,
+          });
+        const [minimalLocalityEvidence, balancedLocalityEvidence] =
+          await Promise.all([
+            compareRetrieval(minimalRecipe.limits.maxCandidatesPerQuery),
+            compareRetrieval(balancedRecipe.limits.maxCandidatesPerQuery),
+          ]);
+        assert.ok(
+          balancedLocalityEvidence.candidates.length >
+            minimalLocalityEvidence.candidates.length,
+          'balanced retrieval should expose additional optional evidence at the same root',
+        );
+        assert.deepEqual(
+          balancedLocalityEvidence.candidates
+            .slice(0, minimalLocalityEvidence.candidates.length)
+            .map((candidate) => ({
+              path: candidate.unit.path,
+              authority: candidate.unit.authority,
+              visibility: candidate.unit.visibility,
+            })),
+          minimalLocalityEvidence.candidates.map((candidate) => ({
+            path: candidate.unit.path,
+            authority: candidate.unit.authority,
+            visibility: candidate.unit.visibility,
+          })),
+          'a richer budget may add leads but must not reinterpret shared evidence',
+        );
+        assert.ok(
+          [
+            ...minimalLocalityEvidence.candidates,
+            ...balancedLocalityEvidence.candidates,
+          ].every(
+            (candidate) =>
+              candidate.unit.path !== 'developer/false-tide-road.md',
+          ),
+        );
 
         const accountId = randomUUID();
         const runId = randomUUID();
