@@ -1,12 +1,12 @@
 # Implementation plan
 
 Feature: [Storyteller creative exploration](FEATURE.md).
-Execution scope: design and provider-free evaluation preparation only until the owner confirms the proposed feature scope. No provider call, graph deployment or model-maintained index is authorized by this plan.
+Execution scope: approved provider-free benchmark and contract phases first. No provider call, graph deployment or model-maintained index is authorized by this plan.
 Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Phases
 
-### C0 — Creative-search benchmark and failure taxonomy
+### C0 — Creative-search benchmark and failure taxonomy — implemented and focused-verified
 
 - Outcome: extend the maintained long-story corpus with fixed story positions where excellent turns require distributed connection-making rather than one known fact.
 - Add conventional, quiet/no-grand-narrative and abstract-world cases. Label eligible source families, forbidden/private/stale material, genuinely distinct direction families and reasons a superficially clever connection is bad.
@@ -44,8 +44,8 @@ Implementation owner: Cursor by default; reviewer: Codex.
 
 ## Current checkpoint
 
-- Current phase and exact next action: proposed scope awaiting owner confirmation; if agreed, implement C0 as provider-free benchmark data before extending the controller or choosing a graph/semantic backend.
-- Base/reviewed Git revision and relevant uncommitted changes: `1f71b7a`; this feature proposal and index link only.
-- Actual checks/results for this revision; checks not run: inspected current exploration, evidence packing, memory/global-synthesis and agency/taste contracts; refreshed primary research. No code checks were needed for documentation-only planning.
-- Unresolved findings/blockers: current `needs_context` operations support registry/lexical/read discovery but not creative lenses, direction alternatives or adaptive relational/global exploration. Existing evidence-use self-citation cannot measure whether a direction was good. The smallest useful lens set and one-round-versus-separate-ideation design need benchmark evidence.
+- Current phase and exact next action: C0 is complete; implement C1's provider-neutral creative-need/lens/result contract over the existing memory owners without adding another runtime.
+- Base/reviewed Git revision and relevant uncommitted changes: `82cb46c`; C0 adds typed benchmark/observation/report contracts, three fixed checkpoints, literal/noisy/curated fixture observations and a structural evaluator.
+- Actual checks/results for this revision: contracts and application builds pass; the focused creative-exploration evaluator case passes 1/1. It proves stage attribution and fixture integrity, not generated-model creativity or human preference.
+- Unresolved findings/blockers: current `needs_context` operations still support registry/lexical/read discovery but not creative lenses, direction alternatives or adaptive relational/global exploration. C0 selects an initial eight-lens vocabulary for benchmarking, not as proof every lens deserves runtime support. One-round-versus-separate-ideation remains a later fixed-budget comparison.
 - Provider spend and accounting certainty: $0; no provider call.

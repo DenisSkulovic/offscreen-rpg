@@ -7,3 +7,4 @@ export * from './retrieval-oracle';
 export * from './long-story-memory-corpus';
 export * from './memory-evaluator';
 export * from './evidence-packing-evaluator';
+export * from './creative-exploration-evaluator';

@@ -32,6 +32,71 @@ import {
   buildEvidencePackingPressureFixture,
   evaluateEvidencePackingPressure,
 } from '../dist/developer-tools/evidence-packing-evaluator.js';
+import {
+  buildCreativeExplorationBenchmarkCases,
+  buildCreativeExplorationFixtureObservations,
+  evaluateCreativeExplorationObservation,
+} from '../dist/developer-tools/creative-exploration-evaluator.js';
+
+test('separates literal recall, noisy novelty and grounded creative breadth', () => {
+  const benchmarks = buildCreativeExplorationBenchmarkCases();
+  assert.equal(benchmarks.length, 3);
+  assert.deepEqual(
+    benchmarks.map((benchmark) => benchmark.checkpoint.narrativeMode),
+    ['directed', 'no-grand-narrative', 'quiet'],
+  );
+  assert.deepEqual(
+    benchmarks.map((benchmark) => benchmark.worldContrast),
+    ['conventional', 'conventional', 'abstract'],
+  );
+
+  for (const benchmark of benchmarks) {
+    const observations = buildCreativeExplorationFixtureObservations(benchmark);
+    const literal = evaluateCreativeExplorationObservation(
+      benchmark,
+      observations.literal,
+    );
+    const noisy = evaluateCreativeExplorationObservation(
+      benchmark,
+      observations.noisy,
+    );
+    const curated = evaluateCreativeExplorationObservation(
+      benchmark,
+      observations.curated,
+    );
+
+    assert.equal(literal.sourceValidity.status, 'passed');
+    assert.equal(literal.connectionCoverage.status, 'failed');
+    assert.equal(literal.directionDiversity.status, 'failed');
+    assert.equal(literal.finalGrounding.status, 'not-run');
+
+    assert.equal(noisy.sourceValidity.status, 'failed');
+    assert.equal(noisy.finalGrounding.status, 'failed');
+
+    assert.equal(curated.sourceValidity.status, 'passed');
+    assert.equal(curated.connectionCoverage.status, 'passed');
+    assert.equal(curated.directionDiversity.status, 'passed');
+    assert.equal(curated.finalGrounding.status, 'passed');
+    assert.equal(curated.humanTaste.status, 'not-run');
+  }
+
+  const noGrandNarrative = benchmarks[1];
+  assert.ok(noGrandNarrative);
+  assert.match(
+    noGrandNarrative.forbiddenConnections.find(
+      (connection) => connection.id === 'greywake.forced-smugglers',
+    )?.reason ?? '',
+    /cannot promote a private smuggler possibility/i,
+  );
+  const abstract = benchmarks[2];
+  assert.ok(abstract);
+  assert.equal(
+    abstract.sources.some((source) =>
+      /keeper|tavern|employment|calendar/i.test(source.path),
+    ),
+    false,
+  );
+});
 
 test('validates private evidence-use references and reports required omissions', () => {
   const packet = {

@@ -47,6 +47,10 @@
       "types": "./dist/src/memory-evaluation.d.ts",
       "default": "./dist/src/memory-evaluation.js"
     },
+    "./creative-exploration-evaluation": {
+      "types": "./dist/src/creative-exploration-evaluation.d.ts",
+      "default": "./dist/src/creative-exploration-evaluation.js"
+    },
     "./story-retrieval": {
       "types": "./dist/src/story-retrieval.d.ts",
       "default": "./dist/src/story-retrieval.js"

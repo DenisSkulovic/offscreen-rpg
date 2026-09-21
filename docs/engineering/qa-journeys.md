@@ -91,6 +91,15 @@ Import and instantiation are exposed through the available `reusable-start-packa
 
 The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 
+### Creative-exploration checklist
+
+1. Fork every alternative from the same canonical story checkpoint. Do not compare turns that received different committed state.
+2. Run a literal factual baseline, a deliberately noisy novelty route and a curated source-linked direction set. The baseline should remain valid but narrow; noise must not score as creativity merely because it is surprising.
+3. Separate source validity, complete connection coverage, materially distinct direction families and final evidence use. A failure in one stage must not be relabelled as another.
+4. Include directed, explicit no-grand-narrative and abstract/nonhuman positions. The same contract must permit pressure, quiet continuity and nonhuman recurrence without universal quest, person, calendar or escalation assumptions.
+5. Treat direction families as benchmark annotations, not application truth. Generated connections and candidate directions remain private possibilities until ordinary validation/publication admits their result.
+6. Keep human taste not-run during structural fixtures. Later blind review records specificity, coherence, surprise, restraint, continuity payoff and desire-to-continue; no aggregate automatic score certifies “wow.”
+
 ### Story-item authority checklist
 
 1. Commit a continuation that creates a new item with a stable key and immediately transfers it to another holder. Confirm the saved passage and final holder appear together and the intermediate holder does not survive as current state.

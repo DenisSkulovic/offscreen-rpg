@@ -157,6 +157,16 @@ Query expansion can generate synonyms, aliases, facets or hypothetical relevant 
 
 For expensive or ambiguous needs, allow one bounded exploration round that asks for searches/reads before narration. Persist the request and results, reuse duplicate queries, and reserve enough budget for the final answer. Do not add a separate routing-model call merely to decide whether to call the Storyteller.
 
+### Creative discovery is not ordinary relevance search
+
+A Storyteller may not know the right information need in advance. Exceptional composition can depend on discovering that distant events form an echo, a correction creates a new affordance, an unresolved relationship naturally touches the player's quiet activity, or an obscure eligible detail provides useful contrast. A literal top-k query can be correct and still miss this possibility space.
+
+Handle this with bounded divergence followed by convergence. Divergence searches several explicit creative lenses and preserves breadth across genuinely different source-linked connection families. Convergence reads exact evidence, rejects stale/private/wrong-branch novelty, compares a small number of private directions and composes one ordinary Storyteller result. A direction artifact records its evidence IDs, concise premise, intended value and compatibility constraints; it is not canon or stored chain-of-thought.
+
+Controlled serendipity means sampling less-obvious eligible regions under explicit diversity and budget rules. It never means unfiltered randomness. Required current state is packed first, and an inferred association cannot outrank or rewrite its sources. Off/minimal/balanced/rich recipes independently bound creative queries, reads, alternatives, transmitted bytes, rounds, latency and spend. A zero allowance bypasses the phase cleanly.
+
+Evaluate this separately from fact recall. Source validity, complete connection coverage, direction-family diversity and final evidence use are structural diagnostics. Whether the chosen turn is specific, coherent, surprising, restrained, rewarding and worth continuing requires forked comparison from the same checkpoint and ultimately human/player judgment.
+
 ## Ranking must understand story semantics
 
 Start with filters, then score. A useful candidate rank may combine:

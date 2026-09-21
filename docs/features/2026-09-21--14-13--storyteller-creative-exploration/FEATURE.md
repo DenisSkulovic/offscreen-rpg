@@ -1,7 +1,7 @@
 # Storyteller creative exploration
 
-Status: Draft
-Approval: Pending confirmation of this proposed scope. The owner identified the missing capability on 2026-09-21: factual retrieval alone cannot discover the scattered connections, inspirations and latent possibilities needed for exceptional turns across an enormous story corpus.
+Status: Agreed
+Approval: The owner confirmed continued implementation on 2026-09-21 after reviewing the proposed distinction between factual retrieval and bounded creative exploration.
 
 ## Intended outcome
 
