@@ -6,13 +6,24 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-Next: exercise the reviewed opening and three-round mechanical journey through the player-facing Chamber/browser and retain the first real discrepancy. Pineapple and microbe now pass the shared connected application/API path; do not add another fixture or recovery subsystem before checking what the player actually experiences. The bounded Phase 1 slice of [token-efficient diagnostics](2026-09-20--16-19--token-efficient-diagnostics/PLAN.md), [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md), and the essential [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) retry boundary are implemented in the current working tree.
+Next program: long-story memory and retrieval. The owner made this the product-critical implementation priority on 2026-09-21: without bounded, evidence-grounded recall across extreme histories, additional content mechanics do not establish a worthwhile game. Execute the following feature folders in dependency order, one coherent phase and checkpoint at a time:
+
+1. [Long-story memory evaluation corpus](2026-09-21--10-55--long-story-memory-evaluation/FEATURE.md) E1/E2 establishes the fixed oracle and stage-separated measurements.
+2. [Indexed story retrieval](2026-09-21--10-55--indexed-story-retrieval/FEATURE.md) L1/L2 replaces lifetime linear scans with filtered field-aware lexical discovery.
+3. [Bounded Storyteller memory exploration](2026-09-21--10-55--storyteller-memory-exploration/FEATURE.md) X1/X2 connects persisted search/read/final rounds.
+4. [Episodic memory and source navigation](2026-09-21--10-55--episodic-memory-and-source-navigation/FEATURE.md) M1/M2 preserves lived continuity and exact source expansion.
+5. [Hybrid semantic story retrieval](2026-09-21--10-55--hybrid-semantic-story-retrieval/FEATURE.md) evaluates and adopts a local semantic route only if it wins against the fixed baseline.
+6. [Relational and global story synthesis](2026-09-21--10-55--relational-and-global-story-synthesis/FEATURE.md) adds multi-hop and broad synthesis only after local recall works and benchmarks justify it.
+
+The existing [Storyteller memory and situated recall](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) remains the shared product/authority umbrella. Its former broad phases are delivered by the six folders above; do not implement a parallel memory store or second exploration runner from that older phase wording. The first exact implementation action is evaluation E1, not an embedding database or GraphRAG deployment.
+
+The earlier browser/gold-session route remains useful acceptance evidence after the first connected memory return exists; it is no longer the next coding action. The bounded Phase 1 slice of [token-efficient diagnostics](2026-09-20--16-19--token-efficient-diagnostics/PLAN.md), [deliberate-time T3](2026-09-19--22-13--deliberate-action-time/PLAN.md), and the essential [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) retry boundary are implemented.
 
 Implementation is active under the owner's instruction. Follow this route one coherent slice at a time and commit/push before the next. Do not launch another agent, enable providers or broaden into unrelated unfinished features.
 
 Read [progress](../progress.md), the [gold session](../technical/playthroughs/harbor-session.md) and [solo integration contract](../technical/solo-gameplay-contract.md), then only the current phase's file map. These capture the product/architecture decisions a coding model must not reinvent.
 
-Nearest prepared work after the current uncommitted T3 completion is the remaining [bounded-cost B2](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) recovery matrix, which consumes the implemented deliberate-time contract. [Canonical storage and creative bundles](2026-09-19--18-49--canonical-campaign-storage/PLAN.md) C1/C2 remains independently ready, followed by [memory/exploration](2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md). The harbor/return flow remains the acceptance anchor.
+Memory E1 is the nearest prepared work. The item-state checkpoint at `a38076c` admits dynamic items; synchronizing its canonical inventory projection remains a contained storage seam and must not displace the memory program unless it blocks corpus construction. The harbor/return flow remains the connected acceptance anchor.
 
 | Feature | Phases | Ownership |
 | --- | --- | --- |
@@ -21,7 +32,7 @@ Nearest prepared work after the current uncommitted T3 completion is the remaini
 | [Deliberate action time](2026-09-19--22-13--deliberate-action-time/FEATURE.md) | T1 accepted-execution clock → T2 finite actions → T3 safe overlapping preparation | No idle drift, time-bearing story selections, independent execution/narration readiness |
 | [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/FEATURE.md) | B1a effective profiles → B1b recipes/preflight → B2a accounting/B2b windows and holds → B3 memory integration → B4 evidence | Configurable account/tier/context/model limits, cumulative work/spending, safe pause/reset recovery |
 | [Canonical campaign storage](2026-09-19--18-49--canonical-campaign-storage/FEATURE.md) | C1 store/admission → C2 source ownership → C3 creative bundles → C4 inspection/recovery | Immutable files, publication roots, exact source references, export |
-| [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | 1 context/provenance → 2 memory documents → 3 exploration → 4 return rehearsal; 5 local hybrid search once the corpus exists | Extraction, summaries, discovery and evidence-grounded turns |
+| [Storyteller memory and exploration](2026-09-18--20-09--storyteller-memory-and-recall/FEATURE.md) | Shared umbrella; delivery is decomposed into the six memory-program folders above | Authority, common vocabulary and overall evidence-grounded return contract |
 
 No chapters, chapter navigation or chapter-bound generation. A scene may span many Storyteller turns; a memory segment is only a bounded source range.
 

@@ -4,6 +4,8 @@ Feature: [Storyteller memory and situated recall](FEATURE.md).
 Execution scope: prepared implementation of document-based extraction, bounded context, recall/exploration and POC search evaluation, as requested on 2026-09-19. Use local/offline execution; paid provisioning and live model calls remain disabled.
 Implementation owner: the coding agent assigned the implementation turn, with one active owner per slice. Commit/push each coherent phase; no repeated approval gate for the prepared scope.
 
+> **2026-09-21 delivery decomposition:** this document remains the shared authority and historical checkpoint, but its broad implementation phases are now owned by six smaller active feature folders: [evaluation corpus](../2026-09-21--10-55--long-story-memory-evaluation/PLAN.md), [indexed retrieval](../2026-09-21--10-55--indexed-story-retrieval/PLAN.md), [bounded exploration](../2026-09-21--10-55--storyteller-memory-exploration/PLAN.md), [episodic/source memory](../2026-09-21--10-55--episodic-memory-and-source-navigation/PLAN.md), [hybrid semantic retrieval](../2026-09-21--10-55--hybrid-semantic-story-retrieval/PLAN.md), and [relational/global synthesis](../2026-09-21--10-55--relational-and-global-story-synthesis/PLAN.md). Follow their dependency order and checkpoints. Do not implement duplicate schemas or a parallel runner directly from the older phase text below.
+
 ## Design trace and sequencing
 
 World-independent invariant: later correctness must depend on committed state and recoverable evidence, not on the last few messages. A returning gate guard, a spacecraft contact and a microbe's previously encountered environment need the same source/state/identity separation. None requires simulating unseen populations or treating prose as an executable rule.
@@ -134,6 +136,8 @@ Acceptance/QA: a paraphrased old detail can be found and traced to its exact sou
 Exit: selected local search route, measured comparison and limitations documented in the permanent contract; QA contains the same queries and evidence requirements. No promise of perfect recall or live narrative quality.
 
 ## Current checkpoint
+
+- Program route: begin evaluation E1 in the dedicated corpus folder, then lexical L1. The owner explicitly prioritized this program on 2026-09-21.
 
 - Status: Phase 1's canonical task capture is partially implemented. Every post-start task captures a root-fenced campaign catalogue plus pinned world/rule catalogues, compact orientations, exact selected sections and an omission/byte trace. Narrative choices can privately hand up to four validated world-section handles to the selected successor; known mechanics bind tagged rule sections deterministically. Phase 2's durable linked episode/identity memory is not implemented.
 - Decisions: narrative documents and exact execution state have distinct owners; Storyteller turns, scenes, passages and memory segments are distinct; no chapters. Exact authored handles are preferred over prose keyword inference. Anticipatory choice hints add no model round, grant no authority, remain invisible to the player and are optional for sparse worlds.
