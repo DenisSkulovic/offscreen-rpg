@@ -28,8 +28,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: X2; persist classified terminal outcomes for stale root, invalid handle and exhausted read/byte/round limits, then add the single budget-sharing invalid-final repair path.
-- Base/reviewed Git revision and relevant uncommitted changes: `52dba40`; X2 now stores each normalized context request and SHA-256 identity before reads, resumes it without another Storyteller decision after a crash, and commits its snapshot/counters once. QA catalogue version 16 and the Greywake trace preserve that distinction.
+- Current phase and exact next action: X2; add the single budget-sharing invalid-final repair path, then exercise stale-root and invalid-handle classifications through the real canonical dispatcher.
+- Base/reviewed Git revision and relevant uncommitted changes: `526ac3f`; X2 now persists stale-root, invalid-handle, read-limit and round-limit terminal outcomes, replays the same code without another decision, and updates QA catalogue version 17.
 - Actual checks/results for this revision: database, application and API-integration TypeScript builds pass. The focused disposable-database start-package case passes after an injected post-request/pre-read crash: recovery executes the stored request, calls the scripted source only for the later final round, stores the final candidate and replays it on re-entry.
-- Unresolved findings/blockers: normal generation/provider execution does not yet feed exploration rounds or promote the stored final candidate into generation output/publication. A crash after a read but before snapshot commit may recompute the same read-only lookup without double-counting it. Durable classified failures and invalid-final repair remain X2.
+- Unresolved findings/blockers: normal generation/provider execution does not yet feed exploration rounds or promote the stored final candidate into generation output/publication. A crash after a read but before snapshot commit may recompute the same read-only lookup without double-counting it. Invalid-final repair remains X2; stale-root and invalid-handle classification are implemented but lack controller-level integration assertions.
 - Provider spend and accounting certainty: $0; no provider call.

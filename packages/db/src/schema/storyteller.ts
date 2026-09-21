@@ -50,11 +50,14 @@ export const storytellerMemoryExploration = pgTable(
     state: text('state')
       .notNull()
       .default('exploring')
-      .$type<'exploring' | 'final-ready'>(),
+      .$type<'exploring' | 'final-ready' | 'failed'>(),
     snapshot: jsonb('snapshot').notNull().$type<unknown>(),
     pendingRequestSha256: text('pending_request_sha256'),
     pendingRequest: jsonb('pending_request').$type<unknown>(),
     finalOutput: jsonb('final_output').$type<unknown>(),
+    failureCode: text('failure_code').$type<
+      'stale-root' | 'invalid-handle' | 'read-limit' | 'round-limit'
+    >(),
     createdAt: timestamp('created_at', {
       withTimezone: true,
       precision: 3,
@@ -72,11 +75,11 @@ export const storytellerMemoryExploration = pgTable(
     check('storyteller_memory_exploration_revision', sql`${t.revision} >= 0`),
     check(
       'storyteller_memory_exploration_state',
-      sql`${t.state} IN ('exploring','final-ready')`,
+      sql`${t.state} IN ('exploring','final-ready','failed')`,
     ),
     check(
       'storyteller_memory_exploration_output',
-      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
+      sql`(${t.state} = 'exploring' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IS NULL) OR (${t.state} = 'final-ready' AND ${t.finalOutput} IS NOT NULL AND ${t.failureCode} IS NULL AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL) OR (${t.state} = 'failed' AND ${t.finalOutput} IS NULL AND ${t.failureCode} IN ('stale-root','invalid-handle','read-limit','round-limit') AND ${t.pendingRequest} IS NULL AND ${t.pendingRequestSha256} IS NULL)`,
     ),
     check(
       'storyteller_memory_exploration_pending_request',

@@ -11,7 +11,31 @@ import {
   type StorytellerOutput,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import type { MemoryExplorationSnapshot } from './memory-exploration';
+import {
+  CanonicalMemoryExplorationError,
+  type MemoryExplorationSnapshot,
+} from './memory-exploration';
+
+export type MemoryExplorationFailureCode =
+  | 'stale-root'
+  | 'invalid-handle'
+  | 'read-limit'
+  | 'round-limit';
+
+export class MemoryExplorationControllerError extends Error {
+  constructor(readonly code: MemoryExplorationFailureCode) {
+    super(`Memory exploration stopped: ${code}`);
+  }
+}
+
+function isFailureCode(value: unknown): value is MemoryExplorationFailureCode {
+  return (
+    value === 'stale-root' ||
+    value === 'invalid-handle' ||
+    value === 'read-limit' ||
+    value === 'round-limit'
+  );
+}
 
 type CanonicalMemoryExplorer = Readonly<{
   execute: (
@@ -118,10 +142,41 @@ export async function runScriptedMemoryExploration(
         explorationRounds: snapshot.rounds.length,
       };
     }
+    if (artifact.state === 'failed') {
+      if (!isFailureCode(artifact.failureCode)) {
+        throw new Error('Memory exploration failure artifact is invalid');
+      }
+      throw new MemoryExplorationControllerError(artifact.failureCode);
+    }
+
+    const fail = async (code: MemoryExplorationFailureCode): Promise<never> => {
+      const updated = await database.db
+        .update(storytellerMemoryExploration)
+        .set({
+          revision: artifact.revision + 1,
+          state: 'failed',
+          pendingRequestSha256: null,
+          pendingRequest: null,
+          failureCode: code,
+          updatedAt: sql`clock_timestamp()`,
+        })
+        .where(
+          and(
+            eq(storytellerMemoryExploration.generationId, input.generationId),
+            eq(storytellerMemoryExploration.revision, artifact.revision),
+            eq(storytellerMemoryExploration.state, 'exploring'),
+          ),
+        )
+        .returning({ generationId: storytellerMemoryExploration.generationId });
+      if (!updated.length) {
+        throw new Error('Memory exploration artifact changed concurrently');
+      }
+      throw new MemoryExplorationControllerError(code);
+    };
 
     const round = snapshot.rounds.length + 1;
     if (round > recipe.maxModelRounds) {
-      throw new Error('Memory exploration final round exhausted');
+      return fail('round-limit');
     }
     const pendingRequest = artifact.pendingRequest
       ? storytellerNeedsContextSchema.parse(artifact.pendingRequest)
@@ -138,13 +193,13 @@ export async function runScriptedMemoryExploration(
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
     if (contextRequest.success) {
       if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {
-        throw new Error('Memory exploration must preserve the final round');
+        return fail('round-limit');
       }
       if (
         snapshot.readsUsed + contextRequest.data.requests.length >
         recipe.maxReads
       ) {
-        throw new Error('Memory exploration read limit exceeded');
+        return fail('read-limit');
       }
       if (!pendingRequest) {
         const requestHash = requestSha256(contextRequest.data);
@@ -175,7 +230,14 @@ export async function runScriptedMemoryExploration(
         }
         continue;
       }
-      await explorer.execute(contextRequest.data);
+      try {
+        await explorer.execute(contextRequest.data);
+      } catch (error) {
+        if (error instanceof CanonicalMemoryExplorationError) {
+          return fail(error.code);
+        }
+        throw error;
+      }
       const nextSnapshot = explorer.snapshot();
       assertSnapshotWithinRecipe(nextSnapshot, recipe);
       const updated = await database.db

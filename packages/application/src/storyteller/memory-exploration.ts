@@ -15,6 +15,17 @@ type EvidenceHandle = Readonly<{
   unit: StoryRetrievalUnit;
 }>;
 
+export type CanonicalMemoryExplorationFailureCode =
+  | 'stale-root'
+  | 'invalid-handle'
+  | 'read-limit';
+
+export class CanonicalMemoryExplorationError extends Error {
+  constructor(readonly code: CanonicalMemoryExplorationFailureCode) {
+    super(`Memory exploration ${code}`);
+  }
+}
+
 export type MemoryExplorationSnapshot = Readonly<{
   format: 'offscreen.memory-exploration-snapshot.v1';
   storyId: string;
@@ -100,7 +111,7 @@ export function createCanonicalMemoryExplorer(input: {
       manifest.campaignId !== index.storyId ||
       manifest.revision !== index.rootRevision
     ) {
-      throw new Error('Memory exploration root is stale');
+      throw new CanonicalMemoryExplorationError('stale-root');
     }
     const entry = manifest.entries.find(
       (candidate) =>
@@ -109,7 +120,7 @@ export function createCanonicalMemoryExplorer(input: {
         candidate.objectHash === unit.sourceHash &&
         candidate.visibility !== 'developer-private',
     );
-    if (!entry) throw new Error('Memory exploration handle is not current');
+    if (!entry) throw new CanonicalMemoryExplorationError('invalid-handle');
     return entry;
   }
 
@@ -186,7 +197,7 @@ export function createCanonicalMemoryExplorer(input: {
   async function execute(rawRequest: StorytellerNeedsContext) {
     const request = storytellerNeedsContextSchema.parse(rawRequest);
     if (readsUsed + request.requests.length > recipe.assembly.maxReads) {
-      throw new Error('Memory exploration read limit exceeded');
+      throw new CanonicalMemoryExplorationError('read-limit');
     }
     const results = [];
     for (const operation of request.requests) {
@@ -220,7 +231,7 @@ export function createCanonicalMemoryExplorer(input: {
           manifest.campaignId !== index.storyId ||
           manifest.revision !== index.rootRevision
         ) {
-          throw new Error('Memory exploration root is stale');
+          throw new CanonicalMemoryExplorationError('stale-root');
         }
         results.push({
           requestId: operation.requestId,
@@ -238,7 +249,9 @@ export function createCanonicalMemoryExplorer(input: {
           ? memoryHandles
           : sourceHandles;
       const unit = handles.get(operation.handle);
-      if (!unit) throw new Error('Unknown memory exploration handle');
+      if (!unit) {
+        throw new CanonicalMemoryExplorationError('invalid-handle');
+      }
       const loaded = await readUnit(unit);
       const bytes = Buffer.byteLength(loaded.body, 'utf8');
       if (retainedBytes + bytes > recipe.assembly.maxBytes) {

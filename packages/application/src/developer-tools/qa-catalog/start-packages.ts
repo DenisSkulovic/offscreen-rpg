@@ -4,7 +4,7 @@ import { defineCase, stage, stateEvidence } from './support';
 export const startPackageCases: readonly QaJourneyCase[] = [
   defineCase({
     id: 'reusable-start-package',
-    version: 16,
+    version: 17,
     name: 'Reusable canonical start package',
     purpose:
       'Prove that one generic import and campaign-start path supports both a richly authored conventional setting and a sparse abstract life without inventing missing concepts.',
@@ -153,9 +153,9 @@ export const startPackageCases: readonly QaJourneyCase[] = [
         action:
           'Batch memory search and registry lookup, persist the accepted request before its reads, recover it after an injected crash, restore the private exploration state, inspect the returned favor and source, then accept and replay a validated final candidate.',
         observableExpectation:
-          'The trace exposes compact candidates followed by the exact current favor and original promise passage. The final candidate is stored and replayed without another scripted decision; no prose is published.',
+          'The trace exposes compact candidates, exact evidence and a replayable final candidate. A separate over-budget request becomes a durable read-limit failure without another scripted decision; no prose is published.',
         authoritativeExpectation:
-          'Every body read rechecks the captured manifest identity, the hashed pending request survives recovery without another Storyteller decision, task-local handles survive durable snapshot restoration, four reads remain within the retained-byte ceiling, and a context request cannot consume the reserved final round.',
+          'Body reads recheck the captured manifest. The hashed request recovers without another Storyteller decision, task-local handles survive restoration, four reads stay within limits, and the reserved final round remains unavailable to context requests.',
       }),
       stage({
         id: 'retry',

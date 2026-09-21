@@ -1,6 +1,6 @@
 {
-  "id": "f11385f5-68b1-478a-81e4-c90fa41b9c3c",
-  "prevId": "e73e6654-1eaa-400d-8830-6eb6239a6e8d",
+  "id": "948ff108-9460-4f5f-8344-e635811f0ae9",
+  "prevId": "f11385f5-68b1-478a-81e4-c90fa41b9c3c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3988,6 +3988,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "failure_code": {
+          "name": "failure_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -4029,11 +4035,11 @@
         },
         "storyteller_memory_exploration_state": {
           "name": "storyteller_memory_exploration_state",
-          "value": "\"storyteller_memory_exploration\".\"state\" IN ('exploring','final-ready')"
+          "value": "\"storyteller_memory_exploration\".\"state\" IN ('exploring','final-ready','failed')"
         },
         "storyteller_memory_exploration_output": {
           "name": "storyteller_memory_exploration_output",
-          "value": "(\"storyteller_memory_exploration\".\"state\" = 'exploring' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'final-ready' AND \"storyteller_memory_exploration\".\"final_output\" IS NOT NULL AND \"storyteller_memory_exploration\".\"pending_request\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" IS NULL)"
+          "value": "(\"storyteller_memory_exploration\".\"state\" = 'exploring' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL AND \"storyteller_memory_exploration\".\"failure_code\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'final-ready' AND \"storyteller_memory_exploration\".\"final_output\" IS NOT NULL AND \"storyteller_memory_exploration\".\"failure_code\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" IS NULL) OR (\"storyteller_memory_exploration\".\"state\" = 'failed' AND \"storyteller_memory_exploration\".\"final_output\" IS NULL AND \"storyteller_memory_exploration\".\"failure_code\" IN ('stale-root','invalid-handle','read-limit','round-limit') AND \"storyteller_memory_exploration\".\"pending_request\" IS NULL AND \"storyteller_memory_exploration\".\"pending_request_sha256\" IS NULL)"
         },
         "storyteller_memory_exploration_pending_request": {
           "name": "storyteller_memory_exploration_pending_request",

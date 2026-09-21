@@ -16,6 +16,7 @@ import {
   runScriptedMemoryExploration,
   searchCanonicalKnowledge,
   type MemoryExplorationSnapshot,
+  MemoryExplorationControllerError,
   type ScriptedMemoryRoundSource,
 } from '@offscreen/application/storyteller';
 import { generation } from '@offscreen/db/generation-schema';
@@ -165,6 +166,53 @@ registerStoryConcern(
         assert.equal(replayed.replayed, true);
         assert.equal(replayed.explorationRounds, 1);
         assert.deepEqual(replayed.output, completed.output);
+
+        const failedGenerationId = randomUUID();
+        await database.db.insert(generation).values({
+          id: failedGenerationId,
+          ownerId: owner,
+          kind: 'storyteller.profiled.v1',
+          input: task,
+        });
+        let failedSourceCalls = 0;
+        const exhaustedSource: ScriptedMemoryRoundSource = () => {
+          failedSourceCalls += 1;
+          return {
+            kind: 'needs_context',
+            version: 1,
+            purpose: 'Request more reads than this operation permits.',
+            requests: [
+              { requestId: 'r1', operation: 'search_memory', query: 'one' },
+              { requestId: 'r2', operation: 'search_memory', query: 'two' },
+              { requestId: 'r3', operation: 'search_memory', query: 'three' },
+            ],
+          };
+        };
+        const assertReadLimit = (error: unknown) =>
+          error instanceof MemoryExplorationControllerError &&
+          error.code === 'read-limit';
+        await assert.rejects(
+          runScriptedMemoryExploration(database, {
+            generationId: failedGenerationId,
+            task,
+            createExplorer,
+            source: exhaustedSource,
+          }),
+          assertReadLimit,
+        );
+        assert.equal(failedSourceCalls, 1);
+        await assert.rejects(
+          runScriptedMemoryExploration(database, {
+            generationId: failedGenerationId,
+            task,
+            createExplorer,
+            source: () => {
+              throw new Error('A durable failure must not decide again');
+            },
+          }),
+          assertReadLimit,
+        );
+        assert.equal(failedSourceCalls, 1);
       },
     );
 
