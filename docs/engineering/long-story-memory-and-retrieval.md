@@ -280,6 +280,8 @@ Create a durable benchmark corpus and query set before tuning retrieval. Add sta
 
 Replace full linear scanning with a rebuildable field-aware lexical index over contextualized current units and immutable sources. Preserve the current search contract and coverage trace. Compare against the linear oracle for correctness.
 
+The backend-neutral L1 contract is implemented. `offscreen.story-retrieval-result.v1` returns versioned canonical units rather than backend rows: document identity/revision/hash, path/kind/authority/visibility, branch/current/time fields, heading path, explicit source links, contextual key and body size. Candidate scores name their provider, and complete/partial/not-indexed coverage carries the exact root/revision watermark and bounded omission reasons. The current linear scanner now projects document-root units through this contract without changing its deliberately weak AND-term matching. L2 still owns a real indexed lexical adapter and richer heading/source-range units.
+
 ### R3 — Bounded exploration
 
 Connect search/list/read operations to a persisted `needs_context` round sharing the generation's round, read, byte and spend envelope. Demonstrate retrieve → exact read → final result and no-match/partial-coverage behavior with scripted generation.

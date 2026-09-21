@@ -56,15 +56,18 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     rootRevision: materialized.rootRevision,
     query: 'patient tide road',
     maxResults: 6,
-    maxScanDocuments: 256,
-    maxScanBytes: 128 * 1024,
+    maxExaminedUnits: 256,
+    maxExaminedBytes: 128 * 1024,
   });
-  assert.equal(current.results[0]?.path, 'threads/patient-tide-return.md');
+  assert.equal(current.candidates[0]?.unit.path, 'threads/patient-tide-return.md');
+  assert.match(current.candidates[0]?.unit.sourceHash ?? '', /^[0-9a-f]{64}$/);
+  assert.equal(current.candidates[0]?.score.provider, 'linear-lexical.v1');
+  assert.equal(current.coverage.indexedThroughRevision, 1);
   assert.ok(
-    current.results.every(
+    current.candidates.every(
       (entry) =>
-        entry.path !== 'developer/false-tide-road.md' &&
-        entry.path !== 'developer/fork-destroyed-greywake.md',
+        entry.unit.path !== 'developer/false-tide-road.md' &&
+        entry.unit.path !== 'developer/fork-destroyed-greywake.md',
     ),
   );
 
@@ -139,8 +142,8 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     rootRevision: abstract.rootRevision,
     query: 'tavern wage humanoid',
   });
-  assert.deepEqual(humanDefaults.results, []);
-  assert.equal(humanDefaults.trace.coverageComplete, true);
+  assert.deepEqual(humanDefaults.candidates, []);
+  assert.equal(humanDefaults.coverage.state, 'complete');
   const abstractSuite = await evaluateLinearMemoryBaseline({
     storage: abstractStorage,
     corpus: gradient,

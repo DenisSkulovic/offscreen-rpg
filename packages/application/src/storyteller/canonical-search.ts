@@ -1,4 +1,10 @@
 import type { DocumentStore } from '@offscreen/documents';
+import {
+  storyRetrievalQuerySchema,
+  storyRetrievalResultSchema,
+  type StoryRetrievalCandidate,
+  type StoryRetrievalQuery,
+} from '@offscreen/contracts/story-retrieval';
 import { z } from 'zod';
 
 export const canonicalKnowledgeKinds: ReadonlySet<string> = new Set([
@@ -15,28 +21,7 @@ export const canonicalKnowledgePriority: ReadonlyMap<string, number> = new Map(
   [...canonicalKnowledgeKinds].map((kind, index) => [kind, index]),
 );
 
-const searchInputSchema = z.strictObject({
-  storyId: z.uuid(),
-  rootHash: z.string().min(1),
-  rootRevision: z.number().int().positive(),
-  query: z.string().trim().min(2).max(160),
-  maxResults: z.number().int().min(1).max(8).default(5),
-  maxScanDocuments: z.number().int().min(1).max(256).default(128),
-  maxScanBytes: z
-    .number()
-    .int()
-    .min(1024)
-    .max(512 * 1024)
-    .default(128 * 1024),
-  maxDocumentBytes: z
-    .number()
-    .int()
-    .min(256)
-    .max(64 * 1024)
-    .default(16 * 1024),
-});
-
-export type CanonicalKnowledgeSearchInput = z.input<typeof searchInputSchema>;
+export type CanonicalKnowledgeSearchInput = StoryRetrievalQuery;
 
 const recallCueSchema = z.strictObject({
   documentId: z.uuid(),
@@ -180,7 +165,7 @@ export async function searchCanonicalKnowledge(
   storage: DocumentStore,
   rawInput: CanonicalKnowledgeSearchInput,
 ) {
-  const input = searchInputSchema.parse(rawInput);
+  const input = storyRetrievalQuerySchema.parse(rawInput);
   const manifest = await storage.readManifest(input.rootHash);
   if (
     manifest.campaignId !== input.storyId ||
@@ -206,26 +191,14 @@ export async function searchCanonicalKnowledge(
     )
     .sort((left, right) => left.path.localeCompare(right.path));
 
-  const candidates: Array<{
-    documentId: string;
-    revision: number;
-    path: string;
-    kind: string;
-    authority: string;
-    visibility: string;
-    title: string;
-    snippet: string;
-    matchedFields: Array<'title' | 'path' | 'body'>;
-    matchedTerms: string[];
-    score: number;
-  }> = [];
+  const candidates: StoryRetrievalCandidate[] = [];
   let scannedDocuments = 0;
   let scannedBytes = 0;
   let skippedOversized = 0;
   let stoppedByByteLimit = false;
 
   for (const entry of eligible) {
-    if (scannedDocuments >= input.maxScanDocuments) break;
+    if (scannedDocuments >= input.maxExaminedUnits) break;
     const document = await storage.readDocument(entry.objectHash);
     if (
       document.envelope.documentId !== entry.documentId ||
@@ -238,11 +211,11 @@ export async function searchCanonicalKnowledge(
     }
     scannedDocuments += 1;
     const bytes = Buffer.byteLength(document.body, 'utf8');
-    if (bytes > input.maxDocumentBytes) {
+    if (bytes > input.maxUnitBytes) {
       skippedOversized += 1;
       continue;
     }
-    if (scannedBytes + bytes > input.maxScanBytes) {
+    if (scannedBytes + bytes > input.maxExaminedBytes) {
       stoppedByByteLimit = true;
       break;
     }
@@ -273,49 +246,66 @@ export async function searchCanonicalKnowledge(
       matchingTerms(document.body, terms).length * 3 +
       10;
     candidates.push({
-      documentId: entry.documentId,
-      revision: entry.revision,
-      path: entry.path,
-      kind: entry.kind,
-      authority: entry.authority,
-      visibility: entry.visibility,
-      title: document.title,
+      unit: {
+        unitId: `${entry.documentId}@${entry.revision}#root`,
+        documentId: entry.documentId,
+        revision: entry.revision,
+        sourceHash: entry.objectHash,
+        path: entry.path,
+        kind: entry.kind,
+        authority: entry.authority,
+        visibility: entry.visibility,
+        branchKey: null,
+        current: true,
+        headingPath: [],
+        linkedDocumentIds: document.envelope.sources.map(
+          (source) => source.documentId,
+        ),
+        effectiveFromTick: document.envelope.coverage?.fromTick ?? null,
+        effectiveThroughTick: document.envelope.coverage?.throughTick ?? null,
+        title: document.title,
+        contextualKey: `${entry.kind} ${document.title} ${entry.path}`,
+        bodyBytes: bytes,
+      },
       snippet: bestSnippet(document.body, phrase, terms),
       matchedFields,
       matchedTerms,
-      score,
+      score: { provider: 'linear-lexical.v1', value: score },
     });
   }
 
   const results = candidates
     .sort(
       (left, right) =>
-        right.score - left.score || left.path.localeCompare(right.path),
+        right.score.value - left.score.value ||
+        left.unit.path.localeCompare(right.unit.path),
     )
     .slice(0, input.maxResults);
-  return {
+  const omissions = [
+    ...(scannedDocuments < eligible.length && !stoppedByByteLimit
+      ? (['unit-limit'] as const)
+      : []),
+    ...(stoppedByByteLimit ? (['byte-limit'] as const) : []),
+    ...(skippedOversized > 0 ? (['oversized-unit'] as const) : []),
+  ];
+  return storyRetrievalResultSchema.parse({
+    format: 'offscreen.story-retrieval-result.v1',
     query: input.query,
-    results,
-    trace: {
+    candidates: results,
+    coverage: {
+      state: omissions.length ? 'partial' : 'complete',
+      rootHash: input.rootHash,
+      indexedThroughRevision: input.rootRevision,
+      eligibleUnits: eligible.length,
+      examinedUnits: scannedDocuments,
+      examinedBytes: scannedBytes,
+      omissions,
+    },
+    diagnostics: {
       normalizedTerms: terms,
       termsTruncated: allTerms.length > terms.length,
-      eligibleDocuments: eligible.length,
-      scannedDocuments,
-      scannedBytes,
-      skippedOversized,
-      candidates: candidates.length,
-      returned: results.length,
-      maxResults: input.maxResults,
-      maxScanDocuments: input.maxScanDocuments,
-      maxScanBytes: input.maxScanBytes,
-      maxDocumentBytes: input.maxDocumentBytes,
-      coverageComplete:
-        !stoppedByByteLimit &&
-        skippedOversized === 0 &&
-        scannedDocuments >= eligible.length,
-      stoppedByDocumentLimit:
-        !stoppedByByteLimit && scannedDocuments < eligible.length,
-      stoppedByByteLimit,
+      matchedUnits: candidates.length,
+      returnedUnits: results.length,
     },
-  };
+  });
 }

@@ -208,10 +208,10 @@ registerStoryConcern(
           rootRevision: manifest.revision,
           query: abstractOracle.query,
           maxResults: abstractOracle.budget.maxCandidates,
-          maxScanBytes: abstractOracle.budget.maxBytes,
+          maxExaminedBytes: abstractOracle.budget.maxBytes,
         });
-        assert.equal(abstractDiscovery.trace.coverageComplete, true);
-        assert.deepEqual(abstractDiscovery.results, []);
+        assert.equal(abstractDiscovery.coverage.state, 'complete');
+        assert.deepEqual(abstractDiscovery.candidates, []);
         assert.ok(abstractOracle.abstainWhenExpectedMissing);
         const obligations = await database.db.$client.query(
           'SELECT id, due_tick FROM world_obligation WHERE story_id = $1',
@@ -1200,20 +1200,20 @@ registerStoryConcern(
           rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
           query: returnOracle.query,
           maxResults: returnOracle.budget.maxCandidates,
-          maxScanBytes: returnOracle.budget.maxBytes,
+          maxExaminedBytes: returnOracle.budget.maxBytes,
         });
-        assert.equal(discovery.trace.coverageComplete, true);
-        assert.equal(discovery.results[0]?.documentId, promotedThreadDocumentId);
-        assert.equal(discovery.results[0]?.revision, 2);
-        assert.match(discovery.results[0]?.snippet ?? '', /collapsed beneath/);
+        assert.equal(discovery.coverage.state, 'complete');
+        assert.equal(discovery.candidates[0]?.unit.documentId, promotedThreadDocumentId);
+        assert.equal(discovery.candidates[0]?.unit.revision, 2);
+        assert.match(discovery.candidates[0]?.snippet ?? '', /collapsed beneath/);
         assert.ok(
           returnOracle.expectedPaths.every((path) =>
-            discovery.results.some((result) => result.path === path),
+            discovery.candidates.some((result) => result.unit.path === path),
           ),
         );
         assert.ok(
           returnOracle.forbiddenPaths.every((path) =>
-            discovery.results.every((result) => result.path !== path),
+            discovery.candidates.every((result) => result.unit.path !== path),
           ),
         );
         const staleDiscovery = await searchCanonicalKnowledge(storage, {
@@ -1224,13 +1224,13 @@ registerStoryConcern(
           maxResults: 8,
         });
         assert.ok(
-          staleDiscovery.results.every(
-            (result) => result.documentId !== promotedThreadDocumentId,
+          staleDiscovery.candidates.every(
+            (result) => result.unit.documentId !== promotedThreadDocumentId,
           ),
         );
         assert.ok(
-          staleDiscovery.results.some(
-            (result) => result.path === 'possibilities/smugglers.md',
+          staleDiscovery.candidates.some(
+            (result) => result.unit.path === 'possibilities/smugglers.md',
           ),
         );
         const discoveredKnowledge = await loadCanonicalKnowledge(storage, {
@@ -1239,7 +1239,7 @@ registerStoryConcern(
           rootRevision: returnTask.context.canonicalKnowledge!.rootRevision,
           recallCues: [
             {
-              documentId: discovery.results[0]!.documentId,
+              documentId: discovery.candidates[0]!.unit.documentId,
               reason: 'thread',
             },
           ],

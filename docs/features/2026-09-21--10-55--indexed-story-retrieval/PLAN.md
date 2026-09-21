@@ -6,7 +6,7 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Phases
 
-### L1 — Retrieval-unit and result contracts
+### L1 — Retrieval-unit and result contracts — implemented and focused-verified
 
 - Outcome: versioned index-unit metadata and query/result/coverage contracts shared with `canonical-search.ts`.
 - Owners: `@offscreen/documents` for canonical section/source derivation, application Storyteller search for authorization and query policy, database schema only for rebuildable index state.
@@ -28,8 +28,8 @@ Implementation owner: Codex under the owner's continuing instruction.
 
 ## Current checkpoint
 
-- Current phase and exact next action: L1 after E1; extract the current `canonical-search.ts` contract and document-unit derivation into backend-neutral types.
-- Base/reviewed Git revision and relevant uncommitted changes: `a38076c`; planning files only.
-- Actual checks/results for this revision; checks not run: source/design review only.
+- Current phase and exact next action: L2; compare the smallest local field-aware lexical implementation options, then implement one adapter behind the shared contract with incremental freshness evidence.
+- Base/reviewed Git revision and relevant uncommitted changes: `fa1f739`; L1 shared schemas, linear projection, consumers and documentation are uncommitted.
+- Actual checks/results for this revision; checks not run: contracts, application and API-integration builds pass; focused 200-scene corpus/evaluator test passes through the new retrieval result. No indexed backend or quality improvement is claimed.
 - Unresolved findings/blockers: local index backend selection is deliberately deferred to L2 measurement.
 - Provider spend and accounting certainty: $0; local deterministic work only.

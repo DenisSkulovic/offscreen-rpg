@@ -114,14 +114,14 @@ export async function observeLinearMemoryBaseline(args: {
     rootRevision: args.rootRevision,
     query: query.query,
     maxResults: query.budget.maxCandidates,
-    maxScanDocuments: 256,
-    maxScanBytes: 512 * 1024,
+    maxExaminedUnits: 256,
+    maxExaminedBytes: 512 * 1024,
   });
   const evidenceByPath = new Map(
     args.corpus.evidence.map((entry) => [entry.path, entry]),
   );
-  const retrieved = result.results
-    .map((entry) => evidenceByPath.get(entry.path))
+  const retrieved = result.candidates
+    .map((entry) => evidenceByPath.get(entry.unit.path))
     .filter((entry) => entry !== undefined);
   const assembled = retrieved.slice(0, query.budget.maxReads);
   return memoryEvaluationObservationSchema.parse({
@@ -130,8 +130,8 @@ export async function observeLinearMemoryBaseline(args: {
     queryId: query.id,
     retrieval: {
       evidenceKeys: retrieved.map((entry) => entry.key),
-      coverage: result.trace.coverageComplete ? 'complete' : 'partial',
-      candidatesExamined: result.trace.scannedDocuments,
+      coverage: result.coverage.state,
+      candidatesExamined: result.coverage.examinedUnits,
       durationMs: performance.now() - started,
     },
     assembly: {
