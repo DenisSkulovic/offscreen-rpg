@@ -34,9 +34,32 @@ export type ProviderOutcome =
       telemetry: ProviderTelemetry;
     }
   | { kind: 'uncertain'; telemetry: ProviderTelemetry };
+export type StorytellerProviderDispatch = Readonly<{
+  request: CapturedProviderRequest;
+  maxGeneratedTokens: number;
+}>;
 export type StorytellerProvider = (
   task: StorytellerTask,
+  dispatch?: StorytellerProviderDispatch,
 ) => Promise<ProviderOutcome>;
+
+function providerDispatch(
+  task: StorytellerTask,
+  dispatch?: StorytellerProviderDispatch,
+) {
+  const selected = dispatch ?? {
+    request: task.request,
+    maxGeneratedTokens: task.resources.envelope.maxGeneratedTokens,
+  };
+  if (
+    !Number.isSafeInteger(selected.maxGeneratedTokens) ||
+    selected.maxGeneratedTokens <= 0 ||
+    selected.maxGeneratedTokens > task.resources.envelope.maxGeneratedTokens
+  ) {
+    throw new Error('Invalid provider dispatch output ceiling');
+  }
+  return selected;
+}
 
 /**
  * Build the complete credential-free JSON body used by transport. Dry-run
@@ -45,22 +68,25 @@ export type StorytellerProvider = (
  */
 export function buildOpenRouterRequest(
   task: StorytellerTask,
-  capturedRequest: CapturedProviderRequest = task.request,
+  dispatch?: StorytellerProviderDispatch,
 ) {
   if (task.execution.mode !== 'provider') {
     throw new Error('Wrong execution mode');
   }
+  const selected = providerDispatch(task, dispatch);
   const policy = task.execution.policy;
   reservationForRequest(
-    capturedRequest,
+    selected.request,
     policy,
     task.resources.envelope.maxSerializedRequestBytes,
+    task.resources.envelope.maxInputTokens,
+    selected.maxGeneratedTokens,
   );
   return {
     model: policy.model,
-    messages: capturedRequest.messages,
+    messages: selected.request.messages,
     stream: false,
-    max_tokens: task.resources.envelope.maxGeneratedTokens,
+    max_tokens: selected.maxGeneratedTokens,
     reasoning: { enabled: false, exclude: true },
     plugins: [
       { id: 'web', enabled: false },
@@ -76,7 +102,7 @@ export function buildOpenRouterRequest(
       json_schema: {
         name: 'storyteller_result',
         strict: true,
-        schema: capturedRequest.outputSchema,
+        schema: selected.request.outputSchema,
       },
     },
   };
@@ -85,9 +111,10 @@ export function buildOpenRouterRequest(
 /** Exact packet facts only; token counts remain unknown without a verified tokenizer. */
 export function inspectOpenRouterRequest(
   task: StorytellerTask,
-  capturedRequest: CapturedProviderRequest = task.request,
+  dispatch?: StorytellerProviderDispatch,
 ) {
-  const body = buildOpenRouterRequest(task, capturedRequest);
+  const selected = providerDispatch(task, dispatch);
+  const body = buildOpenRouterRequest(task, selected);
   const serialized = JSON.stringify(body);
   const userMessage = body.messages.find((message) => message.role === 'user');
   let userSections: ReadonlyArray<{
@@ -142,15 +169,15 @@ export function inspectOpenRouterRequest(
     sha256: createHash('sha256').update(serialized).digest('hex'),
     serializedBytes: Buffer.byteLength(serialized, 'utf8'),
     capturedRequestBytes: Buffer.byteLength(
-      JSON.stringify(capturedRequest),
+      JSON.stringify(selected.request),
       'utf8',
     ),
     outputSchemaBytes: Buffer.byteLength(
-      JSON.stringify(capturedRequest.outputSchema),
+      JSON.stringify(selected.request.outputSchema),
       'utf8',
     ),
     outputSchemaSha256: createHash('sha256')
-      .update(JSON.stringify(capturedRequest.outputSchema))
+      .update(JSON.stringify(selected.request.outputSchema))
       .digest('hex'),
     messages: body.messages.map((message, index) => ({
       index,
@@ -333,8 +360,8 @@ export function createOpenRouterProvider(config: {
     throw new Error('Live provider is disabled');
   }
   const transport = config.transport ?? fetch;
-  return async (task) => {
-    const request = buildOpenRouterRequest(task);
+  return async (task, dispatch) => {
+    const request = buildOpenRouterRequest(task, dispatch);
     const policy = task.execution.mode === 'provider' && task.execution.policy;
     if (!policy) throw new Error('Wrong execution mode');
     const startedAt = Date.now();

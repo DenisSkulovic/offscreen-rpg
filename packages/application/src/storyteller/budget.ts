@@ -11,13 +11,13 @@ import {
   executionPolicySchema,
   reservationForRequest,
   serializedRequestBytes,
-  type CapturedProviderRequest,
   type ExecutionPolicy,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import type {
   ProviderTelemetry,
   ProviderUsage,
+  StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
 import { isDeepStrictEqual } from 'node:util';
 import type { Transaction } from '../outbox/index';
@@ -42,7 +42,7 @@ export class StorytellerBudgetError extends Error {
 type ProviderExecution = Extract<ExecutionPolicy, { mode: 'provider' }>;
 
 export type StorytellerDispatchReservation = {
-  request: CapturedProviderRequest;
+  request: StorytellerProviderDispatch['request'];
   maxSerializedRequestBytes: number;
   maxInputTokens: number;
   maxGeneratedTokens: number;

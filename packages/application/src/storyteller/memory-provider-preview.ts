@@ -24,7 +24,10 @@ export function inspectMemoryExplorationProviderRequest(
     throw new Error('Provider preview requires an exploration recipe');
   }
   const prepared = prepareMemoryEvidenceContext(task, snapshot, round);
-  const inspection = inspectOpenRouterRequest(task, prepared.request);
+  const inspection = inspectOpenRouterRequest(task, {
+    request: prepared.request,
+    maxGeneratedTokens: task.resources.envelope.maxGeneratedTokens,
+  });
   const userMessage = JSON.parse(prepared.request.messages[1].content) as {
     memoryExploration: { evidencePack: unknown };
   };
@@ -34,8 +37,7 @@ export function inspectMemoryExplorationProviderRequest(
     providerChargeMicrousd: '0' as const,
     round,
     canRequestContext:
-      round <=
-      recipe.maxModelRounds - recipe.finalAnswerReserveRounds,
+      round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds,
     capturedRequestBytes: prepared.capturedRequestBytes,
     boundedRequestBytes: prepared.boundedRequestBytes,
     evidence: {
@@ -55,16 +57,6 @@ function jsonObject(value: unknown, label: string): Record<string, unknown> {
     throw new Error(`${label} must be a JSON object`);
   }
   return value as Record<string, unknown>;
-}
-
-function withGeneratedTokenLimit(task: StorytellerTask, limit: number) {
-  return {
-    ...task,
-    resources: {
-      ...task.resources,
-      envelope: { ...task.resources.envelope, maxGeneratedTokens: limit },
-    },
-  } as StorytellerTask;
 }
 
 function composeSeparateIdeationRequests(input: {
@@ -143,7 +135,9 @@ export function compareCreativeIdeationOrchestration(input: {
   ideationGeneratedTokens: number;
 }) {
   if (input.task.execution.mode !== 'provider') {
-    throw new Error('Creative orchestration comparison requires a provider task');
+    throw new Error(
+      'Creative orchestration comparison requires a provider task',
+    );
   }
   if (
     !Number.isInteger(input.ideationGeneratedTokens) ||
@@ -167,15 +161,18 @@ export function compareCreativeIdeationOrchestration(input: {
   const finalGeneratedTokens =
     input.task.resources.envelope.maxGeneratedTokens -
     input.ideationGeneratedTokens;
-  const inline = inspectOpenRouterRequest(input.task, prepared.request);
-  const ideation = inspectOpenRouterRequest(
-    withGeneratedTokenLimit(input.task, input.ideationGeneratedTokens),
-    separate.ideation,
-  );
-  const final = inspectOpenRouterRequest(
-    withGeneratedTokenLimit(input.task, finalGeneratedTokens),
-    separate.final,
-  );
+  const inline = inspectOpenRouterRequest(input.task, {
+    request: prepared.request,
+    maxGeneratedTokens: input.task.resources.envelope.maxGeneratedTokens,
+  });
+  const ideation = inspectOpenRouterRequest(input.task, {
+    request: separate.ideation,
+    maxGeneratedTokens: input.ideationGeneratedTokens,
+  });
+  const final = inspectOpenRouterRequest(input.task, {
+    request: separate.final,
+    maxGeneratedTokens: finalGeneratedTokens,
+  });
   const separateBytes =
     ideation.capturedRequestBytes + final.capturedRequestBytes;
 
@@ -186,8 +183,7 @@ export function compareCreativeIdeationOrchestration(input: {
     scope: 'structural-only' as const,
     inline: {
       modelRounds: 1,
-      generatedTokenAllowance:
-        input.task.resources.envelope.maxGeneratedTokens,
+      generatedTokenAllowance: input.task.resources.envelope.maxGeneratedTokens,
       capturedRequestBytes: inline.capturedRequestBytes,
       inspection: inline,
     },
@@ -196,8 +192,7 @@ export function compareCreativeIdeationOrchestration(input: {
       generatedTokenAllowance:
         input.ideationGeneratedTokens + finalGeneratedTokens,
       capturedRequestBytes: separateBytes,
-      retransmissionDeltaBytes:
-        separateBytes - inline.capturedRequestBytes,
+      retransmissionDeltaBytes: separateBytes - inline.capturedRequestBytes,
       ideation,
       final,
     },

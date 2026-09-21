@@ -16,7 +16,7 @@ Ordinary gameplay, tests and startup never silently inherit a developer's previo
 
 ## Exact packet boundary
 
-The provider adapter owns one pure credential-free request builder. Dry-run inspection and network transport use that same value. The inspection artifact includes the exact JSON body, SHA-256 hash, serialized byte count, message roles and sizes, output-schema size, top-level user-payload section sizes, captured route/provider, output ceiling and applicable resource-policy identities.
+The provider adapter owns one pure credential-free request builder. Dry-run inspection and network transport use the same per-dispatch specification: captured request plus its bounded generated-token ceiling. Accounting reserves that same specification rather than silently substituting the operation-wide ceiling. The inspection artifact includes the exact JSON body, SHA-256 hash, serialized byte count, message roles and sizes, output-schema size, top-level user-payload section sizes, captured route/provider, output ceiling and applicable resource-policy identities.
 
 API keys, authorization headers and arbitrary environment data are never part of the packet artifact. Exact token count remains `unknown` until a route-specific tokenizer is verified; character or byte heuristics must not be relabelled as tokens or cost.
 

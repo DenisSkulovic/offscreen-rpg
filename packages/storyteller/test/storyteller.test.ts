@@ -91,9 +91,13 @@ test('memory exploration request preview embeds evidence without transport', () 
     'evidenceUse',
     'creativeDirections',
   ]);
-  const inspection = inspectOpenRouterRequest(task, request);
+  const inspection = inspectOpenRouterRequest(task, {
+    request,
+    maxGeneratedTokens: 321,
+  });
   assert.equal(inspection.userSections.at(-1)?.key, 'memoryExploration');
   assert.equal(inspection.body.messages, request.messages);
+  assert.equal(inspection.body.max_tokens, 321);
   assert.ok(inspection.serializedBytes > inspection.capturedRequestBytes);
   const exploratoryRequest = composeMemoryExplorationDecisionRequest({
     request: task.request,
@@ -1226,6 +1230,7 @@ test('provider adapter uses an injected transport, one route and no retry; missi
       const body = JSON.parse(String(init?.body));
       assert.deepEqual(body.provider.only, ['Test']);
       assert.equal(body.provider.allow_fallbacks, false);
+      assert.equal(body.max_tokens, 321);
       return new Response(
         JSON.stringify({
           id: 'fake',
@@ -1253,7 +1258,10 @@ test('provider adapter uses an injected transport, one route and no retry; missi
       );
     },
   });
-  const result = await provider(providerTask);
+  const result = await provider(providerTask, {
+    request: providerTask.request,
+    maxGeneratedTokens: 321,
+  });
   assert.equal(result.kind, 'result');
   if (result.kind === 'result') {
     assert.equal(result.usage.reportedCostMicrousd, 2n);

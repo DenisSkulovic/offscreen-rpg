@@ -8,11 +8,11 @@ import {
   storytellerDispatchReviewDecision,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
-import { inspectOpenRouterRequest } from '@offscreen/storyteller/providers/openrouter';
-import type {
-  CapturedProviderRequest,
-  StorytellerTask,
-} from '@offscreen/storyteller/tasks';
+import {
+  inspectOpenRouterRequest,
+  type StorytellerProviderDispatch,
+} from '@offscreen/storyteller/providers/openrouter';
+import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import { enqueue } from '../outbox/index';
 import { storytellerTopic } from './records';
 
@@ -35,13 +35,13 @@ export async function prepareDispatchReview(
   generationId: string,
   attemptId: string,
   task: StorytellerTask,
-  request: CapturedProviderRequest = task.request,
+  dispatch?: StorytellerProviderDispatch,
 ): Promise<DispatchReviewDisposition> {
   const execution = task.execution;
   if (execution.mode !== 'provider') {
     throw new Error('Dispatch review requires provider execution');
   }
-  const inspection = inspectOpenRouterRequest(task, request);
+  const inspection = inspectOpenRouterRequest(task, dispatch);
   return database.db.transaction(async (tx) => {
     await tx
       .insert(storytellerDispatchReview)
