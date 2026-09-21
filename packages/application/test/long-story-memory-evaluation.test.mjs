@@ -20,6 +20,10 @@ import { LocalLexicalStoryIndexStore } from '../dist/storyteller/local-lexical-s
 import { resolveStoryRetrievalRecipe } from '../dist/storyteller/retrieval-recipes.js';
 import { createCanonicalMemoryExplorer } from '../dist/storyteller/memory-exploration.js';
 import { packStoryEvidence } from '../dist/storyteller/evidence-packing.js';
+import {
+  buildEvidencePackingPressureFixture,
+  evaluateEvidencePackingPressure,
+} from '../dist/developer-tools/evidence-packing-evaluator.js';
 
 test('packs required evidence, group breadth and shared content deterministically', () => {
   const representation = (level, content, utility) => ({
@@ -94,6 +98,63 @@ test('packs required evidence, group breadth and shared content deterministicall
     maxItemsPerGroup: 1,
   });
   assert.equal(overflow.status, 'mandatory-overflow');
+});
+
+test('measures evidence density and breadth across fixed cost postures', () => {
+  const fixture = buildEvidencePackingPressureFixture();
+  const repeated = buildEvidencePackingPressureFixture();
+  const report = evaluateEvidencePackingPressure(fixture);
+  const repeatedReport = evaluateEvidencePackingPressure(repeated);
+
+  assert.deepEqual(repeated, fixture);
+  assert.deepEqual(repeatedReport, report);
+  assert.deepEqual(report.fixture, {
+    items: 40,
+    identities: 20,
+    places: 5,
+    plotNodes: 15,
+    required: 6,
+    groups: 40,
+  });
+  assert.deepEqual(
+    report.postures.map((posture) => posture.posture),
+    ['minimal', 'balanced', 'rich'],
+  );
+
+  for (const posture of report.postures) {
+    assert.equal(posture.status, 'packed');
+    assert.equal(posture.requiredRecall, 1);
+    assert.equal(posture.requiredSourceRecall, 1);
+    assert.ok(posture.bytes <= posture.policy.maxBytes);
+    assert.ok(posture.usefulDensity > 0);
+    assert.ok(posture.duplicateBytesRemoved > 0);
+    assert.equal(posture.fidelity.exact >= 1, true);
+    assert.ok(posture.groupCoverageByKind.identity.selected > 0);
+    assert.ok(posture.groupCoverageByKind.place.selected > 0);
+    assert.ok(posture.groupCoverageByKind.event.selected > 0);
+  }
+
+  const [minimal, balanced, rich] = report.postures;
+  assert.ok(minimal.groupCoverage < balanced.groupCoverage);
+  assert.ok(balanced.groupCoverage < rich.groupCoverage);
+  assert.ok(minimal.selectedItems < balanced.selectedItems);
+  assert.ok(balanced.selectedItems < rich.selectedItems);
+  assert.equal(rich.selectedItems, 40);
+  assert.equal(rich.groupCoverage, 1);
+  assert.deepEqual(rich.groupCoverageByKind, {
+    event: { eligible: 15, selected: 15, coverage: 1 },
+    identity: { eligible: 20, selected: 20, coverage: 1 },
+    place: { eligible: 5, selected: 5, coverage: 1 },
+  });
+  assert.equal(minimal.fidelity.exact, 1);
+  assert.equal(balanced.fidelity.exact, 1);
+  assert.equal(rich.fidelity.exact, 1);
+  assert.equal(rich.fidelity.card, 39);
+  assert.equal(rich.fidelity.lead, 0);
+  assert.equal(
+    rich.selected.find((selection) => selection.itemId === 'node-01')?.level,
+    'exact',
+  );
 });
 
 test('builds reproducible conventional and abstract 200-scene memory corpora', async () => {

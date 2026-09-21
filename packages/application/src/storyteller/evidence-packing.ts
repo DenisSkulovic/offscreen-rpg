@@ -63,6 +63,23 @@ function packetBytes(selected: readonly Selected[]) {
   return Buffer.byteLength(JSON.stringify(packetFor(selected)), 'utf8');
 }
 
+function inlinePacketBytes(selected: readonly Selected[]) {
+  return Buffer.byteLength(
+    JSON.stringify({
+      format: 'offscreen.evidence-pack.v1',
+      evidence: selected.map(({ item, representation }) => ({
+        itemId: item.id,
+        group: item.group,
+        required: item.required,
+        level: representation.level,
+        content: representation.content,
+        sourceKeys: [...new Set(representation.sourceKeys)].sort(),
+      })),
+    }),
+    'utf8',
+  );
+}
+
 function orderedRepresentations(item: PackableEvidenceItem) {
   return [...item.representations]
     .filter((entry) => levelRank[entry.level] >= levelRank[item.minimumLevel])
@@ -106,6 +123,8 @@ export function packStoryEvidence(
       selected: [],
       omitted: items.map((item) => ({ itemId: item.id, reason: 'mandatory-overflow' as const })),
       duplicateContentBytesRemoved: 0,
+      duplicateSourceKeyBytesRemoved: 0,
+      duplicateBytesRemoved: 0,
     };
   }
 
@@ -167,12 +186,35 @@ export function packStoryEvidence(
     (total, entry) => total + Buffer.byteLength(entry.text, 'utf8'),
     0,
   );
+  const undeduplicatedSourceKeyBytes = selected.reduce(
+    (total, entry) =>
+      total +
+      [...new Set(entry.representation.sourceKeys)].reduce(
+        (sourceTotal, sourceKey) =>
+          sourceTotal + Buffer.byteLength(sourceKey, 'utf8'),
+        0,
+      ),
+    0,
+  );
+  const uniqueSourceKeyBytes = packet.sources.reduce(
+    (total, entry) => total + Buffer.byteLength(entry.key, 'utf8'),
+    0,
+  );
+  const duplicateContentBytesRemoved =
+    undeduplicatedContentBytes - uniqueContentBytes;
+  const duplicateSourceKeyBytesRemoved =
+    undeduplicatedSourceKeyBytes - uniqueSourceKeyBytes;
   return {
     status: 'packed' as const,
     packet,
     bytes: packetBytes(selected),
     selected: selected.map((entry) => ({ itemId: entry.item.id, level: entry.representation.level })),
     omitted: [...omitted].map(([itemId, reason]) => ({ itemId, reason })),
-    duplicateContentBytesRemoved: undeduplicatedContentBytes - uniqueContentBytes,
+    duplicateContentBytesRemoved,
+    duplicateSourceKeyBytesRemoved,
+    duplicateBytesRemoved: Math.max(
+      0,
+      inlinePacketBytes(selected) - packetBytes(selected),
+    ),
   };
 }
