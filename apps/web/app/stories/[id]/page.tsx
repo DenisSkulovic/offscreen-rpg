@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
 import { apiOrigin, requireViewer } from '@/src/lib/viewer';
 import { DraftEditor } from '@/src/features/stories/draft-editor';
+import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
 
 export default async function SavedDraft({
   params,
@@ -19,10 +20,24 @@ export default async function SavedDraft({
   if (response.status === 404) notFound();
   if (response.status === 401) redirect('/sign-in');
   if (!response.ok) throw new Error('Draft could not be loaded');
+  const catalogueResponse = await fetch(
+    `${apiOrigin()}/api/drafts/${parsed.data}/openings/catalogue`,
+    {
+      headers: { cookie },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (!catalogueResponse.ok)
+    throw new Error('Story starts could not be loaded');
   return (
     <DraftEditor
       id={parsed.data}
       initial={draftSchema.parse(await response.json())}
+      preparedStarts={
+        mechanicalContentCatalogueSchema.parse(await catalogueResponse.json())
+          .entries
+      }
     />
   );
 }

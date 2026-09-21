@@ -20,6 +20,8 @@ function present(row: typeof storyDraft.$inferSelect): Draft {
       row.storyteller == null
         ? null
         : storytellerReferenceSchema.parse(row.storyteller),
+    openingContentId: row.openingContentId,
+    characterName: row.characterName,
     title: row.title,
     premise: row.premise,
     storytellingDirection: row.storytellingDirection,

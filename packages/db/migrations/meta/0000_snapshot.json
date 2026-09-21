@@ -1,5 +1,5 @@
 {
-  "id": "92d79b16-8f34-418c-981f-e6eb00fa724b",
+  "id": "e5bde833-2cec-4a4b-b939-f5c6f88d69e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1961,6 +1961,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "opening_content_id": {
+          "name": "opening_content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "character_name": {
+          "name": "character_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "title": {
           "name": "title",
           "type": "text",
@@ -2055,7 +2067,7 @@
         },
         "story_draft_content_bounds": {
           "name": "story_draft_content_bounds",
-          "value": "length(\"story_draft\".\"title\") <= 160 AND length(\"story_draft\".\"premise\") <= 6000 AND length(\"story_draft\".\"storytelling_direction\") <= 2000"
+          "value": "length(\"story_draft\".\"character_name\") <= 120 AND length(\"story_draft\".\"title\") <= 160 AND length(\"story_draft\".\"premise\") <= 6000 AND length(\"story_draft\".\"storytelling_direction\") <= 2000"
         }
       },
       "isRLSEnabled": false

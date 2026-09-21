@@ -6,7 +6,10 @@ import { startPackageReferenceSchema } from './campaign';
 
 export const requestOpeningSchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483647),
-  contentId: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,99}$/).optional(),
+  contentId: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9.-]{0,99}$/)
+    .optional(),
   startPackage: startPackageReferenceSchema.optional(),
 });
 export const mechanicalContentSummarySchema = z.strictObject({
@@ -14,6 +17,13 @@ export const mechanicalContentSummarySchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(300),
   startPackage: startPackageReferenceSchema.optional(),
+  draft: z
+    .strictObject({
+      title: z.string().max(160),
+      premise: z.string().max(6000),
+      storytellingDirection: z.string().max(2000),
+    })
+    .optional(),
 });
 export const mechanicalContentCatalogueSchema = z.strictObject({
   entries: z.array(mechanicalContentSummarySchema).max(32),

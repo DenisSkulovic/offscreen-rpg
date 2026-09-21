@@ -266,6 +266,8 @@ CREATE TABLE "story_draft" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"owner_id" text NOT NULL,
 	"storyteller" jsonb,
+	"opening_content_id" text,
+	"character_name" text NOT NULL,
 	"title" text NOT NULL,
 	"premise" text NOT NULL,
 	"storytelling_direction" text NOT NULL,
@@ -273,7 +275,7 @@ CREATE TABLE "story_draft" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "story_draft_revision_positive" CHECK ("story_draft"."revision" > 0),
-	CONSTRAINT "story_draft_content_bounds" CHECK (length("story_draft"."title") <= 160 AND length("story_draft"."premise") <= 6000 AND length("story_draft"."storytelling_direction") <= 2000)
+	CONSTRAINT "story_draft_content_bounds" CHECK (length("story_draft"."character_name") <= 120 AND length("story_draft"."title") <= 160 AND length("story_draft"."premise") <= 6000 AND length("story_draft"."storytelling_direction") <= 2000)
 );
 --> statement-breakpoint
 CREATE TABLE "draft_opening" (

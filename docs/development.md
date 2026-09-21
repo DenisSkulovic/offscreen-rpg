@@ -138,16 +138,26 @@ Auth rate limits use the database. A server-written client-IP header prevents ca
 
 Use [implementation overview](progress.md) for the next slice rather than inferring priority from this setup guide. Decisions listed in [open questions](questions.md) remain open until the affected behavior needs them.
 
-## Local scripted launcher without OAuth
+## Local live Story mode without OAuth
 
 For the ordinary player-facing product surface, run `pnpm story:local`. It uses
 the normal `/stories`, creation, preview and play pages with a fixed loopback
 identity, a dedicated persistent `offscreen_story_local` database and
 `data/story-local-documents`. It does not mount Chamber scenarios, inspectors,
-fault controls or QA endpoints. Provider execution remains disabled, so this
-first launcher exercises the real Story flow with the scripted Storyteller at
-zero model spend. Normal non-loopback application startup still requires real
-authentication.
+fault controls or QA endpoints, and it rejects scripted opening fallback.
+Startup reads the ignored `.env.openrouter` credential, verifies account usage
+and the exact current OpenAI endpoint before enabling GPT-5.6 Luna. Each turn
+permits one buffered strict-JSON call, at most 12,000 input and 2,048 generated
+tokens, no reasoning, fallback, repair, judge or automatic retry, and at most
+$0.01 reserved cost. The local run/account ceiling is $1 until deliberately
+changed; an uncertain provider delivery stops further admission. Exact raw
+provider responses are retained under ignored `data/story-local-evidence` for
+the owner/Codex debugging loop. Merely launching makes no inference call.
+Normal non-loopback application startup still requires real authentication.
+The local creation journey first selects a prepared experience or custom story,
+then the player role, Storyteller and final review. Creating the opening is the
+first billable action. The UI distinguishes queued/running work, ordinary
+failure and billing uncertainty; it never retries automatically.
 
 With the Compose services running, dependencies installed and Playwright Chromium available, run `pnpm chamber`. It builds the web/API and opens a separate Chromium window as a local fixture user. No GitHub or model credentials are needed. The Chamber API injects that fixed identity only in this loopback-only developer process, so any browser on the workstation can open `http://127.0.0.1:3100/stories` without a cookie or OAuth redirect. Ordinary application startup still requires real authentication. Chamber uses only loopback ports 3001 and 3100 and refuses occupied ports; stop other API/test processes before starting it. `/demo` on port 3000 remains a separate in-memory prototype.
 

@@ -220,137 +220,152 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
   const status = error || resolutionMessage(story);
 
   return (
-    <main className="editor">
+    <main className="story-demo play-screen">
       <SessionRefresh />
-      <p className="eyebrow">Offscreen RPG · Live story</p>
-      {story.storyteller ? (
-        <p>
-          {story.storyteller.name} ·{' '}
-          {story.sourceMode === 'provider'
-            ? 'Generated story'
-            : story.campaign?.character
-              ? 'Offline mechanical rehearsal'
-              : 'Offline authored rehearsal'}
-        </p>
-      ) : null}
-      <h1>{story.current.content.title}</h1>
-      {story.current.content.paragraphs.map((paragraph, index) => (
-        <p key={index}>{paragraph}</p>
-      ))}
-      {waiting ? (
-        <section aria-label="Journey timing">
-          {waiting.remainingMs !== null ? (
-            <p>
-              Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
-              seconds remain.
-            </p>
-          ) : (
-            <p>
-              Still travelling. Arrival estimated at {waiting.dueAt}. Reloading
-              never restarts the wait.
-            </p>
-          )}
-          <p>
-            Fictional duration: {waiting.gameDurationMs / 60000} minutes. The
-            saved deadline is authoritative.
-          </p>
-          {waiting.canControl ? (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => void control(journeyAction(waiting))}
-            >
-              {waiting.remainingMs === null ? 'Pause' : 'Resume'}
-            </button>
+      <header className="story-header">
+        <a href="/stories">← Stories</a>
+        <span className="demo-label">
+          {story.storyteller?.name ?? 'Storyteller'} ·{' '}
+          {story.campaign?.worldTime.label ?? `revision ${story.revision}`}
+        </span>
+      </header>
+      <div className="play-layout">
+        <section className="play-main" aria-label="Current scene">
+          <article className="story-scene">
+            <p className="eyebrow">Current scene</p>
+            <h1>{story.current.content.title}</h1>
+            <div className="scene-prose">
+              {story.current.content.paragraphs.map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          </article>
+          {waiting ? (
+            <section className="play-notice" aria-label="Journey timing">
+              {waiting.remainingMs !== null ? (
+                <p>
+                  Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
+                  seconds remain.
+                </p>
+              ) : (
+                <p>
+                  Still travelling. Arrival estimated at {waiting.dueAt}.
+                  Reloading never restarts the wait.
+                </p>
+              )}
+              <p>
+                Fictional duration: {waiting.gameDurationMs / 60000} minutes.
+                The saved deadline is authoritative.
+              </p>
+              {waiting.canControl ? (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => void control(journeyAction(waiting))}
+                >
+                  {waiting.remainingMs === null ? 'Pause' : 'Resume'}
+                </button>
+              ) : null}
+            </section>
           ) : null}
-        </section>
-      ) : null}
-      {controlOperation.current ? (
-        <button disabled={pending} type="button" onClick={() => void control()}>
-          Retry control
-        </button>
-      ) : null}
-      {offer && !story.campaign?.character ? (
-        <section aria-label="Offered interaction">
-          <p>{offer.specification.prompt}</p>
-          {offer.specification.options.map((option) => (
-            <article className="campaign-option" key={option.id}>
-              <button
-                type="button"
-                disabled={pending || !canChoose || operation.current !== null}
-                onClick={() => void respond(option.id)}
-              >
-                {option.label}
-              </button>
-              {option.description ? (
-                <p className="campaign-option-intention">
-                  {option.description}
-                </p>
-              ) : null}
-              {option.risk ? (
-                <p className="campaign-option-risk">
-                  <strong>Apparent risk:</strong> {option.risk}
-                </p>
-              ) : null}
-            </article>
-          ))}
-          {operation.current ? (
+          {controlOperation.current ? (
             <button
               disabled={pending}
               type="button"
-              onClick={() => void respond()}
+              onClick={() => void control()}
             >
-              Retry the same choice
+              Retry control
             </button>
           ) : null}
-        </section>
-      ) : null}
-      {status ? <p role="status">{status}</p> : null}
-      <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
-      {story.campaign?.character ? (
-        <CampaignPlay
-          key={story.campaign.offer?.id ?? story.id}
-          story={story}
-          campaign={story.campaign}
-          onSnapshot={acceptSnapshot}
-        />
-      ) : null}
-      {story.campaign ? (
-        <CampaignSettingsEditor
-          key={story.campaign.settings.revision}
-          story={story}
-          campaign={story.campaign}
-          onSnapshot={acceptSnapshot}
-        />
-      ) : null}
-      <StoryHistoryView storyId={story.id} />
-      <details>
-        <summary>Inspect saved state</summary>
-        <dl>
-          {story.usage ? (
-            <>
-              <dt>Settled model usage (USD)</dt>
-              <dd>
-                {(Number(story.usage.settledMicrousd) / 1000000).toFixed(6)}
-              </dd>
-              <dt>Reserved pending usage (USD)</dt>
-              <dd>
-                {(Number(story.usage.reservedMicrousd) / 1000000).toFixed(6)}
-              </dd>
-            </>
+          {offer && !story.campaign?.character ? (
+            <section className="scene-choices" aria-label="Offered interaction">
+              <p>{offer.specification.prompt}</p>
+              {offer.specification.options.map((option) => (
+                <article className="campaign-option" key={option.id}>
+                  <button
+                    type="button"
+                    disabled={
+                      pending || !canChoose || operation.current !== null
+                    }
+                    onClick={() => void respond(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                  {option.description ? (
+                    <p className="campaign-option-intention">
+                      {option.description}
+                    </p>
+                  ) : null}
+                  {option.risk ? (
+                    <p className="campaign-option-risk">
+                      <strong>Apparent risk:</strong> {option.risk}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+              {operation.current ? (
+                <button
+                  disabled={pending}
+                  type="button"
+                  onClick={() => void respond()}
+                >
+                  Retry the same choice
+                </button>
+              ) : null}
+            </section>
           ) : null}
-          <dt>Story ID</dt>
-          <dd>{story.id}</dd>
-          <dt>Revision</dt>
-          <dd>{story.revision}</dd>
-          <dt>Passage ID</dt>
-          <dd>{story.current.id}</dd>
-        </dl>
-      </details>
-      <p>You can reopen this story from your stories list.</p>
-      <p>
-        <a href="/stories">Back to stories</a>
-      </p>
+          {status ? (
+            <p className="scene-status" role="status">
+              {status}
+            </p>
+          ) : null}
+          <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
+          {story.campaign?.character ? (
+            <CampaignPlay
+              key={story.campaign.offer?.id ?? story.id}
+              story={story}
+              campaign={story.campaign}
+              onSnapshot={acceptSnapshot}
+            />
+          ) : null}
+        </section>
+        <aside className="play-sidebar" aria-label="Story information">
+          <StoryHistoryView storyId={story.id} />
+          {story.campaign ? (
+            <CampaignSettingsEditor
+              key={story.campaign.settings.revision}
+              story={story}
+              campaign={story.campaign}
+              onSnapshot={acceptSnapshot}
+            />
+          ) : null}
+          <details>
+            <summary>Technical details</summary>
+            <dl>
+              {story.usage ? (
+                <>
+                  <dt>Settled model usage (USD)</dt>
+                  <dd>
+                    {(Number(story.usage.settledMicrousd) / 1000000).toFixed(6)}
+                  </dd>
+                  <dt>Reserved pending usage (USD)</dt>
+                  <dd>
+                    {(Number(story.usage.reservedMicrousd) / 1000000).toFixed(
+                      6,
+                    )}
+                  </dd>
+                </>
+              ) : null}
+              <dt>Story ID</dt>
+              <dd>{story.id}</dd>
+              <dt>Revision</dt>
+              <dd>{story.revision}</dd>
+              <dt>Passage ID</dt>
+              <dd>{story.current.id}</dd>
+            </dl>
+          </details>
+        </aside>
+      </div>
     </main>
   );
 }

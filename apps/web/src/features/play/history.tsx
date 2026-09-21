@@ -37,8 +37,12 @@ export function StoryHistoryView({ storyId }: { storyId: string }) {
     }
   }
   return (
-    <section aria-label="Saved chronology" aria-busy={pending}>
-      <h2>Saved chronology</h2>
+    <section
+      className="story-history"
+      aria-label="Saved chronology"
+      aria-busy={pending}
+    >
+      <h2>Chronology</h2>
       <button disabled={pending} onClick={() => void load()}>
         {page ? 'Show latest passages' : 'Read saved passages'}
       </button>

@@ -108,6 +108,7 @@ export type CreateAppOptions = Readonly<{
   documentStore?: DocumentStore;
   defaultRules?: RulePackageReference;
   openingContent?: readonly import('@offscreen/application/storyteller').OpeningContentEntry[];
+  scriptedOpeningFallback?: boolean;
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -158,8 +159,15 @@ export async function createApp(
             options.storytellerExecution,
             options.storytellerUsagePolicy,
             {
-              ...(options.documentStore ? { documentStore: options.documentStore } : {}),
-              ...(options.openingContent ? { content: options.openingContent } : {}),
+              ...(options.documentStore
+                ? { documentStore: options.documentStore }
+                : {}),
+              ...(options.openingContent
+                ? { content: options.openingContent }
+                : {}),
+              ...(options.scriptedOpeningFallback === undefined
+                ? {}
+                : { scriptedFallback: options.scriptedOpeningFallback }),
             },
           ),
         },

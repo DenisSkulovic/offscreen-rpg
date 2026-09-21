@@ -1,10 +1,64 @@
 # Story creation
 
-Creation turns a premise into a small, playable beginning. It should invite imagination without asking the player to design a world database or fill in a long character sheet.
+Creation turns a chosen story foundation into a small, playable beginning. It
+should invite imagination without asking the player to design a world database,
+understand canonical-file internals or fill in a long character sheet.
+
+## Creation information architecture
+
+The player makes decisions in dependency order. A later screen must not reveal
+an earlier decision or silently reinterpret earlier answers:
+
+1. **Choose a foundation.** Pick a prepared experience, choose a reusable world,
+   or create a world/story from scratch. A prepared experience such as the Seyda
+   Neen prisoner arrival is a cohesive bundle: it identifies its world, rules,
+   starting situation and role constraints. It is not an “opening seed” attached
+   after an unrelated premise has been written.
+2. **Establish the player role.** Accept or customize the compatible character
+   and immediate circumstances. Fixed facts supplied by the foundation are
+   explained rather than asked again. A prepared prisoner arrival therefore
+   does not ask the player to choose a contradictory location; a blank world can
+   ask broader questions.
+3. **Choose how it is told.** Select a Storyteller profile and the small number
+   of experience-defining preferences: tone/direction, narrative initiative and
+   pace. Advanced autonomy, risk and cost controls remain progressively
+   disclosed.
+4. **Review one setup summary.** Show the foundation, player role, Storyteller,
+   important rules and expected generation cost. Editing returns to the owning
+   step. Generation never begins merely by visiting the review.
+5. **Create the opening.** Show an honest, recoverable generation state. Success
+   presents the actual first playable situation; validation failure, provider
+   rejection, timeout and uncertain billing are different states with different
+   recovery actions. A retry is never implied by a generic waiting label.
+
+This is a short staged flow, not one long settings form. Each step contains only
+choices meaningful under the selected foundation. Draft persistence spans the
+whole flow, and returning resumes the last incomplete step. Prepared and custom
+creation converge on the same reviewed campaign-start contract, but their setup
+questions need not be identical.
+
+For the current POC, the first screen can offer only two honest routes:
+
+- **Seyda Neen prisoner arrival** — a prepared experience with pinned
+  Vvardenfell, rules, expected participants and starting constraints;
+- **Create your own story** — a freeform route that asks for the world, player
+  role and starting circumstances together until reusable-world selection is
+  implemented.
+
+Do not show a one-option world picker inside the prepared route, call developer
+fixtures “seeds,” or expose a prepared experience in the custom-story preview.
+When the library grows, cards may first group prepared experiences by world,
+but the player should select a playable promise rather than navigate storage
+packages.
 
 ## Premise and characters
 
-The implemented entry point is a private draft with three text fields: an optional title, a premise describing the character and starting circumstances, and a separate storytelling direction. An explicit Save keeps incomplete ideas, including an empty draft. Saving does not generate an opening or start time. The stories page lists saved drafts and lets the owner reopen them. A saved, unchanged draft links to a preview page where an explicit request saves a deterministic playable opening candidate: scene prose plus visible choices. The page explains that this sample is not adapted to the premise. A successful current candidate can be started as a live story; that first passage is the reviewed presentation, not a regenerated scene. Choosing an option from that live opening admits asynchronous scripted continuation, including a prepared timed arrival; no model is connected. Returning reopens the saved candidate; editing the draft marks it stale. Live generation, presets and shared setup remain subsequent components.
+A private creation draft owns the incomplete choices from every creation step.
+Explicit Save keeps an incomplete idea without generating prose or starting
+time. The stories page lists drafts separately from playable stories. Editing a
+foundation, role or Storyteller choice makes an older generated opening visibly
+stale. Starting uses exactly the opening the player reviewed; it never silently
+regenerates it.
 
 If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story will support several players.
 

@@ -31,7 +31,10 @@ import {
 } from '../campaign/fixtures/mechanical-content';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { prepareAdmittedStorytellerTask } from './task-admission';
-import type { DocumentStore, StartPackageReference } from '@offscreen/documents';
+import type {
+  DocumentStore,
+  StartPackageReference,
+} from '@offscreen/documents';
 import { loadStartPackageKnowledge } from './context';
 
 export type OpeningContentEntry = Readonly<{
@@ -39,6 +42,11 @@ export type OpeningContentEntry = Readonly<{
   name: string;
   description: string;
   startPackage?: StartPackageReference;
+  draft?: Readonly<{
+    title: string;
+    premise: string;
+    storytellingDirection: string;
+  }>;
 }>;
 
 export function createStorytellerOpenings(
@@ -170,6 +178,11 @@ export function createStorytellerOpenings(
       contentId?: string,
       startPackage?: StartPackageReference,
     ) {
+      const selectedContent = options.content?.find(
+        (entry) => entry.id === contentId,
+      );
+      const effectiveStartPackage =
+        selectedContent?.startPackage ?? startPackage;
       validId(id);
       validId(draftId);
       await database.db.transaction(async (tx) => {
@@ -197,7 +210,8 @@ export function createStorytellerOpenings(
             original.source.draftId !== draftId ||
             original.source.draftRevision !== expectedRevision ||
             original.context.mechanicalOpening?.id !== contentId ||
-            JSON.stringify(original.source.startPackage) !== JSON.stringify(startPackage)
+            JSON.stringify(original.source.startPackage) !==
+              JSON.stringify(effectiveStartPackage)
           ) {
             throw new GenerationError('conflict');
           }
@@ -221,11 +235,17 @@ export function createStorytellerOpenings(
           throw new GenerationError('busy');
         }
         const seed = contentId ? mechanicalOpening(contentId) : undefined;
-        if (startPackage && !options.documentStore) {
+        if (seed && draft.characterName.trim()) {
+          seed.character.name = draft.characterName.trim();
+        }
+        if (effectiveStartPackage && !options.documentStore) {
           throw new GenerationError('invalid');
         }
-        const canonicalKnowledge = startPackage
-          ? await loadStartPackageKnowledge(options.documentStore!, startPackage)
+        const canonicalKnowledge = effectiveStartPackage
+          ? await loadStartPackageKnowledge(
+              options.documentStore!,
+              effectiveStartPackage,
+            )
           : undefined;
         const task = prepareAdmittedStorytellerTask(
           {
@@ -233,7 +253,9 @@ export function createStorytellerOpenings(
             source: {
               draftId,
               draftRevision: draft.revision,
-              ...(startPackage ? { startPackage } : {}),
+              ...(effectiveStartPackage
+                ? { startPackage: effectiveStartPackage }
+                : {}),
             },
             profile: storytellerCatalogue.resolve(draft.storyteller),
             execution,
@@ -243,8 +265,10 @@ export function createStorytellerOpenings(
                 : {}),
               ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
               premise: {
-                title: seed?.opening.title ?? draft.title,
-                premise: seed?.opening.paragraphs.join('\n') ?? draft.premise,
+                title: draft.title || seed?.opening.title || '',
+                premise: seed
+                  ? `${seed.opening.paragraphs.join('\n')}\n\nPlayer role: ${draft.characterName.trim() ? `${draft.characterName.trim()}. ` : ''}${draft.premise}`
+                  : `${draft.characterName.trim() ? `Character name: ${draft.characterName.trim()}\n` : ''}${draft.premise}`,
                 storytellingDirection: draft.storytellingDirection,
               },
               current: null,

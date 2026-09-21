@@ -57,18 +57,15 @@ export function CampaignPlay({
     (commitment) => commitment.id !== activity?.id,
   );
   return (
-    <section aria-label="Character and activities">
-      <p>
-        {campaign.character?.name} · HP {campaign.character?.hp}/
-        {campaign.character?.maxHp}
-        {campaign.location ? ` · ${campaign.location}` : ''}
-      </p>
-      <p>World time: {campaign.worldTime.label}</p>
-      <p>
-        {campaign.activityAccess.kind === 'selected'
-          ? 'This situation permits selected extended activities.'
-          : 'No extended activities are available in this situation.'}
-      </p>
+    <section className="campaign-play" aria-label="Character and activities">
+      <div className="campaign-summary">
+        <p>
+          {campaign.character?.name} · HP {campaign.character?.hp}/
+          {campaign.character?.maxHp}
+          {campaign.location ? ` · ${campaign.location}` : ''}
+        </p>
+        <p>World time: {campaign.worldTime.label}</p>
+      </div>
       {campaign.holds.length > 0 ? (
         <p role="status">
           {campaign.holds.some(
@@ -420,7 +417,10 @@ export function CampaignPlay({
         </details>
       ) : null}
       {nodes.length ? (
-        <div aria-label="Contextual options">
+        <div
+          className="scene-choices campaign-decisions"
+          aria-label="Contextual options"
+        >
           <h2>What would you like to do?</h2>
           {path.length ? (
             <button
@@ -540,7 +540,7 @@ export function CampaignPlay({
         </button>
       ) : null}
       {campaign.actionReceipts.length ? (
-        <details open>
+        <details>
           <summary>Committed immediate outcomes</summary>
           {campaign.actionReceipts.map((receipt) => (
             <article key={receipt.id}>

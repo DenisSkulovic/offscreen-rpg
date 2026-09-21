@@ -122,9 +122,21 @@ const openingProviderResultSchema = z.strictObject({
   version: z.literal(1),
   scene: playableProposalSchema,
 });
+const openingImmediateActionPlanSchema = immediateActionPlanSchema.extend({
+  evidence: z.array(z.string()).max(0),
+});
 const mechanicalOpeningProviderResultSchema = z.strictObject({
   version: z.literal(1),
-  scene: mechanicalOpeningSceneSchema,
+  scene: z.strictObject({
+    version: z.literal(1),
+    content: passageContentSchema,
+    next: z.strictObject({
+      kind: z.literal('action-plans'),
+      state: z.enum(['available', 'held']),
+      plans: z.array(openingImmediateActionPlanSchema).max(6),
+      activityAccess: activityAccessSchema,
+    }),
+  }),
 });
 function parseOpeningProviderResult(
   output: unknown,
@@ -298,7 +310,7 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
     taskRules = `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities, fact declarations and evidence must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. Creative guidance affects prose and proposals only. No interval or arrival notes.`;
   } else if (context.mechanicalOpening) {
     taskRules =
-      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Never roll or apply effects. Explicitly set activityAccess to none or select every proposed process/resume key. Set state to available when at least one plan exists, otherwise held. No arrival notes.';
+      'Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Set evidence to [] on every opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Explicitly set activityAccess to none or select every proposed process key. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.';
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';

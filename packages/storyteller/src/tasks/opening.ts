@@ -33,7 +33,8 @@ export function prepareOpening(draft: unknown) {
   if (!parsed.success) {
     throw new OpeningInputError('invalid_draft');
   }
-  const { id, revision, title, premise, storytellingDirection } = parsed.data;
+  const { id, revision, characterName, title, premise, storytellingDirection } =
+    parsed.data;
   if (!premise.trim()) {
     throw new OpeningInputError('premise_required');
   }
@@ -43,7 +44,13 @@ export function prepareOpening(draft: unknown) {
     inputVersion: 1 as const,
     promptVersion: 'opening.v1' as const,
     source: Object.freeze({ draftId: id, draftRevision: revision }),
-    content: Object.freeze({ title, premise, storytellingDirection }),
+    content: Object.freeze({
+      title,
+      premise: characterName.trim()
+        ? `Character name: ${characterName.trim()}\n${premise}`
+        : premise,
+      storytellingDirection,
+    }),
   });
 }
 

@@ -46,37 +46,41 @@ export function StorytellerSelect({
     `${reference.id}/${reference.revision}`;
   return (
     <>
-      <label htmlFor="storyteller">Choose your storyteller</label>
-      <select
-        id="storyteller"
-        value={value ? identity(value) : ''}
-        onChange={(event) => {
-          const profile = catalogue.find(
-            (item) => identity(item) === event.target.value,
-          );
-          onChange(
-            profile ? { id: profile.id, revision: profile.revision } : null,
-          );
-        }}
-      >
-        <option value="">Choose a style</option>
-        {value && !selected ? (
-          <option value={identity(value)}>
-            Saved storyteller ({value.id})
-          </option>
-        ) : null}
+      <fieldset className="storyteller-options">
+        <legend>Choose your Storyteller</legend>
         {catalogue.map((profile) => (
-          <option key={identity(profile)} value={identity(profile)}>
-            {profile.name}
-          </option>
+          <label key={identity(profile)}>
+            <input
+              type="radio"
+              name="storyteller"
+              value={identity(profile)}
+              checked={identity(profile) === (value ? identity(value) : '')}
+              onChange={() =>
+                onChange({ id: profile.id, revision: profile.revision })
+              }
+            />
+            <span>
+              <strong>{profile.name}</strong>
+              <small>{profile.description}</small>
+            </span>
+          </label>
         ))}
-      </select>
-      <p className="field-help">
-        {error
-          ? 'The catalogue is unavailable. Your saved selection is preserved; reload to try again.'
-          : (selected?.description ??
-            'You can save an incomplete draft before choosing.')}
-      </p>
+        {value && !selected ? (
+          <label>
+            <input type="radio" checked readOnly />
+            <span>
+              <strong>Saved Storyteller</strong>
+              <small>{value.id}</small>
+            </span>
+          </label>
+        ) : null}
+      </fieldset>
+      {error ? (
+        <p className="field-help" role="alert">
+          The Storyteller catalogue is unavailable. Your saved selection is
+          preserved; reload to try again.
+        </p>
+      ) : null}
     </>
   );
 }

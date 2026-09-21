@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -213,6 +213,139 @@ const memoryDryRunExecution: ExecutionPolicy = {
   },
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
+const storyAccountId = '00000000-0000-4000-8000-000000000010';
+const storyRunId = '00000000-0000-4000-8000-000000000011';
+const storyModel = 'openai/gpt-5.6-luna';
+const storyProvider = 'OpenAI';
+
+async function readLocalOpenRouterKey() {
+  const content = await readFile(
+    join(workspaceRoot, '.env.openrouter'),
+    'utf8',
+  );
+  const entry = content
+    .split(/\r?\n/)
+    .find((line) => line.trim().startsWith('OPENROUTER_API_KEY='));
+  const key = entry?.slice(entry.indexOf('=') + 1).trim() ?? '';
+  if (!key)
+    throw new Error(
+      'Local Story mode requires OPENROUTER_API_KEY in .env.openrouter',
+    );
+  return key;
+}
+
+async function storyLiveAuthority() {
+  const apiKey = await readLocalOpenRouterKey();
+  const headers = { authorization: `Bearer ${apiKey}` };
+  const [creditsResponse, endpointsResponse] = await Promise.all([
+    fetch('https://openrouter.ai/api/v1/credits', {
+      headers,
+      redirect: 'error',
+    }),
+    fetch(`https://openrouter.ai/api/v1/models/${storyModel}/endpoints`, {
+      redirect: 'error',
+    }),
+  ]);
+  if (!creditsResponse.ok || !endpointsResponse.ok) {
+    throw new Error('Could not verify the local Story model and account');
+  }
+  const credits = (await creditsResponse.json()) as {
+    data?: { total_credits?: number; total_usage?: number };
+  };
+  const endpoints = (await endpointsResponse.json()) as {
+    data?: {
+      endpoints?: Array<{
+        provider_name?: string;
+        context_length?: number;
+        pricing?: { prompt?: string; completion?: string };
+        supported_parameters?: string[];
+      }>;
+    };
+  };
+  const eligible = (endpoints.data?.endpoints ?? []).filter(
+    (endpoint) =>
+      endpoint.provider_name === storyProvider &&
+      (endpoint.context_length ?? 0) >= 12_000 &&
+      endpoint.supported_parameters?.includes('response_format') &&
+      endpoint.supported_parameters?.includes('structured_outputs'),
+  );
+  if (!eligible.length)
+    throw new Error('No eligible exact Story model endpoint is available');
+  const perMillionMicrousd = (price: string | undefined) =>
+    BigInt(Math.ceil(Number(price) * 1_000_000_000_000));
+  const inputPrice = eligible.reduce((maximum, endpoint) => {
+    const price = perMillionMicrousd(endpoint.pricing?.prompt);
+    return price > maximum ? price : maximum;
+  }, 0n);
+  const outputPrice = eligible.reduce((maximum, endpoint) => {
+    const price = perMillionMicrousd(endpoint.pricing?.completion);
+    return price > maximum ? price : maximum;
+  }, 0n);
+  const verifiedAt = new Date().toISOString();
+  const profile = {
+    schemaVersion: 1 as const,
+    id: 'local-story-live.v1',
+    revision: 1,
+    enabled: true,
+    allowedRoutes: ['openrouter:gpt-5.6-luna'],
+    defaultRoute: 'openrouter:gpt-5.6-luna',
+    fundingModes: ['prepaid' as const],
+    recovery: 'explicit-resume' as const,
+    limits: {
+      maxInputTokensPerRequest: 12_000,
+      maxSerializedBytesPerRequest: 48_000,
+      maxGeneratedTokensPerRequest: 2_048,
+      maxReasoningTokensPerRequest: 0,
+      maxInputTokensPerOperation: 12_000,
+      maxGeneratedTokensPerOperation: 2_048,
+      maxModelRoundsPerOperation: 1,
+      maxReadsPerOperation: 0,
+      maxRetainedReadBytes: 0,
+      maxMicrousdPerOperation: '10000',
+      maxInFlightDispatches: 1,
+      maxBackgroundJobsPerWindow: 0,
+    },
+    windows: [],
+  };
+  const resolved = resolveEffectiveUsagePolicy({
+    platform: profile,
+    entitlement: profile,
+    restrictions: [],
+    requestedRoute: 'openrouter:gpt-5.6-luna',
+    requestedFundingMode: 'prepaid',
+  });
+  if (resolved.kind !== 'allowed')
+    throw new Error('Local Story usage policy is invalid');
+  return {
+    apiKey,
+    usagePolicy: resolved.policy,
+    execution: {
+      mode: 'provider' as const,
+      accountId: storyAccountId,
+      runId: storyRunId,
+      dispatchReview: { mode: 'observe' as const },
+      policy: {
+        version: 'local-story-live.v1',
+        route: 'openrouter:gpt-5.6-luna',
+        model: storyModel,
+        provider: storyProvider,
+        priceVersion: `openrouter-endpoints-${verifiedAt}`,
+        outputProtocol: 'native-json-schema' as const,
+        responseTransport: 'buffered-json' as const,
+        inputMicrousdPerMillion: inputPrice.toString(),
+        outputMicrousdPerMillion: outputPrice.toString(),
+        maxInputTokens: 12_000,
+        maxOutputTokens: 2_048,
+        timeoutMs: 60_000,
+      },
+    },
+    totalUsageMicrousd: BigInt(
+      Math.floor((credits.data?.total_usage ?? 0) * 1_000_000),
+    ),
+    verifiedAt,
+  };
+}
+const storyAuthority = storyMode ? await storyLiveAuthority() : null;
 const evaluationConfig = configArgument
   ? memoryEvaluationPacket || memoryEvaluationRun
     ? null
@@ -373,6 +506,20 @@ await applyMigrations(
   fileURLToPath(new URL('../../../../packages/db/migrations', import.meta.url)),
 );
 const database = createDatabase(config, () => {});
+if (storyAuthority) {
+  await database.db.$client.query(
+    `INSERT INTO storyteller_funding (id, limit_microusd, stopped, verified_at)
+     VALUES ($1, $2, false, $3)
+     ON CONFLICT (id) DO UPDATE SET stopped = false, verified_at = EXCLUDED.verified_at`,
+    [storyAccountId, '1000000', storyAuthority.verifiedAt],
+  );
+  await database.db.$client.query(
+    `INSERT INTO storyteller_run (id, account_id, limit_microusd, max_attempts, enabled)
+     VALUES ($1, $2, $3, $4, true)
+     ON CONFLICT (id) DO UPDATE SET enabled = true`,
+    [storyRunId, storyAccountId, '1000000', 250],
+  );
+}
 const openRouterApiKey =
   evaluationRun || memoryEvaluationRun
     ? (process.env['OPENROUTER_API_KEY'] ?? '')
@@ -423,17 +570,24 @@ const defaultRulePackage = await importRulePackageDirectory(
 );
 let storyOpeningContent;
 if (storyMode) {
-  const world = await importWorldPackageDirectory(
-    documentStore,
-    {
-      sourceDirectory: join(workspaceRoot, 'content', 'worlds', 'vvardenfell-poc'),
-      worldId: '7c14e5bc-4d72-4f8c-9a6b-97f334b83c11',
-      operationId: '89ec4571-24ee-49da-826c-ce25ad6b3e41',
-      title: 'Vvardenfell POC',
-    },
-  );
-  if (world.rootHash !== '9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb') {
-    throw new Error('Checked-in Vvardenfell package root changed without updating the start package');
+  const world = await importWorldPackageDirectory(documentStore, {
+    sourceDirectory: join(
+      workspaceRoot,
+      'content',
+      'worlds',
+      'vvardenfell-poc',
+    ),
+    worldId: '7c14e5bc-4d72-4f8c-9a6b-97f334b83c11',
+    operationId: '89ec4571-24ee-49da-826c-ce25ad6b3e41',
+    title: 'Vvardenfell POC',
+  });
+  if (
+    world.rootHash !==
+    '9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb'
+  ) {
+    throw new Error(
+      'Checked-in Vvardenfell package root changed without updating the start package',
+    );
   }
   const start = await importStartPackageDirectory(
     documentStore,
@@ -443,7 +597,15 @@ if (storyMode) {
     {
       id: 'seyda-neen-arrival.v1',
       name: 'Seyda Neen — prisoner arrival',
-      description: 'Begin aboard the prison ship and pass through the maintained Seyda Neen release sequence.',
+      description:
+        'Begin aboard the prison ship and pass through the maintained Seyda Neen release sequence.',
+      draft: {
+        title: 'Prisoner in Seyda Neen',
+        premise:
+          'I am a prisoner arriving by ship at Seyda Neen in Vvardenfell. Begin aboard the prison ship and follow the canonical release process.',
+        storytellingDirection:
+          'Ground the story in the supplied canonical setting. Preserve player agency, concrete continuity, and room for ordinary life as well as larger events.',
+      },
       startPackage: {
         startPackageId: start.manifest.startPackageId,
         rootHash: start.rootHash,
@@ -480,29 +642,35 @@ const app = await createApp(
       engine: defaultRulePackage.manifest.engine,
     },
     ...(storyOpeningContent ? { openingContent: storyOpeningContent } : {}),
+    ...(storyMode ? { scriptedOpeningFallback: false } : {}),
     developerTools: !storyMode,
     ...(!storyMode ? { chamberStorytellerControl: storytellerControl } : {}),
-    ...(packetReview ||
-    memoryPacketReview ||
-    memoryEvaluationPacket ||
-    memoryEvaluationRun ||
-    evaluationPacket ||
-    evaluationRun
+    ...(storyAuthority
       ? {
-          storytellerExecution:
-            evaluationAuthority?.execution ??
-            memoryEvaluationAuthority?.execution ??
-            (memoryPacketReview ? memoryDryRunExecution : dryRunExecution),
-          storytellerUsagePolicy:
-            evaluationPolicy?.kind === 'allowed'
-              ? evaluationPolicy.policy
-              : memoryEvaluationPolicy?.kind === 'allowed'
-                ? memoryEvaluationPolicy.policy
-                : memoryPacketReview
-                  ? memoryDryRunPolicy.policy
-                  : dryRunPolicy.policy,
+          storytellerExecution: storyAuthority.execution,
+          storytellerUsagePolicy: storyAuthority.usagePolicy,
         }
-      : {}),
+      : packetReview ||
+          memoryPacketReview ||
+          memoryEvaluationPacket ||
+          memoryEvaluationRun ||
+          evaluationPacket ||
+          evaluationRun
+        ? {
+            storytellerExecution:
+              evaluationAuthority?.execution ??
+              memoryEvaluationAuthority?.execution ??
+              (memoryPacketReview ? memoryDryRunExecution : dryRunExecution),
+            storytellerUsagePolicy:
+              evaluationPolicy?.kind === 'allowed'
+                ? evaluationPolicy.policy
+                : memoryEvaluationPolicy?.kind === 'allowed'
+                  ? memoryEvaluationPolicy.policy
+                  : memoryPacketReview
+                    ? memoryDryRunPolicy.policy
+                    : dryRunPolicy.policy,
+          }
+        : {}),
     qaContext: {
       git: { commit: gitCommit, dirty: gitDirty },
       environment: { identity: 'local-chamber' },
@@ -557,47 +725,72 @@ try {
     {
       address: '127.0.0.1:7233',
       namespace: 'default',
-      taskQueue: 'local-chamber',
+      taskQueue: storyMode ? 'local-story' : 'local-chamber',
     },
     () => {},
-    (evaluationRun || memoryEvaluationRun) && liveDispatchPolicy
+    storyAuthority
       ? {
           provider: createOpenRouterProvider({
             enabled: true,
-            apiKey: openRouterApiKey,
+            apiKey: storyAuthority.apiKey,
             recordResponse: async (evidence) => {
-              const parsed = JSON.parse(evidence.raw) as { id?: unknown };
-              const providerId =
-                typeof parsed.id === 'string' &&
-                /^[a-zA-Z0-9_-]{1,200}$/.test(parsed.id)
-                  ? parsed.id
-                  : crypto.randomUUID();
-              const directory = join(tmpdir(), 'offscreen-rpg-packet-review');
+              const directory = join(
+                workspaceRoot,
+                'data',
+                'story-local-evidence',
+              );
               await mkdir(directory, { recursive: true });
               await writeFile(
-                join(directory, `provider-response-${providerId}.json`),
+                join(
+                  directory,
+                  `provider-response-${crypto.randomUUID()}.json`,
+                ),
                 `${JSON.stringify(evidence, null, 2)}\n`,
                 { flag: 'wx' },
               );
             },
           }),
-          dispatchAuthority: () => liveDispatchPolicy,
+          dispatchAuthority: () => storyAuthority.usagePolicy,
           documentStore,
         }
-      : memoryPacketReview || memoryEvaluationPacket
+      : (evaluationRun || memoryEvaluationRun) && liveDispatchPolicy
         ? {
-            provider: async () => {
-              throw new Error(
-                'Held memory packet attempted provider transport',
-              );
-            },
-            dispatchAuthority: () =>
-              memoryEvaluationPolicy?.kind === 'allowed'
-                ? memoryEvaluationPolicy.policy
-                : memoryDryRunPolicy.policy,
+            provider: createOpenRouterProvider({
+              enabled: true,
+              apiKey: openRouterApiKey,
+              recordResponse: async (evidence) => {
+                const parsed = JSON.parse(evidence.raw) as { id?: unknown };
+                const providerId =
+                  typeof parsed.id === 'string' &&
+                  /^[a-zA-Z0-9_-]{1,200}$/.test(parsed.id)
+                    ? parsed.id
+                    : crypto.randomUUID();
+                const directory = join(tmpdir(), 'offscreen-rpg-packet-review');
+                await mkdir(directory, { recursive: true });
+                await writeFile(
+                  join(directory, `provider-response-${providerId}.json`),
+                  `${JSON.stringify(evidence, null, 2)}\n`,
+                  { flag: 'wx' },
+                );
+              },
+            }),
+            dispatchAuthority: () => liveDispatchPolicy,
             documentStore,
           }
-        : { scriptedGate: storytellerControl.evaluate, documentStore },
+        : memoryPacketReview || memoryEvaluationPacket
+          ? {
+              provider: async () => {
+                throw new Error(
+                  'Held memory packet attempted provider transport',
+                );
+              },
+              dispatchAuthority: () =>
+                memoryEvaluationPolicy?.kind === 'allowed'
+                  ? memoryEvaluationPolicy.policy
+                  : memoryDryRunPolicy.policy,
+              documentStore,
+            }
+          : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
   if (memoryPacketReview || memoryEvaluationPacket || memoryEvaluationRun) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
@@ -713,9 +906,7 @@ try {
       browserOrigin: origin,
       cookie,
       database,
-      ...(evaluationConfig
-        ? { contentId: 'seyda-neen-arrival.v1' }
-        : {}),
+      ...(evaluationConfig ? { contentId: 'seyda-neen-arrival.v1' } : {}),
     });
     if (evaluationConfig) {
       const inspection = evaluationPacketInspectionSchema.parse(
@@ -1017,7 +1208,7 @@ try {
       const localIdentity = await fetch(`${origin}/api/me`);
       if (
         !localIdentity.ok ||
-        (await localIdentity.json() as { email?: unknown }).email !==
+        ((await localIdentity.json()) as { email?: unknown }).email !==
           localUserEmail
       ) {
         throw new Error('Chamber local identity was not available.');
@@ -1028,10 +1219,10 @@ try {
     } else {
       console.log(
         storyMode
-          ? 'Local Story mode opened at http://127.0.0.1:3100/stories. It uses ordinary player pages, a dedicated persistent local database and no Chamber tools. Model spend: $0; no provider calls.'
+          ? `Local Story mode opened at http://127.0.0.1:3100/stories. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one bounded call per turn, no fallback or automatic retry. Starting the launcher made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`
           : packetReview
-          ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
-          : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
+            ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
+            : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
       );
       await Promise.race([
         new Promise<void>((resolve) => {

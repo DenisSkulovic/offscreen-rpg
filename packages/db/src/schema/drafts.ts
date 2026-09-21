@@ -19,6 +19,8 @@ export const storyDraft = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'restrict' }),
     storyteller: jsonb('storyteller').$type<unknown>(),
+    openingContentId: text('opening_content_id'),
+    characterName: text('character_name').notNull(),
     title: text('title').notNull(),
     premise: text('premise').notNull(),
     storytellingDirection: text('storytelling_direction').notNull(),
@@ -39,7 +41,7 @@ export const storyDraft = pgTable(
     check('story_draft_revision_positive', sql`${table.revision} > 0`),
     check(
       'story_draft_content_bounds',
-      sql`length(${table.title}) <= 160 AND length(${table.premise}) <= 6000 AND length(${table.storytellingDirection}) <= 2000`,
+      sql`length(${table.characterName}) <= 120 AND length(${table.title}) <= 160 AND length(${table.premise}) <= 6000 AND length(${table.storytellingDirection}) <= 2000`,
     ),
   ],
 );

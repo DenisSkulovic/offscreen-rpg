@@ -65,6 +65,38 @@ function providerDispatch(
 }
 
 /**
+ * OpenAI strict structured outputs intentionally support only a JSON Schema
+ * subset. Keep the domain validator expressive and project its captured schema
+ * at the transport boundary: discriminated unions become supported `anyOf`,
+ * defaults remain an application concern, and every object field is explicit.
+ */
+export function projectOpenAiStrictSchema(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(projectOpenAiStrictSchema);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const source = value as Record<string, unknown>;
+  const projected: Record<string, unknown> = {};
+  for (const [key, child] of Object.entries(source)) {
+    if (key === 'default') continue;
+    projected[key === 'oneOf' ? 'anyOf' : key] =
+      projectOpenAiStrictSchema(child);
+  }
+  if (
+    projected['properties'] &&
+    typeof projected['properties'] === 'object' &&
+    !Array.isArray(projected['properties'])
+  ) {
+    projected['required'] = Object.keys(
+      projected['properties'] as Record<string, unknown>,
+    );
+  }
+  return projected;
+}
+
+/**
  * Build the complete credential-free JSON body used by transport. Dry-run
  * inspection and live dispatch must share this function so reviewed evidence
  * cannot differ from the eventual request through adapter-only decoration.
@@ -80,8 +112,17 @@ export function buildOpenRouterRequest(
   const policy = task.execution.policy;
   const outputProtocol = policy.outputProtocol ?? 'native-json-schema';
   const responseTransport = policy.responseTransport ?? 'buffered-json';
+  const request =
+    outputProtocol === 'native-json-schema' && policy.provider === 'OpenAI'
+      ? {
+          ...selected.request,
+          outputSchema: projectOpenAiStrictSchema(
+            selected.request.outputSchema,
+          ),
+        }
+      : selected.request;
   reservationForRequest(
-    selected.request,
+    request,
     policy,
     task.resources.envelope.maxSerializedRequestBytes,
     task.resources.envelope.maxInputTokens,
@@ -89,7 +130,7 @@ export function buildOpenRouterRequest(
   );
   return {
     model: policy.model,
-    messages: selected.request.messages,
+    messages: request.messages,
     stream: responseTransport === 'streaming-sse',
     ...(responseTransport === 'streaming-sse'
       ? { stream_options: { include_usage: true } }
@@ -112,7 +153,7 @@ export function buildOpenRouterRequest(
             json_schema: {
               name: 'storyteller_result',
               strict: true,
-              schema: selected.request.outputSchema,
+              schema: request.outputSchema,
             },
           }
         : { type: 'json_object' as const },
@@ -343,6 +384,15 @@ const responseSchema = z.object({
     )
     .min(1)
     .max(1),
+});
+
+const rejectedSchemaEnvelope = z.object({
+  error: z.object({
+    code: z.union([z.number(), z.string()]),
+    metadata: z
+      .object({ provider_error_code: z.string().optional() })
+      .optional(),
+  }),
 });
 
 const streamChunkSchema = z.object({
@@ -599,6 +649,35 @@ export function createOpenRouterProvider(config: {
       });
       const parsed = responseSchema.safeParse(bounded.parsed);
       if (!parsed.success) {
+        const rejected = rejectedSchemaEnvelope.safeParse(bounded.parsed);
+        if (
+          response.status === 400 &&
+          !providerId &&
+          rejected.success &&
+          rejected.data.error.metadata?.provider_error_code ===
+            'invalid_json_schema'
+        ) {
+          return {
+            kind: 'failed',
+            failureCode: 'invalid_output',
+            usage: {
+              reportedCostMicrousd: 0n,
+              promptTokens: 0,
+              completionTokens: 0,
+              totalTokens: 0,
+              reasoningTokens: null,
+              cachedTokens: null,
+              cacheWriteTokens: null,
+            },
+            telemetry: {
+              durationMs: Date.now() - startedAt,
+              httpStatus,
+              providerId: null,
+              reportedModel: null,
+              finishReason: 'invalid-json-schema',
+            },
+          };
+        }
         return {
           kind: 'uncertain',
           telemetry: {

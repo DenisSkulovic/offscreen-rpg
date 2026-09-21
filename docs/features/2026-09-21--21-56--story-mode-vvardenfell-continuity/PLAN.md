@@ -46,31 +46,39 @@ Implementation owner: Codex for the current owner-requested implementation.
 - Drive at least five Storyteller turns through ordinary HTTP/application
   commands with player-selected options, checks, elapsed-time work/travel,
   canonical change and return recall. Record the compact ledger.
-- First run scripted/offline, then hold exact provider packets. Live generation
-  waits for accounting reconciliation and a finite captured allowance.
+- Mechanical fixtures remain in tests/Chamber, but ordinary Story mode uses
+  bounded live generation only. Capture exact provider evidence and stop on
+  uncertain delivery; do not silently fall back to scripted prose.
 - Exit: the permanent connected-POC and QA documents contain honest run
   evidence and remaining deficiencies; fold durable decisions into permanent
   owners and delete this completed feature folder.
 
 ## Current checkpoint
 
-- Current phase and exact next action: S3; exercise a meaningful Socucius
-  interaction and add only the smallest current-state representation exposed
-  by that real flow. S2 now imports the checked-in world/start/rules at local
-  startup and pairs the exact start reference with the Seyda mechanical seed.
-- Base/reviewed Git revision and relevant uncommitted changes: base `13a83bc`;
-  S2 connection changes are ready to commit.
-- Actual checks/results for this revision: affected package builds passed. An
-  ordinary HTTP run saved a grounded opening, started story
-  `aeb7daae-ea0b-403d-a6fc-6c6f62debcf0`, and produced campaign manifest
-  revision 2 with 14 entries including Socucius, Sellus, release thread,
-  player character, exact start/rule/world references and source passage.
-  `/stories` remained cookie-free and Story mode remained Chamber-tool-free.
-- Unresolved findings/blockers: the currently runnable local player path is
-  scripted/offline. A previous provider attempt remains unreconciled, so live
-  inference is deliberately stopped; this does not block mechanical Story
-  play or canonical-state work. Progressive changes to known people are S3,
-  not falsely claimed by merely seeding their identity documents.
-- Provider spend and accounting certainty: no calls in this work. A previous
-  memory-provider attempt remains uncertain, so all provider inference stays
-  stopped.
+- Current phase and exact next action: S3/S4 player observation. Story creation
+  now follows foundation → player role → Storyteller → review → opening. The
+  prepared Seyda experience and custom story are separate routes, a character
+  name reaches both Storyteller input and prepared mechanical state, and the
+  player-facing opening screen distinguishes queued, running, failed,
+  billing-uncertain and succeeded states. Reset the smoke-test database, leave
+  Story mode running, and inspect the owner's actual choices and continuations.
+- Base/reviewed Git revision and relevant uncommitted changes: base `2fee4ee`;
+  provider-only Story mode and the player-screen information architecture are
+  implemented locally.
+- Actual checks/results for this revision: all seven affected package builds and
+  the production web build passed. The exact OpenAI transport projection has no
+  `oneOf`, defaults or missing required object fields. The first live smoke
+  exposed an evidence-contract mismatch; after narrowing opening evidence to an
+  empty list, the second live smoke succeeded with a persisted “Released at
+  Seyda Neen” opening and four distinct executable choices.
+- Unresolved findings/blockers: visual automation could not initialize because
+  its local kernel-assets path was missing, so the owner remains the decisive
+  human UX review. Subsequent continuation quality and canonical mutations are
+  not yet proven.
+- Provider spend and accounting certainty: the first schema-valid but
+  application-invalid smoke cost provider-reported USD 0.00255815. The
+  successful smoke cost ledger-rounded USD 0.002247. After the provider's brief
+  reporting delay, an authenticated read at 2026-09-21T20:59:04Z reported total
+  account usage USD 0.004825326 and available USD 9.995174674, consistent with
+  the two attempts within microusd rounding. No automatic retries or fallback
+  calls occurred.

@@ -36,9 +36,6 @@ export default async function Stories() {
       </Link>
       <LiveStoryList initial={liveStories} />
       <DraftList initial={draftListSchema.parse(await response.json())} />
-      <p>
-        <Link href="/chamber">Open the scripted testing chamber</Link>
-      </p>
       <SignOutButton />
     </main>
   );

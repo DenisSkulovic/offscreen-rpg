@@ -9,13 +9,8 @@ import {
 } from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
-import type { StartPackageReference } from '@offscreen/contracts/campaign';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { paceOptions } from '@/src/features/play/campaign-play';
-import {
-  dispatchReviewResponseSchema,
-  type DispatchReviewView,
-} from '@offscreen/contracts/chamber';
 
 export function OpeningPreviewPanel({
   draft,
@@ -33,17 +28,11 @@ export function OpeningPreviewPanel({
     id: string;
     revision: number;
     contentId: string | undefined;
-    startPackage: StartPackageReference | undefined;
   } | null>(null);
   const storyId = useRef<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [contentId, setContentId] = useState(
-    initial?.contentId ?? mechanicalContent[0]?.id ?? '',
-  );
   const [locked, setLocked] = useState(false);
   const [pace, setPace] = useState('steady');
-  const [dispatchReview, setDispatchReview] =
-    useState<DispatchReviewView | null>(null);
   useEffect(() => {
     const parsed = z
       .uuid()
@@ -83,19 +72,6 @@ export function OpeningPreviewPanel({
             return;
           }
           setPreview(result.preview);
-          if (result.preview?.mode === 'provider') {
-            const reviewResponse = await fetch(
-              `/api/chamber-tools/generations/${result.preview.id}/dispatch-review`,
-              { cache: 'no-store', signal: controller.signal },
-            );
-            if (reviewResponse.ok) {
-              const captured = dispatchReviewResponseSchema.parse(
-                await reviewResponse.json(),
-              ).review;
-              setDispatchReview(captured);
-              if (captured.state === 'awaiting-review') return;
-            }
-          }
           if (
             !result.preview ||
             !['pending', 'running'].includes(result.preview.state)
@@ -137,13 +113,11 @@ export function OpeningPreviewPanel({
             id: preview.id,
             revision: preview.sourceRevision,
             contentId: preview.contentId,
-            startPackage: preview.startPackage,
           }
         : {
             id: crypto.randomUUID(),
             revision: draft.revision,
-            contentId: contentId || undefined,
-            startPackage: mechanicalContent.find((entry) => entry.id === contentId)?.startPackage,
+            contentId: draft.openingContentId ?? undefined,
           });
     attempt.current = request;
     setPending(true);
@@ -157,7 +131,6 @@ export function OpeningPreviewPanel({
           body: JSON.stringify({
             expectedRevision: request.revision,
             contentId: request.contentId,
-            startPackage: request.startPackage,
           }),
           signal: AbortSignal.timeout(15000),
         },
@@ -253,61 +226,53 @@ export function OpeningPreviewPanel({
       setStarting(false);
     }
   }
-  let generateLabel = 'Generate opening candidate';
-  if (preview) {
-    generateLabel = 'Generate another opening candidate';
-  }
-  if (unresolved) {
-    generateLabel = 'Awaiting opening candidate';
-  }
-  if (message) {
-    generateLabel = 'Retry opening candidate';
-  }
+  let generateLabel = 'Create opening';
+  if (preview?.state === 'succeeded')
+    generateLabel = 'Create a different opening';
+  if (preview?.state === 'failed')
+    generateLabel = 'Try creating the opening again';
+  if (preview?.state === 'pending') generateLabel = 'Opening request queued…';
+  if (preview?.state === 'running') generateLabel = 'Storyteller is writing…';
+  if (preview?.state === 'uncertain') generateLabel = 'Generation stopped';
   if (pending) {
-    generateLabel = 'Preparing candidate…';
+    generateLabel = 'Sending to Storyteller…';
   }
+  const preparedStart = mechanicalContent.find(
+    (entry) => entry.id === draft.openingContentId,
+  );
   return (
-    <main className="editor">
+    <main className="editor opening-editor">
       <SessionRefresh />
-      <p className="eyebrow">Offscreen RPG · Opening candidate</p>
-      <h1>{draft.title || 'A possible beginning.'}</h1>
-      <p className="field-help">
-        {preview?.mode === 'provider'
-          ? 'This opening was requested from the selected storyteller. Start uses exactly the candidate you review here.'
-          : preview?.contentId
-            ? 'Offline mechanical rehearsal: the saved seed is planned through the same private-plan boundary used after each action. No model call is made.'
-            : 'Offline narrative rehearsal: authored scenes exercise choices, continuity and real waits without model calls. Arbitrary premises are saved but are not improvised.'}
-      </p>
-      {preview?.storyteller ? (
-        <p>Storyteller: {preview.storyteller.name}</p>
-      ) : null}
-      <p>Saved premise: {draft.premise || 'No premise yet.'}</p>
-      {draft.storyteller ? (
-        <label>
-          Opening seed{' '}
-          <select
-            disabled={pending || starting || Boolean(unresolved)}
-            value={contentId}
-            onChange={(event) => setContentId(event.target.value)}
-          >
-            <option value="">Blank narrative rehearsal</option>
-            {mechanicalContent.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.name}
-              </option>
-            ))}
-          </select>
-          <span className="field-help">
-            Authored starting-state examples. The offline planner creates the
-            candidate's private actions; selecting a seed does not rewrite an
-            existing candidate.
-          </span>
-        </label>
+      <p className="eyebrow">Offscreen RPG · Your opening</p>
+      <h1>{draft.title || 'Untitled story'}</h1>
+      <dl className="opening-setup-summary">
+        <div>
+          <dt>Foundation</dt>
+          <dd>{preparedStart?.name ?? 'Custom story'}</dd>
+        </div>
+        <div>
+          <dt>Storyteller</dt>
+          <dd>
+            {preview?.storyteller?.name ??
+              draft.storyteller?.id ??
+              'Selected profile'}
+          </dd>
+        </div>
+      </dl>
+      {!preview ? (
+        <section className="opening-callout">
+          <h2>Ready to create the first scene.</h2>
+          <p>
+            One bounded Storyteller call will use this saved setup and the
+            prepared world material. It may cost up to one cent; there is no
+            automatic retry or fallback model.
+          </p>
+        </section>
       ) : null}
       {preview && (
         <section aria-label="Opening candidate">
           <p className="field-help">
-            Based on saved draft revision {preview.sourceRevision}.
+            Based on saved setup revision {preview.sourceRevision}.
           </p>
           {(!preview.isCurrent ||
             preview.sourceRevision !== draft.revision) && (
@@ -345,50 +310,48 @@ export function OpeningPreviewPanel({
             </>
           ) : null}
           {['pending', 'running'].includes(preview.state) && (
-            <p>
-              Request saved. You can leave this page while the candidate is
-              prepared.
-            </p>
+            <div className="opening-callout" role="status">
+              <h2>
+                {preview.state === 'pending'
+                  ? 'Opening queued.'
+                  : 'The Storyteller is writing.'}
+              </h2>
+              <p>
+                You may leave this page and return. This screen checks the same
+                saved request; it does not submit another one.
+              </p>
+            </div>
           )}
           {preview.state === 'uncertain' && (
-            <p>This request needs reconciliation before another can begin.</p>
+            <div className="opening-callout opening-problem" role="alert">
+              <h2>Generation stopped for review.</h2>
+              <p>
+                The provider response or its billing could not be confirmed, so
+                the game will not retry or spend again automatically.
+              </p>
+            </div>
           )}
-          {preview.state === 'failed' && <p>The previous request failed.</p>}
+          {preview.state === 'failed' && (
+            <div className="opening-callout opening-problem" role="alert">
+              <h2>The opening was not created.</h2>
+              <p>
+                The failed request is recorded. You may make one new attempt
+                below.
+              </p>
+            </div>
+          )}
         </section>
       )}
-      {dispatchReview ? (
-        <section aria-label="Held provider request">
-          <h2>Held before provider dispatch</h2>
-          <p>
-            No provider request, reservation, or model charge has occurred. This
-            immutable packet is waiting for developer review.
-          </p>
-          <dl>
-            <dt>State</dt>
-            <dd>{dispatchReview.state}</dd>
-            <dt>Packet SHA-256</dt>
-            <dd><code>{dispatchReview.packetSha256}</code></dd>
-          </dl>
-          <details>
-            <summary>Structural inspection</summary>
-            <pre>{JSON.stringify(dispatchReview.inspection, null, 2)}</pre>
-          </details>
-          <details>
-            <summary>Exact credential-free provider body</summary>
-            <pre>{JSON.stringify(dispatchReview.packet, null, 2)}</pre>
-          </details>
-        </section>
-      ) : null}
       {canStart && preview?.storyteller ? (
         <fieldset disabled={starting || pending}>
-          <legend>Campaign rules</legend>
+          <legend>Before you begin</legend>
           <label>
             <input
               type="checkbox"
               checked={locked}
               onChange={(event) => setLocked(event.target.checked)}
             />{' '}
-            Lock storyteller and speed settings at Start
+            Keep Storyteller and speed settings fixed for this story
           </label>
           <label>
             Game speed{' '}
@@ -403,9 +366,9 @@ export function OpeningPreviewPanel({
               ))}
             </select>
           </label>
-          <p>
-            Nonlethal rules subset. Pausing remains available. Start preserves
-            the reviewed content and choices.
+          <p className="field-help">
+            You can pause play later. Start preserves exactly the opening shown
+            above.
           </p>
         </fieldset>
       ) : null}
@@ -434,12 +397,11 @@ export function OpeningPreviewPanel({
       <p role="status">{message}</p>
       {message && (
         <p>
-          <a href={`/stories/${draft.id}/preview`}>Reload preview</a> ·{' '}
-          <a href="/sign-in">Sign in</a>
+          <a href={`/stories/${draft.id}/preview`}>Reload this opening</a>
         </p>
       )}
       <p>
-        <a href={`/stories/${draft.id}`}>Back to draft</a>
+        <a href={`/stories/${draft.id}`}>Back to story setup</a>
       </p>
     </main>
   );

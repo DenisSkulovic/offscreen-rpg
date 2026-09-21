@@ -46,6 +46,12 @@ The catalogue contains:
   mechanics. A passing journey still requires the finite supervisor, five
   committed Storyteller turns, canonical change and later recall; catalogue
   presence alone is not evidence.
+- Story-creation dependency order, not yet available: choose the prepared Seyda
+  experience before entering compatible role details, then select the
+  Storyteller and review one setup summary. The custom route must not expose or
+  default to the Seyda package. Returning resumes the same route and step. A
+  provider rejection must end in an actionable failed state; billing ambiguity
+  must hold separately and must not render as ordinary generation progress.
 - exact provider-packet dry run and dispatch review, structurally and durably implemented through application controls: focused fake-provider evidence proves zero attempts/calls while held and one call after exact release. `pnpm chamber:packet` exercises an actual pre-story opening and preserves its credential-free packet under a generation-scoped filename. Developer-only GET/PUT endpoints expose owner-scoped inspection and exact hash/revision release or rejection; the offline QA case uses rejection and never authorizes live release.
 - alternate-continuity rehearsal: preserve a supported first decision as a fork, take a different option in each story, and confirm both histories, current passages and lineage remain independently readable. Phase 1 exercises only narrative revision-one checkpoints; a blocked mechanical or historical position is evidence that snapshot coverage is still missing, not permission to copy newer state backward.
 - reusable start package: both the abstract/microbe and conventional rich-content variants are available through the focused provider-free API driver. Together they prove imported-package admission, one final campaign root, exact references/provenance, distinct activation classes, campaign-specific obligation identity, idempotent retry and revision pinning after a reusable package publishes revision two.

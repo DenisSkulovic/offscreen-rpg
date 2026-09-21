@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { draftIdSchema } from '@offscreen/contracts/drafts';
 import { apiOrigin, requireViewer } from '@/src/lib/viewer';
 import { DraftEditor } from '@/src/features/stories/draft-editor';
+import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
 
 export default async function NewDraft({
   searchParams,
@@ -20,5 +21,24 @@ export default async function NewDraft({
   if (response.ok) redirect(`/stories/${parsed.data}`);
   if (response.status === 401) redirect('/sign-in');
   if (response.status !== 404) throw new Error('Draft could not be loaded');
-  return <DraftEditor id={parsed.data} initial={null} />;
+  const catalogueResponse = await fetch(
+    `${apiOrigin()}/api/drafts/${parsed.data}/openings/catalogue`,
+    {
+      headers: { cookie },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (!catalogueResponse.ok)
+    throw new Error('Story starts could not be loaded');
+  return (
+    <DraftEditor
+      id={parsed.data}
+      initial={null}
+      preparedStarts={
+        mechanicalContentCatalogueSchema.parse(await catalogueResponse.json())
+          .entries
+      }
+    />
+  );
 }
