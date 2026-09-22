@@ -3776,7 +3776,7 @@ test(
               id: runId,
               accountId,
               limitMicrousd: 1000000n,
-              maxAttempts: 4,
+              maxAttempts: 6,
               enabled: true,
             });
             const execution: ExecutionPolicy = {
@@ -3950,6 +3950,47 @@ test(
             assert.ok(settledAttempt.dispatchedAt);
             assert.ok(settledAttempt.settledAt);
             assert.equal(settledAttempt.durationMs, 25);
+            const overlappingId = randomUUID();
+            await profiled.request(ownerId, draftId, overlappingId, 1);
+            let overlapCalls = 0;
+            let releaseProvider!: () => void;
+            const providerReleased = new Promise<void>((resolve) => {
+              releaseProvider = resolve;
+            });
+            let enterProvider!: () => void;
+            const providerEntered = new Promise<void>((resolve) => {
+              enterProvider = resolve;
+            });
+            const overlapping = createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (task) => {
+                overlapCalls++;
+                enterProvider();
+                await providerReleased;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('overlapping-provider-id'),
+                };
+              },
+            });
+            const firstDelivery = overlapping.complete(overlappingId);
+            await providerEntered;
+            await overlapping.complete(overlappingId);
+            assert.equal(overlapCalls, 1);
+            assert.equal((await budget.inspect(accountId)).stopped, false);
+            releaseProvider();
+            await firstDelivery;
+            const [overlappingAttempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, overlappingId));
+            assert.equal(overlappingAttempt?.state, 'settled');
+            assert.equal(overlappingAttempt?.chargedMicrousd, 10n);
             const uncertainId = randomUUID();
             await profiled.request(ownerId, draftId, uncertainId, 1);
             const uncertain = createStorytellerRuntime(database, {

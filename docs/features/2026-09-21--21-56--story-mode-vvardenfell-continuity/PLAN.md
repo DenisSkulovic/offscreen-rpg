@@ -61,28 +61,32 @@ Implementation owner: Codex for the current owner-requested implementation.
   [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md).
   Headless Story mode and the `story:play` client now cover ordinary creation,
   observation, selection, waiting and explicit retry without UI input. Exact
-  next action is an owner-requested, bounded fresh play session, first on Luna
-  and then as a separate controlled Sol probe if requested. Each mutating CLI
-  invocation requires `--confirm-live`; no automatic retry or unattended loop
-  was introduced.
-- Reviewed source: `95aa0e5` includes the earlier profile-scope and funding-stop
-  repairs. This pass adds the headless launcher, self-play client, private
-  trajectory capture and guarded model/cost selection. Earlier session evidence
-  below remains historical; the six recent raw responses were re-inspected, but
-  fresh `story:inspect` was blocked by Docker pipe permissions.
+  next action is review and explicit release of the stopped funding account
+  after the now-known overlapping-wake charge is reconciled. Only then may the
+  bounded profile play session resume. Each mutating CLI invocation requires
+  `--confirm-live`; no automatic retry or unattended loop was introduced.
+- Reviewed source: `fe8297c` contains the headless launcher, self-play client,
+  private trajectory capture and guarded model/cost selection. Fresh local
+  infrastructure, database inspection, provider evidence and Temporal history
+  were available in this pass.
 - Unresolved findings: mild comedy, deferred intent fulfillment, unused-branch
   output burden and owner dissatisfaction need controlled diagnosis. A stronger
   model probe does not require further speculative Luna prompt edits first.
   The owner now requires a fixed real-second tick with model-proposed fictional
   duration; [the time contract](../../technical/ticks-and-tags.md#target-one-real-second-tick)
   records that unimplemented change. UI polish is lower priority.
-- Provider spend and accounting certainty: story
-  `3346efc0-0210-43dc-a2b4-823d2382b82c` spent ledger-settled USD 0.007323
-  across exactly two successful calls (17,016 total tokens). The next action
-  made no provider attempt and has no charge; it failed local admission because
-  the shared funding row was stopped with a stale USD 0.009716 aggregate
-  reservation from an older now-unsent schema rejection. No retry or fallback
-  call occurred.
+- Provider spend and accounting certainty: fresh Driven Adventure story
+  `0cfacb7a-9b96-4287-91ad-19c9b662bccf` spent USD 0.002755 on its opening and
+  USD 0.003922 on its first consequence. The ledger is USD 0.032814 settled,
+  USD 0 reserved, with no uncertain attempts. OpenRouter independently reported
+  USD 0.037632896 cumulative usage and USD 9.962367104 remaining credit at
+  2026-09-22T12:13:13.401Z; the delta from the pre-play snapshot matches these
+  two calls. Funding remains stopped because
+  the receipt's second publication wake overlapped the original 19.746-second
+  call and temporarily classified that exact dispatched attempt as uncertain.
+  The original completion settled with provider ID
+  `gen-1790078231-5zv68iGbXNrOfmKIP3Wy`; publication remained blocked. No retry,
+  fallback, additional profile or model switch followed.
 
 ## First owner play evidence — 2026-09-22
 

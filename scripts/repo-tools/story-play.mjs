@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 const args = process.argv.slice(2);
 const command = args.shift();
 const origin = option('--origin') ?? process.env['OFFSCREEN_STORY_ORIGIN'] ?? 'http://127.0.0.1:3001';
+const appOrigin = process.env['OFFSCREEN_STORY_APP_ORIGIN'] ?? 'http://127.0.0.1:3100';
 const evidenceRoot = join(process.cwd(), 'data', 'story-agent');
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const live = args.includes('--confirm-live');
@@ -26,10 +27,12 @@ function requireLive(action) {
 }
 
 async function request(path, init = {}) {
+  const method = init.method ?? 'GET';
   const response = await fetch(`${origin}${path}`, {
     ...init,
     headers: {
       accept: 'application/json',
+      ...(method === 'GET' ? {} : { origin: new URL(appOrigin).origin }),
       ...(init.body ? { 'content-type': 'application/json' } : {}),
       ...init.headers,
     },
@@ -199,8 +202,21 @@ async function choose(storyId, selection) {
   requireLive('choose');
   const before = await readStory(storyId);
   const narrative = before.current?.interaction?.specification;
+  const path = selection.split('/').filter(Boolean);
+  const offer = before.campaign?.offer;
+  const leaf = offer?.nodes.find((node) => node.id === path.at(-1));
+  const campaignSelection =
+    offer && leaf?.action && pathFor(offer.nodes, leaf.id).join('/') === path.join('/');
   let admitted;
-  if (narrative?.kind === 'choice.v1' && narrative.options.some((option) => option.id === selection)) {
+  if (campaignSelection) {
+    admitted = await request(`/api/stories/${storyId}/actions/${randomUUID()}`, {
+      method: 'PUT',
+      body: JSON.stringify({ expectedRevision: before.revision, offerId: offer.id, path }),
+    });
+  } else if (
+    narrative?.kind === 'choice.v1' &&
+    narrative.options.some((option) => option.id === selection)
+  ) {
     admitted = await request(`/api/stories/${storyId}/resolutions/${randomUUID()}`, {
       method: 'PUT',
       body: JSON.stringify({
@@ -212,21 +228,16 @@ async function choose(storyId, selection) {
       }),
     });
   } else {
-    const path = selection.split('/').filter(Boolean);
-    const offer = before.campaign?.offer;
-    const leaf = offer?.nodes.find((node) => node.id === path.at(-1));
-    if (!offer || !leaf?.action || pathFor(offer.nodes, leaf.id).join('/') !== path.join('/')) {
-      throw new Error(`selection is not a current narrative option or selectable campaign path: ${selection}`);
-    }
-    admitted = await request(`/api/stories/${storyId}/actions/${randomUUID()}`, {
-      method: 'PUT',
-      body: JSON.stringify({ expectedRevision: before.revision, offerId: offer.id, path }),
-    });
+    throw new Error(`selection is not a current narrative option or selectable campaign path: ${selection}`);
   }
   const final = await waitForStory(storyId, before);
   const summary = summarize(final);
-  const path = await record('choice', { selection, admitted: summarize(admitted), final: summary }, storyId);
-  return { ...summary, evidencePath: path };
+  const evidencePath = await record(
+    'choice',
+    { selection, admitted: summarize(admitted), final: summary },
+    storyId,
+  );
+  return { ...summary, evidencePath };
 }
 
 async function retry(storyId) {

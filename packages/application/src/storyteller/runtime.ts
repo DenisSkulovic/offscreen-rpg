@@ -19,49 +19,62 @@ export function createStorytellerRuntime(
   options: StorytellerRuntimeOptions = {},
 ) {
   const execution = createStorytellerExecution(database, options);
+  // A prepared finite action can enqueue a second publication wake while the
+  // original provider activity is still running. Both notices intentionally
+  // remain durable, but only one activity in this worker process may classify
+  // or dispatch the generation at a time. After a process restart this set is
+  // empty, so the existing durable running/attempt recovery path still owns an
+  // interrupted transport.
+  const activeGenerationIds = new Set<string>();
 
   return {
     async complete(id: string) {
-      const [record] = await database.db
-        .select()
-        .from(generation)
-        .where(
-          and(eq(generation.id, id), eq(generation.kind, storytellerKind)),
-        );
-      if (!record) {
-        throw new StoryError('not_found');
-      }
-      const task = storytellerTaskSchema.parse(record.input);
-      if (record.state === 'pending' || record.state === 'running') {
-        const executionDisposition = await execution.execute(record, task);
-        if (
-          executionDisposition === 'held' ||
-          executionDisposition === 'stopped'
-        ) {
-          return;
-        }
-      }
+      if (activeGenerationIds.has(id)) return;
+      activeGenerationIds.add(id);
       try {
-        await publishStorytellerResult(
-          database,
-          id,
-          options.realDurationMs ?? (() => 20000),
-          options.documentStore,
-        );
-      } catch (error) {
-        if (!(error instanceof StoryError)) {
-          throw error;
+        const [record] = await database.db
+          .select()
+          .from(generation)
+          .where(
+            and(eq(generation.id, id), eq(generation.kind, storytellerKind)),
+          );
+        if (!record) {
+          throw new StoryError('not_found');
         }
-        await database.db.transaction(async (tx) => {
-          await tx
-            .update(storytellerPublication)
-            .set({ state: 'blocked', failureCode: 'publication_blocked' })
-            .where(eq(storytellerPublication.generationId, id));
-          await tx
-            .update(generation)
-            .set({ statusRevision: sql`${generation.statusRevision} + 1` })
-            .where(eq(generation.id, id));
-        });
+        const task = storytellerTaskSchema.parse(record.input);
+        if (record.state === 'pending' || record.state === 'running') {
+          const executionDisposition = await execution.execute(record, task);
+          if (
+            executionDisposition === 'held' ||
+            executionDisposition === 'stopped'
+          ) {
+            return;
+          }
+        }
+        try {
+          await publishStorytellerResult(
+            database,
+            id,
+            options.realDurationMs ?? (() => 20000),
+            options.documentStore,
+          );
+        } catch (error) {
+          if (!(error instanceof StoryError)) {
+            throw error;
+          }
+          await database.db.transaction(async (tx) => {
+            await tx
+              .update(storytellerPublication)
+              .set({ state: 'blocked', failureCode: 'publication_blocked' })
+              .where(eq(storytellerPublication.generationId, id));
+            await tx
+              .update(generation)
+              .set({ statusRevision: sql`${generation.statusRevision} + 1` })
+              .where(eq(generation.id, id));
+          });
+        }
+      } finally {
+        activeGenerationIds.delete(id);
       }
     },
   };
