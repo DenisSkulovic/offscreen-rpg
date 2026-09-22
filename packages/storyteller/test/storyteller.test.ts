@@ -609,6 +609,12 @@ function beaconMechanicalOpening() {
   });
 }
 
+test('transmitted immediate checks cannot request situational modifiers', () => {
+  const schema = JSON.stringify(mechanicalOpening().request.outputSchema);
+  assert.match(schema, /difficultyBasis/);
+  assert.match(schema, /"maxItems":0/);
+});
+
 test('mechanical opening captures fresh plans instead of an authored offer', () => {
   const task = mechanicalOpening();
   assert.equal('offer' in task.context.mechanicalOpening!, false);
@@ -1657,6 +1663,84 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     assert.equal(rejected.usage.reportedCostMicrousd, 0n);
     assert.equal(rejected.telemetry.providerId, null);
     assert.equal(rejected.telemetry.finishReason, 'invalid-json-schema');
+  }
+  const paddedComplete = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        JSON.stringify({
+          id: 'padded-complete',
+          model: 'test/model',
+          usage: {
+            cost: 0.000002,
+            prompt_tokens: 11,
+            completion_tokens: 4,
+            total_tokens: 15,
+          },
+          choices: [
+            {
+              finish_reason: 'length',
+              message: {
+                content: `${JSON.stringify(scriptedStorytellerResult(task))}   `,
+              },
+            },
+          ],
+        }),
+      ),
+  });
+  const acceptedLength = await paddedComplete(providerTask);
+  assert.equal(acceptedLength.kind, 'result');
+  const truncatedLength = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        JSON.stringify({
+          id: 'truncated-length',
+          model: 'test/model',
+          usage: {
+            cost: 0.000002,
+            prompt_tokens: 11,
+            completion_tokens: 4,
+            total_tokens: 15,
+          },
+          choices: [
+            {
+              finish_reason: 'length',
+              message: { content: '{"version":1,"scene":' },
+            },
+          ],
+        }),
+      ),
+  });
+  const truncated = await truncatedLength(providerTask);
+  assert.equal(truncated.kind, 'failed');
+  if (truncated.kind === 'failed') {
+    assert.equal(truncated.failureCode, 'invalid_output');
+  }
+  const unavailable = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            message: 'Provider returned error',
+            code: 503,
+            metadata: { provider_error_code: 'provider_unavailable' },
+          },
+        }),
+        { status: 200, headers: { 'x-generation-id': 'unbilled-generation' } },
+      ),
+  });
+  const providerDown = await unavailable(providerTask);
+  assert.equal(providerDown.kind, 'failed');
+  if (providerDown.kind === 'failed') {
+    assert.equal(providerDown.failureCode, 'provider_unavailable');
+    assert.equal(providerDown.usage.reportedCostMicrousd, 0n);
+    assert.equal(providerDown.telemetry.providerId, null);
+    assert.equal(providerDown.telemetry.httpStatus, 200);
   }
   const missingUsage = createOpenRouterProvider({
     enabled: true,

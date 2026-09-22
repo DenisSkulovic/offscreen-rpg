@@ -284,6 +284,17 @@ export function createStorytellerExecution(
         await saveOutcome(record.id, attemptId, { state: 'uncertain' });
         return;
       }
+      if (
+        outcome.kind === 'failed' &&
+        outcome.failureCode === 'provider_unavailable'
+      ) {
+        await budget.confirmUnsent(attemptId, task.execution, outcome.telemetry);
+        await saveOutcome(record.id, attemptId, {
+          state: 'failed',
+          failureCode: 'provider_unavailable',
+        });
+        return;
+      }
       let output: unknown = null;
       let failureCode = outcome.kind === 'failed' ? outcome.failureCode : null;
       if (outcome.kind === 'result') {

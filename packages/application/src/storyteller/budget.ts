@@ -517,6 +517,88 @@ export function createStorytellerBudget(database: Database) {
           .where(eq(funding.id, execution.accountId));
       });
     },
+    /**
+     * A provider error envelope proved the dispatched request was not accepted
+     * and reported no charge. Release it as unsent so the same intention can
+     * be retried without stopping the funding account.
+     */
+    async confirmUnsent(
+      id: string,
+      execution: ProviderExecution,
+      telemetry: ProviderTelemetry,
+    ) {
+      await database.db.transaction(async (tx) => {
+        const { account, allowance } = await lockAllowance(tx, execution);
+        const [record] = await tx
+          .select()
+          .from(attempt)
+          .where(
+            and(
+              eq(attempt.id, id),
+              eq(attempt.runId, execution.runId),
+              eq(attempt.state, 'dispatched'),
+            ),
+          )
+          .for('update');
+        if (!record) return;
+        const [operationRecord] = await tx
+          .select()
+          .from(operation)
+          .where(eq(operation.generationId, record.generationId))
+          .for('update');
+        if (!operationRecord) {
+          throw new Error('Missing Storyteller operation');
+        }
+        await tx
+          .update(attempt)
+          .set({
+            state: 'unsent',
+            chargedMicrousd: 0n,
+            reconciliation: 'unavailable',
+            httpStatus: telemetry.httpStatus,
+            providerId: null,
+            reportedModel: null,
+            finishReason: telemetry.finishReason,
+            durationMs: telemetry.durationMs,
+            settledAt: sql`clock_timestamp()`,
+          })
+          .where(eq(attempt.id, id));
+        await tx
+          .update(funding)
+          .set({
+            reservedMicrousd:
+              account.reservedMicrousd - record.reservedMicrousd,
+          })
+          .where(eq(funding.id, account.id));
+        await tx
+          .update(run)
+          .set({
+            reservedMicrousd:
+              allowance.reservedMicrousd - record.reservedMicrousd,
+            admittedAttempts: Math.max(0, allowance.admittedAttempts - 1),
+          })
+          .where(eq(run.id, allowance.id));
+        await tx
+          .update(operation)
+          .set({
+            state: 'open',
+            dispatchedRounds: Math.max(0, operationRecord.dispatchedRounds - 1),
+            reservedInputTokens:
+              operationRecord.reservedInputTokens - record.reservedInputTokens,
+            reservedGeneratedTokens:
+              operationRecord.reservedGeneratedTokens -
+              record.reservedGeneratedTokens,
+            reservedReasoningTokens:
+              operationRecord.reservedReasoningTokens -
+              record.reservedReasoningTokens,
+            reservedMicrousd:
+              operationRecord.reservedMicrousd - record.reservedMicrousd,
+            updatedAt: sql`clock_timestamp()`,
+          })
+          .where(eq(operation.generationId, record.generationId));
+        await markUsageWindows(tx, record.id, 'released');
+      });
+    },
     async settle(input: {
       id: string;
       execution: ProviderExecution;

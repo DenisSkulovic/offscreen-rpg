@@ -364,6 +364,50 @@ export const contextInputSchema = z.strictObject({
 });
 export type StorytellerContext = z.infer<typeof contextInputSchema>;
 
+function providerCampaignTime(
+  time: NonNullable<StorytellerContext['campaignTime']>,
+) {
+  const label = time.label
+    .replaceAll('ticks', 'fictional seconds')
+    .replaceAll('tick', 'fictional second');
+  if (time.kind === 'elapsed') {
+    return {
+      kind: time.kind,
+      definitionId: time.definitionId,
+      definitionRevision: time.definitionRevision,
+      elapsedFictionalSeconds: time.tick,
+      wholeUnits: time.wholeUnits,
+      fictionalSecondsOfUnit: time.tickOfUnit,
+      unitLabel: time.unitLabel,
+      label,
+    };
+  }
+  if (time.kind === 'ordinal-days') {
+    return {
+      kind: time.kind,
+      definitionId: time.definitionId,
+      definitionRevision: time.definitionRevision,
+      elapsedFictionalSeconds: time.tick,
+      day: time.day,
+      fictionalSecondsOfDay: time.tickOfDay,
+      label,
+    };
+  }
+  return {
+    kind: time.kind,
+    definitionId: time.definitionId,
+    definitionRevision: time.definitionRevision,
+    elapsedFictionalSeconds: time.tick,
+    year: time.year,
+    monthId: time.monthId,
+    monthLabel: time.monthLabel,
+    day: time.day,
+    fictionalSecondsOfDay: time.tickOfDay,
+    eraLabel: time.eraLabel,
+    label,
+  };
+}
+
 export function contextRequestSections(context: StorytellerContext) {
   const handle = (id: string) => {
     const passage = context.evidence.find((item) => item.id === id);
@@ -427,11 +471,23 @@ export function contextRequestSections(context: StorytellerContext) {
             },
           }
         : {}),
-      ...(context.resolution ? { resolution: context.resolution } : {}),
+      ...(context.resolution
+        ? {
+            resolution: {
+              character: context.resolution.character,
+              storyFacts: context.resolution.storyFacts,
+              elapsedFictionalSeconds: context.resolution.tick,
+              offer: context.resolution.offer,
+              receipts: context.resolution.receipts,
+            },
+          }
+        : {}),
       ...(context.campaignSettings
         ? { campaignSettings: context.campaignSettings }
         : {}),
-      ...(context.campaignTime ? { campaignTime: context.campaignTime } : {}),
+      ...(context.campaignTime
+        ? { campaignTime: providerCampaignTime(context.campaignTime) }
+        : {}),
       ...(context.worldConditions
         ? { worldConditions: context.worldConditions }
         : {}),

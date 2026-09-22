@@ -43,7 +43,11 @@ const settlementSchema = z.discriminatedUnion('kind', [
   }),
   z.strictObject({
     kind: z.literal('failed'),
-    failureCode: z.enum(['provider_refusal', 'invalid_output']),
+    failureCode: z.enum([
+      'provider_refusal',
+      'provider_unavailable',
+      'invalid_output',
+    ]),
     usage: usageSchema,
     telemetry: telemetrySchema,
   }),
@@ -265,6 +269,17 @@ export function createMemoryProviderRoundRuntime(
     if (settlement.kind === 'uncertain') {
       await budget.uncertain(round.attemptId, execution, settlement.telemetry);
       throw new MemoryProviderRoundError('provider-uncertain');
+    }
+    if (
+      settlement.kind === 'failed' &&
+      settlement.failureCode === 'provider_unavailable'
+    ) {
+      await budget.confirmUnsent(
+        round.attemptId,
+        execution,
+        settlement.telemetry,
+      );
+      throw new MemoryProviderRoundError('provider-refusal');
     }
     await budget.settle({
       id: round.attemptId,

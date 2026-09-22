@@ -32,7 +32,10 @@ export type ProviderOutcome =
     }
   | {
       kind: 'failed';
-      failureCode: 'provider_refusal' | 'invalid_output';
+      failureCode:
+        | 'provider_refusal'
+        | 'provider_unavailable'
+        | 'invalid_output';
       usage: ProviderUsage;
       telemetry: ProviderTelemetry;
     }
@@ -433,6 +436,16 @@ export type OpenRouterResponseDiagnostic = Readonly<{
   >;
 }>;
 
+function validatedModelOutput(content: string, task: StorytellerTask) {
+  try {
+    const output = JSON.parse(content) as unknown;
+    validateStorytellerResult(task, output);
+    return output;
+  } catch {
+    return null;
+  }
+}
+
 function diagnosticIssues(
   error: z.ZodError,
 ): OpenRouterResponseDiagnostic['issues'] {
@@ -674,15 +687,23 @@ export function createOpenRouterProvider(config: {
       const parsed = responseSchema.safeParse(bounded.parsed);
       if (!parsed.success) {
         const rejected = rejectedSchemaEnvelope.safeParse(bounded.parsed);
+        const providerErrorCode = rejected.success
+          ? rejected.data.error.metadata?.provider_error_code
+          : undefined;
         if (
-          response.status === 400 &&
           rejected.success &&
-          rejected.data.error.metadata?.provider_error_code ===
-            'invalid_json_schema'
+          (providerErrorCode === 'provider_unavailable' ||
+            (response.status === 400 &&
+              providerErrorCode === 'invalid_json_schema'))
         ) {
+          // A provider_unavailable envelope has no usage and is not a delivered
+          // generation. Leaving it uncertain stops the funding account.
           return {
             kind: 'failed',
-            failureCode: 'invalid_output',
+            failureCode:
+              providerErrorCode === 'provider_unavailable'
+                ? 'provider_unavailable'
+                : 'invalid_output',
             usage: {
               reportedCostMicrousd: 0n,
               promptTokens: 0,
@@ -697,7 +718,10 @@ export function createOpenRouterProvider(config: {
               httpStatus,
               providerId: null,
               reportedModel: null,
-              finishReason: 'invalid-json-schema',
+              finishReason:
+                providerErrorCode === 'provider_unavailable'
+                  ? 'provider-unavailable'
+                  : 'invalid-json-schema',
             },
           };
         }
@@ -732,15 +756,22 @@ export function createOpenRouterProvider(config: {
         reportedModel: parsed.data.model,
         finishReason: choice?.finish_reason ?? null,
       };
+      const content = choice?.message.content ?? '';
+      const completeDespiteLength =
+        choice?.finish_reason === 'length' &&
+        response.ok &&
+        !choice.message.refusal &&
+        validatedModelOutput(content, task) !== null;
       if (
         !choice ||
         !response.ok ||
         choice.message.refusal ||
-        choice.finish_reason !== 'stop'
+        (choice.finish_reason !== 'stop' && !completeDespiteLength)
       ) {
         return {
           kind: 'failed',
-          failureCode: 'provider_refusal',
+          failureCode:
+            choice?.finish_reason === 'length' ? 'invalid_output' : 'provider_refusal',
           usage,
           telemetry,
         };

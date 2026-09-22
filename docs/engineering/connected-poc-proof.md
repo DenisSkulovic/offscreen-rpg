@@ -74,12 +74,12 @@ The persisted corrected Sol state still says `warehouse-shift-available: true`; 
 
 Other concrete blockers found in the preserved evidence:
 
-- The Luna story's final response passed provider JSON-schema decoding and stopped normally, then failed application policy because it added a proficiency modifier that the transmitted schema allowed but the application validator forbids. Align the task schema with admissible mechanics; this is a harness defect, not evidence of poor prose.
-- A parseable, schema-complete Luna opening was discarded solely because the model padded the remainder of its output allowance with whitespace and reported `finish_reason: length`. The adapter should decide explicitly whether a fully validated JSON value is safe to accept under this finish reason instead of treating every length result as necessarily truncated.
-- Settled invalid output leaves the Luna story permanently held with no retry. Recovery must retry preparation/publication of the already committed intention without replaying time, rolls or effects.
-- OpenRouter twice returned an HTTP-200 error envelope for Sol. Manual reconciliation proved both attempts unbilled and reopened the same intentions, but ordinary play still lacks that operator recovery path.
+- The Luna story's final response passed provider JSON-schema decoding and stopped normally, then failed application policy because it added a proficiency modifier. Immediate-check schemas now transmit advantage and disadvantage as false and modifiers with a maximum of zero, matching the validator. Process checks can still carry their own modifiers.
+- A parseable, schema-complete Luna opening was discarded because the model padded its output and reported `finish_reason: length`. A length result is now accepted only when the content is complete JSON that passes task validation. Truncated JSON still fails.
+- Settled invalid output that was actually billed still consumes its one-shot envelope. The two observed Luna failures were the modifier mismatch and the padded length result, which the schema and length rules now prevent. A billed invalid candidate still needs an explicit repair round before another 10–15-turn run.
+- OpenRouter twice returned an HTTP-200 `provider_unavailable` envelope for Sol. That envelope is now a zero-charge unsent release, so the funding account stays open and the existing intention retry can dispatch again. Any other malformed HTTP-200 body remains uncertain.
 - Consequence packets are roughly 46 KB. About 22 KB is the general output schema; the model receives all prior unselected offer branches and a growing active-scene transcript, while normal turns receive no prompt-cache hit. The five successful Sol calls transmitted about 220 KB, consumed 38,276 prompt and 4,799 completion tokens, cost USD 0.125934 and averaged 22.9 seconds. Narrow capability-specific schemas and omit superseded branches before shrinking creative context.
-- The model-facing committed-time rule and public world-time label still say `ticks`, although action contracts now request fictional seconds. Remove that contradictory vocabulary from current packets and present elapsed fictional time in the world's available units.
+- Model packets now name the campaign coordinate `elapsedFictionalSeconds`, and the default elapsed calendar labels that coordinate as fictional seconds. Internal persistence fields still use `tick`. Player chrome uses the same fictional-second wording. A campaign whose stored calendar unit is still named tick keeps that stored label until its settings are recreated; the provider projection rewrites the word tick in the label it sends.
 - Contribution boundaries became seven repetitive story passages in the Luna history. Routine work evidence belongs in the activity ledger and a bounded completion/return summary unless a boundary creates an actual scene.
 - Darvyn's name survives in a current continuity note but no durable identity or relationship document was created. The run has not proved progressive materialization, later retrieval or a callback after leaving and returning.
 
@@ -106,8 +106,8 @@ This pattern does not justify changing the shared Storyteller prompt. The comedy
 The next implementation tranche is provider-free:
 
 1. Authorized opening references are implemented. A selected key substitutes the captured duration, effects, closure condition and occurrence identity. Live model selection of that reference is still unproved.
-2. align output schemas with application policy, add non-replaying invalid-output recovery, and classify the known provider error envelope without manual database repair;
-3. remove current tick-language contradictions and keep routine activity boundary evidence out of narrative passage history;
+2. Immediate-check schemas now match the no-situational-modifier policy. Complete JSON with `finish_reason: length` is accepted. HTTP-200 `provider_unavailable` releases as unsent. A billed invalid candidate still needs one explicit repair round.
+3. Model and default player time say fictional seconds. Internal tick fields remain. Routine activity-boundary passages still enter narrative history.
 4. reduce task packet/schema breadth, then compare the current all-branch planning contract with an intent-first selected-branch plan using saved packets before choosing an architecture;
 5. prove progressive identity/relationship materialization and a later callback before another 10–15-turn live attempt;
 6. only then evaluate narrow profile tuning. Preserve the current Sol tendency to end scenes with explanatory relational summaries as a hypothesis; do not hard-code a generic prose preference from one story.

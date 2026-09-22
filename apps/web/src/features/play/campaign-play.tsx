@@ -329,8 +329,9 @@ export function CampaignPlay({
               : ''}
           </p>
           <p>
-            Accepted at tick {acceptedPlan.acceptedAtTick}; no successor starts
-            at or after tick {acceptedPlan.horizonTick}.
+            Accepted at fictional second {acceptedPlan.acceptedAtTick}; no
+            successor starts at or after fictional second{' '}
+            {acceptedPlan.horizonTick}.
           </p>
           <ol>
             {acceptedPlan.entries.map((entry) => (
@@ -363,7 +364,7 @@ export function CampaignPlay({
           {campaign.activityEvents.map((event) => (
             <article key={event.id}>
               <p>
-                <strong>{event.label}</strong> · {event.kind} · tick{' '}
+                <strong>{event.label}</strong> · {event.kind} · fictional second{' '}
                 {event.tick}
               </p>
               <p>{event.summary}</p>
@@ -376,7 +377,8 @@ export function CampaignPlay({
           <summary>Timed action history (latest 100)</summary>
           {campaign.actionExecutionEvents.map((event) => (
             <p key={event.id}>
-              <strong>{event.label}</strong> · {event.kind} · tick {event.tick}
+              <strong>{event.label}</strong> · {event.kind} · fictional second{' '}
+              {event.tick}
             </p>
           ))}
         </details>
@@ -387,7 +389,8 @@ export function CampaignPlay({
           {campaign.activityReports.map((entry) => (
             <article key={entry.id}>
               <p>
-                <strong>{entry.report?.title ?? entry.label}</strong> · tick{' '}
+                <strong>{entry.report?.title ?? entry.label}</strong> · fictional
+                second{' '}
                 {entry.sourceTick} · {entry.state}
               </p>
               {(entry.report?.paragraphs ?? [entry.factualSummary]).map(
@@ -405,7 +408,8 @@ export function CampaignPlay({
           {campaign.worldObligationReports.map((entry) => (
             <article key={entry.id}>
               <p>
-                <strong>{entry.report?.title ?? entry.label}</strong> · tick{' '}
+                <strong>{entry.report?.title ?? entry.label}</strong> · fictional
+                second{' '}
                 {entry.sourceTick} · {entry.state}
               </p>
               {(entry.report?.paragraphs ?? [entry.factualSummary]).map(
@@ -510,7 +514,7 @@ export function CampaignPlay({
                 staged. Choose a different activity to start the plan.
               </p>
               <label>
-                Successor horizon in game ticks{' '}
+                Successor horizon in fictional seconds{' '}
                 <input
                   type="number"
                   min={1}
@@ -604,7 +608,8 @@ export function CampaignPlay({
         {campaign.rolls.map((entry) => (
           <article key={entry.id}>
             <p>
-              <strong>{entry.roll.purpose}</strong> · tick {entry.tick} ·
+              <strong>{entry.roll.purpose}</strong> · fictional second {entry.tick}{' '}
+              ·
               boundary {entry.segment}
             </p>
             <p>

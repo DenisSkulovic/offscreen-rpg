@@ -144,8 +144,8 @@ export const defaultWorldTimeDefinition = {
   revision: 1,
   unit: {
     id: 'tick',
-    label: 'tick',
-    pluralLabel: 'ticks',
+    label: 'fictional second',
+    pluralLabel: 'fictional seconds',
     ticksPerUnit: 1,
   },
   epoch: { wholeUnits: 0, tickOfUnit: 0 },

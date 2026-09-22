@@ -354,6 +354,67 @@ Arrival is a private future: its prose, knowledge and note changes are not true 
 const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. On a restart, recallDocuments may attach only directly relevant exact campaign-catalogue handles, labelled identity, place or thread; omit it otherwise. This does not erase history or continuity notes.`;
 const documentChangeRules = `When this turn materially establishes or changes descriptive world state, propose up to 8 documentChanges in the same result. Create or revision-fence only lore, identity, relationship, narrative-thread, premise or private-possibility Markdown. Include the complete concise replacement body and a short reason. When restarting the active scene, optionally set recallAs to identity, place or thread only for a changed record that remains directly relevant; identity requires identity, place requires lore and thread requires narrative-thread. Omit it otherwise. Do not restate unchanged documents or duplicate the passage. Never use documentChanges for inventory, skills, scores, health, clocks, progress, obligations, rolls or effects. New private possibilities must be noncanonical and storyteller-private.`;
 
+/** Immediate checks reject situational modifiers. The transmitted schema must too. */
+function withholdImmediateCheckModifiers(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(withholdImmediateCheckModifiers);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const source = value as Record<string, unknown>;
+  const rewritten = Object.fromEntries(
+    Object.entries(source).map(([key, child]) => [
+      key,
+      withholdImmediateCheckModifiers(child),
+    ]),
+  );
+  const properties = rewritten.properties;
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties) ||
+    !('check' in properties) ||
+    !('difficultyBasis' in properties)
+  ) {
+    return rewritten;
+  }
+  const fields = properties as Record<string, unknown>;
+  const check = fields.check;
+  if (!check || typeof check !== 'object' || Array.isArray(check)) {
+    return rewritten;
+  }
+  const checkSchema = check as Record<string, unknown>;
+  const checkProperties = checkSchema.properties;
+  if (
+    !checkProperties ||
+    typeof checkProperties !== 'object' ||
+    Array.isArray(checkProperties)
+  ) {
+    return rewritten;
+  }
+  const checkFields = checkProperties as Record<string, unknown>;
+  const modifiers = checkFields.modifiers;
+  return {
+    ...rewritten,
+    properties: {
+      ...fields,
+      check: {
+        ...checkSchema,
+        properties: {
+          ...checkFields,
+          advantage: { type: 'boolean', enum: [false] },
+          disadvantage: { type: 'boolean', enum: [false] },
+          modifiers:
+            modifiers && typeof modifiers === 'object' && !Array.isArray(modifiers)
+              ? { ...modifiers, maxItems: 0 }
+              : { type: 'array', maxItems: 0, items: {} },
+        },
+      },
+    },
+  };
+}
+
 function constrainActionEvidenceHandles(
   value: unknown,
   handles: readonly string[],
@@ -444,13 +505,14 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
         )
       : resultSchemas[input.task],
   );
-  const outputSchema =
+  const outputSchema = withholdImmediateCheckModifiers(
     input.task === 'consequence' || input.task === 'pending-consequence'
       ? constrainActionEvidenceHandles(
           rawOutputSchema,
           context.evidence.map((passage) => `p${passage.sequence}`),
         )
-      : rawOutputSchema;
+      : rawOutputSchema,
+  );
   return {
     messages: [
       {
