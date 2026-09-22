@@ -15,7 +15,10 @@ import {
   validateStorytellerResult,
   validateResourcesForExecution,
 } from '../src/tasks';
-import { scriptedStorytellerResult } from '../src/fixtures';
+import {
+  authorizedMechanicalOpeningPlans,
+  scriptedStorytellerResult,
+} from '../src/fixtures';
 import { applyContinuityPatch } from '../src/context/continuity';
 import {
   boundStorytellerContext,
@@ -750,6 +753,158 @@ test('Seyda opening offers a bounded paid warehouse shift in fictional time', ()
     kind: 'selected',
     actionKeys: ['work-warehouse-shift'],
   });
+});
+
+test('an authorized opening reference substitutes the captured warehouse plan', () => {
+  const seeded = seydaMechanicalOpening();
+  const opening = seeded.context.mechanicalOpening;
+  if (!opening) {
+    throw new Error('Expected a mechanical opening');
+  }
+  const authorizedPlans = authorizedMechanicalOpeningPlans(opening.character);
+  const task = prepareStorytellerTask({
+    ...seeded,
+    context: {
+      ...seeded.context,
+      mechanicalOpening: {
+        ...opening,
+        authorizedPlans,
+      },
+    },
+  });
+  const request = task.request.messages.map((message) => message.content).join('\n');
+  assert.match(request, /"source":"authorized"/);
+  assert.match(request, /"key":"work-warehouse-shift"/);
+  assert.equal(request.includes('requiredFictionalSeconds'), false);
+  assert.equal(request.includes('conditionPolicy'), false);
+  assert.equal(request.includes('seyda-neen-warehouse-shifts'), false);
+
+  const referenced = validateStorytellerResult(task, {
+    version: 1,
+    scene: {
+      version: 1,
+      content: opening.opening,
+      next: {
+        kind: 'action-plans',
+        state: 'available',
+        plans: [
+          { source: 'authorized', key: 'work-warehouse-shift' },
+          {
+            version: 1,
+            key: 'look-over-the-docks',
+            label: 'Look over the docks',
+            intention: 'Take in the census office yard and the nearby water.',
+            risk: null,
+            evidence: [],
+            requires: [{ id: 'location', value: 'seyda-neen' }],
+            requiresStory: [],
+            requiresQuantities: [],
+            resolution: {
+              kind: 'automatic',
+              fictionalDurationSeconds: 5,
+              outcome: {
+                text: 'You look across the docks.',
+                effects: [],
+                declarations: [],
+              },
+            },
+          },
+        ],
+        activityAccess: {
+          kind: 'selected',
+          actionKeys: ['work-warehouse-shift'],
+        },
+      },
+    },
+  });
+  if (referenced.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  const warehouse = referenced.scene.next.plans.find(
+    (plan) => plan.key === 'work-warehouse-shift',
+  );
+  const captured = authorizedPlans.find(
+    (plan) => plan.key === 'work-warehouse-shift',
+  );
+  assert.deepEqual(warehouse, captured);
+  if (warehouse?.resolution.kind !== 'process') {
+    throw new Error('Expected the authored warehouse process');
+  }
+  if (warehouse.resolution.action.process.kind !== 'clock-wait.v1') {
+    throw new Error('Expected a clock-wait warehouse shift');
+  }
+  assert.equal(warehouse.resolution.action.process.requiredFictionalSeconds, 1_800);
+  assert.deepEqual(warehouse.resolution.action.conditionPolicy, {
+    kind: 'boundary',
+    blockedText:
+      'The warehouse shift cannot continue after its admitted conditions change.',
+  });
+  assert.deepEqual(warehouse.resolution.action.occurrence, {
+    kind: 'limited',
+    scopeKey: 'seyda-neen-warehouse-shifts',
+    limit: 1,
+  });
+  assert.equal(
+    referenced.scene.next.plans.some(
+      (plan) => plan.key === 'look-over-the-docks',
+    ),
+    true,
+  );
+
+  const rewritten = structuredClone(captured);
+  if (
+    rewritten?.resolution.kind !== 'process' ||
+    rewritten.resolution.action.process.kind !== 'clock-wait.v1'
+  ) {
+    throw new Error('Expected the authored warehouse process');
+  }
+  rewritten.resolution.action.process.requiredFictionalSeconds = 4;
+  assert.throws(
+    () =>
+      validateStorytellerResult(task, {
+        version: 1,
+        scene: {
+          version: 1,
+          content: opening.opening,
+          next: {
+            kind: 'action-plans',
+            state: 'available',
+            plans: [rewritten],
+            activityAccess: {
+              kind: 'selected',
+              actionKeys: ['work-warehouse-shift'],
+            },
+          },
+        },
+      }),
+    /Authorized opening plan was reconstructed/,
+  );
+  assert.throws(
+    () =>
+      validateStorytellerResult(task, {
+        version: 1,
+        scene: {
+          version: 1,
+          content: opening.opening,
+          next: {
+            kind: 'action-plans',
+            state: 'held',
+            plans: [{ source: 'authorized', key: 'not-a-supplied-plan' }],
+            activityAccess: { kind: 'none' },
+          },
+        },
+      }),
+    /Unknown authorized opening plan/,
+  );
+
+  const scripted = scriptedStorytellerResult(task);
+  if (scripted.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.deepEqual(
+    scripted.scene.next.plans.find((plan) => plan.key === 'work-warehouse-shift'),
+    captured,
+  );
 });
 
 test('captured schemas expose only the result for the requested task', () => {

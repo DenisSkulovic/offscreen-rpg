@@ -29,7 +29,8 @@ const mechanicalOpeningCatalogueSchema = z
 
 const catalogue = mechanicalOpeningCatalogueSchema.parse(definitions);
 // This catalogue owns setup seeds only. Scripted Storyteller fixtures own the
-// authored benchmark outputs, so an example plan cannot drift between copies.
+// authored plans. Opening admission copies those plans onto the task as
+// authorized references so a live model cannot rewrite them.
 
 export function mechanicalContentCatalogue() {
   return catalogue.entries.map(({ id, name, description }) => ({

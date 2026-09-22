@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 import { capturedProviderRequestSchema } from './opening';
@@ -29,6 +30,7 @@ import {
   immediateActionPlanSchema,
   validateActivityAccess,
   validateImmediateActionProposal,
+  type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
 import { proposedDocumentChangesSchema } from './document-changes.js';
 import { storytellerNeedsContextSchema } from './memory-exploration.js';
@@ -122,6 +124,14 @@ const openingProviderResultSchema = z.strictObject({
 const openingImmediateActionPlanSchema = immediateActionPlanSchema.extend({
   evidence: z.array(z.string()).max(0),
 });
+const authorizedOpeningPlanReferenceSchema = z.strictObject({
+  source: z.literal('authorized'),
+  key: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+});
+const mechanicalOpeningPlanSelectionSchema = z.union([
+  authorizedOpeningPlanReferenceSchema,
+  openingImmediateActionPlanSchema,
+]);
 const mechanicalOpeningProviderResultSchema = z.strictObject({
   version: z.literal(1),
   scene: z.strictObject({
@@ -135,12 +145,76 @@ const mechanicalOpeningProviderResultSchema = z.strictObject({
     }),
   }),
 });
-function parseOpeningProviderResult(
-  output: unknown,
-  schema:
-    | typeof openingProviderResultSchema
-    | typeof mechanicalOpeningProviderResultSchema,
+const mechanicalOpeningReferenceProviderResultSchema = z.strictObject({
+  version: z.literal(1),
+  scene: z.strictObject({
+    version: z.literal(1),
+    content: passageContentSchema,
+    next: z.strictObject({
+      kind: z.literal('action-plans'),
+      state: z.enum(['available', 'held']),
+      plans: z.array(mechanicalOpeningPlanSelectionSchema).max(6),
+      activityAccess: activityAccessSchema,
+    }),
+  }),
+});
+function mechanicalOpeningProviderSchema(allowReferences: boolean) {
+  return allowReferences
+    ? mechanicalOpeningReferenceProviderResultSchema
+    : mechanicalOpeningProviderResultSchema;
+}
+function expandAuthorizedOpeningPlans(
+  parsed: z.infer<typeof mechanicalOpeningReferenceProviderResultSchema>,
+  authorizedPlans: readonly ImmediateActionPlan[],
 ) {
+  const byKey = new Map(authorizedPlans.map((plan) => [plan.key, plan]));
+  const processActionIds = new Map(
+    authorizedPlans.flatMap((plan) =>
+      plan.resolution.kind === 'process'
+        ? [[plan.resolution.action.id, plan.key] as const]
+        : [],
+    ),
+  );
+  const plans = parsed.scene.next.plans.map((entry) => {
+    const reference = authorizedOpeningPlanReferenceSchema.safeParse(entry);
+    if (reference.success) {
+      const plan = byKey.get(reference.data.key);
+      if (!plan) {
+        throw new Error('Unknown authorized opening plan');
+      }
+      return plan;
+    }
+    const proposed = openingImmediateActionPlanSchema.parse(entry);
+    const captured = byKey.get(proposed.key);
+    if (captured) {
+      if (!isDeepStrictEqual(captured, proposed)) {
+        throw new Error('Authorized opening plan was reconstructed');
+      }
+      return captured;
+    }
+    if (
+      proposed.resolution.kind === 'process' &&
+      processActionIds.has(proposed.resolution.action.id)
+    ) {
+      throw new Error('Authorized opening plan was reconstructed');
+    }
+    return proposed;
+  });
+  return {
+    version: 1 as const,
+    scene: {
+      ...parsed.scene,
+      next: {
+        ...parsed.scene.next,
+        plans,
+      },
+    },
+  };
+}
+function parseOpeningProviderResult<Schema extends z.ZodType>(
+  output: unknown,
+  schema: Schema,
+): z.infer<Schema> {
   const stored = storytellerResultSchema.safeParse(output);
   if (stored.success) {
     if (stored.data.currentNotes.length || stored.data.arrivalNotes.length) {
@@ -354,8 +428,10 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
     );
     taskRules = `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Follow the supplied profile's tone, dramaticRhythm, surprisePolicy, consequenceStyle, choiceGuidance and taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. The selected intention has just resolved: carry its receipt forward and do not offer the same step again unless the receipt clearly leaves a genuinely repeatable action available. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Every plan evidence array must be [] or contain only these exact handles: ${evidenceHandles.length ? evidenceHandles.join(', ') : '(none)'}. Never put prose, facts or descriptions in an evidence array. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities and fact declarations must use the supplied contracts exactly. Distinct plans must represent materially different intentions. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate them from fictional effort under the supplied world and rule context. Never choose scheduler ticks or real waiting time, and do not copy one duration across unrelated actions merely because earlier plans used it. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. No interval or arrival notes.`;
   } else if (context.mechanicalOpening) {
-    taskRules =
-      "Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and follow the supplied profile's tone, dramaticRhythm, surprisePolicy, choiceGuidance and opening taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. Propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Treat exact terms stated by the supplied opening for an offered commitment, including duration, payment and completion conditions, as binding plan terms; do not omit them or turn them into another negotiation. Set evidence to [] on every opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate unspecified durations from fictional effort under the supplied world and rule context. Never choose scheduler ticks or real waiting time. Explicitly set activityAccess to none or select every proposed process key. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.";
+    const suppliedMechanics = context.mechanicalOpening.authorizedPlans?.length
+      ? 'authorizedPlans lists immutable supplied mechanics. Offer one only as {"source":"authorized","key":"its exact key"} with no resolution body. The application substitutes that captured plan, so its duration, effects, closure, capacity, condition policy and occurrence stay unchanged. Do not reconstruct a supplied plan under its key or another key. You may also return fresh immediate-action.v1 plans for genuinely different proposals that are not substitutes for a supplied commitment. '
+      : 'Propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Treat exact terms stated by the supplied opening for an offered commitment, including duration, payment and completion conditions, as binding plan terms; do not omit them or turn them into another negotiation. ';
+    taskRules = `Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and follow the supplied profile's tone, dramaticRhythm, surprisePolicy, choiceGuidance and opening taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. ${suppliedMechanics}Set evidence to [] on every fresh opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate unspecified durations from fictional effort under the supplied world and rule context. Never choose scheduler ticks or real waiting time. Explicitly set activityAccess to none or select every proposed process key, including keys selected by authorized reference. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.`;
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
@@ -363,7 +439,9 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
   const sections = contextRequestSections(context);
   const rawOutputSchema = z.toJSONSchema(
     input.task === 'opening' && context.mechanicalOpening
-      ? mechanicalOpeningProviderResultSchema
+      ? mechanicalOpeningProviderSchema(
+          (context.mechanicalOpening.authorizedPlans?.length ?? 0) > 0,
+        )
       : resultSchemas[input.task],
   );
   const outputSchema =
@@ -498,9 +576,15 @@ export function validateStorytellerResult(
     task.task === 'opening'
       ? storytellerResultSchema.parse({
           ...(task.context.mechanicalOpening
-            ? parseOpeningProviderResult(
-                output,
-                mechanicalOpeningProviderResultSchema,
+            ? expandAuthorizedOpeningPlans(
+                parseOpeningProviderResult(
+                  output,
+                  mechanicalOpeningProviderSchema(
+                    (task.context.mechanicalOpening.authorizedPlans?.length ??
+                      0) > 0,
+                  ),
+                ),
+                task.context.mechanicalOpening.authorizedPlans ?? [],
               )
             : parseOpeningProviderResult(output, openingProviderResultSchema)),
           currentNotes: [],

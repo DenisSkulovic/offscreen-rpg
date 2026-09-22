@@ -1,4 +1,6 @@
+import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import type { StorytellerTask } from '../tasks';
+import { z } from 'zod';
 
 type MechanicalCharacter = NonNullable<
   StorytellerTask['context']['mechanicalOpening']
@@ -773,12 +775,8 @@ function frostRoadOpeningPlans(character: MechanicalCharacter) {
   ];
 }
 
-export function scriptedMechanicalOpening(task: StorytellerTask) {
-  const opening = task.context.mechanicalOpening;
-  if (task.task !== 'opening' || !opening) {
-    throw new Error('Missing mechanical opening context');
-  }
-  const character = opening.character;
+/** Plans the offline fixture would admit for this character. Live openings capture the same objects. */
+export function authorizedMechanicalOpeningPlans(character: MechanicalCharacter) {
   const plans =
     seydaNeenOpeningPlans(character) ??
     pineappleOpeningPlans(character) ??
@@ -786,6 +784,15 @@ export function scriptedMechanicalOpening(task: StorytellerTask) {
     microbeOpeningPlans(character) ??
     frostRoadOpeningPlans(character) ??
     [];
+  return z.array(immediateActionPlanSchema).max(6).parse(plans);
+}
+
+export function scriptedMechanicalOpening(task: StorytellerTask) {
+  const opening = task.context.mechanicalOpening;
+  if (task.task !== 'opening' || !opening) {
+    throw new Error('Missing mechanical opening context');
+  }
+  const plans = authorizedMechanicalOpeningPlans(opening.character);
   return {
     version: 1,
     scene: {

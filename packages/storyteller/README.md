@@ -26,7 +26,7 @@ When a controlling scene blocks an accepted itinerary, `activitySituation.accept
 
 ## Implemented tasks and limits
 
-- **Opening:** prepares a reviewable beginning. A mechanical opening proposes fresh private plans from the captured character/story-fact seed; validation rejects unsupported or currently unavailable plans before review.
+- **Opening:** prepares a reviewable beginning. A mechanical opening may select a captured authorized plan by key, which validation replaces with that immutable plan, or propose a fresh private plan for a commitment that is not already authorized. Validation rejects unsupported, reconstructed or currently unavailable plans before review.
 - **Continuation:** resolves a narrative selection into an immediate scene or a prepared timed arrival. It does not adjudicate general mechanical effects.
 - **Consequence / DM turn:** narrates already resolved mechanics and proposes zero to six fresh private immediate-action plans. It cannot roll or alter the committed receipt. Pure validation checks the captured capabilities, facts, quantities and evidence before application publication repeats admission.
 - **Pending consequence:** uses the same output shape but a distinct input purpose that identifies a frozen projected result, execution, target tick and projected-state digest. Its output remains private and non-canonical until application settlement links the exact generation to a matching receipt; the task itself cannot advance time or promote its evidence.

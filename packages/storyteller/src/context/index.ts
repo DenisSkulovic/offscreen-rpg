@@ -321,6 +321,9 @@ export const contextInputSchema = z.strictObject({
       character: characterSchema,
       storyFacts: storyFactsSchema.default([]),
       opening: passageContentSchema,
+      // Immutable supplied mechanics. The provider sees summaries; selection
+      // substitutes these plans instead of accepting a rewritten body.
+      authorizedPlans: z.array(immediateActionPlanSchema).max(6).optional(),
     })
     .optional(),
   resolution: z
@@ -409,6 +412,18 @@ export function contextRequestSections(context: StorytellerContext) {
               character: context.mechanicalOpening.character,
               storyFacts: context.mechanicalOpening.storyFacts,
               opening: context.mechanicalOpening.opening,
+              ...(context.mechanicalOpening.authorizedPlans?.length
+                ? {
+                    authorizedPlans:
+                      context.mechanicalOpening.authorizedPlans.map((plan) => ({
+                        key: plan.key,
+                        label: plan.label,
+                        intention: plan.intention,
+                        risk: plan.risk,
+                        resolutionKind: plan.resolution.kind,
+                      })),
+                  }
+                : {}),
             },
           }
         : {}),

@@ -9,9 +9,12 @@ import type {
 import { storytellerResultSchema, validateStorytellerResult } from '../tasks';
 import authoredRehearsal from './content/narrative-rehearsal.json';
 import {
+  authorizedMechanicalOpeningPlans,
   scriptedMechanicalConsequence,
   scriptedMechanicalOpening,
 } from './mechanical';
+
+export { authorizedMechanicalOpeningPlans };
 
 const authoredSource = z
   .object({ offer: z.unknown() })

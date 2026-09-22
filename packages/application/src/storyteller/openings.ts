@@ -25,6 +25,7 @@ import {
 } from '@offscreen/contracts/openings';
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
+import { authorizedMechanicalOpeningPlans } from '@offscreen/storyteller/fixtures';
 import {
   mechanicalContentCatalogue,
   mechanicalOpening,
@@ -265,7 +266,15 @@ export function createStorytellerOpenings(
             execution,
             context: {
               ...(seed
-                ? { mechanicalOpening: { ...seed, storyFacts: [] } }
+                ? {
+                    mechanicalOpening: {
+                      ...seed,
+                      storyFacts: [],
+                      authorizedPlans: authorizedMechanicalOpeningPlans(
+                        seed.character,
+                      ),
+                    },
+                  }
                 : {}),
               ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
               premise: {
