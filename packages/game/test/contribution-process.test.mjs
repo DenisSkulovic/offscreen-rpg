@@ -53,7 +53,7 @@ const plan = resolvedActivityPlanSchema.parse({
       kind: 'contribution.v1',
       progressLabel: 'Beacon repair',
       requiredContribution: 10,
-      everyTicks: 5,
+      everyFictionalSeconds: 5,
       attempt: {
         check: {
           rule: 'srd-5.2.1-subset.v1',
@@ -168,7 +168,7 @@ test('a check cadence can wake earlier without becoming productive progress', ()
       checks: [
         {
           id: 'approaching-stranger',
-          everyTicks: 2,
+          everyFictionalSeconds: 2,
           resolution: {
             kind: 'event',
             purpose: 'Approaching stranger',
@@ -233,7 +233,7 @@ test('clock wait completes at its eligible tick target without a roll or work po
       process: {
         kind: 'clock-wait.v1',
         progressLabel: 'Protective interval',
-        requiredTicks: 10,
+        requiredFictionalSeconds: 10,
       },
       conditionPolicy: { kind: 'admission-only' },
       occurrence: { kind: 'unbounded' },
@@ -244,21 +244,21 @@ test('clock wait completes at its eligible tick target without a roll or work po
     settingsRevision: 1,
     resolvedThroughTick: 0,
   });
-  const progress = { kind: 'clock-wait.v1', elapsedTicks: 0 };
+  const progress = { kind: 'clock-wait.v1', elapsedFictionalSeconds: 0 };
   assert.equal(nextBoundaryTick(wait, 0), 10);
   assert.equal(estimatedCompletionBoundaryTick(wait, progress, character), 10);
   assert.equal(processBoundaryDue(wait, 9), false);
   assert.equal(processBoundaryDue(wait, 10), true);
   assert.deepEqual(processProgressAtEffortTick(wait, progress, 6), {
     kind: 'clock-wait.v1',
-    elapsedTicks: 6,
+    elapsedFictionalSeconds: 6,
   });
   const result = settleProcessBoundary(wait, progress, character, () => {
     throw new Error('A wait must not draw a d20');
   });
   assert.deepEqual(result.progress, {
     kind: 'clock-wait.v1',
-    elapsedTicks: 10,
+    elapsedFictionalSeconds: 10,
   });
   assert.equal(result.complete, true);
   assert.equal(result.roll, null);

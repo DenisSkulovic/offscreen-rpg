@@ -398,7 +398,8 @@ export async function publishStorytellerResult(
                   ? { kind: 'process' }
                   : {
                       kind: 'finite',
-                      ticks: plan.resolution.durationTicks,
+                      fictionalSeconds:
+                        plan.resolution.fictionalDurationSeconds,
                     },
             },
           };

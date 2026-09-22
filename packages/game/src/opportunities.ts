@@ -34,7 +34,7 @@ export function composeOpportunities(input: {
             ? { kind: 'process' }
             : {
                 kind: 'finite',
-                ticks: plan.resolution.durationTicks,
+                fictionalSeconds: plan.resolution.fictionalDurationSeconds,
               },
       },
     })),

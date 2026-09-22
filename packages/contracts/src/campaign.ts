@@ -80,8 +80,8 @@ const campaignActivityViewSchema = z.strictObject({
     z.strictObject({
       kind: z.literal('wait'),
       label: z.string().min(1).max(120),
-      elapsedTicks: z.number().int().nonnegative(),
-      requiredTicks: z.number().int().positive(),
+      elapsedFictionalSeconds: z.number().int().nonnegative(),
+      requiredFictionalSeconds: z.number().int().positive(),
     }),
   ]),
   dueAt: z.iso.datetime().nullable(),
@@ -369,7 +369,11 @@ export const worldObligationControlSchema = z.discriminatedUnion('action', [
 export const campaignStartSchema = z.strictObject({
   mechanics: z.boolean().default(false),
   locked: z.boolean().default(false),
-  pace: paceSchema.default({ kind: 'rate', ticks: 1, realMs: 1000 }),
+  pace: paceSchema.default({
+    kind: 'rate',
+    fictionalSeconds: 1,
+    realSeconds: 1,
+  }),
   time: worldTimeDefinitionSchema.default(defaultWorldTimeDefinition),
   worldObligations: z.array(worldObligationProposalSchema).max(50).default([]),
   worlds: z.array(worldPackageReferenceSchema).max(8).default([]),

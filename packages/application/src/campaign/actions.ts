@@ -394,7 +394,8 @@ export function createCampaignActions(
         return;
       }
       const startTick = selectedState.tick;
-      const targetTick = startTick + definition.resolution.durationTicks;
+      const targetTick =
+        startTick + definition.resolution.fictionalDurationSeconds;
       const interveningObligations = await readPendingWorldObligations(tx, {
         storyId: current.id,
         throughTick: targetTick,
@@ -431,14 +432,19 @@ export function createCampaignActions(
         targetTick,
       });
       if (pendingResolution) {
-        await preparePendingActionNarration(tx, current, {
-          executionId: args.operationId,
-          targetTick,
-          offer,
-          label: definition.label,
-          intention: definition.intention,
-          pending: pendingResolution,
-        }, documentStore);
+        await preparePendingActionNarration(
+          tx,
+          current,
+          {
+            executionId: args.operationId,
+            targetTick,
+            offer,
+            label: definition.label,
+            intention: definition.intention,
+            pending: pendingResolution,
+          },
+          documentStore,
+        );
       }
       await recordActionExecutionEvent(tx, {
         storyId: current.id,

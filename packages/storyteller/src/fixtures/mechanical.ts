@@ -54,7 +54,7 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Learn the safe road to Balmora',
@@ -67,12 +67,15 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
         },
         difficultyBasis:
           'The road is commonly travelled, but the stranger must make sense of local directions.',
-        success: outcome('A local marks the north road and its safer crossings.', [
-          {
-            kind: 'fact.set.v1',
-            fact: { id: 'balmora-route-known', value: true },
-          },
-        ]),
+        success: outcome(
+          'A local marks the north road and its safer crossings.',
+          [
+            {
+              kind: 'fact.set.v1',
+              fact: { id: 'balmora-route-known', value: true },
+            },
+          ],
+        ),
         failure: outcome(
           'The directions dissolve into contradictory landmarks and marsh paths.',
         ),
@@ -109,7 +112,7 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
             kind: 'contribution.v1',
             progressLabel: 'Warehouse work completed',
             requiredContribution: 6,
-            everyTicks: 3,
+            everyFictionalSeconds: 3,
             attempt: {
               check: {
                 rule: 'srd-5.2.1-subset.v1',
@@ -123,7 +126,8 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
               },
               successContribution: 3,
               failureContribution: 0,
-              successText: 'A sound round of cargo handling advances the shift.',
+              successText:
+                'A sound round of cargo handling advances the shift.',
               failureText:
                 'The attempt consumes time, but the cargo must be handled again.',
             },
@@ -176,7 +180,8 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
         action: {
           id: 'travel-toward-balmora',
           label: 'Travel toward Balmora',
-          description: 'Follow the north road through the first marsh crossing.',
+          description:
+            'Follow the north road through the first marsh crossing.',
           requires: [
             { id: 'location', value: 'seyda-neen' },
             { id: 'balmora-route-known', value: true },
@@ -185,9 +190,12 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Road travelled',
-            requiredTicks: 8,
+            requiredFictionalSeconds: 8,
           },
-          conditionPolicy: { kind: 'boundary', blockedText: 'The admitted route is no longer available.' },
+          conditionPolicy: {
+            kind: 'boundary',
+            blockedText: 'The admitted route is no longer available.',
+          },
           occurrence: { kind: 'unbounded' },
           completionFollowUp: 'scene',
           checks: [],
@@ -235,7 +243,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         outcome: outcome(
           'You slip behind the sofa without approaching the window.',
           [{ kind: 'fact.set.v1', fact: { id: 'under-cover', value: true } }],
@@ -254,7 +262,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Calm Gary',
@@ -288,7 +296,7 @@ function pineappleOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         outcome: outcome(
           'You stay by the doorway while Gary points both eyestalks toward the window.',
         ),
@@ -321,7 +329,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Sense the gradient',
@@ -355,7 +363,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         outcome: outcome(
           'The organism contracts away from the strongest disturbance.',
         ),
@@ -385,7 +393,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Protective interval',
-            requiredTicks: 10,
+            requiredFictionalSeconds: 10,
           },
           conditionPolicy: {
             kind: 'boundary',
@@ -431,7 +439,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Sampling interval',
-            requiredTicks: 2,
+            requiredFictionalSeconds: 2,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: {
@@ -472,7 +480,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Temperature cycle',
-            requiredTicks: 2,
+            requiredFictionalSeconds: 2,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: {
@@ -513,7 +521,7 @@ function microbeOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Pressure cycle',
-            requiredTicks: 2,
+            requiredFictionalSeconds: 2,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: {
@@ -566,7 +574,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Harbor observation',
-            requiredTicks: 2,
+            requiredFictionalSeconds: 2,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: {
@@ -606,7 +614,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Harbor watch',
-            requiredTicks: 2,
+            requiredFictionalSeconds: 2,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: {
@@ -653,7 +661,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
             kind: 'contribution.v1',
             progressLabel: 'Beacon repair',
             requiredContribution: 9,
-            everyTicks: 5,
+            everyFictionalSeconds: 5,
             attempt: {
               check: {
                 rule: 'srd-5.2.1-subset.v1',
@@ -682,7 +690,7 @@ function beaconOpeningPlans(character: MechanicalCharacter) {
           checks: [
             {
               id: 'stranger-approaches',
-              everyTicks: 10,
+              everyFictionalSeconds: 10,
               resolution: {
                 kind: 'event',
                 purpose: 'An unknown boat approaches the dark beacon',
@@ -763,7 +771,7 @@ function frostRoadOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Road crossed',
-            requiredTicks: 60,
+            requiredFictionalSeconds: 60,
           },
           conditionPolicy: { kind: 'admission-only' },
           occurrence: { kind: 'unbounded' },
@@ -837,7 +845,7 @@ function seydaNeenConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: outcome('You continue north along the raised road.'),
         },
       },
@@ -883,7 +891,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Draw the parcel closer safely',
@@ -924,7 +932,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: outcome(
             'You leave the parcel outside and keep the window closed.',
             [],
@@ -953,7 +961,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Identify the disturbance',
@@ -993,7 +1001,7 @@ function pineappleConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: outcome(
             'You leave the sofa and join Gary beside the window.',
             [
@@ -1023,7 +1031,7 @@ function pineappleConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Identify the disturbance',
@@ -1089,7 +1097,7 @@ function beaconConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'check',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           check: {
             rule: 'srd-5.2.1-subset.v1',
             purpose: 'Read and challenge the approaching stranger',
@@ -1129,7 +1137,7 @@ function beaconConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: outcome(
             'You bar the door until the stranger returns to the boat.',
             [
@@ -1208,7 +1216,7 @@ function beaconConsequence(
             kind: 'contribution.v1',
             progressLabel: 'Tools secured',
             requiredContribution: 3,
-            everyTicks: 5,
+            everyFictionalSeconds: 5,
             attempt: {
               check: {
                 rule: 'srd-5.2.1-subset.v1',
@@ -1269,7 +1277,7 @@ function microbeConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: outcome(
             'The organism remains sheltered while the surrounding gradient shifts.',
           ),
@@ -1290,7 +1298,7 @@ function microbeConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Sense the surviving gradient',
@@ -1324,7 +1332,7 @@ function microbeConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         outcome: outcome(
           'The organism contracts, conserving itself without reaching shelter.',
         ),
@@ -1365,7 +1373,7 @@ function frostRoadConsequence(
       requiresQuantities: [],
       resolution: {
         kind: 'automatic',
-        durationTicks: 1,
+        fictionalDurationSeconds: 1,
         outcome: outcome('You make a defensible camp below the winter pass.', [
           {
             kind: 'fact.set.v1',

@@ -5,7 +5,11 @@ export const gameActionSchema = z.strictObject({
   timing: z.discriminatedUnion('kind', [
     z.strictObject({
       kind: z.literal('finite'),
-      ticks: z.number().int().positive().max(10080),
+      fictionalSeconds: z
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER),
     }),
     z.strictObject({ kind: z.literal('process') }),
   ]),

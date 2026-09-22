@@ -11,19 +11,19 @@ import { useCampaignCommand } from './use-campaign-command';
 
 export const paceOptions: { label: string; value: string; pace: Pace }[] = [
   {
-    label: '1 tick per real minute',
+    label: '1 fictional second per real minute',
     value: 'slow',
-    pace: { kind: 'rate', ticks: 1, realMs: 60000 },
+    pace: { kind: 'rate', fictionalSeconds: 1, realSeconds: 60 },
   },
   {
-    label: '1 tick per real second',
+    label: '1 fictional second per real second',
     value: 'steady',
-    pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+    pace: { kind: 'rate', fictionalSeconds: 1, realSeconds: 1 },
   },
   {
-    label: '10 ticks per real second',
+    label: '10 fictional seconds per real second',
     value: 'fast',
-    pace: { kind: 'rate', ticks: 10, realMs: 1000 },
+    pace: { kind: 'rate', fictionalSeconds: 10, realSeconds: 1 },
   },
   {
     label: 'Instant, until a choice or completion',
@@ -201,8 +201,9 @@ export function CampaignPlay({
           </p>
         ))}
         <p>
-          Tick {campaign.tick}. SRD 5.2.1 ability-check subset; server-resolved
-          nonlethal actions.
+          Elapsed game time:{' '}
+          {formatWorldDuration(campaign.settings.time, campaign.tick)}. SRD
+          5.2.1 ability-check subset; server-resolved nonlethal actions.
         </p>
       </details>
       {activity ? (
@@ -212,7 +213,7 @@ export function CampaignPlay({
             {activity.progress.label}:{' '}
             {activity.progress.kind === 'contribution'
               ? `${activity.progress.earned}/${activity.progress.required}`
-              : `${formatWorldDuration(campaign.settings.time, activity.progress.elapsedTicks)} / ${formatWorldDuration(campaign.settings.time, activity.progress.requiredTicks)}`}{' '}
+              : `${formatWorldDuration(campaign.settings.time, activity.progress.elapsedFictionalSeconds)} / ${formatWorldDuration(campaign.settings.time, activity.progress.requiredFictionalSeconds)}`}{' '}
             · {activity.state}. {activity.boundariesSettled} mechanical
             boundaries settled.
           </p>
@@ -311,7 +312,7 @@ export function CampaignPlay({
                 {commitment.progress.label}:{' '}
                 {commitment.progress.kind === 'contribution'
                   ? `${commitment.progress.earned}/${commitment.progress.required}`
-                  : `${formatWorldDuration(campaign.settings.time, commitment.progress.elapsedTicks)} / ${formatWorldDuration(campaign.settings.time, commitment.progress.requiredTicks)}`}
+                  : `${formatWorldDuration(campaign.settings.time, commitment.progress.elapsedFictionalSeconds)} / ${formatWorldDuration(campaign.settings.time, commitment.progress.requiredFictionalSeconds)}`}
                 . Time is not advancing this work.
               </p>
             </article>
@@ -470,7 +471,10 @@ export function CampaignPlay({
                   Time:{' '}
                   {node.action.timing.kind === 'process'
                     ? 'extended'
-                    : `${node.action.timing.ticks} tick${node.action.timing.ticks === 1 ? '' : 's'}`}
+                    : formatWorldDuration(
+                        campaign.settings.time,
+                        node.action.timing.fictionalSeconds,
+                      )}
                   .
                 </p>
               ) : null}

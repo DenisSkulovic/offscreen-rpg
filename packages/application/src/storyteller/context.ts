@@ -56,15 +56,9 @@ const librarySectionHandleSchema = z
   .regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/);
 const librarySectionSelectionSchema = z.strictObject({
   handles: z.array(librarySectionHandleSchema).max(8),
-  ruleTopics: z
-    .array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/))
-    .max(8),
+  ruleTopics: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/)).max(8),
   maxReads: z.number().int().min(0).max(maximumLibrarySectionReads),
-  maxBytes: z
-    .number()
-    .int()
-    .min(0)
-    .max(maximumSelectedLibrarySectionBytes),
+  maxBytes: z.number().int().min(0).max(maximumSelectedLibrarySectionBytes),
 });
 export type CanonicalLibrarySectionSelection = z.infer<
   typeof librarySectionSelectionSchema
@@ -119,8 +113,9 @@ function projectActivityProgress(plan: unknown, progress: unknown) {
     progress: {
       kind: 'wait' as const,
       label: resolved.action.process.progressLabel,
-      elapsedTicks: stored.elapsedTicks,
-      requiredTicks: resolved.action.process.requiredTicks,
+      elapsedFictionalSeconds: stored.elapsedFictionalSeconds,
+      requiredFictionalSeconds:
+        resolved.action.process.requiredFictionalSeconds,
     },
   };
 }
@@ -253,8 +248,7 @@ async function loadCanonicalLibraries(
       (entry) => entry.documentId === manifest.orientationDocumentId,
     );
     let orientation:
-      | { documentHandle: string; title: string; body: string }
-      | undefined;
+      { documentHandle: string; title: string; body: string } | undefined;
     if (orientationEntry) {
       const document = await storage.readDocument(orientationEntry.objectHash);
       const bytes = Buffer.byteLength(document.body, 'utf8');
@@ -275,9 +269,7 @@ async function loadCanonicalLibraries(
       handle: `l${libraryIndex + 1}`,
       kind: source.kind,
       title: manifest.title,
-      ...(source.kind === 'world'
-        ? { mount: source.reference.mount }
-        : {}),
+      ...(source.kind === 'world' ? { mount: source.reference.mount } : {}),
       rootHash: source.reference.rootHash,
       revision: source.reference.revision,
       catalogue: catalogue.map(
@@ -339,11 +331,7 @@ async function loadCanonicalLibraries(
   const loadedHandles: string[] = [];
   const omitted: Array<{
     handle: string;
-    reason:
-      | 'read-limit'
-      | 'byte-limit'
-      | 'section-too-large'
-      | 'request-limit';
+    reason: 'read-limit' | 'byte-limit' | 'section-too-large' | 'request-limit';
     bytes: number;
   }> = [];
   for (const handle of requestedHandles) {
@@ -367,7 +355,9 @@ async function loadCanonicalLibraries(
       continue;
     }
     const library = libraries.find((candidate) =>
-      candidate.catalogue.some((entry) => entry.handle === record.documentHandle),
+      candidate.catalogue.some(
+        (entry) => entry.handle === record.documentHandle,
+      ),
     );
     if (!library) {
       throw new Error('Canonical library section lost its package');
@@ -502,9 +492,7 @@ export async function loadCanonicalKnowledge(
   const requestedSet = new Set(requestedDocumentIds);
   const loadingOrder = [
     ...requestedRecords,
-    ...ranked.filter(
-      (record) => !requestedSet.has(record.entry.documentId),
-    ),
+    ...ranked.filter((record) => !requestedSet.has(record.entry.documentId)),
   ];
   const loaded = new Set<string>();
   const documents: Array<{ handle: string; title: string; body: string }> = [];
@@ -628,7 +616,9 @@ export async function loadStartPackageKnowledge(
     manifest.startPackageId !== reference.startPackageId ||
     manifest.revision !== reference.revision
   ) {
-    throw new Error('Opening start-package reference does not match its manifest');
+    throw new Error(
+      'Opening start-package reference does not match its manifest',
+    );
   }
   const eligible = manifest.entries
     .filter(
@@ -686,7 +676,9 @@ export async function loadStartPackageKnowledge(
     rootHash: reference.rootHash,
     rootRevision: reference.revision,
     catalogue,
-    catalogueTruncated: manifest.entries.filter((entry) => entry.path.endsWith('.md')).length > eligible.length,
+    catalogueTruncated:
+      manifest.entries.filter((entry) => entry.path.endsWith('.md')).length >
+      eligible.length,
     documents,
     documentSelection: {
       cueResolution: {
@@ -729,9 +721,7 @@ export function canonicalContextDependencies(
           canonical: {
             rootHash: current.documentRootHash,
             rootRevision: current.documentRootRevision,
-            ...(librarySectionSelection
-              ? { librarySectionSelection }
-              : {}),
+            ...(librarySectionSelection ? { librarySectionSelection } : {}),
             ...(campaignDocumentIds ? { campaignDocumentIds } : {}),
             ...(recallCues?.length ? { recallCues } : {}),
           },
@@ -823,11 +813,8 @@ export async function loadStorytellerContext(
   const evidence = await Promise.all(
     [
       ...new Map(
-      [...recent, ...older].map((passage) => [
-        passage.id,
-        passage,
-      ]),
-    ).values(),
+        [...recent, ...older].map((passage) => [passage.id, passage]),
+      ).values(),
     ].map(async (passage) => {
       if (passage.contentDocumentHash !== null && !input.documentStore) {
         throw new Error('Canonical passage context requires document storage');
@@ -919,8 +906,7 @@ export async function loadStorytellerContext(
         rootRevision: input.canonical.rootRevision,
         ...(input.canonical.librarySectionSelection
           ? {
-              librarySectionSelection:
-                input.canonical.librarySectionSelection,
+              librarySectionSelection: input.canonical.librarySectionSelection,
             }
           : {}),
         ...(input.canonical.campaignDocumentIds

@@ -346,7 +346,7 @@ export async function settleActivity(
       if (result.text) lines.push(result.text);
     }
     for (const schedule of plan.action.checks) {
-      if (boundaryTick % schedule.everyTicks !== 0) {
+      if (boundaryTick % schedule.everyFictionalSeconds !== 0) {
         continue;
       }
       const before = character;

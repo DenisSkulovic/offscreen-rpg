@@ -36,7 +36,11 @@ const canonicalLibraryCatalogueEntrySchema = z.strictObject({
   handle: z.string().regex(/^k[1-9][0-9]*$/),
   path: z.string().min(1).max(320),
   kind: z.string().min(1).max(80),
-  sourceBytes: z.number().int().nonnegative().max(512 * 1024),
+  sourceBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(512 * 1024),
   sections: z
     .array(
       z.strictObject({
@@ -55,7 +59,10 @@ const canonicalLibrarySchema = z.strictObject({
   handle: z.string().regex(/^l[1-9][0-9]*$/),
   kind: z.enum(['world', 'rules']),
   title: z.string().min(1).max(160),
-  mount: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).optional(),
+  mount: z
+    .string()
+    .regex(/^[a-z][a-z0-9-]{0,79}$/)
+    .optional(),
   rootHash: z.string().regex(/^[0-9a-f]{64}$/),
   revision: z.number().int().positive(),
   catalogue: z.array(canonicalLibraryCatalogueEntrySchema).max(64),
@@ -75,18 +82,18 @@ const canonicalLibrarySchema = z.strictObject({
         title: z.string().min(1).max(240),
         heading: z.string().min(1).max(240),
         body: z.string().max(8 * 1024),
-        bytes: z.number().int().positive().max(8 * 1024),
+        bytes: z
+          .number()
+          .int()
+          .positive()
+          .max(8 * 1024),
       }),
     )
     .max(8),
 });
 const canonicalLibrarySelectionTraceSchema = z.strictObject({
-  requestedTopics: z
-    .array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/))
-    .max(8),
-  unmatchedTopics: z
-    .array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/))
-    .max(8),
+  requestedTopics: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/)).max(8),
+  unmatchedTopics: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/)).max(8),
   requestedHandles: z
     .array(z.string().regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/))
     .max(8),
@@ -103,14 +110,26 @@ const canonicalLibrarySelectionTraceSchema = z.strictObject({
           'section-too-large',
           'request-limit',
         ]),
-        bytes: z.number().int().positive().max(512 * 1024),
+        bytes: z
+          .number()
+          .int()
+          .positive()
+          .max(512 * 1024),
       }),
     )
     .max(8),
   maxReads: z.number().int().nonnegative().max(8),
-  maxBytes: z.number().int().nonnegative().max(32 * 1024),
+  maxBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(32 * 1024),
   usedReads: z.number().int().nonnegative().max(8),
-  usedBytes: z.number().int().nonnegative().max(32 * 1024),
+  usedBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(32 * 1024),
 });
 const canonicalDocumentSelectionTraceSchema = z.strictObject({
   cueResolution: z.strictObject({
@@ -143,9 +162,7 @@ const canonicalDocumentSelectionTraceSchema = z.strictObject({
     maxCandidates: z.number().int().min(0).max(4),
   }),
   requestedDocumentIds: z.array(z.uuid()).max(4),
-  loadedHandles: z
-    .array(z.string().regex(/^d[1-9][0-9]*$/))
-    .max(4),
+  loadedHandles: z.array(z.string().regex(/^d[1-9][0-9]*$/)).max(4),
   omitted: z
     .array(
       z.strictObject({
@@ -155,14 +172,22 @@ const canonicalDocumentSelectionTraceSchema = z.strictObject({
           'context-limit',
           'request-limit',
         ]),
-        bytes: z.number().int().positive().max(512 * 1024),
+        bytes: z
+          .number()
+          .int()
+          .positive()
+          .max(512 * 1024),
       }),
     )
     .max(4),
   maxReads: z.literal(4),
   maxBytes: z.literal(12 * 1024),
   usedReads: z.number().int().nonnegative().max(4),
-  usedBytes: z.number().int().nonnegative().max(12 * 1024),
+  usedBytes: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(12 * 1024),
 });
 export const canonicalKnowledgeSchema = z.strictObject({
   rootHash: z.string().regex(/^[0-9a-f]{64}$/),
@@ -193,7 +218,11 @@ export const canonicalKnowledgeSchema = z.strictObject({
         ]),
         visibility: z.enum(['player-known', 'storyteller-private']),
         title: z.string().min(1).max(240),
-        bytes: z.number().int().nonnegative().max(512 * 1024),
+        bytes: z
+          .number()
+          .int()
+          .nonnegative()
+          .max(512 * 1024),
         loaded: z.boolean(),
       }),
     )
@@ -277,8 +306,8 @@ export const contextInputSchema = z.strictObject({
               z.strictObject({
                 kind: z.literal('wait'),
                 label: z.string().min(1).max(120),
-                elapsedTicks: z.number().int().nonnegative(),
-                requiredTicks: z.number().int().positive(),
+                elapsedFictionalSeconds: z.number().int().nonnegative(),
+                requiredFictionalSeconds: z.number().int().positive(),
               }),
             ]),
           }),
@@ -347,11 +376,9 @@ export function contextRequestSections(context: StorytellerContext) {
         ? {
             canonicalKnowledge: {
               catalogue: context.canonicalKnowledge.catalogue,
-              catalogueTruncated:
-                context.canonicalKnowledge.catalogueTruncated,
+              catalogueTruncated: context.canonicalKnowledge.catalogueTruncated,
               documents: context.canonicalKnowledge.documents,
-              documentSelection:
-                context.canonicalKnowledge.documentSelection,
+              documentSelection: context.canonicalKnowledge.documentSelection,
               libraries: context.canonicalKnowledge.libraries.map(
                 ({ rootHash: _rootHash, ...library }) => library,
               ),

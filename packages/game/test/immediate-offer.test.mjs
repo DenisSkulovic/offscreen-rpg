@@ -72,7 +72,7 @@ const content = immediateActionContentSchema.parse({
       requires: [{ id: 'exposed', value: true }],
       resolution: {
         kind: 'automatic',
-        durationTicks: 5,
+        fictionalDurationSeconds: 5,
         outcome: { text: 'The microbe contracts.', effects: [] },
       },
     },
@@ -88,7 +88,7 @@ test('public offer contains no private resolution mechanics', () => {
   });
   assert.deepEqual(offer.nodes[0]?.action, {
     kind: 'attempt',
-    timing: { kind: 'finite', ticks: 5 },
+    timing: { kind: 'finite', fictionalSeconds: 5 },
   });
   assert.equal(
     offer.nodes[0]?.description,
@@ -120,7 +120,7 @@ test('immediate resolution returns one authoritative automatic outcome', () => {
 
 test('bounded action duration is explicit rather than inferred as zero', () => {
   const missingDuration = structuredClone(content.plans[0]);
-  delete missingDuration.resolution.durationTicks;
+  delete missingDuration.resolution.fictionalDurationSeconds;
   assert.equal(
     immediateActionContentSchema.safeParse({
       version: 1,
@@ -136,7 +136,7 @@ test('immediate resolution selects one checked branch and applies it once', () =
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
-      durationTicks: 5,
+      fictionalDurationSeconds: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Sense a gradient',
@@ -180,7 +180,7 @@ test('story fact declaration is explicit, durable and separate from character fa
         evidence: ['p1'],
         resolution: {
           kind: 'automatic',
-          durationTicks: 5,
+          fictionalDurationSeconds: 5,
           outcome: {
             text: 'The promise becomes established.',
             effects: [],
@@ -213,7 +213,7 @@ test('proposal validation rejects unsupported or duplicate story declarations', 
     evidence: ['p1'],
     resolution: {
       kind: 'automatic',
-      durationTicks: 5,
+      fictionalDurationSeconds: 5,
       outcome: {
         text: 'A claim is proposed.',
         effects: [],
@@ -364,7 +364,7 @@ test('extended activity access is explicit and cannot omit or invent a plan', ()
           kind: 'contribution.v1',
           progressLabel: 'Progress',
           requiredContribution: 1,
-          everyTicks: 1,
+          everyFictionalSeconds: 1,
           attempt: {
             check: {
               rule: 'srd-5.2.1-subset.v1',
@@ -459,7 +459,7 @@ test('proposal validation rejects ungrounded situational modifiers', () => {
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
-      durationTicks: 5,
+      fictionalDurationSeconds: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Sense a gradient',
@@ -489,7 +489,7 @@ test('current form constrains abilities and skills without changing the D&D rule
     ...structuredClone(content.plans[0]),
     resolution: {
       kind: 'check',
-      durationTicks: 5,
+      fictionalDurationSeconds: 5,
       check: {
         rule: 'srd-5.2.1-subset.v1',
         purpose: 'Push a physical barrier',

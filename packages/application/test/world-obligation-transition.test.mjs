@@ -57,7 +57,7 @@ const execution = {
     requires: [],
     resolution: {
       kind: 'automatic',
-      durationTicks: 10,
+      fictionalDurationSeconds: 10,
       outcome: {
         text: 'The current is sensed.',
         effects: [],

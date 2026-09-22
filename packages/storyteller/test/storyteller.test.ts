@@ -383,7 +383,7 @@ function consequence(
               description: 'Inspect what changed.',
               action: {
                 kind: 'attempt',
-                timing: { kind: 'finite', ticks: 5 },
+                timing: { kind: 'finite', fictionalSeconds: 5 },
               },
             },
             {
@@ -393,7 +393,7 @@ function consequence(
               description: 'Step away from the situation.',
               action: {
                 kind: 'attempt',
-                timing: { kind: 'finite', ticks: 5 },
+                timing: { kind: 'finite', fictionalSeconds: 5 },
               },
             },
           ],

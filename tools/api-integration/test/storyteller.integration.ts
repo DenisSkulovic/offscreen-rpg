@@ -133,10 +133,14 @@ test(
           contentId = 'pineapple-mechanics.v4',
           pace:
             | { kind: 'instant' }
-            | { kind: 'rate'; ticks: number; realMs: number } = {
+            | {
+                kind: 'rate';
+                fictionalSeconds: number;
+                realSeconds: number;
+              } = {
             kind: 'rate',
-            ticks: 1,
-            realMs: 1000,
+            fictionalSeconds: 1,
+            realSeconds: 1,
           },
           campaignOverrides: Partial<CampaignStart> = {},
         ) {
@@ -678,7 +682,7 @@ test(
             };
             const started = await mechanicalCandidate(
               'frost-road.v1',
-              { kind: 'rate', ticks: 1, realMs: 60_000 },
+              { kind: 'rate', fictionalSeconds: 1, realSeconds: 60 },
               {
                 time: ordinalTime,
                 worldObligations: [
@@ -967,8 +971,8 @@ test(
             assert.deepEqual(interrupted.campaign?.activity?.progress, {
               kind: 'wait',
               label: 'Road crossed',
-              elapsedTicks: 55,
-              requiredTicks: 60,
+              elapsedFictionalSeconds: 55,
+              requiredFictionalSeconds: 60,
             });
             assert.deepEqual(interrupted.campaign?.worldConditions, [
               {
@@ -1430,7 +1434,7 @@ test(
             const obligationId = randomUUID();
             const started = await mechanicalCandidate(
               'pineapple-mechanics.v4',
-              { kind: 'rate', ticks: 1, realMs: 60_000 },
+              { kind: 'rate', fictionalSeconds: 1, realSeconds: 60 },
               {
                 worldObligations: [
                   {
@@ -1629,7 +1633,7 @@ test(
               requiresQuantities: [],
               resolution: {
                 kind: 'automatic' as const,
-                durationTicks: 5,
+                fictionalDurationSeconds: 5,
                 outcome: {
                   text: 'You bar the door until the stranger returns to the boat.',
                   effects: [
@@ -1689,7 +1693,7 @@ test(
                       risk: encounterPlan.risk,
                       action: {
                         kind: 'attempt',
-                        timing: { kind: 'finite', ticks: 5 },
+                        timing: { kind: 'finite', fictionalSeconds: 5 },
                       },
                     },
                   ],
@@ -2508,8 +2512,8 @@ test(
             assert.deepEqual(completed.campaign?.activity?.progress, {
               kind: 'wait',
               label: 'Protective interval',
-              elapsedTicks: 10,
-              requiredTicks: 10,
+              elapsedFictionalSeconds: 10,
+              requiredFictionalSeconds: 10,
             });
             assert.equal(completed.campaign?.tick, 10);
             assert.equal(completed.campaign?.rolls.length, 0);

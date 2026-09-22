@@ -15,7 +15,11 @@ const outcomeSchema = z.strictObject({
 });
 export const scheduledCheckSchema = z.strictObject({
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
-  everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  everyFictionalSeconds: z
+    .number()
+    .int()
+    .positive()
+    .max(Number.MAX_SAFE_INTEGER),
   resolution: checkResolutionSchema,
   success: outcomeSchema,
   failure: outcomeSchema,
@@ -28,7 +32,11 @@ const contributionProcessSchema = z.strictObject({
     .int()
     .positive()
     .max(Number.MAX_SAFE_INTEGER),
-  everyTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  everyFictionalSeconds: z
+    .number()
+    .int()
+    .positive()
+    .max(Number.MAX_SAFE_INTEGER),
   attempt: z.strictObject({
     check: checkPlanSchema,
     successContribution: z
@@ -48,7 +56,11 @@ const contributionProcessSchema = z.strictObject({
 const clockWaitProcessSchema = z.strictObject({
   kind: z.literal('clock-wait.v1'),
   progressLabel: z.string().min(1).max(120),
-  requiredTicks: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  requiredFictionalSeconds: z
+    .number()
+    .int()
+    .positive()
+    .max(Number.MAX_SAFE_INTEGER),
 });
 export const activityOccurrencePolicySchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('unbounded') }),
@@ -272,7 +284,11 @@ export const contributionProgressSchema = z.strictObject({
 export type ContributionProgress = z.infer<typeof contributionProgressSchema>;
 export const clockWaitProgressSchema = z.strictObject({
   kind: z.literal('clock-wait.v1'),
-  elapsedTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  elapsedFictionalSeconds: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER),
 });
 export type ClockWaitProgress = z.infer<typeof clockWaitProgressSchema>;
 export const processProgressSchema = z.discriminatedUnion('kind', [
@@ -292,7 +308,7 @@ export function initialActivityProgress(action: ActionDefinition) {
     process:
       action.process.kind === 'contribution.v1'
         ? { kind: 'contribution.v1', earned: 0 }
-        : { kind: 'clock-wait.v1', elapsedTicks: 0 },
+        : { kind: 'clock-wait.v1', elapsedFictionalSeconds: 0 },
     completionPending: false,
   });
 }
@@ -346,7 +362,7 @@ export function estimatedCompletionBoundaryTick(
     }
     return Math.max(
       plan.resolvedThroughTick,
-      plan.action.process.requiredTicks,
+      plan.action.process.requiredFictionalSeconds,
     );
   }
   if (progress.kind !== 'contribution.v1') {
@@ -368,7 +384,7 @@ export function estimatedCompletionBoundaryTick(
   if (boundariesRemaining === 0) {
     return plan.resolvedThroughTick;
   }
-  const cadence = plan.action.process.everyTicks;
+  const cadence = plan.action.process.everyFictionalSeconds;
   const nextBoundary =
     (Math.floor(plan.resolvedThroughTick / cadence) + 1) * cadence;
   return nextBoundary + (boundariesRemaining - 1) * cadence;
@@ -415,8 +431,8 @@ export function processBoundaryDue(
 ) {
   const process = plan.action.process;
   return process.kind === 'contribution.v1'
-    ? boundaryTick % process.everyTicks === 0
-    : boundaryTick === process.requiredTicks;
+    ? boundaryTick % process.everyFictionalSeconds === 0
+    : boundaryTick === process.requiredFictionalSeconds;
 }
 
 /** Reflect eligible clock effort without confusing it with contribution. */
@@ -436,7 +452,10 @@ export function processProgressAtEffortTick(
   }
   return {
     kind: 'clock-wait.v1' as const,
-    elapsedTicks: Math.min(plan.action.process.requiredTicks, effortTick),
+    elapsedFictionalSeconds: Math.min(
+      plan.action.process.requiredFictionalSeconds,
+      effortTick,
+    ),
   };
 }
 
@@ -456,9 +475,9 @@ export function settleProcessBoundary(
   if (progress.kind !== 'clock-wait.v1') {
     throw new Error('Activity progress does not match its process rule');
   }
-  const elapsedTicks = plan.action.process.requiredTicks;
+  const elapsedFictionalSeconds = plan.action.process.requiredFictionalSeconds;
   return {
-    progress: { kind: 'clock-wait.v1', elapsedTicks } as const,
+    progress: { kind: 'clock-wait.v1', elapsedFictionalSeconds } as const,
     complete: true,
     contribution: null,
     text: null,
@@ -474,11 +493,11 @@ export function nextBoundaryTick(
   const process = plan.action.process;
   let next =
     process.kind === 'contribution.v1'
-      ? (BigInt(cursorTick) / BigInt(process.everyTicks) + 1n) *
-        BigInt(process.everyTicks)
-      : BigInt(process.requiredTicks);
+      ? (BigInt(cursorTick) / BigInt(process.everyFictionalSeconds) + 1n) *
+        BigInt(process.everyFictionalSeconds)
+      : BigInt(process.requiredFictionalSeconds);
   for (const schedule of plan.action.checks) {
-    const cadence = BigInt(schedule.everyTicks);
+    const cadence = BigInt(schedule.everyFictionalSeconds);
     const candidate = (BigInt(cursorTick) / cadence + 1n) * cadence;
     if (candidate < next) {
       next = candidate;

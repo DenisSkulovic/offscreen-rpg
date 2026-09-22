@@ -281,7 +281,7 @@ export async function ensureCampaign(tx: Transaction, current: StoryRecord) {
     {
       mechanics: false,
       locked: false,
-      pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+      pace: { kind: 'rate', fictionalSeconds: 1, realSeconds: 1 },
       time: defaultWorldTimeDefinition,
       worldObligations: [],
       worlds: [],

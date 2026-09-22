@@ -61,12 +61,20 @@ export const immediateActionPlanSchema = z.strictObject({
   resolution: z.discriminatedUnion('kind', [
     z.strictObject({
       kind: z.literal('automatic'),
-      durationTicks: z.number().int().positive().max(10080),
+      fictionalDurationSeconds: z
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER),
       outcome: outcomeSchema,
     }),
     z.strictObject({
       kind: z.literal('check'),
-      durationTicks: z.number().int().positive().max(10080),
+      fictionalDurationSeconds: z
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER),
       check: checkPlanSchema,
       difficultyBasis: z.string().min(1).max(300),
       success: outcomeSchema,

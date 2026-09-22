@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const paceSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('rate'),
-    ticks: z.number().int().min(1).max(1_000_000),
-    realMs: z.number().int().min(1).max(86_400_000),
+    fictionalSeconds: z.number().int().min(1).max(1_000_000),
+    realSeconds: z.number().int().min(1).max(86_400),
   }),
   z.strictObject({ kind: z.literal('instant') }),
 ]);
@@ -53,10 +53,11 @@ export function earnedTicks(input: {
     Math.max(0, input.now - input.anchorAt.getTime()),
   );
   const previousDenominator = BigInt(input.progress.remainder.denominator);
-  const denominator = previousDenominator * BigInt(input.pace.realMs);
+  const realDurationMs = BigInt(input.pace.realSeconds) * 1000n;
+  const denominator = previousDenominator * realDurationMs;
   const numerator =
-    BigInt(input.progress.remainder.numerator) * BigInt(input.pace.realMs) +
-    realElapsedMs * BigInt(input.pace.ticks) * previousDenominator;
+    BigInt(input.progress.remainder.numerator) * realDurationMs +
+    realElapsedMs * BigInt(input.pace.fictionalSeconds) * previousDenominator;
   const elapsedTicks =
     BigInt(input.progress.elapsedTicks) + numerator / denominator;
   if (elapsedTicks >= BigInt(input.maximumTicks)) {
@@ -86,8 +87,8 @@ export function realMsUntilTick(
   const remaining =
     BigInt(boundaryTick - progress.elapsedTicks) * denominator -
     BigInt(progress.remainder.numerator);
-  const realNumerator = remaining * BigInt(pace.realMs);
-  const realDenominator = denominator * BigInt(pace.ticks);
+  const realNumerator = remaining * BigInt(pace.realSeconds) * 1000n;
+  const realDenominator = denominator * BigInt(pace.fictionalSeconds);
   const roundedUp = (realNumerator + realDenominator - 1n) / realDenominator;
   return Number(roundedUp > 86_400_000n ? 86_400_000n : roundedUp);
 }

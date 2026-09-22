@@ -185,8 +185,10 @@ export async function readCampaign(
             ? {
                 kind: 'wait' as const,
                 label: plan.action.process.progressLabel,
-                elapsedTicks: progress.process.elapsedTicks,
-                requiredTicks: plan.action.process.requiredTicks,
+                elapsedFictionalSeconds:
+                  progress.process.elapsedFictionalSeconds,
+                requiredFictionalSeconds:
+                  plan.action.process.requiredFictionalSeconds,
               }
             : (() => {
                 throw new Error(

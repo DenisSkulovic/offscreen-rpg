@@ -150,9 +150,7 @@ function listStoryStatus(row: {
   if (row.hasCurrentResolution) {
     return 'Storyteller needs attention';
   }
-  return row.interaction || row.campaignOffer
-    ? 'A choice awaits'
-    : 'Concluded';
+  return row.interaction || row.campaignOffer ? 'A choice awaits' : 'Concluded';
 }
 
 const snapshotCacheContract = 'story-snapshot.v1';
@@ -414,7 +412,11 @@ export function createStoryReads(
                       creative: initialCreative(
                         storytellerProfileSchema.parse(row.storyteller),
                       ),
-                      pace: { kind: 'rate', ticks: 1, realMs: 1000 },
+                      pace: {
+                        kind: 'rate',
+                        fictionalSeconds: 1,
+                        realSeconds: 1,
+                      },
                       locked: false,
                       rules: 'srd-5.2.1-subset.v1',
                       risk: 'nonlethal',
