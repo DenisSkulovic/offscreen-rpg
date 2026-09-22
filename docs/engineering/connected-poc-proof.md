@@ -66,21 +66,50 @@ Raw packets, responses and canonical objects remain separately inspectable by id
 
 Implemented foundations include exact held packets, strict structured results, one opening plus one continuation in the live runner, deterministic mechanical receipts, activities/time, canonical start/world/rule/campaign documents, bounded context and memory exploration, persistent accounting and publication recovery.
 
-The proof is **not ready or passed**. The 2026-09-22 headless comparison established:
+The proof is **not ready or passed**. Two real Sol stories and their weaker Luna contrasts established that Sol materially improves prose, choice quality, continuity and process selection. The corrected Sol story `a15c682c-9a30-4d92-b966-a2ed8d551299` reached five successful Storyteller turns, advanced the warehouse work by 1,800 fictional seconds, paid six septims once and developed a coherent acquaintance with Darvyn. This is promising quality evidence, not an authority pass.
 
-- the headless client can create a story, select explicit options, wait through activities and capture a durable per-story evidence stream without UI input;
-- GPT-5.6 Luna produced serviceable openings but repeatedly encoded ordinary actions as one-to-three-tick micro-actions and once repeated the opening instead of continuing it;
-- GPT-5.6 Sol produced materially stronger character continuity and correctly proposed the warehouse work as a process, demonstrating that model capability matters;
-- the admitted Sol process lasted only four scheduler ticks because the model was still asked to invent tick counts directly; the fixed-second/fictional-duration conversion remains unimplemented;
-- the first activity completion exposed and then verified fixes for nullable post-activity offers and missing worker document-store wiring;
-- Sol's drama profile sustained a coherent wage dispute but prolonged it across successive turns instead of paying the existing `septims` quantity, so stronger prose alone did not produce satisfying pacing or ordinary-life closure;
-- no run has yet reached 10–15 enjoyable Storyteller turns, substantial configured elapsed time, durable wages and a later continuity callback together.
+The live opening task receives the authored opening prose, character and facts but not the authored executable opening plans. It asks the model to recreate those mechanics. The successful Sol opening therefore changed the maintained warehouse plan's action identity, capacity, condition policy and occurrence scope, omitted the effect that closes `warehouse-shift-available`, and added three no-op quantity effects. Luna instead admitted a full 1,800-second finite action followed by a separately invented contribution process that consumed another 2,100 seconds. Both outputs passed the structural validator. The provider-free fixture uses the exact authored plan, so its correct 1,800-second payment proof does not cover this live authority boundary.
+
+The persisted corrected Sol state still says `warehouse-shift-available: true`; only its model-invented occurrence scope prevents the exact same plan from repeating. A later model can choose another scope key. This makes duration, one-time identity and closure dependent on model compliance despite the authored commitment. The next implementation slice must let a Storyteller select an exact authorized mechanical reference and have the application substitute that immutable plan. A model-generated plan remains appropriate for genuinely new proposals only under its own validation contract.
+
+Other concrete blockers found in the preserved evidence:
+
+- The Luna story's final response passed provider JSON-schema decoding and stopped normally, then failed application policy because it added a proficiency modifier that the transmitted schema allowed but the application validator forbids. Align the task schema with admissible mechanics; this is a harness defect, not evidence of poor prose.
+- A parseable, schema-complete Luna opening was discarded solely because the model padded the remainder of its output allowance with whitespace and reported `finish_reason: length`. The adapter should decide explicitly whether a fully validated JSON value is safe to accept under this finish reason instead of treating every length result as necessarily truncated.
+- Settled invalid output leaves the Luna story permanently held with no retry. Recovery must retry preparation/publication of the already committed intention without replaying time, rolls or effects.
+- OpenRouter twice returned an HTTP-200 error envelope for Sol. Manual reconciliation proved both attempts unbilled and reopened the same intentions, but ordinary play still lacks that operator recovery path.
+- Consequence packets are roughly 46 KB. About 22 KB is the general output schema; the model receives all prior unselected offer branches and a growing active-scene transcript, while normal turns receive no prompt-cache hit. The five successful Sol calls transmitted about 220 KB, consumed 38,276 prompt and 4,799 completion tokens, cost USD 0.125934 and averaged 22.9 seconds. Narrow capability-specific schemas and omit superseded branches before shrinking creative context.
+- The model-facing committed-time rule and public world-time label still say `ticks`, although action contracts now request fictional seconds. Remove that contradictory vocabulary from current packets and present elapsed fictional time in the world's available units.
+- Contribution boundaries became seven repetitive story passages in the Luna history. Routine work evidence belongs in the activity ledger and a bounded completion/return summary unless a boundary creates an actual scene.
+- Darvyn's name survives in a current continuity note but no durable identity or relationship document was created. The run has not proved progressive materialization, later retrieval or a callback after leaving and returning.
+
+The corrected Sol run is real provider evidence. Its passages reference settled OpenRouter generations; the warehouse completion passage is a deliberately deterministic engine result. No story output was patched or replaced. Two failed provider deliveries were manually reconciled only in the accounting state after independent provider checks.
+
+### Corrected Sol compact ledger
+
+| Turn | Position and player act | Provider evidence | Authority/change | Review |
+| --- | --- | --- | --- | --- |
+| 1 | Tick 0 opening; five choices | packet `1ea67b74`, 35,057 bytes, 26.3 s, $0.026331 | Live model recreated rather than referenced the warehouse plan | Strong grounded opening and agency; mechanical authority failed silently |
+| 2 | Select full warehouse shift; consequence at tick 1,800 | packet `ff7d50d0`, one confirmed-unsent overload then 17.6 s cached retry, $0.009029 | Six septims committed once; availability fact remained true | Strong concise closure; duplicated the factual completion passage |
+| 3 | Ask the laborer what a newcomer should know; tick 1,860 | packet `6aad5df6`, 46,825 bytes, 19.4 s, $0.029656 | Practical-advice note created | Specific, useful response; five distinct next intentions |
+| 4 | Offer to buy him a drink; tick 1,890 | packet `ad8b1419`, 46,965 bytes, 22.6 s, $0.029174 | No typed resource spend and no relationship record yet | Good boundary and reciprocity; final paragraph explains what dialogue already showed |
+| 5 | Ask his name; tick 1,920 | packet `09f91daf`, 46,605 bytes, 28.6 s, $0.031744 | Current note records Darvyn; no durable identity document | Strong continuity and six meaningful exits/continuations |
+
+Turn six selected “Ask Darvyn to choose a modest place” and advanced to tick 1,955, but its exact packet `ab33ded0` received a confirmed-unbilled provider-unavailable envelope. It is a committed player action with retryable narration, not a successful Storyteller turn.
+
+### Profile evidence
+
+The profiles did not fail uniformly. Luna's Quiet Eerie Mystery opening used the second stamp and record discrepancy to create restrained unease without forcing danger, while its Driven Adventure opening softened the available pressure until neither opportunity felt urgent. Three Absurd Action Comedy openings contained occasional jokes or comic comparisons but none delivered the profile's requested concrete disruption. Sol's Character-Driven Drama run consistently respected character boundaries, practical motives and grounded exits, although it often added an explanatory final paragraph after the dialogue had already carried the point.
+
+This pattern does not justify changing the shared Storyteller prompt. The comedy and adventure profiles already state their distinctive requirements, and the same Luna route followed the mystery profile more successfully. Treat route capability and instruction adherence as variables, preserve Sol's repeated explanatory endings as a narrow style hypothesis, and retest one profile-owned change at a time only after the authority and recovery defects are fixed.
 
 The next implementation tranche is provider-free:
 
-1. replace model-authored tick counts with model-authored fictional durations and engine-owned conversion under the fixed one-real-second tick contract;
-2. give the maintained warehouse commitment an admitted substantial duration and explicit completion wage so the engine, rather than later prose, owns payment;
-3. calibrate profile-owned pacing controls and compare profiles one variable at a time, preserving the current live runs as baselines;
-4. rerun the five-turn diagnostic before attempting the 10–15-turn proof.
+1. replace live reconstruction of supplied mechanics with exact authorized plan references and validate that the authored duration, effects, closure condition and occurrence identity survive unchanged;
+2. align output schemas with application policy, add non-replaying invalid-output recovery, and classify the known provider error envelope without manual database repair;
+3. remove current tick-language contradictions and keep routine activity boundary evidence out of narrative passage history;
+4. reduce task packet/schema breadth, then compare the current all-branch planning contract with an intent-first selected-branch plan using saved packets before choosing an architecture;
+5. prove progressive identity/relationship materialization and a later callback before another 10–15-turn live attempt;
+6. only then evaluate narrow profile tuning. Preserve the current Sol tendency to end scenes with explanatory relational summaries as a hypothesis; do not hard-code a generic prose preference from one story.
 
-The latest live attempts are settled with zero reservation and no uncertain delivery. Further live comparisons remain deliberate experiments and follow the repository spending controls.
+All latest live attempts are settled with zero reservation and no uncertain delivery. Further live comparisons remain deliberate experiments and follow the repository spending controls.
