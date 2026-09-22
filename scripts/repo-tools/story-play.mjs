@@ -341,8 +341,15 @@ async function controlActivity(storyId, control) {
   requireLive('activity');
   const before = await readStory(storyId);
   const activity = before.campaign?.activity;
-  if (!activity || !['running', 'paused'].includes(activity.state)) {
-    throw new Error('story has no active activity');
+  const execution = before.campaign?.actionExecution;
+  let subject = null;
+  if (activity && ['running', 'paused'].includes(activity.state)) {
+    subject = { kind: 'activity', value: activity };
+  } else if (execution && ['running', 'paused'].includes(execution.state)) {
+    subject = { kind: 'action-execution', value: execution };
+  }
+  if (!subject) {
+    throw new Error('story has no active activity or finite action');
   }
   const pace = {
     slow: { kind: 'rate', fictionalSeconds: 1, realSeconds: 60 },
@@ -356,12 +363,14 @@ async function controlActivity(storyId, control) {
     );
   }
   const admitted = await request(
-    `/api/stories/${storyId}/activity-controls/${randomUUID()}`,
+    `/api/stories/${storyId}/${subject.kind === 'activity' ? 'activity-controls' : 'action-execution-controls'}/${randomUUID()}`,
     {
       method: 'PUT',
       body: JSON.stringify({
-        activityId: activity.id,
-        expectedRevision: activity.revision,
+        ...(subject.kind === 'activity'
+          ? { activityId: subject.value.id }
+          : { executionId: subject.value.operationId }),
+        expectedRevision: subject.value.revision,
         action: pace ? 'pace' : control,
         ...(pace ? { pace } : {}),
       }),
@@ -372,7 +381,10 @@ async function controlActivity(storyId, control) {
     const deadline = Date.now() + 120_000;
     while (Date.now() < deadline) {
       final = await readStory(storyId);
-      const current = final.campaign?.activity;
+      const current =
+        subject.kind === 'activity'
+          ? final.campaign?.activity
+          : final.campaign?.actionExecution;
       const resolving =
         final.resolution &&
         ['pending', 'running'].includes(final.resolution.state);
@@ -382,7 +394,9 @@ async function controlActivity(storyId, control) {
       );
       if (
         (!current ||
-          current.id !== activity.id ||
+          (subject.kind === 'activity'
+            ? current.id !== subject.value.id
+            : current.operationId !== subject.value.operationId) ||
           current.state === 'complete') &&
         !resolving &&
         !requiredTurn
@@ -401,7 +415,12 @@ async function controlActivity(storyId, control) {
   const summary = summarize(final);
   const evidencePath = await record(
     'activity-control',
-    { control, admitted: summarize(admitted), final: summary },
+    {
+      control,
+      subject: subject.kind,
+      admitted: summarize(admitted),
+      final: summary,
+    },
     storyId,
   );
   return { ...summary, evidencePath };
