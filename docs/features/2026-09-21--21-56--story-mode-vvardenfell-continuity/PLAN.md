@@ -58,35 +58,62 @@ Implementation owner: Codex for the current owner-requested implementation.
 ## Current checkpoint
 
 - Current phase: S4 connected-play diagnosis, dependent on the active
-  [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md).
-  Headless Story mode and the `story:play` client now cover ordinary creation,
-  observation, selection, waiting and explicit retry without UI input. Exact
-  next action is review and explicit release of the stopped funding account
-  after the now-known overlapping-wake charge is reconciled. Only then may the
-  bounded profile play session resume. Each mutating CLI invocation requires
-  `--confirm-live`; no automatic retry or unattended loop was introduced.
+  [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md)
+  and the fixed-second [time redesign](../../technical/ticks-and-tags.md#target-one-real-second-tick).
+  Headless Story mode and the `story:play` client cover ordinary creation,
+  observation, explicit selection, activity waiting and explicit retry without
+  UI input. Each mutating CLI invocation requires `--confirm-live`; no automatic
+  retry or unattended paid loop was introduced.
 - Reviewed source: `fe8297c` contains the headless launcher, self-play client,
   private trajectory capture and guarded model/cost selection. Fresh local
   infrastructure, database inspection, provider evidence and Temporal history
   were available in this pass.
-- Unresolved findings: mild comedy, deferred intent fulfillment, unused-branch
-  output burden and owner dissatisfaction need controlled diagnosis. A stronger
-  model probe does not require further speculative Luna prompt edits first.
-  The owner now requires a fixed real-second tick with model-proposed fictional
-  duration; [the time contract](../../technical/ticks-and-tags.md#target-one-real-second-tick)
-  records that unimplemented change. UI polish is lower priority.
+- Unresolved findings: Sol materially improves character continuity, option
+  quality and process selection, but the drama run stretched a simple wage
+  dispute across multiple turns and still did not pay the declared `septims`
+  quantity. Luna's weaker behavior and Sol's better behavior are preserved as
+  separate baselines. Do not compensate with shared prompt hardcoding. The
+  engine still asks models for ticks directly and admitted the warehouse shift
+  as four seconds; implement fictional-duration conversion and deterministic
+  reward ownership before more live tuning. UI polish remains lower priority.
 - Provider spend and accounting certainty: fresh Driven Adventure story
   `0cfacb7a-9b96-4287-91ad-19c9b662bccf` spent USD 0.002755 on its opening and
   USD 0.003922 on its first consequence. The ledger is USD 0.032814 settled,
   USD 0 reserved, with no uncertain attempts. OpenRouter independently reported
   USD 0.037632896 cumulative usage and USD 9.962367104 remaining credit at
   2026-09-22T12:13:13.401Z; the delta from the pre-play snapshot matches these
-  two calls. Funding remains stopped because
+  two calls. Funding was stopped because
   the receipt's second publication wake overlapped the original 19.746-second
   call and temporarily classified that exact dispatched attempt as uncertain.
   The original completion settled with provider ID
   `gen-1790078231-5zv68iGbXNrOfmKIP3Wy`; publication remained blocked. No retry,
-  fallback, additional profile or model switch followed.
+  fallback, additional profile or model switch followed until the owner later
+  authorized release after reconciliation.
+
+## Headless Luna/Sol comparison — 2026-09-22
+
+- Character-Driven Drama on Luna, story
+  `50db815e-40c3-486d-a01b-86ffd3aed3c2`, used three settled calls totaling USD
+  0.009355. The opening reflected relationship and obligation better than the
+  earlier comedy evidence, but classified warehouse work as a two-tick finite
+  action. The first continuation offered one redundant confirmation; the next
+  expanded to six attitudes while still making all actions one tick.
+- The matched Sol story `8a0739b3-9b4c-41bc-a82a-00fd0b8f7c08` classified the
+  warehouse shift as a process and produced more focused prose and choices. Its
+  opening plus three continuation calls cost USD 0.113360, all settled with
+  zero reservation and no uncertain attempt. It nevertheless authored the
+  shift as `requiredTicks: 4`, completed it without wages, then prolonged the
+  wage dispute through two further turns.
+- Activity completion first stuck before provider dispatch. The activity
+  consequence legitimately had no active offer, while preparation rejected
+  `null`; after that fix, canonical context still failed because the worker did
+  not pass its configured document store into the Stories application. Both
+  seams are fixed. The existing Temporal workflow recovered and published
+  “After the Shift” without replaying the activity.
+- Exact next action: implement the maintained fictional-duration/one-second-tick
+  contract and an engine-owned paid warehouse completion, then rerun the
+  five-turn diagnostic with Sol and one contrasting profile. Do not spend more
+  turns on the known four-tick/unpaid contract.
 
 ## First owner play evidence — 2026-09-22
 

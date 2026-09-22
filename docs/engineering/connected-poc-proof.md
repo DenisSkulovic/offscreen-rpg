@@ -8,7 +8,7 @@ This document owns that proof. The broader playthrough atlas supplies design pre
 
 Use the maintained Seyda Neen start: the player arrives as a released prisoner in a pinned world/rules/start package. Scenario content may name Vvardenfell, local people, places and opportunities. Shared runtime code must not branch on Seyda Neen, employment, human biology, Earth time or a chosen plot.
 
-The minimum successful session contains **five committed Storyteller turns total**, counting the generated opening as turn one and requiring at least four later turns after meaningful player selections. Ten total turns is the stretch target once the five-turn path is repeatable. A model round used for memory discovery is not another Storyteller turn; a quiet mechanical settlement without narration is not falsely counted as one.
+The POC is ready only when the owner can play a **legitimately enjoyable 10–15 committed Storyteller-turn story**, counting the generated opening as turn one. A model round used for memory discovery is not another Storyteller turn; a quiet mechanical settlement without narration is not falsely counted as one. Mechanical correctness and valid prose are prerequisites, not substitutes for the owner's desire to continue.
 
 Across the session, require:
 
@@ -19,6 +19,7 @@ Across the session, require:
 5. at least one canonical change, such as a current character/item/place/thread/world record or typed engine state, visible to a later turn;
 6. a later callback to an earlier detail or changed fact, recovered from bounded current context or memory exploration rather than invented recollection;
 7. choices that remain meaningfully distinct, include a plausible quiet/non-escalating path when fiction permits it, and never trap the player behind a compulsory paid narration loop.
+8. at least one ordinary-life commitment with a substantial fictional duration—such as a warehouse shift—whose real wait is derived from the selected speed, whose progress remains visible for hundreds of one-second scheduler ticks when configured that way, and whose admitted completion produces a durable result such as earned coin.
 
 The first session may use an authored start package and authored mechanical definitions. Arbitrary premise-to-mechanics generation, general travel graphs, full combat, polished UI, semantic search and a ten-thousand-turn history are not prerequisites. The proof is invalid if the harness patches generated output, writes state directly, selects fixture-only backdoors or adds scenario-name branches to shared policy.
 
@@ -36,13 +37,13 @@ Run the same starting state with provider execution held before every dispatch. 
 
 After all spending gates are clear, run one opening and two selected continuations with a currently verified route. Reconcile every attempt before releasing the next. Stop on invalid output, uncertainty, unsupported mechanics, incoherent authority or missing evidence. This is transport/prompt compatibility evidence, not the POC.
 
-### P3 — Five-turn proof
+### P3 — Five-turn diagnostic
 
-From one reviewed opening, complete the minimum session above. The run has one finite captured allowance and no fallback, automatic retry, judge or background inference. Human selection between generated choices is allowed and preferred. A failed run remains evidence and may be debugged offline; it is never silently repaired into a pass.
+From one reviewed opening, complete five Storyteller turns as an intermediate diagnostic. The run has one finite captured allowance and no fallback, automatic retry, judge or background inference. Human selection between generated choices is allowed and preferred. A failed run remains evidence and may be debugged offline; it is never silently repaired into a pass. Passing this stage does not establish the POC.
 
-### P4 — Ten-turn and fork pressure
+### P4 — Enjoyable 10–15-turn proof and fork pressure
 
-Only after P3 is repeatable, continue toward ten turns and fork one useful checkpoint to try a materially different choice. This tests continuity, branch isolation and reuse of a good story position without requiring a giant history.
+Only after P3 is repeatable, continue through 10–15 turns and fork one useful checkpoint to try a materially different choice. The owner judges whether the story was legitimately enjoyable and worth continuing. This also tests continuity, branch isolation and reuse of a good story position without requiring a giant history.
 
 ## Compact evidence ledger
 
@@ -65,21 +66,21 @@ Raw packets, responses and canonical objects remain separately inspectable by id
 
 Implemented foundations include exact held packets, strict structured results, one opening plus one continuation in the live runner, deterministic mechanical receipts, activities/time, canonical start/world/rule/campaign documents, bounded context and memory exploration, persistent accounting and publication recovery.
 
-The proof is **not ready or passed**:
+The proof is **not ready or passed**. The 2026-09-22 headless comparison established:
 
-- the live runner stops after opening plus one automatically selected first option, even though its recipe schema permits three primary calls;
-- the maintained `seyda-neen-arrival.v1` seed now supplies an ordinary
-  character, conversation check, bounded warehouse work and gated travel
-  through existing generic contracts, and evaluation packet capture selects it;
-  this is implementation foundation rather than connected-session evidence;
-- it has no durable session/turn ledger or operator choice checkpoint;
-- no connected live run has exercised mechanical action, activity/time, canonical change and later recall together;
-- cheap-model adherence and narrative quality remain unknown beyond isolated failed/single-turn evidence;
-- one prior memory-provider attempt is accounting-uncertain, so repository spending policy currently stops all further provider inference.
+- the headless client can create a story, select explicit options, wait through activities and capture a durable per-story evidence stream without UI input;
+- GPT-5.6 Luna produced serviceable openings but repeatedly encoded ordinary actions as one-to-three-tick micro-actions and once repeated the opening instead of continuing it;
+- GPT-5.6 Sol produced materially stronger character continuity and correctly proposed the warehouse work as a process, demonstrating that model capability matters;
+- the admitted Sol process lasted only four scheduler ticks because the model was still asked to invent tick counts directly; the fixed-second/fictional-duration conversion remains unimplemented;
+- the first activity completion exposed and then verified fixes for nullable post-activity offers and missing worker document-store wiring;
+- Sol's drama profile sustained a coherent wage dispute but prolonged it across successive turns instead of paying the existing `septims` quantity, so stronger prose alone did not produce satisfying pacing or ordinary-life closure;
+- no run has yet reached 10–15 enjoyable Storyteller turns, substantial configured elapsed time, durable wages and a later continuity callback together.
 
 The next implementation tranche is provider-free:
 
-1. generalize the Chamber evaluator into a finite session supervisor that captures a held packet per generated turn, pauses for explicit option selection, traverses narrative and mechanical interaction types, enforces one cumulative run allowance and emits the compact ledger;
-2. exercise the five-turn shape end to end with scripted generation, including canonical change and later context inspection.
+1. replace model-authored tick counts with model-authored fictional durations and engine-owned conversion under the fixed one-real-second tick contract;
+2. give the maintained warehouse commitment an admitted substantial duration and explicit completion wage so the engine, rather than later prose, owns payment;
+3. calibrate profile-owned pacing controls and compare profiles one variable at a time, preserving the current live runs as baselines;
+4. rerun the five-turn diagnostic before attempting the 10–15-turn proof.
 
-Do not issue another live request until the uncertain attempt is explicitly reconciled.
+The latest live attempts are settled with zero reservation and no uncertain delivery. Further live comparisons remain deliberate experiments and follow the repository spending controls.

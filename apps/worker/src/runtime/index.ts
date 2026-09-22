@@ -33,7 +33,11 @@ export async function startRuntime(
   try {
     native = await NativeConnection.connect({ address: config.address });
     const client = new Client({ connection, namespace: config.namespace });
-    const stories = createStories(database);
+    const stories = createStories(database, {
+      ...(storytellerOptions.documentStore
+        ? { documentStore: storytellerOptions.documentStore }
+        : {}),
+    });
     const activities = createWorkerActivities({
       stories,
       storyteller: createStorytellerRuntime(database, storytellerOptions),

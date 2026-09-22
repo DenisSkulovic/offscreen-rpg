@@ -1997,10 +1997,32 @@ test(
               null,
             );
             const blockedFollowUp = await database.db
-              .select({ operationId: campaignConsequence.operationId })
+              .select({
+                operationId: campaignConsequence.operationId,
+                generationId: campaignConsequence.generationId,
+              })
               .from(campaignConsequence)
               .where(eq(campaignConsequence.operationId, activityId));
             assert.equal(blockedFollowUp.length, 1);
+            assert.equal(blockedFollowUp[0]?.generationId, null);
+
+            await storyService.prepareCampaignConsequence(activityId);
+            const [preparedFollowUp] = await database.db
+              .select({ generationId: campaignConsequence.generationId })
+              .from(campaignConsequence)
+              .where(eq(campaignConsequence.operationId, activityId));
+            const generationId = requireDefined(
+              preparedFollowUp?.generationId,
+              'Expected the blocked activity consequence to be prepared',
+            );
+            const [preparedGeneration] = await database.db
+              .select({ input: generation.input })
+              .from(generation)
+              .where(eq(generation.id, generationId));
+            const preparedInput = preparedGeneration?.input as {
+              context?: { resolution?: { offer?: unknown } };
+            };
+            assert.equal(preparedInput.context?.resolution?.offer, null);
             const blockedAfterReplay = await stories.read({
               ownerId,
               storyId: started.storyId,

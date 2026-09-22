@@ -390,7 +390,7 @@ async function admitConsequenceNarration(
           character: characterSchema.parse(state.character),
           storyFacts: storyFactsSchema.parse(state.storyFacts),
           tick: state.tick,
-          offer: offerSchema.parse(state.offer),
+          offer: state.offer === null ? null : offerSchema.parse(state.offer),
           receipts: rolls.map((roll) => ({
             id: roll.id,
             roll: roll.result,
