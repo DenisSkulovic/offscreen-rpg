@@ -2472,6 +2472,80 @@ test(
           },
         );
         await t.test(
+          'Seyda warehouse shift advances thirty fictional minutes and pays once',
+          async () => {
+            const started = await mechanicalCandidate('seyda-neen-arrival.v1', {
+              kind: 'instant',
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the Seyda opening offer',
+            );
+            const shift = requireDefined(
+              offer.nodes.find((node) => node.id === 'work-warehouse-shift'),
+              'Expected the warehouse shift option',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: [shift.id],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const activityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected the admitted warehouse shift',
+            );
+            await storyService.advanceCampaignActivity(activityId);
+            const completed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(completed.campaign?.activity?.state, 'complete');
+            assert.deepEqual(completed.campaign?.activity?.progress, {
+              kind: 'wait',
+              label: 'Warehouse work completed',
+              elapsedFictionalSeconds: 1_800,
+              requiredFictionalSeconds: 1_800,
+            });
+            assert.equal(completed.campaign?.tick, 1_800);
+            assert.equal(
+              completed.campaign?.character?.quantities.find(
+                (quantity) => quantity.id === 'septims',
+              )?.value,
+              6,
+            );
+            assert.equal(
+              completed.campaign?.character?.facts.find(
+                (fact) => fact.id === 'warehouse-shift-available',
+              )?.value,
+              false,
+            );
+            assert.equal(
+              await storyService.advanceCampaignActivity(activityId),
+              null,
+            );
+            const replayed = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            assert.equal(
+              replayed.campaign?.character?.quantities.find(
+                (quantity) => quantity.id === 'septims',
+              )?.value,
+              6,
+            );
+            assert.equal(replayed.campaign?.tick, 1_800);
+          },
+        );
+        await t.test(
           'clock wait completes from eligible time without rolling or earning work points',
           async () => {
             const started = await mechanicalCandidate('microbe.v3', {

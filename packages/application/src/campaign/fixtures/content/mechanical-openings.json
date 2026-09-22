@@ -33,9 +33,7 @@
         "proficiencyBonus": 2,
         "hp": 10,
         "maxHp": 10,
-        "quantities": [
-          { "id": "septims", "label": "Septims", "value": 0 }
-        ],
+        "quantities": [{ "id": "septims", "label": "Septims", "value": 0 }],
         "facts": [
           { "id": "location", "value": "seyda-neen" },
           { "id": "release-papers", "value": true },
@@ -47,7 +45,7 @@
         "version": 1,
         "title": "Released at Seyda Neen",
         "paragraphs": [
-          "The census office releases you into Seyda Neen with stamped papers and no coin. The warehouse is taking hands for a short shift, while the road north leaves the settlement through the marsh."
+          "The census office releases you into Seyda Neen with stamped papers and no coin. The warehouse clerk openly offers a bounded thirty-minute shift moving and recording cargo for six septims, paid only when the shift is complete. The road north leaves the settlement through the marsh."
         ]
       }
     },

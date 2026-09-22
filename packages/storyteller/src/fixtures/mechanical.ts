@@ -109,28 +109,9 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
           ],
           capacity: 'primary',
           process: {
-            kind: 'contribution.v1',
+            kind: 'clock-wait.v1',
             progressLabel: 'Warehouse work completed',
-            requiredContribution: 6,
-            everyFictionalSeconds: 3,
-            attempt: {
-              check: {
-                rule: 'srd-5.2.1-subset.v1',
-                purpose: 'Handle the warehouse cargo',
-                skill: 'athletics',
-                ability: 'strength',
-                dc: 9,
-                advantage: false,
-                disadvantage: false,
-                modifiers: [],
-              },
-              successContribution: 3,
-              failureContribution: 0,
-              successText:
-                'A sound round of cargo handling advances the shift.',
-              failureText:
-                'The attempt consumes time, but the cargo must be handled again.',
-            },
+            requiredFictionalSeconds: 1_800,
           },
           conditionPolicy: {
             kind: 'boundary',
@@ -145,7 +126,7 @@ function seydaNeenOpeningPlans(character: MechanicalCharacter) {
           completionFollowUp: 'scene',
           checks: [],
           completion: {
-            text: 'The warehouse shift ends and the clerk counts out the agreed pay.',
+            text: 'After thirty minutes, the warehouse shift ends and the clerk counts out the agreed six septims.',
             effects: [
               {
                 kind: 'quantity.change.v1',

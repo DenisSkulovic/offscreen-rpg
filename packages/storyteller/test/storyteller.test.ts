@@ -506,6 +506,61 @@ function microbeMechanicalOpening() {
   });
 }
 
+function seydaMechanicalOpening() {
+  const task = mechanicalOpening();
+  return prepareStorytellerTask({
+    ...task,
+    context: {
+      ...task.context,
+      mechanicalOpening: {
+        id: 'seyda-neen-arrival.v1',
+        character: {
+          name: 'A newly released prisoner',
+          scores: {
+            strength: 10,
+            dexterity: 12,
+            constitution: 12,
+            intelligence: 10,
+            wisdom: 12,
+            charisma: 12,
+          },
+          applicableAbilities: [
+            'strength',
+            'dexterity',
+            'constitution',
+            'intelligence',
+            'wisdom',
+            'charisma',
+          ],
+          skills: [
+            { id: 'persuasion', label: 'Persuasion' },
+            { id: 'athletics', label: 'Athletics' },
+          ],
+          proficientSkills: [],
+          proficiencyBonus: 2,
+          hp: 10,
+          maxHp: 10,
+          facts: [
+            { id: 'location', value: 'seyda-neen' },
+            { id: 'release-papers', value: true },
+            { id: 'warehouse-shift-available', value: true },
+            { id: 'balmora-route-known', value: false },
+          ],
+          quantities: [{ id: 'septims', label: 'Septims', value: 0 }],
+        },
+        storyFacts: [],
+        opening: {
+          version: 1,
+          title: 'Released at Seyda Neen',
+          paragraphs: [
+            'A thirty-minute warehouse shift pays six septims on completion.',
+          ],
+        },
+      },
+    },
+  });
+}
+
 function beaconMechanicalOpening() {
   const task = mechanicalOpening();
   return prepareStorytellerTask({
@@ -661,6 +716,40 @@ test('mechanical opening can offer a durable contribution process', () => {
   assert.equal(plan.resolution.action.process.kind, 'contribution.v1');
   assert.equal(plan.resolution.action.process.requiredContribution, 9);
   assert.equal(plan.resolution.action.completion.effects.length, 2);
+});
+
+test('Seyda opening offers a bounded paid warehouse shift in fictional time', () => {
+  const result = scriptedStorytellerResult(seydaMechanicalOpening());
+  if (result.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  const plan = result.scene.next.plans.find(
+    (candidate) => candidate.key === 'work-warehouse-shift',
+  );
+  assert.equal(plan?.resolution.kind, 'process');
+  if (plan?.resolution.kind !== 'process') {
+    throw new Error('Expected a process resolution');
+  }
+  assert.deepEqual(plan.resolution.action.process, {
+    kind: 'clock-wait.v1',
+    progressLabel: 'Warehouse work completed',
+    requiredFictionalSeconds: 1_800,
+  });
+  assert.deepEqual(plan.resolution.action.completion.effects, [
+    {
+      kind: 'quantity.change.v1',
+      quantityId: 'septims',
+      delta: 6,
+    },
+    {
+      kind: 'fact.set.v1',
+      fact: { id: 'warehouse-shift-available', value: false },
+    },
+  ]);
+  assert.deepEqual(result.scene.next.activityAccess, {
+    kind: 'selected',
+    actionKeys: ['work-warehouse-shift'],
+  });
 });
 
 test('captured schemas expose only the result for the requested task', () => {

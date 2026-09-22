@@ -14,10 +14,14 @@ quality or later NPC relationship recall.
 Status: partly implemented. The maintained `seyda-neen-arrival.v1` mechanical
 opening is the first bounded POC slice: it uses the existing generic facts,
 checks, quantities and clock-based activity contracts for conversation, local
-work and travel. The richer dormant local-opportunity lifecycle below remains
-target design. This extends the [Vvardenfell trace](vvardenfell.md) with the
-owner's distinction between prepared local opportunities and a preselected
-queue. Exact values are fixtures. The reusable contract lives in [rules and
+work and travel. Its provider-free warehouse plan now consumes 1,800 fictional
+seconds, pays six septims only on completion, closes that one-time opportunity
+and remains idempotent under duplicate worker delivery. The opening states the
+same thirty-minute/six-septim terms for live Storyteller grounding. Live model
+compliance and the richer dormant local-opportunity lifecycle below remain
+unproved. This extends the [Vvardenfell trace](vvardenfell.md) with the owner's
+distinction between prepared local opportunities and a preselected queue. Exact
+values are fixtures. The reusable contract lives in [rules and
 activities](../rules-and-activities.md#prepared-local-opportunities-proposed).
 
 The POC seed deliberately does not introduce a warehouse subsystem, a Tamriel

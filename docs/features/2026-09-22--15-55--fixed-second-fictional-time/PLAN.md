@@ -22,7 +22,7 @@ Implementation owner: Codex in this thread; owner review remains the final play-
 - Checks: A→B→A, equal-boundary world obligation, pause/speed/restart, accepted horizon and calendar projection.
 - Exit: repository search finds no current executable field whose `tick` name still means fictional time; historical prose may describe old evidence.
 
-### T3 — Seyda timed-work proof
+### T3 — Seyda timed-work proof — provider-free path complete
 
 - Outcome: the maintained start supplies explicit local warehouse terms through content/authorized mechanics: substantial fictional duration, bounded work, six-septim completion and no inferred employment semantics.
 - Owners: start/world content, generic start-package mechanical opportunity contract, Story mode evidence and connected POC ledger.
@@ -31,8 +31,8 @@ Implementation owner: Codex in this thread; owner review remains the final play-
 
 ## Current checkpoint
 
-- Current phase and exact next action: T1 is complete. T2 next renames the remaining fictional-time coordinate through progress, obligations, accepted horizons, persistence and scheduling while preserving exact rational progress and boundary ordering.
-- Base/reviewed Git revision and relevant uncommitted changes: base `133a20e`; T1 replaces model-visible duration/cadence ticks with whole fictional seconds, replaces configurable tick milliseconds with an exact fictional-seconds/real-seconds speed ratio, updates headless play and player labels, and rejects obsolete fields through strict schemas.
-- Actual checks/results for this revision: game build plus 34 tests passed; Storyteller build plus 36 tests passed; application build plus 15 tests passed; contracts, web production and API-integration builds passed. The provider-free focused Storyteller integration passed the finite-action pause/speed and clock-wait completion worker path. The representative timing test proves 1,800 fictional seconds take five real seconds at 360x and, after two seconds of progress, six more seconds at 180x. No broad lint or repository-wide test run was needed.
-- Unresolved findings/blockers: internal persistence and mechanical coordinate names still use `tick`, `elapsedTicks`, target/due ticks and related function names. They now carry fictional seconds consistently but remain misleading until T2. Disposable local prototype data will be reset rather than dual-decoded.
+- Current phase and exact next action: T1 and the provider-free T3 path are complete. Next run a bounded headless Sol/contrast-profile comparison against the maintained Seyda terms. T2's broad internal coordinate rename follows separately; its current names are misleading but no longer change units or behavior.
+- Base/reviewed Git revision and relevant uncommitted changes: T1 is committed at `eb198af`. T3 makes the warehouse offer a 1,800-fictional-second wait with an exact six-septim completion effect and one-time availability; the start states those terms explicitly and generic opening guidance treats exact supplied commitment terms as binding.
+- Actual checks/results for this revision: game build plus 34 tests passed; Storyteller build plus 37 tests passed; application build plus 15 tests passed; contracts, web production and API-integration builds passed. Provider-free focused integration passed finite-action pause/speed, general clock-wait completion and the Seyda 1,800-second warehouse completion. The latter advances the campaign by exactly 1,800 fictional seconds, pays six septims, closes the opportunity and remains at six septims after duplicate worker delivery.
+- Unresolved findings/blockers: internal persistence and mechanical coordinate names still use `tick`, `elapsedTicks`, target/due ticks and related function names. An inventory found roughly 700 references across calendars, persistence, reports, memory metadata and QA; changing them as incidental cleanup would be unsafe. Live model compliance with the maintained warehouse terms remains unproved until the next controlled run.
 - Provider spend and accounting certainty: no provider call in this phase. Latest independent cumulative OpenRouter usage is USD 0.160344; local attempts are settled with zero reservation and no uncertainty.
