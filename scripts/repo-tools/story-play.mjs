@@ -15,7 +15,7 @@ const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const live = args.includes('--confirm-live');
 const usage =
-  'Usage: pnpm story:play <server|list|profiles|starts|show ID|history ID|new [options] --confirm-live|choose ID OPTION --confirm-live|wait ID|retry ID --confirm-live>';
+  'Usage: pnpm story:play <server|list|profiles|starts|show ID|history ID|new [options] --confirm-live|choose ID OPTION --confirm-live|activity ID pause|resume|slow|steady|fast|instant --confirm-live|wait ID|retry ID --confirm-live>';
 
 function option(name) {
   const index = args.indexOf(name);
@@ -151,7 +151,17 @@ async function waitForStory(
       ['pending', 'running'].includes(latest.resolution.state);
     const execution = latest.campaign?.actionExecution;
     const interval = latest.waiting;
-    if ((!requireChange || changed) && !active && !execution && !interval)
+    const requiredTurn = latest.campaign?.holds?.some(
+      (hold) =>
+        hold.kind === 'storyteller-intent' || hold.kind === 'storyteller',
+    );
+    if (
+      (!requireChange || changed) &&
+      !active &&
+      !execution &&
+      !interval &&
+      !requiredTurn
+    )
       return latest;
     if (
       latest.resolution &&
@@ -327,6 +337,76 @@ async function retry(storyId) {
   return { ...summary, evidencePath: path };
 }
 
+async function controlActivity(storyId, control) {
+  requireLive('activity');
+  const before = await readStory(storyId);
+  const activity = before.campaign?.activity;
+  if (!activity || !['running', 'paused'].includes(activity.state)) {
+    throw new Error('story has no active activity');
+  }
+  const pace = {
+    slow: { kind: 'rate', fictionalSeconds: 1, realSeconds: 60 },
+    steady: { kind: 'rate', fictionalSeconds: 1, realSeconds: 1 },
+    fast: { kind: 'rate', fictionalSeconds: 10, realSeconds: 1 },
+    instant: { kind: 'instant' },
+  }[control];
+  if (!pace && control !== 'pause' && control !== 'resume') {
+    throw new Error(
+      'activity control must be pause, resume, slow, steady, fast, or instant',
+    );
+  }
+  const admitted = await request(
+    `/api/stories/${storyId}/activity-controls/${randomUUID()}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({
+        activityId: activity.id,
+        expectedRevision: activity.revision,
+        action: pace ? 'pace' : control,
+        ...(pace ? { pace } : {}),
+      }),
+    },
+  );
+  let final = admitted;
+  if (control === 'instant' || control === 'resume') {
+    const deadline = Date.now() + 120_000;
+    while (Date.now() < deadline) {
+      final = await readStory(storyId);
+      const current = final.campaign?.activity;
+      const resolving =
+        final.resolution &&
+        ['pending', 'running'].includes(final.resolution.state);
+      const requiredTurn = final.campaign?.holds?.some(
+        (hold) =>
+          hold.kind === 'storyteller-intent' || hold.kind === 'storyteller',
+      );
+      if (
+        (!current ||
+          current.id !== activity.id ||
+          current.state === 'complete') &&
+        !resolving &&
+        !requiredTurn
+      ) {
+        break;
+      }
+      if (
+        final.resolution &&
+        ['failed', 'uncertain', 'blocked'].includes(final.resolution.state)
+      ) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  const summary = summarize(final);
+  const evidencePath = await record(
+    'activity-control',
+    { control, admitted: summarize(admitted), final: summary },
+    storyId,
+  );
+  return { ...summary, evidencePath };
+}
+
 async function main() {
   let result;
   if (
@@ -364,6 +444,8 @@ async function main() {
   } else if (command === 'new') result = await createStory();
   else if (command === 'choose')
     result = await choose(args.shift(), args.shift());
+  else if (command === 'activity')
+    result = await controlActivity(args.shift(), args.shift());
   else if (command === 'wait') {
     const storyId = args.shift();
     const before = await readStory(storyId);
