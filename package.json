@@ -27,6 +27,8 @@
     "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
     "chamber": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start",
     "story:local": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --story-mode",
+    "story:server": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --story-mode --no-browser",
+    "story:play": "node scripts/repo-tools/story-play.mjs",
     "story:inspect": "node scripts/repo-tools/story-session-report.mjs",
     "chamber:reset": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --reset-database",
     "chamber:packet": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --packet-review",

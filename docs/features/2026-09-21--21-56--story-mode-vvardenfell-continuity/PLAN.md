@@ -1,8 +1,10 @@
 # Implementation plan
 
 Feature: [Story mode Vvardenfell continuity slice](FEATURE.md)
-Execution scope: all approved phases below; provider inference remains stopped
-until the existing uncertain attempt is explicitly reconciled.
+Execution scope: connected-play phases below. The immediate route is the owner's
+2026-09-22 investigation in agency/taste; do not resume model calls as a side
+effect of inspecting these sessions. Current funding/liability must be inspected
+before any separately admitted experiment under the spending rule.
 Implementation owner: Codex for the current owner-requested implementation.
 
 ## Phases
@@ -55,27 +57,25 @@ Implementation owner: Codex for the current owner-requested implementation.
 
 ## Current checkpoint
 
-- Current phase and exact next action: S4 connected-play repair. Restart the
-  local launcher so its safe unresolved-liability reconciliation and the web
-  polling fix take effect, explicitly retry the already settled second action,
-  and continue the same story without rerolling.
-- Base/reviewed Git revision and relevant working changes: base `b3f8340`.
-  Working changes keep intent-owned Storyteller holds polling, project campaign
-  offers as live choices in the story list, select committed-time rules for
-  mechanical planning, keep creative rhythm and option-count preferences in the
-  selected Storyteller profile rather than the shared task, and repair stale local
-  aggregate reservations from actual unresolved attempts at launcher startup.
-- Actual evidence for this revision: owner play, public snapshot, compact
-  session report, raw provider responses and exact saved task packets were
-  inspected. No provider call was made during this repair pass. Focused builds
-  remain to be batched once before restarting the launcher.
-- Unresolved findings/blockers: the Vvardenfell start still uses abstract
-  simulation ticks without a setting-specific fictional scale, so better rule
-  selection alone cannot produce credible minutes/hours. Absurd Action Comedy
-  reached both successful calls but remained mild and menu-like. Determine
-  whether the revised prompt/time context materially improves Luna before
-  paying for a stronger route. Visual automation still cannot initialize its
-  missing kernel-assets path; owner play remains the human UX evidence.
+- Current phase: S4 connected-play diagnosis, dependent on the active
+  [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md).
+  Headless Story mode and the `story:play` client now cover ordinary creation,
+  observation, selection, waiting and explicit retry without UI input. Exact
+  next action is an owner-requested, bounded fresh play session, first on Luna
+  and then as a separate controlled Sol probe if requested. Each mutating CLI
+  invocation requires `--confirm-live`; no automatic retry or unattended loop
+  was introduced.
+- Reviewed source: `95aa0e5` includes the earlier profile-scope and funding-stop
+  repairs. This pass adds the headless launcher, self-play client, private
+  trajectory capture and guarded model/cost selection. Earlier session evidence
+  below remains historical; the six recent raw responses were re-inspected, but
+  fresh `story:inspect` was blocked by Docker pipe permissions.
+- Unresolved findings: mild comedy, deferred intent fulfillment, unused-branch
+  output burden and owner dissatisfaction need controlled diagnosis. A stronger
+  model probe does not require further speculative Luna prompt edits first.
+  The owner now requires a fixed real-second tick with model-proposed fictional
+  duration; [the time contract](../../technical/ticks-and-tags.md#target-one-real-second-tick)
+  records that unimplemented change. UI polish is lower priority.
 - Provider spend and accounting certainty: story
   `3346efc0-0210-43dc-a2b4-823d2382b82c` spent ledger-settled USD 0.007323
   across exactly two successful calls (17,016 total tokens). The next action

@@ -67,6 +67,7 @@ const memoryEvaluationRun = process.argv.includes('--memory-evaluation-run');
 const evaluationPacket = process.argv.includes('--evaluation-packet');
 const evaluationRun = process.argv.includes('--evaluation-run');
 const storyMode = process.argv.includes('--story-mode');
+const noBrowser = process.argv.includes('--no-browser');
 const resetDatabase = process.argv.includes('--reset-database');
 const configArgument = process.argv
   .slice(2)
@@ -74,6 +75,15 @@ const configArgument = process.argv
 const authorizationArgument = process.argv
   .slice(2)
   .find((argument) => argument.startsWith('--authorize='));
+const storyModelArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--story-model='));
+const storyMaxMicrousdArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--story-max-microusd='));
+const storyAuthorizationArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--authorize-story-model='));
 const runModes = [
   smoke,
   review,
@@ -101,16 +111,26 @@ if (
           '--evaluation-packet',
           '--evaluation-run',
           '--story-mode',
+          '--no-browser',
           '--reset-database',
           '--',
         ].includes(arg) &&
         !arg.startsWith('--config=') &&
-        !arg.startsWith('--authorize='),
+        !arg.startsWith('--authorize=') &&
+        !arg.startsWith('--story-model=') &&
+        !arg.startsWith('--story-max-microusd=') &&
+        !arg.startsWith('--authorize-story-model='),
     )
 ) {
   throw new Error(
     'Use at most one run mode; evaluation packet modes also require --config=<path>.',
   );
+}
+if (noBrowser && !storyMode) {
+  throw new Error('--no-browser is supported only with --story-mode.');
+}
+if (!storyMode && (storyModelArgument || storyMaxMicrousdArgument || storyAuthorizationArgument)) {
+  throw new Error('Story model arguments are supported only with --story-mode.');
 }
 if (
   (evaluationPacket ||
@@ -215,7 +235,31 @@ const memoryDryRunExecution: ExecutionPolicy = {
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 const storyAccountId = '00000000-0000-4000-8000-000000000010';
 const storyRunId = '00000000-0000-4000-8000-000000000011';
-const storyModel = 'openai/gpt-5.6-luna';
+const storyModel = storyModelArgument?.slice('--story-model='.length) ?? 'openai/gpt-5.6-luna';
+const permittedStoryModels = new Set([
+  'openai/gpt-5.6-luna',
+  'openai/gpt-5.6-terra',
+  'openai/gpt-5.6-sol',
+]);
+if (!permittedStoryModels.has(storyModel)) {
+  throw new Error('Story mode supports only the reviewed GPT-5.6 Luna, Terra, and Sol routes.');
+}
+const storyMaxMicrousd = storyMaxMicrousdArgument
+  ? Number(storyMaxMicrousdArgument.slice('--story-max-microusd='.length))
+  : 10_000;
+if (!Number.isInteger(storyMaxMicrousd) || storyMaxMicrousd < 1 || storyMaxMicrousd > 250_000) {
+  throw new Error('--story-max-microusd must be an integer from 1 through 250000.');
+}
+const storyRoute = `openrouter:${storyModel.slice('openai/'.length)}`;
+if (
+  (storyModel !== 'openai/gpt-5.6-luna' || storyMaxMicrousd > 10_000) &&
+  storyAuthorizationArgument?.slice('--authorize-story-model='.length) !==
+    `${storyModel}@${storyMaxMicrousd}`
+) {
+  throw new Error(
+    `This Story route requires --authorize-story-model=${storyModel}@${storyMaxMicrousd}.`,
+  );
+}
 const storyProvider = 'OpenAI';
 
 async function readLocalOpenRouterKey() {
@@ -287,8 +331,8 @@ async function storyLiveAuthority() {
     id: 'local-story-live.v1',
     revision: 1,
     enabled: true,
-    allowedRoutes: ['openrouter:gpt-5.6-luna'],
-    defaultRoute: 'openrouter:gpt-5.6-luna',
+    allowedRoutes: [storyRoute],
+    defaultRoute: storyRoute,
     fundingModes: ['prepaid' as const],
     recovery: 'explicit-resume' as const,
     limits: {
@@ -301,7 +345,7 @@ async function storyLiveAuthority() {
       maxModelRoundsPerOperation: 1,
       maxReadsPerOperation: 0,
       maxRetainedReadBytes: 0,
-      maxMicrousdPerOperation: '10000',
+      maxMicrousdPerOperation: String(storyMaxMicrousd),
       maxInFlightDispatches: 1,
       maxBackgroundJobsPerWindow: 0,
     },
@@ -311,7 +355,7 @@ async function storyLiveAuthority() {
     platform: profile,
     entitlement: profile,
     restrictions: [],
-    requestedRoute: 'openrouter:gpt-5.6-luna',
+    requestedRoute: storyRoute,
     requestedFundingMode: 'prepaid',
   });
   if (resolved.kind !== 'allowed')
@@ -326,7 +370,7 @@ async function storyLiveAuthority() {
       dispatchReview: { mode: 'observe' as const },
       policy: {
         version: 'local-story-live.v1',
-        route: 'openrouter:gpt-5.6-luna',
+        route: storyRoute,
         model: storyModel,
         provider: storyProvider,
         priceVersion: `openrouter-endpoints-${verifiedAt}`,
@@ -476,7 +520,7 @@ async function requireFreePort(port: number) {
   });
 }
 await requireFreePort(3001);
-await requireFreePort(3100);
+if (!noBrowser) await requireFreePort(3100);
 const adminURL = new URL(databaseURL);
 adminURL.pathname = '/postgres';
 const admin = createDatabase(
@@ -837,6 +881,36 @@ try {
             }
           : { scriptedGate: storytellerControl.evaluate, documentStore },
   );
+  if (storyMode && storyAuthority) {
+    const statusDirectory = join(workspaceRoot, 'data', 'story-agent');
+    await mkdir(statusDirectory, { recursive: true });
+    await writeFile(
+      join(statusDirectory, 'server.json'),
+      `${JSON.stringify(
+        {
+          version: 'story-agent-server.v1',
+          processId: process.pid,
+          startedAt: new Date().toISOString(),
+          apiOrigin: 'http://127.0.0.1:3001',
+          model: storyModel,
+          provider: storyProvider,
+          route: storyRoute,
+          maxMicrousdPerOperation: String(storyMaxMicrousd),
+          inputMicrousdPerMillion:
+            storyAuthority.execution.policy.inputMicrousdPerMillion,
+          outputMicrousdPerMillion:
+            storyAuthority.execution.policy.outputMicrousdPerMillion,
+          pricingVerifiedAt: storyAuthority.verifiedAt,
+          cumulativeProviderUsageMicrousdAtStartup:
+            storyAuthority.totalUsageMicrousd.toString(),
+          reasoning: 'disabled',
+          fallback: false,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  }
   if (memoryPacketReview || memoryEvaluationPacket || memoryEvaluationRun) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
@@ -1104,6 +1178,17 @@ try {
         : `API-only held opening packet saved to ${evidencePath}. Verified: awaiting review, zero provider attempts. Model spend: $0; no browser, provider call or reservation.`,
     );
   } else {
+    if (noBrowser) {
+      console.log(
+        `Local Story API ready at http://127.0.0.1:3001. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one bounded call per turn, no fallback or automatic retry. Starting the server made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`,
+      );
+      await runtime.done.then(() => {
+        if (!stopping) throw new Error('Worker stopped.');
+      });
+      // A pending promise does not keep Node alive after the signal handler has
+      // closed the API, database and worker resources.
+      await new Promise<void>(() => {});
+    }
     web = spawn(
       process.execPath,
       [

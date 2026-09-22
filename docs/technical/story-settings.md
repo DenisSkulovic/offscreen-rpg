@@ -16,6 +16,8 @@ Profiled stories initialize settings revision 1 from the saved snapshot, never t
 
 ## Clock and speed
 
+Target change: tick length is fixed at one real second and speed selects fictional seconds per tick. The [time redesign boundary](ticks-and-tags.md#target-one-real-second-tick) owns conversion, rescheduling and remaining precision choices. The current representation and controls below have not yet been replaced.
+
 Represent pace as `{kind: rate, ticks, realMs}` or explicit `instant`. Simulation ticks have no universal fictional scale; any campaign mapping is independent of speed. Current UI choices are one tick per real minute, one tick per real second, ten ticks per real second, and instant. Calendar-based presentation requires explicit content data and is not implemented. The [committed-time correction](committed-time.md) gives short in-world exchanges explicit durations and gates all advancement on accepted execution; current immediate actions still spend zero ticks. Menu navigation, reading and excess model latency consume no fiction. Event density and response deadlines are separate policies.
 
 For an active mechanical activity, anchor earned simulation ticks to database real time, with held/running state and a control revision. Only the application commits elapsed progress and effects. On an authorized speed change, lock the story, settle eligible elapsed boundaries under the old rate (bounded batches, holding further changes until catch-up completes), retain whole ticks plus a reduced rational tick remainder, then set the new anchor/rate and recompute the next wake. Increment control revision so stale timers cannot advance twice. Paused time earns no game time; changing speed while paused only changes the rate used after resume.

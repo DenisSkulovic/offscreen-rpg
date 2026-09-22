@@ -6,6 +6,8 @@ The durable objective is not to make the system look more “agentic.” It is t
 
 Research refreshed: **2026-09-21**. Sources are original papers, standards and first-party engineering documentation wherever possible.
 
+For disappointing play and controlled profile, prompt or model experiments, use the [Storyteller tuning manual](storyteller-tuning.md), researched on 2026-09-22. It applies the evaluation guidance to intent fulfillment, creative settings, time semantics and owner taste.
+
 For the deeper problem of navigating, reconciling and condensing a very large evolving story corpus, use [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md). It expands this manual's general context/retrieval guidance into query modes, corpus layers, temporal supersession, hierarchical synthesis, cost tiers and an Offscreen-specific implementation ladder.
 
 ## 1. Working model

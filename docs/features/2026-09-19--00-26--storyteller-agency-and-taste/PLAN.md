@@ -1,8 +1,8 @@
 # Storyteller agency and taste plan
 
 Feature: [Storyteller agency and taste](FEATURE.md)
-Execution scope: offline implementation authorized on 2026-09-19; no provider call is authorized.
-Implementation owner: Codex for the current bounded slice; owner review remains the taste gate.
+Execution scope: owner-requested investigation, research, tuning discipline and self-play tooling on 2026-09-22. The proposed stronger-model experiment has not been executed; provider work follows the current spending rule.
+Implementation owner: Codex for diagnosis/design; prepare bounded runtime changes for the established coding handoff. Owner review remains the taste gate.
 
 ## Phases
 
@@ -44,38 +44,26 @@ For the coding handoff, contribute bounded fixture repairs to the [gold-session 
 
 ## Current checkpoint
 
-- Current phase and exact next action: Phase 4 live profile-separation repair.
-  Fresh owner play supplied an important but profile-specific review: the Quiet
-  Eerie Mystery run read as inert summary followed by a mechanical menu. Hold
-  the start and situation constant and contrast that profile with Driven
-  Adventure or the strengthened Absurd Action Comedy before attributing the
-  result to the shared task, model or mechanics.
-- Reviewed source: base `b3f8340`; current working changes restore a creatively
-  neutral shared task, strengthen comedy, retain the new Driven Adventure and
-  Character-Driven Drama profiles, document prompt-ownership discipline, and
-  keep operation-local overrun from stopping the shared account after a known
-  bounded settlement.
-- Verification: exact saved tasks, raw responses, public snapshot and compact
-  session report for story `4820491b-c9e1-4710-a53b-989e58da3b60` were
-  inspected. Builds remain to be batched. No provider call occurred in this
-  repair pass.
-- Live quality finding: Quiet Eerie Mystery coherently introduced a repeated
-  road-marker/paper-stamp discrepancy, so profile transport and basic continuity
-  worked. The experience still failed: the opening emitted six plans, the scene
-  mostly reframed existing choices, and one request devoted roughly 22 KB to
-  output schema versus two short narrative paragraphs. The current cheap mode
-  pre-authors mechanics and outcome prose for every offered branch; this saves a
-  later adjudication call but biases weak models toward schema-safe menu design
-  and wastes output on branches the player never selects. Prompt repair can
-  improve the immediate POC, but a configurable richer intent-first/two-stage
-  mode remains a legitimate architectural candidate, not a model-upgrade excuse.
-- Narrative-direction finding: profiles own rhythm and initiative preference,
-  not a campaign's long-range agenda. The Vvardenfell start currently exposes
-  only a noncanonical generic larger-pressure possibility and explicitly allows
-  ordinary life. Driven Adventure can demand active local developments, but a
-  sustained grand narrative still requires the already-specified campaign-owned
-  private direction and admitted world developments.
-- Provider spend and accounting certainty: this story spent settled USD
-  0.006587 across two successful calls (16,602 tokens). Its third selected
-  action settled mechanically but made no provider attempt. No call or charge
-  occurred during this repair pass.
+- Phase: 4, evidence-led calibration. The [tuning manual](../../engineering/storyteller-tuning.md) and [skill](../../skills/storyteller-tuning/SKILL.md) now define the procedure. No runtime prompt or profile was changed. Headless operation and an explicitly authorized model selector were added without changing the default Luna route.
+- Reviewed source: `95aa0e5`. Read provider builder, mechanical task instructions, profiles, clock arithmetic and six local raw responses. Earlier saved-task/database findings remain in the Story-mode plan; they were not freshly reproduced. `pnpm story:inspect e6583b2b-d556-4137-9050-ff9cfaf79628` failed because this session cannot access the Docker pipe. No database or infrastructure mutation followed. Builds/tests were unnecessary for this documentation slice.
+- Exact next action: on the owner's next play request, start `pnpm story:server`, inspect `pnpm story:play server`, then create and drive a fresh bounded story through the ordinary API. Record the visible choices and state after every decision. Run Luna and Sol in separate stories with the same prepared start, profile and player decisions where possible; do not mix the model comparison with prompt, profile or time-contract changes. Recovering the historical comedy packet remains useful for an exact private replay, but it no longer blocks fresh self-play evidence.
+- Proposed experiment: test whether Sol improves profile realization and intent fulfillment under the same contract. Change only model/route and declared price authority, keep reasoning disabled, 12,000 input / 2,048 output ceilings, one call, no retry/fallback. Proposed ceiling USD 0.11 requires deliberate cost authorization; existing live authority is USD 0.01. Dry-run exact packet and normal validation path first. Reject authority violations, deferred fulfillment without fictional cause and cosmetic option diversity; review profile and agency separately. One sample is a probe, not a reliability verdict. A quiet/no-grand-narrative contrast and abstract case precede general adoption, not the first exploratory call.
+- Separately, the owner settled the time direction: fixed one-real-second ticks, model estimates in fictional time, engine-derived waits. The [time contract](../../technical/ticks-and-tags.md#target-one-real-second-tick) records the cross-component design boundary. Precision, rounding and instant-mode treatment need a focused implementation design, not a prompt tweak. Do not change timing simultaneously with the model probe.
+- Spend this pass: no provider call, USD 0. Current cumulative account usage and remaining balance were not provider-verified. The six historical responses below are not an account ledger reconciliation.
+- Handoff: `pnpm story:server` now runs the real Story API and worker without a browser. `pnpm story:play` lists, creates, observes, chooses, waits and retries through ordinary HTTP routes while recording ignored JSONL trajectories under `data/story-agent`. Mutating commands require `--confirm-live`. The launcher permits only reviewed Luna/Terra/Sol routes; any nondefault model or raised per-operation ceiling requires an exact repeated authorization argument. Chamber compiled; CLI help and fail-closed mutation checks passed; list, profiles, prepared starts, show, history and wait succeeded read-only against the already-running local API; and `git diff --check` passed. Starting a fresh headless process could not be exercised because this sandbox cannot access the Docker pipe. Changes remain uncommitted on `main` because this workspace previously denied `.git/index.lock` creation.
+
+## Evidence and competing explanations
+
+Private files remain in ignored `data/story-local-evidence/provider-response-<provider-id>.json`; no player prose or raw packets are copied here. All six inspected responses report `openai/gpt-5.6-luna`, zero reasoning tokens and `finish_reason: stop`. Current adapter source explicitly disables reasoning. The inspected sample therefore does not test Luna's reasoning-enabled capability, other models or broad storytelling quality.
+
+| Case / provider IDs | Directly observed output | Interpretation and limit |
+| --- | --- | --- |
+| Comedy opening/consequence: `gen-1790028150-gGoJQFFDwigRw3XHXvB7`, `gen-1790028221-Y8b2p6HJuHByixWTzMy0` | Six plans each; all twelve durations one simulation tick. Consequence mostly preserves an unsettled practical offer. | Weak scene-level comedy and progress; earlier saved-task review establishes profile transport. No controlled model/profile comparison yet. |
+| Mystery opening/consequence: `gen-1790030062-jaAsbyPoP2TXoYMtwP2V`, `gen-1790030104-lpaQW4onnCfjkWcQA57e` | Six then four plans, mixed one/two ticks; recognizable clue carried forward, two continuity notes in consequence. | Some style/continuity succeeded, while owner enjoyment failed. Notes in output are not proof of later recall. |
+| Latest opening/consequence: `gen-1790032277-sBKVVrVdBKN4KQSXik0X`, `gen-1790032323-DnLlU7j8JKNnpSm0vEaA` | The `question-socucius` plan offers clarification but its automatic outcome only initiates the exchange. The next scene still awaits the question; another offered plan contains the actual answer. | Deferral begins in opening plan design. Consequence-only prompt tuning or model replay cannot repair the already frozen outcome honestly. |
+
+The comedy consequence contains 510 UTF-8 bytes of serialized scene content versus 6,398 bytes of serialized plans; the latest consequence has 459 versus 4,159. These measurements compare parsed/re-serialized JSON components, not tokens, exact wire size or an attention metric. Much richer dialogue exists in unused private outcomes than in the current scene. The hypothesis that branch preparation competes with scene quality is plausible; neither the ratios nor short scenes establish causation or output truncation. All inspected responses stopped normally below the 2,048-token output ceiling.
+
+What worked: the prior connected evidence records committed rolls/time, admitted generated passages and canonical root advancement; raw responses support a coherent mystery motif and later exact evidence handles. What failed: owner taste, intent fulfillment in at least one plan, credible fictional timing and reliable continuation availability. Prior pre-transport funding stops are runtime/accounting failures, not model errors. Long-term continuity, sustained drama, broad player freedom and a stronger model's benefit remain unproved.
+
+Keep three live hypotheses separate: model capacity with reasoning disabled; competing task/schema/branch demands; insufficient or conflicting effective creative guidance. A fourth issue, missing fictional-time semantics, is already a contract mismatch. Profile rhythm does not supply a campaign's long-term agenda. Free-form intent and intent-first adjudication are architecture candidates, not implied scope for this pass.

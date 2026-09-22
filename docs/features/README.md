@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-Next program: prove the connected game. The permanent [connected generative POC proof](../engineering/connected-poc-proof.md) requires one Seyda Neen campaign to survive at least five committed generated Storyteller turns across narrative choice, deterministic mechanics, elapsed-time play, canonical change and later recall. Long-story memory remains product-critical, but its controller and packet supervision are now foundations consumed by this proof rather than a reason to postpone the short playable session.
+Immediate route: [agency/taste calibration](2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md) investigates owner play before further prompt or profile changes. Use the [tuning manual](../engineering/storyteller-tuning.md); keep the proposed model comparison separate from the [time-contract redesign](../technical/ticks-and-tags.md#target-one-real-second-tick). The connected program remains the [generative POC proof](../engineering/connected-poc-proof.md): one Seyda campaign survives at least five committed generated turns across choice, mechanics, elapsed time, canonical change and later recall. UI polish is lower priority.
 
 The active [Story mode Vvardenfell continuity slice](2026-09-21--21-56--story-mode-vvardenfell-continuity/FEATURE.md) now owns that vertical execution: separate honest local Story mode from Chamber, pin a maintained Vvardenfell start library, materialize entities progressively and then drive the five-turn return. It composes the canonical-storage and memory owners below; it must not duplicate their stores or retrieval controller.
 

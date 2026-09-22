@@ -4,6 +4,8 @@ Status: implemented and exercised provider-free. K1 projects bounded calendars; 
 
 K1 stores the immutable definition in versioned campaign settings, projects a public current label from the authoritative tick, formats durations, and supplies Storyteller tasks with only the compact projected value. The default is honest elapsed ticks; setup may instead admit ordinal days or one fixed unequal-month repeating year. Pace revisions preserve the definition. This does not create scheduled effects, season mechanics, or another clock.
 
+The [real-second tick redesign](ticks-and-tags.md#target-one-real-second-tick) will move these calendar/deadline calculations onto explicitly fictional time. Current K1/K2 code still uses simulation ticks; elapsed ticks are an implementation limitation, not the new calendar-free product target. Calendar definitions remain independent of playback speed.
+
 ## One chronology, optional ways of naming it
 
 Persist simulation positions on the existing monotonically increasing campaign clock. A calendar is a deterministic, versioned interpretation of that coordinate. An era change or another planet's date label must not reset the clock, reorder receipts or rewrite elapsed activity time. Real scheduling timestamps stay separate.

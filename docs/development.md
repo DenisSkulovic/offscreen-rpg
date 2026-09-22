@@ -154,6 +154,52 @@ changed; an uncertain provider delivery stops further admission. Exact raw
 provider responses are retained under ignored `data/story-local-evidence` for
 the owner/Codex debugging loop. Merely launching makes no inference call.
 Normal non-loopback application startup still requires real authentication.
+
+### Headless play and agent operation
+
+`pnpm story:server` starts the same persistent local Story mode API and worker
+without Chromium or the Next.js UI. It verifies the configured OpenRouter
+account and route at startup but performs no inference. Use `pnpm story:play`
+against that server:
+
+```text
+pnpm story:play profiles
+pnpm story:play starts
+pnpm story:play server
+pnpm story:play list
+pnpm story:play show <story-id>
+pnpm story:play new --profile driven-adventure --character Mara --confirm-live
+pnpm story:play choose <story-id> <option-id-or-campaign/path> --confirm-live
+pnpm story:play wait <story-id>
+pnpm story:play retry <story-id> --confirm-live
+pnpm story:play history <story-id>
+```
+
+Read-only commands never dispatch inference. `new`, `choose` and `retry` fail
+closed without `--confirm-live`; this flag confirms only that invocation and is
+not stored as background authorization. `choose` accepts a narrative option ID
+or the complete slash-separated path printed under `campaignChoices`. It waits
+up to two minutes for the admitted action and required narration, then returns
+the current authoritative state even if work remains pending. Every observation
+and mutation appends a private JSONL trajectory under ignored
+`data/story-agent/<story-id>.jsonl`, including the exact visible choices,
+revision, holds, committed scene, time and usage projection. Provider packets
+remain separately captured by Story mode.
+
+The default headless server retains GPT-5.6 Luna and USD 0.01 per operation. A
+deliberate stronger-model session can start with reviewed exact arguments, for
+example:
+
+```text
+pnpm --filter @offscreen/chamber start --story-mode --no-browser --story-model=openai/gpt-5.6-sol --story-max-microusd=110000 --authorize-story-model=openai/gpt-5.6-sol@110000
+```
+
+The launcher freshly verifies the exact OpenAI endpoint and pricing, pins that
+route without fallback, keeps reasoning disabled and retains the shared USD 1
+local run/account ceiling. The repeated authorization value prevents an
+accidental model/cap switch; it does not replace the spending rule or authorize
+unattended play. Compare models in separate stories or private evaluation
+artifacts so a route change does not masquerade as continuity evidence.
 The local creation journey first selects a prepared experience or custom story,
 then the player role, Storyteller and final review. Creating the opening is the
 first billable action. The UI distinguishes queued/running work, ordinary
