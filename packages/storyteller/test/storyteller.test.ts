@@ -8,6 +8,7 @@ import {
 } from '../src/profiles';
 import {
   composeMemoryExplorationDecisionRequest,
+  diagnoseStorytellerResult,
   prepareStorytellerTask,
   storytellerNeedsContextSchema,
   storytellerReadyToAnswerSchema,
@@ -1228,6 +1229,16 @@ test('consequence planning proposes fresh plans without gaining mechanical autho
   }
   fabricated.scene.next.plans[0]!.evidence = ['invented-evidence'];
   assert.throws(() => validateStorytellerResult(task, fabricated));
+  assert.deepEqual(diagnoseStorytellerResult(task, fabricated), {
+    issues: [
+      {
+        path: '',
+        code: 'storyteller_policy',
+        message:
+          'Invalid action plan: unknown-evidence at evidence.0: Evidence is outside the captured task',
+      },
+    ],
+  });
 
   const duplicate = structuredClone(result);
   if (duplicate.scene.version !== 3) {

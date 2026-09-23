@@ -640,6 +640,8 @@ export function createStorytellerBudget(database: Database) {
         state: 'succeeded' | 'failed';
         output: unknown;
         failureCode: string | null;
+        repairCandidate?: unknown;
+        repairDiagnostic?: unknown;
       };
       operationOutcome?: 'continue' | 'complete';
     }) {

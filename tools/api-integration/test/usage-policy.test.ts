@@ -56,6 +56,26 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
     policy: resolved.policy,
   });
   assert.equal(resources.creativeExploration.enabled, false);
+  const repairableResources = resourcesForEffectiveUsagePolicy(
+    execution,
+    resolved.policy,
+    { posture: 'off', maxRepairRounds: 1 },
+  );
+  assert.equal(repairableResources.recipe.version, 'repairable-turn.v1');
+  assert.equal(repairableResources.recipe.maxModelRounds, 2);
+  assert.equal(
+    repairableResources.envelope.maxGeneratedTokens,
+    Math.min(resolved.policy.limits.maxGeneratedTokensPerOperation, 1_400),
+  );
+  assert.equal(
+    repairableResources.envelope.maxInputTokens,
+    Math.min(
+      200_000,
+      resolved.policy.limits.maxInputTokensPerOperation,
+      resolved.policy.limits.maxInputTokensPerRequest * 2,
+      execution.policy.maxInputTokens * 2,
+    ),
+  );
   const creativeResources = resourcesForEffectiveUsagePolicy(
     execution,
     resolved.policy,

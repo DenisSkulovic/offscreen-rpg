@@ -25,6 +25,7 @@ A synthetic account uses its last window allocation while a required turn is pen
 - Versioned entitlement profiles, account/story lower overrides, model allowlists and intersected effective policy; synthetic free/paid/on-demand grants, not checkout.
 - Strict multi-scope fixed/rolling usage windows, durable reservations, affected-story hold/recovery and clear limiting-reason projections.
 - Persistent operation-wide accounting over the existing funding/run/attempt ledger; cumulative input retransmission, generated/reasoning tokens, reads, deadlines and money.
+- Policy-selected ordinary-turn recovery: strict one-shot at the low bound, or one explicit complete-result repair after settled invalid output when that second round was captured and funded before the first dispatch.
 - Explicit provider capability/pricing normalization, worst-case cold/cache-write admission and final-answer capacity reservation.
 - No hidden paid work in search, maintenance, summarization, classifiers, rerankers or retries; bounded background frequency and allocation.
 - Compact canonical read/write projections, deterministic packing and per-section/operation observability.
@@ -47,6 +48,7 @@ Canonical storage remains owned by its feature; memory selection/search/round pe
 11. The game exposes separate manual/usage holds, known eligibility time and safe Resume. No clock catch-up, repeated roll, automatic paid retry or backlog stampede occurs after reset.
 12. Before the first paid run, offline evidence covers the selected profile, window, accounting and hold path. The initial proposed live envelope is one request, 8k input / 1,024 generated tokens and at most $0.01, subject to stricter limits and explicit future authorization.
 13. Every dispatched attempt remains attributable without reading private prompt prose: account/run, owner, story or draft, generation/operation, purpose, Storyteller/profile and prompt/recipe/policy/price versions, requested and reported route, lifecycle timestamps/duration, estimate/reservation, provider charge, normalized token/cache/reasoning usage, outcome and reconciliation certainty are queryable. Missing provider fields remain unknown rather than zero.
+14. An invalid ordinary candidate is retained privately with bounded validator findings. Explicit repair, when configured, uses the same generation, task/schema, model route, story fences and remaining operation allowance. It cannot replay mechanics or appear on one-shot/exhausted/uncertain/refused work.
 
 ## Owning specifications
 

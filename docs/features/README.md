@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/PLAN.md) — Sol issued a valid memory action and the controller completed one canonical read. Final composition failed because JSON-object transport omitted the continuation schema. The explicit hybrid policy now uses native structured output for final-only rounds; extend the provider-free harness through a scripted retrieval and inspect that exact second packet before another paid call.
+**Next action:** [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) B2c — connect one explicit ordinary invalid-output repair to the existing generation operation. The captured repairable recipe and private candidate/diagnostic evidence exist; Retry, second-attempt persistence and publication evidence do not. No live call until the provider-free path and exact repair packet are inspected.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

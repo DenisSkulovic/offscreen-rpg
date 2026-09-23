@@ -16,6 +16,15 @@ const oneShotRecipeSchema = z.strictObject({
   automaticEscalation: z.literal(false),
 });
 
+const repairableTurnRecipeSchema = z.strictObject({
+  version: z.literal('repairable-turn.v1'),
+  maxModelRounds: z.literal(2),
+  maxReads: z.literal(0),
+  tools: z.literal('disabled'),
+  automaticEscalation: z.literal(false),
+  maxRepairRounds: z.literal(1),
+});
+
 const memoryExplorationRecipeSchema = z
   .strictObject({
     version: z.literal('memory-exploration.v1'),
@@ -38,7 +47,11 @@ const memoryExplorationRecipeSchema = z
 
 export const storytellerTaskResourcesSchema = z.strictObject({
   version: z.literal('storyteller-resources.v2'),
-  recipe: z.union([oneShotRecipeSchema, memoryExplorationRecipeSchema]),
+  recipe: z.union([
+    oneShotRecipeSchema,
+    repairableTurnRecipeSchema,
+    memoryExplorationRecipeSchema,
+  ]),
   creativeExploration: creativeExplorationRecipeSchema.default(
     disabledCreativeExplorationRecipe,
   ),
@@ -149,7 +162,8 @@ export function validateResourcesForExecution(
           resources.recipe.maxModelRounds,
         execution.policy.maxInputTokens * resources.recipe.maxModelRounds,
       ) ||
-    resources.envelope.maxGeneratedTokens > execution.policy.maxOutputTokens ||
+    resources.envelope.maxGeneratedTokens >
+      execution.policy.maxOutputTokens * resources.recipe.maxModelRounds ||
     resources.envelope.deadlineMs > execution.policy.timeoutMs
   ) {
     throw new Error('invalid_task_resources');

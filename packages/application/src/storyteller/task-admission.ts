@@ -60,9 +60,8 @@ export function resourcesForEffectiveUsagePolicy(
   if (policy.limits.maxModelRoundsPerOperation < 1) {
     throw new Error('storyteller_recipe_not_authorized');
   }
-  const maxGeneratedTokens = Math.min(
+  const maxGeneratedTokensPerRequest = Math.min(
     policy.limits.maxGeneratedTokensPerRequest,
-    policy.limits.maxGeneratedTokensPerOperation,
     execution.policy.maxOutputTokens,
   );
   const maxMicrousdPerRequest = minimumMicrousd(
@@ -89,7 +88,10 @@ export function resourcesForEffectiveUsagePolicy(
         0,
         Math.min(2, policy.limits.maxModelRoundsPerOperation - 1),
       ),
-      maxGeneratedTokens,
+      maxGeneratedTokens: Math.min(
+        policy.limits.maxGeneratedTokensPerOperation,
+        maxGeneratedTokensPerRequest,
+      ),
       maxLatencyMs: execution.policy.timeoutMs,
       maxCostMicrousd: Number(
         BigInt(maxMicrousdPerRequest) > 10_000_000n
@@ -109,13 +111,27 @@ export function resourcesForEffectiveUsagePolicy(
         finalAnswerReserveRounds: 1 as const,
         maxRepairRounds: creativeInput?.maxRepairRounds ?? 0,
       }
-    : {
+    : creativeInput?.maxRepairRounds === 1 &&
+        policy.limits.maxModelRoundsPerOperation >= 2
+      ? {
+          version: 'repairable-turn.v1' as const,
+          maxModelRounds: 2 as const,
+          maxReads: 0 as const,
+          tools: 'disabled' as const,
+          automaticEscalation: false as const,
+          maxRepairRounds: 1 as const,
+        }
+      : {
         version: 'single-turn.v1' as const,
         maxModelRounds: 1 as const,
         maxReads: 0 as const,
         tools: 'disabled' as const,
         automaticEscalation: false as const,
       };
+  const maxGeneratedTokens = Math.min(
+    policy.limits.maxGeneratedTokensPerOperation,
+    maxGeneratedTokensPerRequest * recipe.maxModelRounds,
+  );
   const maxMicrousd = minimumMicrousd(
     policy.limits.maxMicrousdPerOperation,
     (

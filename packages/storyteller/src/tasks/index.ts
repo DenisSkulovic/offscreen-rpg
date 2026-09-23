@@ -895,3 +895,49 @@ export function publishedStorytellerSlice(
     sourcePart,
   });
 }
+
+export const storytellerOutputDiagnosticSchema = z.strictObject({
+  issues: z
+    .array(
+      z.strictObject({
+        path: z.string().max(300),
+        code: z.string().max(80),
+        message: z.string().max(500),
+      }),
+    )
+    .min(1)
+    .max(12),
+});
+export type StorytellerOutputDiagnostic = z.infer<
+  typeof storytellerOutputDiagnosticSchema
+>;
+
+/** Compact private repair evidence; never substitutes for ordinary validation. */
+export function diagnoseStorytellerResult(
+  task: StorytellerTask,
+  output: unknown,
+): StorytellerOutputDiagnostic | null {
+  try {
+    validateStorytellerResult(task, output);
+    return null;
+  } catch (error) {
+    const issues =
+      error instanceof z.ZodError
+        ? error.issues.slice(0, 12).map((issue) => ({
+            path: issue.path.map(String).join('.').slice(0, 300),
+            code: issue.code.slice(0, 80),
+            message: issue.message.slice(0, 500),
+          }))
+        : [
+            {
+              path: '',
+              code: 'storyteller_policy',
+              message:
+                error instanceof Error
+                  ? error.message.slice(0, 500)
+                  : 'Storyteller output failed policy validation',
+            },
+          ];
+    return storytellerOutputDiagnosticSchema.parse({ issues });
+  }
+}

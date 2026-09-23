@@ -28,6 +28,8 @@ export const generation = pgTable(
     attemptId: uuid('attempt_id'),
     output: jsonb('output').$type<unknown>(),
     failureCode: text('failure_code'),
+    repairCandidate: jsonb('repair_candidate').$type<unknown>(),
+    repairDiagnostic: jsonb('repair_diagnostic').$type<unknown>(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),
@@ -43,6 +45,10 @@ export const generation = pgTable(
     (${t.state} IN ('running', 'uncertain') AND ${t.attemptId} IS NOT NULL AND ${t.output} IS NULL AND ${t.failureCode} IS NULL) OR
     (${t.state} = 'succeeded' AND ${t.attemptId} IS NOT NULL AND ${t.output} IS NOT NULL AND ${t.failureCode} IS NULL) OR
     (${t.state} = 'failed' AND ${t.attemptId} IS NOT NULL AND ${t.output} IS NULL AND ${t.failureCode} IS NOT NULL)`,
+    ),
+    check(
+      'generation_repair_shape',
+      sql`(${t.repairCandidate} IS NULL AND ${t.repairDiagnostic} IS NULL) OR (${t.state} = 'failed' AND ${t.failureCode} = 'invalid_output' AND ${t.repairCandidate} IS NOT NULL AND ${t.repairDiagnostic} IS NOT NULL)`,
     ),
   ],
 );

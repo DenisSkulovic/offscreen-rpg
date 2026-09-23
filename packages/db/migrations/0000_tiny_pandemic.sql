@@ -294,13 +294,16 @@ CREATE TABLE "generation" (
 	"attempt_id" uuid,
 	"output" jsonb,
 	"failure_code" text,
+	"repair_candidate" jsonb,
+	"repair_diagnostic" jsonb,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "generation_state_shape" CHECK (
     ("generation"."state" = 'pending' AND "generation"."attempt_id" IS NULL AND "generation"."output" IS NULL AND "generation"."failure_code" IS NULL) OR
     ("generation"."state" IN ('running', 'uncertain') AND "generation"."attempt_id" IS NOT NULL AND "generation"."output" IS NULL AND "generation"."failure_code" IS NULL) OR
     ("generation"."state" = 'succeeded' AND "generation"."attempt_id" IS NOT NULL AND "generation"."output" IS NOT NULL AND "generation"."failure_code" IS NULL) OR
-    ("generation"."state" = 'failed' AND "generation"."attempt_id" IS NOT NULL AND "generation"."output" IS NULL AND "generation"."failure_code" IS NOT NULL))
+    ("generation"."state" = 'failed' AND "generation"."attempt_id" IS NOT NULL AND "generation"."output" IS NULL AND "generation"."failure_code" IS NOT NULL)),
+	CONSTRAINT "generation_repair_shape" CHECK (("generation"."repair_candidate" IS NULL AND "generation"."repair_diagnostic" IS NULL) OR ("generation"."state" = 'failed' AND "generation"."failure_code" = 'invalid_output' AND "generation"."repair_candidate" IS NOT NULL AND "generation"."repair_diagnostic" IS NOT NULL))
 );
 --> statement-breakpoint
 CREATE TABLE "outbox" (

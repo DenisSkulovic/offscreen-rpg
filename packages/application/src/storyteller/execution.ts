@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
+  diagnoseStorytellerResult,
   validateStorytellerResult,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
@@ -297,11 +298,17 @@ export function createStorytellerExecution(
       }
       let output: unknown = null;
       let failureCode = outcome.kind === 'failed' ? outcome.failureCode : null;
+      let repairCandidate: unknown = null;
+      let repairDiagnostic: unknown = null;
       if (outcome.kind === 'result') {
         try {
           output = validateStorytellerResult(task, outcome.output);
         } catch {
           failureCode = 'invalid_output';
+          if (task.resources.recipe.version === 'repairable-turn.v1') {
+            repairCandidate = outcome.output;
+            repairDiagnostic = diagnoseStorytellerResult(task, outcome.output);
+          }
         }
       }
       await budget.settle({
@@ -310,8 +317,20 @@ export function createStorytellerExecution(
         usage: outcome.usage,
         telemetry: outcome.telemetry,
         generationOutcome: failureCode
-          ? { state: 'failed', output: null, failureCode }
-          : { state: 'succeeded', output, failureCode: null },
+          ? {
+              state: 'failed',
+              output: null,
+              failureCode,
+              repairCandidate,
+              repairDiagnostic,
+            }
+          : {
+              state: 'succeeded',
+              output,
+              failureCode: null,
+              repairCandidate: null,
+              repairDiagnostic: null,
+            },
       });
     } catch (error) {
       if (!(error instanceof StorytellerBudgetError)) {
