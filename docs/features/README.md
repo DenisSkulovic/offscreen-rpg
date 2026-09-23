@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Run one bounded fresh mechanical opening through [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md) S3. The v11 provider schema now excludes zero quantity deltas and accepts only compact opening content/plans while code derives fixed envelope fields. Inspect the exact connected packet first, release one Sol call and reconcile it before any continuation.
+**Next action:** Checkpoint [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md) S4, then run at most one new bounded Sol opening. The first v11 probe proved compact strict decoding and exposed an unavailable one-septim prerequisite; S4 now indexes opening prerequisites to captured state. Do not use the failed operation's pre-S4 repair as evidence for the new schema.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

@@ -872,9 +872,41 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
     (candidate) => candidate.properties && 'resolution' in candidate.properties,
   );
   assert.ok(freshPlanSchema?.properties);
-  assert.equal('version' in freshPlanSchema.properties, false);
-  assert.equal('evidence' in freshPlanSchema.properties, false);
+  const freshPlanProperties = freshPlanSchema.properties as Record<
+    string,
+    unknown
+  >;
+  assert.equal('version' in freshPlanProperties, false);
+  assert.equal('evidence' in freshPlanProperties, false);
   assert.doesNotMatch(JSON.stringify(providerSchema), /"const":"resume"/);
+  const requires = freshPlanProperties['requires'] as {
+    items: { anyOf: Array<{ properties: Record<string, { const: unknown }> }> };
+  };
+  assert.deepEqual(
+    requires.items.anyOf.map((branch) => ({
+      id: branch.properties['id']?.const,
+      value: branch.properties['value']?.const,
+    })),
+    opening.character.facts,
+  );
+  assert.equal(
+    (freshPlanProperties['requiresStory'] as { maxItems: number }).maxItems,
+    0,
+  );
+  const quantityRequirements = freshPlanProperties['requiresQuantities'] as {
+    items: {
+      anyOf: Array<{
+        properties: Record<string, { const?: unknown; maximum?: number }>;
+      }>;
+    };
+  };
+  assert.deepEqual(
+    quantityRequirements.items.anyOf.map((branch) => ({
+      quantityId: branch.properties['quantityId']?.const,
+      maximum: branch.properties['minimum']?.maximum,
+    })),
+    [{ quantityId: 'septims', maximum: 0 }],
+  );
 
   const referenced = validateStorytellerResult(task, {
     content: opening.opening,

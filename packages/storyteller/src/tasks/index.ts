@@ -642,6 +642,104 @@ function withholdResumeResolutions(value: unknown): unknown {
   );
 }
 
+type AvailableFact = Readonly<{ id: string; value: string | boolean }>;
+type AvailableQuantity = Readonly<{ id: string; value: number }>;
+
+function exactFactRequirement(fact: AvailableFact) {
+  return {
+    type: 'object',
+    properties: {
+      id: { type: 'string', const: fact.id },
+      value: { type: typeof fact.value, const: fact.value },
+    },
+    required: ['id', 'value'],
+    additionalProperties: false,
+  };
+}
+
+function availableRequirementArray(
+  schema: unknown,
+  items: readonly Record<string, unknown>[],
+) {
+  const arraySchema =
+    schema && typeof schema === 'object' && !Array.isArray(schema)
+      ? (schema as Record<string, unknown>)
+      : { type: 'array' };
+  return items.length
+    ? { ...arraySchema, items: { anyOf: items } }
+    : { ...arraySchema, maxItems: 0, items: {} };
+}
+
+/** Opening offers may depend only on prerequisites satisfied at capture time. */
+function constrainOpeningPlanPrerequisites(
+  value: unknown,
+  characterFacts: readonly AvailableFact[],
+  storyFacts: readonly AvailableFact[],
+  quantities: readonly AvailableQuantity[],
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((child) =>
+      constrainOpeningPlanPrerequisites(
+        child,
+        characterFacts,
+        storyFacts,
+        quantities,
+      ),
+    );
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const result = Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+      key,
+      constrainOpeningPlanPrerequisites(
+        child,
+        characterFacts,
+        storyFacts,
+        quantities,
+      ),
+    ]),
+  ) as Record<string, unknown>;
+  const properties = result['properties'];
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties)
+  ) {
+    return result;
+  }
+  const fields = properties as Record<string, unknown>;
+  if (!('key' in fields) || !('resolution' in fields)) {
+    return result;
+  }
+  fields['requires'] = availableRequirementArray(
+    fields['requires'],
+    characterFacts.map(exactFactRequirement),
+  );
+  fields['requiresStory'] = availableRequirementArray(
+    fields['requiresStory'],
+    storyFacts.map(exactFactRequirement),
+  );
+  fields['requiresQuantities'] = availableRequirementArray(
+    fields['requiresQuantities'],
+    quantities.map((quantity) => ({
+      type: 'object',
+      properties: {
+        quantityId: { type: 'string', const: quantity.id },
+        minimum: {
+          type: 'integer',
+          minimum: 0,
+          maximum: quantity.value,
+        },
+      },
+      required: ['quantityId', 'minimum'],
+      additionalProperties: false,
+    })),
+  );
+  return result;
+}
+
 function requestFor(
   input: {
     task:
@@ -690,6 +788,12 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
   );
   if (input.task === 'opening' && context.mechanicalOpening) {
     rawOutputSchema = withholdResumeResolutions(rawOutputSchema);
+    rawOutputSchema = constrainOpeningPlanPrerequisites(
+      rawOutputSchema,
+      context.mechanicalOpening.character.facts,
+      context.mechanicalOpening.storyFacts,
+      context.mechanicalOpening.character.quantities,
+    );
   }
   const outputSchema = constrainQuantityChangeDeltas(
     withholdImmediateCheckModifiers(
