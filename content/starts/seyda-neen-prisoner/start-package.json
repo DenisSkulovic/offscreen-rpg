@@ -6,14 +6,14 @@
   "worlds": [
     {
       "worldId": "7c14e5bc-4d72-4f8c-9a6b-97f334b83c11",
-      "rootHash": "9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb",
+      "rootHash": "19275f254da9bbd62f8bdadf253440b62cdfa1ef37f0c78cea0469ad57e5ae27",
       "revision": 1,
       "mount": "vvardenfell"
     }
   ],
   "rules": {
     "ruleSetId": "d73c2a94-1f5b-5a83-91c3-3a9f9897e6bb",
-    "rootHash": "89baa1a75a6852d06a9cc3c9ca863fb91121f5407bd29fac0cbd7cdca7d636f3",
+    "rootHash": "d643427fa3292ce61484deb15f2e9fc6755c613b17260db6f390ea23bd99d7ab",
     "revision": 1,
     "engine": {
       "adapterId": "srd-5.2.1-subset",

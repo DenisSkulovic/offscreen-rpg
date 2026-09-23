@@ -27,6 +27,7 @@ import {
   preflightMemoryEvaluation,
 } from '@offscreen/application/developer-tools';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
+import type { StartPackageReference } from '@offscreen/contracts/campaign';
 import { authOptions, createAuth } from '@offscreen/api/auth';
 import { stopChamberResources } from './stop.js';
 import { captureHeldOpeningPacket } from './packet-review.js';
@@ -685,7 +686,8 @@ const defaultRulePackage = await importRulePackageDirectory(
   join(workspaceRoot, 'content', 'rules', 'srd-5.2.1-subset'),
 );
 let storyOpeningContent;
-if (storyMode) {
+let seydaStartPackage: StartPackageReference | undefined;
+if (storyMode || evaluationConfig) {
   const world = await importWorldPackageDirectory(documentStore, {
     sourceDirectory: join(
       workspaceRoot,
@@ -699,7 +701,7 @@ if (storyMode) {
   });
   if (
     world.rootHash !==
-    '9994b2280e7603f4e9c481440db73c5ba513e5b00808edeed6924752c451d7cb'
+    '19275f254da9bbd62f8bdadf253440b62cdfa1ef37f0c78cea0469ad57e5ae27'
   ) {
     throw new Error(
       'Checked-in Vvardenfell package root changed without updating the start package',
@@ -709,26 +711,29 @@ if (storyMode) {
     documentStore,
     join(workspaceRoot, 'content', 'starts', 'seyda-neen-prisoner'),
   );
-  storyOpeningContent = [
-    {
-      id: 'seyda-neen-arrival.v1',
-      name: 'Seyda Neen — prisoner arrival',
-      description:
-        'Begin aboard the prison ship and pass through the maintained Seyda Neen release sequence.',
-      draft: {
-        title: 'Prisoner in Seyda Neen',
-        premise:
-          'I am a prisoner arriving by ship at Seyda Neen in Vvardenfell. Begin aboard the prison ship and follow the canonical release process.',
-        storytellingDirection:
-          'Ground the story in the supplied canonical setting. Preserve player agency, concrete continuity, and room for ordinary life as well as larger events.',
+  seydaStartPackage = {
+    startPackageId: start.manifest.startPackageId,
+    rootHash: start.rootHash,
+    revision: start.manifest.revision,
+  };
+  if (storyMode) {
+    storyOpeningContent = [
+      {
+        id: 'seyda-neen-arrival.v1',
+        name: 'Seyda Neen — prisoner arrival',
+        description:
+          'Begin aboard the prison ship and pass through the maintained Seyda Neen release sequence.',
+        draft: {
+          title: 'Prisoner in Seyda Neen',
+          premise:
+            'I am a prisoner arriving by ship at Seyda Neen in Vvardenfell. Begin aboard the prison ship and follow the canonical release process.',
+          storytellingDirection:
+            'Ground the story in the supplied canonical setting. Preserve player agency, concrete continuity, and room for ordinary life as well as larger events.',
+        },
+        startPackage: seydaStartPackage,
       },
-      startPackage: {
-        startPackageId: start.manifest.startPackageId,
-        rootHash: start.rootHash,
-        revision: start.manifest.revision,
-      },
-    },
-  ];
+    ];
+  }
 }
 let chamberUserId: string | undefined;
 const localUserEmail = storyMode
@@ -1113,6 +1118,9 @@ try {
       cookie,
       database,
       ...(evaluationConfig ? { contentId: 'seyda-neen-arrival.v1' } : {}),
+      ...(evaluationConfig && seydaStartPackage
+        ? { startPackage: seydaStartPackage }
+        : {}),
     });
     if (evaluationConfig) {
       const inspection = evaluationPacketInspectionSchema.parse(
@@ -1120,6 +1128,7 @@ try {
       );
       const { maxContextTokens: _maxContextTokens, ...route } =
         evaluationConfig.route;
+      void _maxContextTokens;
       const manifest = createLiveEvaluationManifest({
         id: evaluationConfig.id,
         createdAt: new Date().toISOString(),

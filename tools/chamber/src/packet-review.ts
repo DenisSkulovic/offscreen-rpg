@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import type { StartPackageReference } from '@offscreen/contracts/campaign';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import type { DispatchReviewView } from '@offscreen/contracts/chamber';
 import { draftSchema } from '@offscreen/contracts/drafts';
@@ -18,6 +19,7 @@ export async function captureHeldOpeningPacket(input: {
   cookie: string;
   database: Database;
   contentId?: string;
+  startPackage?: StartPackageReference;
 }) {
   const draftId = crypto.randomUUID();
   const generationId = crypto.randomUUID();
@@ -54,6 +56,7 @@ export async function captureHeldOpeningPacket(input: {
     body: JSON.stringify({
       expectedRevision: draft.revision,
       ...(input.contentId ? { contentId: input.contentId } : {}),
+      ...(input.startPackage ? { startPackage: input.startPackage } : {}),
     }),
   });
   let captured: DispatchReviewView | undefined;
@@ -63,7 +66,9 @@ export async function captureHeldOpeningPacket(input: {
       { headers: { cookie: input.cookie, origin: input.browserOrigin } },
     );
     if (response.ok) {
-      captured = dispatchReviewResponseSchema.parse(await response.json()).review;
+      captured = dispatchReviewResponseSchema.parse(
+        await response.json(),
+      ).review;
       break;
     }
     await delay(200);

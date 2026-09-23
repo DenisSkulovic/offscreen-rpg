@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Checkpoint content-owned duration calibration in [Fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md), then ensure the next held opening packet actually carries its start-package world guidance. Typed location changes narrated without matching effects remain a separate admission-design problem; do not spend merely to resample it.
+**Next action:** Design typed-state outcome coherence for generated plans: when an outcome changes an existing typed fact in its own declared mechanics, every matching branch must carry the corresponding admitted effect. Keep this structural and state-indexed; do not parse prose, require travel, or spend merely to resample it. The fixed evaluation harness now carries the same pinned start-package world guidance as Story mode.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
