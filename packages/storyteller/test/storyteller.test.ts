@@ -889,10 +889,12 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
     })),
     opening.character.facts,
   );
-  assert.equal(
-    (freshPlanProperties['requiresStory'] as { maxItems: number }).maxItems,
-    0,
-  );
+  const storyRequirements = freshPlanProperties['requiresStory'] as {
+    maxItems: number;
+    items: { type?: string };
+  };
+  assert.equal(storyRequirements.maxItems, 0);
+  assert.equal(storyRequirements.items.type, 'object');
   const quantityRequirements = freshPlanProperties['requiresQuantities'] as {
     items: {
       anyOf: Array<{

@@ -667,7 +667,7 @@ function availableRequirementArray(
       : { type: 'array' };
   return items.length
     ? { ...arraySchema, items: { anyOf: items } }
-    : { ...arraySchema, maxItems: 0, items: {} };
+    : { ...arraySchema, maxItems: 0 };
 }
 
 /** Opening offers may depend only on prerequisites satisfied at capture time. */
