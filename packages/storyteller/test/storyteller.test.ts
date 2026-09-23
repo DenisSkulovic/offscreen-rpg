@@ -139,6 +139,14 @@ test('memory exploration request preview embeds evidence without transport', () 
     exploratoryRequest.messages[0].content,
     /"evidenceUse":\{"itemIds":\[\],"sourceIds":\[\]\}/,
   );
+  assert.match(
+    exploratoryRequest.messages[0].content,
+    /Memory item IDs belong only in evidenceUse and creativeDirections/,
+  );
+  assert.match(
+    exploratoryRequest.messages[0].content,
+    /exactly one direction must have status selected/,
+  );
 });
 
 function providerResources(route: string) {

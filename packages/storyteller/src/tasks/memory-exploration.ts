@@ -175,7 +175,7 @@ If the supplied context is sufficient, return this instead:
 {"kind":"ready_to_answer","version":1,"purpose":"Evidence is sufficient for the final task."}
 When memoryExploration.canRequestContext is false, return the final wrapper in this exact outer shape:
 {"result":{...the task result...},"evidenceUse":{"itemIds":[],"sourceIds":[]},"creativeDirections":{"format":"offscreen.creative-direction-set.v1","directions":[]}}
-The result value must match the original task contract. In evidenceUse, list only evidence itemIds actually used to form the result and their sourceIds; use empty arrays if none were used. creativeDirections is private: use an empty directions array when no alternatives were compared, otherwise record concise selected/rejected alternatives with packet item IDs, never hidden reasoning. Never claim unseen or unused evidence.
+The result value must match the original task contract. Memory item IDs belong only in evidenceUse and creativeDirections; never put them in result.currentNotes or result.arrivalNotes evidence, which accepts only supplied passage handles, current or arrival. In evidenceUse, list only evidence itemIds actually used to form the result and their sourceIds; use empty arrays if none were used. creativeDirections is private: use an empty directions array when no alternatives were compared. Otherwise exactly one direction must have status selected, and every other direction must have status rejected plus a reason. Record concise alternatives with packet item IDs, never hidden reasoning. Never claim unseen or unused evidence.
 Evidence-use metadata is private. Never expose private exploration mechanics or citations to the player.`;
 
 function finalResponseJsonSchema(resultSchema: unknown) {
