@@ -2,6 +2,17 @@
 
 This package owns use cases, transactions and coordination. The API and Activity worker compose its public exports from [package.json](package.json). Pure rules belong in `@offscreen/game`; task preparation and output validation belong in `@offscreen/storyteller`. Start with one flow below rather than reading every module.
 
+## Directory index
+
+| Directory | Open first | Skip unless that is the task |
+| --- | --- | --- |
+| `campaign/` | `actions.ts` for mechanical selection; `action-execution-transition.ts` for finite-action settlement; `activities.ts` for process mechanics | `fixtures/` data blobs |
+| `stories/` | `index.ts` for the facade; `reads.ts` for snapshots; `start.ts` for campaign Start | — |
+| `storyteller/` | `runtime.ts` for execute-then-publish; `context.ts` for task input; `publication.ts` for committed narrative | `memory-exploration-controller.ts` unless exploring retrieval rounds |
+| `generations/` | `scripted-openings.ts` for profiled opening dispatch | — |
+| `developer-tools/` | `chamber.ts` for Chamber composition | `qa-catalog/` journey tables, `chamber-inspector.ts`, evaluators and corpus builders |
+| `cache/` | `read-cache.ts` for the projection-cache port | — |
+
 ## Campaign transition boundary
 
 Campaign commands and timer wakes enter purpose-specific operations under the story lock. Mechanical policy describes the resulting authoritative state, durable lifecycle fact and typed follow-up intents; the operation persists those parts in one transaction. `campaign/follow-up-intents.ts` is the exhaustive adapter from those intents to durable application work such as a Storyteller hold plus transactional-outbox notice. It is deliberately not a general event bus.

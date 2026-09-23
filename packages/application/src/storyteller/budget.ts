@@ -1,3 +1,8 @@
+/**
+ * Provider attempt reservations, usage-window debits and funding settlement.
+ * Must not dispatch transport or validate model output; see ./execution.ts and
+ * @offscreen/storyteller/providers/openrouter.
+ */
 import { generation } from '@offscreen/db/generation-schema';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';

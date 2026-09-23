@@ -1,3 +1,8 @@
+/**
+ * Storyteller task schemas, preparation, validation and captured request
+ * assembly. Must not read the database or commit story state; see
+ * @offscreen/application/storyteller/context and ./publication consumers.
+ */
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';

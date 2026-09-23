@@ -1,3 +1,8 @@
+/**
+ * Local Chamber launcher: child processes, auth bootstrap and eval harness
+ * wiring. Must not own application use cases; see
+ * @offscreen/application/developer-tools/chamber.ts for the composed facade.
+ */
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { once } from 'node:events';

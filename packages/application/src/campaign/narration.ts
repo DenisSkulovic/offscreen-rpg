@@ -1,3 +1,8 @@
+/**
+ * Committed consequence admission, receipt-gated preparation and hold transfer
+ * after mechanical settlement. Must not own generic Storyteller runtime; see
+ * ../storyteller/runtime.ts and ./action-executions.ts for boundary timing.
+ */
 import { randomUUID } from 'node:crypto';
 import { and, eq, gt, lte } from 'drizzle-orm';
 import { z } from 'zod';

@@ -1,3 +1,8 @@
+/**
+ * Pure immediate-action and situation-authorization policy over offers and
+ * private plans. Must not persist or enqueue work; see
+ * @offscreen/application/campaign/actions for story-locked admission.
+ */
 import { z } from 'zod';
 import { checkPlanSchema, rollSchema } from './checks';
 import { resolveCheck, type DrawD20, type Roll } from './checks';

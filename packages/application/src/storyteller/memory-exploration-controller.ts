@@ -1,3 +1,9 @@
+/**
+ * Multi-round memory and creative exploration under one operation envelope.
+ * Must not own canonical storage or general publication; see
+ * ./memory-exploration.ts for admission and ./publication.ts for applying
+ * committed results.
+ */
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';

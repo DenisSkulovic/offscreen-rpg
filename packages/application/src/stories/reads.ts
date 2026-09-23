@@ -1,3 +1,8 @@
+/**
+ * Public story snapshot and history projection under repeatable-read isolation.
+ * Must not admit commands or mutate authority; see ./index.ts and
+ * ../campaign/actions.ts for mechanical selection.
+ */
 import { initialCreative } from '../campaign/settings';
 import { readCampaign } from '../campaign/reads';
 import {

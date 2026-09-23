@@ -1,4 +1,9 @@
 'use client';
+/**
+ * Main play surface: snapshot rendering, pace controls and campaign commands.
+ * Must not own transport policy or authority; see ./use-campaign-command.ts and
+ * the stories API routes.
+ */
 import { useState } from 'react';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import type { CampaignView } from '@offscreen/contracts/campaign';

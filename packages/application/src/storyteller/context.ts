@@ -1,3 +1,9 @@
+/**
+ * Assembles locked Storyteller task input: active-scene anchor, passage range,
+ * canonical knowledge and pinned world/rule documents. Must not prepare
+ * provider requests or publish outcomes; see @offscreen/storyteller/tasks and
+ * ./publication.ts.
+ */
 import {
   campaign,
   campaignSettings,

@@ -1,3 +1,8 @@
+/**
+ * Activity boundary settlement, contribution progress and durable lifecycle
+ * under the story lock. Must not own finite-action settlement or narrative
+ * publication; see ./action-executions.ts and ../storyteller/publication.ts.
+ */
 import { randomInt, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { eq } from 'drizzle-orm';
@@ -40,7 +45,6 @@ import {
   campaignActivityOccurrences,
   recordActivityEvent,
   processOccurrenceAvailable,
-  type ActivityEventKind,
   type ActivityRecord,
   type CampaignRecord,
 } from './persistence';
@@ -63,26 +67,9 @@ import {
   type WorldObligationRecord,
 } from './world-obligations';
 import type { DocumentStore } from '@offscreen/documents';
+import { recordBoundarySettlementEvents } from './activity-lifecycle-events';
 
 export { campaignActivityTopic } from './topics';
-
-function transitionEventKind(state: string): ActivityEventKind | null {
-  switch (state) {
-    case 'blocked':
-      return 'blocked';
-    case 'encounter':
-      return 'interrupted';
-    case 'complete':
-      return 'completed';
-    case 'abandoned':
-    case 'failed':
-    case 'expired':
-    case 'invalidated':
-      return state;
-    default:
-      return null;
-  }
-}
 export async function scheduleActivity(tx: Transaction, activityId: string) {
   await enqueue(tx, {
     id: randomUUID(),
@@ -454,33 +441,21 @@ export async function settleActivity(
       revision: nextActivity.revision,
     })
     .where(eq(gameActivity.id, activity.id));
-  const transitionKind =
-    activity.state === nextState ? null : transitionEventKind(nextState);
   const boundaryCause = `boundary:${boundariesSettled}:revision:${nextActivity.revision}`;
-  if (transitionKind) {
-    await recordActivityEvent(tx, {
-      storyId: current.id,
-      activityId: activity.id,
-      activityRevision: nextActivity.revision,
-      tick: nextCampaignTick,
-      kind: transitionKind,
-      causeKey: boundaryCause,
-      label: plan.action.label,
-      summary: lines.at(-1) ?? `${plan.action.label} became ${nextState}.`,
-    });
-  }
-  if (!storedProgress.completionPending && completionPending) {
-    await recordActivityEvent(tx, {
-      storyId: current.id,
-      activityId: activity.id,
-      activityRevision: nextActivity.revision,
-      tick: nextCampaignTick,
-      kind: 'completion-pending',
-      causeKey: boundaryCause,
-      label: plan.action.label,
-      summary: `${plan.action.label} reached its goal, but completion is waiting for the interruption or blocker to be resolved.`,
-    });
-  }
+  await recordBoundarySettlementEvents(tx, {
+    storyId: current.id,
+    activityId: activity.id,
+    activityRevision: nextActivity.revision,
+    tick: nextCampaignTick,
+    previousState: activity.state,
+    nextState,
+    boundaryCause,
+    label: plan.action.label,
+    transitionSummary:
+      lines.at(-1) ?? `${plan.action.label} became ${nextState}.`,
+    completionPending,
+    wasCompletionPending: storedProgress.completionPending,
+  });
   const nextCampaign = {
     ...state,
     character,
