@@ -1004,6 +1004,15 @@ try {
         memoryEvaluationPolicy?.kind === 'allowed'
           ? memoryEvaluationPolicy.policy
           : memoryDryRunPolicy.policy,
+      ...(memoryEvaluationConfig
+        ? {
+            comparison: {
+              interactionId: memoryEvaluationConfig.case.interactionId,
+              mode: memoryEvaluationConfig.case.mode,
+              maxRepairRounds: memoryEvaluationConfig.recipe.repairCalls,
+            },
+          }
+        : {}),
     });
     if (memoryEvaluationConfig) {
       const expectedAllowance = {

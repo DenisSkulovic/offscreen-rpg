@@ -28,19 +28,24 @@ export async function provisionMemoryEvaluation(input: {
   config: MemoryEvaluationPacketConfig;
   manifest: unknown;
   review: DispatchReviewView;
-  verifiedAt: string;
+  credits: CreditSnapshot;
 }) {
   await input.database.db.$client.query('BEGIN');
   try {
     await input.database.db.$client.query(
-      'INSERT INTO storyteller_funding (id, limit_microusd, stopped, verified_at) VALUES ($1, 0, true, $2)',
-      [input.config.accountId, input.verifiedAt],
+      'INSERT INTO storyteller_funding (id, limit_microusd, stopped, verified_at) VALUES ($1, $2, true, $3)',
+      [
+        input.config.accountId,
+        input.config.recipe.maxMicrousd,
+        input.credits.verifiedAt,
+      ],
     );
     await input.database.db.$client.query(
-      'INSERT INTO storyteller_run (id, account_id, limit_microusd, max_attempts, enabled) VALUES ($1, $2, 0, $3, false)',
+      'INSERT INTO storyteller_run (id, account_id, limit_microusd, max_attempts, enabled) VALUES ($1, $2, $3, $4, false)',
       [
         input.config.runId,
         input.config.accountId,
+        input.config.recipe.maxMicrousd,
         input.config.recipe.modelRounds,
       ],
     );
@@ -55,6 +60,7 @@ export async function provisionMemoryEvaluation(input: {
     review: input.review,
     accountingReady: true,
     traceReady: true,
+    availableMicrousd: input.credits.availableMicrousd.toString(),
   });
   if (!preflight.eligible) {
     throw new Error(
@@ -64,7 +70,7 @@ export async function provisionMemoryEvaluation(input: {
   return preflight.manifest;
 }
 
-export async function requireSettledFreeMemoryAttempt(
+export async function requireSettledMemoryAttempt(
   database: Database,
   attemptId: string,
 ) {
@@ -81,12 +87,11 @@ export async function requireSettledFreeMemoryAttempt(
   if (
     !attempt ||
     attempt.state !== 'settled' ||
-    attempt.charged_microusd !== '0' ||
-    attempt.calculated_microusd !== '0' ||
+    attempt.charged_microusd !== attempt.calculated_microusd ||
     attempt.reconciliation !== 'matched'
   ) {
     throw new Error(
-      'Memory evaluation stopped: prior attempt is not matched, settled, and free',
+      'Memory evaluation stopped: prior attempt is not matched and settled',
     );
   }
   return attempt;
@@ -237,7 +242,7 @@ export async function runMemoryEvaluation(input: {
     config: input.config,
     manifest: input.firstManifest,
     review: input.firstReview,
-    verifiedAt: input.creditsBefore.verifiedAt,
+    credits: input.creditsBefore,
   });
   await enableSingleLiveAttempt(input.database, input.config);
   let runFailure: unknown = null;
@@ -257,7 +262,7 @@ export async function runMemoryEvaluation(input: {
       priorAttemptId: input.firstReview.attemptId,
     });
     credits.push(await verifyOpenRouterAuthority(input.config, input.apiKey));
-    await requireSettledFreeMemoryAttempt(
+    await requireSettledMemoryAttempt(
       input.database,
       input.firstReview.attemptId,
     );
@@ -325,7 +330,7 @@ export async function runMemoryEvaluation(input: {
         );
       }
       credits.push(await verifyOpenRouterAuthority(input.config, input.apiKey));
-      await requireSettledFreeMemoryAttempt(
+      await requireSettledMemoryAttempt(
         input.database,
         firstProgress.review.attemptId,
       );

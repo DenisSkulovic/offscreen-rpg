@@ -37,6 +37,7 @@ export async function captureHeldMemoryPacket(input: {
   comparison?: {
     interactionId: string;
     mode: 'one-shot' | 'bounded-exploration';
+    maxRepairRounds?: 0 | 1;
   };
 }) {
   const corpus = buildLongStoryMemoryCorpus('greywake');
@@ -109,10 +110,26 @@ export async function captureHeldMemoryPacket(input: {
               maxRetainedBytes: 4096,
               maxModelRounds: 1,
             },
+            maxRepairRounds: input.comparison?.maxRepairRounds ?? 0,
           }),
     },
   );
-  const { resources: _resources, ...comparisonBasis } = task;
+  const {
+    resources: _resources,
+    execution,
+    ...taskWithoutResourcesOrLedgerIdentity
+  } = task;
+  const comparisonBasis = {
+    ...taskWithoutResourcesOrLedgerIdentity,
+    execution:
+      execution.mode === 'provider'
+        ? {
+            ...execution,
+            accountId: '<comparison-account>',
+            runId: '<comparison-run>',
+          }
+        : execution,
+  };
   const comparisonBasisSha256 = createHash('sha256')
     .update(JSON.stringify(comparisonBasis))
     .digest('hex');

@@ -613,10 +613,15 @@ export async function runMemoryExploration(
         return null;
       }
     })();
+    const repairRoundsUsed = Math.max(
+      0,
+      artifact.modelRoundsUsed - snapshot.rounds.length - 1,
+    );
     const repairableInvalidFinal =
       !contextRequest.success &&
       validatedFinalCandidate === null &&
-      artifact.modelRoundsUsed < recipe.maxModelRounds;
+      artifact.modelRoundsUsed < recipe.maxModelRounds &&
+      repairRoundsUsed < recipe.maxRepairRounds;
     const admissibleContextRequest =
       contextRequest.success &&
       round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds &&

@@ -50,6 +50,7 @@ export function resourcesForEffectiveUsagePolicy(
   creativeInput?: {
     posture: CreativeExplorationPosture;
     requested?: Partial<CreativeExplorationLimits>;
+    maxRepairRounds?: 0 | 1;
   },
 ): StorytellerTaskResources {
   const policy = effectiveUsagePolicySchema.parse(policyInput);
@@ -64,7 +65,7 @@ export function resourcesForEffectiveUsagePolicy(
     policy.limits.maxGeneratedTokensPerOperation,
     execution.policy.maxOutputTokens,
   );
-  const maxMicrousd = minimumMicrousd(
+  const maxMicrousdPerRequest = minimumMicrousd(
     policy.limits.maxMicrousdPerOperation,
     executionMaximumCharge(execution),
   );
@@ -74,9 +75,7 @@ export function resourcesForEffectiveUsagePolicy(
     policy.limits.maxRetainedReadBytes >= 1024;
   const creativeExploration = resolveCreativeExplorationRecipe({
     posture: creativeInput?.posture ?? 'off',
-    ...(creativeInput?.requested
-      ? { requested: creativeInput.requested }
-      : {}),
+    ...(creativeInput?.requested ? { requested: creativeInput.requested } : {}),
     operationLimits: {
       maxQueries: Math.max(
         0,
@@ -85,10 +84,7 @@ export function resourcesForEffectiveUsagePolicy(
           : 0,
       ),
       maxReads: Math.min(6, policy.limits.maxReadsPerOperation),
-      maxRetainedBytes: Math.min(
-        48 * 1024,
-        policy.limits.maxRetainedReadBytes,
-      ),
+      maxRetainedBytes: Math.min(48 * 1024, policy.limits.maxRetainedReadBytes),
       maxModelRounds: Math.max(
         0,
         Math.min(2, policy.limits.maxModelRoundsPerOperation - 1),
@@ -96,9 +92,9 @@ export function resourcesForEffectiveUsagePolicy(
       maxGeneratedTokens,
       maxLatencyMs: execution.policy.timeoutMs,
       maxCostMicrousd: Number(
-        BigInt(maxMicrousd) > 10_000_000n
+        BigInt(maxMicrousdPerRequest) > 10_000_000n
           ? 10_000_000n
-          : BigInt(maxMicrousd),
+          : BigInt(maxMicrousdPerRequest),
       ),
     },
   });
@@ -111,6 +107,7 @@ export function resourcesForEffectiveUsagePolicy(
         tools: 'memory-read.v1' as const,
         automaticEscalation: false as const,
         finalAnswerReserveRounds: 1 as const,
+        maxRepairRounds: creativeInput?.maxRepairRounds ?? 0,
       }
     : {
         version: 'single-turn.v1' as const,
@@ -119,6 +116,12 @@ export function resourcesForEffectiveUsagePolicy(
         tools: 'disabled' as const,
         automaticEscalation: false as const,
       };
+  const maxMicrousd = minimumMicrousd(
+    policy.limits.maxMicrousdPerOperation,
+    (
+      BigInt(executionMaximumCharge(execution)) * BigInt(recipe.maxModelRounds)
+    ).toString(),
+  );
   return storytellerTaskResourcesSchema.parse({
     version: 'storyteller-resources.v2',
     recipe,
@@ -155,6 +158,7 @@ export function prepareAdmittedStorytellerTask(
   creativeInput?: {
     posture: CreativeExplorationPosture;
     requested?: Partial<CreativeExplorationLimits>;
+    maxRepairRounds?: 0 | 1;
   },
 ): StorytellerTask {
   if (input.execution.mode === 'scripted') {

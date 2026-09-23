@@ -26,6 +26,25 @@ function requiredReservationMicrousd(input: {
   return (pricedMillionthsOfMicrousd + 999_999n) / 1_000_000n;
 }
 
+function requiredMemoryReservationMicrousd(input: {
+  route: MemoryEvaluationManifest['route'];
+  recipe: MemoryEvaluationPacketConfig['recipe'];
+}) {
+  const admittedInputPrice = [
+    input.route.inputMicrousdPerMillion,
+    input.route.cacheReadMicrousdPerMillion,
+    input.route.cacheWriteMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
+  const pricedMillionthsOfMicrousd =
+    BigInt(input.recipe.maxInputTokensPerOperation) * admittedInputPrice +
+    BigInt(input.recipe.maxGeneratedTokensPerOperation) *
+      BigInt(input.route.outputMicrousdPerMillion);
+  return (pricedMillionthsOfMicrousd + 999_999n) / 1_000_000n;
+}
+
 export function createLiveEvaluationManifest(input: {
   id: string;
   createdAt: string;
@@ -220,7 +239,10 @@ export function createMemoryEvaluationManifest(input: {
     },
     route,
     recipe: input.config.recipe,
-    reservationMicrousd: '0',
+    reservationMicrousd: requiredMemoryReservationMicrousd({
+      route,
+      recipe: input.config.recipe,
+    }).toString(),
     createdAt: input.createdAt,
   });
 }
@@ -229,7 +251,8 @@ export type MemoryEvaluationPreflightFailure =
   | 'packet_not_held'
   | 'packet_identity_mismatch'
   | 'route_verification_stale'
-  | 'route_not_free'
+  | 'reservation_mismatch'
+  | 'funding_insufficient'
   | 'packet_limit_exceeded'
   | 'accounting_not_ready'
   | 'trace_not_ready';
@@ -246,6 +269,7 @@ export function preflightMemoryEvaluation(input: {
   };
   accountingReady: boolean;
   traceReady: boolean;
+  availableMicrousd?: string;
 }) {
   const manifest = memoryEvaluationManifestSchema.parse(input.manifest);
   const failures: MemoryEvaluationPreflightFailure[] = [];
@@ -266,12 +290,21 @@ export function preflightMemoryEvaluation(input: {
   ) {
     failures.push('route_verification_stale');
   }
+  const requiredReservation = requiredMemoryReservationMicrousd({
+    route: manifest.route,
+    recipe: manifest.recipe,
+  });
   if (
-    manifest.route.inputMicrousdPerMillion !== '0' ||
-    manifest.route.outputMicrousdPerMillion !== '0' ||
-    manifest.reservationMicrousd !== '0'
+    BigInt(manifest.reservationMicrousd) !== requiredReservation ||
+    requiredReservation > BigInt(manifest.recipe.maxMicrousd)
   ) {
-    failures.push('route_not_free');
+    failures.push('reservation_mismatch');
+  }
+  if (
+    input.availableMicrousd !== undefined &&
+    BigInt(input.availableMicrousd) < BigInt(manifest.reservationMicrousd)
+  ) {
+    failures.push('funding_insufficient');
   }
   if (
     manifest.packet.serializedBytes >

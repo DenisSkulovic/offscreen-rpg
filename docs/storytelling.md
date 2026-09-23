@@ -1,5 +1,7 @@
 # Storytelling
 
+The shared engine is deliberately unopinionated about whether play should be exciting, quiet, funny, severe, coherent, chaotic, fast or slow. Those qualities come from the selected Storyteller profile, campaign direction, world content and player configuration. Engine policy enforces authority, budgets, provenance and mechanical consistency; it must not smuggle in a preferred dramatic pace, genre or definition of enjoyable play. Evaluate a generated turn against its captured story and Storyteller configuration, not against one universal house style.
+
 The storyteller supports both ordinary continuing life and dramatic developments. Caring for a character over several real days can be the main experience: familiar places, earning and spending, practice, quiet observation and occasional conversations are worthwhile without an approaching twist. It portrays people, offers possible responses and interprets consequences. It can introduce a raid without simulating a distant bandit leadership hierarchy. Once that raid matters to the story, its participants and consequences must remain coherent.
 
 ## What guides it

@@ -29,6 +29,7 @@ const memoryExplorationRecipeSchema = z
     tools: z.literal('memory-read.v1'),
     automaticEscalation: z.literal(false),
     finalAnswerReserveRounds: z.literal(1),
+    maxRepairRounds: z.union([z.literal(0), z.literal(1)]),
   })
   .refine(
     (recipe) => recipe.maxModelRounds > recipe.finalAnswerReserveRounds,

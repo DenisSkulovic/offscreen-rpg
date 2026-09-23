@@ -110,8 +110,8 @@ export type EvaluationPacketConfig = z.infer<
 >;
 
 export const memoryEvaluationRecipeSchema = z.strictObject({
-  modelRounds: z.literal(2),
-  retrievalReads: z.literal(1),
+  modelRounds: z.union([z.literal(1), z.literal(2)]),
+  retrievalReads: z.union([z.literal(0), z.literal(1)]),
   maxInFlightCalls: z.literal(1),
   repairCalls: z.literal(0),
   judgeCalls: z.literal(0),
@@ -120,10 +120,10 @@ export const memoryEvaluationRecipeSchema = z.strictObject({
   maxInputTokensPerRound: z.number().int().positive(),
   maxInputTokensPerOperation: z.number().int().positive(),
   maxSerializedBytesPerRequest: z.number().int().positive(),
-  maxRetainedReadBytes: z.number().int().min(1024),
+  maxRetainedReadBytes: z.number().int().nonnegative(),
   maxGeneratedTokensPerOperation: z.number().int().positive(),
   maxReasoningTokensPerRequest: z.literal(0),
-  maxMicrousd: z.literal('0'),
+  maxMicrousd: unsignedIntegerString,
 });
 
 export const memoryEvaluationPacketConfigSchema = z
@@ -135,22 +135,28 @@ export const memoryEvaluationPacketConfigSchema = z
     case: z.strictObject({
       id: z.string().min(1),
       version: z.string().min(1),
+      interactionId: z.uuid(),
+      mode: z.enum(['one-shot', 'bounded-exploration']),
     }),
     route: evaluationRouteSchema,
     recipe: memoryEvaluationRecipeSchema,
   })
   .superRefine((config, context) => {
+    const oneShot = config.case.mode === 'one-shot';
     if (
-      config.route.inputMicrousdPerMillion !== '0' ||
-      config.route.cacheReadMicrousdPerMillion !== '0' ||
-      config.route.cacheWriteMicrousdPerMillion !== '0' ||
-      config.route.outputMicrousdPerMillion !== '0'
+      (oneShot &&
+        (config.recipe.modelRounds !== 1 ||
+          config.recipe.retrievalReads !== 0 ||
+          config.recipe.maxRetainedReadBytes !== 0)) ||
+      (!oneShot &&
+        (config.recipe.modelRounds !== 2 ||
+          config.recipe.retrievalReads !== 1 ||
+          config.recipe.maxRetainedReadBytes < 1024))
     ) {
       context.addIssue({
         code: 'custom',
-        path: ['route'],
-        message:
-          'Memory evaluation is restricted to verified-zero-price routes',
+        path: ['recipe'],
+        message: 'Memory evaluation recipe does not match its comparison mode',
       });
     }
     if (
@@ -160,7 +166,7 @@ export const memoryEvaluationPacketConfigSchema = z
       context.addIssue({
         code: 'custom',
         path: ['recipe', 'maxInputTokensPerOperation'],
-        message: 'Memory operation input must equal both admitted rounds',
+        message: 'Memory operation input must equal all admitted rounds',
       });
     }
     if (
@@ -199,7 +205,12 @@ export const memoryEvaluationManifestSchema = z.strictObject({
   version: z.literal('memory-live-evaluation.v1'),
   id: z.uuid(),
   gate: z.literal('bounded-memory-operation'),
-  case: z.strictObject({ id: z.string().min(1), version: z.string().min(1) }),
+  case: z.strictObject({
+    id: z.string().min(1),
+    version: z.string().min(1),
+    interactionId: z.uuid(),
+    mode: z.enum(['one-shot', 'bounded-exploration']),
+  }),
   packet: z.strictObject({
     generationId: z.uuid(),
     attemptId: z.uuid(),
@@ -210,7 +221,7 @@ export const memoryEvaluationManifestSchema = z.strictObject({
   }),
   route: evaluationRouteSchema.omit({ maxContextTokens: true }),
   recipe: memoryEvaluationRecipeSchema,
-  reservationMicrousd: z.literal('0'),
+  reservationMicrousd: unsignedIntegerString,
   createdAt: z.iso.datetime(),
 });
 export type MemoryEvaluationManifest = z.infer<

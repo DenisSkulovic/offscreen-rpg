@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — T2, the provider-free Seyda proof and the matched v8/v9 Sol opening comparison are complete. The immutable Greywake one-shot-versus-bounded-exploration packets are now held provider-free; review that comparison before selecting a live route, then return to the connected POC proof.
+**Next action:** [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/PLAN.md) — the first Greywake Sol comparison is complete and rejected: one-shot guessed, exploration recognized the missing fact but missed the tool protocol, and an implicit repair bought an unjustified second guess. Repair is now explicitly configurable and zero by default. Improve and hold the model-facing protocol offline before considering another paid call, then return to the connected POC proof.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

@@ -238,6 +238,7 @@ test('memory exploration requests are private, bounded and reserve a final round
       tools: 'memory-read.v1',
       automaticEscalation: false,
       finalAnswerReserveRounds: 1,
+      maxRepairRounds: 0,
     },
     envelope: {
       maxSerializedRequestBytes: 48 * 1024,
@@ -255,6 +256,7 @@ test('memory exploration requests are private, bounded and reserve a final round
   );
   assert.equal(resources.recipe.maxModelRounds, 3);
   assert.equal(resources.recipe.finalAnswerReserveRounds, 1);
+  assert.equal(resources.recipe.maxRepairRounds, 0);
 });
 
 function opening() {

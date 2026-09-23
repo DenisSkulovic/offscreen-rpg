@@ -829,6 +829,7 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
         tools: 'memory-read.v1',
         automaticEscalation: false,
         finalAnswerReserveRounds: 1,
+        maxRepairRounds: 0,
       },
       authority: {
         ...providerBase.resources.authority,

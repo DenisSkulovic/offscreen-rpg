@@ -104,6 +104,7 @@ registerStoryConcern(
               tools: 'memory-read.v1',
               automaticEscalation: false,
               finalAnswerReserveRounds: 1,
+              maxRepairRounds: 0,
             },
           },
         });

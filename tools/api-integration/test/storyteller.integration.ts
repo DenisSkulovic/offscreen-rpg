@@ -3542,9 +3542,70 @@ test(
             assert.equal(replayed.replayed, true);
             assert.equal(providerCalls, 1);
 
+            const noRepairGenerationId = randomUUID();
+            const noRepairTask = storytellerTaskSchema.parse({
+              ...task,
+              execution: {
+                ...execution,
+                dispatchReview: { mode: 'off' },
+              },
+            });
+            await database.db.insert(generation).values({
+              id: noRepairGenerationId,
+              ownerId,
+              kind: sourceGeneration.kind,
+              input: noRepairTask,
+            });
+            let noRepairCalls = 0;
+            const noRepairRuntime = createMemoryProviderRoundRuntime(database, {
+              generationId: noRepairGenerationId,
+              ownerId,
+              task: noRepairTask,
+              dispatchAuthority: () => policy,
+              provider: async () => {
+                noRepairCalls += 1;
+                return {
+                  kind: 'result',
+                  output: { malformed: 'final candidate' },
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('fake-memory-no-repair'),
+                };
+              },
+            });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId: noRepairGenerationId,
+                task: noRepairTask,
+                createExplorer,
+                ...noRepairRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'invalid-output',
+            );
+            assert.equal(noRepairCalls, 1);
+            const [noRepairArtifact] = await database.db
+              .select()
+              .from(storytellerMemoryExploration)
+              .where(
+                eq(
+                  storytellerMemoryExploration.generationId,
+                  noRepairGenerationId,
+                ),
+              );
+            assert.equal(noRepairArtifact?.state, 'failed');
+            assert.equal(noRepairArtifact?.modelRoundsUsed, 1);
+
             const repairGenerationId = randomUUID();
             const repairTask = storytellerTaskSchema.parse({
               ...task,
+              resources: {
+                ...task.resources,
+                recipe: {
+                  ...task.resources.recipe,
+                  maxRepairRounds: 1,
+                },
+              },
               execution: {
                 ...execution,
                 dispatchReview: { mode: 'off' },

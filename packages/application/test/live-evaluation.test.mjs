@@ -133,7 +133,12 @@ test('builds and preflights one held verified-free memory operation', () => {
     id: randomUUID(),
     accountId: randomUUID(),
     runId: randomUUID(),
-    case: { id: 'greywake-exact-key-place', version: '1' },
+    case: {
+      id: 'greywake-exact-key-place',
+      version: '1',
+      interactionId: randomUUID(),
+      mode: 'bounded-exploration',
+    },
     route: {
       ...manifest.route,
       route: 'openrouter:test-model',
@@ -186,13 +191,18 @@ test('builds and preflights one held verified-free memory operation', () => {
   );
 });
 
-test('memory evaluation rejects paid routes and insufficient operation input', () => {
+test('memory evaluation rejects a mismatched mode and insufficient operation input', () => {
   const base = {
     version: 'memory-evaluation-packet.v1',
     id: randomUUID(),
     accountId: randomUUID(),
     runId: randomUUID(),
-    case: { id: 'greywake-exact-key-place', version: '1' },
+    case: {
+      id: 'greywake-exact-key-place',
+      version: '1',
+      interactionId: randomUUID(),
+      mode: 'one-shot',
+    },
     route: {
       ...manifest.route,
       route: 'openrouter:test-model',
@@ -220,7 +230,7 @@ test('memory evaluation rejects paid routes and insufficient operation input', (
   if (!parsed.success) {
     assert.deepEqual(
       parsed.error.issues.map((issue) => issue.path.join('.')).sort(),
-      ['recipe.maxInputTokensPerOperation', 'route'],
+      ['recipe', 'recipe.maxInputTokensPerOperation'],
     );
   }
 });
