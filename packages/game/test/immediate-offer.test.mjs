@@ -13,6 +13,7 @@ import {
 } from '../dist/src/immediate-actions.js';
 import { composeOpportunities } from '../dist/src/opportunities.js';
 import { selectOfferAction } from '../dist/src/offers.js';
+import { quantityEffectSchema } from '../dist/src/effects.js';
 
 const character = {
   name: 'A microbe',
@@ -33,6 +34,32 @@ const character = {
   facts: [{ id: 'exposed', value: true }],
   quantities: [],
 };
+
+test('quantity effects must change their declared quantity', () => {
+  assert.equal(
+    quantityEffectSchema.parse({
+      kind: 'quantity.change.v1',
+      quantityId: 'silver',
+      delta: 1,
+    }).delta,
+    1,
+  );
+  assert.equal(
+    quantityEffectSchema.parse({
+      kind: 'quantity.change.v1',
+      quantityId: 'silver',
+      delta: -1,
+    }).delta,
+    -1,
+  );
+  assert.throws(() =>
+    quantityEffectSchema.parse({
+      kind: 'quantity.change.v1',
+      quantityId: 'silver',
+      delta: 0,
+    }),
+  );
+});
 
 test('finite action overlap eligibility fails closed around admitted boundaries', () => {
   assert.deepEqual(

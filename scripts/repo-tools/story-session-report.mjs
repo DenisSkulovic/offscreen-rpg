@@ -120,8 +120,8 @@ select jsonb_build_object(
       'id', e.operation_id,
       'actionKey', e.action_key,
       'state', e.state,
-      'startGameSecond', e.start_tick,
-      'targetGameSecond', e.target_tick,
+      'startGameSecond', e.start_game_second,
+      'targetGameSecond', e.target_game_second,
       'generationId', e.preparation_generation_id,
       'receiptOutcome', rec.outcome,
       'hasRoll', rec.roll is not null,
@@ -136,7 +136,7 @@ select jsonb_build_object(
   'holds', coalesce((
     select c.holds from campaign c where c.story_id=s.id
   ), '[]'::jsonb),
-  'game-second', (select c.gameSecond from campaign c where c.story_id=s.id),
+  'game-second', (select c.game_second from campaign c where c.story_id=s.id),
   'pendingOutbox', coalesce((
     select jsonb_agg(jsonb_build_object(
       'id', o.id, 'topic', o.topic, 'operationId', o.operation_id,
