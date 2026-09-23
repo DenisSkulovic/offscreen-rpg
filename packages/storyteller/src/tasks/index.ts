@@ -249,7 +249,7 @@ const resultSchemas = {
 };
 const common = {
   inputVersion: z.literal(10),
-  promptVersion: z.literal('storyteller.v8'),
+  promptVersion: z.literal('storyteller.v9'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -354,7 +354,7 @@ Follow the task-specific opportunity contract. Labels must honestly communicate 
 For each narrative choice, set worldSections and campaignDocuments to at most four exact handles each from the supplied world-section and campaign-document catalogues that the next turn would need if that choice is selected. createdDocuments may name up to four zero-based indexes from this result's documentChanges when the choice needs a descriptive document created or revised by the same result. Usually use empty lists. Never invent handles or indexes, select rule-library sections or include merely related material.
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
-Do not change typed possessions, grant rewards, invent authoritative effects, clocks, real deadlines or executable content.
+Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. If an outcome narrates changing an existing typed fact such as location, encode the matching fact effect in every outcome branch that makes that change. Observation, conversation, refusal and withdrawal may legitimately have no typed effect.
 Return plain-text prose, no HTML. Use concise readable passages.`;
 const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
@@ -598,7 +598,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     context,
     contextManifest,
     inputVersion: 10,
-    promptVersion: 'storyteller.v8',
+    promptVersion: 'storyteller.v9',
     resources,
     request: requestFor(input, context),
   });

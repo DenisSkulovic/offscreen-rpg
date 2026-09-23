@@ -958,7 +958,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
     assert.equal(task.inputVersion, 10);
-    assert.equal(task.promptVersion, 'storyteller.v8');
+    assert.equal(task.promptVersion, 'storyteller.v9');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -980,6 +980,18 @@ test('captured schemas expose only the result for the requested task', () => {
   );
   assert.doesNotMatch(openingInstructions, /"currentNotes":\[\]/);
   assert.match(openingInstructions, /do not add root keys not shown/);
+  assert.match(
+    openingInstructions,
+    /Proposed action-plan outcomes remain inert until selected and resolved by code/,
+  );
+  assert.match(
+    openingInstructions,
+    /If an outcome narrates changing an existing typed fact such as location/,
+  );
+  assert.match(
+    openingInstructions,
+    /Observation, conversation, refusal and withdrawal may legitimately have no typed effect/,
+  );
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
   for (const task of [resolved, pending]) {
