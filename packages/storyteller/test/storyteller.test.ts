@@ -839,6 +839,36 @@ test('Seyda opening offers a bounded paid warehouse shift in fictional time', ()
     kind: 'selected',
     actionKeys: ['work-warehouse-shift'],
   });
+  const directions = result.scene.next.plans.find(
+    (candidate) => candidate.key === 'ask-about-the-road',
+  );
+  assert.equal(
+    directions?.resolution.kind === 'check'
+      ? directions.resolution.fictionalDurationSeconds
+      : null,
+    60,
+  );
+
+  const opening = seydaMechanicalOpening().context.mechanicalOpening;
+  assert.ok(opening);
+  const routeKnownCharacter = structuredClone(opening.character);
+  const routeKnown = routeKnownCharacter.facts.find(
+    (fact) => fact.id === 'balmora-route-known',
+  );
+  assert.ok(routeKnown);
+  routeKnown.value = true;
+  const travel = authorizedMechanicalOpeningPlans(routeKnownCharacter).find(
+    (candidate) => candidate.key === 'travel-toward-balmora',
+  );
+  assert.equal(travel?.resolution.kind, 'process');
+  if (travel?.resolution.kind !== 'process') {
+    throw new Error('Expected a road-travel process');
+  }
+  assert.deepEqual(travel.resolution.action.process, {
+    kind: 'clock-wait.v1',
+    progressLabel: 'Road travelled',
+    requiredFictionalSeconds: 900,
+  });
 });
 
 test('an authorized opening reference substitutes the captured warehouse plan', () => {

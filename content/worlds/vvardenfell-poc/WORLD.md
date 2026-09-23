@@ -12,3 +12,12 @@ toward Balmora. Imperial administration, local Dunmer culture, dangerous
 marshland and distant volcanic pressure can all matter, but the current scene
 should load only the focused pages it needs.
 
+## Human-scale duration guidance
+
+This bounded arrival uses ordinary human-scale effort. A brief exchange or
+asking usable directions commonly takes about 30–120 fictional seconds; a
+deliberate inspection of a nearby object commonly takes about 30–300 fictional
+seconds; leaving the settlement and covering the first meaningful stretch of
+marsh road commonly takes about 600–1,800 fictional seconds. These are local
+estimation anchors, not hard action limits or engine defaults. Exact authored
+terms, current conditions and established fiction take precedence.

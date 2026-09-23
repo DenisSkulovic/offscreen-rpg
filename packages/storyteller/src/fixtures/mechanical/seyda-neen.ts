@@ -22,7 +22,7 @@ export function seydaNeenOpeningPlans(character: MechanicalCharacter) {
       requiresQuantities: [],
       resolution: {
         kind: 'check',
-        fictionalDurationSeconds: 5,
+        fictionalDurationSeconds: 60,
         check: {
           rule: 'srd-5.2.1-subset.v1',
           purpose: 'Learn the safe road to Balmora',
@@ -139,7 +139,7 @@ export function seydaNeenOpeningPlans(character: MechanicalCharacter) {
           process: {
             kind: 'clock-wait.v1',
             progressLabel: 'Road travelled',
-            requiredFictionalSeconds: 8,
+            requiredFictionalSeconds: 900,
           },
           conditionPolicy: {
             kind: 'boundary',
@@ -191,7 +191,7 @@ export function seydaNeenConsequence(
         requiresQuantities: [],
         resolution: {
           kind: 'automatic',
-          fictionalDurationSeconds: 5,
+          fictionalDurationSeconds: 900,
           outcome: outcome('You continue north along the raised road.'),
         },
       },

@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Checkpoint the successful state-indexed v11 live proof in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md), then diagnose its questionable action durations and narrated location change at their owning time/admission layers before editing prompts or spending again.
+**Next action:** Checkpoint content-owned duration calibration in [Fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md), then ensure the next held opening packet actually carries its start-package world guidance. Typed location changes narrated without matching effects remain a separate admission-design problem; do not spend merely to resample it.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
