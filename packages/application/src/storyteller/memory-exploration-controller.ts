@@ -19,6 +19,7 @@ import {
   memoryExplorationFinalResponseSchema,
   serializedRequestBytes,
   storytellerNeedsContextSchema,
+  storytellerReadyToAnswerSchema,
   storytellerTaskSchema,
   validateStorytellerResult,
   type StorytellerOutput,
@@ -538,8 +539,7 @@ export async function runMemoryExploration(
             task,
             round,
             canRequestContext:
-              round <=
-              recipe.maxModelRounds - recipe.finalAnswerReserveRounds,
+              round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds,
             snapshot,
             request: pendingModelRequest,
             capturedRequestBytes: preparedContext.capturedRequestBytes,
@@ -591,8 +591,11 @@ export async function runMemoryExploration(
       }
     }
     const contextRequest = storytellerNeedsContextSchema.safeParse(rawOutput);
+    const readyDecision = storytellerReadyToAnswerSchema.safeParse(rawOutput);
     const validatedFinalCandidate = (() => {
-      if (contextRequest.success || !preparedContext) return null;
+      if (contextRequest.success || readyDecision.success || !preparedContext) {
+        return null;
+      }
       const parsed = memoryExplorationFinalResponseSchema.safeParse(rawOutput);
       if (!parsed.success) return null;
       try {
@@ -619,10 +622,14 @@ export async function runMemoryExploration(
     })();
     const repairRoundsUsed = Math.max(
       0,
-      artifact.modelRoundsUsed - snapshot.rounds.length - 1,
+      artifact.modelRoundsUsed -
+        snapshot.rounds.length -
+        snapshot.readyDecisions -
+        1,
     );
     const repairableInvalidFinal =
       !contextRequest.success &&
+      !readyDecision.success &&
       validatedFinalCandidate === null &&
       artifact.modelRoundsUsed < recipe.maxModelRounds &&
       repairRoundsUsed < recipe.maxRepairRounds;
@@ -632,6 +639,9 @@ export async function runMemoryExploration(
       snapshot.readsUsed + contextRequest.data.requests.length <=
         recipe.maxReads &&
       creativeRequestWithinRecipe(task, snapshot, contextRequest.data);
+    const admissibleReadyDecision =
+      readyDecision.success &&
+      round <= recipe.maxModelRounds - recipe.finalAnswerReserveRounds;
     if (!pendingRequest && input.settlePersistedRound) {
       if (
         !artifact.pendingModelAttemptId ||
@@ -649,7 +659,9 @@ export async function runMemoryExploration(
           round,
           delivery,
           operationOutcome:
-            admissibleContextRequest || repairableInvalidFinal
+            admissibleContextRequest ||
+            admissibleReadyDecision ||
+            repairableInvalidFinal
               ? 'continue'
               : 'complete',
         });
@@ -736,6 +748,41 @@ export async function runMemoryExploration(
         )
         .returning({ generationId: storytellerMemoryExploration.generationId });
       if (!updated.length) {
+        throw new Error('Memory exploration artifact changed concurrently');
+      }
+      continue;
+    }
+
+    if (readyDecision.success) {
+      if (round > recipe.maxModelRounds - recipe.finalAnswerReserveRounds) {
+        return fail('round-limit');
+      }
+      if (snapshot.readyDecisions >= 1) {
+        return fail('round-limit');
+      }
+      const advanced = await database.db
+        .update(storytellerMemoryExploration)
+        .set({
+          revision: artifact.revision + 1,
+          snapshot: {
+            ...snapshot,
+            readyDecisions: snapshot.readyDecisions + 1,
+          },
+          pendingModelAttemptId: null,
+          pendingModelRequestSha256: null,
+          pendingModelRequest: null,
+          pendingModelOutput: null,
+          updatedAt: sql`clock_timestamp()`,
+        })
+        .where(
+          and(
+            eq(storytellerMemoryExploration.generationId, input.generationId),
+            eq(storytellerMemoryExploration.revision, artifact.revision),
+            eq(storytellerMemoryExploration.state, 'exploring'),
+          ),
+        )
+        .returning({ generationId: storytellerMemoryExploration.generationId });
+      if (!advanced.length) {
         throw new Error('Memory exploration artifact changed concurrently');
       }
       continue;

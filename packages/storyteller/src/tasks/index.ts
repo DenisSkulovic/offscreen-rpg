@@ -38,7 +38,10 @@ import {
   type ImmediateActionPlan,
 } from '@offscreen/game/immediate-actions';
 import { proposedDocumentChangesSchema } from './document-changes.js';
-import { storytellerNeedsContextSchema } from './memory-exploration.js';
+import {
+  storytellerNeedsContextSchema,
+  storytellerReadyToAnswerSchema,
+} from './memory-exploration.js';
 import { startPackageReferenceSchema } from '@offscreen/contracts/campaign';
 
 export * from './opening';
@@ -116,6 +119,7 @@ export const storytellerOutputSchema = z.union([
 ]);
 export const storytellerRoundOutputSchema = z.union([
   storytellerNeedsContextSchema,
+  storytellerReadyToAnswerSchema,
   storytellerOutputSchema,
 ]);
 export type StorytellerRoundOutput = z.infer<

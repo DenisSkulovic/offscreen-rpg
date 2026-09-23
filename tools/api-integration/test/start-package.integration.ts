@@ -123,6 +123,7 @@ registerStoryConcern(
           rootRevision: 1,
           readsUsed: 0,
           retainedBytes: 0,
+          readyDecisions: 0,
           memoryHandles: [],
           sourceHandles: [],
           rounds: [],

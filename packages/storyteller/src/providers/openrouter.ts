@@ -123,11 +123,155 @@ export function projectOpenAiStrictSchema(value: unknown): unknown {
     typeof projected['properties'] === 'object' &&
     !Array.isArray(projected['properties'])
   ) {
-    projected['required'] = Object.keys(
-      projected['properties'] as Record<string, unknown>,
+    const sourceProperties =
+      source['properties'] &&
+      typeof source['properties'] === 'object' &&
+      !Array.isArray(source['properties'])
+        ? (source['properties'] as Record<string, unknown>)
+        : {};
+    const projectedProperties = projected['properties'] as Record<
+      string,
+      unknown
+    >;
+    const domainRequired = new Set(
+      Array.isArray(source['required'])
+        ? source['required'].filter(
+            (entry): entry is string => typeof entry === 'string',
+          )
+        : [],
     );
+    for (const [key, property] of Object.entries(projectedProperties)) {
+      const domainProperty = sourceProperties[key];
+      if (!domainRequired.has(key) && !jsonSchemaAllowsNull(domainProperty)) {
+        projectedProperties[key] = {
+          anyOf: [property, { type: 'null' }],
+        };
+      }
+    }
+    projected['required'] = Object.keys(projectedProperties);
   }
   return projected;
+}
+
+function jsonSchemaAllowsNull(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const schema = value as Record<string, unknown>;
+  if (schema['const'] === null) return true;
+  if (Array.isArray(schema['enum']) && schema['enum'].includes(null)) {
+    return true;
+  }
+  const type = schema['type'];
+  if (type === 'null' || (Array.isArray(type) && type.includes('null'))) {
+    return true;
+  }
+  return ['oneOf', 'anyOf'].some(
+    (key) =>
+      Array.isArray(schema[key]) &&
+      schema[key].some((branch) => jsonSchemaAllowsNull(branch)),
+  );
+}
+
+function schemaMatchScore(value: unknown, rawSchema: unknown): number {
+  if (!rawSchema || typeof rawSchema !== 'object' || Array.isArray(rawSchema)) {
+    return 0;
+  }
+  const schema = rawSchema as Record<string, unknown>;
+  if ('const' in schema) return Object.is(value, schema['const']) ? 20 : -1e6;
+  if (Array.isArray(schema['enum'])) {
+    return schema['enum'].some((entry) => Object.is(value, entry)) ? 10 : -1e6;
+  }
+  if (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    schema['properties'] &&
+    typeof schema['properties'] === 'object' &&
+    !Array.isArray(schema['properties'])
+  ) {
+    const record = value as Record<string, unknown>;
+    const properties = schema['properties'] as Record<string, unknown>;
+    let score = 0;
+    for (const key of Array.isArray(schema['required'])
+      ? schema['required']
+      : []) {
+      if (typeof key === 'string') score += key in record ? 1 : -100;
+    }
+    for (const [key, propertySchema] of Object.entries(properties)) {
+      if (!(key in record)) continue;
+      const propertyScore = schemaMatchScore(record[key], propertySchema);
+      if (propertyScore <= -1e6) return propertyScore;
+      score += propertyScore;
+    }
+    return score;
+  }
+  return 0;
+}
+
+function selectedSchemaBranch(value: unknown, schema: Record<string, unknown>) {
+  const branches = Array.isArray(schema['oneOf'])
+    ? schema['oneOf']
+    : Array.isArray(schema['anyOf'])
+      ? schema['anyOf']
+      : null;
+  if (!branches?.length) return null;
+  return branches.reduce<{ branch: unknown; score: number } | null>(
+    (selected, branch) => {
+      const score = schemaMatchScore(value, branch);
+      return !selected || score > selected.score ? { branch, score } : selected;
+    },
+    null,
+  )?.branch;
+}
+
+/**
+ * Removes only nulls introduced to represent domain-optional fields in an
+ * OpenAI strict response. The original captured schema remains authoritative.
+ */
+export function normalizeOpenAiStrictOutput(
+  value: unknown,
+  rawSchema: unknown,
+): unknown {
+  if (!rawSchema || typeof rawSchema !== 'object' || Array.isArray(rawSchema)) {
+    return value;
+  }
+  const schema = rawSchema as Record<string, unknown>;
+  const branch = selectedSchemaBranch(value, schema);
+  if (branch) return normalizeOpenAiStrictOutput(value, branch);
+  if (Array.isArray(value)) {
+    return value.map((entry) =>
+      normalizeOpenAiStrictOutput(entry, schema['items']),
+    );
+  }
+  if (!value || typeof value !== 'object') return value;
+  if (
+    !schema['properties'] ||
+    typeof schema['properties'] !== 'object' ||
+    Array.isArray(schema['properties'])
+  ) {
+    return value;
+  }
+  const properties = schema['properties'] as Record<string, unknown>;
+  const required = new Set(
+    Array.isArray(schema['required'])
+      ? schema['required'].filter(
+          (entry): entry is string => typeof entry === 'string',
+        )
+      : [],
+  );
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).flatMap(([key, child]) => {
+      const childSchema = properties[key];
+      if (
+        child === null &&
+        childSchema !== undefined &&
+        !required.has(key) &&
+        !jsonSchemaAllowsNull(childSchema)
+      ) {
+        return [];
+      }
+      return [[key, normalizeOpenAiStrictOutput(child, childSchema)]];
+    }),
+  );
 }
 
 /**
@@ -455,9 +599,26 @@ export type OpenRouterResponseDiagnostic = Readonly<{
   >;
 }>;
 
-function validatedModelOutput(content: string, task: StorytellerTask) {
+function parsedModelOutput(
+  content: string,
+  task: StorytellerTask,
+  dispatch: ReturnType<typeof providerDispatch>,
+) {
+  const output = JSON.parse(content) as unknown;
+  return dispatch.outputProtocol === 'native-json-schema' &&
+    task.execution.mode === 'provider' &&
+    task.execution.policy.provider === 'OpenAI'
+    ? normalizeOpenAiStrictOutput(output, dispatch.request.outputSchema)
+    : output;
+}
+
+function validatedModelOutput(
+  content: string,
+  task: StorytellerTask,
+  dispatch: ReturnType<typeof providerDispatch>,
+) {
   try {
-    const output = JSON.parse(content) as unknown;
+    const output = parsedModelOutput(content, task, dispatch);
     validateStorytellerResult(task, output);
     return output;
   } catch {
@@ -482,6 +643,7 @@ function diagnosticIssues(
 export function diagnoseOpenRouterResponse(
   raw: string,
   task: StorytellerTask,
+  dispatch?: StorytellerProviderDispatch,
 ): OpenRouterResponseDiagnostic {
   let envelope: unknown;
   try {
@@ -508,7 +670,7 @@ export function diagnoseOpenRouterResponse(
   const content = parsedEnvelope.data.choices[0]?.message.content ?? '';
   let output: unknown;
   try {
-    output = JSON.parse(content);
+    output = parsedModelOutput(content, task, providerDispatch(task, dispatch));
   } catch {
     return {
       stage: 'model-json',
@@ -665,7 +827,8 @@ export function createOpenRouterProvider(config: {
   }
   const transport = config.transport ?? fetch;
   return async (task, dispatch) => {
-    const request = buildOpenRouterRequest(task, dispatch);
+    const selected = providerDispatch(task, dispatch);
+    const request = buildOpenRouterRequest(task, selected);
     const policy = task.execution.mode === 'provider' && task.execution.policy;
     if (!policy) throw new Error('Wrong execution mode');
     const startedAt = Date.now();
@@ -780,7 +943,7 @@ export function createOpenRouterProvider(config: {
         choice?.finish_reason === 'length' &&
         response.ok &&
         !choice.message.refusal &&
-        validatedModelOutput(content, task) !== null;
+        validatedModelOutput(content, task, selected) !== null;
       if (
         !choice ||
         !response.ok ||
@@ -798,7 +961,16 @@ export function createOpenRouterProvider(config: {
         };
       }
       try {
-        const diagnostic = diagnoseOpenRouterResponse(bounded.raw, task);
+        const output = parsedModelOutput(
+          choice.message.content ?? '',
+          task,
+          selected,
+        );
+        const diagnostic = diagnoseOpenRouterResponse(
+          bounded.raw,
+          task,
+          selected,
+        );
         if (diagnostic.stage !== 'valid') {
           await config.recordDiagnostic?.({
             providerId: parsed.data.id,
@@ -811,7 +983,7 @@ export function createOpenRouterProvider(config: {
         }
         return {
           kind: 'result',
-          output: JSON.parse(choice.message.content ?? ''),
+          output,
           usage,
           telemetry,
         };

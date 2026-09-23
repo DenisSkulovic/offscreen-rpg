@@ -10,6 +10,7 @@ import {
   composeMemoryExplorationDecisionRequest,
   prepareStorytellerTask,
   storytellerNeedsContextSchema,
+  storytellerReadyToAnswerSchema,
   storytellerRoundOutputSchema,
   storytellerTaskResourcesSchema,
   validateStorytellerResult,
@@ -29,6 +30,7 @@ import {
   diagnoseOpenRouterResponse,
   inspectOpenRouterRequest,
   compareOpenRouterRequests,
+  normalizeOpenAiStrictOutput,
   projectOpenAiStrictSchema,
   usdToMicrousd,
 } from '../src/providers/openrouter';
@@ -116,6 +118,15 @@ test('memory exploration request preview embeds evidence without transport', () 
       'anyOf' in exploratoryRequest.outputSchema &&
       Array.isArray(exploratoryRequest.outputSchema.anyOf),
   );
+  const decisionBranches = exploratoryRequest.outputSchema.anyOf as Array<{
+    properties?: Record<string, { const?: unknown }>;
+  }>;
+  assert.ok(
+    decisionBranches.some(
+      (branch) => branch.properties?.['kind']?.const === 'ready_to_answer',
+    ),
+  );
+  assert.ok(decisionBranches.every((branch) => !branch.properties?.['result']));
   assert.match(
     exploratoryRequest.messages[0].content,
     /"kind":"needs_context","version":1,"purpose":/,
@@ -215,6 +226,12 @@ test('memory exploration requests are private, bounded and reserve a final round
   });
   assert.deepEqual(storytellerRoundOutputSchema.parse(request), request);
   assert.equal(request.kind, 'needs_context');
+  const ready = storytellerReadyToAnswerSchema.parse({
+    kind: 'ready_to_answer',
+    version: 1,
+    purpose: 'The supplied evidence is sufficient for the final task.',
+  });
+  assert.deepEqual(storytellerRoundOutputSchema.parse(ready), ready);
   assert.throws(
     () =>
       storytellerNeedsContextSchema.parse({
@@ -1504,14 +1521,101 @@ test('provider adapter uses an injected transport, one route and no retry; missi
         type: 'string',
         pattern: '^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$)).+\\.md$',
       },
+      naturallyNullable: {
+        anyOf: [{ type: 'string' }, { type: 'null' }],
+      },
+      nested: {
+        oneOf: [
+          {
+            type: 'object',
+            properties: {
+              kind: { const: 'kept' },
+              note: { type: 'string' },
+            },
+            required: ['kind'],
+            additionalProperties: false,
+          },
+          {
+            type: 'object',
+            properties: { kind: { const: 'other' } },
+            required: ['kind'],
+            additionalProperties: false,
+          },
+        ],
+      },
     },
-  }) as {
-    properties: Record<string, { pattern?: string }>;
+    required: ['safe', 'naturallyNullable', 'nested'],
+    additionalProperties: false,
+  }) as unknown as {
+    properties: Record<string, Record<string, unknown>>;
     required: string[];
   };
   assert.equal(projectedSchema.properties.safe?.pattern, '^[a-z]+$');
-  assert.equal(projectedSchema.properties.domainOnly?.pattern, undefined);
-  assert.deepEqual(projectedSchema.required, ['safe', 'domainOnly']);
+  assert.equal(
+    (
+      projectedSchema.properties.domainOnly?.['anyOf'] as Array<{
+        pattern?: string;
+      }>
+    )[0]?.pattern,
+    undefined,
+  );
+  assert.deepEqual(projectedSchema.properties.domainOnly?.['anyOf'], [
+    { type: 'string' },
+    { type: 'null' },
+  ]);
+  assert.deepEqual(projectedSchema.properties.naturallyNullable?.['anyOf'], [
+    { type: 'string' },
+    { type: 'null' },
+  ]);
+  assert.deepEqual(projectedSchema.required, [
+    'safe',
+    'domainOnly',
+    'naturallyNullable',
+    'nested',
+  ]);
+  assert.deepEqual(
+    normalizeOpenAiStrictOutput(
+      {
+        safe: null,
+        domainOnly: null,
+        naturallyNullable: null,
+        nested: { kind: 'kept', note: null },
+      },
+      {
+        type: 'object',
+        properties: {
+          safe: { type: 'string' },
+          domainOnly: { type: 'string' },
+          naturallyNullable: {
+            anyOf: [{ type: 'string' }, { type: 'null' }],
+          },
+          nested: {
+            oneOf: [
+              {
+                type: 'object',
+                properties: {
+                  kind: { const: 'kept' },
+                  note: { type: 'string' },
+                },
+                required: ['kind'],
+              },
+              {
+                type: 'object',
+                properties: { kind: { const: 'other' } },
+                required: ['kind'],
+              },
+            ],
+          },
+        },
+        required: ['safe', 'naturallyNullable', 'nested'],
+      },
+    ),
+    {
+      safe: null,
+      naturallyNullable: null,
+      nested: { kind: 'kept' },
+    },
+  );
   assert.equal(inspection.estimatedInputTokens, null);
   assert.ok(inspection.userSections.some((section) => section.key === 'task'));
   assert.ok(
@@ -1676,6 +1780,63 @@ test('provider adapter uses an injected transport, one route and no retry; missi
     assert.equal(result.telemetry.reportedModel, 'test/model');
   }
   assert.equal(calls, 1);
+  const continuationTask = createRequestAuditFixtureCases({
+    caseIds: ['scene-continuation'],
+  })[0]!.task;
+  const openAiContinuationTask = {
+    ...continuationTask,
+    execution: {
+      ...providerExecution,
+      policy: { ...providerExecution.policy, provider: 'OpenAI' as const },
+    },
+    resources: storytellerTaskResourcesSchema.parse(
+      providerResources(providerExecution.policy.route),
+    ),
+  };
+  const nullableTransportOutput = structuredClone(
+    scriptedStorytellerResult(continuationTask),
+  ) as Record<string, unknown>;
+  nullableTransportOutput['activeScene'] = null;
+  const strictOptionalProvider = createOpenRouterProvider({
+    enabled: true,
+    apiKey: 'dummy',
+    transport: async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      assert.deepEqual(
+        body.response_format.json_schema.schema.properties.activeScene.anyOf.at(
+          -1,
+        ),
+        { type: 'null' },
+      );
+      return new Response(
+        JSON.stringify({
+          id: 'strict-optional',
+          model: 'test/model',
+          usage: {
+            cost: 0,
+            prompt_tokens: 10,
+            completion_tokens: 20,
+            total_tokens: 30,
+          },
+          choices: [
+            {
+              finish_reason: 'stop',
+              message: { content: JSON.stringify(nullableTransportOutput) },
+            },
+          ],
+        }),
+      );
+    },
+  });
+  const strictOptional = await strictOptionalProvider(openAiContinuationTask);
+  assert.equal(strictOptional.kind, 'result');
+  if (strictOptional.kind === 'result') {
+    assert.equal(
+      Object.hasOwn(strictOptional.output as object, 'activeScene'),
+      false,
+    );
+    validateStorytellerResult(openAiContinuationTask, strictOptional.output);
+  }
   let capturedDiagnostic:
     ReturnType<typeof diagnoseOpenRouterResponse> | undefined;
   const invalidTaskOutput = createOpenRouterProvider({

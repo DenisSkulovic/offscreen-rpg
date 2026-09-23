@@ -3445,6 +3445,7 @@ test(
               rootRevision: 1,
               readsUsed: 0,
               retainedBytes: 0,
+              readyDecisions: 0,
               memoryHandles: [],
               sourceHandles: [],
               rounds: [],
@@ -3467,14 +3468,22 @@ test(
                 assert.notDeepEqual(dispatch.request, providerTask.request);
                 return {
                   kind: 'result',
-                  output: {
-                    result: scriptedStorytellerResult(providerTask),
-                    evidenceUse: { itemIds: [], sourceIds: [] },
-                    creativeDirections: {
-                      format: 'offscreen.creative-direction-set.v1',
-                      directions: [],
-                    },
-                  },
+                  output:
+                    providerCalls === 1
+                      ? {
+                          kind: 'ready_to_answer',
+                          version: 1,
+                          purpose:
+                            'The supplied evidence is sufficient for the final task.',
+                        }
+                      : {
+                          result: scriptedStorytellerResult(providerTask),
+                          evidenceUse: { itemIds: [], sourceIds: [] },
+                          creativeDirections: {
+                            format: 'offscreen.creative-direction-set.v1',
+                            directions: [],
+                          },
+                        },
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('fake-memory-provider'),
                 };
@@ -3512,6 +3521,29 @@ test(
               packetSha256: review?.packetSha256,
               decision: 'release',
             });
+            await assert.rejects(
+              runMemoryExploration(database, {
+                generationId,
+                task,
+                createExplorer,
+                ...providerRuntime,
+              }),
+              (error: unknown) =>
+                error instanceof MemoryExplorationControllerError &&
+                error.code === 'review-held',
+            );
+            assert.equal(providerCalls, 1);
+            const finalReview = await reviews.read(ownerId, generationId);
+            assert.equal(finalReview?.state, 'awaiting-review');
+            assert.notEqual(finalReview?.attemptId, review?.attemptId);
+            await reviews.decide(ownerId, {
+              generationId,
+              attemptId: finalReview?.attemptId,
+              decisionId: randomUUID(),
+              expectedRevision: finalReview?.revision,
+              packetSha256: finalReview?.packetSha256,
+              decision: 'release',
+            });
             const completed = await runMemoryExploration(database, {
               generationId,
               task,
@@ -3519,8 +3551,8 @@ test(
               ...providerRuntime,
             });
             assert.equal(completed.replayed, false);
-            assert.equal(providerCalls, 1);
-            const [attempt] = await database.db
+            assert.equal(providerCalls, 2);
+            const attempts = await database.db
               .select()
               .from(storytellerAttempt)
               .where(eq(storytellerAttempt.generationId, generationId));
@@ -3528,11 +3560,17 @@ test(
               .select()
               .from(storytellerOperation)
               .where(eq(storytellerOperation.generationId, generationId));
-            assert.equal(attempt?.state, 'settled');
-            assert.equal(attempt?.providerId, 'fake-memory-provider');
+            assert.equal(attempts.length, 2);
+            assert.ok(
+              attempts.every(
+                (attempt) =>
+                  attempt.state === 'settled' &&
+                  attempt.providerId === 'fake-memory-provider',
+              ),
+            );
             assert.equal(operation?.state, 'complete');
-            assert.equal(operation?.dispatchedRounds, 1);
-            assert.equal(operation?.consumedMicrousd, 10n);
+            assert.equal(operation?.dispatchedRounds, 2);
+            assert.equal(operation?.consumedMicrousd, 20n);
             const replayed = await runMemoryExploration(database, {
               generationId,
               task,
@@ -3540,7 +3578,7 @@ test(
               ...providerRuntime,
             });
             assert.equal(replayed.replayed, true);
-            assert.equal(providerCalls, 1);
+            assert.equal(providerCalls, 2);
 
             const noRepairGenerationId = randomUUID();
             const noRepairTask = storytellerTaskSchema.parse({
@@ -3597,15 +3635,25 @@ test(
             assert.equal(noRepairArtifact?.modelRoundsUsed, 1);
 
             const repairGenerationId = randomUUID();
+            const repairPolicy = createTestUsagePolicy(
+              execution.policy.route,
+              [],
+              {
+                maxModelRoundsPerOperation: 3,
+                maxReadsPerOperation: 1,
+                maxRetainedReadBytes: 4096,
+              },
+            );
             const repairTask = storytellerTaskSchema.parse({
               ...task,
-              resources: {
-                ...task.resources,
-                recipe: {
-                  ...task.resources.recipe,
+              resources: resourcesForEffectiveUsagePolicy(
+                execution,
+                repairPolicy,
+                {
+                  posture: 'minimal',
                   maxRepairRounds: 1,
                 },
-              },
+              ),
               execution: {
                 ...execution,
                 dispatchReview: { mode: 'off' },
@@ -3622,22 +3670,29 @@ test(
               generationId: repairGenerationId,
               ownerId,
               task: repairTask,
-              dispatchAuthority: () => policy,
+              dispatchAuthority: () => repairPolicy,
               provider: async (providerTask) => {
                 repairCalls += 1;
                 return {
                   kind: 'result',
                   output:
                     repairCalls === 1
-                      ? { malformed: 'final candidate' }
-                      : {
-                          result: scriptedStorytellerResult(providerTask),
-                          evidenceUse: { itemIds: [], sourceIds: [] },
-                          creativeDirections: {
-                            format: 'offscreen.creative-direction-set.v1',
-                            directions: [],
+                      ? {
+                          kind: 'ready_to_answer',
+                          version: 1,
+                          purpose:
+                            'The supplied evidence is sufficient for the final task.',
+                        }
+                      : repairCalls === 2
+                        ? { malformed: 'final candidate' }
+                        : {
+                            result: scriptedStorytellerResult(providerTask),
+                            evidenceUse: { itemIds: [], sourceIds: [] },
+                            creativeDirections: {
+                              format: 'offscreen.creative-direction-set.v1',
+                              directions: [],
+                            },
                           },
-                        },
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry(`fake-memory-repair-${repairCalls}`),
                 };
@@ -3650,7 +3705,7 @@ test(
               ...repairRuntime,
             });
             assert.equal(repaired.replayed, false);
-            assert.equal(repairCalls, 2);
+            assert.equal(repairCalls, 3);
             const [repairArtifact] = await database.db
               .select()
               .from(storytellerMemoryExploration)
@@ -3661,13 +3716,13 @@ test(
                 ),
               );
             assert.equal(repairArtifact?.state, 'final-ready');
-            assert.equal(repairArtifact?.modelRoundsUsed, 2);
+            assert.equal(repairArtifact?.modelRoundsUsed, 3);
             const [repairOperation] = await database.db
               .select()
               .from(storytellerOperation)
               .where(eq(storytellerOperation.generationId, repairGenerationId));
             assert.equal(repairOperation?.state, 'complete');
-            assert.equal(repairOperation?.dispatchedRounds, 2);
+            assert.equal(repairOperation?.dispatchedRounds, 3);
 
             const failedGenerationId = randomUUID();
             const failedTask = storytellerTaskSchema.parse({

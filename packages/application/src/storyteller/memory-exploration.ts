@@ -36,6 +36,7 @@ export type MemoryExplorationSnapshot = Readonly<{
   rootRevision: number;
   readsUsed: number;
   retainedBytes: number;
+  readyDecisions: number;
   memoryHandles: readonly EvidenceHandle[];
   sourceHandles: readonly EvidenceHandle[];
   rounds: readonly unknown[];
@@ -156,6 +157,9 @@ export function createCanonicalMemoryExplorer(input: {
       !Number.isInteger(initial.retainedBytes) ||
       initial.retainedBytes < 0 ||
       initial.retainedBytes > recipe.assembly.maxBytes ||
+      !Number.isInteger(initial.readyDecisions) ||
+      initial.readyDecisions < 0 ||
+      initial.readyDecisions > 1 ||
       !validHandleSet(initial.memoryHandles, 'm') ||
       !validHandleSet(initial.sourceHandles, 'x') ||
       !creativeSnapshotWithinRecipe(initial, creativeExploration) ||
@@ -167,6 +171,7 @@ export function createCanonicalMemoryExplorer(input: {
   }
   let readsUsed = initial?.readsUsed ?? 0;
   let retainedBytes = initial?.retainedBytes ?? 0;
+  const readyDecisions = initial?.readyDecisions ?? 0;
   const memoryHandles = new Map(
     (initial?.memoryHandles ?? []).map((entry) => [entry.handle, entry.unit]),
   );
@@ -431,6 +436,7 @@ export function createCanonicalMemoryExplorer(input: {
       rootRevision: index.rootRevision,
       readsUsed,
       retainedBytes,
+      readyDecisions,
       memoryHandles: [...memoryHandles].map(([handle, unit]) => ({
         handle,
         unit,
