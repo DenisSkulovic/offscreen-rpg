@@ -16,7 +16,7 @@ There are three current task kinds:
 | Continuation | A narrative selection with its captured context | Narrative choice or prepared interval arrival. This legacy narrative flow is not a general mechanical resolver. |
 | Consequence | Already committed action/activity receipts and current mechanical state | Prose plus zero to four proposed private plans and source-backed notes. Cannot reroll or rewrite the receipt. |
 
-The task artifact currently has `inputVersion: 10` and `promptVersion: storyteller.v10`; result versions differ by task. These are implementation versions, not “ten thinking steps.” The runtime can execute a scripted adapter instead of a provider: this exercises task/validation/publication, but proves neither model understanding nor token-free task admission.
+New task artifacts have `inputVersion: 11` and `promptVersion: storyteller.v11`; captured v10 work remains readable for repair/replay, and result versions still differ by task. These are implementation versions, not “eleven thinking steps.” The runtime can execute a scripted adapter instead of a provider: this exercises task/validation/publication, but proves neither model understanding nor token-free task admission.
 
 ## A concrete request: after SpongeBob fails to calm Gary
 

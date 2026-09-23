@@ -133,28 +133,32 @@ const openingProviderResultSchema = z.strictObject({
 const openingImmediateActionPlanSchema = immediateActionPlanSchema.extend({
   evidence: z.array(z.string()).max(0),
 });
+const openingImmediateActionPlanProposalSchema =
+  openingImmediateActionPlanSchema.omit({
+    version: true,
+    evidence: true,
+  });
 const authorizedOpeningPlanReferenceSchema = z.strictObject({
   source: z.literal('authorized'),
   key: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
 });
 const mechanicalOpeningPlanSelectionSchema = z.union([
   authorizedOpeningPlanReferenceSchema,
-  openingImmediateActionPlanSchema,
+  openingImmediateActionPlanProposalSchema,
 ]);
 const mechanicalOpeningProviderResultSchema = z.strictObject({
-  version: z.literal(1),
-  scene: z.strictObject({
-    version: z.literal(1),
-    content: passageContentSchema,
-    next: z.strictObject({
-      kind: z.literal('action-plans'),
-      state: z.enum(['available', 'held']),
-      plans: z.array(openingImmediateActionPlanSchema).max(6),
-      activityAccess: activityAccessSchema,
-    }),
-  }),
+  content: passageContentSchema,
+  plans: z.array(openingImmediateActionPlanProposalSchema).max(6),
 });
 const mechanicalOpeningReferenceProviderResultSchema = z.strictObject({
+  content: passageContentSchema,
+  plans: z.array(mechanicalOpeningPlanSelectionSchema).max(6),
+});
+const legacyMechanicalOpeningPlanSelectionSchema = z.union([
+  authorizedOpeningPlanReferenceSchema,
+  openingImmediateActionPlanSchema,
+]);
+const legacyMechanicalOpeningProviderResultSchema = z.strictObject({
   version: z.literal(1),
   scene: z.strictObject({
     version: z.literal(1),
@@ -162,7 +166,7 @@ const mechanicalOpeningReferenceProviderResultSchema = z.strictObject({
     next: z.strictObject({
       kind: z.literal('action-plans'),
       state: z.enum(['available', 'held']),
-      plans: z.array(mechanicalOpeningPlanSelectionSchema).max(6),
+      plans: z.array(legacyMechanicalOpeningPlanSelectionSchema).max(6),
       activityAccess: activityAccessSchema,
     }),
   }),
@@ -172,8 +176,8 @@ function mechanicalOpeningProviderSchema(allowReferences: boolean) {
     ? mechanicalOpeningReferenceProviderResultSchema
     : mechanicalOpeningProviderResultSchema;
 }
-function expandAuthorizedOpeningPlans(
-  parsed: z.infer<typeof mechanicalOpeningReferenceProviderResultSchema>,
+function expandMechanicalOpeningPlans(
+  entries: readonly unknown[],
   authorizedPlans: readonly ImmediateActionPlan[],
 ) {
   const byKey = new Map(authorizedPlans.map((plan) => [plan.key, plan]));
@@ -184,7 +188,7 @@ function expandAuthorizedOpeningPlans(
         : [],
     ),
   );
-  const plans = parsed.scene.next.plans.map((entry) => {
+  return entries.map((entry) => {
     const reference = authorizedOpeningPlanReferenceSchema.safeParse(entry);
     if (reference.success) {
       const plan = byKey.get(reference.data.key);
@@ -193,7 +197,17 @@ function expandAuthorizedOpeningPlans(
       }
       return plan;
     }
-    const proposed = openingImmediateActionPlanSchema.parse(entry);
+    const stored = openingImmediateActionPlanSchema.safeParse(entry);
+    const proposed = stored.success
+      ? stored.data
+      : openingImmediateActionPlanSchema.parse({
+          ...openingImmediateActionPlanProposalSchema.parse(entry),
+          version: 1,
+          evidence: [],
+        });
+    if (proposed.resolution.kind === 'resume') {
+      throw new Error('Opening cannot propose activity resumption');
+    }
     const captured = byKey.get(proposed.key);
     if (captured) {
       if (!isDeepStrictEqual(captured, proposed)) {
@@ -209,13 +223,69 @@ function expandAuthorizedOpeningPlans(
     }
     return proposed;
   });
+}
+
+function mechanicalOpeningActivityAccess(
+  plans: readonly ImmediateActionPlan[],
+) {
+  const actionKeys = plans
+    .filter((plan) => plan.resolution.kind === 'process')
+    .map((plan) => plan.key);
+  return actionKeys.length
+    ? ({ kind: 'selected', actionKeys } as const)
+    : ({ kind: 'none' } as const);
+}
+
+function compileMechanicalOpeningProviderResult(
+  output: unknown,
+  authorizedPlans: readonly ImmediateActionPlan[],
+) {
+  const stored = storytellerResultSchema.safeParse(output);
+  if (stored.success) {
+    if (stored.data.currentNotes.length || stored.data.arrivalNotes.length) {
+      throw new Error('Opening cannot write continuity notes');
+    }
+    const scene = mechanicalOpeningSceneSchema.parse(stored.data.scene);
+    const plans = expandMechanicalOpeningPlans(
+      scene.next.plans,
+      authorizedPlans,
+    );
+    return {
+      version: 1 as const,
+      scene: {
+        ...scene,
+        next: { ...scene.next, plans },
+      },
+    };
+  }
+  const legacy = legacyMechanicalOpeningProviderResultSchema.safeParse(output);
+  if (legacy.success) {
+    const plans = expandMechanicalOpeningPlans(
+      legacy.data.scene.next.plans,
+      authorizedPlans,
+    );
+    return {
+      version: 1 as const,
+      scene: {
+        ...legacy.data.scene,
+        next: { ...legacy.data.scene.next, plans },
+      },
+    };
+  }
+  const parsed = mechanicalOpeningProviderSchema(
+    authorizedPlans.length > 0,
+  ).parse(output);
+  const plans = expandMechanicalOpeningPlans(parsed.plans, authorizedPlans);
   return {
     version: 1 as const,
     scene: {
-      ...parsed.scene,
+      version: 1 as const,
+      content: parsed.content,
       next: {
-        ...parsed.scene.next,
+        kind: 'action-plans' as const,
+        state: plans.length ? ('available' as const) : ('held' as const),
         plans,
+        activityAccess: mechanicalOpeningActivityAccess(plans),
       },
     },
   };
@@ -252,8 +322,11 @@ const resultSchemas = {
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.literal(10),
-  promptVersion: z.literal('storyteller.v10'),
+  inputVersion: z.union([z.literal(10), z.literal(11)]),
+  promptVersion: z.union([
+    z.literal('storyteller.v10'),
+    z.literal('storyteller.v11'),
+  ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -273,62 +346,73 @@ const common = {
   }),
   request: capturedProviderRequestSchema,
 };
-export const storytellerTaskSchema = z.discriminatedUnion('task', [
-  z.strictObject({
-    ...common,
-    task: z.literal('consequence'),
-    source: z.strictObject({
-      storyId: z.uuid(),
-      narrativeRevision: z.number().int().positive(),
-      passageId: z.uuid(),
+export const storytellerTaskSchema = z
+  .discriminatedUnion('task', [
+    z.strictObject({
+      ...common,
+      task: z.literal('consequence'),
+      source: z.strictObject({
+        storyId: z.uuid(),
+        narrativeRevision: z.number().int().positive(),
+        passageId: z.uuid(),
+      }),
     }),
-  }),
-  z.strictObject({
-    ...common,
-    task: z.literal('pending-consequence'),
-    source: z.strictObject({
-      storyId: z.uuid(),
-      narrativeRevision: z.number().int().positive(),
-      passageId: z.uuid(),
-      executionId: z.uuid(),
-      targetGameSecond: z
-        .number()
-        .int()
-        .positive()
-        .max(Number.MAX_SAFE_INTEGER),
-      projectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/),
+    z.strictObject({
+      ...common,
+      task: z.literal('pending-consequence'),
+      source: z.strictObject({
+        storyId: z.uuid(),
+        narrativeRevision: z.number().int().positive(),
+        passageId: z.uuid(),
+        executionId: z.uuid(),
+        targetGameSecond: z
+          .number()
+          .int()
+          .positive()
+          .max(Number.MAX_SAFE_INTEGER),
+        projectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/),
+      }),
     }),
-  }),
-  z.strictObject({
-    ...common,
-    task: z.literal('report'),
-    source: z.strictObject({
-      storyId: z.uuid(),
-      narrativeRevision: z.number().int().positive(),
-      passageId: z.uuid(),
-      hookId: z.uuid(),
+    z.strictObject({
+      ...common,
+      task: z.literal('report'),
+      source: z.strictObject({
+        storyId: z.uuid(),
+        narrativeRevision: z.number().int().positive(),
+        passageId: z.uuid(),
+        hookId: z.uuid(),
+      }),
     }),
-  }),
-  z.strictObject({
-    ...common,
-    task: z.literal('opening'),
-    source: z.strictObject({
-      draftId: z.uuid(),
-      draftRevision: z.number().int().positive(),
-      startPackage: startPackageReferenceSchema.optional(),
+    z.strictObject({
+      ...common,
+      task: z.literal('opening'),
+      source: z.strictObject({
+        draftId: z.uuid(),
+        draftRevision: z.number().int().positive(),
+        startPackage: startPackageReferenceSchema.optional(),
+      }),
     }),
-  }),
-  z.strictObject({
-    ...common,
-    task: z.literal('continuation'),
-    source: z.strictObject({
-      storyId: z.uuid(),
-      narrativeRevision: z.number().int().positive(),
-      passageId: z.uuid(),
-      interactionId: z.uuid(),
+    z.strictObject({
+      ...common,
+      task: z.literal('continuation'),
+      source: z.strictObject({
+        storyId: z.uuid(),
+        narrativeRevision: z.number().int().positive(),
+        passageId: z.uuid(),
+        interactionId: z.uuid(),
+      }),
     }),
-  }),
-]);
+  ])
+  .superRefine((task, context) => {
+    const expectedPromptVersion = `storyteller.v${task.inputVersion}`;
+    if (task.promptVersion !== expectedPromptVersion) {
+      context.addIssue({
+        code: 'custom',
+        path: ['promptVersion'],
+        message: 'Storyteller task and prompt versions must match',
+      });
+    }
+  });
 export type StorytellerTask = z.infer<typeof storytellerTaskSchema>;
 export type StorytellerSceneTask = Exclude<StorytellerTask, { task: 'report' }>;
 export type StorytellerResult = z.infer<typeof storytellerResultSchema>;
@@ -474,6 +558,90 @@ function constrainActionEvidenceHandles(
   return result;
 }
 
+/** Generated quantity changes must be meaningful; stored legacy effects stay readable. */
+function constrainQuantityChangeDeltas(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(constrainQuantityChangeDeltas);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const source = value as Record<string, unknown>;
+  const result = Object.fromEntries(
+    Object.entries(source).map(([key, child]) => [
+      key,
+      constrainQuantityChangeDeltas(child),
+    ]),
+  ) as Record<string, unknown>;
+  const properties = result['properties'];
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties)
+  ) {
+    return result;
+  }
+  const fields = properties as Record<string, unknown>;
+  const kind = fields['kind'];
+  const delta = fields['delta'];
+  if (
+    !kind ||
+    typeof kind !== 'object' ||
+    Array.isArray(kind) ||
+    (kind as Record<string, unknown>)['const'] !== 'quantity.change.v1' ||
+    !delta ||
+    typeof delta !== 'object' ||
+    Array.isArray(delta)
+  ) {
+    return result;
+  }
+  const integerDelta = delta as Record<string, unknown>;
+  fields['delta'] = {
+    anyOf: [
+      { ...integerDelta, maximum: -1 },
+      { ...integerDelta, minimum: 1 },
+    ],
+  };
+  return result;
+}
+
+/** An opening has no existing activity identity that a fresh plan could resume. */
+function withholdResumeResolutions(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value
+      .filter((child) => {
+        if (!child || typeof child !== 'object' || Array.isArray(child)) {
+          return true;
+        }
+        const properties = (child as Record<string, unknown>)['properties'];
+        if (
+          !properties ||
+          typeof properties !== 'object' ||
+          Array.isArray(properties)
+        ) {
+          return true;
+        }
+        const kind = (properties as Record<string, unknown>)['kind'];
+        return !(
+          kind &&
+          typeof kind === 'object' &&
+          !Array.isArray(kind) &&
+          (kind as Record<string, unknown>)['const'] === 'resume'
+        );
+      })
+      .map(withholdResumeResolutions);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+      key,
+      withholdResumeResolutions(child),
+    ]),
+  );
+}
+
 function requestFor(
   input: {
     task:
@@ -502,31 +670,36 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
     const evidenceHandles = context.evidence.map(
       (passage) => `p${passage.sequence}`,
     );
-    taskRules = `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Follow the supplied profile's tone, dramaticRhythm, surprisePolicy, consequenceStyle, choiceGuidance and taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. The selected intention has just resolved: carry its receipt forward and do not offer the same step again unless the receipt clearly leaves a genuinely repeatable action available. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Every plan evidence array must be [] or contain only these exact handles: ${evidenceHandles.length ? evidenceHandles.join(', ') : '(none)'}. Never put prose, facts or descriptions in an evidence array. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities and fact declarations must use the supplied contracts exactly. Never emit a quantity.change.v1 effect with delta 0; omit the effect when that quantity does not change. Distinct plans must represent materially different intentions. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate them from fictional effort under the supplied world and rule context. Never choose scheduler steps or real waiting time, and do not copy one duration across unrelated actions merely because earlier plans used it. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. No interval or arrival notes.`;
+    taskRules = `Create a version-3 scene with next.kind action-plans. Narrate only the ${input.task === 'pending-consequence' ? 'frozen projected resolution, which remains private and non-canonical until application settlement' : 'already committed resolution'} and current passage. Never reroll, adjudicate, advance time or add effects to the supplied result. Follow the supplied profile's tone, dramaticRhythm, surprisePolicy, consequenceStyle, choiceGuidance and taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. The selected intention has just resolved: carry its receipt forward and do not offer the same step again unless the receipt clearly leaves a genuinely repeatable action available. Propose zero to six fresh immediate-action.v1 plans grounded in supplied evidence and projected current state. Every plan evidence array must be [] or contain only these exact handles: ${evidenceHandles.length ? evidenceHandles.join(', ') : '(none)'}. Never put prose, facts or descriptions in an evidence array. Each label must honestly expose its private intention; mechanics, prerequisites, abilities, skills, quantities and fact declarations must use the supplied contracts exactly. Omit a quantity effect when that quantity does not change. Distinct plans must represent materially different intentions. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate them from fictional effort under the supplied world and rule context. Never choose scheduler steps or real waiting time, and do not copy one duration across unrelated actions merely because earlier plans used it. Explicitly set activityAccess to none or select every proposed process/resume key; omission never inherits earlier access. Set state to available when at least one plan exists, otherwise held. One plan is valid when constrained. No interval or arrival notes.`;
   } else if (context.mechanicalOpening) {
     const suppliedMechanics = context.mechanicalOpening.authorizedPlans?.length
       ? 'authorizedPlans lists immutable supplied mechanics. Offer one only as {"source":"authorized","key":"its exact key"} with no resolution body. The application substitutes that captured plan, so its duration, effects, closure, capacity, condition policy and occurrence stay unchanged. Do not reconstruct a supplied plan under its key or another key. You may also return fresh immediate-action.v1 plans for genuinely different proposals that are not substitutes for a supplied commitment. '
       : 'Propose one to six fresh immediate-action.v1 plans grounded in its character and story facts. Treat exact terms stated by the supplied opening for an offered commitment, including duration, payment and completion conditions, as binding plan terms; do not omit them or turn them into another negotiation. ';
-    taskRules = `Create a version-1 opening with next.kind action-plans. Preserve the supplied starting situation and follow the supplied profile's tone, dramaticRhythm, surprisePolicy, choiceGuidance and opening taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. ${suppliedMechanics}Set evidence to [] on every fresh opening plan because there is no prior resolution receipt to cite. Never roll or apply effects. Never emit a quantity.change.v1 effect with delta 0; omit the effect when that quantity does not change. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate unspecified durations from fictional effort under the supplied world and rule context. Never choose scheduler steps or real waiting time. Explicitly set activityAccess to none or select every proposed process key, including keys selected by authorized reference. Set state to available when at least one plan exists, otherwise held. Do not propose resume plans. No arrival notes.`;
+    taskRules = `Create a mechanical opening. Return only content and plans; the application supplies envelope versions, empty opening evidence, availability state and process access. Preserve the supplied starting situation and follow the supplied profile's tone, dramaticRhythm, surprisePolicy, choiceGuidance and opening taskGuidance without substituting a universal preference for momentum, quiet, danger, comedy or option count. ${suppliedMechanics}Never roll or apply effects. Omit a quantity effect when that quantity does not change. Supply positive whole fictional seconds for finite durations, process durations and check cadence. Estimate unspecified durations from fictional effort under the supplied world and rule context. Never choose scheduler steps or real waiting time. Do not propose resume plans or arrival notes.`;
   } else {
     taskRules +=
       ' Offer 2-5 genuinely different plausible intentions with unique labels. Resolve the selected attempt before introducing another event.';
   }
   const sections = contextRequestSections(context);
-  const rawOutputSchema = z.toJSONSchema(
+  let rawOutputSchema: unknown = z.toJSONSchema(
     input.task === 'opening' && context.mechanicalOpening
       ? mechanicalOpeningProviderSchema(
           (context.mechanicalOpening.authorizedPlans?.length ?? 0) > 0,
         )
       : resultSchemas[input.task],
   );
-  const outputSchema = withholdImmediateCheckModifiers(
-    input.task === 'consequence' || input.task === 'pending-consequence'
-      ? constrainActionEvidenceHandles(
-          rawOutputSchema,
-          context.evidence.map((passage) => `p${passage.sequence}`),
-        )
-      : rawOutputSchema,
+  if (input.task === 'opening' && context.mechanicalOpening) {
+    rawOutputSchema = withholdResumeResolutions(rawOutputSchema);
+  }
+  const outputSchema = constrainQuantityChangeDeltas(
+    withholdImmediateCheckModifiers(
+      input.task === 'consequence' || input.task === 'pending-consequence'
+        ? constrainActionEvidenceHandles(
+            rawOutputSchema,
+            context.evidence.map((passage) => `p${passage.sequence}`),
+          )
+        : rawOutputSchema,
+    ),
   );
   return {
     messages: [
@@ -601,8 +774,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 10,
-    promptVersion: 'storyteller.v10',
+    inputVersion: 11,
+    promptVersion: 'storyteller.v11',
     resources,
     request: requestFor(input, context),
   });
@@ -653,14 +826,8 @@ export function validateStorytellerResult(
     task.task === 'opening'
       ? storytellerResultSchema.parse({
           ...(task.context.mechanicalOpening
-            ? expandAuthorizedOpeningPlans(
-                parseOpeningProviderResult(
-                  output,
-                  mechanicalOpeningProviderSchema(
-                    (task.context.mechanicalOpening.authorizedPlans?.length ??
-                      0) > 0,
-                  ),
-                ),
+            ? compileMechanicalOpeningProviderResult(
+                output,
                 task.context.mechanicalOpening.authorizedPlans ?? [],
               )
             : parseOpeningProviderResult(output, openingProviderResultSchema)),

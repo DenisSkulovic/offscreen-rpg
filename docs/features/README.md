@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Continue live repaired story `23ea2420-d8e5-41a5-8c83-9346184e52fe` without changing its Character-Driven Drama profile or Sol route. [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) B2c now has connected live opening-repair evidence plus one valid post-start turn; the next evidence gap is sustained gameplay, not another repair implementation.
+**Next action:** Run one bounded fresh mechanical opening through [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md) S3. The v11 provider schema now excludes zero quantity deltas and accepts only compact opening content/plans while code derives fixed envelope fields. Inspect the exact connected packet first, release one Sol call and reconcile it before any continuation.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
@@ -26,6 +26,7 @@ Stop for a material product/cost change or an unresolved authority boundary. Che
 
 | Feature | Ownership |
 | --- | --- |
+| [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/FEATURE.md) | Provider-facing mechanical validity and bounded compact-proposal design |
 | [Fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/FEATURE.md) | Fictional-second coordinate, model/admission boundary, Seyda timed-work proof |
 | [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/FEATURE.md) | Local Story mode vertical, Vvardenfell start library, progressive materialization |
 | [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/FEATURE.md) | Bounded divergent discovery, direction comparison, fork-based taste evaluation |

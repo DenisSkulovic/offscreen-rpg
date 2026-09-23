@@ -14,6 +14,7 @@ import {
   storytellerNeedsContextSchema,
   storytellerReadyToAnswerSchema,
   storytellerRoundOutputSchema,
+  storytellerTaskSchema,
   storytellerTaskResourcesSchema,
   validateStorytellerResult,
   validateResourcesForExecution,
@@ -42,6 +43,39 @@ import {
   selectStorytellerRequestSections,
 } from '../src/providers/request-audit';
 import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
+
+function quantityDeltaSchemas(value: unknown): Record<string, unknown>[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(quantityDeltaSchemas);
+  }
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+  const source = value as Record<string, unknown>;
+  const properties = source['properties'];
+  let ownDelta: Record<string, unknown>[] = [];
+  if (
+    properties &&
+    typeof properties === 'object' &&
+    !Array.isArray(properties)
+  ) {
+    const fields = properties as Record<string, unknown>;
+    const kind = fields['kind'];
+    const delta = fields['delta'];
+    if (
+      kind &&
+      typeof kind === 'object' &&
+      !Array.isArray(kind) &&
+      (kind as Record<string, unknown>)['const'] === 'quantity.change.v1' &&
+      delta &&
+      typeof delta === 'object' &&
+      !Array.isArray(delta)
+    ) {
+      ownDelta = [delta as Record<string, unknown>];
+    }
+  }
+  return [...ownDelta, ...Object.values(source).flatMap(quantityDeltaSchemas)];
+}
 
 test('memory exploration request preview embeds evidence without transport', () => {
   const fixture = createRequestAuditFixtureCases({
@@ -827,44 +861,44 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
   assert.equal(request.includes('requiredFictionalSeconds'), false);
   assert.equal(request.includes('conditionPolicy'), false);
   assert.equal(request.includes('seyda-neen-warehouse-shifts'), false);
+  const providerSchema = task.request.outputSchema as {
+    required: string[];
+    properties: {
+      plans: { items: { anyOf: Array<{ properties?: object }> } };
+    };
+  };
+  assert.deepEqual(providerSchema.required, ['content', 'plans']);
+  const freshPlanSchema = providerSchema.properties.plans.items.anyOf.find(
+    (candidate) => candidate.properties && 'resolution' in candidate.properties,
+  );
+  assert.ok(freshPlanSchema?.properties);
+  assert.equal('version' in freshPlanSchema.properties, false);
+  assert.equal('evidence' in freshPlanSchema.properties, false);
+  assert.doesNotMatch(JSON.stringify(providerSchema), /"const":"resume"/);
 
   const referenced = validateStorytellerResult(task, {
-    version: 1,
-    scene: {
-      version: 1,
-      content: opening.opening,
-      next: {
-        kind: 'action-plans',
-        state: 'available',
-        plans: [
-          { source: 'authorized', key: 'work-warehouse-shift' },
-          {
-            version: 1,
-            key: 'look-over-the-docks',
-            label: 'Look over the docks',
-            intention: 'Take in the census office yard and the nearby water.',
-            risk: null,
-            evidence: [],
-            requires: [{ id: 'location', value: 'seyda-neen' }],
-            requiresStory: [],
-            requiresQuantities: [],
-            resolution: {
-              kind: 'automatic',
-              fictionalDurationSeconds: 5,
-              outcome: {
-                text: 'You look across the docks.',
-                effects: [],
-                declarations: [],
-              },
-            },
+    content: opening.opening,
+    plans: [
+      { source: 'authorized', key: 'work-warehouse-shift' },
+      {
+        key: 'look-over-the-docks',
+        label: 'Look over the docks',
+        intention: 'Take in the census office yard and the nearby water.',
+        risk: null,
+        requires: [{ id: 'location', value: 'seyda-neen' }],
+        requiresStory: [],
+        requiresQuantities: [],
+        resolution: {
+          kind: 'automatic',
+          fictionalDurationSeconds: 5,
+          outcome: {
+            text: 'You look across the docks.',
+            effects: [],
+            declarations: [],
           },
-        ],
-        activityAccess: {
-          kind: 'selected',
-          actionKeys: ['work-warehouse-shift'],
         },
       },
-    },
+    ],
   });
   if (referenced.scene.next.kind !== 'action-plans') {
     throw new Error('Expected mechanical opening plans');
@@ -902,6 +936,11 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
     ),
     true,
   );
+  const lookout = referenced.scene.next.plans.find(
+    (plan) => plan.key === 'look-over-the-docks',
+  );
+  assert.equal(lookout?.version, 1);
+  assert.deepEqual(lookout?.evidence, []);
 
   const rewritten = structuredClone(captured);
   if (
@@ -952,7 +991,7 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
   const scripted = scriptedStorytellerResult(task);
   assert.match(
     task.request.messages[0]?.content ?? '',
-    /Never emit a quantity\.change\.v1 effect with delta 0/,
+    /Omit a quantity effect when that quantity does not change/,
   );
   if (scripted.scene.next.kind !== 'action-plans') {
     throw new Error('Expected mechanical opening plans');
@@ -1002,8 +1041,8 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 10);
-    assert.equal(task.promptVersion, 'storyteller.v10');
+    assert.equal(task.inputVersion, 11);
+    assert.equal(task.promptVersion, 'storyteller.v11');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -1037,6 +1076,19 @@ test('captured schemas expose only the result for the requested task', () => {
     openingInstructions,
     /Observation, conversation, refusal and withdrawal may legitimately have no typed effect/,
   );
+  const legacyTask = storytellerTaskSchema.parse({
+    ...initial,
+    inputVersion: 10,
+    promptVersion: 'storyteller.v10',
+  });
+  assert.equal(legacyTask.inputVersion, 10);
+  assert.throws(() =>
+    storytellerTaskSchema.parse({
+      ...initial,
+      inputVersion: 10,
+      promptVersion: 'storyteller.v11',
+    }),
+  );
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
   assert.equal(schema.properties.arrivalNotes.maxItems, 0);
   for (const task of [resolved, pending]) {
@@ -1054,7 +1106,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.match(instructions, /selected intention has just resolved/);
     assert.match(
       instructions,
-      /Never emit a quantity\.change\.v1 effect with delta 0/,
+      /Omit a quantity effect when that quantity does not change/,
     );
     assert.match(instructions, /Visibly realize the supplied profile tone/);
     assert.match(instructions, /Do not extract every mentioned noun/);
@@ -1062,6 +1114,18 @@ test('captured schemas expose only the result for the requested task', () => {
       instructions,
       /trust, obligation, access, commitment or a durable stance/,
     );
+  }
+  for (const task of [seydaMechanicalOpening(), resolved, pending]) {
+    const deltas = quantityDeltaSchemas(task.request.outputSchema);
+    assert.ok(deltas.length > 0);
+    for (const delta of deltas) {
+      assert.deepEqual(delta, {
+        anyOf: [
+          { type: 'integer', minimum: -2147483647, maximum: -1 },
+          { type: 'integer', minimum: 1, maximum: 2147483647 },
+        ],
+      });
+    }
   }
 });
 
