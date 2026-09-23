@@ -4,10 +4,7 @@ import { characterSchema, factSchema, type Character } from './state';
 export const quantityEffectSchema = z.strictObject({
   kind: z.literal('quantity.change.v1'),
   quantityId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/),
-  delta: z.union([
-    z.number().int().min(-2147483647).max(-1),
-    z.number().int().min(1).max(2147483647),
-  ]),
+  delta: z.number().int().min(-2147483647).max(2147483647),
 });
 export const outcomeEffectSchema = z.discriminatedUnion('kind', [
   quantityEffectSchema,

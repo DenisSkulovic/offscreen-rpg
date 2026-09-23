@@ -35,7 +35,7 @@ const character = {
   quantities: [],
 };
 
-test('quantity effects must change their declared quantity', () => {
+test('quantity effect storage remains backward compatible', () => {
   assert.equal(
     quantityEffectSchema.parse({
       kind: 'quantity.change.v1',
@@ -52,12 +52,13 @@ test('quantity effects must change their declared quantity', () => {
     }).delta,
     -1,
   );
-  assert.throws(() =>
+  assert.equal(
     quantityEffectSchema.parse({
       kind: 'quantity.change.v1',
       quantityId: 'silver',
       delta: 0,
-    }),
+    }).delta,
+    0,
   );
 });
 
@@ -104,6 +105,26 @@ const content = immediateActionContentSchema.parse({
       },
     },
   ],
+});
+
+test('proposal validation rejects zero-delta quantity effects', () => {
+  const proposal = structuredClone(content.plans[0]);
+  proposal.resolution.outcome.effects = [
+    { kind: 'quantity.change.v1', quantityId: 'silver', delta: 0 },
+  ];
+  const result = validateImmediateActionProposal({
+    proposal,
+    character: {
+      ...character,
+      quantities: [{ id: 'silver', label: 'Silver', value: 1 }],
+    },
+    evidenceHandles: new Set(),
+  });
+  assert.equal(result.kind, 'rejected');
+  assert.deepEqual(
+    result.issues.map((issue) => issue.code),
+    ['invalid-shape'],
+  );
 });
 
 test('public offer contains no private resolution mechanics', () => {

@@ -446,13 +446,23 @@ export function validateImmediateActionProposal(input: {
             'Outcome fact is not declared with this value type',
           );
         }
-      } else if (!knownQuantities.has(effect.quantityId)) {
-        issue(
-          issues,
-          'unknown-quantity',
-          path,
-          'Outcome quantity is not declared',
-        );
+      } else {
+        if (!knownQuantities.has(effect.quantityId)) {
+          issue(
+            issues,
+            'unknown-quantity',
+            path,
+            'Outcome quantity is not declared',
+          );
+        }
+        if (effect.delta === 0) {
+          issue(
+            issues,
+            'invalid-shape',
+            path,
+            'Quantity effects must change their declared quantity',
+          );
+        }
       }
     }
     const declared = new Set<string>();
