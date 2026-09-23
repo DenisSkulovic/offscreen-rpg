@@ -670,8 +670,8 @@ function availableRequirementArray(
     : { ...arraySchema, maxItems: 0 };
 }
 
-/** Opening offers may depend only on prerequisites satisfied at capture time. */
-function constrainOpeningPlanPrerequisites(
+/** Generated offers may depend only on prerequisites satisfied at capture time. */
+function constrainPlanPrerequisites(
   value: unknown,
   characterFacts: readonly AvailableFact[],
   storyFacts: readonly AvailableFact[],
@@ -679,7 +679,7 @@ function constrainOpeningPlanPrerequisites(
 ): unknown {
   if (Array.isArray(value)) {
     return value.map((child) =>
-      constrainOpeningPlanPrerequisites(
+      constrainPlanPrerequisites(
         child,
         characterFacts,
         storyFacts,
@@ -693,7 +693,7 @@ function constrainOpeningPlanPrerequisites(
   const result = Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, child]) => [
       key,
-      constrainOpeningPlanPrerequisites(
+      constrainPlanPrerequisites(
         child,
         characterFacts,
         storyFacts,
@@ -788,11 +788,21 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
   );
   if (input.task === 'opening' && context.mechanicalOpening) {
     rawOutputSchema = withholdResumeResolutions(rawOutputSchema);
-    rawOutputSchema = constrainOpeningPlanPrerequisites(
+    rawOutputSchema = constrainPlanPrerequisites(
       rawOutputSchema,
       context.mechanicalOpening.character.facts,
       context.mechanicalOpening.storyFacts,
       context.mechanicalOpening.character.quantities,
+    );
+  } else if (
+    (input.task === 'consequence' || input.task === 'pending-consequence') &&
+    context.resolution
+  ) {
+    rawOutputSchema = constrainPlanPrerequisites(
+      rawOutputSchema,
+      context.resolution.character.facts,
+      context.resolution.storyFacts,
+      context.resolution.character.quantities,
     );
   }
   const outputSchema = constrainQuantityChangeDeltas(

@@ -234,6 +234,12 @@ For every tool define:
 
 Use constrained schemas where the provider supports them, but validate again in application code. OpenAI's [Structured Outputs](https://openai.com/index/introducing-structured-outputs-in-the-api/) demonstrates schema-constrained generation; it does not prove that semantically invalid values or unauthorized actions are safe.
 
+The model-facing schema is an interface, not necessarily the stored result type. Let the model author judgments; let code supply versions, derived status, empty bookkeeping, access lists and other values that follow mechanically from the proposal. Where captured state already determines legal references or numeric ranges, project those exact constraints into the transmitted schema and compile the lean proposal into the stable internal shape. Keep the full semantic validator: schema projection reduces impossible candidates but does not grant authority or prove fictional correctness.
+
+This alignment should precede temperature tuning. Lower temperature can reduce variation, including desirable creative variation, while leaving a contradictory schema unchanged. A warning that says “do not emit X” is weaker than removing X from the legal output space when the provider supports that constraint. Conversely, do not force subjective pace, genre, option count or dramatic taste into a structural schema merely because it makes samples more uniform.
+
+Strict-schema transport is its own compatibility boundary. A schema that a local validator generates or accepts may still use constructs that a provider rejects. Inspect the exact transmitted projection and cover empty collections, unions and recursive transformations in provider-free tests; retain provider errors distinctly from model-invalid results.
+
 ### 5.2 Shape tools around information work, not backend tables
 
 Expose what the model needs to accomplish a task, not every internal CRUD endpoint. Prefer `search_world_sections(query, filters, limit)` to `list_all_files()`. Prefer a bounded “character context” projection to separate calls that dump every row in three tables. Conversely, do not create one magical tool with dozens of loosely related behaviors.

@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Checkpoint the typed empty-prerequisite repair in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md). A later fresh Sol opening may live-prove S4; do not retry a captured pre-S4 packet or issue a third operation in the current slice.
+**Next action:** Checkpoint consequence state-indexing and the durable structured-output guidance in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md). A later fresh operation may live-prove the repaired projection; do not spend merely to prove a deterministic schema transformation.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

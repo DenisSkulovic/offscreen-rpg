@@ -364,6 +364,11 @@ function consequence(
       value: boolean | string;
       declaredBy: string;
     }>;
+    quantities?: Array<{
+      id: string;
+      label: string;
+      value: number;
+    }>;
     activitySituation?: {
       activityAccess: { kind: 'none' };
       activeActivityId: string;
@@ -447,7 +452,7 @@ function consequence(
             { id: 'under-cover', value: false },
             { id: 'location', value: 'pineapple' },
           ],
-          quantities: [],
+          quantities: options.quantities ?? [],
         },
         storyFacts: options.storyFacts ?? [],
         gameSecond: 0,
@@ -1132,6 +1137,22 @@ test('captured schemas expose only the result for the requested task', () => {
         .properties.evidence.items.enum,
       ['p2'],
     );
+    const planProperties =
+      constrained.properties.scene.properties.next.properties.plans.items
+        .properties;
+    assert.deepEqual(
+      planProperties.requires.items.anyOf.map(
+        (branch: { properties: Record<string, { const: unknown }> }) => ({
+          id: branch.properties['id']?.const,
+          value: branch.properties['value']?.const,
+        }),
+      ),
+      task.context.resolution?.character.facts,
+    );
+    assert.equal(planProperties.requiresStory.maxItems, 0);
+    assert.equal(planProperties.requiresStory.items.type, 'object');
+    assert.equal(planProperties.requiresQuantities.maxItems, 0);
+    assert.equal(planProperties.requiresQuantities.items.type, 'object');
     const instructions = task.request.messages[0]?.content ?? '';
     assert.match(
       instructions,
@@ -1149,6 +1170,18 @@ test('captured schemas expose only the result for the requested task', () => {
       /trust, obligation, access, commitment or a durable stance/,
     );
   }
+  const quantityBound = consequence({
+    quantities: [{ id: 'focus', label: 'Focus', value: 2 }],
+  });
+  const quantitySchema = JSON.parse(
+    JSON.stringify(quantityBound.request.outputSchema),
+  ).properties.scene.properties.next.properties.plans.items.properties
+    .requiresQuantities;
+  assert.equal(
+    quantitySchema.items.anyOf[0].properties.quantityId.const,
+    'focus',
+  );
+  assert.equal(quantitySchema.items.anyOf[0].properties.minimum.maximum, 2);
   for (const task of [seydaMechanicalOpening(), resolved, pending]) {
     const deltas = quantityDeltaSchemas(task.request.outputSchema);
     assert.ok(deltas.length > 0);

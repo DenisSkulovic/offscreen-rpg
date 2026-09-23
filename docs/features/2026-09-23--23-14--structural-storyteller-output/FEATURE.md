@@ -34,11 +34,11 @@ The engine remains creatively unopinionated. Output structure expresses mechanic
 4. Existing captured `storyteller.v10` tasks remain parseable; newly prepared tasks identify the changed prompt/output contract as `storyteller.v11`.
 5. A mechanical-opening model result contains only `content` and `plans`; code derives its stable envelope, state and activity access without removing prerequisites, outcomes or process mechanics.
 6. Legacy v10 provider-shaped opening results remain locally valid for captured repair/replay, but newly transmitted v11 schemas do not expose that boilerplate or activity resumption.
-7. Mechanical-opening prerequisite schemas expose only captured fact/value pairs that are already true and quantity minima the character currently satisfies; the semantic validator remains authoritative.
+7. Mechanical-opening and consequence prerequisite schemas expose only captured fact/value pairs that are already true and quantity minima the character currently satisfies; the semantic validator remains authoritative.
 
 ## Decisions still needed
 
-None for the implemented opening slice. Whether consequence results should use a similar compiler remains an evidence-led follow-up rather than an automatic generalization.
+None for the implemented availability slice. Whether consequence results should omit their remaining derivable envelope fields through a compiler remains an evidence-led follow-up rather than an automatic generalization.
 
 ## Owning specifications
 

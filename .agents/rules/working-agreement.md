@@ -75,6 +75,16 @@ unclear, document the hypothesis and inspect exact saved packets before editing.
 Structural validity, profile adherence, campaign-direction adherence, model
 capability and subjective enjoyment are separate verdicts.
 
+For model-authored structured output, treat the transmitted schema as a task
+interface rather than a mirror of the persistence DTO. Before adding prompt
+warnings, lowering temperature or spending on another sample, compare that
+schema with downstream admission: remove fields code can derive, constrain
+references and ranges from captured state where the provider can express them,
+and compile the lean proposal into the authoritative internal shape. Keep
+semantic validation as defense in depth, and verify the provider's strict-schema
+subset separately from local type parsing. These constraints may enforce
+authority and validity, but must not encode a preferred creative style.
+
 Treat creative neutrality as an engine invariant. The shared runtime has no
 preferred pace, flavor, dramatic intensity, initiative level, choice density or
 kind of enjoyment. Judge generated gameplay first against the exact captured

@@ -27,6 +27,15 @@ Start with one failed journey and one useful contrast, not every log. Operationa
 
 Classify discrepancies as implementation defect, missing mechanic, expectation/fixture limitation, configuration mismatch, model/task failure or unresolved subjective judgment. Multiple causes can coexist. Identify the earliest deficient boundary and what would falsify each hypothesis.
 
+Before changing prose instructions or temperature for an invalid structured result, compare four layers in order:
+
+1. Could the transmitted schema make the invalid value impossible?
+2. Is the model being asked to repeat a version, status, empty field or access list that code can derive exactly?
+3. Does the schema expose references, prerequisites or ranges that the later semantic validator must reject from the captured state?
+4. Does the provider accept the exact strict-schema projection, including empty and union branches?
+
+Repair these contract mismatches before judging model capability. Keep the later validator and the failed trace. Temperature remains a creative-distribution setting: lowering it may reduce variety and does not repair a legal-but-unadmittable output space.
+
 ## Ownership before intervention
 
 The shared task defines supported authority and universal requirements. Creative settings describe this Storyteller's tone, rhythm, initiative and choice character. Campaign direction grants this story its agenda or absence of one. Content supplies world facts and fictional units. Code converts durations, validates and commits. Model policy controls capability and resources.
