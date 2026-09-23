@@ -147,10 +147,13 @@ identity, a dedicated persistent `offscreen_story_local` database and
 fault controls or QA endpoints, and it rejects scripted opening fallback.
 Startup reads the ignored `.env.openrouter` credential, verifies account usage
 and the exact current OpenAI endpoint before enabling GPT-5.6 Luna. Each turn
-permits one buffered strict-JSON call, at most 12,000 input and 2,048 generated
-tokens, no reasoning, fallback, repair, judge or automatic retry, and at most
-$0.01 reserved cost. The local run/account ceiling is $1 until deliberately
-changed; an uncertain provider delivery stops further admission. Exact raw
+permits one buffered strict-JSON call and, only after a settled invalid output,
+at most one explicit complete-result repair. Each request remains capped at
+12,000 input and 2,048 generated tokens; both attempts share cumulative
+24,000-input, 4,096-generated and $0.01 operation ceilings. There is no
+reasoning, fallback, judge or automatic retry. The local run/account ceiling is
+$1 until deliberately changed; an uncertain provider delivery stops further
+admission. Exact raw
 provider responses are retained under ignored `data/story-local-evidence` for
 the owner/Codex debugging loop. Merely launching makes no inference call.
 Normal non-loopback application startup still requires real authentication.

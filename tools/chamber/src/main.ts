@@ -384,9 +384,9 @@ async function storyLiveAuthority() {
       maxSerializedBytesPerRequest: 48_000,
       maxGeneratedTokensPerRequest: 2_048,
       maxReasoningTokensPerRequest: 0,
-      maxInputTokensPerOperation: 12_000,
-      maxGeneratedTokensPerOperation: 2_048,
-      maxModelRoundsPerOperation: 1,
+      maxInputTokensPerOperation: 24_000,
+      maxGeneratedTokensPerOperation: 4_096,
+      maxModelRoundsPerOperation: 2,
       maxReadsPerOperation: 0,
       maxRetainedReadBytes: 0,
       maxMicrousdPerOperation: String(storyMaxMicrousd),
@@ -1267,7 +1267,7 @@ try {
   } else {
     if (noBrowser) {
       console.log(
-        `Local Story API ready at http://127.0.0.1:3001. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one bounded call per turn, no fallback or automatic retry. Starting the server made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`,
+        `Local Story API ready at http://127.0.0.1:3001. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the server made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`,
       );
       await runtime.done.then(() => {
         if (!stopping) throw new Error('Worker stopped.');
@@ -1436,7 +1436,7 @@ try {
     } else {
       console.log(
         storyMode
-          ? `Local Story mode opened at http://127.0.0.1:3100/stories. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one bounded call per turn, no fallback or automatic retry. Starting the launcher made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`
+          ? `Local Story mode opened at http://127.0.0.1:3100/stories. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the launcher made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`
           : packetReview
             ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
             : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',
