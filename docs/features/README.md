@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — routine running activity boundaries now stay out of narrative passage history, and prompt v8 plus the maintained return benchmark implement progressive identity/relationship materialization. Finish T2 coordinate migration, then execute the provider-free return journey after local Docker recovery. No live Storyteller runs or profile tuning until those blockers are cleared.
+**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — routine running activity boundaries now stay out of narrative passage history, and prompt v8 plus the maintained return benchmark prove progressive identity/relationship materialization. Finish T2 coordinate migration, then inspect one held Sol packet. No live Storyteller runs or profile tuning until that blocker is cleared.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
