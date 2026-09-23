@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — T2 and the provider-free Seyda proof are complete. Preserve the retained v8 Sol opening, refresh route metadata and allocate new one-shot identities, then release at most one exact v9 comparison for the narrated-location effect hypothesis. Keep bounded exploration as a separate later experiment.
+**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — T2, the provider-free Seyda proof and the matched v8/v9 Sol opening comparison are complete. Return to the connected POC proof and prepare one immutable missing-context case for a separate one-shot-versus-bounded-exploration comparison.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
