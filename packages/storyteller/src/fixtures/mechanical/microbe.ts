@@ -70,7 +70,7 @@ export function microbeOpeningPlans(character: MechanicalCharacter) {
       key: 'wait-contracted',
       label: 'Remain contracted',
       intention:
-        'Remain contracted for ten eligible clock ticks while the disturbance passes.',
+        'Remain contracted for ten eligible fictional seconds while the disturbance passes.',
       risk: null,
       evidence: [],
       requires: [{ id: 'exposed', value: true }],
@@ -116,7 +116,7 @@ export function microbeOpeningPlans(character: MechanicalCharacter) {
       key: 'sample-gradient-cycle',
       label: 'Sample the gradient briefly',
       intention:
-        'Hold position for a two-tick sampling interval without committing to movement.',
+        'Hold position for a two-fictional-second sampling interval without committing to movement.',
       risk: null,
       evidence: [],
       requires: [],
@@ -157,7 +157,7 @@ export function microbeOpeningPlans(character: MechanicalCharacter) {
       key: 'hold-temperature-cycle',
       label: 'Hold through a temperature cycle',
       intention:
-        'Remain in place through one two-tick temperature cycle without changing course.',
+        'Remain in place through one two-fictional-second temperature cycle without changing course.',
       risk: null,
       evidence: [],
       requires: [{ id: 'exposed', value: true }],
@@ -198,7 +198,7 @@ export function microbeOpeningPlans(character: MechanicalCharacter) {
       key: 'hold-pressure-cycle',
       label: 'Hold through a pressure cycle',
       intention:
-        'Remain in place through one two-tick pressure cycle without changing course.',
+        'Remain in place through one two-fictional-second pressure cycle without changing course.',
       risk: null,
       evidence: [],
       requires: [{ id: 'exposed', value: true }],

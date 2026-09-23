@@ -5,8 +5,12 @@ const identityFields = {
   revision: z.number().int().positive().max(2_147_483_646),
 };
 const labelSchema = z.string().trim().min(1).max(80);
-const tickSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
-const ticksPerUnitSchema = z.number().int().positive().max(1_000_000_000);
+const gameSecondSchema = z
+  .number()
+  .int()
+  .nonnegative()
+  .max(Number.MAX_SAFE_INTEGER);
+const gameSecondsPerUnitSchema = z.number().int().positive().max(1_000_000_000);
 
 const elapsedTimeDefinitionSchema = z
   .strictObject({
@@ -16,18 +20,20 @@ const elapsedTimeDefinitionSchema = z
       id: z.string().regex(/^[a-z0-9][a-z0-9-]{0,59}$/),
       label: labelSchema,
       pluralLabel: labelSchema,
-      ticksPerUnit: ticksPerUnitSchema,
+      gameSecondsPerUnit: gameSecondsPerUnitSchema,
     }),
     epoch: z.strictObject({
-      wholeUnits: tickSchema,
-      tickOfUnit: tickSchema,
+      wholeUnits: gameSecondSchema,
+      gameSecondOfUnit: gameSecondSchema,
     }),
   })
   .superRefine((definition, context) => {
-    if (definition.epoch.tickOfUnit >= definition.unit.ticksPerUnit) {
+    if (
+      definition.epoch.gameSecondOfUnit >= definition.unit.gameSecondsPerUnit
+    ) {
       context.addIssue({
         code: 'custom',
-        path: ['epoch', 'tickOfUnit'],
+        path: ['epoch', 'gameSecondOfUnit'],
         message: 'Elapsed epoch offset must be inside its unit',
       });
     }
@@ -38,17 +44,17 @@ const ordinalTimeDefinitionSchema = z
     ...identityFields,
     kind: z.literal('ordinal-days'),
     dayLabel: labelSchema,
-    ticksPerDay: ticksPerUnitSchema,
+    gameSecondsPerDay: gameSecondsPerUnitSchema,
     epoch: z.strictObject({
       day: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-      tickOfDay: tickSchema,
+      gameSecondOfDay: gameSecondSchema,
     }),
   })
   .superRefine((definition, context) => {
-    if (definition.epoch.tickOfDay >= definition.ticksPerDay) {
+    if (definition.epoch.gameSecondOfDay >= definition.gameSecondsPerDay) {
       context.addIssue({
         code: 'custom',
-        path: ['epoch', 'tickOfDay'],
+        path: ['epoch', 'gameSecondOfDay'],
         message: 'Ordinal epoch offset must be inside its day',
       });
     }
@@ -58,7 +64,7 @@ const namedYearTimeDefinitionSchema = z
   .strictObject({
     ...identityFields,
     kind: z.literal('named-year'),
-    ticksPerDay: ticksPerUnitSchema,
+    gameSecondsPerDay: gameSecondsPerUnitSchema,
     yearLabel: labelSchema,
     months: z
       .array(
@@ -74,7 +80,7 @@ const namedYearTimeDefinitionSchema = z
       year: z.number().int().positive().max(10_000_000),
       monthId: z.string().regex(/^[a-z0-9][a-z0-9-]{0,59}$/),
       day: z.number().int().positive().max(10_000),
-      tickOfDay: tickSchema,
+      gameSecondOfDay: gameSecondSchema,
       eraLabel: labelSchema.nullable(),
     }),
   })
@@ -103,10 +109,10 @@ const namedYearTimeDefinitionSchema = z
         message: 'Calendar epoch day does not exist',
       });
     }
-    if (definition.epoch.tickOfDay >= definition.ticksPerDay) {
+    if (definition.epoch.gameSecondOfDay >= definition.gameSecondsPerDay) {
       context.addIssue({
         code: 'custom',
-        path: ['epoch', 'tickOfDay'],
+        path: ['epoch', 'gameSecondOfDay'],
         message: 'Calendar epoch offset must be inside its day',
       });
     }
@@ -115,9 +121,9 @@ const namedYearTimeDefinitionSchema = z
       0,
     );
     if (
-      !Number.isSafeInteger(daysPerYear * definition.ticksPerDay) ||
+      !Number.isSafeInteger(daysPerYear * definition.gameSecondsPerDay) ||
       !Number.isSafeInteger(
-        definition.epoch.year * daysPerYear * definition.ticksPerDay,
+        definition.epoch.year * daysPerYear * definition.gameSecondsPerDay,
       )
     ) {
       context.addIssue({
@@ -140,34 +146,34 @@ export type NamedYearTimeDefinition = Extract<
 
 export const defaultWorldTimeDefinition = {
   kind: 'elapsed' as const,
-  id: 'simulation-ticks',
+  id: 'elapsed-fictional-time',
   revision: 1,
   unit: {
-    id: 'tick',
+    id: 'fictional-second',
     label: 'fictional second',
     pluralLabel: 'fictional seconds',
-    ticksPerUnit: 1,
+    gameSecondsPerUnit: 1,
   },
-  epoch: { wholeUnits: 0, tickOfUnit: 0 },
+  epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
 };
 
 export const worldDateSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('elapsed'),
-    wholeUnits: tickSchema,
-    tickOfUnit: tickSchema,
+    wholeUnits: gameSecondSchema,
+    gameSecondOfUnit: gameSecondSchema,
   }),
   z.strictObject({
     kind: z.literal('ordinal-days'),
     day: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    tickOfDay: tickSchema,
+    gameSecondOfDay: gameSecondSchema,
   }),
   z.strictObject({
     kind: z.literal('named-year'),
     year: z.number().int().positive().max(10_000_000),
     monthId: z.string().regex(/^[a-z0-9][a-z0-9-]{0,59}$/),
     day: z.number().int().positive().max(10_000),
-    tickOfDay: tickSchema,
+    gameSecondOfDay: gameSecondSchema,
   }),
 ]);
 export type WorldDate = z.infer<typeof worldDateSchema>;
@@ -177,9 +183,9 @@ export const worldTimeViewSchema = z.discriminatedUnion('kind', [
     kind: z.literal('elapsed'),
     definitionId: identityFields.id,
     definitionRevision: identityFields.revision,
-    tick: tickSchema,
-    wholeUnits: tickSchema,
-    tickOfUnit: tickSchema,
+    gameSecond: gameSecondSchema,
+    wholeUnits: gameSecondSchema,
+    gameSecondOfUnit: gameSecondSchema,
     unitLabel: labelSchema,
     label: z.string().min(1).max(200),
   }),
@@ -187,21 +193,21 @@ export const worldTimeViewSchema = z.discriminatedUnion('kind', [
     kind: z.literal('ordinal-days'),
     definitionId: identityFields.id,
     definitionRevision: identityFields.revision,
-    tick: tickSchema,
+    gameSecond: gameSecondSchema,
     day: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    tickOfDay: tickSchema,
+    gameSecondOfDay: gameSecondSchema,
     label: z.string().min(1).max(200),
   }),
   z.strictObject({
     kind: z.literal('named-year'),
     definitionId: identityFields.id,
     definitionRevision: identityFields.revision,
-    tick: tickSchema,
+    gameSecond: gameSecondSchema,
     year: z.number().int().positive().max(10_000_000),
     monthId: z.string(),
     monthLabel: labelSchema,
     day: z.number().int().positive().max(10_000),
-    tickOfDay: tickSchema,
+    gameSecondOfDay: gameSecondSchema,
     eraLabel: labelSchema.nullable(),
     label: z.string().min(1).max(240),
   }),
@@ -226,7 +232,10 @@ function namedDayIndex(
     throw new Error('Unknown calendar month');
   }
   const month = definition.months[monthIndex]!;
-  if (date.day > month.days || date.tickOfDay >= definition.ticksPerDay) {
+  if (
+    date.day > month.days ||
+    date.gameSecondOfDay >= definition.gameSecondsPerDay
+  ) {
     throw new Error('Invalid calendar date');
   }
   const daysPerYear = definition.months.reduce(
@@ -270,58 +279,61 @@ export function compileWorldDate(definitionInput: unknown, dateInput: unknown) {
   if (definition.kind !== date.kind) {
     throw new Error('World date does not match its time definition');
   }
-  let tick: bigint;
+  let gameSecond: bigint;
   if (definition.kind === 'elapsed' && date.kind === 'elapsed') {
-    if (date.tickOfUnit >= definition.unit.ticksPerUnit) {
+    if (date.gameSecondOfUnit >= definition.unit.gameSecondsPerUnit) {
       throw new Error('Invalid elapsed-unit date');
     }
-    tick =
+    gameSecond =
       (BigInt(date.wholeUnits) - BigInt(definition.epoch.wholeUnits)) *
-        BigInt(definition.unit.ticksPerUnit) +
-      BigInt(date.tickOfUnit - definition.epoch.tickOfUnit);
+        BigInt(definition.unit.gameSecondsPerUnit) +
+      BigInt(date.gameSecondOfUnit - definition.epoch.gameSecondOfUnit);
   } else if (
     definition.kind === 'ordinal-days' &&
     date.kind === 'ordinal-days'
   ) {
-    if (date.tickOfDay >= definition.ticksPerDay) {
+    if (date.gameSecondOfDay >= definition.gameSecondsPerDay) {
       throw new Error('Invalid ordinal date');
     }
-    tick =
+    gameSecond =
       (BigInt(date.day) - BigInt(definition.epoch.day)) *
-        BigInt(definition.ticksPerDay) +
-      BigInt(date.tickOfDay - definition.epoch.tickOfDay);
+        BigInt(definition.gameSecondsPerDay) +
+      BigInt(date.gameSecondOfDay - definition.epoch.gameSecondOfDay);
   } else if (definition.kind === 'named-year' && date.kind === 'named-year') {
     const epoch = {
       kind: 'named-year' as const,
       year: definition.epoch.year,
       monthId: definition.epoch.monthId,
       day: definition.epoch.day,
-      tickOfDay: definition.epoch.tickOfDay,
+      gameSecondOfDay: definition.epoch.gameSecondOfDay,
     };
-    tick =
+    gameSecond =
       (namedDayIndex(definition, date) - namedDayIndex(definition, epoch)) *
-        BigInt(definition.ticksPerDay) +
-      BigInt(date.tickOfDay - definition.epoch.tickOfDay);
+        BigInt(definition.gameSecondsPerDay) +
+      BigInt(date.gameSecondOfDay - definition.epoch.gameSecondOfDay);
   } else {
     throw new Error('World date does not match its time definition');
   }
-  return safeNumber(tick, 'World date is outside the campaign tick range');
+  return safeNumber(
+    gameSecond,
+    'World date is outside the campaign fictional-second range',
+  );
 }
 
 export function projectWorldTime(
   definitionInput: unknown,
-  tickInput: unknown,
+  gameSecondInput: unknown,
 ): WorldTimeView {
   const definition = worldTimeDefinitionSchema.parse(definitionInput);
-  const tick = tickSchema.parse(tickInput);
+  const gameSecond = gameSecondSchema.parse(gameSecondInput);
   if (definition.kind === 'elapsed') {
     const total =
       BigInt(definition.epoch.wholeUnits) *
-        BigInt(definition.unit.ticksPerUnit) +
-      BigInt(definition.epoch.tickOfUnit) +
-      BigInt(tick);
-    const wholeUnits = total / BigInt(definition.unit.ticksPerUnit);
-    const tickOfUnit = total % BigInt(definition.unit.ticksPerUnit);
+        BigInt(definition.unit.gameSecondsPerUnit) +
+      BigInt(definition.epoch.gameSecondOfUnit) +
+      BigInt(gameSecond);
+    const wholeUnits = total / BigInt(definition.unit.gameSecondsPerUnit);
+    const gameSecondOfUnit = total % BigInt(definition.unit.gameSecondsPerUnit);
     const count = safeNumber(wholeUnits, 'Elapsed time exceeds range');
     const unitLabel =
       count === 1 ? definition.unit.label : definition.unit.pluralLabel;
@@ -329,26 +341,27 @@ export function projectWorldTime(
       kind: definition.kind,
       definitionId: definition.id,
       definitionRevision: definition.revision,
-      tick,
+      gameSecond,
       wholeUnits: count,
-      tickOfUnit: Number(tickOfUnit),
+      gameSecondOfUnit: Number(gameSecondOfUnit),
       unitLabel,
       label: `${count} ${unitLabel}`,
     };
   }
   if (definition.kind === 'ordinal-days') {
-    const total = BigInt(definition.epoch.tickOfDay) + BigInt(tick);
+    const total = BigInt(definition.epoch.gameSecondOfDay) + BigInt(gameSecond);
     const day =
-      BigInt(definition.epoch.day) + total / BigInt(definition.ticksPerDay);
-    const tickOfDay = total % BigInt(definition.ticksPerDay);
+      BigInt(definition.epoch.day) +
+      total / BigInt(definition.gameSecondsPerDay);
+    const gameSecondOfDay = total % BigInt(definition.gameSecondsPerDay);
     const dayNumber = safeNumber(day, 'Ordinal day exceeds range');
     return {
       kind: definition.kind,
       definitionId: definition.id,
       definitionRevision: definition.revision,
-      tick,
+      gameSecond,
       day: dayNumber,
-      tickOfDay: Number(tickOfDay),
+      gameSecondOfDay: Number(gameSecondOfDay),
       label: `${definition.dayLabel} ${dayNumber}`,
     };
   }
@@ -357,11 +370,12 @@ export function projectWorldTime(
     year: definition.epoch.year,
     monthId: definition.epoch.monthId,
     day: definition.epoch.day,
-    tickOfDay: definition.epoch.tickOfDay,
+    gameSecondOfDay: definition.epoch.gameSecondOfDay,
   };
-  const total = BigInt(definition.epoch.tickOfDay) + BigInt(tick);
+  const total = BigInt(definition.epoch.gameSecondOfDay) + BigInt(gameSecond);
   const dayIndex =
-    namedDayIndex(definition, epoch) + total / BigInt(definition.ticksPerDay);
+    namedDayIndex(definition, epoch) +
+    total / BigInt(definition.gameSecondsPerDay);
   const projected = namedDateAtDayIndex(definition, dayIndex);
   const era = definition.epoch.eraLabel
     ? ` of ${definition.epoch.eraLabel}`
@@ -370,12 +384,12 @@ export function projectWorldTime(
     kind: definition.kind,
     definitionId: definition.id,
     definitionRevision: definition.revision,
-    tick,
+    gameSecond,
     year: projected.year,
     monthId: projected.month.id,
     monthLabel: projected.month.label,
     day: projected.day,
-    tickOfDay: Number(total % BigInt(definition.ticksPerDay)),
+    gameSecondOfDay: Number(total % BigInt(definition.gameSecondsPerDay)),
     eraLabel: definition.epoch.eraLabel,
     label: `${projected.month.label} ${projected.day}, ${definition.yearLabel} ${projected.year}${era}`,
   };
@@ -397,7 +411,7 @@ export function addCalendarMonths(
   if (
     sourceMonth < 0 ||
     date.day > definition.months[sourceMonth]!.days ||
-    date.tickOfDay >= definition.ticksPerDay
+    date.gameSecondOfDay >= definition.gameSecondsPerDay
   ) {
     throw new Error('Invalid calendar date');
   }
@@ -419,7 +433,7 @@ export function addCalendarMonths(
     year: safeNumber(yearIndex + 1n, 'Calendar year exceeds range'),
     monthId: targetMonth.id,
     day: date.day,
-    tickOfDay: date.tickOfDay,
+    gameSecondOfDay: date.gameSecondOfDay,
   };
   compileWorldDate(definition, result);
   return result;
@@ -427,23 +441,23 @@ export function addCalendarMonths(
 
 export function formatWorldDuration(
   definitionInput: unknown,
-  ticksInput: unknown,
+  gameSecondsInput: unknown,
 ) {
   const definition = worldTimeDefinitionSchema.parse(definitionInput);
-  const ticks = tickSchema.parse(ticksInput);
+  const gameSeconds = gameSecondSchema.parse(gameSecondsInput);
   if (definition.kind === 'elapsed') {
-    const unitTicks = definition.unit.ticksPerUnit;
-    if (ticks % unitTicks === 0) {
-      const count = ticks / unitTicks;
+    const unitGameSeconds = definition.unit.gameSecondsPerUnit;
+    if (gameSeconds % unitGameSeconds === 0) {
+      const count = gameSeconds / unitGameSeconds;
       const label =
         count === 1 ? definition.unit.label : definition.unit.pluralLabel;
       return `${count} ${label}`;
     }
-    return `${ticks} ticks`;
+    return `${gameSeconds} fictional seconds`;
   }
-  if (ticks % definition.ticksPerDay === 0) {
-    const days = ticks / definition.ticksPerDay;
+  if (gameSeconds % definition.gameSecondsPerDay === 0) {
+    const days = gameSeconds / definition.gameSecondsPerDay;
     return `${days} ${days === 1 ? 'day' : 'days'}`;
   }
-  return `${ticks} ticks`;
+  return `${gameSeconds} fictional seconds`;
 }

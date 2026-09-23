@@ -75,8 +75,8 @@ export const documentSourceSchema = z.strictObject({
 export const documentCoverageSchema = z.strictObject({
   fromSequence: z.number().int().positive().optional(),
   throughSequence: z.number().int().positive().optional(),
-  fromTick: z.string().regex(/^\d+$/).optional(),
-  throughTick: z.string().regex(/^\d+$/).optional(),
+  fromGameSecond: z.string().regex(/^\d+$/).optional(),
+  throughGameSecond: z.string().regex(/^\d+$/).optional(),
 });
 
 export const documentEnvelopeSchema = z.strictObject({

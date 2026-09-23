@@ -120,8 +120,8 @@ select jsonb_build_object(
       'id', e.operation_id,
       'actionKey', e.action_key,
       'state', e.state,
-      'startTick', e.start_tick,
-      'targetTick', e.target_tick,
+      'startGameSecond', e.start_tick,
+      'targetGameSecond', e.target_tick,
       'generationId', e.preparation_generation_id,
       'receiptOutcome', rec.outcome,
       'hasRoll', rec.roll is not null,
@@ -136,7 +136,7 @@ select jsonb_build_object(
   'holds', coalesce((
     select c.holds from campaign c where c.story_id=s.id
   ), '[]'::jsonb),
-  'tick', (select c.tick from campaign c where c.story_id=s.id),
+  'game-second', (select c.gameSecond from campaign c where c.story_id=s.id),
   'pendingOutbox', coalesce((
     select jsonb_agg(jsonb_build_object(
       'id', o.id, 'topic', o.topic, 'operationId', o.operation_id,
@@ -202,13 +202,17 @@ function summarizeCanonicalKnowledge(value) {
             bytes: Buffer.byteLength(library.orientation.body ?? '', 'utf8'),
           }
         : null,
-      catalogueOnly: (library.catalogue ?? []).map((entry) => ({
-        handle: entry.handle,
-        kind: entry.kind,
-        path: entry.path,
-        loaded: entry.loaded,
-        sectionHandles: (entry.sections ?? []).map((section) => section.handle),
-      })).filter((entry) => !entry.loaded),
+      catalogueOnly: (library.catalogue ?? [])
+        .map((entry) => ({
+          handle: entry.handle,
+          kind: entry.kind,
+          path: entry.path,
+          loaded: entry.loaded,
+          sectionHandles: (entry.sections ?? []).map(
+            (section) => section.handle,
+          ),
+        }))
+        .filter((entry) => !entry.loaded),
       catalogueCount: library.catalogue?.length ?? 0,
       selectedSections: (library.selectedSections ?? []).map((section) => ({
         handle: section.handle,
@@ -226,9 +230,9 @@ function summarizeResult(value) {
   const next = value.scene?.next;
   const choices =
     next?.kind === 'choice'
-      ? next.options ?? []
+      ? (next.options ?? [])
       : next?.kind === 'action-plans'
-        ? next.plans ?? []
+        ? (next.plans ?? [])
         : [];
   return {
     title: value.scene?.content?.title ?? null,
@@ -331,7 +335,7 @@ try {
       choiceCount:
         value.current?.interaction?.specification?.options?.length ?? 0,
       resolution: value.resolution,
-      tick: value.campaign?.tick ?? null,
+      gameSecond: value.campaign?.gameSecond ?? null,
       holds: value.campaign?.holds ?? [],
       receiptCount: value.campaign?.actionReceipts?.length ?? 0,
       usage: value.usage,

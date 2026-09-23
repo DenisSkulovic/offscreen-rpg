@@ -149,7 +149,7 @@ export async function startStorytellerCandidate(
         compileWorldObligation({
           proposal,
           timeDefinition: accepted.time,
-          originTick: 0,
+          originGameSecond: 0,
         }),
       );
       const byIdentity = <T extends { id: string }>(left: T, right: T) =>

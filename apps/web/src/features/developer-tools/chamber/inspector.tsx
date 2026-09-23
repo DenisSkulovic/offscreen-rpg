@@ -272,8 +272,8 @@ export function ChamberInspectorPanel(args: {
               <ol>
                 {inspection.activityReports.map((report) => (
                   <li key={report.hookId}>
-                    tick {report.sourceTick}, revision {report.sourceRevision} ·{' '}
-                    {report.state}
+                    gameSecond {report.sourceGameSecond}, revision{' '}
+                    {report.sourceRevision} · {report.state}
                     <dl>
                       <Field label="Hook ID" value={report.hookId} />
                       <Field label="Activity ID" value={report.activityId} />

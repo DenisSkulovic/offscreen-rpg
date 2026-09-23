@@ -271,7 +271,11 @@ export const contextInputSchema = z.strictObject({
         .strictObject({
           id: z.uuid(),
           revision: z.number().int().nonnegative(),
-          horizonTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+          horizonGameSecond: z
+            .number()
+            .int()
+            .positive()
+            .max(Number.MAX_SAFE_INTEGER),
           nextEntry: z.strictObject({
             id: z.uuid(),
             plan: immediateActionPlanSchema.refine(
@@ -330,7 +334,7 @@ export const contextInputSchema = z.strictObject({
     .strictObject({
       character: characterSchema,
       storyFacts: storyFactsSchema.default([]),
-      tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+      gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
       offer: offerSchema.nullable(),
       receipts: z
         .array(
@@ -368,16 +372,16 @@ function providerCampaignTime(
   time: NonNullable<StorytellerContext['campaignTime']>,
 ) {
   const label = time.label
-    .replaceAll('ticks', 'fictional seconds')
-    .replaceAll('tick', 'fictional second');
+    .replaceAll('gameSeconds', 'fictional seconds')
+    .replaceAll('game-second', 'fictional second');
   if (time.kind === 'elapsed') {
     return {
       kind: time.kind,
       definitionId: time.definitionId,
       definitionRevision: time.definitionRevision,
-      elapsedFictionalSeconds: time.tick,
+      elapsedFictionalSeconds: time.gameSecond,
       wholeUnits: time.wholeUnits,
-      fictionalSecondsOfUnit: time.tickOfUnit,
+      fictionalSecondsOfUnit: time.gameSecondOfUnit,
       unitLabel: time.unitLabel,
       label,
     };
@@ -387,9 +391,9 @@ function providerCampaignTime(
       kind: time.kind,
       definitionId: time.definitionId,
       definitionRevision: time.definitionRevision,
-      elapsedFictionalSeconds: time.tick,
+      elapsedFictionalSeconds: time.gameSecond,
       day: time.day,
-      fictionalSecondsOfDay: time.tickOfDay,
+      fictionalSecondsOfDay: time.gameSecondOfDay,
       label,
     };
   }
@@ -397,12 +401,12 @@ function providerCampaignTime(
     kind: time.kind,
     definitionId: time.definitionId,
     definitionRevision: time.definitionRevision,
-    elapsedFictionalSeconds: time.tick,
+    elapsedFictionalSeconds: time.gameSecond,
     year: time.year,
     monthId: time.monthId,
     monthLabel: time.monthLabel,
     day: time.day,
-    fictionalSecondsOfDay: time.tickOfDay,
+    fictionalSecondsOfDay: time.gameSecondOfDay,
     eraLabel: time.eraLabel,
     label,
   };
@@ -476,7 +480,7 @@ export function contextRequestSections(context: StorytellerContext) {
             resolution: {
               character: context.resolution.character,
               storyFacts: context.resolution.storyFacts,
-              elapsedFictionalSeconds: context.resolution.tick,
+              elapsedFictionalSeconds: context.resolution.gameSecond,
               offer: context.resolution.offer,
               receipts: context.resolution.receipts,
             },

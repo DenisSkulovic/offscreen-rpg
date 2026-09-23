@@ -264,8 +264,9 @@ export async function searchCanonicalKnowledge(
         linkedDocumentIds: document.envelope.sources.map(
           (source) => source.documentId,
         ),
-        effectiveFromTick: document.envelope.coverage?.fromTick ?? null,
-        effectiveThroughTick: document.envelope.coverage?.throughTick ?? null,
+        effectiveFromGameSecond: document.envelope.coverage?.fromGameSecond ?? null,
+        effectiveThroughGameSecond:
+          document.envelope.coverage?.throughGameSecond ?? null,
         title: document.title,
         contextualKey: `${entry.kind} ${document.title} ${entry.path}`,
         bodyBytes: bytes,

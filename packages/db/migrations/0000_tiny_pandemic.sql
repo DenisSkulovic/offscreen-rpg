@@ -64,7 +64,7 @@ CREATE TABLE "campaign" (
 	"accepted_activity_plan" jsonb,
 	"content" jsonb,
 	"location" text,
-	"tick" bigint NOT NULL,
+	"game_second" bigint NOT NULL,
 	"clock" jsonb NOT NULL,
 	"clock_anchor_at" timestamp (3) with time zone NOT NULL,
 	"clock_pace" jsonb NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE "campaign_report" (
 	"source" jsonb NOT NULL,
 	"source_passage_id" uuid NOT NULL,
 	"source_revision" integer NOT NULL,
-	"source_tick" bigint NOT NULL,
+	"source_game_second" bigint NOT NULL,
 	"label" text NOT NULL,
 	"factual_summary" text NOT NULL,
 	"state" text DEFAULT 'pending' NOT NULL,
@@ -132,15 +132,15 @@ CREATE TABLE "game_action_execution" (
 	"plan" jsonb NOT NULL,
 	"pending_resolution" jsonb,
 	"preparation_generation_id" uuid,
-	"start_tick" bigint NOT NULL,
-	"target_tick" bigint NOT NULL,
+	"start_game_second" bigint NOT NULL,
+	"target_game_second" bigint NOT NULL,
 	"state" text DEFAULT 'running' NOT NULL,
 	"revision" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"settled_at" timestamp (3) with time zone,
 	CONSTRAINT "game_action_execution_offer" UNIQUE("story_id","offer_id"),
 	CONSTRAINT "game_action_execution_state" CHECK ("game_action_execution"."state" in ('running', 'paused', 'interrupted', 'settled')),
-	CONSTRAINT "game_action_execution_ticks" CHECK ("game_action_execution"."start_tick" >= 0 and "game_action_execution"."target_tick" > "game_action_execution"."start_tick")
+	CONSTRAINT "game_action_execution_game_seconds" CHECK ("game_action_execution"."start_game_second" >= 0 and "game_action_execution"."target_game_second" > "game_action_execution"."start_game_second")
 );
 --> statement-breakpoint
 CREATE TABLE "game_action_execution_event" (
@@ -149,7 +149,7 @@ CREATE TABLE "game_action_execution_event" (
 	"story_id" uuid NOT NULL,
 	"execution_id" uuid NOT NULL,
 	"execution_revision" integer NOT NULL,
-	"tick" bigint NOT NULL,
+	"game_second" bigint NOT NULL,
 	"kind" text NOT NULL,
 	"label" text NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE "game_activity_event" (
 	"story_id" uuid NOT NULL,
 	"activity_id" uuid NOT NULL,
 	"activity_revision" integer NOT NULL,
-	"tick" bigint NOT NULL,
+	"game_second" bigint NOT NULL,
 	"kind" text NOT NULL,
 	"cause_key" text NOT NULL,
 	"label" text NOT NULL,
@@ -218,7 +218,7 @@ CREATE TABLE "game_roll" (
 	"operation_id" uuid NOT NULL,
 	"segment" integer NOT NULL,
 	"check_key" text NOT NULL,
-	"tick" bigint NOT NULL,
+	"game_second" bigint NOT NULL,
 	"plan" jsonb NOT NULL,
 	"result" jsonb NOT NULL,
 	"effects" jsonb NOT NULL,
@@ -238,13 +238,13 @@ CREATE TABLE "world_obligation" (
 	"story_id" uuid NOT NULL,
 	"revision" integer NOT NULL,
 	"definition" jsonb NOT NULL,
-	"due_tick" bigint NOT NULL,
+	"due_game_second" bigint NOT NULL,
 	"state" text DEFAULT 'pending' NOT NULL,
-	"fired_at_tick" bigint,
+	"fired_at_game_second" bigint,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "world_obligation_story_source_revision" UNIQUE("story_id","id","revision"),
 	CONSTRAINT "world_obligation_state" CHECK ("world_obligation"."state" in ('pending', 'fired', 'cancelled')),
-	CONSTRAINT "world_obligation_due_tick" CHECK ("world_obligation"."due_tick" > 0)
+	CONSTRAINT "world_obligation_due_game_second" CHECK ("world_obligation"."due_game_second" > 0)
 );
 --> statement-breakpoint
 CREATE TABLE "world_obligation_event" (
@@ -253,7 +253,7 @@ CREATE TABLE "world_obligation_event" (
 	"story_id" uuid NOT NULL,
 	"obligation_id" uuid NOT NULL,
 	"obligation_revision" integer NOT NULL,
-	"tick" bigint NOT NULL,
+	"game_second" bigint NOT NULL,
 	"kind" text NOT NULL,
 	"label" text NOT NULL,
 	"details" jsonb NOT NULL,

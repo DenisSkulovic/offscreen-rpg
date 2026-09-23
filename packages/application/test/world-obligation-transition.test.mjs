@@ -31,8 +31,11 @@ const state = {
   acceptedActivityPlan: null,
   content: {},
   location: null,
-  tick: 0,
-  clock: { elapsedTicks: 0, remainder: { numerator: '0', denominator: '1' } },
+  gameSecond: 0,
+  clock: {
+    elapsedGameSeconds: 0,
+    remainder: { numerator: '0', denominator: '1' },
+  },
   clockAnchorAt: new Date(0),
   clockPace: { kind: 'instant' },
   holds: [],
@@ -45,8 +48,8 @@ const state = {
 const execution = {
   operationId,
   revision: 0,
-  targetTick: 10,
-  controllingTick: 5,
+  targetGameSecond: 10,
+  controllingGameSecond: 5,
   plan: {
     version: 1,
     key: 'sense',
@@ -78,8 +81,8 @@ test('a hard cutoff owns equality before finite action effects', () => {
     },
   });
   assert.equal(transition.state, 'interrupted');
-  assert.equal(transition.campaign.tick, 5);
+  assert.equal(transition.campaign.gameSecond, 5);
   assert.equal(transition.campaign.activeActionOperationId, null);
-  assert.equal(transition.fact.tick, 5);
+  assert.equal(transition.fact.gameSecond, 5);
   assert.deepEqual(transition.campaign.character, state.character);
 });

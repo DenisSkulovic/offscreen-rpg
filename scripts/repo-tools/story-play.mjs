@@ -73,7 +73,7 @@ function summarize(snapshot) {
     viewVersion: snapshot.viewVersion,
     title: snapshot.current?.content?.title ?? null,
     paragraphs: snapshot.current?.content?.paragraphs ?? [],
-    tick: snapshot.campaign?.tick ?? null,
+    gameSecond: snapshot.campaign?.gameSecond ?? null,
     worldTime: snapshot.campaign?.worldTime?.label ?? null,
     resolution: snapshot.resolution,
     waiting: snapshot.waiting,

@@ -1,8 +1,5 @@
 import type { Transaction } from '../outbox/index';
-import {
-  recordActivityEvent,
-  type ActivityEventKind,
-} from './persistence';
+import { recordActivityEvent, type ActivityEventKind } from './persistence';
 
 /** Maps a terminal or transitional activity state to its player-visible ledger kind. */
 export function transitionEventKind(state: string): ActivityEventKind | null {
@@ -27,7 +24,7 @@ type ActivityEventArgs = {
   storyId: string;
   activityId: string;
   activityRevision: number;
-  tick: number;
+  gameSecond: number;
   kind: ActivityEventKind;
   causeKey: string;
   label: string;
@@ -48,7 +45,7 @@ export async function recordBoundarySettlementEvents(
     storyId: string;
     activityId: string;
     activityRevision: number;
-    tick: number;
+    gameSecond: number;
     previousState: string;
     nextState: string;
     boundaryCause: string;
@@ -67,7 +64,7 @@ export async function recordBoundarySettlementEvents(
       storyId: args.storyId,
       activityId: args.activityId,
       activityRevision: args.activityRevision,
-      tick: args.tick,
+      gameSecond: args.gameSecond,
       kind: transitionKind,
       causeKey: args.boundaryCause,
       label: args.label,
@@ -79,7 +76,7 @@ export async function recordBoundarySettlementEvents(
       storyId: args.storyId,
       activityId: args.activityId,
       activityRevision: args.activityRevision,
-      tick: args.tick,
+      gameSecond: args.gameSecond,
       kind: 'completion-pending',
       causeKey: args.boundaryCause,
       label: args.label,

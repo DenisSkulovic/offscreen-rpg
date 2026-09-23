@@ -3,7 +3,7 @@ import {
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
-import { realMsUntilTick } from '@offscreen/game/time';
+import { realMsUntilGameSecond } from '@offscreen/game/time';
 import { projectCampaignClock } from './clock';
 import type { CampaignRecord } from './persistence';
 import type { CampaignFollowUpIntent } from './follow-up-intents';
@@ -17,9 +17,9 @@ type ActionExecutionTransitionInput = {
   operationId: string;
   plan: unknown;
   revision: number;
-  startTick: number;
-  targetTick: number;
-  controllingTick?: number;
+  startGameSecond: number;
+  targetGameSecond: number;
+  controllingGameSecond?: number;
   pendingResolution?: unknown;
   preparationGenerationId?: string | null;
 };
@@ -36,7 +36,7 @@ export type ActionExecutionTransition =
       fact: {
         kind: 'interrupted';
         executionRevision: number;
-        tick: number;
+        gameSecond: number;
         label: string;
       };
     }
@@ -47,7 +47,7 @@ export type ActionExecutionTransition =
       fact: {
         kind: 'settled';
         executionRevision: number;
-        tick: number;
+        gameSecond: number;
         label: string;
       };
       followUps: readonly CampaignFollowUpIntent[];
@@ -69,27 +69,27 @@ export function decideActionExecutionTransition(args: {
   if (plan.resolution.kind === 'process' || plan.resolution.kind === 'resume') {
     throw new Error('Finite action execution contains an activity plan');
   }
-  const nextBoundaryTick = Math.min(
-    execution.targetTick,
-    execution.controllingTick ?? execution.targetTick,
+  const nextBoundaryGameSecond = Math.min(
+    execution.targetGameSecond,
+    execution.controllingGameSecond ?? execution.targetGameSecond,
   );
   const projected = projectCampaignClock(
     state,
     now,
     { kind: 'accepted-action', operationId: execution.operationId },
     args.clockHeld,
-    nextBoundaryTick,
+    nextBoundaryGameSecond,
   );
   if (
-    execution.controllingTick !== undefined &&
-    execution.controllingTick <= execution.targetTick &&
-    projected.clock.elapsedTicks >= execution.controllingTick
+    execution.controllingGameSecond !== undefined &&
+    execution.controllingGameSecond <= execution.targetGameSecond &&
+    projected.clock.elapsedGameSeconds >= execution.controllingGameSecond
   ) {
     return {
       state: 'interrupted',
       campaign: {
         ...state,
-        tick: execution.controllingTick,
+        gameSecond: execution.controllingGameSecond,
         clock: projected.clock,
         clockAnchorAt: new Date(now),
         activeActionOperationId: null,
@@ -97,18 +97,18 @@ export function decideActionExecutionTransition(args: {
       fact: {
         kind: 'interrupted',
         executionRevision: execution.revision + 1,
-        tick: execution.controllingTick,
+        gameSecond: execution.controllingGameSecond,
         label: plan.label,
       },
     };
   }
-  if (projected.clock.elapsedTicks < nextBoundaryTick) {
+  if (projected.clock.elapsedGameSeconds < nextBoundaryGameSecond) {
     return {
       state: 'waiting',
       projected,
-      remainingRealMs: realMsUntilTick(
+      remainingRealMs: realMsUntilGameSecond(
         projected.clock,
-        nextBoundaryTick,
+        nextBoundaryGameSecond,
         projected.pace,
       ),
     };
@@ -123,7 +123,7 @@ export function decideActionExecutionTransition(args: {
       actionResolutionSourceDigest({
         character: state.character,
         storyFacts: state.storyFacts,
-        startTick: execution.startTick,
+        startGameSecond: execution.startGameSecond,
       })
   ) {
     throw new Error('Pending action resolution source fence changed');
@@ -133,7 +133,7 @@ export function decideActionExecutionTransition(args: {
     pending.projectedStateDigest !==
       actionResolutionProjectedDigest({
         resolution: pending.resolution,
-        targetTick: execution.targetTick,
+        targetGameSecond: execution.targetGameSecond,
       })
   ) {
     throw new Error('Pending action resolution projection is invalid');
@@ -153,7 +153,7 @@ export function decideActionExecutionTransition(args: {
       ...state,
       character: receipt.character,
       storyFacts: receipt.storyFacts,
-      tick: execution.targetTick,
+      gameSecond: execution.targetGameSecond,
       clock: projected.clock,
       clockAnchorAt: new Date(now),
       activeActionOperationId: null,
@@ -162,7 +162,7 @@ export function decideActionExecutionTransition(args: {
     fact: {
       kind: 'settled',
       executionRevision: execution.revision + 1,
-      tick: execution.targetTick,
+      gameSecond: execution.targetGameSecond,
       label: plan.label,
     },
     followUps: execution.preparationGenerationId

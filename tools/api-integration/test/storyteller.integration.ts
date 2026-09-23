@@ -162,15 +162,15 @@ test(
             pace: campaignOverrides.pace ?? pace,
             time: campaignOverrides.time ?? {
               kind: 'elapsed',
-              id: 'simulation-ticks',
+              id: 'simulation-gameSeconds',
               revision: 1,
               unit: {
-                id: 'tick',
-                label: 'tick',
-                pluralLabel: 'ticks',
-                ticksPerUnit: 1,
+                id: 'game-second',
+                label: 'game-second',
+                pluralLabel: 'gameSeconds',
+                gameSecondsPerUnit: 1,
               },
-              epoch: { wholeUnits: 0, tickOfUnit: 0 },
+              epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
             },
             worldObligations: campaignOverrides.worldObligations ?? [],
             worlds: campaignOverrides.worlds ?? [],
@@ -252,7 +252,7 @@ test(
                     },
                   },
                   followUp: 'report',
-                  due: { kind: 'tick', tick: 12 },
+                  due: { kind: 'game-second', gameSecond: 12 },
                 },
               }),
             );
@@ -314,15 +314,15 @@ test(
               pace: { kind: 'instant' },
               time: {
                 kind: 'elapsed',
-                id: 'simulation-ticks',
+                id: 'simulation-gameSeconds',
                 revision: 1,
                 unit: {
-                  id: 'tick',
-                  label: 'tick',
-                  pluralLabel: 'ticks',
-                  ticksPerUnit: 1,
+                  id: 'game-second',
+                  label: 'game-second',
+                  pluralLabel: 'gameSeconds',
+                  gameSecondsPerUnit: 1,
                 },
-                epoch: { wholeUnits: 0, tickOfUnit: 0 },
+                epoch: { wholeUnits: 0, gameSecondOfUnit: 0 },
               },
               worldObligations: [],
               worlds: [],
@@ -371,7 +371,7 @@ test(
               .where(eq(worldObligation.storyId, storyId));
             assert.equal(obligationsAfterStart.length, 1);
             assert.notEqual(obligationsAfterStart[0]?.id, packageObligationId);
-            assert.equal(obligationsAfterStart[0]?.dueTick, 12);
+            assert.equal(obligationsAfterStart[0]?.dueGameSecond, 12);
 
             await storiesWithDocuments.startFromCandidate({
               ownerId,
@@ -597,8 +597,8 @@ test(
               );
               const operationId = randomUUID();
               const tickBefore = requireDefined(
-                snapshot.campaign?.tick,
-                'Expected a microbe campaign tick',
+                snapshot.campaign?.gameSecond,
+                'Expected a microbe campaign gameSecond',
               );
 
               await stories.campaignAction({
@@ -619,7 +619,7 @@ test(
                 ownerId,
                 storyId: started.storyId,
               });
-              assert.equal(committed.campaign?.tick, tickBefore + 5);
+              assert.equal(committed.campaign?.gameSecond, tickBefore + 5);
               assert.equal(
                 committed.campaign?.actionReceipts.length,
                 round + 1,
@@ -669,8 +669,8 @@ test(
               id: 'bloom-days',
               revision: 1,
               dayLabel: 'Bloom',
-              ticksPerDay: 1,
-              epoch: { day: 1, tickOfDay: 0 },
+              gameSecondsPerDay: 1,
+              epoch: { day: 1, gameSecondOfDay: 0 },
             };
             const winterConsequence = {
               kind: 'condition.set.v1' as const,
@@ -702,7 +702,7 @@ test(
                       date: {
                         kind: 'ordinal-days',
                         day: 51,
-                        tickOfDay: 0,
+                        gameSecondOfDay: 0,
                       },
                     },
                   },
@@ -721,7 +721,7 @@ test(
                       },
                     },
                     followUp: 'controlling-scene',
-                    due: { kind: 'tick', tick: 58 },
+                    due: { kind: 'game-second', gameSecond: 58 },
                   },
                 ],
               },
@@ -761,7 +761,7 @@ test(
                   date: {
                     kind: 'ordinal-days',
                     day: 56,
-                    tickOfDay: 0,
+                    gameSecondOfDay: 0,
                   },
                 },
               },
@@ -798,7 +798,7 @@ test(
             );
             assert.equal(postponed?.revision, 2);
             assert.equal(postponed?.visibility, 'described');
-            assert.ok(postponed && !('dueTick' in postponed));
+            assert.ok(postponed && !('dueGameSecond' in postponed));
             assert.equal(
               snapshot.campaign?.worldObligations.find(
                 (obligation) => obligation.id === cancelledId,
@@ -827,7 +827,7 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(interrupted.campaign?.tick, 55);
+            assert.equal(interrupted.campaign?.gameSecond, 55);
             assert.equal(interrupted.campaign?.activity?.state, 'encounter');
             assert.deepEqual(
               interrupted.campaign?.worldObligationEvents
@@ -857,7 +857,7 @@ test(
                   kind: 'named-year',
                   id: 'ember-rain-frost',
                   revision: 1,
-                  ticksPerDay: 1,
+                  gameSecondsPerDay: 1,
                   yearLabel: 'year',
                   months: [
                     { id: 'ember', label: 'Ember', days: 20 },
@@ -868,7 +868,7 @@ test(
                     year: 8,
                     monthId: 'ember',
                     day: 10,
-                    tickOfDay: 0,
+                    gameSecondOfDay: 0,
                     eraLabel: 'Lantern Era',
                   },
                 },
@@ -888,7 +888,7 @@ test(
                       },
                     },
                     followUp: 'report',
-                    due: { kind: 'tick', tick: 20 },
+                    due: { kind: 'game-second', gameSecond: 20 },
                   },
                   {
                     id: obligationId,
@@ -912,7 +912,7 @@ test(
                         year: 8,
                         monthId: 'frost',
                         day: 10,
-                        tickOfDay: 0,
+                        gameSecondOfDay: 0,
                       },
                     },
                   },
@@ -929,7 +929,7 @@ test(
             );
             assert.equal(visibleDeadline.visibility, 'exact');
             assert.ok(visibleDeadline.visibility === 'exact');
-            assert.equal(visibleDeadline.dueTick, 55);
+            assert.equal(visibleDeadline.dueGameSecond, 55);
             const offer = requireDefined(
               campaign.offer,
               'Expected the Frost Road offer',
@@ -962,7 +962,7 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(interrupted.campaign?.tick, 55);
+            assert.equal(interrupted.campaign?.gameSecond, 55);
             assert.equal(
               interrupted.campaign?.worldTime.label,
               'Frost 10, year 8 of Lantern Era',
@@ -983,7 +983,7 @@ test(
                   kind: 'world-obligation',
                   obligationId: reportObligationId,
                 },
-                setAtTick: 20,
+                setAtGameSecond: 20,
               },
               {
                 id: 'frost-pass',
@@ -993,7 +993,7 @@ test(
                   kind: 'world-obligation',
                   obligationId,
                 },
-                setAtTick: 55,
+                setAtGameSecond: 55,
               },
             ]);
             assert.deepEqual(interrupted.campaign?.holds, [
@@ -1008,7 +1008,7 @@ test(
               'Expected the optional world-event report',
             );
             assert.equal(report.obligationId, reportObligationId);
-            assert.equal(report.sourceTick, 20);
+            assert.equal(report.sourceGameSecond, 20);
             assert.equal(report.state, 'generating');
             const [reportHook] = await database.db
               .select()
@@ -1386,7 +1386,7 @@ test(
               storyId: started.storyId,
             });
             assert.equal(paused.revision, started.snapshot.revision);
-            assert.equal(paused.campaign?.tick, campaign.tick);
+            assert.equal(paused.campaign?.gameSecond, campaign.gameSecond);
             assert.equal(paused.campaign?.actionExecution?.state, 'paused');
             assert.equal(paused.campaign?.actionReceipts.length, 0);
             assert.equal(paused.resolution?.evidence, 'pending-action');
@@ -1397,7 +1397,7 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(stillPaused.campaign?.tick, campaign.tick);
+            assert.equal(stillPaused.campaign?.gameSecond, campaign.gameSecond);
             assert.equal(
               stillPaused.campaign?.actionExecution?.state,
               'paused',
@@ -1419,7 +1419,10 @@ test(
                 storyId: started.storyId,
               });
             }
-            assert.equal(published.campaign?.tick, campaign.tick + 5);
+            assert.equal(
+              published.campaign?.gameSecond,
+              campaign.gameSecond + 5,
+            );
             assert.equal(published.campaign?.actionReceipts.length, 1);
             const [receipt] = await database.db
               .select({ generationId: gameActionReceipt.generationId })
@@ -1452,7 +1455,7 @@ test(
                       },
                     },
                     followUp: 'controlling-scene',
-                    due: { kind: 'tick', tick: 3 },
+                    due: { kind: 'game-second', gameSecond: 3 },
                   },
                 ],
               },
@@ -1518,7 +1521,7 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(interrupted.campaign?.tick, 3);
+            assert.equal(interrupted.campaign?.gameSecond, 3);
             assert.equal(interrupted.campaign?.actionReceipts.length, 0);
             assert.deepEqual(interrupted.campaign?.holds, [
               {
@@ -1658,11 +1661,11 @@ test(
                 state: 'encounter',
                 boundariesSettled: 1,
                 progress: {
-                  effortTicks: 5,
+                  effortGameSeconds: 5,
                   process: { kind: 'contribution.v1', earned: 3 },
                   completionPending: false,
                 },
-                plan: { ...plan, resolvedThroughTick: 5 },
+                plan: { ...plan, resolvedThroughGameSecond: 5 },
               })
               .where(eq(gameActivity.id, activityId));
             await database.db
@@ -1743,7 +1746,10 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(afterTimedResponse.campaign?.tick, campaign.tick + 5);
+            assert.equal(
+              afterTimedResponse.campaign?.gameSecond,
+              campaign.gameSecond + 5,
+            );
             assert.deepEqual(afterTimedResponse.campaign?.activity?.progress, {
               kind: 'contribution',
               label: 'Beacon repair',
@@ -2132,7 +2138,7 @@ test(
                   ['hold-temperature-cycle'],
                   ['hold-pressure-cycle'],
                 ],
-                horizonTicks: 20,
+                horizonGameSeconds: 20,
               },
             });
             const admitted = await stories.read({
@@ -2228,7 +2234,7 @@ test(
                 offerId: offer.id,
                 path: ['observe-harbor-shift'],
                 successorPaths: [['keep-harbor-watch']],
-                horizonTicks: 20,
+                horizonGameSeconds: 20,
               },
             });
             const admitted = await stories.read({
@@ -2350,7 +2356,7 @@ test(
                 offerId: offer.id,
                 path: ['sample-gradient-cycle'],
                 successorPaths: [['hold-temperature-cycle']],
-                horizonTicks: 1,
+                horizonGameSeconds: 1,
               },
             });
             const admitted = await stories.read({
@@ -2366,8 +2372,8 @@ test(
               'Expected the accepted plan horizon',
             );
             assert.equal(
-              acceptedPlan.horizonTick,
-              acceptedPlan.acceptedAtTick + 1,
+              acceptedPlan.horizonGameSecond,
+              acceptedPlan.acceptedAtGameSecond + 1,
             );
             await storyService.advanceCampaignActivity(firstActivityId);
             const stopped = await stories.read({
@@ -2390,7 +2396,7 @@ test(
             );
             assert.match(
               stopped.campaign?.acceptedActivityPlan?.blockedReason ?? '',
-              /reached its tick .* horizon/,
+              /reached its gameSecond .* horizon/,
             );
             const activities = await database.db
               .select({ id: gameActivity.id })
@@ -2418,7 +2424,7 @@ test(
                 offerId: offer.id,
                 path: ['wait-contracted'],
                 successorPaths: [['hold-temperature-cycle']],
-                horizonTicks: 20,
+                horizonGameSeconds: 20,
               },
             });
             const admitted = await stories.read({
@@ -2485,7 +2491,7 @@ test(
                 offerId: offer.id,
                 path: ['sample-gradient-cycle'],
                 successorPaths: [['hold-temperature-cycle']],
-                horizonTicks: 20,
+                horizonGameSeconds: 20,
               },
             });
             const admitted = await stories.read({
@@ -2583,7 +2589,7 @@ test(
               elapsedFictionalSeconds: 1_800,
               requiredFictionalSeconds: 1_800,
             });
-            assert.equal(completed.campaign?.tick, 1_800);
+            assert.equal(completed.campaign?.gameSecond, 1_800);
             assert.equal(
               completed.campaign?.character?.quantities.find(
                 (quantity) => quantity.id === 'septims',
@@ -2610,7 +2616,7 @@ test(
               )?.value,
               6,
             );
-            assert.equal(replayed.campaign?.tick, 1_800);
+            assert.equal(replayed.campaign?.gameSecond, 1_800);
           },
         );
         await t.test(
@@ -2657,7 +2663,7 @@ test(
               elapsedFictionalSeconds: 10,
               requiredFictionalSeconds: 10,
             });
-            assert.equal(completed.campaign?.tick, 10);
+            assert.equal(completed.campaign?.gameSecond, 10);
             assert.equal(completed.campaign?.rolls.length, 0);
             assert.equal(completed.campaign?.activityReports.length, 1);
             assert.equal(
@@ -2679,7 +2685,7 @@ test(
               storyId: started.storyId,
             });
             assert.equal(duplicate.revision, completed.revision);
-            assert.equal(duplicate.campaign?.tick, 10);
+            assert.equal(duplicate.campaign?.gameSecond, 10);
             assert.equal(duplicate.campaign?.rolls.length, 0);
             assert.deepEqual(
               duplicate.campaign?.activityEvents.map((event) => event.kind),
@@ -2764,7 +2770,7 @@ test(
               );
             }
             assert.notEqual(repeatedIds[0], repeatedIds[1]);
-            assert.equal(repeatSnapshot.campaign?.tick, 14);
+            assert.equal(repeatSnapshot.campaign?.gameSecond, 14);
             assert.equal(repeatSnapshot.campaign?.rolls.length, 0);
             assert.deepEqual(
               repeatSnapshot.campaign?.offer?.nodes.map((node) => node.id),
@@ -4445,7 +4451,7 @@ test(
             );
             assert.deepEqual(action.action?.timing, {
               kind: 'finite',
-              ticks: 5,
+              gameSeconds: 5,
             });
             const controlUrl = `${origin}/api/chamber-tools/stories/${started.storyId}/storyteller-control`;
             const armControl = await fetch(controlUrl, {
@@ -4543,7 +4549,7 @@ test(
                 storyId: started.storyId,
               });
             }
-            assert.equal(held.campaign?.tick, campaign.tick + 5);
+            assert.equal(held.campaign?.gameSecond, campaign.gameSecond + 5);
             assert.equal(held.campaign?.actionReceipts[0]?.state, 'generating');
 
             let completed = held;
@@ -4565,7 +4571,10 @@ test(
               started.snapshot.revision + 1,
               'Restarted worker published the required consequence',
             );
-            assert.equal(completed.campaign?.tick, campaign.tick + 5);
+            assert.equal(
+              completed.campaign?.gameSecond,
+              campaign.gameSecond + 5,
+            );
             assert.equal(completed.campaign?.actionReceipts.length, 1);
             assert.equal(
               completed.campaign?.actionReceipts[0]?.id,
@@ -4651,7 +4660,10 @@ test(
               ownerId,
               storyId: started.storyId,
             });
-            assert.equal(heldDecision.campaign?.tick, campaign.tick + 5);
+            assert.equal(
+              heldDecision.campaign?.gameSecond,
+              campaign.gameSecond + 5,
+            );
           },
         );
         await t.test(

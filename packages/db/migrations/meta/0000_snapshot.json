@@ -486,8 +486,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "tick": {
-          "name": "tick",
+        "game_second": {
+          "name": "game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -743,8 +743,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "source_tick": {
-          "name": "source_tick",
+        "source_game_second": {
+          "name": "source_game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -982,14 +982,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "start_tick": {
-          "name": "start_tick",
+        "start_game_second": {
+          "name": "start_game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "target_tick": {
-          "name": "target_tick",
+        "target_game_second": {
+          "name": "target_game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1068,9 +1068,9 @@
           "name": "game_action_execution_state",
           "value": "\"game_action_execution\".\"state\" in ('running', 'paused', 'interrupted', 'settled')"
         },
-        "game_action_execution_ticks": {
-          "name": "game_action_execution_ticks",
-          "value": "\"game_action_execution\".\"start_tick\" >= 0 and \"game_action_execution\".\"target_tick\" > \"game_action_execution\".\"start_tick\""
+        "game_action_execution_game_seconds": {
+          "name": "game_action_execution_game_seconds",
+          "value": "\"game_action_execution\".\"start_game_second\" >= 0 and \"game_action_execution\".\"target_game_second\" > \"game_action_execution\".\"start_game_second\""
         }
       },
       "isRLSEnabled": false
@@ -1109,8 +1109,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tick": {
-          "name": "tick",
+        "game_second": {
+          "name": "game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1422,8 +1422,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tick": {
-          "name": "tick",
+        "game_second": {
+          "name": "game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1613,8 +1613,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tick": {
-          "name": "tick",
+        "game_second": {
+          "name": "game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1755,8 +1755,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "due_tick": {
-          "name": "due_tick",
+        "due_game_second": {
+          "name": "due_game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
@@ -1768,8 +1768,8 @@
           "notNull": true,
           "default": "'pending'"
         },
-        "fired_at_tick": {
-          "name": "fired_at_tick",
+        "fired_at_game_second": {
+          "name": "fired_at_game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": false
@@ -1816,9 +1816,9 @@
           "name": "world_obligation_state",
           "value": "\"world_obligation\".\"state\" in ('pending', 'fired', 'cancelled')"
         },
-        "world_obligation_due_tick": {
-          "name": "world_obligation_due_tick",
-          "value": "\"world_obligation\".\"due_tick\" > 0"
+        "world_obligation_due_game_second": {
+          "name": "world_obligation_due_game_second",
+          "value": "\"world_obligation\".\"due_game_second\" > 0"
         }
       },
       "isRLSEnabled": false
@@ -1857,8 +1857,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "tick": {
-          "name": "tick",
+        "game_second": {
+          "name": "game_second",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true

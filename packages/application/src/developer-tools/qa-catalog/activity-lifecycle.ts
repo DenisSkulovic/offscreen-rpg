@@ -128,7 +128,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
           'Sample the gradient briefly plus the temperature and pressure cycles are currently authorized.',
         ],
         action:
-          'Stage both environmental cycles in order, set a horizon beyond six ticks, start Sample the gradient briefly, and let all entries settle.',
+          'Stage both environmental cycles in order, set a horizon beyond six gameSeconds, start Sample the gradient briefly, and let all entries settle.',
         observableExpectation:
           'The plan shows three distinct entries starting and finishing in the accepted order before its displayed horizon.',
         authoritativeExpectation:
@@ -139,10 +139,10 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
         name: 'Stop successor admission at the plan horizon',
         importance: 'poc-blocker',
         preconditions: [
-          'Start a fresh microbe.v3 story and stage a successor with a one-tick horizon.',
+          'Start a fresh microbe.v3 story and stage a successor with a one-gameSecond horizon.',
         ],
         action:
-          'Start the two-tick sampling activity and inspect the plan after it completes.',
+          'Start the two-gameSecond sampling activity and inspect the plan after it completes.',
         observableExpectation:
           'The first entry completes, the plan says horizon reached, and its pending successor is cancelled without starting.',
         authoritativeExpectation:
@@ -223,7 +223,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
       {
         kind: 'activity-identities',
         description:
-          'Accepted-plan activity IDs plus the second sampling and beacon handoff IDs, revisions, progress, ticks, and terminal states.',
+          'Accepted-plan activity IDs plus the second sampling and beacon handoff IDs, revisions, progress, gameSeconds, and terminal states.',
         required: true,
       },
       {
@@ -313,7 +313,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
         observableExpectation:
           'B completes quietly and A returns with its earlier progress rather than restarting.',
         authoritativeExpectation:
-          'A and B have distinct identities, world ticks remain monotonic, B creates no narration intent, and only A resumes.',
+          'A and B have distinct identities, world gameSeconds remain monotonic, B creates no narration intent, and only A resumes.',
       }),
     ],
     evidenceRequirements: [
@@ -321,7 +321,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
       {
         kind: 'activity-lifecycle',
         description:
-          'A/B identities, revisions, states, progress, blocker, ticks, rolls, and terminal effects.',
+          'A/B identities, revisions, states, progress, blocker, gameSeconds, rolls, and terminal effects.',
         required: true,
       },
       {
@@ -368,7 +368,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
         observableExpectation:
           'Activity history explains the ordered transitions using recognizable labels and reasons.',
         authoritativeExpectation:
-          'Events retain exact activity IDs, revisions, world ticks and stable causes under the same commits as their state changes.',
+          'Events retain exact activity IDs, revisions, world gameSeconds and stable causes under the same commits as their state changes.',
       }),
       stage({
         id: 'retain-terminal-history',
@@ -412,7 +412,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
       {
         kind: 'activity-event-ledger',
         description:
-          'Ordered public-safe lifecycle events with exact instance, revision, tick, cause, and permitted evidence links.',
+          'Ordered public-safe lifecycle events with exact instance, revision, gameSecond, cause, and permitted evidence links.',
         required: true,
       },
       {
@@ -473,7 +473,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
         observableExpectation:
           'Current play proceeds independently of the optional report.',
         authoritativeExpectation:
-          'The wait owns the later ticks/current state; the report retains the earlier completion tick and receipt.',
+          'The wait owns the later gameSeconds/current state; the report retains the earlier completion gameSecond and receipt.',
       }),
       stage({
         id: 'publish-late-report',
@@ -484,7 +484,7 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
         observableExpectation:
           'The report reads as earlier history and does not replace the current scene or choices.',
         authoritativeExpectation:
-          'Current revision, offer, facts, rewards, and tick remain unchanged; duplicate publication creates no second report.',
+          'Current revision, offer, facts, rewards, and gameSecond remain unchanged; duplicate publication creates no second report.',
       }),
       stage({
         id: 'contrast-required-scene',
@@ -506,13 +506,13 @@ export const activityLifecycleCases: readonly QaJourneyCase[] = [
       {
         kind: 'follow-up-hooks',
         description:
-          'Source receipts, hook identities, task/publication states, source ticks, and controlling classification.',
+          'Source receipts, hook identities, task/publication states, source gameSeconds, and controlling classification.',
         required: true,
       },
       {
         kind: 'before-after-current-state',
         description:
-          'Current story revision, offer, tick, facts, rewards, and passage identity before and after late report publication.',
+          'Current story revision, offer, gameSecond, facts, rewards, and passage identity before and after late report publication.',
         required: true,
       },
     ],

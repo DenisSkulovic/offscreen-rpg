@@ -31,7 +31,7 @@ export const campaign = pgTable('campaign', {
   acceptedActivityPlan: jsonb('accepted_activity_plan').$type<unknown>(),
   content: jsonb('content').$type<unknown>(),
   location: text('location'),
-  tick: bigint('tick', { mode: 'number' }).notNull(),
+  gameSecond: bigint('game_second', { mode: 'number' }).notNull(),
   clock: jsonb('clock').notNull().$type<unknown>(),
   clockAnchorAt: timestamp('clock_anchor_at', {
     withTimezone: true,
@@ -61,9 +61,9 @@ export const worldObligation = pgTable(
       .references(() => story.id, { onDelete: 'cascade' }),
     revision: integer('revision').notNull(),
     definition: jsonb('definition').notNull().$type<unknown>(),
-    dueTick: bigint('due_tick', { mode: 'number' }).notNull(),
+    dueGameSecond: bigint('due_game_second', { mode: 'number' }).notNull(),
     state: text('state').notNull().default('pending'),
-    firedAtTick: bigint('fired_at_tick', { mode: 'number' }),
+    firedAtGameSecond: bigint('fired_at_game_second', { mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
       .notNull()
       .defaultNow(),
@@ -78,7 +78,7 @@ export const worldObligation = pgTable(
       'world_obligation_state',
       sql`${t.state} in ('pending', 'fired', 'cancelled')`,
     ),
-    check('world_obligation_due_tick', sql`${t.dueTick} > 0`),
+    check('world_obligation_due_game_second', sql`${t.dueGameSecond} > 0`),
   ],
 );
 export const worldObligationEvent = pgTable(
@@ -93,7 +93,7 @@ export const worldObligationEvent = pgTable(
       .notNull()
       .references(() => worldObligation.id),
     obligationRevision: integer('obligation_revision').notNull(),
-    tick: bigint('tick', { mode: 'number' }).notNull(),
+    gameSecond: bigint('game_second', { mode: 'number' }).notNull(),
     kind: text('kind').notNull(),
     label: text('label').notNull(),
     details: jsonb('details').notNull().$type<unknown>(),
@@ -177,7 +177,7 @@ export const gameActivityEvent = pgTable(
       .notNull()
       .references(() => gameActivity.id),
     activityRevision: integer('activity_revision').notNull(),
-    tick: bigint('tick', { mode: 'number' }).notNull(),
+    gameSecond: bigint('game_second', { mode: 'number' }).notNull(),
     kind: text('kind').notNull(),
     causeKey: text('cause_key').notNull(),
     label: text('label').notNull(),
@@ -204,7 +204,7 @@ export const campaignReport = pgTable(
       .notNull()
       .references(() => storyPassage.id, { onDelete: 'cascade' }),
     sourceRevision: integer('source_revision').notNull(),
-    sourceTick: bigint('source_tick', { mode: 'number' }).notNull(),
+    sourceGameSecond: bigint('source_game_second', { mode: 'number' }).notNull(),
     label: text('label').notNull(),
     factualSummary: text('factual_summary').notNull(),
     state: text('state').notNull().default('pending'),
@@ -232,7 +232,7 @@ export const gameRoll = pgTable(
     operationId: uuid('operation_id').notNull(),
     segment: integer('segment').notNull(),
     checkKey: text('check_key').notNull(),
-    tick: bigint('tick', { mode: 'number' }).notNull(),
+    gameSecond: bigint('game_second', { mode: 'number' }).notNull(),
     plan: jsonb('plan').notNull().$type<unknown>(),
     result: jsonb('result').notNull().$type<unknown>(),
     effects: jsonb('effects').notNull().$type<unknown>(),
@@ -301,8 +301,8 @@ export const gameActionExecution = pgTable(
       () => generation.id,
       { onDelete: 'restrict' },
     ),
-    startTick: bigint('start_tick', { mode: 'number' }).notNull(),
-    targetTick: bigint('target_tick', { mode: 'number' }).notNull(),
+    startGameSecond: bigint('start_game_second', { mode: 'number' }).notNull(),
+    targetGameSecond: bigint('target_game_second', { mode: 'number' }).notNull(),
     state: text('state').notNull().default('running'),
     revision: integer('revision').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
@@ -317,8 +317,8 @@ export const gameActionExecution = pgTable(
       sql`${t.state} in ('running', 'paused', 'interrupted', 'settled')`,
     ),
     check(
-      'game_action_execution_ticks',
-      sql`${t.startTick} >= 0 and ${t.targetTick} > ${t.startTick}`,
+      'game_action_execution_game_seconds',
+      sql`${t.startGameSecond} >= 0 and ${t.targetGameSecond} > ${t.startGameSecond}`,
     ),
   ],
 );
@@ -334,7 +334,7 @@ export const gameActionExecutionEvent = pgTable(
       .notNull()
       .references(() => gameActionExecution.operationId),
     executionRevision: integer('execution_revision').notNull(),
-    tick: bigint('tick', { mode: 'number' }).notNull(),
+    gameSecond: bigint('game_second', { mode: 'number' }).notNull(),
     kind: text('kind').notNull(),
     label: text('label').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })

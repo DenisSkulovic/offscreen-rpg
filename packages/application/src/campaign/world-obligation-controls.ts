@@ -58,10 +58,10 @@ export function createWorldObligationControls(database: Database) {
       const now = await readDatabaseClockMs(tx, current.id);
       const nearest = await readNearestPendingWorldObligations(tx, {
         storyId: current.id,
-        throughTick: Number.MAX_SAFE_INTEGER,
+        throughGameSecond: Number.MAX_SAFE_INTEGER,
         followUp: 'controlling-scene',
       });
-      const nearestTick = nearest[0]?.dueTick;
+      const nearestGameSecond = nearest[0]?.dueGameSecond;
       const [action] = state.activeActionOperationId
         ? await tx
             .select()
@@ -101,10 +101,12 @@ export function createWorldObligationControls(database: Database) {
         now,
         eligibility,
         campaignClockHeld(state),
-        runningAction?.targetTick ?? nearestTick ?? state.tick,
-        nearestTick,
+        runningAction?.targetGameSecond ??
+          nearestGameSecond ??
+          state.gameSecond,
+        nearestGameSecond,
       ).clock;
-      if (projected.elapsedTicks >= record.dueTick) {
+      if (projected.elapsedGameSeconds >= record.dueGameSecond) {
         // Once accepted work has earned the old boundary, that event wins even
         // if its sleeping worker has not persisted the interruption yet.
         throw new StoryError('conflict');
@@ -114,7 +116,7 @@ export function createWorldObligationControls(database: Database) {
         throw new StoryError('conflict');
       }
       const revision = record.revision + 1;
-      let dueTick = record.dueTick;
+      let dueGameSecond = record.dueGameSecond;
       if (parsed.data.action === 'postpone') {
         const settings = await loadCampaignSettings(
           tx,
@@ -122,9 +124,9 @@ export function createWorldObligationControls(database: Database) {
           state.settingsRevision,
         );
         try {
-          dueTick =
-            parsed.data.due.kind === 'tick'
-              ? parsed.data.due.tick
+          dueGameSecond =
+            parsed.data.due.kind === 'game-second'
+              ? parsed.data.due.gameSecond
               : compileWorldDate(settings.settings.time, parsed.data.due.date);
         } catch {
           throw new StoryError('invalid');
@@ -132,21 +134,22 @@ export function createWorldObligationControls(database: Database) {
       }
       if (
         parsed.data.action === 'postpone' &&
-        (dueTick <= projected.elapsedTicks || dueTick <= record.dueTick)
+        (dueGameSecond <= projected.elapsedGameSeconds ||
+          dueGameSecond <= record.dueGameSecond)
       ) {
         throw new StoryError('conflict');
       }
       const nextDefinition = worldObligationSchema.parse({
         ...definition,
         revision,
-        dueTick,
+        dueGameSecond,
       });
       const [updated] = await tx
         .update(worldObligation)
         .set({
           revision,
           definition: nextDefinition,
-          dueTick,
+          dueGameSecond,
           state: parsed.data.action === 'cancel' ? 'cancelled' : 'pending',
         })
         .where(
@@ -163,13 +166,13 @@ export function createWorldObligationControls(database: Database) {
         storyId: current.id,
         obligationId: record.id,
         obligationRevision: revision,
-        tick: projected.elapsedTicks,
+        gameSecond: projected.elapsedGameSeconds,
         kind: parsed.data.action === 'cancel' ? 'cancelled' : 'postponed',
         label: definition.label,
         details:
           parsed.data.action === 'postpone'
-            ? { previousDueTick: record.dueTick, dueTick }
-            : { previousDueTick: record.dueTick },
+            ? { previousDueGameSecond: record.dueGameSecond, dueGameSecond }
+            : { previousDueGameSecond: record.dueGameSecond },
       });
       await incrementStoryViewVersion(tx, {
         storyId: current.id,

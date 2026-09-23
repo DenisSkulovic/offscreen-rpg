@@ -1,10 +1,6 @@
 import type { QaJourneyCase } from '@offscreen/contracts/qa';
 import { mechanicalContentCatalogue } from '../../campaign/fixtures/mechanical-content';
-import {
-  defineCase,
-  stage,
-  stateEvidence,
-} from './support';
+import { defineCase, stage, stateEvidence } from './support';
 
 export const playerEntryCases: readonly QaJourneyCase[] = [
   defineCase({
@@ -194,7 +190,7 @@ export const playerEntryCases: readonly QaJourneyCase[] = [
         preconditions: ['A reviewed mechanical opening exists.'],
         action: 'Start the selected scenario variant.',
         observableExpectation:
-          'The opening presents feasible, distinct choices and labels each with a finite tick duration or as extended work.',
+          'The opening presents feasible, distinct choices and labels each with a finite gameSecond duration or as extended work.',
         authoritativeExpectation:
           'A committed passage owns the current offer and private admitted plans; public timing is derived from those plans rather than omitted or inferred from prose.',
       }),
@@ -219,9 +215,9 @@ export const playerEntryCases: readonly QaJourneyCase[] = [
         preconditions: ['An offer-local plan is available.'],
         action: 'Select one option and wait for its consequence.',
         observableExpectation:
-          'The accepted execution remains visible until its target tick; only then does the committed outcome appear while narration preparation is pending, followed by a fresh choice.',
+          'The accepted execution remains visible until its target gameSecond; only then does the committed outcome appear while narration preparation is pending, followed by a fresh choice.',
         authoritativeExpectation:
-          'The admitted execution owns the campaign clock, then one resolution receipt and its effects commit exactly once at its target tick. Narration latency adds no ticks; preparation retry cannot repeat mechanics.',
+          'The admitted execution owns the campaign clock, then one resolution receipt and its effects commit exactly once at its target gameSecond. Narration latency adds no gameSeconds; preparation retry cannot repeat mechanics.',
       }),
       stage({
         id: 'control-finite-action',

@@ -86,7 +86,7 @@ const campaignActivityViewSchema = z.strictObject({
   ]),
   dueAt: z.iso.datetime().nullable(),
   estimatedCompletionAt: z.iso.datetime().nullable(),
-  resolvedTicks: z.number().int().nonnegative(),
+  resolvedGameSeconds: z.number().int().nonnegative(),
   settingsRevision: z.number().int(),
 });
 
@@ -113,7 +113,7 @@ export const campaignActivityEventSchema = z.strictObject({
   ordinal: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   activityId: z.uuid(),
   activityRevision: z.number().int().nonnegative(),
-  tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   kind: campaignActivityEventKindSchema,
   label: z.string().trim().min(1).max(200),
   summary: z.string().trim().min(1).max(1000),
@@ -124,7 +124,7 @@ export const campaignActivityReportSchema = z.strictObject({
   id: z.uuid(),
   activityId: z.uuid(),
   activityRevision: z.number().int().nonnegative(),
-  sourceTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  sourceGameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   label: z.string().trim().min(1).max(200),
   factualSummary: z.string().trim().min(1).max(1000),
   state: z.enum(['pending', 'generating', 'published', 'unavailable']),
@@ -143,7 +143,7 @@ export const campaignWorldObligationReportSchema = z.strictObject({
   id: z.uuid(),
   obligationId: z.uuid(),
   obligationRevision: z.number().int().positive(),
-  sourceTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  sourceGameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   label: z.string().trim().min(1).max(200),
   factualSummary: z.string().trim().min(1).max(1000),
   state: z.enum(['pending', 'generating', 'published', 'unavailable']),
@@ -169,8 +169,12 @@ export const acceptedActivityPlanViewSchema = z.strictObject({
     'horizon-reached',
   ]),
   cursor: z.number().int().nonnegative(),
-  acceptedAtTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  horizonTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  acceptedAtGameSecond: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER),
+  horizonGameSecond: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   entries: z
     .array(
       z.strictObject({
@@ -196,7 +200,7 @@ export const campaignViewSchema = z.strictObject({
   character: characterSchema.nullable(),
   storyFacts: storyFactsSchema,
   location: z.string().nullable(),
-  tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   worldTime: worldTimeViewSchema,
   holds: z.array(
     z.discriminatedUnion('kind', [
@@ -229,8 +233,16 @@ export const campaignViewSchema = z.strictObject({
     .strictObject({
       operationId: z.uuid(),
       label: z.string().min(1).max(200),
-      startTick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-      targetTick: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+      startGameSecond: z
+        .number()
+        .int()
+        .nonnegative()
+        .max(Number.MAX_SAFE_INTEGER),
+      targetGameSecond: z
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER),
       state: z.enum(['running', 'paused']),
       revision: z.number().int().nonnegative(),
       dueAt: z.iso.datetime().nullable(),
@@ -243,7 +255,7 @@ export const campaignViewSchema = z.strictObject({
         ordinal: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
         executionId: z.uuid(),
         executionRevision: z.number().int().nonnegative(),
-        tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
         kind: z.enum([
           'started',
           'paused',
@@ -272,7 +284,7 @@ export const campaignViewSchema = z.strictObject({
         ordinal: z.number().int().positive(),
         obligationId: z.uuid(),
         obligationRevision: z.number().int().positive(),
-        tick: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+        gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
         kind: z.enum(['fired', 'postponed', 'cancelled']),
         label: z.string().trim().min(1).max(160),
         createdAt: z.iso.datetime(),
@@ -285,7 +297,7 @@ export const campaignViewSchema = z.strictObject({
       z.strictObject({
         id: z.uuid(),
         segment: z.number().int(),
-        tick: z.number().int().nonnegative(),
+        gameSecond: z.number().int().nonnegative(),
         roll: rollSchema,
         effects: outcomeEffectsSchema,
       }),
@@ -324,13 +336,13 @@ export const actionCommandSchema = z
       .min(1)
       .max(5)
       .optional(),
-    horizonTicks: z.number().int().positive().max(10080).optional(),
+    horizonGameSeconds: z.number().int().positive().max(10080).optional(),
   })
   .refine(
     (value) =>
       (value.successorPaths === undefined) ===
-      (value.horizonTicks === undefined),
-    'Accepted successors require exactly one finite tick horizon',
+      (value.horizonGameSeconds === undefined),
+    'Accepted successors require exactly one finite game-second horizon',
   );
 export const activityControlSchema = z
   .strictObject({

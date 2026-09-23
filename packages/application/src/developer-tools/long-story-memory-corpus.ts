@@ -51,7 +51,7 @@ function scenes(corpusId: string, count: number, landmarks: Map<number, string>)
     const sequence = index + 1;
     return {
       sequence,
-      tick: String(sequence * 10),
+      gameSecond: String(sequence * 10),
       documentId: stableUuid(`${corpusId}:scene:${sequence}`),
       path: `sources/passages/${String(sequence).padStart(4, '0')}.json`,
       title: `Passage ${sequence}`,
@@ -192,7 +192,7 @@ export async function materializeLongStoryMemoryCorpus(
   for (const scene of corpus.scenes) {
     const objectHash = await storage.putSourcePassage({
       format: 'offscreen.source-passage.v1',
-      envelope: { documentId: scene.documentId, kind: 'source-passage', schemaVersion: 1, revision: 1, authority: 'source', visibility: 'player-known', sources: [], coverage: { fromSequence: scene.sequence, throughSequence: scene.sequence, fromTick: scene.tick, throughTick: scene.tick } },
+      envelope: { documentId: scene.documentId, kind: 'source-passage', schemaVersion: 1, revision: 1, authority: 'source', visibility: 'player-known', sources: [], coverage: { fromSequence: scene.sequence, throughSequence: scene.sequence, fromGameSecond: scene.gameSecond, throughGameSecond: scene.gameSecond } },
       content: { version: 1, title: scene.title, paragraphs: scene.paragraphs },
     });
     entries.push({ documentId: scene.documentId, revision: 1, path: scene.path, objectHash, kind: 'source-passage' as const, authority: 'source' as const, visibility: 'player-known' as const });

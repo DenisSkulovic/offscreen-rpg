@@ -31,7 +31,7 @@ async function requestHistoricalReport(
     state: CampaignRecord;
     source: CampaignReportSource;
     selectedId: string;
-    sourceTick: number;
+    sourceGameSecond: number;
     passageId: string;
     label: string;
     intention: string;
@@ -78,7 +78,7 @@ async function requestHistoricalReport(
         resolution: {
           character: characterSchema.parse(args.state.character),
           storyFacts: storyFactsSchema.parse(args.state.storyFacts),
-          tick: args.state.tick,
+          gameSecond: args.state.gameSecond,
           offer: offerSchema.parse(args.state.offer),
           receipts: [
             {
@@ -109,7 +109,7 @@ async function requestHistoricalReport(
     source,
     sourcePassageId: args.passageId,
     sourceRevision: args.current.revision,
-    sourceTick: args.sourceTick,
+    sourceGameSecond: args.sourceGameSecond,
     label: args.label,
     factualSummary: args.factualSummary,
     state: 'generating',
@@ -145,7 +145,7 @@ export async function requestActivityReport(
       activityRevision: args.activity.revision,
     },
     selectedId: args.activity.id,
-    sourceTick: args.state.tick,
+    sourceGameSecond: args.state.gameSecond,
     effects: args.completionEffects,
     receipts: rolls.map((roll) => ({
       id: roll.id,
@@ -166,7 +166,7 @@ export async function requestWorldObligationReport(
     passageId: string;
     obligationId: string;
     obligationRevision: number;
-    dueTick: number;
+    dueGameSecond: number;
     label: string;
     factualSummary: string;
     documentStore?: DocumentStore;
@@ -180,7 +180,7 @@ export async function requestWorldObligationReport(
       obligationRevision: args.obligationRevision,
     },
     selectedId: args.obligationId,
-    sourceTick: args.dueTick,
+    sourceGameSecond: args.dueGameSecond,
     intention: args.factualSummary,
     effects: [],
     ...(args.documentStore ? { documentStore: args.documentStore } : {}),

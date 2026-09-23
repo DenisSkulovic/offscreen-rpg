@@ -268,7 +268,7 @@ export function createStoryReads(
           )`,
           activityState: sql<
             string | null
-          >`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id} AND c.tick IS NOT NULL)`,
+          >`(SELECT a.state FROM campaign c JOIN game_activity a ON a.id = c.active_activity_id WHERE c.story_id = ${story.id} AND c.gameSecond IS NOT NULL)`,
           wait: storyPassage.waitPlan,
           remaining: storyPassage.remainingMs,
         })
@@ -429,7 +429,7 @@ export function createStoryReads(
                     character: null,
                     storyFacts: [],
                     location: null,
-                    tick: 0,
+                    gameSecond: 0,
                     offer: null,
                     activityAccess: { kind: 'none' },
                     activity: null,

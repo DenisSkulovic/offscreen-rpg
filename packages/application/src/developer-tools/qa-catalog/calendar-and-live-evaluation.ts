@@ -90,21 +90,21 @@ export const calendarAndLiveEvaluationCases: readonly QaJourneyCase[] = [
       }),
       stage({
         id: 'advance',
-        name: 'Project the settled campaign tick',
+        name: 'Project the settled campaign gameSecond',
         importance: 'major',
         preconditions: ['A finite accepted action can advance campaign time.'],
         action: 'Settle the action and read the campaign again.',
         observableExpectation:
           'The date and duration labels advance by the admitted definition.',
         authoritativeExpectation:
-          'The monotonic tick remains authoritative and the compact Storyteller context contains the server-projected date.',
+          'The monotonic gameSecond remains authoritative and the compact Storyteller context contains the server-projected date.',
       }),
       stage({
         id: 'deadline',
         name: 'Stop accepted work at the controlling boundary',
         importance: 'poc-blocker',
         preconditions: [
-          'The world-deadline variant has an accepted journey crossing the exact due tick.',
+          'The world-deadline variant has an accepted journey crossing the exact due gameSecond.',
         ],
         action:
           'Advance the journey through the due boundary, redeliver it once, prepare the saved consequence and publish the scripted scene.',
@@ -123,17 +123,17 @@ export const calendarAndLiveEvaluationCases: readonly QaJourneyCase[] = [
         action:
           'Postpone one obligation, reject its stale revision, cancel another and deliver the old activity wake.',
         observableExpectation:
-          'Described knowledge still hides the exact tick; history shows postpone, cancellation and the eventual firing once.',
+          'Described knowledge still hides the exact gameSecond; history shows postpone, cancellation and the eventual firing once.',
         authoritativeExpectation:
-          'The old wake uses the revised due tick, cancelled work cannot fire, and revision-kind receipts remain replay-safe.',
+          'The old wake uses the revised due gameSecond, cancelled work cannot fire, and revision-kind receipts remain replay-safe.',
       }),
       stage({
         id: 'pace',
         name: 'Change pace without changing chronology',
         importance: 'major',
         preconditions: ['Campaign speed is editable.'],
-        action: 'Change pace and read the same settled tick.',
-        observableExpectation: 'The world date at that tick is unchanged.',
+        action: 'Change pace and read the same settled gameSecond.',
+        observableExpectation: 'The world date at that gameSecond is unchanged.',
         authoritativeExpectation:
           'The new settings revision preserves the captured definition and epoch exactly.',
       }),

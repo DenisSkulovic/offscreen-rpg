@@ -248,7 +248,7 @@ export function createChamberInspector(
           source: campaignReport.source,
           sourcePassageId: campaignReport.sourcePassageId,
           sourceRevision: campaignReport.sourceRevision,
-          sourceTick: campaignReport.sourceTick,
+          sourceGameSecond: campaignReport.sourceGameSecond,
           state: campaignReport.state,
           generationId: campaignReport.generationId,
           generationState: generation.state,

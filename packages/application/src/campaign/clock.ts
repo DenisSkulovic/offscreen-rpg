@@ -1,8 +1,8 @@
-import type { Pace, TickProgress } from '@offscreen/game/time';
+import type { Pace, GameTimeProgress } from '@offscreen/game/time';
 import {
-  earnedTicks,
+  earnedGameSeconds,
   paceSchema,
-  tickProgressSchema,
+  gameTimeProgressSchema,
 } from '@offscreen/game/time';
 import type { CampaignRecord } from './persistence';
 
@@ -21,9 +21,9 @@ export function projectCampaignClock(
   now: number,
   eligibility: CampaignClockEligibility,
   held: boolean,
-  instantTargetTick = state.tick,
-  controllingTick?: number,
-): { clock: TickProgress; pace: Pace } {
+  instantTargetGameSecond = state.gameSecond,
+  controllingGameSecond?: number,
+): { clock: GameTimeProgress; pace: Pace } {
   const pace = paceSchema.parse(state.clockPace);
   const acceptedActivityOwnsClock =
     eligibility.kind === 'accepted-activity' &&
@@ -31,8 +31,8 @@ export function projectCampaignClock(
   const acceptedActionOwnsClock =
     eligibility.kind === 'accepted-action' &&
     state.activeActionOperationId === eligibility.operationId;
-  const clock = earnedTicks({
-    progress: tickProgressSchema.parse(state.clock),
+  const clock = earnedGameSeconds({
+    progress: gameTimeProgressSchema.parse(state.clock),
     anchorAt: state.clockAnchorAt,
     // A missing hold is not permission to advance. The caller must identify
     // the accepted execution that owns the campaign's single advancing slot.
@@ -42,14 +42,14 @@ export function projectCampaignClock(
         : 'held',
     pace,
     now,
-    maximumTicks: Math.min(
+    maximumGameSeconds: Math.min(
       eligibility.kind === 'accepted-action' || pace.kind === 'instant'
-        ? instantTargetTick
+        ? instantTargetGameSecond
         : Number.MAX_SAFE_INTEGER,
-      controllingTick ?? Number.MAX_SAFE_INTEGER,
+      controllingGameSecond ?? Number.MAX_SAFE_INTEGER,
     ),
   });
-  if (clock.elapsedTicks < state.tick) {
+  if (clock.elapsedGameSeconds < state.gameSecond) {
     throw new Error('Campaign clock is behind its settled frontier');
   }
   return { clock, pace };

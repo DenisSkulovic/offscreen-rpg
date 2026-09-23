@@ -3,7 +3,7 @@ import type { Database } from '@offscreen/db';
 import { campaign, gameActionExecution } from '@offscreen/db/campaign-schema';
 import { actionExecutionControlSchema } from '@offscreen/contracts/campaign';
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
-import { paceSchema, tickProgressSchema } from '@offscreen/game/time';
+import { paceSchema, gameTimeProgressSchema } from '@offscreen/game/time';
 import {
   incrementStoryViewVersion,
   lockOwnedStory,
@@ -62,7 +62,7 @@ export function createActionExecutionControls(database: Database) {
       }
 
       const now = await readDatabaseClockMs(tx, current.id);
-      let clock = tickProgressSchema.parse(state.clock);
+      let clock = gameTimeProgressSchema.parse(state.clock);
       if (execution.state === 'running') {
         const settlement = await settleActionExecution(
           tx,
@@ -97,7 +97,7 @@ export function createActionExecutionControls(database: Database) {
         storyId: current.id,
         executionId: execution.operationId,
         executionRevision: execution.revision + 1,
-        tick: clock.elapsedTicks,
+        gameSecond: clock.elapsedGameSeconds,
         kind: eventKind,
         label: plan.label,
       });

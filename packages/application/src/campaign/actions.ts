@@ -173,7 +173,7 @@ export function createCampaignActions(
         offer.id,
         selectionNow,
       );
-      const acceptedHorizonTicks = parsed.data.horizonTicks;
+      const acceptedHorizonGameSeconds = parsed.data.horizonGameSeconds;
       if (
         (definition.resolution.kind === 'process' ||
           definition.resolution.kind === 'resume') &&
@@ -238,7 +238,7 @@ export function createCampaignActions(
           storyId: current.id,
           activityId: retained.id,
           activityRevision: retained.revision + 1,
-          tick: state.tick,
+          gameSecond: state.gameSecond,
           kind: 'resumed',
           causeKey: `command:${args.operationId}`,
           label: activePlan.action.label,
@@ -288,7 +288,7 @@ export function createCampaignActions(
             storyId: current.id,
             activityId: active.id,
             activityRevision: active.revision + 1,
-            tick: state.tick,
+            gameSecond: state.gameSecond,
             kind: 'suspended',
             causeKey: `command:${args.operationId}`,
             label: retainedPlan.action.label,
@@ -314,22 +314,22 @@ export function createCampaignActions(
         const activityId = randomUUID();
         let acceptedPlan = null;
         if (acceptedSequence.length > 1) {
-          if (acceptedHorizonTicks === undefined) {
+          if (acceptedHorizonGameSeconds === undefined) {
             throw new StoryError('invalid');
           }
           acceptedPlan = createAcceptedActivityPlan({
             offerId: offer.id,
             plans: acceptedSequence,
             firstActivityId: activityId,
-            acceptedAtTick: projected.clock.elapsedTicks,
-            horizonTicks: acceptedHorizonTicks,
+            acceptedAtGameSecond: projected.clock.elapsedGameSeconds,
+            horizonGameSeconds: acceptedHorizonGameSeconds,
           });
         } else {
           acceptedPlan = reenterAcceptedActivityPlan({
             value: state.acceptedActivityPlan,
             selectedPlan: definition,
             activityId,
-            currentTick: projected.clock.elapsedTicks,
+            currentGameSecond: projected.clock.elapsedGameSeconds,
           });
         }
         await tx.insert(gameActivity).values({
@@ -339,7 +339,7 @@ export function createCampaignActions(
             version: 6,
             action: definition.resolution.action,
             settingsRevision: state.settingsRevision,
-            resolvedThroughTick: 0,
+            resolvedThroughGameSecond: 0,
           },
           state: 'running',
           boundariesSettled: 0,
@@ -349,7 +349,7 @@ export function createCampaignActions(
           storyId: current.id,
           activityId,
           activityRevision: 0,
-          tick: projected.clock.elapsedTicks,
+          gameSecond: projected.clock.elapsedGameSeconds,
           kind: 'started',
           causeKey: `command:${args.operationId}`,
           label: definition.resolution.action.label,
@@ -380,7 +380,7 @@ export function createCampaignActions(
             },
             activeActivityId: activityId,
             acceptedActivityPlan: acceptedPlan,
-            tick: projected.clock.elapsedTicks,
+            gameSecond: projected.clock.elapsedGameSeconds,
             clock: projected.clock,
             clockAnchorAt: new Date(now),
           })
@@ -393,12 +393,12 @@ export function createCampaignActions(
         await scheduleActivity(tx, activityId);
         return;
       }
-      const startTick = selectedState.tick;
-      const targetTick =
-        startTick + definition.resolution.fictionalDurationSeconds;
+      const startGameSecond = selectedState.gameSecond;
+      const targetGameSecond =
+        startGameSecond + definition.resolution.fictionalDurationSeconds;
       const interveningObligations = await readPendingWorldObligations(tx, {
         storyId: current.id,
-        throughTick: targetTick,
+        throughGameSecond: targetGameSecond,
       });
       const overlap = actionOverlapEligibility({
         resolutionKind: definition.resolution.kind,
@@ -408,8 +408,8 @@ export function createCampaignActions(
         ? freezePendingActionResolution({
             character: campaignCharacter(selectedState),
             storyFacts: campaignStoryFacts(selectedState),
-            startTick,
-            targetTick,
+            startGameSecond,
+            targetGameSecond,
             resolution: resolveImmediateAction(
               campaignCharacter(selectedState),
               campaignStoryFacts(selectedState),
@@ -428,8 +428,8 @@ export function createCampaignActions(
         offer,
         plan: definition,
         pendingResolution,
-        startTick,
-        targetTick,
+        startGameSecond,
+        targetGameSecond,
       });
       if (pendingResolution) {
         await preparePendingActionNarration(
@@ -437,7 +437,7 @@ export function createCampaignActions(
           current,
           {
             executionId: args.operationId,
-            targetTick,
+            targetGameSecond,
             offer,
             label: definition.label,
             intention: definition.intention,
@@ -450,7 +450,7 @@ export function createCampaignActions(
         storyId: current.id,
         executionId: args.operationId,
         executionRevision: 0,
-        tick: startTick,
+        gameSecond: startGameSecond,
         kind: 'started',
         label: definition.label,
       });

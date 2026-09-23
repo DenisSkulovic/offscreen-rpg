@@ -11,8 +11,8 @@ const timeDefinition = {
   id: 'bloom-time',
   revision: 1,
   dayLabel: 'Bloom',
-  ticksPerDay: 6,
-  epoch: { day: 9, tickOfDay: 0 },
+  gameSecondsPerDay: 6,
+  epoch: { day: 9, gameSecondOfDay: 0 },
 };
 
 const proposal = {
@@ -23,7 +23,7 @@ const proposal = {
   visibility: { kind: 'exact' },
   due: {
     kind: 'date',
-    date: { kind: 'ordinal-days', day: 10, tickOfDay: 2 },
+    date: { kind: 'ordinal-days', day: 10, gameSecondOfDay: 2 },
   },
   consequence: {
     kind: 'condition.set.v1',
@@ -36,14 +36,14 @@ const proposal = {
   followUp: 'controlling-scene',
 };
 
-test('an admitted date is compiled once to an exact due tick', () => {
+test('an admitted date is compiled once to an exact due game second', () => {
   const obligation = compileWorldObligation({
     proposal,
     timeDefinition,
-    originTick: 0,
+    originGameSecond: 0,
   });
-  assert.equal(obligation.dueTick, 8);
-  assert.equal(obligation.originTick, 0);
+  assert.equal(obligation.dueGameSecond, 8);
+  assert.equal(obligation.originGameSecond, 0);
   assert.deepEqual(
     projectPublicWorldObligation({ obligation, state: 'pending' }),
     {
@@ -52,7 +52,7 @@ test('an admitted date is compiled once to an exact due tick', () => {
       label: proposal.label,
       visibility: 'exact',
       state: 'pending',
-      dueTick: 8,
+      dueGameSecond: 8,
     },
   );
 });
@@ -61,7 +61,7 @@ test('a fired obligation replaces its condition by stable identity', () => {
   const obligation = compileWorldObligation({
     proposal,
     timeDefinition,
-    originTick: 0,
+    originGameSecond: 0,
   });
   assert.deepEqual(
     applyWorldObligationCondition({
@@ -74,7 +74,7 @@ test('a fired obligation replaces its condition by stable identity', () => {
             kind: 'world-obligation',
             obligationId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
           },
-          setAtTick: 1,
+          setAtGameSecond: 1,
         },
       ],
       obligation,
@@ -88,7 +88,7 @@ test('a fired obligation replaces its condition by stable identity', () => {
           kind: 'world-obligation',
           obligationId: proposal.id,
         },
-        setAtTick: 8,
+        setAtGameSecond: 8,
       },
     ],
   );
@@ -99,10 +99,10 @@ test('hidden obligations expose no schedule and past admission is rejected', () 
     proposal: {
       ...proposal,
       visibility: { kind: 'hidden' },
-      due: { kind: 'tick', tick: 12 },
+      due: { kind: 'game-second', gameSecond: 12 },
     },
     timeDefinition,
-    originTick: 3,
+    originGameSecond: 3,
   });
   assert.equal(
     projectPublicWorldObligation({ obligation, state: 'pending' }),
@@ -111,9 +111,9 @@ test('hidden obligations expose no schedule and past admission is rejected', () 
   assert.throws(
     () =>
       compileWorldObligation({
-        proposal: { ...proposal, due: { kind: 'tick', tick: 3 } },
+        proposal: { ...proposal, due: { kind: 'game-second', gameSecond: 3 } },
         timeDefinition,
-        originTick: 3,
+        originGameSecond: 3,
       }),
     /due after its admission origin/,
   );

@@ -21,7 +21,7 @@ export const campaignStateFileSchema = z.strictObject({
   acceptedActivityPlan: jsonValue.nullable(),
   content: jsonValue.nullable(),
   location: z.string().nullable(),
-  tick: z.number().int().nonnegative(),
+  gameSecond: z.number().int().nonnegative(),
   clock: jsonValue,
   clockAnchorAt: z.iso.datetime(),
   clockPace: jsonValue,
@@ -44,7 +44,7 @@ export function projectCampaignStateFile(row: typeof campaign.$inferSelect) {
     acceptedActivityPlan: row.acceptedActivityPlan,
     content: row.content,
     location: row.location,
-    tick: row.tick,
+    gameSecond: row.gameSecond,
     clock: row.clock,
     clockAnchorAt: row.clockAnchorAt.toISOString(),
     clockPace: row.clockPace,
@@ -62,8 +62,8 @@ function stableStateDocumentId(storyId: string) {
     .update(`offscreen:campaign-state:${storyId}`)
     .digest()
     .subarray(0, 16);
-  bytes[6] = (bytes[6] ?? 0) & 0x0f | 0x50;
-  bytes[8] = (bytes[8] ?? 0) & 0x3f | 0x80;
+  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x50;
+  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
   const hex = bytes.toString('hex');
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
@@ -86,10 +86,15 @@ export async function stageCampaignStateDocument(args: {
         authorOperationId: null,
         entries: [],
       });
-  if (current.campaignId !== args.storyId || current.revision !== args.rootRevision)
+  if (
+    current.campaignId !== args.storyId ||
+    current.revision !== args.rootRevision
+  )
     throw new StoryError('conflict', 'document_root');
   const documentId = stableStateDocumentId(args.storyId);
-  const previous = current.entries.find((entry) => entry.documentId === documentId);
+  const previous = current.entries.find(
+    (entry) => entry.documentId === documentId,
+  );
   const revision = (previous?.revision ?? 0) + 1;
   const document = canonicalStructuredDocumentSchema.parse({
     format: 'offscreen.structured-document.v1',
@@ -121,8 +126,10 @@ export async function stageCampaignStateDocument(args: {
     revision: current.revision + 1,
     previousRootHash: args.rootHash,
     authorOperationId: args.operationId,
-    entries: [...current.entries.filter((item) => item.documentId !== documentId), entry]
-      .sort((left, right) => left.path.localeCompare(right.path)),
+    entries: [
+      ...current.entries.filter((item) => item.documentId !== documentId),
+      entry,
+    ].sort((left, right) => left.path.localeCompare(right.path)),
   });
   return {
     documentId,

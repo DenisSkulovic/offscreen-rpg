@@ -10,8 +10,12 @@ export const paceSchema = z.discriminatedUnion('kind', [
 ]);
 export type Pace = z.infer<typeof paceSchema>;
 
-export const tickProgressSchema = z.strictObject({
-  elapsedTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+export const gameTimeProgressSchema = z.strictObject({
+  elapsedGameSeconds: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER),
   remainder: z
     .strictObject({
       numerator: z.string().regex(/^(0|[1-9]\d*)$/),
@@ -21,10 +25,13 @@ export const tickProgressSchema = z.strictObject({
       (fraction) => BigInt(fraction.numerator) < BigInt(fraction.denominator),
     ),
 });
-export type TickProgress = z.infer<typeof tickProgressSchema>;
+export type GameTimeProgress = z.infer<typeof gameTimeProgressSchema>;
 
-export function wholeTicks(elapsedTicks: number): TickProgress {
-  return { elapsedTicks, remainder: { numerator: '0', denominator: '1' } };
+export function wholeGameSeconds(elapsedGameSeconds: number): GameTimeProgress {
+  return {
+    elapsedGameSeconds,
+    remainder: { numerator: '0', denominator: '1' },
+  };
 }
 
 function gcd(left: bigint, right: bigint): bigint {
@@ -35,19 +42,19 @@ function gcd(left: bigint, right: bigint): bigint {
 }
 
 /** Exact earned progress at the real-time anchor, independent of checks. */
-export function earnedTicks(input: {
-  progress: TickProgress;
+export function earnedGameSeconds(input: {
+  progress: GameTimeProgress;
   anchorAt: Date;
   state: string;
   pace: Pace;
   now: number;
-  maximumTicks: number;
-}): TickProgress {
+  maximumGameSeconds: number;
+}): GameTimeProgress {
   if (input.state !== 'running') {
     return input.progress;
   }
   if (input.pace.kind === 'instant') {
-    return wholeTicks(input.maximumTicks);
+    return wholeGameSeconds(input.maximumGameSeconds);
   }
   const realElapsedMs = BigInt(
     Math.max(0, input.now - input.anchorAt.getTime()),
@@ -58,15 +65,15 @@ export function earnedTicks(input: {
   const numerator =
     BigInt(input.progress.remainder.numerator) * realDurationMs +
     realElapsedMs * BigInt(input.pace.fictionalSeconds) * previousDenominator;
-  const elapsedTicks =
-    BigInt(input.progress.elapsedTicks) + numerator / denominator;
-  if (elapsedTicks >= BigInt(input.maximumTicks)) {
-    return wholeTicks(input.maximumTicks);
+  const elapsedGameSeconds =
+    BigInt(input.progress.elapsedGameSeconds) + numerator / denominator;
+  if (elapsedGameSeconds >= BigInt(input.maximumGameSeconds)) {
+    return wholeGameSeconds(input.maximumGameSeconds);
   }
   const remainder = numerator % denominator;
   const divisor = gcd(remainder, denominator);
   return {
-    elapsedTicks: Number(elapsedTicks),
+    elapsedGameSeconds: Number(elapsedGameSeconds),
     remainder: {
       numerator: String(remainder / divisor),
       denominator: String(denominator / divisor),
@@ -75,17 +82,20 @@ export function earnedTicks(input: {
 }
 
 /** Real wait only. Long waits wake periodically within native timer limits. */
-export function realMsUntilTick(
-  progress: TickProgress,
-  boundaryTick: number,
+export function realMsUntilGameSecond(
+  progress: GameTimeProgress,
+  boundaryGameSecond: number,
   pace: Pace,
 ): number {
-  if (pace.kind === 'instant' || progress.elapsedTicks >= boundaryTick) {
+  if (
+    pace.kind === 'instant' ||
+    progress.elapsedGameSeconds >= boundaryGameSecond
+  ) {
     return 0;
   }
   const denominator = BigInt(progress.remainder.denominator);
   const remaining =
-    BigInt(boundaryTick - progress.elapsedTicks) * denominator -
+    BigInt(boundaryGameSecond - progress.elapsedGameSeconds) * denominator -
     BigInt(progress.remainder.numerator);
   const realNumerator = remaining * BigInt(pace.realSeconds) * 1000n;
   const realDenominator = denominator * BigInt(pace.fictionalSeconds);

@@ -48,7 +48,7 @@ export function CampaignPlay({
 }) {
   const [path, setPath] = useState<string[]>([]);
   const [successorPaths, setSuccessorPaths] = useState<string[][]>([]);
-  const [planHorizonTicks, setPlanHorizonTicks] = useState(60);
+  const [planHorizonGameSeconds, setPlanHorizonGameSeconds] = useState(60);
   const [pace, setPace] = useState('steady');
   const command = useCampaignCommand(story.id, onSnapshot);
   const activity = campaign.activity;
@@ -106,7 +106,7 @@ export function CampaignPlay({
               <p key={obligation.id}>
                 <strong>{obligation.label}</strong>
                 {obligation.visibility === 'exact'
-                  ? ` — ${projectWorldTime(campaign.settings.time, obligation.dueTick).label}`
+                  ? ` — ${projectWorldTime(campaign.settings.time, obligation.dueGameSecond).label}`
                   : ` — ${obligation.description}`}
               </p>
             ))}
@@ -118,7 +118,7 @@ export function CampaignPlay({
           {campaign.worldObligationEvents.map((event) => (
             <p key={event.id}>
               <strong>{event.label}</strong> · {event.kind} ·{' '}
-              {projectWorldTime(campaign.settings.time, event.tick).label}
+              {projectWorldTime(campaign.settings.time, event.gameSecond).label}
             </p>
           ))}
         </details>
@@ -130,7 +130,8 @@ export function CampaignPlay({
             for{' '}
             {formatWorldDuration(
               campaign.settings.time,
-              actionExecution.targetTick - actionExecution.startTick,
+              actionExecution.targetGameSecond -
+                actionExecution.startGameSecond,
             )}
             .
             {actionExecution.dueAt
@@ -207,8 +208,8 @@ export function CampaignPlay({
         ))}
         <p>
           Elapsed game time:{' '}
-          {formatWorldDuration(campaign.settings.time, campaign.tick)}. SRD
-          5.2.1 ability-check subset; server-resolved nonlethal actions.
+          {formatWorldDuration(campaign.settings.time, campaign.gameSecond)}.
+          SRD 5.2.1 ability-check subset; server-resolved nonlethal actions.
         </p>
       </details>
       {activity ? (
@@ -334,9 +335,9 @@ export function CampaignPlay({
               : ''}
           </p>
           <p>
-            Accepted at fictional second {acceptedPlan.acceptedAtTick}; no
+            Accepted at fictional second {acceptedPlan.acceptedAtGameSecond}; no
             successor starts at or after fictional second{' '}
-            {acceptedPlan.horizonTick}.
+            {acceptedPlan.horizonGameSecond}.
           </p>
           <ol>
             {acceptedPlan.entries.map((entry) => (
@@ -370,7 +371,7 @@ export function CampaignPlay({
             <article key={event.id}>
               <p>
                 <strong>{event.label}</strong> · {event.kind} · fictional second{' '}
-                {event.tick}
+                {event.gameSecond}
               </p>
               <p>{event.summary}</p>
             </article>
@@ -383,7 +384,7 @@ export function CampaignPlay({
           {campaign.actionExecutionEvents.map((event) => (
             <p key={event.id}>
               <strong>{event.label}</strong> · {event.kind} · fictional second{' '}
-              {event.tick}
+              {event.gameSecond}
             </p>
           ))}
         </details>
@@ -394,9 +395,8 @@ export function CampaignPlay({
           {campaign.activityReports.map((entry) => (
             <article key={entry.id}>
               <p>
-                <strong>{entry.report?.title ?? entry.label}</strong> · fictional
-                second{' '}
-                {entry.sourceTick} · {entry.state}
+                <strong>{entry.report?.title ?? entry.label}</strong> ·
+                fictional second {entry.sourceGameSecond} · {entry.state}
               </p>
               {(entry.report?.paragraphs ?? [entry.factualSummary]).map(
                 (paragraph, index) => (
@@ -413,9 +413,8 @@ export function CampaignPlay({
           {campaign.worldObligationReports.map((entry) => (
             <article key={entry.id}>
               <p>
-                <strong>{entry.report?.title ?? entry.label}</strong> · fictional
-                second{' '}
-                {entry.sourceTick} · {entry.state}
+                <strong>{entry.report?.title ?? entry.label}</strong> ·
+                fictional second {entry.sourceGameSecond} · {entry.state}
               </p>
               {(entry.report?.paragraphs ?? [entry.factualSummary]).map(
                 (paragraph, index) => (
@@ -464,7 +463,7 @@ export function CampaignPlay({
                     ...(successorPaths.length
                       ? {
                           successorPaths,
-                          horizonTicks: planHorizonTicks,
+                          horizonGameSeconds: planHorizonGameSeconds,
                         }
                       : {}),
                   });
@@ -524,9 +523,9 @@ export function CampaignPlay({
                   type="number"
                   min={1}
                   max={10080}
-                  value={planHorizonTicks}
+                  value={planHorizonGameSeconds}
                   onChange={(event) =>
-                    setPlanHorizonTicks(Number(event.target.value))
+                    setPlanHorizonGameSeconds(Number(event.target.value))
                   }
                 />
               </label>{' '}
@@ -613,9 +612,8 @@ export function CampaignPlay({
         {campaign.rolls.map((entry) => (
           <article key={entry.id}>
             <p>
-              <strong>{entry.roll.purpose}</strong> · fictional second {entry.tick}{' '}
-              ·
-              boundary {entry.segment}
+              <strong>{entry.roll.purpose}</strong> · fictional second{' '}
+              {entry.gameSecond} · boundary {entry.segment}
             </p>
             <p>
               d20: {entry.roll.dice.join(', ')} → {entry.roll.chosen}

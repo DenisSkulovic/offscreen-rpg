@@ -15,7 +15,7 @@ export function beaconOpeningPlans(character: MechanicalCharacter) {
       key: 'observe-harbor-shift',
       label: 'Observe the harbor shift',
       intention:
-        'Watch the harbor for two ticks before deciding how to use the rest of the watch.',
+        'Watch the harbor for two fictional seconds before deciding how to use the rest of the watch.',
       risk: null,
       evidence: [],
       requires: [{ id: 'location', value: 'harbor-beacon' }],
@@ -56,7 +56,7 @@ export function beaconOpeningPlans(character: MechanicalCharacter) {
       key: 'keep-harbor-watch',
       label: 'Keep the harbor watch',
       intention:
-        'Continue watching the landing for two more ticks without beginning repairs.',
+        'Continue watching the landing for two more fictional seconds without beginning repairs.',
       risk: null,
       evidence: [],
       requires: [{ id: 'location', value: 'harbor-beacon' }],

@@ -284,12 +284,12 @@ export async function publishStorytellerResult(
         execution.preparationGenerationId !== id ||
         receipt.generationId !== id ||
         execution.storyId !== current.id ||
-        execution.targetTick !== task.source.targetTick ||
+        execution.targetGameSecond !== task.source.targetGameSecond ||
         pending.projectedStateDigest !== task.source.projectedStateDigest ||
         actionProjectedStateDigest({
           character: campaignState.character,
           storyFacts: campaignState.storyFacts,
-          tick: campaignState.tick,
+          gameSecond: campaignState.gameSecond,
         }) !== task.source.projectedStateDigest
       ) {
         throw new StoryError('invalid');

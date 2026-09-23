@@ -59,7 +59,7 @@ export async function preparePendingActionNarration(
   current: StoryRecord,
   input: {
     executionId: string;
-    targetTick: number;
+    targetGameSecond: number;
     offer: unknown;
     label: string;
     intention: string;
@@ -88,7 +88,7 @@ export async function preparePendingActionNarration(
       label: input.label,
       intention: input.intention,
     },
-    projectTick: input.targetTick,
+    projectGameSecond: input.targetGameSecond,
     ...canonicalContextDependencies(
       current,
       documentStore,
@@ -105,7 +105,7 @@ export async function preparePendingActionNarration(
         narrativeRevision: current.revision,
         passageId: passage.id,
         executionId: input.executionId,
-        targetTick: input.targetTick,
+        targetGameSecond: input.targetGameSecond,
         projectedStateDigest: input.pending.projectedStateDigest,
       },
       profile: storytellerProfileSchema.parse(current.storyteller),
@@ -115,7 +115,7 @@ export async function preparePendingActionNarration(
         resolution: {
           character: input.pending.resolution.character,
           storyFacts: input.pending.resolution.storyFacts,
-          tick: input.targetTick,
+          gameSecond: input.targetGameSecond,
           offer: offerSchema.parse(input.offer),
           receipts: [
             {
@@ -272,7 +272,7 @@ async function admitActionNarration(
         resolution: {
           character: characterSchema.parse(state.character),
           storyFacts: storyFactsSchema.parse(state.storyFacts),
-          tick: state.tick,
+          gameSecond: state.gameSecond,
           offer: offerSchema.parse(receipt.offer),
           receipts: [
             {
@@ -373,9 +373,7 @@ async function admitConsequenceNarration(
       current,
       documentStore,
       canonicalRuleEvidence(
-        rolls.length
-          ? ['time', 'contribution', 'ability-check']
-          : ['time'],
+        rolls.length ? ['time', 'contribution', 'ability-check'] : ['time'],
       ),
     ),
   });
@@ -394,7 +392,7 @@ async function admitConsequenceNarration(
         resolution: {
           character: characterSchema.parse(state.character),
           storyFacts: storyFactsSchema.parse(state.storyFacts),
-          tick: state.tick,
+          gameSecond: state.gameSecond,
           offer: state.offer === null ? null : offerSchema.parse(state.offer),
           receipts: rolls.map((roll) => ({
             id: roll.id,
@@ -476,7 +474,7 @@ async function admitWorldObligationNarration(
         resolution: {
           character: characterSchema.parse(state.character),
           storyFacts: storyFactsSchema.parse(state.storyFacts),
-          tick: state.tick,
+          gameSecond: state.gameSecond,
           offer: null,
           receipts: [
             {

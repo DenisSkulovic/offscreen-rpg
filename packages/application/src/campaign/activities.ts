@@ -12,17 +12,17 @@ import {
   activityBoundaryBlockText,
   activityProgressSchema,
   initialActivityProgress,
-  nextBoundaryTick,
+  nextBoundaryGameSecond,
   processBoundaryDue,
-  processProgressAtEffortTick,
+  processProgressAtEffortGameSecond,
   resolvedActivityPlanSchema,
   recordActivityOccurrence,
   settleProcessBoundary,
-  worldTickForEffortBoundary,
+  worldGameSecondForEffortBoundary,
 } from '@offscreen/game/activities';
 import { resolveCheckResolution } from '@offscreen/game/checks';
 import { applyOutcomeEffects } from '@offscreen/game/effects';
-import { realMsUntilTick, wholeTicks } from '@offscreen/game/time';
+import { realMsUntilGameSecond, wholeGameSeconds } from '@offscreen/game/time';
 import {
   consumePreparedActivityPlan,
   immediateActionAvailable,
@@ -108,7 +108,7 @@ async function settleAcceptedPlanBoundary(
       .where(eq(campaign.storyId, state.storyId));
     return { ...state, acceptedActivityPlan: finished, activeActivityId: null };
   }
-  if (state.tick >= accepted.horizonTick) {
+  if (state.gameSecond >= accepted.horizonGameSecond) {
     const stopped = acceptedActivityPlanSchema.parse({
       ...accepted,
       revision: accepted.revision + 1,
@@ -117,7 +117,7 @@ async function settleAcceptedPlanBoundary(
       entries: completedEntries.map((entry, index) =>
         index >= nextCursor ? { ...entry, state: 'cancelled' as const } : entry,
       ),
-      blockedReason: `The accepted plan reached its tick ${accepted.horizonTick} horizon before the next activity could start.`,
+      blockedReason: `The accepted plan reached its gameSecond ${accepted.horizonGameSecond} horizon before the next activity could start.`,
     });
     await tx
       .update(campaign)
@@ -168,7 +168,7 @@ async function settleAcceptedPlanBoundary(
       version: 6,
       action: prepared.resolution.action,
       settingsRevision: state.settingsRevision,
-      resolvedThroughTick: 0,
+      resolvedThroughGameSecond: 0,
     },
     state: 'running',
     boundariesSettled: 0,
@@ -178,7 +178,7 @@ async function settleAcceptedPlanBoundary(
     storyId: state.storyId,
     activityId,
     activityRevision: 0,
-    tick: state.tick,
+    gameSecond: state.gameSecond,
     kind: 'started',
     causeKey: `accepted-plan:${accepted.id}:entry:${nextEntry.id}`,
     label: prepared.label,
@@ -237,34 +237,37 @@ export async function settleActivity(
     return { activity, current, state };
   }
   const storedProgress = activityProgressSchema.parse(activity.progress);
-  const nextEffortBoundary = nextBoundaryTick(plan, plan.resolvedThroughTick);
-  const instantTargetTick = storedProgress.completionPending
-    ? state.tick
-    : worldTickForEffortBoundary({
-        campaignTick: state.tick,
-        retainedEffortTicks: storedProgress.effortTicks,
-        boundaryEffortTick: nextEffortBoundary,
+  const nextEffortBoundary = nextBoundaryGameSecond(
+    plan,
+    plan.resolvedThroughGameSecond,
+  );
+  const instantTargetGameSecond = storedProgress.completionPending
+    ? state.gameSecond
+    : worldGameSecondForEffortBoundary({
+        campaignGameSecond: state.gameSecond,
+        retainedEffortGameSeconds: storedProgress.effortGameSeconds,
+        boundaryEffortGameSecond: nextEffortBoundary,
       });
   const { clock, pace } = projectCampaignClock(
     state,
     now,
     { kind: 'accepted-activity', activityId: activity.id },
     campaignClockHeld(state),
-    instantTargetTick,
+    instantTargetGameSecond,
     controllingObligation
-      ? Math.max(state.tick, controllingObligation.dueTick)
+      ? Math.max(state.gameSecond, controllingObligation.dueGameSecond)
       : undefined,
   );
-  const availableWorldTicks = clock.elapsedTicks - state.tick;
-  let availableEffortTicks = storedProgress.effortTicks + availableWorldTicks;
+  const availableWorldGameSeconds = clock.elapsedGameSeconds - state.gameSecond;
+  let availableEffortGameSeconds = storedProgress.effortGameSeconds + availableWorldGameSeconds;
   if (pace.kind === 'instant') {
-    availableEffortTicks = storedProgress.completionPending
-      ? storedProgress.effortTicks
+    availableEffortGameSeconds = storedProgress.completionPending
+      ? storedProgress.effortGameSeconds
       : nextEffortBoundary;
   }
   let processProgress = storedProgress.process;
-  let cursorTick = plan.resolvedThroughTick;
-  let worldCursor = state.tick;
+  let cursorGameSecond = plan.resolvedThroughGameSecond;
+  let worldCursor = state.gameSecond;
   let boundariesSettled = activity.boundariesSettled;
   let nextState = 'running';
   let completionPending = storedProgress.completionPending;
@@ -286,26 +289,26 @@ export async function settleActivity(
     nextState === 'running' && boundaryCount < 24;
     boundaryCount++
   ) {
-    const boundaryTick = nextBoundaryTick(plan, cursorTick);
-    if (boundaryTick > availableEffortTicks) {
+    const boundaryGameSecond = nextBoundaryGameSecond(plan, cursorGameSecond);
+    if (boundaryGameSecond > availableEffortGameSeconds) {
       break;
     }
-    const worldBoundaryTick = worldTickForEffortBoundary({
-      campaignTick: state.tick,
-      retainedEffortTicks: storedProgress.effortTicks,
-      boundaryEffortTick: boundaryTick,
+    const worldBoundaryGameSecond = worldGameSecondForEffortBoundary({
+      campaignGameSecond: state.gameSecond,
+      retainedEffortGameSeconds: storedProgress.effortGameSeconds,
+      boundaryEffortGameSecond: boundaryGameSecond,
     });
-    // A hard world cutoff owns equality. Productive effects at that exact tick
+    // A hard world cutoff owns equality. Productive effects at that exact gameSecond
     // remain unapplied and the obligation is committed first by the caller.
     if (
       controllingObligation &&
-      worldBoundaryTick >= controllingObligation.dueTick
+      worldBoundaryGameSecond >= controllingObligation.dueGameSecond
     ) {
       break;
     }
     boundariesSettled++;
     let processComplete = false;
-    if (processBoundaryDue(plan, boundaryTick)) {
+    if (processBoundaryDue(plan, boundaryGameSecond)) {
       const before = character;
       const result = settleProcessBoundary(plan, processProgress, before, () =>
         randomInt(1, 21),
@@ -318,7 +321,7 @@ export async function settleActivity(
           operationId: activity.id,
           segment: boundariesSettled,
           checkKey: 'process-contribution',
-          tick: worldBoundaryTick,
+          gameSecond: worldBoundaryGameSecond,
           plan: {
             resolution: {
               kind: 'ability',
@@ -333,7 +336,7 @@ export async function settleActivity(
       if (result.text) lines.push(result.text);
     }
     for (const schedule of plan.action.checks) {
-      if (boundaryTick % schedule.everyFictionalSeconds !== 0) {
+      if (boundaryGameSecond % schedule.everyFictionalSeconds !== 0) {
         continue;
       }
       const before = character;
@@ -347,7 +350,7 @@ export async function settleActivity(
         operationId: activity.id,
         segment: boundariesSettled,
         checkKey: schedule.id,
-        tick: worldBoundaryTick,
+        gameSecond: worldBoundaryGameSecond,
         plan: { resolution: schedule.resolution, character: before },
         result,
         effects: outcome.effects,
@@ -368,8 +371,8 @@ export async function settleActivity(
         break;
       }
     }
-    cursorTick = boundaryTick;
-    worldCursor = worldBoundaryTick;
+    cursorGameSecond = boundaryGameSecond;
+    worldCursor = worldBoundaryGameSecond;
     if (nextState === 'encounter') {
       completionPending = processComplete;
       break;
@@ -390,25 +393,25 @@ export async function settleActivity(
     nextState !== 'running';
   const backlogDue =
     nextState === 'running' &&
-    nextBoundaryTick(plan, cursorTick) <= availableEffortTicks;
+    nextBoundaryGameSecond(plan, cursorGameSecond) <= availableEffortGameSeconds;
   const caughtUpRunning = nextState === 'running' && !backlogDue;
-  const nextEffortTicks = caughtUpRunning ? availableEffortTicks : cursorTick;
-  processProgress = processProgressAtEffortTick(
+  const nextEffortGameSeconds = caughtUpRunning ? availableEffortGameSeconds : cursorGameSecond;
+  processProgress = processProgressAtEffortGameSecond(
     plan,
     processProgress,
-    nextEffortTicks,
+    nextEffortGameSeconds,
   );
   const controllingBoundaryReached =
     controllingObligation !== undefined &&
     controllingObligation !== null &&
-    clock.elapsedTicks >= controllingObligation.dueTick;
+    clock.elapsedGameSeconds >= controllingObligation.dueGameSecond;
   const nextClock =
     nextState === 'running' &&
     (pace.kind !== 'instant' || controllingBoundaryReached)
       ? clock
-      : wholeTicks(worldCursor);
-  const nextCampaignTick = caughtUpRunning
-    ? nextClock.elapsedTicks
+      : wholeGameSeconds(worldCursor);
+  const nextCampaignGameSecond = caughtUpRunning
+    ? nextClock.elapsedGameSeconds
     : worldCursor;
   const activityOccurrences =
     nextState === 'complete'
@@ -418,11 +421,11 @@ export async function settleActivity(
         )
       : campaignActivityOccurrences(state);
   const retainedProgress = {
-    effortTicks: nextEffortTicks,
+    effortGameSeconds: nextEffortGameSeconds,
     process: processProgress,
     completionPending,
   };
-  const nextPlan = { ...plan, resolvedThroughTick: cursorTick };
+  const nextPlan = { ...plan, resolvedThroughGameSecond: cursorGameSecond };
   const nextActivity = {
     ...activity,
     plan: nextPlan,
@@ -446,7 +449,7 @@ export async function settleActivity(
     storyId: current.id,
     activityId: activity.id,
     activityRevision: nextActivity.revision,
-    tick: nextCampaignTick,
+    gameSecond: nextCampaignGameSecond,
     previousState: activity.state,
     nextState,
     boundaryCause,
@@ -459,7 +462,7 @@ export async function settleActivity(
   const nextCampaign = {
     ...state,
     character,
-    tick: nextCampaignTick,
+    gameSecond: nextCampaignGameSecond,
     clock: nextClock,
     clockAnchorAt: new Date(now),
     activityOccurrences,
@@ -468,7 +471,7 @@ export async function settleActivity(
     .update(campaign)
     .set({
       character,
-      tick: nextCampaign.tick,
+      gameSecond: nextCampaign.gameSecond,
       clock: nextClock,
       clockAnchorAt: new Date(now),
       activityOccurrences,
@@ -598,7 +601,7 @@ export function createCampaignActivities(
           tx,
           {
             storyId: current.id,
-            throughTick: Number.MAX_SAFE_INTEGER,
+            throughGameSecond: Number.MAX_SAFE_INTEGER,
             followUp: 'controlling-scene',
           },
         );
@@ -614,12 +617,12 @@ export function createCampaignActivities(
         );
         const reportObligations = await readPendingWorldObligations(tx, {
           storyId: current.id,
-          throughTick: settled.state.tick,
+          throughGameSecond: settled.state.gameSecond,
           followUp: 'report',
         });
         if (
           controllingObligation &&
-          settled.state.tick >= controllingObligation.dueTick
+          settled.state.gameSecond >= controllingObligation.dueGameSecond
         ) {
           const interruptedRevision = settled.activity.revision + 1;
           await tx
@@ -630,7 +633,7 @@ export function createCampaignActivities(
             storyId: current.id,
             activityId: settled.activity.id,
             activityRevision: interruptedRevision,
-            tick: controllingObligation.dueTick,
+            gameSecond: controllingObligation.dueGameSecond,
             kind: 'interrupted',
             causeKey: `world-obligation:${controllingObligation.id}:${controllingObligation.revision}`,
             label: resolvedActivityPlanSchema.parse(settled.activity.plan)
@@ -674,22 +677,31 @@ export function createCampaignActivities(
             activityId: settled.activity.id,
           },
           campaignClockHeld(settledState),
-          settledState.tick,
+          settledState.gameSecond,
           controllingObligation
-            ? Math.max(settledState.tick, controllingObligation.dueTick)
+            ? Math.max(
+                settledState.gameSecond,
+                controllingObligation.dueGameSecond,
+              )
             : undefined,
         );
-        const nextWorldBoundary = worldTickForEffortBoundary({
-          campaignTick: settledState.tick,
-          retainedEffortTicks: storedProgress.effortTicks,
-          boundaryEffortTick: nextBoundaryTick(plan, plan.resolvedThroughTick),
+        const nextWorldBoundary = worldGameSecondForEffortBoundary({
+          campaignGameSecond: settledState.gameSecond,
+          retainedEffortGameSeconds: storedProgress.effortGameSeconds,
+          boundaryEffortGameSecond: nextBoundaryGameSecond(
+            plan,
+            plan.resolvedThroughGameSecond,
+          ),
         });
-        return realMsUntilTick(
+        return realMsUntilGameSecond(
           progress,
           Math.min(
             nextWorldBoundary,
             controllingObligation
-              ? Math.max(settledState.tick, controllingObligation.dueTick)
+              ? Math.max(
+                  settledState.gameSecond,
+                  controllingObligation.dueGameSecond,
+                )
               : nextWorldBoundary,
           ),
           pace,

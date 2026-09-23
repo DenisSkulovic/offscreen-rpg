@@ -28,15 +28,15 @@ import {
 } from '@offscreen/game/world-obligations';
 import {
   activityProgressSchema,
-  estimatedCompletionBoundaryTick,
-  nextBoundaryTick,
+  estimatedCompletionBoundaryGameSecond,
+  nextBoundaryGameSecond,
   resolvedActivityPlanSchema,
-  worldTickForEffortBoundary,
+  worldGameSecondForEffortBoundary,
 } from '@offscreen/game/activities';
 import {
   paceSchema,
-  realMsUntilTick,
-  tickProgressSchema,
+  realMsUntilGameSecond,
+  gameTimeProgressSchema,
 } from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
@@ -101,7 +101,7 @@ export async function readCampaign(
     .select()
     .from(gameRoll)
     .where(eq(gameRoll.storyId, storyId))
-    .orderBy(desc(gameRoll.tick), desc(gameRoll.id))
+    .orderBy(desc(gameRoll.gameSecond), desc(gameRoll.id))
     .limit(100);
   const actionExecutionEvents = await db
     .select()
@@ -119,7 +119,10 @@ export async function readCampaign(
     .select()
     .from(campaignReport)
     .where(eq(campaignReport.storyId, storyId))
-    .orderBy(desc(campaignReport.sourceTick), desc(campaignReport.createdAt))
+    .orderBy(
+      desc(campaignReport.sourceGameSecond),
+      desc(campaignReport.createdAt),
+    )
     .limit(100);
   const reports = reportRows.map((report) => ({
     report,
@@ -154,13 +157,13 @@ export async function readCampaign(
   function projectActivity(candidate: (typeof activities)[number]) {
     const plan = resolvedActivityPlanSchema.parse(candidate.plan);
     const pace = paceSchema.parse(state.clockPace);
-    const clock = tickProgressSchema.parse(state.clock);
+    const clock = gameTimeProgressSchema.parse(state.clock);
     const progress = activityProgressSchema.parse(candidate.progress);
     // Campaign rows also back narrative-only stories. A character becomes
     // mandatory only when projecting a mechanical commitment whose estimate
     // depends on their captured capabilities.
     const character = characterSchema.parse(state.character);
-    const estimatedCompletionTick = estimatedCompletionBoundaryTick(
+    const estimatedCompletionGameSecond = estimatedCompletionBoundaryGameSecond(
       plan,
       progress.process,
       character,
@@ -196,7 +199,7 @@ export async function readCampaign(
                 );
               })(),
       revision: candidate.revision,
-      resolvedTicks: plan.resolvedThroughTick,
+      resolvedGameSeconds: plan.resolvedThroughGameSecond,
       settingsRevision: plan.settingsRevision,
       dueAt:
         candidate.state === 'running' &&
@@ -204,14 +207,14 @@ export async function readCampaign(
         holds.length === 0
           ? new Date(
               state.clockAnchorAt.getTime() +
-                realMsUntilTick(
+                realMsUntilGameSecond(
                   clock,
-                  worldTickForEffortBoundary({
-                    campaignTick: state.tick,
-                    retainedEffortTicks: progress.effortTicks,
-                    boundaryEffortTick: nextBoundaryTick(
+                  worldGameSecondForEffortBoundary({
+                    campaignGameSecond: state.gameSecond,
+                    retainedEffortGameSeconds: progress.effortGameSeconds,
+                    boundaryEffortGameSecond: nextBoundaryGameSecond(
                       plan,
-                      plan.resolvedThroughTick,
+                      plan.resolvedThroughGameSecond,
                     ),
                   }),
                   pace,
@@ -222,17 +225,17 @@ export async function readCampaign(
         candidate.state === 'running' &&
         candidate.id === state.activeActivityId &&
         holds.length === 0 &&
-        estimatedCompletionTick !== null
+        estimatedCompletionGameSecond !== null
           ? new Date(
               state.clockAnchorAt.getTime() +
-                realMsUntilTick(
+                realMsUntilGameSecond(
                   clock,
-                  worldTickForEffortBoundary({
-                    campaignTick: state.tick,
-                    retainedEffortTicks: progress.effortTicks,
-                    boundaryEffortTick: Math.max(
-                      estimatedCompletionTick,
-                      progress.effortTicks,
+                  worldGameSecondForEffortBoundary({
+                    campaignGameSecond: state.gameSecond,
+                    retainedEffortGameSeconds: progress.effortGameSeconds,
+                    boundaryEffortGameSecond: Math.max(
+                      estimatedCompletionGameSecond,
+                      progress.effortGameSeconds,
                     ),
                   }),
                   pace,
@@ -255,8 +258,8 @@ export async function readCampaign(
     character: state.character,
     storyFacts: state.storyFacts,
     location: state.location,
-    tick: state.tick,
-    worldTime: projectWorldTime(settings.time, state.tick),
+    gameSecond: state.gameSecond,
+    worldTime: projectWorldTime(settings.time, state.gameSecond),
     holds,
     offer: state.offer,
     activityAccess: situationAuthorizationSchema.parse(
@@ -269,17 +272,17 @@ export async function readCampaign(
           return {
             operationId: actionExecution.operationId,
             label: plan.label,
-            startTick: actionExecution.startTick,
-            targetTick: actionExecution.targetTick,
+            startGameSecond: actionExecution.startGameSecond,
+            targetGameSecond: actionExecution.targetGameSecond,
             state: actionExecution.state,
             revision: actionExecution.revision,
             dueAt:
               actionExecution.state === 'running' && holds.length === 0
                 ? new Date(
                     state.clockAnchorAt.getTime() +
-                      realMsUntilTick(
-                        tickProgressSchema.parse(state.clock),
-                        actionExecution.targetTick,
+                      realMsUntilGameSecond(
+                        gameTimeProgressSchema.parse(state.clock),
+                        actionExecution.targetGameSecond,
                         paceSchema.parse(state.clockPace),
                       ),
                   ).toISOString()
@@ -292,7 +295,7 @@ export async function readCampaign(
       ordinal: event.ordinal,
       executionId: event.executionId,
       executionRevision: event.executionRevision,
-      tick: event.tick,
+      gameSecond: event.gameSecond,
       kind: event.kind,
       label: event.label,
       createdAt: event.createdAt.toISOString(),
@@ -303,7 +306,7 @@ export async function readCampaign(
       ordinal: event.ordinal,
       activityId: event.activityId,
       activityRevision: event.activityRevision,
-      tick: event.tick,
+      gameSecond: event.gameSecond,
       kind: event.kind,
       label: event.label,
       summary: event.summary,
@@ -322,7 +325,7 @@ export async function readCampaign(
         id: report.id,
         activityId: source.activityId,
         activityRevision: source.activityRevision,
-        sourceTick: report.sourceTick,
+        sourceGameSecond: report.sourceGameSecond,
         label: report.label,
         factualSummary: report.factualSummary,
         state:
@@ -350,7 +353,7 @@ export async function readCampaign(
         id: report.id,
         obligationId: source.obligationId,
         obligationRevision: source.obligationRevision,
-        sourceTick: report.sourceTick,
+        sourceGameSecond: report.sourceGameSecond,
         label: report.label,
         factualSummary: report.factualSummary,
         state:
@@ -378,7 +381,7 @@ export async function readCampaign(
       ordinal: event.ordinal,
       obligationId: event.obligationId,
       obligationRevision: event.obligationRevision,
-      tick: event.tick,
+      gameSecond: event.gameSecond,
       kind: event.kind,
       label: event.label,
       createdAt: event.createdAt.toISOString(),
@@ -389,7 +392,7 @@ export async function readCampaign(
     rolls: rolls.map((roll) => ({
       id: roll.id,
       segment: roll.segment,
-      tick: roll.tick,
+      gameSecond: roll.gameSecond,
       roll: roll.result,
       effects: roll.effects,
     })),

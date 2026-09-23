@@ -11,7 +11,7 @@ const emberCalendar = {
   kind: 'named-year',
   id: 'ember-calendar',
   revision: 1,
-  ticksPerDay: 4,
+  gameSecondsPerDay: 4,
   yearLabel: 'Cycle',
   months: [
     { id: 'ember', label: 'Ember', days: 20 },
@@ -22,7 +22,7 @@ const emberCalendar = {
     year: 3,
     monthId: 'ember',
     day: 10,
-    tickOfDay: 1,
+    gameSecondOfDay: 1,
     eraLabel: 'the Lantern',
   },
 };
@@ -33,19 +33,19 @@ test('named calendars round-trip across unequal month and year boundaries', () =
     year: 4,
     monthId: 'rain',
     day: 12,
-    tickOfDay: 3,
+    gameSecondOfDay: 3,
   };
-  const tick = compileWorldDate(emberCalendar, date);
-  assert.deepEqual(projectWorldTime(emberCalendar, tick), {
+  const gameSecond = compileWorldDate(emberCalendar, date);
+  assert.deepEqual(projectWorldTime(emberCalendar, gameSecond), {
     kind: 'named-year',
     definitionId: 'ember-calendar',
     definitionRevision: 1,
-    tick,
+    gameSecond,
     year: 4,
     monthId: 'rain',
     monthLabel: 'Rain',
     day: 12,
-    tickOfDay: 3,
+    gameSecondOfDay: 3,
     eraLabel: 'the Lantern',
     label: 'Rain 12, Cycle 4 of the Lantern',
   });
@@ -57,7 +57,7 @@ test('month addition preserves the day and rejects nonexistent target dates', ()
     year: 3,
     monthId: 'ember',
     day: 10,
-    tickOfDay: 1,
+    gameSecondOfDay: 1,
   };
   const target = addCalendarMonths(emberCalendar, source, 2);
   assert.deepEqual(target, {
@@ -67,7 +67,7 @@ test('month addition preserves the day and rejects nonexistent target dates', ()
   assert.equal(
     compileWorldDate(emberCalendar, target) -
       compileWorldDate(emberCalendar, source),
-    55 * emberCalendar.ticksPerDay,
+    55 * emberCalendar.gameSecondsPerDay,
   );
   assert.throws(
     () =>
@@ -86,15 +86,15 @@ test('ordinal and elapsed definitions project from nonzero epochs', () => {
     id: 'spore-days',
     revision: 2,
     dayLabel: 'Bloom',
-    ticksPerDay: 6,
-    epoch: { day: 9, tickOfDay: 4 },
+    gameSecondsPerDay: 6,
+    epoch: { day: 9, gameSecondOfDay: 4 },
   };
   assert.equal(projectWorldTime(ordinal, 3).label, 'Bloom 10');
   assert.equal(
     compileWorldDate(ordinal, {
       kind: 'ordinal-days',
       day: 10,
-      tickOfDay: 1,
+      gameSecondOfDay: 1,
     }),
     3,
   );
@@ -107,13 +107,13 @@ test('ordinal and elapsed definitions project from nonzero epochs', () => {
       id: 'cycle',
       label: 'cycle',
       pluralLabel: 'cycles',
-      ticksPerUnit: 8,
+      gameSecondsPerUnit: 8,
     },
-    epoch: { wholeUnits: 2, tickOfUnit: 7 },
+    epoch: { wholeUnits: 2, gameSecondOfUnit: 7 },
   };
   assert.equal(projectWorldTime(elapsed, 1).label, '3 cycles');
   assert.equal(formatWorldDuration(elapsed, 16), '2 cycles');
-  assert.equal(formatWorldDuration(elapsed, 3), '3 ticks');
+  assert.equal(formatWorldDuration(elapsed, 3), '3 fictional seconds');
 });
 
 test('date compilation rejects mismatched and pre-epoch dates', () => {
@@ -122,7 +122,7 @@ test('date compilation rejects mismatched and pre-epoch dates', () => {
       compileWorldDate(emberCalendar, {
         kind: 'ordinal-days',
         day: 1,
-        tickOfDay: 0,
+        gameSecondOfDay: 0,
       }),
     /does not match/,
   );
@@ -133,8 +133,8 @@ test('date compilation rejects mismatched and pre-epoch dates', () => {
         year: 1,
         monthId: 'ember',
         day: 1,
-        tickOfDay: 0,
+        gameSecondOfDay: 0,
       }),
-    /outside the campaign tick range/,
+    /outside the campaign fictional-second range/,
   );
 });

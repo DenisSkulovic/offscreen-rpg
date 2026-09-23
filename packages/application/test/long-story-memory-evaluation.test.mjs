@@ -347,7 +347,7 @@ test('packs required evidence, group breadth and shared content deterministicall
         ),
         representation(
           'exact',
-          'Mira still holds the repaired quay charter. It was returned at tick 880.',
+          'Mira still holds the repaired quay charter. It was returned at fictional second 880.',
           70,
         ),
       ],

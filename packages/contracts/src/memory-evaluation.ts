@@ -71,7 +71,7 @@ export const longStoryMemoryCorpusSchema = z
       .array(
         z.strictObject({
           sequence: z.number().int().positive(),
-          tick: z.string().regex(/^\d+$/),
+          gameSecond: z.string().regex(/^\d+$/),
           documentId: z.uuid(),
           path: pathSchema,
           title: z.string().min(1).max(160),

@@ -186,7 +186,7 @@ export function createRequestAuditFixtureCases(input: {
   const resolution = {
     character,
     storyFacts: [],
-    tick: 25,
+    gameSecond: 25,
     offer: null,
     receipts: [
       {
@@ -323,12 +323,7 @@ export function createRequestAuditFixtureCases(input: {
       evidenceExpectations: {
         // The first clue and holder change are independently required by the
         // fixture, not inferred from what the current selector retained.
-        requiredHandles: [
-          'p1',
-          'p6',
-          'p10',
-          `p${sequencePosition ?? 15}`,
-        ],
+        requiredHandles: ['p1', 'p6', 'p10', `p${sequencePosition ?? 15}`],
         forbiddenHandles: ['p16'],
       },
     };

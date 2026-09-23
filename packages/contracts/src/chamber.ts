@@ -204,7 +204,7 @@ export const chamberInspectorSchema = z.strictObject({
         activityRevision: z.number().int().nonnegative(),
         sourcePassageId: z.uuid(),
         sourceRevision: z.number().int().positive(),
-        sourceTick: z.number().int().nonnegative(),
+        sourceGameSecond: z.number().int().nonnegative(),
         state: z.string().min(1),
         generationId: z.uuid().nullable(),
         generationState: z

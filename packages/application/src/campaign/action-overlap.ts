@@ -33,43 +33,43 @@ function digest(value: unknown) {
 export function actionResolutionSourceDigest(input: {
   character: unknown;
   storyFacts: unknown;
-  startTick: number;
+  startGameSecond: number;
 }) {
   return digest({
     character: characterSchema.parse(input.character),
     storyFacts: storyFactsSchema.parse(input.storyFacts),
-    tick: input.startTick,
+    gameSecond: input.startGameSecond,
   });
 }
 
 export function actionResolutionProjectedDigest(input: {
   resolution: ImmediateActionResolution;
-  targetTick: number;
+  targetGameSecond: number;
 }) {
   return actionProjectedStateDigest({
     character: input.resolution.character,
     storyFacts: input.resolution.storyFacts,
-    tick: input.targetTick,
+    gameSecond: input.targetGameSecond,
   });
 }
 
 export function actionProjectedStateDigest(input: {
   character: unknown;
   storyFacts: unknown;
-  tick: number;
+  gameSecond: number;
 }) {
   return digest({
     character: characterSchema.parse(input.character),
     storyFacts: storyFactsSchema.parse(input.storyFacts),
-    tick: input.tick,
+    gameSecond: input.gameSecond,
   });
 }
 
 export function freezePendingActionResolution(input: {
   character: unknown;
   storyFacts: unknown;
-  startTick: number;
-  targetTick: number;
+  startGameSecond: number;
+  targetGameSecond: number;
   resolution: ImmediateActionResolution;
 }): PendingImmediateActionResolution {
   return pendingImmediateActionResolutionSchema.parse({

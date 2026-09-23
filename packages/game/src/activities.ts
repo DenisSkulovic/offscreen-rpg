@@ -273,7 +273,7 @@ export const resolvedActivityPlanSchema = z.strictObject({
   version: z.literal(6),
   action: actionDefinitionSchema,
   settingsRevision: z.number().int().positive(),
-  resolvedThroughTick: z.number().int().nonnegative().default(0),
+  resolvedThroughGameSecond: z.number().int().nonnegative().default(0),
 });
 export type ResolvedActivityPlan = z.infer<typeof resolvedActivityPlanSchema>;
 
@@ -296,7 +296,7 @@ export const processProgressSchema = z.discriminatedUnion('kind', [
   clockWaitProgressSchema,
 ]);
 export const activityProgressSchema = z.strictObject({
-  effortTicks: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  effortGameSeconds: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   process: processProgressSchema,
   completionPending: z.boolean().default(false),
 });
@@ -304,7 +304,7 @@ export type ActivityProgress = z.infer<typeof activityProgressSchema>;
 
 export function initialActivityProgress(action: ActionDefinition) {
   return activityProgressSchema.parse({
-    effortTicks: 0,
+    effortGameSeconds: 0,
     process:
       action.process.kind === 'contribution.v1'
         ? { kind: 'contribution.v1', earned: 0 }
@@ -351,7 +351,7 @@ function abilityCheckSuccessChance(
 }
 
 /** Conditional projection only; never use this value to award progress. */
-export function estimatedCompletionBoundaryTick(
+export function estimatedCompletionBoundaryGameSecond(
   plan: ResolvedActivityPlan,
   progress: ContributionProgress | ClockWaitProgress,
   character: Character,
@@ -361,7 +361,7 @@ export function estimatedCompletionBoundaryTick(
       throw new Error('Activity progress does not match its process rule');
     }
     return Math.max(
-      plan.resolvedThroughTick,
+      plan.resolvedThroughGameSecond,
       plan.action.process.requiredFictionalSeconds,
     );
   }
@@ -382,11 +382,11 @@ export function estimatedCompletionBoundaryTick(
   }
   const boundariesRemaining = Math.ceil(remaining / expectedContribution);
   if (boundariesRemaining === 0) {
-    return plan.resolvedThroughTick;
+    return plan.resolvedThroughGameSecond;
   }
   const cadence = plan.action.process.everyFictionalSeconds;
   const nextBoundary =
-    (Math.floor(plan.resolvedThroughTick / cadence) + 1) * cadence;
+    (Math.floor(plan.resolvedThroughGameSecond / cadence) + 1) * cadence;
   return nextBoundary + (boundariesRemaining - 1) * cadence;
 }
 
@@ -427,19 +427,19 @@ export function contributeAtBoundary(
 
 export function processBoundaryDue(
   plan: ResolvedActivityPlan,
-  boundaryTick: number,
+  boundaryGameSecond: number,
 ) {
   const process = plan.action.process;
   return process.kind === 'contribution.v1'
-    ? boundaryTick % process.everyFictionalSeconds === 0
-    : boundaryTick === process.requiredFictionalSeconds;
+    ? boundaryGameSecond % process.everyFictionalSeconds === 0
+    : boundaryGameSecond === process.requiredFictionalSeconds;
 }
 
 /** Reflect eligible clock effort without confusing it with contribution. */
-export function processProgressAtEffortTick(
+export function processProgressAtEffortGameSecond(
   plan: ResolvedActivityPlan,
   progress: ActivityProgress['process'],
-  effortTick: number,
+  effortGameSecond: number,
 ) {
   if (plan.action.process.kind === 'contribution.v1') {
     if (progress.kind !== 'contribution.v1') {
@@ -454,7 +454,7 @@ export function processProgressAtEffortTick(
     kind: 'clock-wait.v1' as const,
     elapsedFictionalSeconds: Math.min(
       plan.action.process.requiredFictionalSeconds,
-      effortTick,
+      effortGameSecond,
     ),
   };
 }
@@ -485,20 +485,20 @@ export function settleProcessBoundary(
   };
 }
 
-/** Skip quiet ticks while preserving the earliest due mechanical boundary. */
-export function nextBoundaryTick(
+/** Skip quiet fictional seconds while preserving the earliest due mechanical boundary. */
+export function nextBoundaryGameSecond(
   plan: ResolvedActivityPlan,
-  cursorTick: number,
+  cursorGameSecond: number,
 ) {
   const process = plan.action.process;
   let next =
     process.kind === 'contribution.v1'
-      ? (BigInt(cursorTick) / BigInt(process.everyFictionalSeconds) + 1n) *
+      ? (BigInt(cursorGameSecond) / BigInt(process.everyFictionalSeconds) + 1n) *
         BigInt(process.everyFictionalSeconds)
       : BigInt(process.requiredFictionalSeconds);
   for (const schedule of plan.action.checks) {
     const cadence = BigInt(schedule.everyFictionalSeconds);
-    const candidate = (BigInt(cursorTick) / cadence + 1n) * cadence;
+    const candidate = (BigInt(cursorGameSecond) / cadence + 1n) * cadence;
     if (candidate < next) {
       next = candidate;
     }
@@ -507,15 +507,15 @@ export function nextBoundaryTick(
 }
 
 /** Map a local effort boundary onto the campaign timeline, including backlog. */
-export function worldTickForEffortBoundary(input: {
-  campaignTick: number;
-  retainedEffortTicks: number;
-  boundaryEffortTick: number;
+export function worldGameSecondForEffortBoundary(input: {
+  campaignGameSecond: number;
+  retainedEffortGameSeconds: number;
+  boundaryEffortGameSecond: number;
 }) {
-  const worldTick =
-    input.campaignTick + (input.boundaryEffortTick - input.retainedEffortTicks);
-  if (!Number.isSafeInteger(worldTick) || worldTick < 0) {
-    throw new Error('Campaign tick is outside the supported range');
+  const worldGameSecond =
+    input.campaignGameSecond + (input.boundaryEffortGameSecond - input.retainedEffortGameSeconds);
+  if (!Number.isSafeInteger(worldGameSecond) || worldGameSecond < 0) {
+    throw new Error('Campaign gameSecond is outside the supported range');
   }
-  return worldTick;
+  return worldGameSecond;
 }

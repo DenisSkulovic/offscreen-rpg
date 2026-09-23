@@ -26,7 +26,7 @@ export async function readPendingWorldObligations(
   tx: Transaction,
   args: {
     storyId: string;
-    throughTick: number;
+    throughGameSecond: number;
     followUp?: 'controlling-scene' | 'report';
   },
 ) {
@@ -37,10 +37,10 @@ export async function readPendingWorldObligations(
       and(
         eq(worldObligation.storyId, args.storyId),
         eq(worldObligation.state, 'pending'),
-        lte(worldObligation.dueTick, args.throughTick),
+        lte(worldObligation.dueGameSecond, args.throughGameSecond),
       ),
     )
-    .orderBy(asc(worldObligation.dueTick), asc(worldObligation.id));
+    .orderBy(asc(worldObligation.dueGameSecond), asc(worldObligation.id));
   return args.followUp
     ? records.filter(
         (record) =>
@@ -54,15 +54,15 @@ export async function readNearestPendingWorldObligations(
   tx: Transaction,
   args: {
     storyId: string;
-    throughTick: number;
+    throughGameSecond: number;
     followUp?: 'controlling-scene' | 'report';
   },
 ) {
   const records = await readPendingWorldObligations(tx, args);
-  const nearestTick = records[0]?.dueTick;
-  return nearestTick === undefined
+  const nearestGameSecond = records[0]?.dueGameSecond;
+  return nearestGameSecond === undefined
     ? []
-    : records.filter((record) => record.dueTick === nearestTick);
+    : records.filter((record) => record.dueGameSecond === nearestGameSecond);
 }
 
 /** Commits due effects atomically; only controlling follow-ups freeze play. */
@@ -79,7 +79,10 @@ export async function fireWorldObligations(
   }
   const obligations = records.map((record) => {
     const obligation = worldObligationSchema.parse(record.definition);
-    if (record.dueTick !== obligation.dueTick || record.dueTick > state.tick) {
+    if (
+      record.dueGameSecond !== obligation.dueGameSecond ||
+      record.dueGameSecond > state.gameSecond
+    ) {
       throw new Error('World obligation is not due at the settled frontier');
     }
     return obligation;
@@ -90,7 +93,7 @@ export async function fireWorldObligations(
     const obligation = obligations[index]!;
     const [updated] = await tx
       .update(worldObligation)
-      .set({ state: 'fired', firedAtTick: record.dueTick })
+      .set({ state: 'fired', firedAtGameSecond: record.dueGameSecond })
       .where(
         and(
           eq(worldObligation.id, record.id),
@@ -114,8 +117,10 @@ export async function fireWorldObligations(
   const controlling = fired.filter(
     (obligation) => obligation.followUp === 'controlling-scene',
   );
-  if (new Set(controlling.map((item) => item.dueTick)).size > 1) {
-    throw new Error('Controlling world obligations must share one due tick');
+  if (new Set(controlling.map((item) => item.dueGameSecond)).size > 1) {
+    throw new Error(
+      'Controlling world obligations must share one due gameSecond',
+    );
   }
   const controllingOwner = controlling[0] ?? null;
   const holds = campaignHoldsSchema.parse([
@@ -136,7 +141,7 @@ export async function fireWorldObligations(
       storyId: state.storyId,
       obligationId: obligation.id,
       obligationRevision: obligation.revision,
-      tick: obligation.dueTick,
+      gameSecond: obligation.dueGameSecond,
       kind: 'fired',
       label: obligation.label,
       details: { consequence: obligation.consequence },
@@ -206,9 +211,9 @@ export async function fireWorldObligations(
       passageId: passage.id,
       obligationId: obligation.id,
       obligationRevision: obligation.revision,
-      dueTick: obligation.dueTick,
+      dueGameSecond: obligation.dueGameSecond,
       label: obligation.label,
-      factualSummary: `${obligation.consequence.condition.label} became ${String(obligation.consequence.condition.value)} at tick ${obligation.dueTick}.`,
+      factualSummary: `${obligation.consequence.condition.label} became ${String(obligation.consequence.condition.value)} at fictional second ${obligation.dueGameSecond}.`,
       ...(documentStore ? { documentStore } : {}),
     });
   }

@@ -41,7 +41,7 @@ function isUnstartedCampaign(state: typeof campaign.$inferSelect) {
     state.character === null &&
     state.content === null &&
     state.location === null &&
-    state.tick === 0 &&
+    state.gameSecond === 0 &&
     state.acceptedActivityPlan === null &&
     state.offer === null &&
     state.activeActivityId === null &&

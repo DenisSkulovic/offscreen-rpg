@@ -375,7 +375,7 @@ function consequence(
           quantities: [],
         },
         storyFacts: options.storyFacts ?? [],
-        tick: 0,
+        gameSecond: 0,
         offer: {
           id: randomUUID(),
           nodes: [
@@ -931,7 +931,7 @@ test('captured schemas expose only the result for the requested task', () => {
       narrativeRevision: 2,
       passageId: resolved.source.passageId,
       executionId: randomUUID(),
-      targetTick: 5,
+      targetGameSecond: 5,
       projectedStateDigest: 'a'.repeat(64),
     },
   });

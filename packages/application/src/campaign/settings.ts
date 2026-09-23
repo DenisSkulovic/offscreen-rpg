@@ -46,7 +46,7 @@ import { composeOpportunities } from '@offscreen/game/opportunities';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
 import { randomUUID } from 'node:crypto';
 import { saveOfferPlans } from './persistence';
-import { wholeTicks, type Pace } from '@offscreen/game/time';
+import { wholeGameSeconds, type Pace } from '@offscreen/game/time';
 
 export function initialCreative(profile: StorytellerProfile): CreativeSettings {
   return {
@@ -112,7 +112,7 @@ export async function initializeCampaign(
     compileWorldObligation({
       proposal,
       timeDefinition: settings.time,
-      originTick: 0,
+      originGameSecond: 0,
     }),
   );
   await tx.insert(campaign).values({
@@ -125,8 +125,8 @@ export async function initializeCampaign(
     worldConditions: [],
     activityOccurrences: [],
     location: null,
-    tick: 0,
-    clock: wholeTicks(0),
+    gameSecond: 0,
+    clock: wholeGameSeconds(0),
     clockAnchorAt: new Date(now),
     clockPace: settings.pace,
     holds: opportunities
@@ -152,7 +152,7 @@ export async function initializeCampaign(
         storyId,
         revision: obligation.revision,
         definition: obligation,
-        dueTick: obligation.dueTick,
+        dueGameSecond: obligation.dueGameSecond,
       })),
     );
   }

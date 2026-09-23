@@ -5,7 +5,11 @@ import {
   worldTimeDefinitionSchema,
 } from './calendar';
 
-const tickSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const gameSecondSchema = z
+  .number()
+  .int()
+  .nonnegative()
+  .max(Number.MAX_SAFE_INTEGER);
 const identifierSchema = z.string().regex(/^[a-z][a-z0-9-]{0,79}$/);
 const labelSchema = z.string().trim().min(1).max(160);
 
@@ -21,7 +25,7 @@ export const worldConditionSchema = z.strictObject({
   label: labelSchema,
   value: z.union([z.string().trim().min(1).max(300), z.boolean()]),
   provenance: worldConditionProvenanceSchema,
-  setAtTick: tickSchema,
+  setAtGameSecond: gameSecondSchema,
 });
 export type WorldCondition = z.infer<typeof worldConditionSchema>;
 export const worldConditionsSchema = z
@@ -62,7 +66,10 @@ const obligationIdentitySchema = z.strictObject({
 });
 
 export const worldObligationDueSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('tick'), tick: tickSchema }),
+  z.strictObject({
+    kind: z.literal('game-second'),
+    gameSecond: gameSecondSchema,
+  }),
   z.strictObject({ kind: z.literal('date'), date: worldDateSchema }),
 ]);
 
@@ -74,8 +81,8 @@ export type WorldObligationProposal = z.infer<
 >;
 
 export const worldObligationSchema = obligationIdentitySchema.extend({
-  dueTick: tickSchema,
-  originTick: tickSchema,
+  dueGameSecond: gameSecondSchema,
+  originGameSecond: gameSecondSchema,
 });
 export type WorldObligation = z.infer<typeof worldObligationSchema>;
 
@@ -88,20 +95,24 @@ export const worldObligationStateSchema = z.enum([
 export function compileWorldObligation(args: {
   proposal: unknown;
   timeDefinition: unknown;
-  originTick: number;
+  originGameSecond: number;
 }): WorldObligation {
   const proposal = worldObligationProposalSchema.parse(args.proposal);
   const timeDefinition = worldTimeDefinitionSchema.parse(args.timeDefinition);
-  const originTick = tickSchema.parse(args.originTick);
-  const dueTick =
-    proposal.due.kind === 'tick'
-      ? proposal.due.tick
+  const originGameSecond = gameSecondSchema.parse(args.originGameSecond);
+  const dueGameSecond =
+    proposal.due.kind === 'game-second'
+      ? proposal.due.gameSecond
       : compileWorldDate(timeDefinition, proposal.due.date);
-  if (dueTick <= originTick) {
+  if (dueGameSecond <= originGameSecond) {
     throw new Error('World obligation must be due after its admission origin');
   }
   const { due: _due, ...identity } = proposal;
-  return worldObligationSchema.parse({ ...identity, dueTick, originTick });
+  return worldObligationSchema.parse({
+    ...identity,
+    dueGameSecond,
+    originGameSecond,
+  });
 }
 
 export function applyWorldObligationCondition(args: {
@@ -119,7 +130,7 @@ export function applyWorldObligationCondition(args: {
       kind: 'world-obligation',
       obligationId: obligation.id,
     },
-    setAtTick: obligation.dueTick,
+    setAtGameSecond: obligation.dueGameSecond,
   });
   return worldConditionsSchema.parse(next);
 }
@@ -131,7 +142,7 @@ export const publicWorldObligationSchema = z.discriminatedUnion('visibility', [
     revision: z.number().int().positive(),
     label: labelSchema,
     state: worldObligationStateSchema,
-    dueTick: tickSchema,
+    dueGameSecond: gameSecondSchema,
   }),
   z.strictObject({
     visibility: z.literal('described'),
@@ -160,7 +171,11 @@ export function projectPublicWorldObligation(args: {
     state,
   };
   return obligation.visibility.kind === 'exact'
-    ? { ...common, visibility: 'exact', dueTick: obligation.dueTick }
+    ? {
+        ...common,
+        visibility: 'exact',
+        dueGameSecond: obligation.dueGameSecond,
+      }
     : {
         ...common,
         visibility: 'described',

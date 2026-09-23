@@ -38,7 +38,7 @@ export async function recordActionExecutionEvent(
     storyId: string;
     executionId: string;
     executionRevision: number;
-    tick: number;
+    gameSecond: number;
     kind: ActionExecutionEventKind;
     label: string;
   },
@@ -76,7 +76,7 @@ export async function settleActionExecution(
   const plan = immediateActionPlanSchema.parse(execution.plan);
   const controllingObligations = await readNearestPendingWorldObligations(tx, {
     storyId: current.id,
-    throughTick: execution.targetTick,
+    throughGameSecond: execution.targetGameSecond,
     followUp: 'controlling-scene',
   });
   const controllingObligation = controllingObligations[0] ?? null;
@@ -86,9 +86,9 @@ export async function settleActionExecution(
       ...execution,
       ...(controllingObligation
         ? {
-            controllingTick: Math.max(
-              state.tick,
-              controllingObligation.dueTick,
+            controllingGameSecond: Math.max(
+              state.gameSecond,
+              controllingObligation.dueGameSecond,
             ),
           }
         : {}),
@@ -112,14 +112,14 @@ export async function settleActionExecution(
       storyId: current.id,
       executionId: execution.operationId,
       executionRevision: transition.fact.executionRevision,
-      tick: transition.fact.tick,
+      gameSecond: transition.fact.gameSecond,
       kind: transition.fact.kind,
       label: transition.fact.label,
     });
     await tx
       .update(campaign)
       .set({
-        tick: transition.campaign.tick,
+        gameSecond: transition.campaign.gameSecond,
         clock: transition.campaign.clock,
         clockAnchorAt: transition.campaign.clockAnchorAt,
         activeActionOperationId: null,
@@ -127,7 +127,7 @@ export async function settleActionExecution(
       .where(eq(campaign.storyId, current.id));
     const reportObligations = await readPendingWorldObligations(tx, {
       storyId: current.id,
-      throughTick: transition.campaign.tick,
+      throughGameSecond: transition.campaign.gameSecond,
       followUp: 'report',
     });
     const interruptedCampaign = controllingObligation
@@ -176,7 +176,7 @@ export async function settleActionExecution(
     storyId: current.id,
     executionId: execution.operationId,
     executionRevision: transition.fact.executionRevision,
-    tick: transition.fact.tick,
+    gameSecond: transition.fact.gameSecond,
     kind: transition.fact.kind,
     label: transition.fact.label,
   });
@@ -185,7 +185,7 @@ export async function settleActionExecution(
     .set({
       character: transition.campaign.character,
       storyFacts: transition.campaign.storyFacts,
-      tick: transition.campaign.tick,
+      gameSecond: transition.campaign.gameSecond,
       clock: transition.campaign.clock,
       clockAnchorAt: transition.campaign.clockAnchorAt,
       activeActionOperationId: null,
@@ -193,7 +193,7 @@ export async function settleActionExecution(
     .where(eq(campaign.storyId, current.id));
   const reportObligations = await readPendingWorldObligations(tx, {
     storyId: current.id,
-    throughTick: transition.campaign.tick,
+    throughGameSecond: transition.campaign.gameSecond,
     followUp: 'report',
   });
   const campaignWithReports = await fireWorldObligations(

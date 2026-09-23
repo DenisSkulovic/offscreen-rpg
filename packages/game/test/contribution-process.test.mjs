@@ -4,14 +4,14 @@ import {
   activityBoundaryBlockText,
   activityOccurrenceAvailable,
   contributeAtBoundary,
-  estimatedCompletionBoundaryTick,
-  nextBoundaryTick,
+  estimatedCompletionBoundaryGameSecond,
+  nextBoundaryGameSecond,
   processBoundaryDue,
-  processProgressAtEffortTick,
+  processProgressAtEffortGameSecond,
   resolvedActivityPlanSchema,
   recordActivityOccurrence,
   settleProcessBoundary,
-  worldTickForEffortBoundary,
+  worldGameSecondForEffortBoundary,
 } from '../dist/src/activities.js';
 
 const character = {
@@ -78,13 +78,13 @@ const plan = resolvedActivityPlanSchema.parse({
     completion: { text: 'The beacon works again.', effects: [] },
   },
   settingsRevision: 1,
-  resolvedThroughTick: 0,
+  resolvedThroughGameSecond: 0,
 });
 
 test('ability checks determine contribution while time only schedules attempts', () => {
   let progress = { kind: 'contribution.v1', earned: 0 };
-  assert.equal(nextBoundaryTick(plan, 0), 5);
-  assert.equal(estimatedCompletionBoundaryTick(plan, progress, character), 30);
+  assert.equal(nextBoundaryGameSecond(plan, 0), 5);
+  assert.equal(estimatedCompletionBoundaryGameSecond(plan, progress, character), 30);
 
   const first = contributeAtBoundary(plan, progress, character, () => 20);
   progress = first.progress;
@@ -189,39 +189,39 @@ test('a check cadence can wake earlier without becoming productive progress', ()
       ],
     },
   });
-  assert.equal(nextBoundaryTick(withCheck, 0), 2);
-  assert.equal(nextBoundaryTick(withCheck, 2), 4);
-  assert.equal(nextBoundaryTick(withCheck, 4), 5);
+  assert.equal(nextBoundaryGameSecond(withCheck, 0), 2);
+  assert.equal(nextBoundaryGameSecond(withCheck, 2), 4);
+  assert.equal(nextBoundaryGameSecond(withCheck, 4), 5);
 });
 
 test('retained effort maps to the current campaign clock after other work', () => {
   assert.equal(
-    worldTickForEffortBoundary({
-      campaignTick: 15,
-      retainedEffortTicks: 10,
-      boundaryEffortTick: 15,
+    worldGameSecondForEffortBoundary({
+      campaignGameSecond: 15,
+      retainedEffortGameSeconds: 10,
+      boundaryEffortGameSecond: 15,
     }),
     20,
   );
   assert.equal(
-    worldTickForEffortBoundary({
-      campaignTick: 20,
-      retainedEffortTicks: 15,
-      boundaryEffortTick: 20,
+    worldGameSecondForEffortBoundary({
+      campaignGameSecond: 20,
+      retainedEffortGameSeconds: 15,
+      boundaryEffortGameSecond: 20,
     }),
     25,
   );
   assert.equal(
-    worldTickForEffortBoundary({
-      campaignTick: 200,
-      retainedEffortTicks: 200,
-      boundaryEffortTick: 125,
+    worldGameSecondForEffortBoundary({
+      campaignGameSecond: 200,
+      retainedEffortGameSeconds: 200,
+      boundaryEffortGameSecond: 125,
     }),
     125,
   );
 });
 
-test('clock wait completes at its eligible tick target without a roll or work points', () => {
+test('clock wait completes at its eligible game-second target without a roll or work points', () => {
   const wait = resolvedActivityPlanSchema.parse({
     version: 6,
     action: {
@@ -242,14 +242,14 @@ test('clock wait completes at its eligible tick target without a roll or work po
       completion: { text: 'The disturbance passes.', effects: [] },
     },
     settingsRevision: 1,
-    resolvedThroughTick: 0,
+    resolvedThroughGameSecond: 0,
   });
   const progress = { kind: 'clock-wait.v1', elapsedFictionalSeconds: 0 };
-  assert.equal(nextBoundaryTick(wait, 0), 10);
-  assert.equal(estimatedCompletionBoundaryTick(wait, progress, character), 10);
+  assert.equal(nextBoundaryGameSecond(wait, 0), 10);
+  assert.equal(estimatedCompletionBoundaryGameSecond(wait, progress, character), 10);
   assert.equal(processBoundaryDue(wait, 9), false);
   assert.equal(processBoundaryDue(wait, 10), true);
-  assert.deepEqual(processProgressAtEffortTick(wait, progress, 6), {
+  assert.deepEqual(processProgressAtEffortGameSecond(wait, progress, 6), {
     kind: 'clock-wait.v1',
     elapsedFictionalSeconds: 6,
   });

@@ -54,7 +54,7 @@ export async function recordRoll(
     operationId: string;
     segment: number;
     checkKey: string;
-    tick: number;
+    gameSecond: number;
     plan: unknown;
     result: Roll;
     effects: OutcomeEffect[];
@@ -73,7 +73,7 @@ export async function recordActivityEvent(
     storyId: string;
     activityId: string;
     activityRevision: number;
-    tick: number;
+    gameSecond: number;
     kind: ActivityEventKind;
     causeKey: string;
     label: string;
@@ -100,7 +100,7 @@ export async function recordActivityEvent(
     !saved ||
     saved.storyId !== args.storyId ||
     saved.activityRevision !== args.activityRevision ||
-    saved.tick !== args.tick ||
+    saved.gameSecond !== args.gameSecond ||
     saved.label !== args.label ||
     saved.summary !== args.summary ||
     !isDeepStrictEqual(saved.details, details)

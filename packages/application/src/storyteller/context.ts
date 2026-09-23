@@ -768,7 +768,7 @@ export async function loadStorytellerContext(
     notes: unknown;
     activeSceneScope: unknown;
     selected: { id: string; label: string; intention: string };
-    projectTick?: number;
+    projectGameSecond?: number;
     documentStore?: DocumentStore;
     canonical?: {
       rootHash: string;
@@ -898,7 +898,7 @@ export async function loadStorytellerContext(
       ? {
           id: acceptedPlan.id,
           revision: acceptedPlan.revision,
-          horizonTick: acceptedPlan.horizonTick,
+          horizonGameSecond: acceptedPlan.horizonGameSecond,
           nextEntry: { id: blockedEntry.id, plan: blockedEntry.plan },
         }
       : undefined;
@@ -979,7 +979,7 @@ export async function loadStorytellerContext(
       ? {
           campaignTime: projectWorldTime(
             acceptedSettings.time,
-            input.projectTick ?? settingsRow.tick,
+            input.projectGameSecond ?? settingsRow.gameSecond,
           ),
         }
       : {}),

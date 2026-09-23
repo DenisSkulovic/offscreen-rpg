@@ -387,8 +387,9 @@ export async function buildLexicalStoryIndex(
       linkedDocumentIds: document.envelope.sources.map(
         (source) => source.documentId,
       ),
-      effectiveFromTick: document.envelope.coverage?.fromTick ?? null,
-      effectiveThroughTick: document.envelope.coverage?.throughTick ?? null,
+      effectiveFromGameSecond: document.envelope.coverage?.fromGameSecond ?? null,
+      effectiveThroughGameSecond:
+        document.envelope.coverage?.throughGameSecond ?? null,
       title: document.title,
       contextualKey,
       bodyBytes: Buffer.byteLength(document.body, 'utf8'),

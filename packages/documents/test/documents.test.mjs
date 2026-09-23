@@ -164,7 +164,7 @@ test('structured state documents preserve validated data and export exact JSON',
       sources: [],
     },
     schemaId: 'campaign-state.v1',
-    data: { version: 1, tick: 17, inventory: ['brass-key'] },
+    data: { version: 1, gameSecond: 17, inventory: ['brass-key'] },
   });
   const objectHash = await store.putStructuredDocument(document);
   assert.deepEqual(await store.readStructuredDocument(objectHash), document);
@@ -499,7 +499,7 @@ test('start packages distinguish canon, possibilities, and executable obligation
           sources: [],
         },
         schemaId: 'world-obligation.v1',
-        data: { version: 1, dueTick: 40, label: 'The tide gate closes' },
+        data: { version: 1, dueGameSecond: 40, label: 'The tide gate closes' },
       }),
       path: 'obligations/tide-gate.json',
       activation: 'executable-obligation',
@@ -584,7 +584,7 @@ test('start package directory import preserves authored activation boundaries', 
           },
         },
         followUp: 'report',
-        due: { kind: 'tick', tick: 12 },
+        due: { kind: 'game-second', gameSecond: 12 },
       },
     }),
   );
@@ -648,7 +648,7 @@ test('start package directory import preserves authored activation boundaries', 
     await store.readStructuredDocument(obligation.objectHash)
   ).data;
   assert.equal(obligationData.version, 1);
-  assert.equal(obligationData.obligation.due.tick, 12);
+  assert.equal(obligationData.obligation.due.gameSecond, 12);
   assert.equal(obligationData.obligation.consequence.condition.id, 'high-tide');
 });
 

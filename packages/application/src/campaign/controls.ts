@@ -16,11 +16,11 @@ import {
 import { settleActivity, scheduleActivity } from './activities';
 import {
   activityProgressSchema,
-  nextBoundaryTick,
+  nextBoundaryGameSecond,
   resolvedActivityPlanSchema,
-  worldTickForEffortBoundary,
+  worldGameSecondForEffortBoundary,
 } from '@offscreen/game/activities';
-import { paceSchema, tickProgressSchema } from '@offscreen/game/time';
+import { paceSchema, gameTimeProgressSchema } from '@offscreen/game/time';
 import { StoryError } from '../stories/errors';
 
 export function createCampaignControls(database: Database) {
@@ -71,15 +71,18 @@ export function createCampaignControls(database: Database) {
       const storedProgress = activityProgressSchema.parse(
         settled.activity.progress,
       );
-      const nextWorldBoundary = worldTickForEffortBoundary({
-        campaignTick: settled.state.tick,
-        retainedEffortTicks: storedProgress.effortTicks,
-        boundaryEffortTick: nextBoundaryTick(plan, plan.resolvedThroughTick),
+      const nextWorldBoundary = worldGameSecondForEffortBoundary({
+        campaignGameSecond: settled.state.gameSecond,
+        retainedEffortGameSeconds: storedProgress.effortGameSeconds,
+        boundaryEffortGameSecond: nextBoundaryGameSecond(
+          plan,
+          plan.resolvedThroughGameSecond,
+        ),
       });
       if (
         settled.activity.state === 'running' &&
         nextWorldBoundary <=
-          tickProgressSchema.parse(settled.state.clock).elapsedTicks
+          gameTimeProgressSchema.parse(settled.state.clock).elapsedGameSeconds
       ) {
         // Commit the batch and continue catch-up before accepting a control.
         // Throwing inside this transaction would undo the progress just made.
@@ -104,7 +107,7 @@ export function createCampaignControls(database: Database) {
           storyId: current.id,
           activityId: activity.id,
           activityRevision: settled.activity.revision + 1,
-          tick: settled.state.tick,
+          gameSecond: settled.state.gameSecond,
           kind: parsed.data.action === 'pause' ? 'paused' : 'resumed',
           causeKey: `command:${args.operationId}`,
           label: plan.action.label,
