@@ -11,6 +11,7 @@ import {
   createCanonicalMemoryExplorer,
   createStorytellerRuntime,
   loadCanonicalKnowledge,
+  memoryRoundGeneratedTokenCeilings,
   prepareMemoryEvidenceContext,
   prepareAdmittedStorytellerTask,
   resolveStoryRetrievalRecipe,
@@ -50,11 +51,34 @@ export async function captureHeldMemoryPacket(input: {
     input.documentStore,
     corpus,
   );
-  const canonicalKnowledge = await loadCanonicalKnowledge(input.documentStore, {
-    storyId: materialized.storyId,
-    rootHash: materialized.rootHash,
-    rootRevision: materialized.rootRevision,
-  });
+  const loadedCanonicalKnowledge = await loadCanonicalKnowledge(
+    input.documentStore,
+    {
+      storyId: materialized.storyId,
+      rootHash: materialized.rootHash,
+      rootRevision: materialized.rootRevision,
+    },
+  );
+  const hidingPlaceRecord = corpus.evidence.find(
+    (entry) => entry.key === 'relationship.brass-key-hiding-place',
+  );
+  const hidingPlaceCatalogueEntry = loadedCanonicalKnowledge.catalogue.find(
+    (entry) => entry.documentId === hidingPlaceRecord?.documentId,
+  );
+  if (!hidingPlaceRecord || !hidingPlaceCatalogueEntry) {
+    throw new Error('Memory corpus lacks the brass-key relationship record');
+  }
+  const canonicalKnowledge = {
+    ...loadedCanonicalKnowledge,
+    catalogue: loadedCanonicalKnowledge.catalogue.map((entry) =>
+      entry.handle === hidingPlaceCatalogueEntry.handle
+        ? { ...entry, loaded: false }
+        : entry,
+    ),
+    documents: loadedCanonicalKnowledge.documents.filter(
+      (entry) => entry.handle !== hidingPlaceCatalogueEntry.handle,
+    ),
+  };
   const currentScene = corpus.scenes.at(-1);
   if (!currentScene) throw new Error('Memory corpus has no current passage');
 
@@ -292,14 +316,14 @@ export async function captureHeldMemoryPacket(input: {
     await explorer.execute(scriptedRequest);
     const snapshot = explorer.snapshot();
     const prepared = prepareMemoryEvidenceContext(task, snapshot, 2);
+    const generatedTokens = memoryRoundGeneratedTokenCeilings({
+      maxGeneratedTokens: task.resources.envelope.maxGeneratedTokens,
+      maxModelRounds: recipe.maxModelRounds,
+      maxRepairRounds: recipe.maxRepairRounds,
+    });
     const inspection = inspectOpenRouterRequest(task, {
       request: prepared.request,
-      maxGeneratedTokens: Math.max(
-        1,
-        Math.floor(
-          task.resources.envelope.maxGeneratedTokens / recipe.maxModelRounds,
-        ),
-      ),
+      maxGeneratedTokens: generatedTokens.final,
       outputProtocol: 'native-json-schema',
     });
     if (

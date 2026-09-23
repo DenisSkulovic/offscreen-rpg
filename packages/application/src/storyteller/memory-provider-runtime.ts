@@ -70,6 +70,28 @@ export class MemoryProviderRoundError extends Error {
   }
 }
 
+export function memoryRoundGeneratedTokenCeilings(input: {
+  maxGeneratedTokens: number;
+  maxModelRounds: number;
+  maxRepairRounds: number;
+}) {
+  const publishableRounds = 1 + input.maxRepairRounds;
+  const decisionRounds = Math.max(0, input.maxModelRounds - publishableRounds);
+  const evenShare = Math.max(
+    1,
+    Math.floor(input.maxGeneratedTokens / input.maxModelRounds),
+  );
+  const decision = Math.min(256, evenShare);
+  const publishableBudget = Math.max(
+    publishableRounds,
+    input.maxGeneratedTokens - decision * decisionRounds,
+  );
+  return {
+    decision,
+    final: Math.max(1, Math.floor(publishableBudget / publishableRounds)),
+  } as const;
+}
+
 function jsonUsage(
   usage: Extract<ProviderOutcome, { kind: 'result' | 'failed' }>['usage'],
 ) {
@@ -145,13 +167,17 @@ export function createMemoryProviderRoundRuntime(
   }
   const budget = createStorytellerBudget(database);
   const execution = input.task.execution;
-  const rounds = input.task.resources.recipe.maxModelRounds;
-  const maxGeneratedTokens = Math.max(
-    1,
-    Math.floor(input.task.resources.envelope.maxGeneratedTokens / rounds),
-  );
+  const recipe = input.task.resources.recipe;
+  if (recipe.version !== 'memory-exploration.v1') {
+    throw new Error('Memory provider runtime requires memory exploration');
+  }
+  const generatedTokens = memoryRoundGeneratedTokenCeilings({
+    maxGeneratedTokens: input.task.resources.envelope.maxGeneratedTokens,
+    maxModelRounds: recipe.maxModelRounds,
+    maxRepairRounds: recipe.maxRepairRounds,
+  });
   const maxReasoningTokens = Math.floor(
-    input.task.resources.envelope.maxReasoningTokens / rounds,
+    input.task.resources.envelope.maxReasoningTokens / recipe.maxModelRounds,
   );
   const maxInputTokensPerRound = Math.min(
     execution.policy.maxInputTokens,
@@ -159,11 +185,13 @@ export function createMemoryProviderRoundRuntime(
   );
 
   const source: ScriptedMemoryRoundSource = async (round) => {
+    const maxGeneratedTokens = round.canRequestContext
+      ? generatedTokens.decision
+      : generatedTokens.final;
     const providerDispatch: StorytellerProviderDispatch = {
       request: round.request,
       maxGeneratedTokens,
-      ...(execution.policy.outputProtocol ===
-      'memory-json-object-native-final'
+      ...(execution.policy.outputProtocol === 'memory-json-object-native-final'
         ? {
             outputProtocol: round.canRequestContext
               ? ('json-object-local-validation' as const)
