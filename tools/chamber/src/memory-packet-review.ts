@@ -7,9 +7,13 @@ import {
   materializeLongStoryMemoryCorpus,
 } from '@offscreen/application/developer-tools';
 import {
+  buildLexicalStoryIndex,
+  createCanonicalMemoryExplorer,
   createStorytellerRuntime,
   loadCanonicalKnowledge,
+  prepareMemoryEvidenceContext,
   prepareAdmittedStorytellerTask,
+  resolveStoryRetrievalRecipe,
 } from '@offscreen/application/storyteller';
 import { dispatchReviewResponseSchema } from '@offscreen/contracts/chamber';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
@@ -18,6 +22,7 @@ import { generation } from '@offscreen/db/generation-schema';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import type { DocumentStore } from '@offscreen/documents';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import { inspectOpenRouterRequest } from '@offscreen/storyteller/providers/openrouter';
 import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
 
 /**
@@ -230,6 +235,129 @@ export async function captureHeldMemoryPacket(input: {
     )}\n`,
     { encoding: 'utf8', flag: 'wx' },
   );
+  let finalProjectionPath: string | null = null;
+  let finalProjection: {
+    packetSha256: string;
+    serializedBytes: number;
+    capturedRequestBytes: number;
+    outputSchemaBytes: number;
+  } | null = null;
+  if (
+    input.comparison?.mode !== 'one-shot' &&
+    input.execution.policy.outputProtocol === 'memory-json-object-native-final'
+  ) {
+    if (!('storyId' in task.source) || !task.context.canonicalKnowledge) {
+      throw new Error('Hybrid final projection lacks canonical story context');
+    }
+    const recipe = task.resources.recipe;
+    if (recipe.version !== 'memory-exploration.v1') {
+      throw new Error('Hybrid final projection requires memory exploration');
+    }
+    const root = task.context.canonicalKnowledge;
+    const index = await buildLexicalStoryIndex(input.documentStore, {
+      storyId: task.source.storyId,
+      rootHash: root.rootHash,
+      rootRevision: root.rootRevision,
+    });
+    const explorer = createCanonicalMemoryExplorer({
+      storage: input.documentStore,
+      index,
+      recipe: resolveStoryRetrievalRecipe({
+        posture:
+          task.resources.creativeExploration.posture === 'off'
+            ? 'minimal'
+            : task.resources.creativeExploration.posture,
+        operationLimits: {
+          maxReads: recipe.maxReads,
+          maxRetainedBytes: recipe.maxRetainedReadBytes,
+        },
+      }),
+      creativeExploration: task.resources.creativeExploration,
+    });
+    const scriptedRequest = {
+      kind: 'needs_context' as const,
+      version: 1 as const,
+      purpose:
+        "Verify Mira Vale's established answer about the brass key's old hiding place before resolving the question.",
+      requests: [
+        {
+          requestId: 'r1',
+          operation: 'ask_memory' as const,
+          intent: 'evidence' as const,
+          question:
+            'What exact hiding place did Mira Vale previously name for the brass key, and in what circumstances did she say it?',
+        },
+      ],
+    };
+    await explorer.execute(scriptedRequest);
+    const snapshot = explorer.snapshot();
+    const prepared = prepareMemoryEvidenceContext(task, snapshot, 2);
+    const inspection = inspectOpenRouterRequest(task, {
+      request: prepared.request,
+      maxGeneratedTokens: Math.max(
+        1,
+        Math.floor(
+          task.resources.envelope.maxGeneratedTokens / recipe.maxModelRounds,
+        ),
+      ),
+      outputProtocol: 'native-json-schema',
+    });
+    if (
+      inspection.outputProtocol !== 'native-json-schema' ||
+      inspection.body.response_format.type !== 'json_schema'
+    ) {
+      throw new Error('Hybrid final projection did not use native schema');
+    }
+    finalProjectionPath = join(
+      evidenceDirectory,
+      `memory-final-projection-${generationId}.json`,
+    );
+    finalProjection = {
+      packetSha256: inspection.sha256,
+      serializedBytes: inspection.serializedBytes,
+      capturedRequestBytes: inspection.capturedRequestBytes,
+      outputSchemaBytes: inspection.outputSchemaBytes,
+    };
+    await writeFile(
+      finalProjectionPath,
+      `${JSON.stringify(
+        {
+          format: 'offscreen.memory-final-packet-projection.v1',
+          case: {
+            id: 'greywake-hidden-key',
+            version: '1',
+            comparisonBasisSha256,
+          },
+          generationId,
+          sourceHeldReview: {
+            attemptId: review.attemptId,
+            packetSha256: review.packetSha256,
+          },
+          scriptedRequest,
+          retrievalSnapshot: snapshot,
+          finalContext: {
+            round: 2,
+            canRequestContext: false,
+            selectedEvidence: prepared.selected,
+            omittedEvidence: prepared.omitted,
+            capturedRequestBytes: prepared.capturedRequestBytes,
+            boundedRequestBytes: prepared.boundedRequestBytes,
+            request: prepared.request,
+            evidencePack: prepared.evidencePack,
+          },
+          inspection,
+          accounting: {
+            providerAttempts: 0,
+            providerSpendMicrousd: '0',
+            transportPerformed: false,
+          },
+        },
+        null,
+        2,
+      )}\n`,
+      { encoding: 'utf8', flag: 'wx' },
+    );
+  }
   return {
     evidencePath,
     generationId,
@@ -237,6 +365,8 @@ export async function captureHeldMemoryPacket(input: {
     corpus: materialized,
     allowance,
     comparisonBasisSha256,
+    finalProjectionPath,
+    finalProjection,
   } as const;
 }
 

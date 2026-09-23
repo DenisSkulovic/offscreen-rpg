@@ -1089,8 +1089,9 @@ try {
           `Memory live evaluation report saved to ${saved.path}. No retry is permitted.`,
         );
       } else {
+        const projection = captured.finalProjection;
         console.log(
-          `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}. Verified: memory state held, zero provider attempts. Model spend: $0 (no provider call).`,
+          `Held memory evaluation packet saved to ${captured.evidencePath}; manifest saved to ${manifestPath}.${projection && captured.finalProjectionPath ? ` Provider-free final-round projection saved to ${captured.finalProjectionPath} (${projection.serializedBytes} bytes, sha256 ${projection.packetSha256}).` : ''} Verified: memory state held, zero provider attempts. Model spend: $0 (no provider call).`,
         );
       }
     } else {

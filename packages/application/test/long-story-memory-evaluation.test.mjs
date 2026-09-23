@@ -509,7 +509,7 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
       evidence: materialized.evidence,
       queries: materialized.queries,
     },
-    { scenes: 200, evidence: 10, queries: 12 },
+    { scenes: 200, evidence: 11, queries: 13 },
   );
 
   const current = await searchCanonicalKnowledge(storage, {
@@ -589,8 +589,8 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     rootHash: materialized.rootHash,
     rootRevision: materialized.rootRevision,
   });
-  assert.equal(suite.summary.queries, 12);
-  assert.equal(suite.summary.generationNotRun, 12);
+  assert.equal(suite.summary.queries, 13);
+  assert.equal(suite.summary.generationNotRun, 13);
   assert.ok(suite.summary.retrievalPassed > 0);
   assert.ok(suite.summary.retrievalPassed < suite.summary.queries);
 
@@ -649,9 +649,9 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
       recipe,
     });
   }
-  assert.equal(profileReports.minimal.summary.queries, 12);
-  assert.equal(profileReports.balanced.summary.queries, 12);
-  assert.equal(profileReports.rich.summary.queries, 12);
+  assert.equal(profileReports.minimal.summary.queries, 13);
+  assert.equal(profileReports.balanced.summary.queries, 13);
+  assert.equal(profileReports.rich.summary.queries, 13);
   assert.ok(
     profileReports.balanced.summary.meanExpectedRecall >=
       profileReports.minimal.summary.meanExpectedRecall,
@@ -669,7 +669,19 @@ test('builds reproducible conventional and abstract 200-scene memory corpora', a
     ...resolveStoryRetrievalRecipe({ posture: 'minimal' }).query,
   });
   assert.equal(minimalSearch.diagnostics.tuning.id, 'minimal-lexical');
-  assert.equal(minimalSearch.coverage.eligibleUnits, 8);
+  assert.equal(minimalSearch.coverage.eligibleUnits, 9);
+  const hidingPlaceSearch = index.search({
+    storyId: materialized.storyId,
+    rootHash: materialized.rootHash,
+    rootRevision: materialized.rootRevision,
+    query:
+      'What exact hiding place did Mira Vale previously name for the brass key, and in what circumstances did she say it?',
+    ...resolveStoryRetrievalRecipe({ posture: 'minimal' }).query,
+  });
+  assert.equal(
+    hidingPlaceSearch.candidates[0]?.unit.path,
+    'relationships/brass-key-hiding-place.md',
+  );
 
   const explorationRecipe = resolveStoryRetrievalRecipe({ posture: 'rich' });
   const creativeRecipe = resolveCreativeExplorationRecipe({

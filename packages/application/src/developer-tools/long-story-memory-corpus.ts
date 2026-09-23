@@ -85,6 +85,7 @@ function greywakeCorpus(sceneCount: number): LongStoryMemoryCorpus {
   const records = evidence(id, [
     { key: 'identity.player', revision: 1, path: 'identities/player.md', kind: 'identity', authority: 'canon', visibility: 'player-known', title: 'The player', body: 'The returning traveler known at Greywake.', sourceSequences: [1] },
     { key: 'identity.mira-vale', revision: 1, path: 'identities/mira-vale.md', kind: 'identity', authority: 'canon', visibility: 'player-known', title: 'Mira Vale', body: 'Greywake innkeeper; keeper of the blue ledger and the brass key.', sourceSequences: [7] },
+    { key: 'relationship.brass-key-hiding-place', revision: 1, path: 'relationships/brass-key-hiding-place.md', kind: 'relationship', authority: 'canon', visibility: 'player-known', title: 'The brass key beneath the ledger', body: 'Mira Vale accepted the brass key and promised to keep it beneath the blue ledger.', sourceSequences: [7] },
     { key: 'identity.mira-pell', revision: 1, path: 'identities/mira-pell.md', kind: 'identity', authority: 'canon', visibility: 'player-known', title: 'Mira Pell', body: 'A visiting cartographer, distinct from Mira Vale.', sourceSequences: [61] },
     { key: 'place.greywake', revision: 1, path: 'locations/greywake-quay.md', kind: 'lore', authority: 'canon', visibility: 'player-known', title: 'Greywake quay', body: 'A salt quay with an inn whose western shutter remains damaged.', sourceSequences: [9, 188] },
     { key: 'relationship.open-favor', revision: 1, path: 'relationships/mira-vale-favor.md', kind: 'relationship', authority: 'canon', visibility: 'player-known', title: 'A quiet favor', body: 'The player still owes Mira Vale one quiet favor; no deadline was established.', sourceSequences: [9, 188] },
@@ -97,6 +98,7 @@ function greywakeCorpus(sceneCount: number): LongStoryMemoryCorpus {
   const queries = [
     query('greywake.current-route', 'exact-current-state', 'What is the current patient tide route?', ['thread.patient-tide-current'], ['claim.bridge-warning', 'decoy.false-road'], 'current'),
     query('greywake.which-mira', 'alias-disambiguation', 'Which Mira keeps the blue ledger?', ['identity.mira-vale'], ['identity.mira-pell']),
+    query('greywake.brass-key-hiding-place', 'exact-wording', 'What exact hiding place did Mira Vale name for the brass key?', ['relationship.brass-key-hiding-place']),
     query('greywake.promise-words', 'exact-wording', 'What exactly was promised to Mira Vale?', ['relationship.open-favor']),
     query('greywake.coiled-return', 'paraphrased-callback', 'What old obligation should shape this homecoming?', ['relationship.open-favor']),
     query('greywake.mira-quay-link', 'multi-hop-relation', 'How is Mira Vale connected to the damaged Greywake quay?', ['identity.mira-vale', 'place.greywake', 'relationship.open-favor']),
