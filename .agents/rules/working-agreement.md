@@ -75,6 +75,15 @@ unclear, document the hypothesis and inspect exact saved packets before editing.
 Structural validity, profile adherence, campaign-direction adherence, model
 capability and subjective enjoyment are separate verdicts.
 
+Treat creative neutrality as an engine invariant. The shared runtime has no
+preferred pace, flavor, dramatic intensity, initiative level, choice density or
+kind of enjoyment. Judge generated gameplay first against the exact captured
+Storyteller profile, campaign direction, opening and established fiction. A
+reviewer's taste can reject that configured experience or motivate a profile
+change, but it cannot become an implicit engine default. Neutrality does not
+weaken engine authority over declared rules, time, evidence, persistence,
+permissions, safety or spending.
+
 The owner's preferred division is Codex for investigation, product/technical design and review; Cursor for bulk coding and refactoring. Prepare actionable phases instead of starting a large implementation pass in Codex without being asked. Do not launch another task, agent or subscription/model switch automatically.
 
 Keep one active implementation owner for a slice. Before work, inspect Git status and the current feature checkpoint. Preserve unrelated changes. At handoff, record the current phase, exact next step, relevant checks and unresolved blockers in PLAN.md; rewrite this snapshot rather than appending diary entries. Keep handoffs short enough that a fresh model can act without rereading the conversation.

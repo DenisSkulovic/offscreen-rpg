@@ -2,6 +2,8 @@
 
 Implemented for profiled solo stories, with offline rehearsal limits described below. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
 
+Shared application behavior is creatively neutral. It provides the same bounded narrative and mechanical capabilities to radically different profiles but does not supply a fallback taste for excitement, restraint, humor, option density or pace. Effective creative direction is the resolved combination of the selected profile, campaign direction, opening and established fiction. Evaluation must first ask whether a result fulfilled those captured commitments; reviewer enjoyment is a separate observation and cannot silently redefine the engine's defaults.
+
 ## Settings with distinct meanings
 
 | Setting | Representation and meaning |

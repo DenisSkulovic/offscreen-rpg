@@ -1,6 +1,6 @@
 # Connected generative POC proof
 
-The POC is not established by schemas, canonical storage, retrieval benchmarks or isolated provider responses. It is established when one ordinary campaign survives a short sequence of real generated Storyteller turns while deterministic application mechanics remain authoritative and the resulting story is worth continuing.
+The POC is not established by schemas, canonical storage, retrieval benchmarks or isolated provider responses. It is established when one ordinary campaign survives a short sequence of real generated Storyteller turns while deterministic application mechanics remain authoritative and the resulting story fulfills its selected Storyteller and campaign commitments well enough that the owner wants to continue that configured experience.
 
 This document owns that proof. The broader playthrough atlas supplies design pressure; feature plans own implementation slices; QA journeys own repeatable execution evidence.
 
@@ -8,7 +8,7 @@ This document owns that proof. The broader playthrough atlas supplies design pre
 
 Use the maintained Seyda Neen start: the player arrives as a released prisoner in a pinned world/rules/start package. Scenario content may name Vvardenfell, local people, places and opportunities. Shared runtime code must not branch on Seyda Neen, employment, human biology, Earth time or a chosen plot.
 
-The POC is ready only when the owner can play a **legitimately enjoyable 10–15 committed Storyteller-turn story**, counting the generated opening as turn one. A model round used for memory discovery is not another Storyteller turn; a quiet mechanical settlement without narration is not falsely counted as one. Mechanical correctness and valid prose are prerequisites, not substitutes for the owner's desire to continue.
+The POC is ready only when the owner can play a **legitimately enjoyable 10–15 committed Storyteller-turn story that matches its captured profile, direction, opening and established fiction**, counting the generated opening as turn one. Enjoyment here is not a hidden demand for excitement, speed or drama: a deliberately quiet, dull or chaotic configuration succeeds by realizing that intent coherently. A model round used for memory discovery is not another Storyteller turn; a quiet mechanical settlement without narration is not falsely counted as one. Mechanical correctness and valid prose are prerequisites, not substitutes for profile adherence or the owner's desire to continue the configured experience.
 
 Across the session, require:
 
@@ -43,7 +43,7 @@ From one reviewed opening, complete five Storyteller turns as an intermediate di
 
 ### P4 — Enjoyable 10–15-turn proof and fork pressure
 
-Only after P3 is repeatable, continue through 10–15 turns and fork one useful checkpoint to try a materially different choice. The owner judges whether the story was legitimately enjoyable and worth continuing. This also tests continuity, branch isolation and reuse of a good story position without requiring a giant history.
+Only after P3 is repeatable, continue through 10–15 turns and fork one useful checkpoint to try a materially different choice. The owner judges separately whether the run honored its captured creative commitments and whether that configured experience was enjoyable and worth continuing. This also tests continuity, branch isolation and reuse of a good story position without requiring a giant history.
 
 ## Compact evidence ledger
 
