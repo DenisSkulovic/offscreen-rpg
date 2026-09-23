@@ -1096,6 +1096,17 @@ test('captured schemas expose only the result for the requested task', () => {
     JSON.stringify(initial.request.outputSchema),
   );
   assert.deepEqual(openingSchema.required, ['version', 'scene']);
+  const openingChoiceProperties =
+    openingSchema.properties.scene.properties.next.oneOf[0].properties.options
+      .items.properties;
+  for (const field of [
+    'worldSections',
+    'campaignDocuments',
+    'createdDocuments',
+  ]) {
+    assert.equal(openingChoiceProperties[field].maxItems, 0);
+    assert.ok(openingChoiceProperties[field].items.type);
+  }
   const openingInstructions = initial.request.messages[0]?.content ?? '';
   assert.match(
     openingInstructions,

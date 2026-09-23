@@ -645,6 +645,14 @@ function withholdResumeResolutions(value: unknown): unknown {
 type AvailableFact = Readonly<{ id: string; value: string | boolean }>;
 type AvailableQuantity = Readonly<{ id: string; value: number }>;
 
+function closeArray(schema: unknown) {
+  const arraySchema =
+    schema && typeof schema === 'object' && !Array.isArray(schema)
+      ? (schema as Record<string, unknown>)
+      : { type: 'array' };
+  return { ...arraySchema, maxItems: 0 };
+}
+
 function exactFactRequirement(fact: AvailableFact) {
   return {
     type: 'object',
@@ -667,7 +675,79 @@ function availableRequirementArray(
       : { type: 'array' };
   return items.length
     ? { ...arraySchema, items: { anyOf: items } }
-    : { ...arraySchema, maxItems: 0 };
+    : closeArray(arraySchema);
+}
+
+function availableStringArray(schema: unknown, values: readonly string[]) {
+  const arraySchema =
+    schema && typeof schema === 'object' && !Array.isArray(schema)
+      ? (schema as Record<string, unknown>)
+      : { type: 'array' };
+  return values.length
+    ? { ...arraySchema, items: { type: 'string', enum: [...values] } }
+    : closeArray(arraySchema);
+}
+
+/** Choice retrieval hints may reference only the exact captured catalogues. */
+function constrainChoiceRetrievalHandles(
+  value: unknown,
+  worldSections: readonly string[],
+  campaignDocuments: readonly string[],
+  allowCreatedDocuments: boolean,
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((child) =>
+      constrainChoiceRetrievalHandles(
+        child,
+        worldSections,
+        campaignDocuments,
+        allowCreatedDocuments,
+      ),
+    );
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const result = Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+      key,
+      constrainChoiceRetrievalHandles(
+        child,
+        worldSections,
+        campaignDocuments,
+        allowCreatedDocuments,
+      ),
+    ]),
+  ) as Record<string, unknown>;
+  const properties = result['properties'];
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties)
+  ) {
+    return result;
+  }
+  const fields = properties as Record<string, unknown>;
+  if (
+    !('intention' in fields) ||
+    !('worldSections' in fields) ||
+    !('campaignDocuments' in fields) ||
+    !('createdDocuments' in fields)
+  ) {
+    return result;
+  }
+  fields['worldSections'] = availableStringArray(
+    fields['worldSections'],
+    worldSections,
+  );
+  fields['campaignDocuments'] = availableStringArray(
+    fields['campaignDocuments'],
+    campaignDocuments,
+  );
+  if (!allowCreatedDocuments) {
+    fields['createdDocuments'] = closeArray(fields['createdDocuments']);
+  }
+  return result;
 }
 
 /** Generated offers may depend only on prerequisites satisfied at capture time. */
@@ -803,6 +883,20 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
       context.resolution.character.facts,
       context.resolution.storyFacts,
       context.resolution.character.quantities,
+    );
+  }
+  if (input.task !== 'report') {
+    rawOutputSchema = constrainChoiceRetrievalHandles(
+      rawOutputSchema,
+      context.canonicalKnowledge?.libraries
+        .filter((library) => library.kind === 'world')
+        .flatMap((library) =>
+          library.catalogue.flatMap((document) =>
+            document.sections.map((section) => section.handle),
+          ),
+        ) ?? [],
+      context.canonicalKnowledge?.catalogue.map((entry) => entry.handle) ?? [],
+      input.task !== 'opening',
     );
   }
   const outputSchema = constrainQuantityChangeDeltas(

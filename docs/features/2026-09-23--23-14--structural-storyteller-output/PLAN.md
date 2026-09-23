@@ -44,10 +44,18 @@ Implementation owner: Codex, as requested by the owner; review remains local to 
 - Evidence: Storyteller builds and passes 40/40 tests. Tests cover exact current fact/value branches, typed closed empty story/quantity collections and a quantity minimum capped at two. The provider-free activity-consequence audit is 32,581 request bytes with a 23,057-byte schema; no inference or spend occurred.
 - Exit: both consequence task variants use the same captured-state projection already proven for mechanical openings and retain downstream admission. Status: implemented.
 
+## Phase S6 — State-index narrative retrieval hints
+
+- Outcome: narrative choice schemas expose only world-section and campaign-document handles in the captured catalogues; narrative openings cannot reference same-result document changes they do not return.
+- Owners: task-specific schema projection and focused Storyteller contract tests. Publication validation remains authoritative.
+- Boundaries: the Storyteller still decides whether and which permitted material a choice needs. Continuations may still reference a document change authored in the same result, which remains semantically checked after generation.
+- Evidence: Storyteller builds and passes 40/40 tests. Empty captured catalogues preserve typed item schemas while closing all three opening retrieval arrays. The provider-free packet audit remains within existing envelopes and performed no inference.
+- Exit: arbitrary retrieval strings are absent from the provider-facing choice schema where the later validator would reject them. Status: implemented.
+
 ## Current checkpoint
 
-- Current phase and exact next action: checkpoint S5 and its permanent contract guidance. A later fresh operation may live-prove the state-indexed contract; do not spend merely to prove the deterministic schema transformation.
-- Base/reviewed Git revision and relevant uncommitted changes: S1/S2 are pushed at `378292a`; opening state-indexing at `5a58a68`; the typed-empty repair at `6cb98ad`; S5 and documentation are the current working change.
-- Actual checks/results for this revision: Storyteller builds and passes 40/40 tests. The provider-free opening audit remains 22,443 packet / 22,071 request / 16,653 schema bytes. The state-indexed activity-consequence audit is 32,581 request / 23,057 schema bytes. No provider inference ran in S5.
+- Current phase and exact next action: checkpoint S6. A later fresh operation may live-prove the repaired state-indexed contracts; do not spend merely to prove deterministic schema transformations.
+- Base/reviewed Git revision and relevant uncommitted changes: S1/S2 are pushed at `378292a`; opening state-indexing at `5a58a68`; the typed-empty repair at `6cb98ad`; consequence state-indexing and durable guidance at `8aec5f9`; S6 is the current working change.
+- Actual checks/results for this revision: Storyteller builds and passes 40/40 tests. The provider-free opening audit remains 22,443 packet / 22,071 request / 16,653 schema bytes. The state-indexed activity-consequence audit remains 32,581 request / 23,057 schema bytes. No provider inference ran in S5 or S6.
 - Unresolved findings/blockers: the repaired state-index projection is not yet live-proved. Consequence envelope compaction remains a separate candidate because continuity, document changes, evidence and activity resumption need a deliberate boundary. One generated sample does not establish v11 reliability.
 - Provider spend and accounting certainty: the sole billable S3 call settled and reconciled at 22,684 microusd (6,078 prompt, 749 completion, zero reasoning); operation state remains open only for explicit repair, with zero account/run reservation and no uncertain attempt. The next fresh operation returned HTTP 400 `invalid-json-schema` before inference and reconciled at zero tokens/zero charge with no retry capacity. OpenRouter reported USD 0.657259296 cumulative account usage and USD 9.342740704 remaining at 2026-09-23T20:58:44Z.

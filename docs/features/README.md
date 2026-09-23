@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Checkpoint consequence state-indexing and the durable structured-output guidance in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md). A later fresh operation may live-prove the repaired projection; do not spend merely to prove a deterministic schema transformation.
+**Next action:** Checkpoint state-indexed narrative retrieval hints in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md). A later fresh operation may live-prove the repaired projections; do not spend merely to prove deterministic schema transformations.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

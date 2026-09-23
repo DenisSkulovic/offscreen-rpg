@@ -35,6 +35,7 @@ The engine remains creatively unopinionated. Output structure expresses mechanic
 5. A mechanical-opening model result contains only `content` and `plans`; code derives its stable envelope, state and activity access without removing prerequisites, outcomes or process mechanics.
 6. Legacy v10 provider-shaped opening results remain locally valid for captured repair/replay, but newly transmitted v11 schemas do not expose that boilerplate or activity resumption.
 7. Mechanical-opening and consequence prerequisite schemas expose only captured fact/value pairs that are already true and quantity minima the character currently satisfies; the semantic validator remains authoritative.
+8. Narrative-choice retrieval hints expose only captured world-section and campaign-document handles; an opening cannot reference document changes absent from its compact result.
 
 ## Decisions still needed
 
