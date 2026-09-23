@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) B2c — review and enable the newly proven two-round Story-mode policy for newly captured tasks, then spend at most one deliberately chosen live turn on gameplay evidence. Explicit repair now works provider-free under the original operation; the older held one-shot story cannot gain that authority retroactively.
+**Next action:** Continue live repaired story `23ea2420-d8e5-41a5-8c83-9346184e52fe` without changing its Character-Driven Drama profile or Sol route. [Bounded Storyteller effort and cost](2026-09-19--19-08--bounded-storyteller-cost/PLAN.md) B2c now has connected live opening-repair evidence plus one valid post-start turn; the next evidence gap is sustained gameplay, not another repair implementation.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

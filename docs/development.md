@@ -172,15 +172,18 @@ pnpm story:play server
 pnpm story:play list
 pnpm story:play show <story-id>
 pnpm story:play new --profile driven-adventure --character Mara --confirm-live
+pnpm story:play retry-opening <draft-id> <opening-id> --confirm-live
 pnpm story:play choose <story-id> <option-id-or-campaign/path> --confirm-live
 pnpm story:play wait <story-id>
 pnpm story:play retry <story-id> --confirm-live
 pnpm story:play history <story-id>
 ```
 
-Read-only commands never dispatch inference. `new`, `choose` and `retry` fail
-closed without `--confirm-live`; this flag confirms only that invocation and is
-not stored as background authorization. `choose` accepts a narrative option ID
+Read-only commands never dispatch inference. `new`, `retry-opening`, `choose`
+and `retry` fail closed without `--confirm-live`; this flag confirms only that
+invocation and is not stored as background authorization. `retry-opening`
+requires the failed preview's draft and opening IDs, consumes only captured
+repair capacity, and starts the story after a valid correction. `choose` accepts a narrative option ID
 or the complete slash-separated path printed under `campaignChoices`. It waits
 up to two minutes for the admitted action and required narration, then returns
 the current authoritative state even if work remains pending. Every observation

@@ -77,13 +77,23 @@ if (!generationId || !attemptId || !evidenceArgument) {
       ) {
         throw new Error('Saved evidence is not a complete provider response.');
       }
+      if (
+        task.execution.mode !== 'provider' ||
+        envelope.model !== task.execution.policy.model ||
+        envelope.provider !== task.execution.policy.provider
+      ) {
+        throw new Error('Saved evidence does not match the captured route.');
+      }
       const integerUsage = [
         usage.prompt_tokens,
         usage.completion_tokens,
         usage.total_tokens,
       ];
       if (
-        integerUsage.some((value) => !Number.isSafeInteger(value) || value < 0)
+        integerUsage.some(
+          (value) => !Number.isSafeInteger(value) || value < 0,
+        ) ||
+        usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens
       ) {
         throw new Error('Saved evidence has invalid token accounting.');
       }
