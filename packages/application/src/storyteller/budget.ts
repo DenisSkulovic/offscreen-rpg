@@ -102,14 +102,32 @@ function calculatedCharge(
   execution: ProviderExecution,
   usage: ProviderUsage,
 ): bigint | null {
-  // The current price snapshot has no cache-read/write prices. Returning
-  // unknown is safer than presenting a plausible but dimensionally wrong cost.
-  if ((usage.cachedTokens ?? 0) > 0 || (usage.cacheWriteTokens ?? 0) > 0) {
+  const cachedTokens = usage.cachedTokens ?? 0;
+  const cacheWriteTokens = usage.cacheWriteTokens ?? 0;
+  const ordinaryInputTokens =
+    usage.promptTokens - cachedTokens - cacheWriteTokens;
+  if (
+    ordinaryInputTokens < 0 ||
+    (cachedTokens > 0 &&
+      execution.policy.cacheReadMicrousdPerMillion === undefined) ||
+    (cacheWriteTokens > 0 &&
+      execution.policy.cacheWriteMicrousdPerMillion === undefined)
+  ) {
     return null;
   }
   const amount =
-    BigInt(usage.promptTokens) *
+    BigInt(ordinaryInputTokens) *
       BigInt(execution.policy.inputMicrousdPerMillion) +
+    BigInt(cachedTokens) *
+      BigInt(
+        execution.policy.cacheReadMicrousdPerMillion ??
+          execution.policy.inputMicrousdPerMillion,
+      ) +
+    BigInt(cacheWriteTokens) *
+      BigInt(
+        execution.policy.cacheWriteMicrousdPerMillion ??
+          execution.policy.inputMicrousdPerMillion,
+      ) +
     BigInt(usage.completionTokens) *
       BigInt(execution.policy.outputMicrousdPerMillion);
   return (amount + 999_999n) / 1_000_000n;
@@ -127,9 +145,18 @@ function estimatedCharge(
     reservation.maxInputTokens,
     requestBytes,
   );
+  const admittedInputPrice = [
+    execution.policy.inputMicrousdPerMillion,
+    execution.policy.cacheReadMicrousdPerMillion ??
+      execution.policy.inputMicrousdPerMillion,
+    execution.policy.cacheWriteMicrousdPerMillion ??
+      execution.policy.inputMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
   const amount =
-    BigInt(estimatedInputTokens) *
-      BigInt(execution.policy.inputMicrousdPerMillion) +
+    BigInt(estimatedInputTokens) * admittedInputPrice +
     BigInt(reservation.maxGeneratedTokens) *
       BigInt(execution.policy.outputMicrousdPerMillion);
   return {

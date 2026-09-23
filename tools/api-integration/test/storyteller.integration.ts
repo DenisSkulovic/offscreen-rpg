@@ -3964,8 +3964,10 @@ test(
                 model: 'fake/model',
                 provider: 'fake',
                 priceVersion: 'test-only',
-                inputMicrousdPerMillion: '1000',
-                outputMicrousdPerMillion: '1000',
+                inputMicrousdPerMillion: '100000',
+                cacheReadMicrousdPerMillion: '10000',
+                cacheWriteMicrousdPerMillion: '250000',
+                outputMicrousdPerMillion: '100000',
                 maxInputTokens: 100000,
                 maxOutputTokens: 2000,
                 timeoutMs: 1000,
@@ -3987,7 +3989,7 @@ test(
                 return {
                   kind: 'result',
                   output: scriptedStorytellerResult(task),
-                  usage: fakeUsage(10n),
+                  usage: { ...fakeUsage(10n), cacheWriteTokens: 15 },
                   telemetry: fakeTelemetry('fake-provider-id'),
                 };
               },
@@ -4109,7 +4111,7 @@ test(
             assert.equal(settledAttempt.completionTokens, 10);
             assert.equal(settledAttempt.reasoningTokens, 0);
             assert.equal(settledAttempt.chargedMicrousd, 10n);
-            assert.equal(settledAttempt.calculatedMicrousd, 1n);
+            assert.equal(settledAttempt.calculatedMicrousd, 6n);
             assert.ok(
               settledAttempt.estimatedMicrousd <
                 settledAttempt.reservedMicrousd,

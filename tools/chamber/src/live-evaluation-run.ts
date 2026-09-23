@@ -63,14 +63,22 @@ export async function verifyOpenRouterAuthority(
     data?: {
       endpoints?: Array<{
         provider_name?: string;
+        tag?: string;
         context_length?: number;
-        pricing?: { prompt?: string; completion?: string };
+        pricing?: {
+          prompt?: string;
+          completion?: string;
+          input_cache_read?: string;
+          input_cache_write?: string;
+        };
         supported_parameters?: string[];
       }>;
     };
   };
   const endpoint = endpoints.data?.endpoints?.find(
-    (candidate) => candidate.provider_name === config.route.endpointProvider,
+    (candidate) =>
+      candidate.provider_name === config.route.endpointProvider &&
+      candidate.tag === config.route.endpointTag,
   );
   const supportedParameters = endpoint?.supported_parameters ?? [];
   if (
@@ -90,8 +98,16 @@ export async function verifyOpenRouterAuthority(
   const outputPrice = BigInt(
     Math.ceil(Number(endpoint.pricing?.completion) * 1_000_000_000_000),
   );
+  const cacheReadPrice = BigInt(
+    Math.ceil(Number(endpoint.pricing?.input_cache_read) * 1_000_000_000_000),
+  );
+  const cacheWritePrice = BigInt(
+    Math.ceil(Number(endpoint.pricing?.input_cache_write) * 1_000_000_000_000),
+  );
   if (
     inputPrice.toString() !== config.route.inputMicrousdPerMillion ||
+    cacheReadPrice.toString() !== config.route.cacheReadMicrousdPerMillion ||
+    cacheWritePrice.toString() !== config.route.cacheWriteMicrousdPerMillion ||
     outputPrice.toString() !== config.route.outputMicrousdPerMillion
   ) {
     throw new Error('Configured OpenRouter endpoint pricing is stale');

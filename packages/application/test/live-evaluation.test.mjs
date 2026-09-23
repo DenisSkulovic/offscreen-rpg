@@ -27,12 +27,16 @@ const manifest = {
   route: {
     provider: 'openrouter',
     endpointProvider: 'Test Provider',
+    endpointTag: 'test/default',
     route: 'openrouter:test/model',
     model: 'test/model',
     priceVersion: 'verified-test-price',
     outputProtocol: 'native-json-schema',
     responseTransport: 'buffered-json',
+    serviceTier: 'default',
     inputMicrousdPerMillion: '1000',
+    cacheReadMicrousdPerMillion: '100',
+    cacheWriteMicrousdPerMillion: '1250',
     outputMicrousdPerMillion: '2000',
     supportsStructuredOutput: true,
     reasoning: 'disabled',
@@ -90,7 +94,7 @@ test('builds the manifest and derives the conservative reservation', () => {
     recipe: manifest.recipe,
   });
   assert.equal(created.packet.inputTokenUpperBound, 4350);
-  assert.equal(created.reservationMicrousd, '7');
+  assert.equal(created.reservationMicrousd, '8');
 });
 
 test('reports independent optional-call, identity, funding and trace failures', () => {
@@ -134,6 +138,8 @@ test('builds and preflights one held verified-free memory operation', () => {
       ...manifest.route,
       route: 'openrouter:test-model',
       inputMicrousdPerMillion: '0',
+      cacheReadMicrousdPerMillion: '0',
+      cacheWriteMicrousdPerMillion: '0',
       outputMicrousdPerMillion: '0',
       maxContextTokens: 32_000,
     },

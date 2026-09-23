@@ -14,7 +14,11 @@ export const modelPolicySchema = z.strictObject({
     .optional(),
   /** Response framing is captured because it changes the reviewed provider packet. */
   responseTransport: z.enum(['buffered-json', 'streaming-sse']).optional(),
+  /** Provider capacity tier is explicit so price review and dispatch select the same endpoint class. */
+  serviceTier: z.enum(['default', 'flex', 'priority']).optional(),
   inputMicrousdPerMillion: microusdSchema,
+  cacheReadMicrousdPerMillion: microusdSchema.optional(),
+  cacheWriteMicrousdPerMillion: microusdSchema.optional(),
   outputMicrousdPerMillion: microusdSchema,
   maxInputTokens: z.number().int().positive().max(100000),
   maxOutputTokens: z.number().int().positive().max(8000),
@@ -59,9 +63,17 @@ export function reservationForRequest(
   if (inputBound > maxSerializedRequestBytes) {
     throw new Error('context_too_large');
   }
+  const admittedInputPrice = [
+    policy.inputMicrousdPerMillion,
+    policy.cacheReadMicrousdPerMillion ?? policy.inputMicrousdPerMillion,
+    policy.cacheWriteMicrousdPerMillion ?? policy.inputMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
   const amount =
     BigInt(Math.min(maxInputTokens, policy.maxInputTokens)) *
-      BigInt(policy.inputMicrousdPerMillion) +
+      admittedInputPrice +
     BigInt(Math.min(maxOutputTokens, policy.maxOutputTokens)) *
       BigInt(policy.outputMicrousdPerMillion);
   return (amount + 999999n) / 1000000n;

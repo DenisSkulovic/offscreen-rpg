@@ -134,8 +134,13 @@ if (
 if (noBrowser && !storyMode) {
   throw new Error('--no-browser is supported only with --story-mode.');
 }
-if (!storyMode && (storyModelArgument || storyMaxMicrousdArgument || storyAuthorizationArgument)) {
-  throw new Error('Story model arguments are supported only with --story-mode.');
+if (
+  !storyMode &&
+  (storyModelArgument || storyMaxMicrousdArgument || storyAuthorizationArgument)
+) {
+  throw new Error(
+    'Story model arguments are supported only with --story-mode.',
+  );
 }
 if (
   (evaluationPacket ||
@@ -240,20 +245,29 @@ const memoryDryRunExecution: ExecutionPolicy = {
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 const storyAccountId = '00000000-0000-4000-8000-000000000010';
 const storyRunId = '00000000-0000-4000-8000-000000000011';
-const storyModel = storyModelArgument?.slice('--story-model='.length) ?? 'openai/gpt-5.6-luna';
+const storyModel =
+  storyModelArgument?.slice('--story-model='.length) ?? 'openai/gpt-5.6-luna';
 const permittedStoryModels = new Set([
   'openai/gpt-5.6-luna',
   'openai/gpt-5.6-terra',
   'openai/gpt-5.6-sol',
 ]);
 if (!permittedStoryModels.has(storyModel)) {
-  throw new Error('Story mode supports only the reviewed GPT-5.6 Luna, Terra, and Sol routes.');
+  throw new Error(
+    'Story mode supports only the reviewed GPT-5.6 Luna, Terra, and Sol routes.',
+  );
 }
 const storyMaxMicrousd = storyMaxMicrousdArgument
   ? Number(storyMaxMicrousdArgument.slice('--story-max-microusd='.length))
   : 10_000;
-if (!Number.isInteger(storyMaxMicrousd) || storyMaxMicrousd < 1 || storyMaxMicrousd > 250_000) {
-  throw new Error('--story-max-microusd must be an integer from 1 through 250000.');
+if (
+  !Number.isInteger(storyMaxMicrousd) ||
+  storyMaxMicrousd < 1 ||
+  storyMaxMicrousd > 250_000
+) {
+  throw new Error(
+    '--story-max-microusd must be an integer from 1 through 250000.',
+  );
 }
 const storyRoute = `openrouter:${storyModel.slice('openai/'.length)}`;
 if (
@@ -266,6 +280,8 @@ if (
   );
 }
 const storyProvider = 'OpenAI';
+const storyEndpointTag = 'openai';
+const storyServiceTier = 'default' as const;
 
 async function readLocalOpenRouterKey() {
   const content = await readFile(
@@ -305,8 +321,14 @@ async function storyLiveAuthority() {
     data?: {
       endpoints?: Array<{
         provider_name?: string;
+        tag?: string;
         context_length?: number;
-        pricing?: { prompt?: string; completion?: string };
+        pricing?: {
+          prompt?: string;
+          completion?: string;
+          input_cache_read?: string;
+          input_cache_write?: string;
+        };
         supported_parameters?: string[];
       }>;
     };
@@ -314,6 +336,7 @@ async function storyLiveAuthority() {
   const eligible = (endpoints.data?.endpoints ?? []).filter(
     (endpoint) =>
       endpoint.provider_name === storyProvider &&
+      endpoint.tag === storyEndpointTag &&
       (endpoint.context_length ?? 0) >= 12_000 &&
       endpoint.supported_parameters?.includes('response_format') &&
       endpoint.supported_parameters?.includes('structured_outputs'),
@@ -328,6 +351,14 @@ async function storyLiveAuthority() {
   }, 0n);
   const outputPrice = eligible.reduce((maximum, endpoint) => {
     const price = perMillionMicrousd(endpoint.pricing?.completion);
+    return price > maximum ? price : maximum;
+  }, 0n);
+  const cacheReadPrice = eligible.reduce((maximum, endpoint) => {
+    const price = perMillionMicrousd(endpoint.pricing?.input_cache_read);
+    return price > maximum ? price : maximum;
+  }, 0n);
+  const cacheWritePrice = eligible.reduce((maximum, endpoint) => {
+    const price = perMillionMicrousd(endpoint.pricing?.input_cache_write);
     return price > maximum ? price : maximum;
   }, 0n);
   const verifiedAt = new Date().toISOString();
@@ -381,7 +412,10 @@ async function storyLiveAuthority() {
         priceVersion: `openrouter-endpoints-${verifiedAt}`,
         outputProtocol: 'native-json-schema' as const,
         responseTransport: 'buffered-json' as const,
+        serviceTier: storyServiceTier,
         inputMicrousdPerMillion: inputPrice.toString(),
+        cacheReadMicrousdPerMillion: cacheReadPrice.toString(),
+        cacheWriteMicrousdPerMillion: cacheWritePrice.toString(),
         outputMicrousdPerMillion: outputPrice.toString(),
         maxInputTokens: 12_000,
         maxOutputTokens: 2_048,

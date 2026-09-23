@@ -33,9 +33,7 @@ export type ProviderOutcome =
   | {
       kind: 'failed';
       failureCode:
-        | 'provider_refusal'
-        | 'provider_unavailable'
-        | 'invalid_output';
+        'provider_refusal' | 'provider_unavailable' | 'invalid_output';
       usage: ProviderUsage;
       telemetry: ProviderTelemetry;
     }
@@ -144,6 +142,7 @@ export function buildOpenRouterRequest(
   return {
     model: policy.model,
     messages: request.messages,
+    ...(policy.serviceTier ? { service_tier: policy.serviceTier } : {}),
     stream: responseTransport === 'streaming-sse',
     ...(responseTransport === 'streaming-sse'
       ? { stream_options: { include_usage: true } }
@@ -771,7 +770,9 @@ export function createOpenRouterProvider(config: {
         return {
           kind: 'failed',
           failureCode:
-            choice?.finish_reason === 'length' ? 'invalid_output' : 'provider_refusal',
+            choice?.finish_reason === 'length'
+              ? 'invalid_output'
+              : 'provider_refusal',
           usage,
           telemetry,
         };

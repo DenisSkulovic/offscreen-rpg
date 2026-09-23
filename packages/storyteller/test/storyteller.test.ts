@@ -1797,12 +1797,14 @@ test('provider adapter uses an injected transport, one route and no retry; missi
       policy: {
         ...providerExecution.policy,
         responseTransport: 'streaming-sse' as const,
+        serviceTier: 'default' as const,
       },
     },
     resources: providerResources(providerExecution.policy.route),
   });
   const streamingInspection = inspectOpenRouterRequest(streamingTask);
   assert.equal(streamingInspection.responseTransport, 'streaming-sse');
+  assert.equal(streamingInspection.body.service_tier, 'default');
   assert.equal(streamingInspection.body.stream, true);
   assert.deepEqual(streamingInspection.body.stream_options, {
     include_usage: true,

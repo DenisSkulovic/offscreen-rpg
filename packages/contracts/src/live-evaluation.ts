@@ -5,6 +5,7 @@ const sha256 = z.string().regex(/^[0-9a-f]{64}$/);
 const evaluationRouteSchema = z.strictObject({
   provider: z.literal('openrouter'),
   endpointProvider: z.string().min(1).max(100),
+  endpointTag: z.string().min(1).max(100),
   route: z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,99}$/),
   model: z.string().min(1).max(160),
   priceVersion: z.string().min(1).max(100),
@@ -15,7 +16,10 @@ const evaluationRouteSchema = z.strictObject({
   responseTransport: z
     .enum(['buffered-json', 'streaming-sse'])
     .default('buffered-json'),
+  serviceTier: z.enum(['default', 'flex', 'priority']),
   inputMicrousdPerMillion: unsignedIntegerString,
+  cacheReadMicrousdPerMillion: unsignedIntegerString,
+  cacheWriteMicrousdPerMillion: unsignedIntegerString,
   outputMicrousdPerMillion: unsignedIntegerString,
   supportsStructuredOutput: z.literal(true),
   reasoning: z.literal('disabled'),
@@ -138,6 +142,8 @@ export const memoryEvaluationPacketConfigSchema = z
   .superRefine((config, context) => {
     if (
       config.route.inputMicrousdPerMillion !== '0' ||
+      config.route.cacheReadMicrousdPerMillion !== '0' ||
+      config.route.cacheWriteMicrousdPerMillion !== '0' ||
       config.route.outputMicrousdPerMillion !== '0'
     ) {
       context.addIssue({
@@ -234,6 +240,7 @@ export const liveEvaluationManifestSchema = z
     route: z.strictObject({
       provider: z.literal('openrouter'),
       endpointProvider: z.string().min(1).max(100),
+      endpointTag: z.string().min(1).max(100),
       route: z.string().min(1),
       model: z.string().min(1),
       priceVersion: z.string().min(1),
@@ -242,7 +249,10 @@ export const liveEvaluationManifestSchema = z
         'json-object-local-validation',
       ]),
       responseTransport: z.enum(['buffered-json', 'streaming-sse']),
+      serviceTier: z.enum(['default', 'flex', 'priority']),
       inputMicrousdPerMillion: unsignedIntegerString,
+      cacheReadMicrousdPerMillion: unsignedIntegerString,
+      cacheWriteMicrousdPerMillion: unsignedIntegerString,
       outputMicrousdPerMillion: unsignedIntegerString,
       supportsStructuredOutput: z.boolean(),
       reasoning: z.literal('disabled'),

@@ -26,8 +26,16 @@ export function createLiveEvaluationManifest(input: {
   // A tokenizer token cannot represent less than one encoded byte. This is a
   // deliberately conservative compatibility bound, not provider metering.
   const inputTokenUpperBound = input.review.serializedBytes;
+  const admittedInputPrice = [
+    input.route.inputMicrousdPerMillion,
+    input.route.cacheReadMicrousdPerMillion,
+    input.route.cacheWriteMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
   const pricedMillionthsOfMicrousd =
-    BigInt(inputTokenUpperBound) * BigInt(input.route.inputMicrousdPerMillion) +
+    BigInt(inputTokenUpperBound) * admittedInputPrice +
     BigInt(input.recipe.maxGeneratedTokens) *
       BigInt(input.route.outputMicrousdPerMillion);
   const reservationMicrousd = (
@@ -132,9 +140,16 @@ export function preflightLiveEvaluation(input: {
   if (manifest.packet.inputTokenUpperBound > recipe.maxInputTokens) {
     failures.push('input_limit_exceeded');
   }
+  const admittedInputPrice = [
+    manifest.route.inputMicrousdPerMillion,
+    manifest.route.cacheReadMicrousdPerMillion,
+    manifest.route.cacheWriteMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
   const pricedMillionthsOfMicrousd =
-    BigInt(manifest.packet.inputTokenUpperBound) *
-      BigInt(manifest.route.inputMicrousdPerMillion) +
+    BigInt(manifest.packet.inputTokenUpperBound) * admittedInputPrice +
     BigInt(recipe.maxGeneratedTokens) *
       BigInt(manifest.route.outputMicrousdPerMillion);
   const requiredReservationMicrousd =
