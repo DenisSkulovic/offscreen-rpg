@@ -8,7 +8,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 **Next action:** Design typed-state outcome coherence for generated plans: when an outcome changes an existing typed fact in its own declared mechanics, every matching branch must carry the corresponding admitted effect. Keep this structural and state-indexed; do not parse prose, require travel, or spend merely to resample it. The fixed evaluation harness now carries the same pinned start-package world guidance as Story mode.
 
-Before sustained 30–50-turn evaluation in a private or sparsely documented setting, implement the permanent [canon-invention policy](../storyteller-settings.md#canon-invention-policy): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission. It remains a queued product gap rather than another dormant feature folder until it becomes the active implementation slice.
+Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
@@ -42,6 +42,14 @@ Stop for a material product/cost change or an unresolved authority boundary. Che
 | [Inhabitable play and return](2026-09-19--00-26--inhabitable-play-and-return/FEATURE.md) | Scene feel, return recap, recovery states |
 | [Storyteller trace explorer](2026-09-18--17-27--storyteller-trace-explorer/FEATURE.md) | Correlated task/model/publication inspection in Chamber |
 | [Conservative live-model evaluation](2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md) | Dry-run-first OpenRouter gates; design does not authorize live calls |
+
+## Deliberately dormant dossiers
+
+The owner explicitly requested that the following prepared dossier remain indexed while work continues elsewhere. It is not the current coding route and does not authorize provider spend.
+
+| Feature | Activation condition |
+| --- | --- |
+| [Configurable canon invention policy](2026-09-24--01-30--canon-invention-policy/FEATURE.md) | After typed-state outcome coherence reaches a checkpoint and before sustained 30–50-turn private-world evaluation |
 
 No chapters, chapter navigation or chapter-bound generation. Premise-to-mechanics choices live in [questions](../questions.md) until authorized.
 
