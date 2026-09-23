@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Checkpoint state-indexed narrative retrieval hints in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md). A later fresh operation may live-prove the repaired projections; do not spend merely to prove deterministic schema transformations.
+**Next action:** Checkpoint the successful state-indexed v11 live proof in [Structural Storyteller output](2026-09-23--23-14--structural-storyteller-output/PLAN.md), then diagnose its questionable action durations and narrated location change at their owning time/admission layers before editing prompts or spending again.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
