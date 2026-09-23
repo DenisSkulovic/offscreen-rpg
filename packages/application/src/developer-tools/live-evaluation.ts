@@ -7,6 +7,25 @@ import {
   type MemoryEvaluationPacketConfig,
 } from '@offscreen/contracts/live-evaluation';
 
+function requiredReservationMicrousd(input: {
+  route: LiveEvaluationManifest['route'];
+  recipe: LiveEvaluationRecipe;
+}) {
+  const admittedInputPrice = [
+    input.route.inputMicrousdPerMillion,
+    input.route.cacheReadMicrousdPerMillion,
+    input.route.cacheWriteMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
+  const pricedMillionthsOfMicrousd =
+    BigInt(input.recipe.maxInputTokens) * admittedInputPrice +
+    BigInt(input.recipe.maxGeneratedTokens) *
+      BigInt(input.route.outputMicrousdPerMillion);
+  return (pricedMillionthsOfMicrousd + 999_999n) / 1_000_000n;
+}
+
 export function createLiveEvaluationManifest(input: {
   id: string;
   createdAt: string;
@@ -26,22 +45,9 @@ export function createLiveEvaluationManifest(input: {
   // A tokenizer token cannot represent less than one encoded byte. This is a
   // deliberately conservative compatibility bound, not provider metering.
   const inputTokenUpperBound = input.review.serializedBytes;
-  const admittedInputPrice = [
-    input.route.inputMicrousdPerMillion,
-    input.route.cacheReadMicrousdPerMillion,
-    input.route.cacheWriteMicrousdPerMillion,
-  ].reduce((maximum, price) => {
-    const parsed = BigInt(price);
-    return parsed > maximum ? parsed : maximum;
-  }, 0n);
-  const pricedMillionthsOfMicrousd =
-    BigInt(inputTokenUpperBound) * admittedInputPrice +
-    BigInt(input.recipe.maxGeneratedTokens) *
-      BigInt(input.route.outputMicrousdPerMillion);
-  const reservationMicrousd = (
-    (pricedMillionthsOfMicrousd + 999_999n) /
-    1_000_000n
-  ).toString();
+  // Runtime reserves the admitted operation envelope, not the current body's
+  // byte count. Keep the held preview identical to that fail-closed boundary.
+  const reservationMicrousd = requiredReservationMicrousd(input).toString();
   return liveEvaluationManifestSchema.parse({
     version: 'live-evaluation.v1',
     id: input.id,
@@ -140,23 +146,13 @@ export function preflightLiveEvaluation(input: {
   if (manifest.packet.inputTokenUpperBound > recipe.maxInputTokens) {
     failures.push('input_limit_exceeded');
   }
-  const admittedInputPrice = [
-    manifest.route.inputMicrousdPerMillion,
-    manifest.route.cacheReadMicrousdPerMillion,
-    manifest.route.cacheWriteMicrousdPerMillion,
-  ].reduce((maximum, price) => {
-    const parsed = BigInt(price);
-    return parsed > maximum ? parsed : maximum;
-  }, 0n);
-  const pricedMillionthsOfMicrousd =
-    BigInt(manifest.packet.inputTokenUpperBound) * admittedInputPrice +
-    BigInt(recipe.maxGeneratedTokens) *
-      BigInt(manifest.route.outputMicrousdPerMillion);
-  const requiredReservationMicrousd =
-    (pricedMillionthsOfMicrousd + 999_999n) / 1_000_000n;
+  const requiredReservation = requiredReservationMicrousd({
+    route: manifest.route,
+    recipe,
+  });
   const reservationMicrousd = BigInt(manifest.reservationMicrousd);
   if (
-    reservationMicrousd < requiredReservationMicrousd ||
+    reservationMicrousd < requiredReservation ||
     reservationMicrousd > BigInt(recipe.maxMicrousd)
   ) {
     failures.push('reservation_mismatch');

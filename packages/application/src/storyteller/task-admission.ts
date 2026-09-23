@@ -22,9 +22,18 @@ function minimumMicrousd(left: string, right: string) {
 function executionMaximumCharge(
   execution: Extract<ExecutionPolicy, { mode: 'provider' }>,
 ) {
+  const admittedInputPrice = [
+    execution.policy.inputMicrousdPerMillion,
+    execution.policy.cacheReadMicrousdPerMillion ??
+      execution.policy.inputMicrousdPerMillion,
+    execution.policy.cacheWriteMicrousdPerMillion ??
+      execution.policy.inputMicrousdPerMillion,
+  ].reduce((maximum, price) => {
+    const parsed = BigInt(price);
+    return parsed > maximum ? parsed : maximum;
+  }, 0n);
   const amount =
-    BigInt(execution.policy.maxInputTokens) *
-      BigInt(execution.policy.inputMicrousdPerMillion) +
+    BigInt(execution.policy.maxInputTokens) * admittedInputPrice +
     BigInt(execution.policy.maxOutputTokens) *
       BigInt(execution.policy.outputMicrousdPerMillion);
   return ((amount + 999_999n) / 1_000_000n).toString();

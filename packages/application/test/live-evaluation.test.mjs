@@ -56,7 +56,7 @@ const manifest = {
     maxReasoningTokens: 0,
     maxMicrousd: '10000',
   },
-  reservationMicrousd: '10',
+  reservationMicrousd: '13',
   createdAt: now,
 };
 const ready = {
@@ -94,7 +94,7 @@ test('builds the manifest and derives the conservative reservation', () => {
     recipe: manifest.recipe,
   });
   assert.equal(created.packet.inputTokenUpperBound, 4350);
-  assert.equal(created.reservationMicrousd, '8');
+  assert.equal(created.reservationMicrousd, '13');
 });
 
 test('reports independent optional-call, identity, funding and trace failures', () => {

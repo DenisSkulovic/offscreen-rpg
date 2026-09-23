@@ -35,6 +35,8 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
       provider: 'fake',
       priceVersion: 'test',
       inputMicrousdPerMillion: '1000',
+      cacheReadMicrousdPerMillion: '100',
+      cacheWriteMicrousdPerMillion: '1500',
       outputMicrousdPerMillion: '2000',
       maxInputTokens: 10_000,
       maxOutputTokens: 700,
@@ -48,7 +50,7 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
   assert.equal(resources.envelope.maxInputTokens, 10_000);
   assert.equal(resources.envelope.maxGeneratedTokens, 700);
   assert.equal(resources.envelope.maxReasoningTokens, 700);
-  assert.equal(resources.envelope.maxMicrousd, '12');
+  assert.equal(resources.envelope.maxMicrousd, '17');
   assert.deepEqual(resources.authority, {
     kind: 'effective-usage-policy',
     policy: resolved.policy,
@@ -79,7 +81,7 @@ test('task admission intersects entitlement, provider and price ceilings', () =>
   );
   assert.equal(
     creativeResources.creativeExploration.limits.maxCostMicrousd,
-    12,
+    17,
   );
   const noReadCreativeResources = resourcesForEffectiveUsagePolicy(
     execution,
