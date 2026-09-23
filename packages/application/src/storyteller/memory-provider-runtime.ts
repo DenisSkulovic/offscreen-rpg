@@ -162,6 +162,14 @@ export function createMemoryProviderRoundRuntime(
     const providerDispatch: StorytellerProviderDispatch = {
       request: round.request,
       maxGeneratedTokens,
+      ...(execution.policy.outputProtocol ===
+      'memory-json-object-native-final'
+        ? {
+            outputProtocol: round.canRequestContext
+              ? ('json-object-local-validation' as const)
+              : ('native-json-schema' as const),
+          }
+        : {}),
     };
     const review = await prepareDispatchReview(
       database,

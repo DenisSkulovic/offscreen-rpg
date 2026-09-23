@@ -116,6 +116,18 @@ test('memory exploration request preview embeds evidence without transport', () 
       'anyOf' in exploratoryRequest.outputSchema &&
       Array.isArray(exploratoryRequest.outputSchema.anyOf),
   );
+  assert.match(
+    exploratoryRequest.messages[0].content,
+    /"kind":"needs_context","version":1,"purpose":/,
+  );
+  assert.match(
+    exploratoryRequest.messages[0].content,
+    /Do not wrap the object under a needs_context key/,
+  );
+  assert.match(
+    exploratoryRequest.messages[0].content,
+    /"evidenceUse":\{"itemIds":\[\],"sourceIds":\[\]\}/,
+  );
 });
 
 function providerResources(route: string) {
@@ -1581,6 +1593,40 @@ test('provider adapter uses an injected transport, one route and no retry; missi
   assert.equal(protocolComparison.samePacket, false);
   assert.equal(protocolComparison.sameOutputSchema, true);
   assert.ok(protocolComparison.potentialReusableMessageContentBytes > 0);
+  const hybridTask = prepareStorytellerTask({
+    ...task,
+    execution: {
+      ...providerExecution,
+      policy: {
+        ...providerExecution.policy,
+        outputProtocol: 'memory-json-object-native-final' as const,
+      },
+    },
+    resources: providerResources(providerExecution.policy.route),
+  });
+  assert.throws(
+    () => inspectOpenRouterRequest(hybridTask),
+    /requires an output protocol/,
+  );
+  const hybridExplorationInspection = inspectOpenRouterRequest(hybridTask, {
+    request: hybridTask.request,
+    maxGeneratedTokens: 321,
+    outputProtocol: 'json-object-local-validation',
+  });
+  assert.equal(
+    hybridExplorationInspection.outputProtocol,
+    'json-object-local-validation',
+  );
+  assert.deepEqual(hybridExplorationInspection.body.response_format, {
+    type: 'json_object',
+  });
+  const hybridFinalInspection = inspectOpenRouterRequest(hybridTask, {
+    request: hybridTask.request,
+    maxGeneratedTokens: 321,
+    outputProtocol: 'native-json-schema',
+  });
+  assert.equal(hybridFinalInspection.outputProtocol, 'native-json-schema');
+  assert.equal(hybridFinalInspection.body.response_format.type, 'json_schema');
   let calls = 0;
   const provider = createOpenRouterProvider({
     enabled: true,

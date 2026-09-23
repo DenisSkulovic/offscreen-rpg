@@ -84,7 +84,8 @@ export async function verifyOpenRouterAuthority(
   if (
     !endpoint ||
     !supportedParameters.includes('response_format') ||
-    (config.route.outputProtocol === 'native-json-schema' &&
+    ((config.route.outputProtocol === 'native-json-schema' ||
+      config.route.outputProtocol === 'memory-json-object-native-final') &&
       !supportedParameters.includes('structured_outputs')) ||
     (endpoint.context_length ?? 0) < config.route.maxContextTokens
   ) {

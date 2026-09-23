@@ -104,6 +104,7 @@ export type ScriptedMemoryRoundSource = (input: {
   attemptId: string;
   task: StorytellerTask;
   round: number;
+  canRequestContext: boolean;
   snapshot: MemoryExplorationSnapshot;
   request: ReturnType<typeof prepareMemoryEvidenceContext>['request'];
   capturedRequestBytes: number;
@@ -536,6 +537,9 @@ export async function runMemoryExploration(
             attemptId: artifact.pendingModelAttemptId!,
             task,
             round,
+            canRequestContext:
+              round <=
+              recipe.maxModelRounds - recipe.finalAnswerReserveRounds,
             snapshot,
             request: pendingModelRequest,
             capturedRequestBytes: preparedContext.capturedRequestBytes,

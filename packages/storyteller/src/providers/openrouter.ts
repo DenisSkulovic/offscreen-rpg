@@ -41,6 +41,7 @@ export type ProviderOutcome =
 export type StorytellerProviderDispatch = Readonly<{
   request: CapturedProviderRequest;
   maxGeneratedTokens: number;
+  outputProtocol?: 'native-json-schema' | 'json-object-local-validation';
 }>;
 export type StorytellerProvider = (
   task: StorytellerTask,
@@ -62,7 +63,29 @@ function providerDispatch(
   ) {
     throw new Error('Invalid provider dispatch output ceiling');
   }
-  return selected;
+  const configuredProtocol =
+    task.execution.mode === 'provider'
+      ? (task.execution.policy.outputProtocol ?? 'native-json-schema')
+      : 'native-json-schema';
+  if (configuredProtocol === 'memory-json-object-native-final') {
+    if (!selected.outputProtocol) {
+      throw new Error('Memory hybrid dispatch requires an output protocol');
+    }
+  } else if (
+    selected.outputProtocol &&
+    selected.outputProtocol !== configuredProtocol
+  ) {
+    throw new Error('Provider dispatch cannot override its captured protocol');
+  }
+  const outputProtocol =
+    selected.outputProtocol ??
+    (configuredProtocol === 'memory-json-object-native-final'
+      ? null
+      : configuredProtocol);
+  if (!outputProtocol) {
+    throw new Error('Provider dispatch output protocol is unresolved');
+  }
+  return { ...selected, outputProtocol };
 }
 
 /**
@@ -121,7 +144,7 @@ export function buildOpenRouterRequest(
   }
   const selected = providerDispatch(task, dispatch);
   const policy = task.execution.policy;
-  const outputProtocol = policy.outputProtocol ?? 'native-json-schema';
+  const outputProtocol = selected.outputProtocol;
   const responseTransport = policy.responseTransport ?? 'buffered-json';
   const request =
     outputProtocol === 'native-json-schema' && policy.provider === 'OpenAI'
@@ -229,10 +252,7 @@ export function inspectOpenRouterRequest(
     purpose: describeStorytellerRequestPurpose(task),
     promptVersion: task.promptVersion,
     contextPolicyVersion: task.contextManifest.policyVersion,
-    outputProtocol:
-      task.execution.mode === 'provider'
-        ? (task.execution.policy.outputProtocol ?? 'native-json-schema')
-        : 'native-json-schema',
+    outputProtocol: selected.outputProtocol ?? 'native-json-schema',
     responseTransport:
       task.execution.mode === 'provider'
         ? (task.execution.policy.responseTransport ?? 'buffered-json')

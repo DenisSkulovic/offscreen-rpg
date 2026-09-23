@@ -12,6 +12,7 @@ const evaluationRouteSchema = z.strictObject({
   outputProtocol: z.enum([
     'native-json-schema',
     'json-object-local-validation',
+    'memory-json-object-native-final',
   ]),
   responseTransport: z
     .enum(['buffered-json', 'streaming-sse'])
@@ -258,6 +259,7 @@ export const liveEvaluationManifestSchema = z
       outputProtocol: z.enum([
         'native-json-schema',
         'json-object-local-validation',
+        'memory-json-object-native-final',
       ]),
       responseTransport: z.enum(['buffered-json', 'streaming-sse']),
       serviceTier: z.enum(['default', 'flex', 'priority']),

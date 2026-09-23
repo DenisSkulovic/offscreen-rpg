@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/PLAN.md) — the first Greywake Sol comparison is complete and rejected: one-shot guessed, exploration recognized the missing fact but missed the tool protocol, and an implicit repair bought an unjustified second guess. Repair is now explicitly configurable and zero by default. Improve and hold the model-facing protocol offline before considering another paid call, then return to the connected POC proof.
+**Next action:** [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/PLAN.md) — Sol issued a valid memory action and the controller completed one canonical read. Final composition failed because JSON-object transport omitted the continuation schema. The explicit hybrid policy now uses native structured output for final-only rounds; extend the provider-free harness through a scripted retrieval and inspect that exact second packet before another paid call.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 

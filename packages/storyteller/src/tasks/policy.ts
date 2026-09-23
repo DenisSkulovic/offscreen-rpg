@@ -10,7 +10,11 @@ export const modelPolicySchema = z.strictObject({
   priceVersion: z.string().min(1).max(100),
   /** Provider output constraint; application validation remains authoritative. */
   outputProtocol: z
-    .enum(['native-json-schema', 'json-object-local-validation'])
+    .enum([
+      'native-json-schema',
+      'json-object-local-validation',
+      'memory-json-object-native-final',
+    ])
     .optional(),
   /** Response framing is captured because it changes the reviewed provider packet. */
   responseTransport: z.enum(['buffered-json', 'streaming-sse']).optional(),
