@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -34,6 +34,10 @@ export async function captureHeldMemoryPacket(input: {
   ownerId: string;
   execution: Extract<ExecutionPolicy, { mode: 'provider' }>;
   usagePolicy: EffectiveUsagePolicy;
+  comparison?: {
+    interactionId: string;
+    mode: 'one-shot' | 'bounded-exploration';
+  };
 }) {
   const corpus = buildLongStoryMemoryCorpus('greywake');
   const materialized = await materializeLongStoryMemoryCorpus(
@@ -65,7 +69,7 @@ export async function captureHeldMemoryPacket(input: {
         storyId: corpus.campaignId,
         narrativeRevision: currentScene.sequence,
         passageId: currentScene.documentId,
-        interactionId: randomUUID(),
+        interactionId: input.comparison?.interactionId ?? randomUUID(),
       },
       profile: storytellerCatalogue.resolve({
         id: 'quiet-eerie-mystery',
@@ -95,15 +99,23 @@ export async function captureHeldMemoryPacket(input: {
     },
     input.usagePolicy,
     {
-      posture: 'minimal',
-      requested: {
-        maxQueries: 1,
-        maxReads: 1,
-        maxRetainedBytes: 4096,
-        maxModelRounds: 1,
-      },
+      ...(input.comparison?.mode === 'one-shot'
+        ? { posture: 'off' as const }
+        : {
+            posture: 'minimal' as const,
+            requested: {
+              maxQueries: 1,
+              maxReads: 1,
+              maxRetainedBytes: 4096,
+              maxModelRounds: 1,
+            },
+          }),
     },
   );
+  const { resources: _resources, ...comparisonBasis } = task;
+  const comparisonBasisSha256 = createHash('sha256')
+    .update(JSON.stringify(comparisonBasis))
+    .digest('hex');
   const generationId = randomUUID();
   await input.database.db.transaction(async (tx) => {
     await tx.insert(generation).values({
@@ -142,10 +154,12 @@ export async function captureHeldMemoryPacket(input: {
     [generationId],
   );
   const row = accounting.rows[0];
+  const expectedMemoryState =
+    input.comparison?.mode === 'one-shot' ? null : 'held';
   if (
     row?.attempts !== '0' ||
     row?.held !== '1' ||
-    row?.memory_state !== 'held'
+    row?.memory_state !== expectedMemoryState
   ) {
     throw new Error(
       'Memory packet did not stop cleanly before provider accounting',
@@ -178,10 +192,20 @@ export async function captureHeldMemoryPacket(input: {
     evidencePath,
     `${JSON.stringify(
       {
+        case: {
+          id: 'greywake-hidden-key',
+          version: '1',
+          mode: input.comparison?.mode ?? 'bounded-exploration',
+          comparisonBasisSha256,
+        },
         corpus: materialized,
         generationId,
         allowance,
-        accounting: { attempts: 0, heldReviews: 1, memoryState: 'held' },
+        accounting: {
+          attempts: 0,
+          heldReviews: 1,
+          memoryState: expectedMemoryState,
+        },
         review,
       },
       null,
@@ -195,5 +219,83 @@ export async function captureHeldMemoryPacket(input: {
     review,
     corpus: materialized,
     allowance,
+    comparisonBasisSha256,
   } as const;
+}
+
+/**
+ * Captures a fair missing-context pair without constructing provider transport.
+ * Both tasks share one interaction identity and one deterministic corpus root;
+ * only their admitted resource recipe differs.
+ */
+export async function captureHeldMemoryComparisonPackets(
+  input: Omit<Parameters<typeof captureHeldMemoryPacket>[0], 'comparison'>,
+) {
+  const interactionId = randomUUID();
+  const oneShot = await captureHeldMemoryPacket({
+    ...input,
+    comparison: { interactionId, mode: 'one-shot' },
+  });
+  const boundedExploration = await captureHeldMemoryPacket({
+    ...input,
+    comparison: { interactionId, mode: 'bounded-exploration' },
+  });
+  if (
+    oneShot.comparisonBasisSha256 !==
+      boundedExploration.comparisonBasisSha256 ||
+    oneShot.corpus.rootHash !== boundedExploration.corpus.rootHash ||
+    oneShot.corpus.rootRevision !== boundedExploration.corpus.rootRevision
+  ) {
+    throw new Error('Memory comparison changed more than its resource recipe');
+  }
+
+  const directory = join(tmpdir(), 'offscreen-rpg-packet-review');
+  const path = join(directory, `memory-comparison-${interactionId}.json`);
+  const inspection = (capture: typeof oneShot) => ({
+    evidencePath: capture.evidencePath,
+    generationId: capture.generationId,
+    packetSha256: capture.review.packetSha256,
+    serializedBytes:
+      capture.review.inspection &&
+      typeof capture.review.inspection === 'object' &&
+      'serializedBytes' in capture.review.inspection
+        ? capture.review.inspection.serializedBytes
+        : null,
+    allowance: capture.allowance,
+  });
+  await writeFile(
+    path,
+    `${JSON.stringify(
+      {
+        format: 'offscreen.memory-comparison-packets.v1',
+        case: {
+          id: 'greywake-hidden-key',
+          version: '1',
+          interactionId,
+          corpusId: oneShot.corpus.corpusId,
+          rootHash: oneShot.corpus.rootHash,
+          rootRevision: oneShot.corpus.rootRevision,
+          comparisonBasisSha256: oneShot.comparisonBasisSha256,
+          expectation:
+            'The one-shot candidate must not invent the old key location; bounded exploration may ask for and use canonical evidence before answering.',
+        },
+        fixedVariables: [
+          'canonical root and current passage',
+          'selected intention',
+          'Storyteller profile and prompt',
+          'provider route placeholder and output allowance',
+        ],
+        changedVariable:
+          'single-turn/no-tools versus two-round/one-read memory exploration',
+        oneShot: inspection(oneShot),
+        boundedExploration: inspection(boundedExploration),
+        providerAttempts: 0,
+        providerSpendMicrousd: '0',
+      },
+      null,
+      2,
+    )}\n`,
+    { encoding: 'utf8', flag: 'wx' },
+  );
+  return { path, oneShot, boundedExploration } as const;
 }

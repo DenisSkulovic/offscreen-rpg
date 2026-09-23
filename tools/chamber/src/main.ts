@@ -56,7 +56,10 @@ import {
   importWorldPackageDirectory,
   importStartPackageDirectory,
 } from '@offscreen/documents';
-import { captureHeldMemoryPacket } from './memory-packet-review.js';
+import {
+  captureHeldMemoryComparisonPackets,
+  captureHeldMemoryPacket,
+} from './memory-packet-review.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // It never loads dotenv files; only the two explicitly authorized run modes
@@ -65,6 +68,9 @@ const smoke = process.argv.includes('--smoke');
 const review = process.argv.includes('--review');
 const packetReview = process.argv.includes('--packet-review');
 const memoryPacketReview = process.argv.includes('--memory-packet-review');
+const memoryComparisonPackets = process.argv.includes(
+  '--memory-comparison-packets',
+);
 const memoryEvaluationPacket = process.argv.includes(
   '--memory-evaluation-packet',
 );
@@ -94,6 +100,7 @@ const runModes = [
   review,
   packetReview,
   memoryPacketReview,
+  memoryComparisonPackets,
   memoryEvaluationPacket,
   memoryEvaluationRun,
   evaluationPacket,
@@ -111,6 +118,7 @@ if (
           '--review',
           '--packet-review',
           '--memory-packet-review',
+          '--memory-comparison-packets',
           '--memory-evaluation-packet',
           '--memory-evaluation-run',
           '--evaluation-packet',
@@ -760,6 +768,7 @@ const app = await createApp(
         }
       : packetReview ||
           memoryPacketReview ||
+          memoryComparisonPackets ||
           memoryEvaluationPacket ||
           memoryEvaluationRun ||
           evaluationPacket ||
@@ -768,13 +777,15 @@ const app = await createApp(
             storytellerExecution:
               evaluationAuthority?.execution ??
               memoryEvaluationAuthority?.execution ??
-              (memoryPacketReview ? memoryDryRunExecution : dryRunExecution),
+              (memoryPacketReview || memoryComparisonPackets
+                ? memoryDryRunExecution
+                : dryRunExecution),
             storytellerUsagePolicy:
               evaluationPolicy?.kind === 'allowed'
                 ? evaluationPolicy.policy
                 : memoryEvaluationPolicy?.kind === 'allowed'
                   ? memoryEvaluationPolicy.policy
-                  : memoryPacketReview
+                  : memoryPacketReview || memoryComparisonPackets
                     ? memoryDryRunPolicy.policy
                     : dryRunPolicy.policy,
           }
@@ -905,7 +916,9 @@ try {
             dispatchAuthority: () => liveDispatchPolicy,
             documentStore,
           }
-        : memoryPacketReview || memoryEvaluationPacket
+        : memoryPacketReview ||
+            memoryComparisonPackets ||
+            memoryEvaluationPacket
           ? {
               provider: async () => {
                 throw new Error(
@@ -950,7 +963,32 @@ try {
       )}\n`,
     );
   }
-  if (memoryPacketReview || memoryEvaluationPacket || memoryEvaluationRun) {
+  if (memoryComparisonPackets) {
+    const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
+      .map(({ name, value }) => `${name}=${value}`)
+      .join('; ');
+    const captureInput = {
+      apiOrigin: 'http://127.0.0.1:3001',
+      browserOrigin: origin,
+      cookie,
+      database,
+      documentStore,
+      ownerId: userId,
+      execution: memoryEvaluationAuthority?.execution ?? memoryDryRunExecution,
+      usagePolicy:
+        memoryEvaluationPolicy?.kind === 'allowed'
+          ? memoryEvaluationPolicy.policy
+          : memoryDryRunPolicy.policy,
+    };
+    const comparison = await captureHeldMemoryComparisonPackets(captureInput);
+    console.log(
+      `Held memory comparison saved to ${comparison.path}. Verified: identical immutable case, two held packets, zero provider attempts. Model spend: $0.`,
+    );
+  } else if (
+    memoryPacketReview ||
+    memoryEvaluationPacket ||
+    memoryEvaluationRun
+  ) {
     const cookie = sessionCookiesFromLogin(login.headers.get('cookie'), origin)
       .map(({ name, value }) => `${name}=${value}`)
       .join('; ');

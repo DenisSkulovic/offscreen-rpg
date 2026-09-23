@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — T2, the provider-free Seyda proof and the matched v8/v9 Sol opening comparison are complete. Return to the connected POC proof and prepare one immutable missing-context case for a separate one-shot-versus-bounded-exploration comparison.
+**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — T2, the provider-free Seyda proof and the matched v8/v9 Sol opening comparison are complete. The immutable Greywake one-shot-versus-bounded-exploration packets are now held provider-free; review that comparison before selecting a live route, then return to the connected POC proof.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
