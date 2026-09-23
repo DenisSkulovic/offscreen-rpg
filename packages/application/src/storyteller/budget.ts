@@ -649,8 +649,16 @@ export function createStorytellerBudget(database: Database) {
         throw new Error('Invalid charge');
       }
       const operationOutcome = input.operationOutcome ?? 'complete';
-      if (operationOutcome === 'continue' && input.generationOutcome) {
-        throw new Error('Intermediate settlement cannot finish generation');
+      if (
+        operationOutcome === 'continue' &&
+        (input.generationOutcome?.state !== 'failed' ||
+          input.generationOutcome.failureCode !== 'invalid_output' ||
+          input.generationOutcome.repairCandidate == null ||
+          input.generationOutcome.repairDiagnostic == null)
+      ) {
+        throw new Error(
+          'Only a retained invalid candidate may keep an operation open',
+        );
       }
       return database.db.transaction(async (tx) => {
         const { account, allowance } = await lockAllowance(tx, input.execution);
