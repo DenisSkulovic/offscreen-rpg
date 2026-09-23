@@ -477,6 +477,19 @@ export async function settleActivity(
   if (!reachedBoundary) {
     return { activity: nextActivity, current, state: nextCampaign };
   }
+  if (nextState === 'running') {
+    // Routine progress belongs to the activity/roll ledgers. Wake readers for
+    // the changed campaign projection without manufacturing narrative history.
+    await incrementStoryViewVersion(tx, {
+      storyId: current.id,
+      viewVersion: current.viewVersion + 1,
+    });
+    return {
+      activity: nextActivity,
+      current: { ...current, viewVersion: current.viewVersion + 1 },
+      state: nextCampaign,
+    };
+  }
   const nonControllingCompletion = activityCompletionIsNonControlling(
     nextState,
     plan.action.completionFollowUp,

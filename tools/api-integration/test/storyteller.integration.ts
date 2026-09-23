@@ -24,7 +24,7 @@ import {
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { story } from '@offscreen/db/story-schema';
+import { story, storyPassage } from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
   storytellerFunding,
@@ -1922,6 +1922,74 @@ test(
                   .where(eq(gameActivity.storyId, started.storyId))
               ).length,
               2,
+            );
+          },
+        );
+        await t.test(
+          'routine activity progress does not manufacture narrative passages',
+          async () => {
+            const started = await mechanicalCandidate('beacon-watch.v1', {
+              kind: 'rate',
+              fictionalSeconds: 5,
+              realSeconds: 100,
+            });
+            const offer = requireDefined(
+              started.snapshot.campaign?.offer,
+              'Expected the beacon offer',
+            );
+            await stories.campaignAction({
+              ownerId,
+              storyId: started.storyId,
+              operationId: randomUUID(),
+              body: {
+                expectedRevision: started.snapshot.revision,
+                offerId: offer.id,
+                path: ['restore-beacon'],
+              },
+            });
+            const admitted = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const activityId = requireDefined(
+              admitted.campaign?.activity?.id,
+              'Expected admitted beacon work',
+            );
+            const [passagesBefore] = await database.db
+              .select({ count: orm.count() })
+              .from(storyPassage)
+              .where(eq(storyPassage.storyId, started.storyId));
+            await database.db
+              .update(campaignTable)
+              .set({ clockAnchorAt: new Date(Date.now() - 101_000) })
+              .where(eq(campaignTable.storyId, started.storyId));
+
+            const nextWakeMs =
+              await storyService.advanceCampaignActivity(activityId);
+            const advanced = await stories.read({
+              ownerId,
+              storyId: started.storyId,
+            });
+            const [passagesAfter] = await database.db
+              .select({ count: orm.count() })
+              .from(storyPassage)
+              .where(eq(storyPassage.storyId, started.storyId));
+            const [storedActivity] = await database.db
+              .select({ boundariesSettled: gameActivity.boundariesSettled })
+              .from(gameActivity)
+              .where(eq(gameActivity.id, activityId));
+
+            assert.notEqual(nextWakeMs, null);
+            assert.equal(advanced.campaign?.activity?.state, 'running');
+            assert.equal(storedActivity?.boundariesSettled, 1);
+            assert.equal(advanced.campaign?.rolls.length, 1);
+            assert.equal(advanced.revision, admitted.revision);
+            assert.equal(advanced.viewVersion, admitted.viewVersion + 1);
+            assert.equal(advanced.current.id, admitted.current.id);
+            assert.equal(passagesAfter?.count, passagesBefore?.count);
+            assert.deepEqual(
+              advanced.campaign?.activityEvents.map((event) => event.kind),
+              ['started'],
             );
           },
         );

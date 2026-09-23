@@ -107,7 +107,7 @@ The next implementation tranche is provider-free:
 
 1. Authorized opening references are implemented. A selected key substitutes the captured duration, effects, closure condition and occurrence identity. Live model selection of that reference is still unproved.
 2. Immediate-check schemas now match the no-situational-modifier policy. Complete JSON with `finish_reason: length` is accepted. HTTP-200 `provider_unavailable` releases as unsent. A billed invalid candidate still needs one explicit repair round.
-3. Model and default player time say fictional seconds. Internal tick fields remain. Routine activity-boundary passages still enter narrative history.
+3. Model and default player time say fictional seconds. Internal tick fields remain. Routine running activity boundaries now update activity state, roll history and the public projection without appending narrative passages; terminal completion, interruption and block passages remain meaningful history.
 4. reduce task packet/schema breadth, then compare the current all-branch planning contract with an intent-first selected-branch plan using saved packets before choosing an architecture;
 5. prove progressive identity/relationship materialization and a later callback before another 10–15-turn live attempt;
 6. only then evaluate narrow profile tuning. Preserve the current Sol tendency to end scenes with explanatory relational summaries as a hypothesis; do not hard-code a generic prose preference from one story.

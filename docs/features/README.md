@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — keep routine activity-boundary evidence out of narrative passage history, prove progressive identity and relationship materialization, then finish T2 coordinate migration. No live Storyteller runs or [prompt tuning](../engineering/storyteller-tuning.md) until those play blockers are fixed.
+**Next action:** [fixed-second fictional time](2026-09-22--15-55--fixed-second-fictional-time/PLAN.md) — routine running activity boundaries now stay out of narrative passage history; prove progressive identity and relationship materialization, then finish T2 coordinate migration. No live Storyteller runs or [prompt tuning](../engineering/storyteller-tuning.md) until those play blockers are fixed.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
