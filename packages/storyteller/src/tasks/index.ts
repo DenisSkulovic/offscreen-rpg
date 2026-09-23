@@ -249,7 +249,7 @@ const resultSchemas = {
 };
 const common = {
   inputVersion: z.literal(10),
-  promptVersion: z.literal('storyteller.v7'),
+  promptVersion: z.literal('storyteller.v8'),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
   resources: storytellerTaskResourcesSchema,
@@ -357,7 +357,7 @@ Use create/update/retire patches, at most 8 per publication and 20 retained note
 passage handles or current/arrival. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
 Arrival is a private future: its prose, knowledge and note changes are not true until the interval completes.`;
 const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. On a restart, recallDocuments may attach only directly relevant exact campaign-catalogue handles, labelled identity, place or thread; omit it otherwise. This does not erase history or continuity notes.`;
-const documentChangeRules = `When this turn materially establishes or changes descriptive world state, propose up to 8 documentChanges in the same result. Create or revision-fence only lore, identity, relationship, narrative-thread, premise or private-possibility Markdown. Include the complete concise replacement body and a short reason. When restarting the active scene, optionally set recallAs to identity, place or thread only for a changed record that remains directly relevant; identity requires identity, place requires lore and thread requires narrative-thread. Omit it otherwise. Do not restate unchanged documents or duplicate the passage. Never use documentChanges for inventory, skills, scores, health, clocks, progress, obligations, rolls or effects. New private possibilities must be noncanonical and storyteller-private.`;
+const documentChangeRules = `When this turn materially establishes or changes descriptive world state, propose up to 8 documentChanges in the same result. Create or revision-fence only lore, identity, relationship, narrative-thread, premise or private-possibility Markdown. Do not extract every mentioned noun. Promote an exact person, place or thing to an identity record once later correctness depends on that individual: the player meaningfully engages with it, learns or assigns a stable identity, transfers something to it, deliberately revisits it or a proposed future intention needs that exact entity. Create or revise a relationship record when trust, obligation, access, commitment or a durable stance between exact identities changes; preserve specific lived evidence rather than a generic sentiment label. A passing crowd member or decorative object needs no record. Include the complete concise replacement body and a short reason. When restarting the active scene, optionally set recallAs to identity, place or thread only for a changed record that remains directly relevant; identity requires identity, place requires lore and thread requires narrative-thread. Omit it otherwise. Do not restate unchanged documents or duplicate the passage. Never use documentChanges for inventory, skills, scores, health, clocks, progress, obligations, rolls or effects. New private possibilities must be noncanonical and storyteller-private.`;
 
 /** Immediate checks reject situational modifiers. The transmitted schema must too. */
 function withholdImmediateCheckModifiers(value: unknown): unknown {
@@ -411,7 +411,9 @@ function withholdImmediateCheckModifiers(value: unknown): unknown {
           advantage: { type: 'boolean', enum: [false] },
           disadvantage: { type: 'boolean', enum: [false] },
           modifiers:
-            modifiers && typeof modifiers === 'object' && !Array.isArray(modifiers)
+            modifiers &&
+            typeof modifiers === 'object' &&
+            !Array.isArray(modifiers)
               ? { ...modifiers, maxItems: 0 }
               : { type: 'array', maxItems: 0, items: {} },
         },
@@ -592,7 +594,7 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     context,
     contextManifest,
     inputVersion: 10,
-    promptVersion: 'storyteller.v7',
+    promptVersion: 'storyteller.v8',
     resources,
     request: requestFor(input, context),
   });

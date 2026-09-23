@@ -1179,6 +1179,9 @@ registerStoryConcern(
         let offeredWorldSection: string | undefined;
         let offeredCampaignDocument: string | undefined;
         const promotedThreadPath = 'threads/patient-tide-return.md';
+        const promotedIdentityPath = 'identities/ira-venn.md';
+        const promotedRelationshipPath =
+          'relationships/newcomer-and-ira-venn.md';
         const unrelatedMarketPath = 'lore/net-market-weather.md';
         let promotedThreadDocumentId: string | undefined;
         let narrativeContinuationPhase = 0;
@@ -1213,8 +1216,30 @@ registerStoryConcern(
                     reason:
                       'The current passage established a durable possible return.',
                   },
+                  {
+                    operation: 'create',
+                    path: promotedIdentityPath,
+                    kind: 'identity',
+                    authority: 'canon',
+                    visibility: 'player-known',
+                    title: 'Ira Venn',
+                    body: 'Ira Venn is the quay worker who gave the newcomer a precise warning about the patient tide road.',
+                    reason:
+                      'A named person became continuity-relevant through direct advice and a possible later return.',
+                  },
+                  {
+                    operation: 'create',
+                    path: promotedRelationshipPath,
+                    kind: 'relationship',
+                    authority: 'canon',
+                    visibility: 'player-known',
+                    title: 'The newcomer and Ira Venn',
+                    body: 'Ira Venn gave the newcomer a specific warning about the patient tide road. The newcomer may return to Ira as the source of that advice.',
+                    reason:
+                      'The exchange established a source-linked acquaintance that later recognition must preserve.',
+                  },
                 ];
-                option.createdDocuments = [0];
+                option.createdDocuments = [0, 1, 2];
               } else if (narrativeContinuationPhase === 1) {
                 result.documentChanges = [
                   {
@@ -1670,6 +1695,12 @@ registerStoryConcern(
             hintedTask.context.canonicalKnowledge?.catalogue.find(
               (entry) => entry.path === promotedThreadPath,
             )?.documentId,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedIdentityPath,
+            )?.documentId,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedRelationshipPath,
+            )?.documentId,
           ],
         );
         const reloadedCampaignEntry =
@@ -1684,6 +1715,12 @@ registerStoryConcern(
             reloadedCampaignEntry.handle,
             hintedTask.context.canonicalKnowledge?.catalogue.find(
               (entry) => entry.path === promotedThreadPath,
+            )?.handle,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedIdentityPath,
+            )?.handle,
+            hintedTask.context.canonicalKnowledge?.catalogue.find(
+              (entry) => entry.path === promotedRelationshipPath,
             )?.handle,
           ],
         );
@@ -1757,6 +1794,28 @@ registerStoryConcern(
             (entry) => entry.path === unrelatedMarketPath,
           );
         assert.ok(unrelatedMarketEntry?.loaded);
+        const carriedIdentityEntry =
+          interveningTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.path === promotedIdentityPath,
+          );
+        const carriedRelationshipEntry =
+          interveningTask.context.canonicalKnowledge?.catalogue.find(
+            (entry) => entry.path === promotedRelationshipPath,
+          );
+        assert.ok(carriedIdentityEntry?.loaded);
+        assert.ok(carriedRelationshipEntry?.loaded);
+        assert.match(
+          interveningTask.context.canonicalKnowledge?.documents.find(
+            (document) => document.handle === carriedIdentityEntry.handle,
+          )?.body ?? '',
+          /Ira Venn is the quay worker/,
+        );
+        assert.match(
+          interveningTask.context.canonicalKnowledge?.documents.find(
+            (document) => document.handle === carriedRelationshipEntry.handle,
+          )?.body ?? '',
+          /source of that advice/,
+        );
         assert.deepEqual(
           interveningTask.context.canonicalKnowledge?.documentSelection
             .requestedDocumentIds,

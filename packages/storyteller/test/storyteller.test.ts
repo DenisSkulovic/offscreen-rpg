@@ -778,7 +778,9 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
       },
     },
   });
-  const request = task.request.messages.map((message) => message.content).join('\n');
+  const request = task.request.messages
+    .map((message) => message.content)
+    .join('\n');
   assert.match(request, /"source":"authorized"/);
   assert.match(request, /"key":"work-warehouse-shift"/);
   assert.equal(request.includes('requiredFictionalSeconds'), false);
@@ -839,7 +841,10 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
   if (warehouse.resolution.action.process.kind !== 'clock-wait.v1') {
     throw new Error('Expected a clock-wait warehouse shift');
   }
-  assert.equal(warehouse.resolution.action.process.requiredFictionalSeconds, 1_800);
+  assert.equal(
+    warehouse.resolution.action.process.requiredFictionalSeconds,
+    1_800,
+  );
   assert.deepEqual(warehouse.resolution.action.conditionPolicy, {
     kind: 'boundary',
     blockedText:
@@ -908,7 +913,9 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
     throw new Error('Expected mechanical opening plans');
   }
   assert.deepEqual(
-    scripted.scene.next.plans.find((plan) => plan.key === 'work-warehouse-shift'),
+    scripted.scene.next.plans.find(
+      (plan) => plan.key === 'work-warehouse-shift',
+    ),
     captured,
   );
 });
@@ -951,7 +958,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
     assert.equal(task.inputVersion, 10);
-    assert.equal(task.promptVersion, 'storyteller.v7');
+    assert.equal(task.promptVersion, 'storyteller.v8');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -989,6 +996,11 @@ test('captured schemas expose only the result for the requested task', () => {
     );
     assert.match(instructions, /selected intention has just resolved/);
     assert.match(instructions, /Visibly realize the supplied profile tone/);
+    assert.match(instructions, /Do not extract every mentioned noun/);
+    assert.match(
+      instructions,
+      /trust, obligation, access, commitment or a durable stance/,
+    );
   }
 });
 
