@@ -21,8 +21,10 @@ an earlier decision or silently reinterpret earlier answers:
    ask broader questions.
 3. **Choose how it is told.** Select a Storyteller profile and the small number
    of experience-defining preferences: tone/direction, narrative initiative and
-   pace. Advanced autonomy, risk and cost controls remain progressively
-   disclosed.
+   pace. Also choose an understandable canon-invention preset within the
+   selected world's limits: canon-bound, grounded expansion or open world.
+   Advanced per-domain invention, autonomy, risk and cost controls remain
+   progressively disclosed.
 4. **Review one setup summary.** Show the foundation, player role, Storyteller,
    important rules and expected generation cost. Editing returns to the owning
    step. Generation never begins merely by visiting the review.
@@ -82,6 +84,8 @@ Pace and availability also matter: how long someone expects to wait, whether una
 
 Creation should also establish how much narrative initiative the Storyteller has. The player need not outline a plot: they may ask the Storyteller to cultivate a larger direction, allow occasional proactive developments, or explicitly choose an emergent ordinary-life experience with no grand narrative. This is independent of incident frequency and danger. “No grand narrative” can still contain consequences and small surprises; “directed” does not promise a railroad or a particular ending.
 
+Separately, creation establishes how much missing world material the Storyteller may invent. A prepared world declares ceilings for characters, places, groups, world elements and deep lore; the story may choose stricter values but cannot exceed them. Show simple presets first and the [per-domain matrix](storyteller-settings.md#canon-invention-policy) only as an advanced control. This setting governs factual authorship, not prose quality or initiative: a canon-bound Storyteller may be highly proactive using supplied material, while an open-world Storyteller may remain quiet.
+
 When a start contains a hoped-for arc, antagonist move or reveal, preserve it as Storyteller-private noncanonical direction or possibilities. Only scheduled facts that really must become due are admitted as executable obligations. The opening may seed either kind without presenting a future possibility as already true.
 
 ## Before starting
@@ -100,9 +104,9 @@ For the connected POC, creation may also offer a maintained authored start
 whose exact world, rules and initial campaign documents are inspectable before
 or after Start. Selecting a familiar setting does not authorize the model to
 fill missing lore from memory: the opening is grounded in the pinned package,
-and anything outside its coverage remains an interpretation or explicit
-unknown. This authored route complements freeform creation; it does not make
-fantasy geography or seeded NPCs mandatory for other stories.
+and anything outside its coverage follows the captured invention policy rather
+than the model's confidence. This authored route complements freeform creation;
+it does not make fantasy geography or seeded NPCs mandatory for other stories.
 
 ## Progressive people and other entities
 

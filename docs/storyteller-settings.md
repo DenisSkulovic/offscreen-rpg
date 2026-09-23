@@ -23,6 +23,38 @@ Narrative initiative is not another name for surprise frequency. A rare meteor c
 
 Resource controls are separate from creative presets. [Account usage policy](technical/usage-policy.md) defines allowed models, context/output sizes, exploration effort, optional narration/maintenance allocations, spending windows and recovery settings. Players may lower their limits; creative guidance or a dramatic-rhythm setting cannot enlarge account authority. Keep a few understandable presets backed by independently bounded controls, not a single “eagerness” slider that secretly increases every kind of spending. This resource-policy layer is prepared, not yet implemented in the editor.
 
+## Canon invention policy
+
+How freely the Storyteller may fill gaps in supplied world material is a separate campaign permission, not a temperature setting, model tier, narrative-initiative level or personality trait. A strict historical reconstruction and an improvisational sandbox may use the same Storyteller profile while granting very different authority to establish new people, places and lore.
+
+Use a small matrix rather than one creativity slider. The initial domains are:
+
+| Domain | Includes |
+| --- | --- |
+| Characters and agents | People, creatures, intelligences and other acting subjects. |
+| Places and routes | Rooms, camps, caves, stations, regions and connections between them. |
+| Groups and institutions | Families, factions, cultures, governments, companies and organized collectives. |
+| World elements | Species, ecology, artifacts, technology and magic as descriptive setting material; executable capabilities still require supported rules. |
+| History and cosmology | Past events, origins, metaphysics and laws of the fictional world. |
+
+Each domain selects one of three permissions:
+
+- **Reference only:** use supplied or already admitted campaign facts. Connective prose and immediate sensory texture may be inferred when they establish no new reusable subject or world claim. If a missing fact matters, retrieve it, avoid relying on it or hold honestly.
+- **Compatible additions:** create minor or local campaign additions that fit supplied material, such as an incidental traveler, roadside camp or unnamed service corridor. Do not answer an unresolved major-lore question or redefine the world's structures.
+- **Broad invention:** establish substantial campaign-local additions compatible with current canon and campaign direction. This still cannot contradict established facts, fabricate a citation, retcon history, choose for the player or create executable mechanics through prose.
+
+A fact crossing multiple domains must satisfy every applicable permission. These permissions govern what may become true, not how dramatic, strange or frequent developments should be.
+
+The world package declares a maximum permission for each domain. A new foundation with no reusable package records an explicit world ceiling during creation rather than inheriting a hidden engine default. A prepared start may narrow or lock that ceiling, and the story owner selects an equal or stricter policy. Storyteller guidance cannot widen the effective intersection. This lets a carefully maintained setting forbid new cosmology while permitting minor local characters, and lets an original sandbox grant much broader invention without making that the engine default.
+
+Creation should present a few understandable presets before advanced overrides:
+
+- **Canon-bound:** reference only in every domain.
+- **Grounded expansion:** compatible additions for characters, places and local world elements; reference only for institutions and deep lore unless the world grants more.
+- **Open world:** broad invention in every domain up to the world's declared ceilings.
+
+Anything invented and worth remembering becomes campaign canon only through ordinary publication and provenance. Passing texture need not become a file. Changing this setting affects future uncommitted Storyteller tasks; it never rewrites established campaign facts or an already captured result.
+
 ## Tags and custom content
 
 Provide reusable tags with an identity, description, scope and revision. Narrative tags express meaning to the DM. Mechanical tags reference supported rule definitions, such as difficult terrain, and cannot gain numeric effects from their names alone. A user-created `wealthy` or `invincible` tag is creative guidance, not authority to mint money or grant immunity. Unsupported mechanical behavior needs a real rule definition.
@@ -51,4 +83,4 @@ The live-story editor supports catalogue presets, private saved presets, emphasi
 
 The offline source does not improvise from arbitrary text: creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. Its offline narrator repeats saved outcomes; it has no special profile voice or absurd-comedy tag branch. Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented. Mid-activity pace changes are separate controls.
 
-The current editor does not yet expose narrative initiative or a campaign narrative-direction revision. Existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as that authority.
+The current editor does not yet expose narrative initiative, a campaign narrative-direction revision or canon-invention permissions. Existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as any of those authorities. Current tasks therefore receive canonical material without a captured per-domain answer for how freely gaps may be filled; this is a known blocker before meaningful long-run evaluation in a private or sparsely documented world.

@@ -8,6 +8,8 @@ The storyteller supports both ordinary continuing life and dramatic developments
 
 Its judgment draws on the premise, storytelling preferences, current situation, relevant history, character capabilities and player intentions. Tone, dramatic intensity and unpredictability are related but different: horror can unfold slowly, and a comic story can still have meaningful consequences.
 
+The campaign's effective [canon invention policy](storyteller-settings.md#canon-invention-policy) separately controls which kinds of missing world detail the Storyteller may establish. It is resolved from world-package ceilings and story choices, not inferred from model temperature, price or confidence. Model memory about a recognizable setting is not supplied canon. Even broad invention must preserve established facts; reference-only play may still use connective prose but cannot quietly turn an unsupported name, place or remembered franchise detail into campaign truth.
+
 Frequency of unusual incidents and severity when an incident occurs are separate preferences. A mostly peaceful life with rare dangerous developments should be possible; low incident frequency must not mean that character progress stops. Conversely, routine repetition must not force escalating danger merely to keep the plot busy. Precise controls and unattended-risk permissions still need design; permission for a severe incident is not implied by permission to continue an ordinary routine.
 
 ## Narrative direction and Storyteller initiative
@@ -55,6 +57,8 @@ The storyteller may prepare an interruption when an intention is selected. That 
 ## Authority and limits
 
 The storyteller invents within the fiction; the application enforces ownership of player actions, timing, budgets and consistent application of outcomes. Model prose alone cannot authorize spending the same coins twice or applying an already resolved action again.
+
+Invention authority is captured by domain. A campaign may permit incidental characters while forbidding new locations, institutions or cosmology, or make the opposite choice for an unusual world. Durable invented material is admitted as campaign-local canon with provenance; private possibilities remain noncanonical. Permission to invent descriptive lore never grants permission to invent executable rules or bypass state admission.
 
 Established traits and facts constrain plausible outcomes. D&D-style checks are mandatory for supported uncertain actions; the DM proposes challenges and code resolves them under the [game rules](game-rules.md). Story pacing and action success are separate judgments: finding an encounter is not automatically failing a travel check.
 

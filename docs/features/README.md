@@ -8,6 +8,8 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 **Next action:** Design typed-state outcome coherence for generated plans: when an outcome changes an existing typed fact in its own declared mechanics, every matching branch must carry the corresponding admitted effect. Keep this structural and state-indexed; do not parse prose, require travel, or spend merely to resample it. The fixed evaluation harness now carries the same pinned start-package world guidance as Story mode.
 
+Before sustained 30–50-turn evaluation in a private or sparsely documented setting, implement the permanent [canon-invention policy](../storyteller-settings.md#canon-invention-policy): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission. It remains a queued product gap rather than another dormant feature folder until it becomes the active implementation slice.
+
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
 **Composing slices** (not the immediate next action):

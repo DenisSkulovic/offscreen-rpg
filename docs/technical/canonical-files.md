@@ -25,6 +25,8 @@ Markdown is the preferred authoring format for prose. Typed metadata, links and 
 
 “Canonical” means authoritative for a declared responsibility. A summary is the accepted account of its covered sources, but remains derived. A rumor document is authoritative evidence that somebody made a claim, not proof of the claim. A world document can establish newly admitted descriptive lore; it need not first be copied into an NPC or location table. Lore that changes executable rules, current possession or travel access must also pass the relevant mechanical admission boundary.
 
+Distinguish reusable **source canon** from **campaign canon**. Source canon is the exact pinned world-library material. Campaign canon includes published developments and admitted overlay documents, including inventions that the campaign's effective [canon invention policy](../storyteller-settings.md#canon-invention-policy) permitted. A generated addition does not acquire a fictional source citation merely because it is compatible with the source world: retain its originating passage, invention domain and permission as provenance. Pretrained model recollection is neither source canon nor evidence.
+
 Keep a small database control layer for ownership, stable references, revision fences, root commits, operation deduplication, due-work claims, indexing jobs and money. Avoid a new table per kind of world or mechanical content. Executable definitions, current campaign state and exact receipts belong to validated JSON documents; SQL scheduling projections retain only what a worker must efficiently claim and recheck. Existing SQL content is the current implementation; replacing it must actually move ownership, not add a second independently editable copy. Merely exposing SQL through virtual file paths would not complete the requested direction.
 
 ## Reusable world libraries and campaign overlays
@@ -36,6 +38,7 @@ World libraries and campaign documents have different lifecycles:
 - A world library has a stable identity, immutable versions, a small orientation/index and canonical source files. Many campaigns can reuse it.
 - A campaign pins exact library root hashes and revisions. Updating the reusable library does not silently rewrite an existing campaign or in-flight task.
 - Campaign-specific characters, passages, relationships, discoveries and state live in the campaign workspace. Developments that alter local reality are campaign overlay documents linked to base-world sources; they do not mutate the shared package.
+- Each world version declares per-domain invention ceilings. A campaign may choose stricter permissions, but neither a start package, Storyteller profile nor model route may silently widen the pinned world's authority.
 - A campaign adopts a newer library revision only through an explicit conflict-checked operation with a readable compatibility/diff review.
 - A campaign may use no external world library, one library or several deliberately mounted packages. Package order cannot resolve contradictory canon by accidental last-write-wins; authority and conflict policy are explicit.
 
