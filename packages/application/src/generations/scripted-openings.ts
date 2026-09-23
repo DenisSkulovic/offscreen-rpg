@@ -159,6 +159,12 @@ export function createScriptedOpenings(
       await operations.request(owner, draftId, id, revision);
       return present(await operations.read(owner, id));
     },
+    async retry(owner: string, draftId: string, id: string, retryId: string) {
+      if (!(await profiled.handles(owner, draftId, id))) {
+        throw new GenerationError('invalid');
+      }
+      return profiled.retry(owner, draftId, id, retryId);
+    },
     // Internal Activity: the stored operation identifies its owner and task kind.
     async complete(id: string) {
       validId(id);

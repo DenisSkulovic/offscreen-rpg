@@ -1,7 +1,12 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { storyDraft } from '@offscreen/db/draft-schema';
 import { generation, draftOpening } from '@offscreen/db/generation-schema';
+import {
+  storytellerAttempt,
+  storytellerOperation,
+  storytellerRetry,
+} from '@offscreen/db/storyteller-schema';
 import {
   storytellerCatalogue,
   storytellerSummary,
@@ -25,6 +30,8 @@ import {
 } from '@offscreen/contracts/openings';
 import { GenerationError, validId } from '../generations/index';
 import { insertStorytellerTask, storytellerKind } from './records';
+import { storytellerTopic } from './records';
+import { enqueue } from '../outbox/index';
 import { authorizedMechanicalOpeningPlans } from '@offscreen/storyteller/fixtures';
 import {
   mechanicalContentCatalogue,
@@ -36,10 +43,7 @@ import type {
   DocumentStore,
   StartPackageReference,
 } from '@offscreen/documents';
-import {
-  canonicalRuleEvidence,
-  loadStartPackageKnowledge,
-} from './context';
+import { canonicalRuleEvidence, loadStartPackageKnowledge } from './context';
 
 export type OpeningContentEntry = Readonly<{
   id: string;
@@ -93,6 +97,34 @@ export function createStorytellerOpenings(
       .select()
       .from(draftOpening)
       .where(eq(draftOpening.draftId, task.source.draftId));
+    const [attempt, operation] =
+      row.attemptId === null
+        ? [null, null]
+        : await Promise.all([
+            database.db
+              .select({ state: storytellerAttempt.state })
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.id, row.attemptId))
+              .then((rows) => rows[0] ?? null),
+            database.db
+              .select({
+                state: storytellerOperation.state,
+                dispatchedRounds: storytellerOperation.dispatchedRounds,
+                maxModelRounds: storytellerOperation.maxModelRounds,
+              })
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, row.id))
+              .then((rows) => rows[0] ?? null),
+          ]);
+    const repairAvailable =
+      task.execution.mode === 'provider' &&
+      row.failureCode === 'invalid_output' &&
+      task.resources.recipe.version === 'repairable-turn.v1' &&
+      row.repairCandidate !== null &&
+      row.repairDiagnostic !== null &&
+      attempt?.state === 'settled' &&
+      operation?.state === 'open' &&
+      operation.dispatchedRounds < operation.maxModelRounds;
     const result =
       row.state === 'succeeded'
         ? storytellerResultSchema.parse(row.output)
@@ -130,6 +162,11 @@ export function createStorytellerOpenings(
       startPackage: task.source.startPackage,
       storyteller: storytellerSummary(task.profile),
       state: row.state,
+      canRetry:
+        row.state === 'failed' &&
+        (task.execution.mode === 'scripted' ||
+          attempt?.state === 'unsent' ||
+          repairAvailable),
       candidate: presentation?.interaction ? presentation : null,
     });
   }
@@ -301,6 +338,105 @@ export function createStorytellerOpenings(
             target: draftOpening.draftId,
             set: { generationId: id },
           });
+      });
+      return read(ownerId, id);
+    },
+    async retry(ownerId: string, draftId: string, id: string, retryId: string) {
+      validId(draftId);
+      validId(id);
+      validId(retryId);
+      await database.db.transaction(async (tx) => {
+        const [draft] = await tx
+          .select()
+          .from(storyDraft)
+          .where(
+            and(eq(storyDraft.id, draftId), eq(storyDraft.ownerId, ownerId)),
+          )
+          .for('update');
+        if (!draft) throw new GenerationError('not_found');
+        const [latest] = await tx
+          .select()
+          .from(draftOpening)
+          .where(eq(draftOpening.draftId, draftId));
+        if (latest?.generationId !== id) throw new GenerationError('conflict');
+        const [prior] = await tx
+          .select({ retryId: storytellerRetry.retryId })
+          .from(storytellerRetry)
+          .where(
+            and(
+              eq(storytellerRetry.generationId, id),
+              eq(storytellerRetry.retryId, retryId),
+            ),
+          );
+        if (prior) return;
+        const [record] = await tx
+          .select()
+          .from(generation)
+          .where(
+            and(
+              eq(generation.id, id),
+              eq(generation.ownerId, ownerId),
+              eq(generation.kind, storytellerKind),
+            ),
+          )
+          .for('update');
+        if (!record?.attemptId || record.state !== 'failed') {
+          throw new GenerationError('conflict');
+        }
+        const task = storytellerTaskSchema.parse(record.input);
+        if (
+          task.task !== 'opening' ||
+          task.source.draftId !== draftId ||
+          task.source.draftRevision !== draft.revision
+        ) {
+          throw new GenerationError('conflict');
+        }
+        if (task.execution.mode === 'provider') {
+          const [attempt] = await tx
+            .select({ state: storytellerAttempt.state })
+            .from(storytellerAttempt)
+            .where(eq(storytellerAttempt.id, record.attemptId));
+          const [operation] = await tx
+            .select({
+              state: storytellerOperation.state,
+              dispatchedRounds: storytellerOperation.dispatchedRounds,
+              maxModelRounds: storytellerOperation.maxModelRounds,
+            })
+            .from(storytellerOperation)
+            .where(eq(storytellerOperation.generationId, record.id));
+          const repairEligible =
+            attempt?.state === 'settled' &&
+            record.failureCode === 'invalid_output' &&
+            task.resources.recipe.version === 'repairable-turn.v1' &&
+            record.repairCandidate !== null &&
+            record.repairDiagnostic !== null &&
+            operation?.state === 'open' &&
+            operation.dispatchedRounds < operation.maxModelRounds;
+          if (attempt?.state !== 'unsent' && !repairEligible) {
+            throw new GenerationError('conflict');
+          }
+        }
+        await tx
+          .update(generation)
+          .set({
+            state: 'pending',
+            attemptId: null,
+            output: null,
+            failureCode: null,
+            updatedAt: sql`clock_timestamp()`,
+            statusRevision: sql`${generation.statusRevision} + 1`,
+          })
+          .where(eq(generation.id, record.id));
+        await tx.insert(storytellerRetry).values({
+          generationId: record.id,
+          retryId,
+          attemptId: record.attemptId,
+        });
+        await enqueue(tx, {
+          id: retryId,
+          operationId: record.id,
+          topic: storytellerTopic,
+        });
       });
       return read(ownerId, id);
     },

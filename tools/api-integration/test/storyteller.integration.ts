@@ -4329,7 +4329,10 @@ test(
         await t.test(
           'provider recovery retries only work proven unsent',
           async () => {
-            async function providerStory(repairable = false) {
+            async function providerStory(
+              repairable = false,
+              repairOpening = false,
+            ) {
               const accountId = randomUUID();
               const runId = randomUUID();
               await database.db.insert(storytellerFunding).values({
@@ -4372,7 +4375,7 @@ test(
                 expectedRevision: 0,
               });
               const openingId = randomUUID();
-              await createStorytellerOpenings(
+              const profiledOpenings = createStorytellerOpenings(
                 database,
                 execution,
                 createTestUsagePolicy(
@@ -4386,19 +4389,55 @@ test(
                       }
                     : {},
                 ),
-              ).request(ownerId, draftId, openingId, 1);
+              );
+              await profiledOpenings.request(ownerId, draftId, openingId, 1);
+              let openingCalls = 0;
               await createStorytellerRuntime(database, {
                 dispatchAuthority: ({ task }) =>
                   task.resources.authority.kind === 'effective-usage-policy'
                     ? task.resources.authority.policy
                     : null,
-                provider: async (task) => ({
-                  kind: 'result',
-                  output: scriptedStorytellerResult(task),
-                  usage: fakeUsage(10n),
-                  telemetry: fakeTelemetry('provider-opening'),
-                }),
+                provider: async (task) => {
+                  openingCalls++;
+                  return {
+                    kind: 'result',
+                    output: repairOpening
+                      ? { invalid: true }
+                      : scriptedStorytellerResult(task),
+                    usage: fakeUsage(10n),
+                    telemetry: fakeTelemetry('provider-opening'),
+                  };
+                },
               }).complete(openingId);
+              if (repairOpening) {
+                const failedOpening = await profiledOpenings.latest(
+                  ownerId,
+                  draftId,
+                );
+                assert.equal(failedOpening?.state, 'failed');
+                assert.equal(failedOpening?.canRetry, true);
+                await profiledOpenings.retry(
+                  ownerId,
+                  draftId,
+                  openingId,
+                  randomUUID(),
+                );
+                await createStorytellerRuntime(database, {
+                  dispatchAuthority: ({ task }) =>
+                    task.resources.authority.kind === 'effective-usage-policy'
+                      ? task.resources.authority.policy
+                      : null,
+                  provider: async (task) => {
+                    openingCalls++;
+                    return {
+                      kind: 'result',
+                      output: scriptedStorytellerResult(task),
+                      usage: fakeUsage(10n),
+                      telemetry: fakeTelemetry('provider-opening-repair'),
+                    };
+                  },
+                }).complete(openingId);
+              }
               const storyId = randomUUID();
               await stories.startFromCandidate({
                 ownerId,
@@ -4406,7 +4445,7 @@ test(
                 candidateId: openingId,
                 expectedDraftRevision: 1,
               });
-              return { accountId, execution, storyId };
+              return { accountId, execution, storyId, openingCalls };
             }
 
             async function admit(storyId: string) {
@@ -4427,6 +4466,9 @@ test(
               });
               return generationId;
             }
+
+            const repairedOpening = await providerStory(true, true);
+            assert.equal(repairedOpening.openingCalls, 2);
 
             const unsent = await providerStory();
             const unsentId = await admit(unsent.storyId);

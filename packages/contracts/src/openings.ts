@@ -44,6 +44,7 @@ export const openingPreviewSchema = z.strictObject({
   contentId: z.string().optional(),
   startPackage: startPackageReferenceSchema.optional(),
   state: z.enum(['pending', 'running', 'succeeded', 'failed', 'uncertain']),
+  canRetry: z.boolean().optional(),
   candidate: openingCandidateSchema.nullable(),
 });
 export type OpeningCandidate = z.infer<typeof openingCandidateSchema>;

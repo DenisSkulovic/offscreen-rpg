@@ -15,7 +15,7 @@ const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const live = args.includes('--confirm-live');
 const usage =
-  'Usage: pnpm story:play <server|list|profiles|starts|show ID|history ID|new [options] --confirm-live|choose ID OPTION --confirm-live|activity ID pause|resume|slow|steady|fast|instant --confirm-live|wait ID|retry ID --confirm-live>';
+  'Usage: pnpm story:play <server|list|profiles|starts|show ID|history ID|new [options] --confirm-live|retry-opening DRAFT_ID OPENING_ID --confirm-live|choose ID OPTION --confirm-live|activity ID pause|resume|slow|steady|fast|instant --confirm-live|wait ID|retry ID --confirm-live>';
 
 function option(name) {
   const index = args.indexOf(name);
@@ -337,6 +337,62 @@ async function retry(storyId) {
   return { ...summary, evidencePath: path };
 }
 
+async function retryOpening(draftId, openingId) {
+  requireLive('retry-opening');
+  if (!uuid.test(draftId) || !uuid.test(openingId)) {
+    throw new Error('retry-opening requires draft and opening UUIDs');
+  }
+  const before = await request(`/api/drafts/${draftId}/openings/latest`);
+  if (
+    before.preview?.id !== openingId ||
+    before.preview.state !== 'failed' ||
+    !before.preview.canRetry
+  ) {
+    throw new Error('current opening does not authorize retry');
+  }
+  await request(
+    `/api/drafts/${draftId}/openings/${openingId}/retries/${randomUUID()}`,
+    { method: 'PUT', body: '{}' },
+  );
+  let preview;
+  for (let read = 0; read < 120; read++) {
+    preview = (await request(`/api/drafts/${draftId}/openings/latest`)).preview;
+    if (preview && !['pending', 'running'].includes(preview.state)) break;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  if (!preview || preview.state !== 'succeeded' || !preview.candidate) {
+    const evidencePath = await record('opening-retry-terminal', {
+      draftId,
+      openingId,
+      preview,
+    });
+    throw new Error(
+      `opening repair did not succeed; evidence: ${evidencePath}`,
+    );
+  }
+  const storyId = randomUUID();
+  const snapshot = await request(`/api/stories/${storyId}/start`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      candidateId: preview.id,
+      expectedDraftRevision: preview.sourceRevision,
+      campaign: {
+        mechanics: true,
+        locked: false,
+        pace: { kind: 'rate', fictionalSeconds: 1, realSeconds: 1 },
+        ...(preview.startPackage ? { startPackage: preview.startPackage } : {}),
+      },
+    }),
+  });
+  const summary = summarize(snapshot);
+  const evidencePath = await record(
+    'opening-retry-started',
+    { draftId, openingId, story: summary },
+    storyId,
+  );
+  return { ...summary, evidencePath };
+}
+
 async function controlActivity(storyId, control) {
   requireLive('activity');
   const before = await readStory(storyId);
@@ -461,6 +517,8 @@ async function main() {
     result = await request(`/api/stories/${storyId}/history`);
     result.evidencePath = await record('history', result, storyId);
   } else if (command === 'new') result = await createStory();
+  else if (command === 'retry-opening')
+    result = await retryOpening(args.shift(), args.shift());
   else if (command === 'choose')
     result = await choose(args.shift(), args.shift());
   else if (command === 'activity')

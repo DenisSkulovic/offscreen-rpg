@@ -74,4 +74,17 @@ export class OpeningsController {
       );
     });
   }
+
+  @Put(':id/retries/:retryId')
+  @HttpCode(202)
+  retry(
+    @Req() request: Request,
+    @Param('draftId') draftId: string,
+    @Param('id') id: string,
+    @Param('retryId') retryId: string,
+  ) {
+    return this.run(request, (owner) =>
+      this.openings.retry(owner, draftId, id, retryId),
+    );
+  }
 }
