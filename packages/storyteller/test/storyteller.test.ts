@@ -948,6 +948,10 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
   );
 
   const scripted = scriptedStorytellerResult(task);
+  assert.match(
+    task.request.messages[0]?.content ?? '',
+    /Never emit a quantity\.change\.v1 effect with delta 0/,
+  );
   if (scripted.scene.next.kind !== 'action-plans') {
     throw new Error('Expected mechanical opening plans');
   }
@@ -997,7 +1001,7 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
     assert.equal(task.inputVersion, 10);
-    assert.equal(task.promptVersion, 'storyteller.v9');
+    assert.equal(task.promptVersion, 'storyteller.v10');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -1046,6 +1050,10 @@ test('captured schemas expose only the result for the requested task', () => {
       /evidence array must be \[\] or contain only these exact handles: p2/,
     );
     assert.match(instructions, /selected intention has just resolved/);
+    assert.match(
+      instructions,
+      /Never emit a quantity\.change\.v1 effect with delta 0/,
+    );
     assert.match(instructions, /Visibly realize the supplied profile tone/);
     assert.match(instructions, /Do not extract every mentioned noun/);
     assert.match(
