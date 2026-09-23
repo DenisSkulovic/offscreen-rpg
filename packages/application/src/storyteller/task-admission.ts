@@ -122,12 +122,12 @@ export function resourcesForEffectiveUsagePolicy(
           maxRepairRounds: 1 as const,
         }
       : {
-        version: 'single-turn.v1' as const,
-        maxModelRounds: 1 as const,
-        maxReads: 0 as const,
-        tools: 'disabled' as const,
-        automaticEscalation: false as const,
-      };
+          version: 'single-turn.v1' as const,
+          maxModelRounds: 1 as const,
+          maxReads: 0 as const,
+          tools: 'disabled' as const,
+          automaticEscalation: false as const,
+        };
   const maxGeneratedTokens = Math.min(
     policy.limits.maxGeneratedTokensPerOperation,
     maxGeneratedTokensPerRequest * recipe.maxModelRounds,
@@ -183,12 +183,18 @@ export function prepareAdmittedStorytellerTask(
   if (!usagePolicy) {
     throw new Error('effective_usage_policy_required');
   }
+  const selectedRecipe =
+    creativeInput ??
+    (input.task !== 'report' &&
+    usagePolicy.limits.maxModelRoundsPerOperation >= 2
+      ? { posture: 'off' as const, maxRepairRounds: 1 as const }
+      : undefined);
   return prepareStorytellerTask({
     ...input,
     resources: resourcesForEffectiveUsagePolicy(
       input.execution,
       usagePolicy,
-      creativeInput,
+      selectedRecipe,
     ),
   });
 }

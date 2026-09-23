@@ -9,6 +9,7 @@ import {
 import {
   composeMemoryExplorationDecisionRequest,
   diagnoseStorytellerResult,
+  prepareStorytellerRepairRequest,
   prepareStorytellerTask,
   storytellerNeedsContextSchema,
   storytellerReadyToAnswerSchema,
@@ -1248,6 +1249,44 @@ test('consequence planning proposes fresh plans without gaining mechanical autho
     ...duplicate.scene.next.plans[0]!,
   });
   assert.throws(() => validateStorytellerResult(task, duplicate));
+});
+
+test('ordinary repair requests retain rules and schema without retransmitting context', () => {
+  const task = consequence();
+  const candidate = scriptedStorytellerResult(task);
+  if (candidate.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  candidate.scene.next.plans[0]!.evidence = ['invented-evidence'];
+  const diagnostic = diagnoseStorytellerResult(task, candidate);
+  assert.ok(diagnostic);
+  const repairableTask = {
+    ...task,
+    resources: storytellerTaskResourcesSchema.parse({
+      ...task.resources,
+      recipe: {
+        version: 'repairable-turn.v1',
+        maxModelRounds: 2,
+        maxReads: 0,
+        tools: 'disabled',
+        automaticEscalation: false,
+        maxRepairRounds: 1,
+      },
+    }),
+  };
+  const request = prepareStorytellerRepairRequest({
+    task: repairableTask,
+    candidate,
+    diagnostic,
+  });
+  assert.deepEqual(request.messages[0], task.request.messages[0]);
+  assert.deepEqual(request.outputSchema, task.request.outputSchema);
+  assert.match(request.messages[1].content, /invented-evidence/);
+  assert.match(request.messages[1].content, /unknown-evidence/);
+  assert.notEqual(
+    request.messages[1].content,
+    task.request.messages[1].content,
+  );
 });
 
 test('offline consequence plans change with committed pineapple state', () => {

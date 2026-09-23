@@ -4,11 +4,16 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   diagnoseStorytellerResult,
+  prepareStorytellerRepairRequest,
+  storytellerOutputDiagnosticSchema,
   validateStorytellerResult,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
-import type { StorytellerProvider } from '@offscreen/storyteller/providers/openrouter';
+import type {
+  StorytellerProvider,
+  StorytellerProviderDispatch,
+} from '@offscreen/storyteller/providers/openrouter';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareDispatchReview } from './dispatch-review';
@@ -199,11 +204,41 @@ export function createStorytellerExecution(
       }
       return;
     }
+    const repairable = task.resources.recipe.version === 'repairable-turn.v1';
+    const hasRepairEvidence =
+      record.repairCandidate !== null || record.repairDiagnostic !== null;
+    if (
+      hasRepairEvidence &&
+      (!repairable ||
+        record.repairCandidate === null ||
+        record.repairDiagnostic === null)
+    ) {
+      throw new Error('Invalid Storyteller repair evidence');
+    }
+    const repairing = repairable && hasRepairEvidence;
+    const request = repairing
+      ? prepareStorytellerRepairRequest({
+          task,
+          candidate: record.repairCandidate,
+          diagnostic: storytellerOutputDiagnosticSchema.parse(
+            record.repairDiagnostic,
+          ),
+        })
+      : task.request;
+    const roundCount = repairable ? 2 : 1;
+    const providerDispatch: StorytellerProviderDispatch = {
+      request,
+      maxGeneratedTokens: Math.max(
+        1,
+        Math.floor(task.resources.envelope.maxGeneratedTokens / roundCount),
+      ),
+    };
     const reviewDisposition = await prepareDispatchReview(
       database,
       record.id,
       attemptId,
       task,
+      providerDispatch,
     );
     if (reviewDisposition !== 'proceed') {
       return reviewDisposition;
@@ -221,6 +256,21 @@ export function createStorytellerExecution(
         generationId: record.id,
         ownerId: record.ownerId,
         task,
+        dispatch: {
+          request,
+          maxSerializedRequestBytes:
+            task.resources.envelope.maxSerializedRequestBytes,
+          maxInputTokens: Math.min(
+            task.execution.policy.maxInputTokens,
+            task.resources.authority.kind === 'effective-usage-policy'
+              ? task.resources.authority.policy.limits.maxInputTokensPerRequest
+              : task.execution.policy.maxInputTokens,
+          ),
+          maxGeneratedTokens: providerDispatch.maxGeneratedTokens,
+          maxReasoningTokens: Math.floor(
+            task.resources.envelope.maxReasoningTokens / roundCount,
+          ),
+        },
       });
       if (state === 'settled') {
         return;
@@ -267,7 +317,7 @@ export function createStorytellerExecution(
       }
       let outcome;
       try {
-        outcome = await options.provider(task);
+        outcome = await options.provider(task, providerDispatch);
       } catch {
         outcome = {
           kind: 'uncertain' as const,
@@ -289,7 +339,11 @@ export function createStorytellerExecution(
         outcome.kind === 'failed' &&
         outcome.failureCode === 'provider_unavailable'
       ) {
-        await budget.confirmUnsent(attemptId, task.execution, outcome.telemetry);
+        await budget.confirmUnsent(
+          attemptId,
+          task.execution,
+          outcome.telemetry,
+        );
         await saveOutcome(record.id, attemptId, {
           state: 'failed',
           failureCode: 'provider_unavailable',
@@ -331,6 +385,12 @@ export function createStorytellerExecution(
               repairCandidate: null,
               repairDiagnostic: null,
             },
+        operationOutcome:
+          !repairing &&
+          failureCode === 'invalid_output' &&
+          repairDiagnostic !== null
+            ? 'continue'
+            : 'complete',
       });
     } catch (error) {
       if (!(error instanceof StorytellerBudgetError)) {

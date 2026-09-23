@@ -48,7 +48,7 @@ export const generation = pgTable(
     ),
     check(
       'generation_repair_shape',
-      sql`(${t.repairCandidate} IS NULL AND ${t.repairDiagnostic} IS NULL) OR (${t.state} = 'failed' AND ${t.failureCode} = 'invalid_output' AND ${t.repairCandidate} IS NOT NULL AND ${t.repairDiagnostic} IS NOT NULL)`,
+      sql`(${t.repairCandidate} IS NULL AND ${t.repairDiagnostic} IS NULL) OR (${t.state} <> 'succeeded' AND ${t.output} IS NULL AND ${t.repairCandidate} IS NOT NULL AND ${t.repairDiagnostic} IS NOT NULL)`,
     ),
   ],
 );

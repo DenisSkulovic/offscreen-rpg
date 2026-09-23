@@ -941,3 +941,35 @@ export function diagnoseStorytellerResult(
     return storytellerOutputDiagnosticSchema.parse({ issues });
   }
 }
+
+/**
+ * Builds a minimal complete-result correction packet. The invalid candidate is
+ * private data; original system rules and output schema remain authoritative.
+ */
+export function prepareStorytellerRepairRequest(input: {
+  task: StorytellerTask;
+  candidate: unknown;
+  diagnostic: StorytellerOutputDiagnostic;
+}) {
+  if (input.task.resources.recipe.version !== 'repairable-turn.v1') {
+    throw new Error('Storyteller task does not admit repair');
+  }
+  const diagnostic = storytellerOutputDiagnosticSchema.parse(input.diagnostic);
+  return capturedProviderRequestSchema.parse({
+    messages: [
+      input.task.request.messages[0],
+      {
+        role: 'user',
+        content: [
+          'The previous candidate failed deterministic validation.',
+          'Return one complete corrected replacement matching the supplied output schema.',
+          'Preserve every valid field exactly and change only what the validator findings require.',
+          'Do not add commentary, wrappers, alternatives or a second candidate.',
+          `Validator findings: ${JSON.stringify(diagnostic)}`,
+          `Invalid candidate: ${JSON.stringify(input.candidate)}`,
+        ].join('\n'),
+      },
+    ],
+    outputSchema: input.task.request.outputSchema,
+  });
+}

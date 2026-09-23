@@ -4329,7 +4329,7 @@ test(
         await t.test(
           'provider recovery retries only work proven unsent',
           async () => {
-            async function providerStory() {
+            async function providerStory(repairable = false) {
               const accountId = randomUUID();
               const runId = randomUUID();
               await database.db.insert(storytellerFunding).values({
@@ -4375,7 +4375,17 @@ test(
               await createStorytellerOpenings(
                 database,
                 execution,
-                createTestUsagePolicy(execution.policy.route),
+                createTestUsagePolicy(
+                  execution.policy.route,
+                  [],
+                  repairable
+                    ? {
+                        maxInputTokensPerOperation: 200000,
+                        maxGeneratedTokensPerOperation: 4000,
+                        maxModelRoundsPerOperation: 2,
+                      }
+                    : {},
+                ),
               ).request(ownerId, draftId, openingId, 1);
               await createStorytellerRuntime(database, {
                 dispatchAuthority: ({ task }) =>
@@ -4506,6 +4516,107 @@ test(
               { code: 'conflict' },
             );
             assert.equal(spentCalls, 1);
+
+            const repairable = await providerStory(true);
+            const repairableId = await admit(repairable.storyId);
+            let repairCalls = 0;
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (_task, dispatch) => {
+                repairCalls++;
+                assert.ok(dispatch);
+                return {
+                  kind: 'result',
+                  output: { invalid: true },
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('repairable-invalid-output'),
+                };
+              },
+            }).complete(repairableId);
+            const [capturedInvalid] = await database.db
+              .select()
+              .from(generation)
+              .where(eq(generation.id, repairableId));
+            assert.equal(capturedInvalid?.state, 'failed');
+            assert.deepEqual(capturedInvalid?.repairCandidate, {
+              invalid: true,
+            });
+            assert.ok(capturedInvalid?.repairDiagnostic);
+            const [openRepairOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, repairableId));
+            assert.equal(openRepairOperation?.state, 'open');
+            const repairableFailure = await stories.read({
+              ownerId,
+              storyId: repairable.storyId,
+            });
+            assert.deepEqual(repairableFailure.resolution?.blocker, {
+              kind: 'generation',
+              recovery: 'retry',
+            });
+            assert.equal(repairableFailure.resolution?.canRetry, true);
+            await stories.retryResolution({
+              ownerId,
+              storyId: repairable.storyId,
+              retryId: randomUUID(),
+            });
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (task, dispatch) => {
+                repairCalls++;
+                assert.ok(dispatch);
+                assert.match(
+                  dispatch.request.messages[1].content,
+                  /Invalid candidate: \{"invalid":true\}/,
+                );
+                assert.match(
+                  dispatch.request.messages[1].content,
+                  /Validator findings/,
+                );
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(10n),
+                  telemetry: fakeTelemetry('repaired-output'),
+                };
+              },
+            }).complete(repairableId);
+            assert.equal(repairCalls, 2);
+            const repairedStory = await stories.read({
+              ownerId,
+              storyId: repairable.storyId,
+            });
+            assert.equal(repairedStory.revision, 2);
+            const repairedAttempts = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, repairableId));
+            assert.equal(repairedAttempts.length, 2);
+            assert.equal(
+              repairedAttempts.reduce(
+                (total, attempt) => total + (attempt.chargedMicrousd ?? 0n),
+                0n,
+              ),
+              20n,
+            );
+            const [repairedGeneration] = await database.db
+              .select()
+              .from(generation)
+              .where(eq(generation.id, repairableId));
+            assert.equal(repairedGeneration?.state, 'succeeded');
+            assert.equal(repairedGeneration?.repairCandidate, null);
+            const [completeRepairOperation] = await database.db
+              .select()
+              .from(storytellerOperation)
+              .where(eq(storytellerOperation.generationId, repairableId));
+            assert.equal(completeRepairOperation?.state, 'complete');
 
             const uncertain = await providerStory();
             const uncertainId = await admit(uncertain.storyId);

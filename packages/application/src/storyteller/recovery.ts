@@ -8,6 +8,7 @@ import {
 } from '@offscreen/db/campaign-schema';
 import {
   storytellerAttempt,
+  storytellerOperation,
   storytellerPublication,
   storytellerRetry,
 } from '@offscreen/db/storyteller-schema';
@@ -113,11 +114,25 @@ export async function retryStoryteller(
           .select()
           .from(storytellerAttempt)
           .where(eq(storytellerAttempt.id, record.attemptId));
-        // Only work that provably never reached transport can be dispatched
-        // again. A settled provider failure has already consumed this
-        // operation's one-shot allowance; uncertain delivery needs operator
-        // reconciliation rather than another request.
-        if (attempt?.state !== 'unsent') {
+        const [operation] = await tx
+          .select({
+            state: storytellerOperation.state,
+            dispatchedRounds: storytellerOperation.dispatchedRounds,
+            maxModelRounds: storytellerOperation.maxModelRounds,
+          })
+          .from(storytellerOperation)
+          .where(eq(storytellerOperation.generationId, record.id));
+        const repairEligible =
+          attempt?.state === 'settled' &&
+          record.failureCode === 'invalid_output' &&
+          task.resources.recipe.version === 'repairable-turn.v1' &&
+          record.repairCandidate !== null &&
+          record.repairDiagnostic !== null &&
+          operation?.state === 'open' &&
+          operation.dispatchedRounds < operation.maxModelRounds;
+        // Confirmed-unsent work may repeat its exact round. A settled invalid
+        // candidate may proceed only through its captured repair round.
+        if (attempt?.state !== 'unsent' && !repairEligible) {
           throw new StoryError('conflict');
         }
       }

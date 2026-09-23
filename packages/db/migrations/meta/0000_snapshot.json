@@ -2245,7 +2245,7 @@
         },
         "generation_repair_shape": {
           "name": "generation_repair_shape",
-          "value": "(\"generation\".\"repair_candidate\" IS NULL AND \"generation\".\"repair_diagnostic\" IS NULL) OR (\"generation\".\"state\" = 'failed' AND \"generation\".\"failure_code\" = 'invalid_output' AND \"generation\".\"repair_candidate\" IS NOT NULL AND \"generation\".\"repair_diagnostic\" IS NOT NULL)"
+          "value": "(\"generation\".\"repair_candidate\" IS NULL AND \"generation\".\"repair_diagnostic\" IS NULL) OR (\"generation\".\"state\" <> 'succeeded' AND \"generation\".\"output\" IS NULL AND \"generation\".\"repair_candidate\" IS NOT NULL AND \"generation\".\"repair_diagnostic\" IS NOT NULL)"
         }
       },
       "isRLSEnabled": false

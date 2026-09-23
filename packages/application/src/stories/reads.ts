@@ -9,9 +9,13 @@ import {
   storytellerProfileSchema,
   storytellerSummary,
 } from '@offscreen/storyteller/profiles';
-import { executionPolicySchema } from '@offscreen/storyteller/tasks';
+import {
+  executionPolicySchema,
+  storytellerTaskSchema,
+} from '@offscreen/storyteller/tasks';
 import {
   storytellerAttempt,
+  storytellerOperation,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import { storyListSchema } from '@offscreen/contracts/stories';
@@ -113,6 +117,14 @@ function publicResolutionBlocker(
   failureCode: string | null,
   sourceMode: 'scripted' | 'provider',
   attemptState: string | null,
+  repair: Readonly<{
+    task: unknown;
+    candidate: unknown;
+    diagnostic: unknown;
+    operationState: 'open' | 'complete' | 'uncertain' | 'exhausted' | null;
+    dispatchedRounds: number | null;
+    maxModelRounds: number | null;
+  }>,
 ) {
   // Public categories are deliberately stable and coarse. Provider/account
   // identifiers and internal policy sources remain in the accounting audit.
@@ -133,10 +145,22 @@ function publicResolutionBlocker(
     return { kind: 'task-input' as const, recovery: 'none' as const };
   if (failureCode === 'provider_disabled')
     return { kind: 'provider-disabled' as const, recovery: 'retry' as const };
+  const storedTask = storytellerTaskSchema.safeParse(repair.task);
+  const repairAvailable =
+    failureCode === 'invalid_output' &&
+    attemptState === 'settled' &&
+    storedTask.success &&
+    storedTask.data.resources.recipe.version === 'repairable-turn.v1' &&
+    repair.candidate !== null &&
+    repair.diagnostic !== null &&
+    repair.operationState === 'open' &&
+    repair.dispatchedRounds !== null &&
+    repair.maxModelRounds !== null &&
+    repair.dispatchedRounds < repair.maxModelRounds;
   return {
     kind: 'generation' as const,
     recovery:
-      sourceMode === 'scripted' || attemptState === 'unsent'
+      sourceMode === 'scripted' || attemptState === 'unsent' || repairAvailable
         ? ('retry' as const)
         : ('none' as const),
   };
@@ -352,9 +376,15 @@ export function createStoryReads(
               resolutionSubmission: storyResolution.submission,
               resolutionVersion: generation.statusRevision,
               failureCode: generation.failureCode,
+              generationInput: generation.input,
+              repairCandidate: generation.repairCandidate,
+              repairDiagnostic: generation.repairDiagnostic,
               publicationState: storytellerPublication.state,
               publicationFailure: storytellerPublication.failureCode,
               attemptState: storytellerAttempt.state,
+              operationState: storytellerOperation.state,
+              operationDispatchedRounds: storytellerOperation.dispatchedRounds,
+              operationMaxModelRounds: storytellerOperation.maxModelRounds,
             })
             .from(story)
             .innerJoin(
@@ -384,6 +414,10 @@ export function createStoryReads(
               storytellerPublication,
               eq(storytellerPublication.generationId, generation.id),
             )
+            .leftJoin(
+              storytellerOperation,
+              eq(storytellerOperation.generationId, generation.id),
+            )
             .where(
               and(
                 eq(story.id, parseStoryIdentifier(storyId)),
@@ -401,6 +435,9 @@ export function createStoryReads(
             publicationState: row.publicationState,
             publicationFailure: row.publicationFailure,
             attemptState: row.attemptState,
+            operationState: row.operationState,
+            operationDispatchedRounds: row.operationDispatchedRounds,
+            operationMaxModelRounds: row.operationMaxModelRounds,
             usage: row.usage,
           };
           const content = await resolvePassageContent(
@@ -503,6 +540,14 @@ export function createStoryReads(
                         ? 'scripted'
                         : executionPolicySchema.parse(row.execution).mode,
                       row.attemptState,
+                      {
+                        task: row.generationInput,
+                        candidate: row.repairCandidate,
+                        diagnostic: row.repairDiagnostic,
+                        operationState: row.operationState,
+                        dispatchedRounds: row.operationDispatchedRounds,
+                        maxModelRounds: row.operationMaxModelRounds,
+                      },
                     );
                     return {
                       ...publicResolutionState(row.resolutionState),
