@@ -328,6 +328,7 @@ const common = {
     z.literal(12),
     z.literal(13),
     z.literal(14),
+    z.literal(15),
   ]),
   promptVersion: z.union([
     z.literal('storyteller.v10'),
@@ -335,6 +336,7 @@ const common = {
     z.literal('storyteller.v12'),
     z.literal('storyteller.v13'),
     z.literal('storyteller.v14'),
+    z.literal('storyteller.v15'),
   ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -452,11 +454,11 @@ For each narrative choice, set worldSections and campaignDocuments to at most fo
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
 Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. Every fresh action plan must include factTransitions, usually []. For an automatic or check plan, when its intention or an outcome establishes a new value for an existing typed fact such as location, declare that branch and target fact; every declaration requires the exact fact.set effect in that branch, and every fact.set effect requires a declaration. Process and resume plans use []. Observation, conversation, refusal and withdrawal usually use [] unless they actually change typed state.
-Every automatic outcome, check success and failure, and process completion must freeze the exact concrete result that later consequence prose may narrate. Never defer result selection with placeholders such as an unspecified detail, discrepancy, kind of leverage or whether something happened. If a complete grounded result cannot be stated now, omit that plan or give it a complete bounded outcome that honestly resolves the advertised attempt.
+Every automatic outcome, finite-check success and failure, process interval/check outcome, contribution attempt outcome, and process completion must freeze the exact concrete result that later consequence prose may narrate. Never defer result selection with placeholders such as an unspecified detail, discrepancy, useful observation, kind of leverage or whether something happened. If a complete grounded result cannot be stated now, omit that plan or give it a complete bounded outcome that honestly resolves the advertised attempt.
 Return plain-text prose, no HTML. Use concise readable passages.`;
 const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
-passage handles or current/arrival. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
+passage handles or current/arrival. When this result first establishes a noted detail, cite current (or arrival for a prepared future), not an earlier passage that only introduced its subject. No made-up evidence. Current notes cannot reference arrival. Retire only obsolete notes.
 Arrival is a private future: its prose, knowledge and note changes are not true until the interval completes.`;
 const sceneScopeRules = `Set activeScene.kind to continue while the same detailed interaction remains active. Use restart-at-current only when this newly published current passage genuinely begins a different situation whose future turns no longer require the preceding exchange in raw active context. On a restart, recallDocuments may attach only directly relevant exact campaign-catalogue handles, labelled identity, place or thread; omit it otherwise. This does not erase history or continuity notes.`;
 const documentChangeRules = `When this turn materially establishes or changes descriptive world state, propose up to 8 documentChanges in the same result. Create or revision-fence only lore, identity, relationship, narrative-thread, premise or private-possibility Markdown. Do not extract every mentioned noun. Promote an exact person, place or thing to an identity record once later correctness depends on that individual: the player meaningfully engages with it, learns or assigns a stable identity, transfers something to it, deliberately revisits it or a proposed future intention needs that exact entity. Create or revise a relationship record when trust, obligation, access, commitment or a durable stance between exact identities changes; preserve specific lived evidence rather than a generic sentiment label. A passing crowd member or decorative object needs no record. Include the complete concise replacement body and a short reason. When restarting the active scene, optionally set recallAs to identity, place or thread only for a changed record that remains directly relevant; identity requires identity, place requires lore and thread requires narrative-thread. Omit it otherwise. Do not restate unchanged documents or duplicate the passage. Never use documentChanges for inventory, skills, scores, health, clocks, progress, obligations, rolls or effects. New private possibilities must be noncanonical and storyteller-private.`;
@@ -1071,8 +1073,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 14,
-    promptVersion: 'storyteller.v14',
+    inputVersion: 15,
+    promptVersion: 'storyteller.v15',
     resources,
     request: requestFor(input, context),
   });
