@@ -93,6 +93,12 @@ const storyModelArgument = process.argv
 const storyMaxMicrousdArgument = process.argv
   .slice(2)
   .find((argument) => argument.startsWith('--story-max-microusd='));
+const storyMaxInputTokensArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--story-max-input-tokens='));
+const storyMaxOutputTokensArgument = process.argv
+  .slice(2)
+  .find((argument) => argument.startsWith('--story-max-output-tokens='));
 const storyAuthorizationArgument = process.argv
   .slice(2)
   .find((argument) => argument.startsWith('--authorize-story-model='));
@@ -133,6 +139,8 @@ if (
         !arg.startsWith('--authorize=') &&
         !arg.startsWith('--story-model=') &&
         !arg.startsWith('--story-max-microusd=') &&
+        !arg.startsWith('--story-max-input-tokens=') &&
+        !arg.startsWith('--story-max-output-tokens=') &&
         !arg.startsWith('--authorize-story-model='),
     )
 ) {
@@ -145,7 +153,11 @@ if (noBrowser && !storyMode) {
 }
 if (
   !storyMode &&
-  (storyModelArgument || storyMaxMicrousdArgument || storyAuthorizationArgument)
+  (storyModelArgument ||
+    storyMaxMicrousdArgument ||
+    storyMaxInputTokensArgument ||
+    storyMaxOutputTokensArgument ||
+    storyAuthorizationArgument)
 ) {
   throw new Error(
     'Story model arguments are supported only with --story-mode.',
@@ -278,6 +290,36 @@ if (
     '--story-max-microusd must be an integer from 1 through 250000.',
   );
 }
+const storyMaxOutputTokens = storyMaxOutputTokensArgument
+  ? Number(
+      storyMaxOutputTokensArgument.slice(
+        '--story-max-output-tokens='.length,
+      ),
+    )
+  : 2_048;
+if (
+  !Number.isInteger(storyMaxOutputTokens) ||
+  storyMaxOutputTokens < 512 ||
+  storyMaxOutputTokens > 8_000
+) {
+  throw new Error(
+    '--story-max-output-tokens must be an integer from 512 through 8000.',
+  );
+}
+const storyMaxInputTokens = storyMaxInputTokensArgument
+  ? Number(
+      storyMaxInputTokensArgument.slice('--story-max-input-tokens='.length),
+    )
+  : 12_000;
+if (
+  !Number.isInteger(storyMaxInputTokens) ||
+  storyMaxInputTokens < 8_000 ||
+  storyMaxInputTokens > 100_000
+) {
+  throw new Error(
+    '--story-max-input-tokens must be an integer from 8000 through 100000.',
+  );
+}
 const storyRoute = `openrouter:${storyModel.slice('openai/'.length)}`;
 if (
   (storyModel !== 'openai/gpt-5.6-luna' || storyMaxMicrousd > 10_000) &&
@@ -346,7 +388,7 @@ async function storyLiveAuthority() {
     (endpoint) =>
       endpoint.provider_name === storyProvider &&
       endpoint.tag === storyEndpointTag &&
-      (endpoint.context_length ?? 0) >= 12_000 &&
+      (endpoint.context_length ?? 0) >= storyMaxInputTokens &&
       endpoint.supported_parameters?.includes('response_format') &&
       endpoint.supported_parameters?.includes('structured_outputs'),
   );
@@ -381,12 +423,12 @@ async function storyLiveAuthority() {
     fundingModes: ['prepaid' as const],
     recovery: 'explicit-resume' as const,
     limits: {
-      maxInputTokensPerRequest: 12_000,
-      maxSerializedBytesPerRequest: 48_000,
-      maxGeneratedTokensPerRequest: 2_048,
+      maxInputTokensPerRequest: storyMaxInputTokens,
+      maxSerializedBytesPerRequest: storyMaxInputTokens * 4,
+      maxGeneratedTokensPerRequest: storyMaxOutputTokens,
       maxReasoningTokensPerRequest: 0,
-      maxInputTokensPerOperation: 24_000,
-      maxGeneratedTokensPerOperation: 4_096,
+      maxInputTokensPerOperation: storyMaxInputTokens * 2,
+      maxGeneratedTokensPerOperation: storyMaxOutputTokens * 2,
       maxModelRoundsPerOperation: 2,
       maxReadsPerOperation: 0,
       maxRetainedReadBytes: 0,
@@ -426,8 +468,8 @@ async function storyLiveAuthority() {
         cacheReadMicrousdPerMillion: cacheReadPrice.toString(),
         cacheWriteMicrousdPerMillion: cacheWritePrice.toString(),
         outputMicrousdPerMillion: outputPrice.toString(),
-        maxInputTokens: 12_000,
-        maxOutputTokens: 2_048,
+        maxInputTokens: storyMaxInputTokens,
+        maxOutputTokens: storyMaxOutputTokens,
         timeoutMs: 60_000,
       },
     },
@@ -953,6 +995,9 @@ try {
           provider: storyProvider,
           route: storyRoute,
           maxMicrousdPerOperation: String(storyMaxMicrousd),
+          maxInputTokensPerRequest: storyMaxInputTokens,
+          maxSerializedBytesPerRequest: storyMaxInputTokens * 4,
+          maxOutputTokensPerRequest: storyMaxOutputTokens,
           inputMicrousdPerMillion:
             storyAuthority.execution.policy.inputMicrousdPerMillion,
           outputMicrousdPerMillion:
@@ -1276,7 +1321,7 @@ try {
   } else {
     if (noBrowser) {
       console.log(
-        `Local Story API ready at http://127.0.0.1:3001. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the server made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`,
+        `Local Story API ready at http://127.0.0.1:3001. Live Storyteller: ${storyModel} through the exact ${storyProvider} route with at most ${storyMaxInputTokens} input and ${storyMaxOutputTokens} generated tokens per request; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the server made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`,
       );
       await runtime.done.then(() => {
         if (!stopping) throw new Error('Worker stopped.');
@@ -1445,7 +1490,7 @@ try {
     } else {
       console.log(
         storyMode
-          ? `Local Story mode opened at http://127.0.0.1:3100/stories. Live Storyteller: ${storyModel} through the exact ${storyProvider} route; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the launcher made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`
+          ? `Local Story mode opened at http://127.0.0.1:3100/stories. Live Storyteller: ${storyModel} through the exact ${storyProvider} route with at most ${storyMaxInputTokens} input and ${storyMaxOutputTokens} generated tokens per request; one initial call and at most one explicit invalid-output repair inside the same operation ceiling, with no fallback or automatic retry. Starting the launcher made no inference call. OpenRouter cumulative usage at startup: $${(Number(storyAuthority!.totalUsageMicrousd) / 1_000_000).toFixed(6)}.`
           : packetReview
             ? 'Held-packet Chamber opened. Create a draft and generate its opening to inspect the exact credential-free request before dispatch. The configured route is deliberately unpriced and model-unselected; release is unavailable. Model spend: $0; no provider calls.'
             : 'Scripted chamber opened. Bookmark story URLs to reopen them in this browser session. Data persists in offscreen_chamber. Close the browser or press Ctrl+C to stop local execution. Model spend: $0; no provider calls.',

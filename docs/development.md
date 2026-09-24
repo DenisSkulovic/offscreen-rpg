@@ -149,8 +149,14 @@ Startup reads the ignored `.env.openrouter` credential, verifies account usage
 and the exact current OpenAI endpoint before enabling GPT-5.6 Luna. Each turn
 permits one buffered strict-JSON call and, only after a settled invalid output,
 at most one explicit complete-result repair. Each request remains capped at
-12,000 input and 2,048 generated tokens; both attempts share cumulative
-24,000-input, 4,096-generated and $0.01 operation ceilings. There is no
+12,000 input and, by default, 2,048 generated tokens; both attempts share cumulative
+24,000-input, 4,096-generated and $0.01 operation ceilings. Local diagnostics may
+explicitly set `--story-max-input-tokens=8000..100000` and
+`--story-max-output-tokens=512..8000`; each per-operation token ceiling remains twice
+its per-request value, serialized request bytes are bounded at four times the selected
+input-token cap, and the independently supplied dollar ceiling still limits the whole
+operation. The selected caps are recorded in `data/story-agent/server.json`.
+There is no
 reasoning, fallback, judge or automatic retry. The local run/account ceiling is
 $1 until deliberately changed; an uncertain provider delivery stops further
 admission. Exact raw
@@ -197,7 +203,7 @@ deliberate stronger-model session can start with reviewed exact arguments, for
 example:
 
 ```text
-pnpm --filter @offscreen/chamber start --story-mode --no-browser --story-model=openai/gpt-5.6-sol --story-max-microusd=110000 --authorize-story-model=openai/gpt-5.6-sol@110000
+pnpm --filter @offscreen/chamber start --story-mode --no-browser --story-model=openai/gpt-5.6-sol --story-max-input-tokens=16000 --story-max-output-tokens=4096 --story-max-microusd=110000 --authorize-story-model=openai/gpt-5.6-sol@110000
 ```
 
 The launcher freshly verifies the exact OpenAI endpoint and pricing, pins that

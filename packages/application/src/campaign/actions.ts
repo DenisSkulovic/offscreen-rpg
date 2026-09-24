@@ -432,19 +432,26 @@ export function createCampaignActions(
         targetGameSecond,
       });
       if (pendingResolution) {
-        await preparePendingActionNarration(
-          tx,
-          current,
-          {
-            executionId: args.operationId,
-            targetGameSecond,
-            offer,
-            label: definition.label,
-            intention: definition.intention,
-            pending: pendingResolution,
-          },
-          documentStore,
-        );
+        try {
+          await preparePendingActionNarration(
+            tx,
+            current,
+            {
+              executionId: args.operationId,
+              targetGameSecond,
+              offer,
+              label: definition.label,
+              intention: definition.intention,
+              pending: pendingResolution,
+            },
+            documentStore,
+          );
+        } catch (error) {
+          if (error instanceof Error && error.message === 'context_too_large') {
+            throw new StoryError('unavailable', 'context_too_large');
+          }
+          throw error;
+        }
       }
       await recordActionExecutionEvent(tx, {
         storyId: current.id,

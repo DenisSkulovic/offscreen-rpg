@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Prepare and drive a bounded 5-turn Seyda diagnostic from the live-valid `storyteller.v12` opening, releasing at most one reconciled call at a time. Observe intention resolution, durable newly learned information and later choice coherence before changing prompts or schemas again. The first v12 Sol sample passed but did not exercise a fresh nonempty transition; its “Ask the clerk” plan also exposes an unresolved-intention candidate for connected play.
+**Next action:** Start a fresh bounded Seyda run with `storyteller.v13`, 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling, releasing one reconciled call at a time. Verify that compact continuity-note updates remain complete through five generations while continuing to score intention/consequence fidelity against Quiet Eerie Mystery. The prior run proved the old 2,048 output cap can truncate a valid 2,103-token turn and found both a 400-character note clip and a 48,000-byte context ceiling; context exhaustion now returns a stable admission reason.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 
