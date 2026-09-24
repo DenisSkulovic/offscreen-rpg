@@ -329,6 +329,7 @@ const common = {
     z.literal(13),
     z.literal(14),
     z.literal(15),
+    z.literal(16),
   ]),
   promptVersion: z.union([
     z.literal('storyteller.v10'),
@@ -337,6 +338,7 @@ const common = {
     z.literal('storyteller.v13'),
     z.literal('storyteller.v14'),
     z.literal('storyteller.v15'),
+    z.literal('storyteller.v16'),
   ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -454,6 +456,7 @@ For each narrative choice, set worldSections and campaignDocuments to at most fo
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
 Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. Every fresh action plan must include factTransitions, usually []. For an automatic or check plan, when its intention or an outcome establishes a new value for an existing typed fact such as location, declare that branch and target fact; every declaration requires the exact fact.set effect in that branch, and every fact.set effect requires a declaration. Process and resume plans use []. Observation, conversation, refusal and withdrawal usually use [] unless they actually change typed state.
+Effects in supplied receipts are already reflected in the current state. Never copy a settled receipt effect into fresh plans. A future plan may independently change the same fact or quantity only when that plan's own action causes the change and its frozen outcome explicitly states it.
 Every automatic outcome, finite-check success and failure, process interval/check outcome, contribution attempt outcome, and process completion must freeze the exact concrete result that later consequence prose may narrate. Never defer result selection with placeholders such as an unspecified detail, discrepancy, useful observation, kind of leverage or whether something happened. If a complete grounded result cannot be stated now, omit that plan or give it a complete bounded outcome that honestly resolves the advertised attempt.
 Return plain-text prose, no HTML. Use concise readable passages.`;
 const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
@@ -771,12 +774,7 @@ function constrainPlanPrerequisites(
 ): unknown {
   if (Array.isArray(value)) {
     return value.map((child) =>
-      constrainPlanPrerequisites(
-        child,
-        characterFacts,
-        storyFacts,
-        quantities,
-      ),
+      constrainPlanPrerequisites(child, characterFacts, storyFacts, quantities),
     );
   }
   if (!value || typeof value !== 'object') {
@@ -785,12 +783,7 @@ function constrainPlanPrerequisites(
   const result = Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, child]) => [
       key,
-      constrainPlanPrerequisites(
-        child,
-        characterFacts,
-        storyFacts,
-        quantities,
-      ),
+      constrainPlanPrerequisites(child, characterFacts, storyFacts, quantities),
     ]),
   ) as Record<string, unknown>;
   const properties = result['properties'];
@@ -1073,8 +1066,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 15,
-    promptVersion: 'storyteller.v15',
+    inputVersion: 16,
+    promptVersion: 'storyteller.v16',
     resources,
     request: requestFor(input, context),
   });
@@ -1097,6 +1090,15 @@ export function taskEvidence(task: StorytellerTask): Record<string, string> {
       passage.id,
     ]),
   );
+}
+
+function containsDeepValue(value: unknown, target: unknown): boolean {
+  if (isDeepStrictEqual(value, target)) return true;
+  if (Array.isArray(value)) {
+    return value.some((entry) => containsDeepValue(entry, target));
+  }
+  if (!value || typeof value !== 'object') return false;
+  return Object.values(value).some((entry) => containsDeepValue(entry, target));
 }
 
 /** Structural/policy checks, not a claim to detect every narrative contradiction. */
@@ -1256,6 +1258,18 @@ export function validateStorytellerResult(
         )
       ) {
         throw new Error('Action plan is unavailable in captured state');
+      }
+    }
+    for (const effect of resolution.receipts.flatMap(
+      (receipt) => receipt.effects,
+    )) {
+      if (
+        next.plans.length > 0 &&
+        next.plans.every((plan) => containsDeepValue(plan.resolution, effect))
+      ) {
+        throw new Error(
+          'Fresh action plans cannot all replay an already settled receipt effect',
+        );
       }
     }
   }

@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Once a fresh daily funding window leaves comfortable headroom, begin the configured `storyteller.v15` 10–15-turn Seyda acceptance campaign with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. Release and reconcile one call at a time; do not retune during the run. The targeted v15 proof passed concrete finite/process outcomes, receipt-faithful narration and correct `current` provenance for a newly established clue note. The acceptance run must now demonstrate durable identity or relationship change and later recall under the selected story/profile.
+**Next action:** Run one bounded `storyteller.v16` warehouse-path confirmation with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. The first v15 sustained campaign stopped at turn four because every post-payment plan replayed the settled `+6 septims` effect. v16 now instructs against receipt-effect copying and rejects a settled effect repeated across every fresh plan. Reconcile one call at a time; if the targeted path passes, continue the 10–15-turn acceptance proof requiring durable identity or relationship change and later recall.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 

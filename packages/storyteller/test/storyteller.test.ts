@@ -1111,8 +1111,8 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 15);
-    assert.equal(task.promptVersion, 'storyteller.v15');
+    assert.equal(task.inputVersion, 16);
+    assert.equal(task.promptVersion, 'storyteller.v16');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -1163,6 +1163,10 @@ test('captured schemas expose only the result for the requested task', () => {
   );
   assert.match(
     openingInstructions,
+    /Never copy a settled receipt effect into fresh plans/,
+  );
+  assert.match(
+    openingInstructions,
     /Never defer result selection with placeholders/,
   );
   assert.match(openingInstructions, /process interval\/check outcome/);
@@ -1208,7 +1212,9 @@ test('captured schemas expose only the result for the requested task', () => {
       planProperties.factTransitions.items.anyOf.map(
         (branch: {
           properties: {
-            fact: { properties: Record<string, { const?: unknown; type?: string }> };
+            fact: {
+              properties: Record<string, { const?: unknown; type?: string }>;
+            };
           };
         }) => ({
           id: branch.properties.fact.properties['id']?.const,
@@ -1460,6 +1466,79 @@ test('consequence planning proposes fresh plans without gaining mechanical autho
     ...duplicate.scene.next.plans[0]!,
   });
   assert.throws(() => validateStorytellerResult(task, duplicate));
+});
+
+test('consequence planning rejects a settled effect copied into every fresh plan', () => {
+  const base = consequence({
+    quantities: [{ id: 'septims', label: 'Septims', value: 6 }],
+  });
+  const resolution = base.context.resolution;
+  assert.ok(resolution);
+  const paid = prepareStorytellerTask({
+    task: 'consequence',
+    source: base.source,
+    profile: base.profile,
+    execution: base.execution,
+    context: {
+      ...base.context,
+      resolution: {
+        ...resolution,
+        receipts: [
+          {
+            id: randomUUID(),
+            outcome: 'automatic',
+            text: 'The completed work paid six septims.',
+            roll: null,
+            effects: [
+              {
+                kind: 'quantity.change.v1',
+                quantityId: 'septims',
+                delta: 6,
+              },
+            ],
+            declarations: [],
+          },
+        ],
+      },
+    },
+  });
+  const repeated = structuredClone(scriptedStorytellerResult(paid));
+  if (repeated.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  const copiedEffect = {
+    kind: 'quantity.change.v1' as const,
+    quantityId: 'septims',
+    delta: 6,
+  };
+  const independent = structuredClone(scriptedStorytellerResult(paid));
+  if (
+    independent.scene.version !== 3 ||
+    independent.scene.next.plans[0]?.resolution.kind !== 'automatic'
+  ) {
+    throw new Error('Expected an automatic consequence plan');
+  }
+  independent.scene.next.plans[0].resolution.outcome.text +=
+    ' The action independently yields six septims.';
+  independent.scene.next.plans[0].resolution.outcome.effects.push({
+    ...copiedEffect,
+  });
+  assert.doesNotThrow(() => validateStorytellerResult(paid, independent));
+
+  for (const plan of repeated.scene.next.plans) {
+    if (plan.resolution.kind === 'automatic') {
+      plan.resolution.outcome.effects.push({ ...copiedEffect });
+    } else if (plan.resolution.kind === 'check') {
+      plan.resolution.success.effects.push({ ...copiedEffect });
+      plan.resolution.failure.effects.push({ ...copiedEffect });
+    } else {
+      throw new Error('Expected the scripted finite plans');
+    }
+  }
+  assert.throws(
+    () => validateStorytellerResult(paid, repeated),
+    /cannot all replay an already settled receipt effect/,
+  );
 });
 
 test('ordinary repair requests retain rules and schema without retransmitting context', () => {
