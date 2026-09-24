@@ -3,7 +3,10 @@
  * Must not define runtime admission policy; see
  * @offscreen/application/campaign/fixtures/mechanical-content.ts.
  */
-import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
+import {
+  immediateActionPlanSchema,
+  type ImmediateActionPlan,
+} from '@offscreen/game/immediate-actions';
 import type { StorytellerTask } from '../tasks';
 import { z } from 'zod';
 import { authoredActivityAccess, type MechanicalCharacter } from './mechanical/shared';
@@ -12,6 +15,36 @@ import { pineappleOpeningPlans, pineappleConsequence } from './mechanical/pineap
 import { microbeOpeningPlans, microbeConsequence } from './mechanical/microbe';
 import { beaconOpeningPlans, beaconConsequence } from './mechanical/beacon';
 import { frostRoadOpeningPlans, frostRoadConsequence } from './mechanical/frost-road';
+
+function withDeclaredFactTransitions(
+  plan: ImmediateActionPlan,
+): ImmediateActionPlan {
+  const transitions =
+    plan.resolution.kind === 'automatic'
+      ? plan.resolution.outcome.effects.flatMap((effect) =>
+          effect.kind === 'fact.set.v1'
+            ? [{ branch: 'automatic' as const, fact: effect.fact }]
+            : [],
+        )
+      : plan.resolution.kind === 'check'
+        ? [
+            ...plan.resolution.success.effects.flatMap((effect) =>
+              effect.kind === 'fact.set.v1'
+                ? [{ branch: 'success' as const, fact: effect.fact }]
+                : [],
+            ),
+            ...plan.resolution.failure.effects.flatMap((effect) =>
+              effect.kind === 'fact.set.v1'
+                ? [{ branch: 'failure' as const, fact: effect.fact }]
+                : [],
+            ),
+          ]
+        : [];
+  return immediateActionPlanSchema.parse({
+    ...plan,
+    factTransitions: transitions,
+  });
+}
 
 /** Plans the offline fixture would admit for this character. Live openings capture the same objects. */
 export function authorizedMechanicalOpeningPlans(character: MechanicalCharacter) {
@@ -22,7 +55,11 @@ export function authorizedMechanicalOpeningPlans(character: MechanicalCharacter)
     microbeOpeningPlans(character) ??
     frostRoadOpeningPlans(character) ??
     [];
-  return z.array(immediateActionPlanSchema).max(6).parse(plans);
+  return z
+    .array(immediateActionPlanSchema)
+    .max(6)
+    .parse(plans)
+    .map(withDeclaredFactTransitions);
 }
 
 export function scriptedMechanicalOpening(task: StorytellerTask) {
@@ -58,13 +95,18 @@ export function scriptedMechanicalConsequence(task: StorytellerTask) {
     throw new Error('Missing committed consequence');
   }
   const evidence = `p${current.sequence}`;
-  const plans =
+  const proposedPlans =
     seydaNeenConsequence(resolution, evidence) ??
     pineappleConsequence(resolution, evidence) ??
     beaconConsequence(resolution, evidence, task.context.activitySituation) ??
     microbeConsequence(resolution, evidence) ??
     frostRoadConsequence(resolution, evidence, task.context.worldConditions) ??
     [];
+  const plans = z
+    .array(immediateActionPlanSchema)
+    .max(6)
+    .parse(proposedPlans)
+    .map(withDeclaredFactTransitions);
   const prior = resolution.receipts.at(-1);
   return {
     version: 1,

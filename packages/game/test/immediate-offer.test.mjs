@@ -502,6 +502,47 @@ test('proposal validation returns bounded diagnostics without applying mechanics
   assert.deepEqual(character.facts, [{ id: 'exposed', value: true }]);
 });
 
+test('generated finite plans pair declared fact transitions with exact effects', () => {
+  const proposal = structuredClone(content.plans[0]);
+  proposal.factTransitions = [
+    { branch: 'automatic', fact: { id: 'exposed', value: false } },
+  ];
+  proposal.resolution.outcome.effects = [
+    { kind: 'fact.set.v1', fact: { id: 'exposed', value: false } },
+  ];
+  assert.equal(
+    validateImmediateActionProposal({
+      proposal,
+      character,
+      evidenceHandles: new Set(),
+      requireFactTransitionDeclarations: true,
+    }).kind,
+    'accepted',
+  );
+
+  const missingDeclaration = structuredClone(proposal);
+  missingDeclaration.factTransitions = [];
+  const missingResult = validateImmediateActionProposal({
+    proposal: missingDeclaration,
+    character,
+    evidenceHandles: new Set(),
+    requireFactTransitionDeclarations: true,
+  });
+  assert.equal(missingResult.kind, 'rejected');
+  assert.match(missingResult.issues[0]?.message ?? '', /matching fact transition/);
+
+  const missingEffect = structuredClone(proposal);
+  missingEffect.resolution.outcome.effects = [];
+  const effectResult = validateImmediateActionProposal({
+    proposal: missingEffect,
+    character,
+    evidenceHandles: new Set(),
+    requireFactTransitionDeclarations: true,
+  });
+  assert.equal(effectResult.kind, 'rejected');
+  assert.match(effectResult.issues[0]?.message ?? '', /exact fact.set effect/);
+});
+
 test('proposal validation rejects ungrounded situational modifiers', () => {
   const proposal = {
     ...structuredClone(content.plans[0]),

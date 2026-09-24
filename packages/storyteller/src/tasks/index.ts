@@ -322,10 +322,11 @@ const resultSchemas = {
   report: storytellerReportResultSchema,
 };
 const common = {
-  inputVersion: z.union([z.literal(10), z.literal(11)]),
+  inputVersion: z.union([z.literal(10), z.literal(11), z.literal(12)]),
   promptVersion: z.union([
     z.literal('storyteller.v10'),
     z.literal('storyteller.v11'),
+    z.literal('storyteller.v12'),
   ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -442,7 +443,7 @@ Follow the task-specific opportunity contract. Labels must honestly communicate 
 For each narrative choice, set worldSections and campaignDocuments to at most four exact handles each from the supplied world-section and campaign-document catalogues that the next turn would need if that choice is selected. createdDocuments may name up to four zero-based indexes from this result's documentChanges when the choice needs a descriptive document created or revised by the same result. Usually use empty lists. Never invent handles or indexes, select rule-library sections or include merely related material.
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
-Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. If an outcome narrates changing an existing typed fact such as location, encode the matching fact effect in every outcome branch that makes that change. Observation, conversation, refusal and withdrawal may legitimately have no typed effect.
+Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. Every fresh action plan must include factTransitions, usually []. For an automatic or check plan, when its intention or an outcome establishes a new value for an existing typed fact such as location, declare that branch and target fact; every declaration requires the exact fact.set effect in that branch, and every fact.set effect requires a declaration. Process and resume plans use []. Observation, conversation, refusal and withdrawal usually use [] unless they actually change typed state.
 Return plain-text prose, no HTML. Use concise readable passages.`;
 const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
@@ -820,6 +821,77 @@ function constrainPlanPrerequisites(
   return result;
 }
 
+function typedFactTransition(fact: AvailableFact) {
+  return {
+    type: 'object',
+    properties: {
+      branch: {
+        type: 'string',
+        enum: ['automatic', 'success', 'failure'],
+      },
+      fact: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', const: fact.id },
+          value: { type: typeof fact.value },
+        },
+        required: ['id', 'value'],
+        additionalProperties: false,
+      },
+    },
+    required: ['branch', 'fact'],
+    additionalProperties: false,
+  };
+}
+
+/** Fresh generated plans explicitly pair finite-branch fact writes with intent. */
+function constrainPlanFactTransitions(
+  value: unknown,
+  characterFacts: readonly AvailableFact[],
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((child) =>
+      constrainPlanFactTransitions(child, characterFacts),
+    );
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  const result = Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+      key,
+      constrainPlanFactTransitions(child, characterFacts),
+    ]),
+  ) as Record<string, unknown>;
+  const properties = result['properties'];
+  if (
+    !properties ||
+    typeof properties !== 'object' ||
+    Array.isArray(properties)
+  ) {
+    return result;
+  }
+  const fields = properties as Record<string, unknown>;
+  if (
+    !('key' in fields) ||
+    !('resolution' in fields) ||
+    !('factTransitions' in fields)
+  ) {
+    return result;
+  }
+  fields['factTransitions'] = availableRequirementArray(
+    fields['factTransitions'],
+    characterFacts.map(typedFactTransition),
+  );
+  const required = Array.isArray(result['required'])
+    ? (result['required'] as unknown[])
+    : [];
+  if (!required.includes('factTransitions')) {
+    result['required'] = [...required, 'factTransitions'];
+  }
+  return result;
+}
+
 function requestFor(
   input: {
     task:
@@ -874,6 +946,10 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
       context.mechanicalOpening.storyFacts,
       context.mechanicalOpening.character.quantities,
     );
+    rawOutputSchema = constrainPlanFactTransitions(
+      rawOutputSchema,
+      context.mechanicalOpening.character.facts,
+    );
   } else if (
     (input.task === 'consequence' || input.task === 'pending-consequence') &&
     context.resolution
@@ -883,6 +959,10 @@ Return exactly this complete nesting: {"version":1,"scene":{"version":1,"content
       context.resolution.character.facts,
       context.resolution.storyFacts,
       context.resolution.character.quantities,
+    );
+    rawOutputSchema = constrainPlanFactTransitions(
+      rawOutputSchema,
+      context.resolution.character.facts,
     );
   }
   if (input.task !== 'report') {
@@ -982,8 +1062,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 11,
-    promptVersion: 'storyteller.v11',
+    inputVersion: 12,
+    promptVersion: 'storyteller.v12',
     resources,
     request: requestFor(input, context),
   });
@@ -1095,11 +1175,16 @@ export function validateStorytellerResult(
       throw new Error('Invalid mechanical opening plans');
     }
     for (const plan of next.plans) {
+      const suppliedPlan =
+        task.context.mechanicalOpening.authorizedPlans?.some((candidate) =>
+          isDeepStrictEqual(candidate, plan),
+        ) ?? false;
       const validation = validateImmediateActionProposal({
         proposal: plan,
         character: task.context.mechanicalOpening.character,
         storyFacts: task.context.mechanicalOpening.storyFacts,
         evidenceHandles: new Set(),
+        requireFactTransitionDeclarations: !suppliedPlan,
       });
       if (validation.kind === 'rejected') {
         throw new Error(`Invalid opening plan: ${validation.issues[0]?.code}`);
@@ -1144,6 +1229,7 @@ export function validateStorytellerResult(
         character: resolution.character,
         storyFacts: resolution.storyFacts,
         evidenceHandles,
+        requireFactTransitionDeclarations: true,
       });
       if (validation.kind === 'rejected') {
         const first = validation.issues[0];

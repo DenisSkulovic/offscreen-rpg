@@ -957,6 +957,7 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
         requires: [{ id: 'location', value: 'seyda-neen' }],
         requiresStory: [],
         requiresQuantities: [],
+        factTransitions: [],
         resolution: {
           kind: 'automatic',
           fictionalDurationSeconds: 5,
@@ -1110,8 +1111,8 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 11);
-    assert.equal(task.promptVersion, 'storyteller.v11');
+    assert.equal(task.inputVersion, 12);
+    assert.equal(task.promptVersion, 'storyteller.v12');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -1150,11 +1151,11 @@ test('captured schemas expose only the result for the requested task', () => {
   );
   assert.match(
     openingInstructions,
-    /If an outcome narrates changing an existing typed fact such as location/,
+    /Every fresh action plan must include factTransitions/,
   );
   assert.match(
     openingInstructions,
-    /Observation, conversation, refusal and withdrawal may legitimately have no typed effect/,
+    /every fact.set effect requires a declaration/,
   );
   const legacyTask = storytellerTaskSchema.parse({
     ...initial,
@@ -1166,7 +1167,7 @@ test('captured schemas expose only the result for the requested task', () => {
     storytellerTaskSchema.parse({
       ...initial,
       inputVersion: 10,
-      promptVersion: 'storyteller.v11',
+      promptVersion: 'storyteller.v12',
     }),
   );
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));
@@ -1181,6 +1182,27 @@ test('captured schemas expose only the result for the requested task', () => {
     const planProperties =
       constrained.properties.scene.properties.next.properties.plans.items
         .properties;
+    assert.ok(
+      constrained.properties.scene.properties.next.properties.plans.items.required.includes(
+        'factTransitions',
+      ),
+    );
+    assert.deepEqual(
+      planProperties.factTransitions.items.anyOf.map(
+        (branch: {
+          properties: {
+            fact: { properties: Record<string, { const?: unknown; type?: string }> };
+          };
+        }) => ({
+          id: branch.properties.fact.properties['id']?.const,
+          valueType: branch.properties.fact.properties['value']?.type,
+        }),
+      ),
+      task.context.resolution?.character.facts.map((fact) => ({
+        id: fact.id,
+        valueType: typeof fact.value,
+      })),
+    );
     assert.deepEqual(
       planProperties.requires.items.anyOf.map(
         (branch: { properties: Record<string, { const: unknown }> }) => ({

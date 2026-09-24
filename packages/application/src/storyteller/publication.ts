@@ -330,6 +330,7 @@ export async function publishStorytellerResult(
           character: resolutionContext.character,
           storyFacts: resolutionContext.storyFacts,
           evidenceHandles,
+          requireFactTransitionDeclarations: true,
         });
         if (validation.kind === 'rejected') {
           throw new StoryError('invalid');

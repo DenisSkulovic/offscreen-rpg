@@ -45,6 +45,24 @@ const outcomeSchema = z.strictObject({
 });
 type ImmediateOutcome = z.infer<typeof outcomeSchema>;
 
+export const immediateFactTransitionsSchema = z
+  .array(
+    z.strictObject({
+      branch: z.enum(['automatic', 'success', 'failure']),
+      fact: factSchema,
+    }),
+  )
+  .max(16)
+  .refine(
+    (transitions) =>
+      new Set(
+        transitions.map(
+          (transition) => `${transition.branch}\u0000${transition.fact.id}`,
+        ),
+      ).size === transitions.length,
+    'Duplicate fact transition for one outcome branch',
+  );
+
 export const immediateActionPlanSchema = z.strictObject({
   version: z.literal(1),
   key: actionKeySchema,
@@ -63,6 +81,10 @@ export const immediateActionPlanSchema = z.strictObject({
     )
     .max(16)
     .default([]),
+  // Optional in the stored/domain reader for captured-plan compatibility.
+  // Current generated finite plans are required to supply it by their task
+  // schema and semantic admission policy.
+  factTransitions: immediateFactTransitionsSchema.optional(),
   resolution: z.discriminatedUnion('kind', [
     z.strictObject({
       kind: z.literal('automatic'),
@@ -247,6 +269,21 @@ function resolutionOutcomes(
   return [];
 }
 
+function finiteBranchOutcomes(
+  plan: ImmediateActionPlan,
+): Array<readonly ['automatic' | 'success' | 'failure', ImmediateOutcome]> {
+  if (plan.resolution.kind === 'automatic') {
+    return [['automatic', plan.resolution.outcome]];
+  }
+  if (plan.resolution.kind === 'check') {
+    return [
+      ['success', plan.resolution.success],
+      ['failure', plan.resolution.failure],
+    ];
+  }
+  return [];
+}
+
 function possibleDeclarations(plan: ImmediateActionPlan) {
   return resolutionOutcomes(plan).flatMap(([, outcome]) =>
     outcome.declarations.map((declaration) => declaration),
@@ -312,6 +349,7 @@ export function validateImmediateActionProposal(input: {
   character: Character;
   evidenceHandles: ReadonlySet<string>;
   storyFacts?: readonly StoryFact[];
+  requireFactTransitionDeclarations?: boolean;
 }): ImmediateActionValidation {
   const parsed = immediateActionPlanSchema.safeParse(input.proposal);
   if (!parsed.success) {
@@ -354,6 +392,76 @@ export function validateImmediateActionProposal(input: {
   const knownStoryFacts = new Map(
     storyFacts.map((fact) => [fact.id, typeof fact.value]),
   );
+  if (input.requireFactTransitionDeclarations) {
+    const transitions = plan.factTransitions;
+    if (!transitions) {
+      issue(
+        issues,
+        'invalid-shape',
+        'factTransitions',
+        'Generated plans must declare their branch-specific fact transitions',
+      );
+    } else {
+      const outcomes = new Map(finiteBranchOutcomes(plan));
+      for (const [index, transition] of transitions.entries()) {
+        const path = `factTransitions.${index}`;
+        const outcome = outcomes.get(transition.branch);
+        if (!outcome) {
+          issue(
+            issues,
+            'invalid-shape',
+            path,
+            'Fact transition names a branch absent from this resolution',
+          );
+          continue;
+        }
+        if (
+          knownFacts.get(transition.fact.id) !== typeof transition.fact.value
+        ) {
+          issue(
+            issues,
+            'unknown-fact',
+            path,
+            'Fact transition is not declared with this value type',
+          );
+        }
+        const matched = outcome.effects.some(
+          (effect) =>
+            effect.kind === 'fact.set.v1' &&
+            effect.fact.id === transition.fact.id &&
+            effect.fact.value === transition.fact.value,
+        );
+        if (!matched) {
+          issue(
+            issues,
+            'invalid-shape',
+            path,
+            'Fact transition requires an exact fact.set effect in its branch',
+          );
+        }
+      }
+      for (const [branch, outcome] of outcomes) {
+        for (const [effectIndex, effect] of outcome.effects.entries()) {
+          if (
+            effect.kind === 'fact.set.v1' &&
+            !transitions.some(
+              (transition) =>
+                transition.branch === branch &&
+                transition.fact.id === effect.fact.id &&
+                transition.fact.value === effect.fact.value,
+            )
+          ) {
+            issue(
+              issues,
+              'invalid-shape',
+              `resolution.${branch === 'automatic' ? 'outcome' : branch}.effects.${effectIndex}`,
+              'Generated fact.set effects require a matching fact transition declaration',
+            );
+          }
+        }
+      }
+    }
+  }
   for (const [index, required] of plan.requires.entries()) {
     if (knownFacts.get(required.id) !== typeof required.value) {
       issue(

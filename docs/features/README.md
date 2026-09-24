@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Design typed-state outcome coherence for generated plans: when an outcome changes an existing typed fact in its own declared mechanics, every matching branch must carry the corresponding admitted effect. Keep this structural and state-indexed; do not parse prose, require travel, or spend merely to resample it. The fixed evaluation harness now carries the same pinned start-package world guidance as Story mode.
+**Next action:** Prepare and drive a bounded 5-turn Seyda diagnostic from the live-valid `storyteller.v12` opening, releasing at most one reconciled call at a time. Observe intention resolution, durable newly learned information and later choice coherence before changing prompts or schemas again. The first v12 Sol sample passed but did not exercise a fresh nonempty transition; its “Ask the clerk” plan also exposes an unresolved-intention candidate for connected play.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 
