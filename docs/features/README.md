@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Start a fresh bounded Seyda run with `storyteller.v13`, 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling, releasing one reconciled call at a time. Verify that compact continuity-note updates remain complete through five generations while continuing to score intention/consequence fidelity against Quiet Eerie Mystery. The prior run proved the old 2,048 output cap can truncate a valid 2,103-token turn and found both a 400-character note clip and a 48,000-byte context ceiling; context exhaustion now returns a stable admission reason.
+**Next action:** Start one fresh bounded `storyteller.v14` Seyda opening with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. Inspect its private branches before selecting one; continue for at most two consequences only when outcomes freeze their exact concrete results. The v13 run proved compact note rewriting and envelope headroom, but later plans still deferred engine-owned facts behind placeholders, so v14 targets that authority boundary without changing profile taste. The affected package builds and all 40 focused tests pass locally.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 

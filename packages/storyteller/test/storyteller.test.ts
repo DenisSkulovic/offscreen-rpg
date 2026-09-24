@@ -1111,8 +1111,8 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 13);
-    assert.equal(task.promptVersion, 'storyteller.v13');
+    assert.equal(task.inputVersion, 14);
+    assert.equal(task.promptVersion, 'storyteller.v14');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -1157,6 +1157,14 @@ test('captured schemas expose only the result for the requested task', () => {
     openingInstructions,
     /every fact.set effect requires a declaration/,
   );
+  assert.match(
+    openingInstructions,
+    /must freeze the exact concrete result that later consequence prose may narrate/,
+  );
+  assert.match(
+    openingInstructions,
+    /Never defer result selection with placeholders/,
+  );
   const consequenceInstructions = resolved.request.messages[0]?.content ?? '';
   assert.match(consequenceInstructions, /compact memory, not transcripts/);
   assert.match(consequenceInstructions, /at most 360 characters/);
@@ -1171,7 +1179,7 @@ test('captured schemas expose only the result for the requested task', () => {
     storytellerTaskSchema.parse({
       ...initial,
       inputVersion: 10,
-      promptVersion: 'storyteller.v13',
+      promptVersion: 'storyteller.v14',
     }),
   );
   const schema = JSON.parse(JSON.stringify(resolved.request.outputSchema));

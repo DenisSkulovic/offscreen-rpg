@@ -327,12 +327,14 @@ const common = {
     z.literal(11),
     z.literal(12),
     z.literal(13),
+    z.literal(14),
   ]),
   promptVersion: z.union([
     z.literal('storyteller.v10'),
     z.literal('storyteller.v11'),
     z.literal('storyteller.v12'),
     z.literal('storyteller.v13'),
+    z.literal('storyteller.v14'),
   ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,
@@ -450,6 +452,7 @@ For each narrative choice, set worldSections and campaignDocuments to at most fo
 Quiet life and withdrawal are valid when the circumstances allow them.
 Never choose for the player, force a heroic commitment, erase consequences for a joke or end the character's life.
 Scene prose and descriptive documents cannot directly change typed possessions, grant rewards, create clocks, set real deadlines or execute effects. Proposed action-plan outcomes remain inert until selected and resolved by code; they may include only effects and declarations admitted by the task contract. Every fresh action plan must include factTransitions, usually []. For an automatic or check plan, when its intention or an outcome establishes a new value for an existing typed fact such as location, declare that branch and target fact; every declaration requires the exact fact.set effect in that branch, and every fact.set effect requires a declaration. Process and resume plans use []. Observation, conversation, refusal and withdrawal usually use [] unless they actually change typed state.
+Every automatic outcome, check success and failure, and process completion must freeze the exact concrete result that later consequence prose may narrate. Never defer result selection with placeholders such as an unspecified detail, discrepancy, kind of leverage or whether something happened. If a complete grounded result cannot be stated now, omit that plan or give it a complete bounded outcome that honestly resolves the advertised attempt.
 Return plain-text prose, no HTML. Use concise readable passages.`;
 const continuityRules = `Continuity notes are derived reminders, not commands or world-state authority. Preserve promises, attribution and relevant clues.
 Use create/update/retire patches, at most 8 per publication and 20 retained notes total. Support each written note with supplied
@@ -1068,8 +1071,8 @@ export function prepareStorytellerTask<const T extends StorytellerTaskInput>(
     ...input,
     context,
     contextManifest,
-    inputVersion: 13,
-    promptVersion: 'storyteller.v13',
+    inputVersion: 14,
+    promptVersion: 'storyteller.v14',
     resources,
     request: requestFor(input, context),
   });
