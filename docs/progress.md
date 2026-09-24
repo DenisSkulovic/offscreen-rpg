@@ -12,6 +12,8 @@ The POC already has a genuine generated Storyteller path, deterministic mechanic
 
 The priority order is: (1) a 5–10-turn diagnostic path followed by the 10–15-turn acceptance run; (2) durable information/relationship state and return recall; (3) activate the dormant canon-invention dossier before a 30–50-turn private-world evaluation; (4) compare one-shot generation with bounded exploration only when a turn genuinely benefits from research. Typed-state outcome coherence and its first live probe are complete. General calendar expansion, broader world simulation and UI polish remain deferred. The engine stays creatively unopinionated: pace, flavor, initiative and invention freedom come from world/story/Storyteller configuration, and evaluations must score against those captured settings rather than a universal idea of fun.
 
+A context-window review against current provider guidance confirmed the intended request model: rebuild each round from authoritative state and a bounded retained working set, reserve reasoning/output headroom before dispatch, stop optional exploration at a soft threshold, and never rely on crossing the route's hard context boundary. The runtime already owns cumulative operation limits, final-round reservation and deterministic evidence repacking. Remaining refinement is better round-boundary budget telemetry and, where an adapter supports it without a hidden model call, exact rendered-token preflight; neither blocks the next sustained-play proof. Provider-native compaction is only a possible operation-local optimization, never canonical story memory.
+
 ## Implemented boundary
 
 | Area | Exists now | Important limit |

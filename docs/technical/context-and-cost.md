@@ -35,6 +35,21 @@ The context manifest references one immutable base snapshot and a frozen decisio
 
 The [canonical document workspace](canonical-files.md) supplies explicit paths/identities, source links, chronology windows and unresolved threads. Exact, lexical and semantic/hybrid retrieval belong in its POC evaluation, with backend choice separate from content ownership. Compare their contribution on the same return scenes; vectors are candidate discovery, not proof of a fact. No embedding service or paid call is enabled by this design.
 
+### Context-window headroom and graceful termination
+
+This is not a permanent chat transcript. Each provider request is assembled from the immutable task, current authoritative state and the operation's retained working set. A tool-assisted turn may contain several requests, but every request gets a newly bounded packet; cumulative operation allowance is a separate constraint from any one request's context window.
+
+For a route with context capacity `C`, dispatch only when the rendered request input `I`, reserved reasoning allowance `R`, reserved final output `O` and safety margin `M` satisfy `I + R + O + M <= C`. Application policy may impose a smaller effective `C`. Count the fully rendered request, including instructions, message framing, schemas and tool definitions. OpenAI's [input-token counting endpoint](https://developers.openai.com/api/docs/guides/token-counting) is the reference pattern for exact preflight where an adapter supports it. The current OpenRouter chat adapter does not expose that facility, so it keeps exact serialized bytes and conservatively reserves configured token ceilings until a route-specific tokenizer is verified. Do not silently add a paid counting/model call to every turn.
+
+Use two enforcement layers:
+
+- A **soft threshold** ends optional discovery. The harness repacks the retained evidence, marks further context requests unavailable and sends a final-only round using the protected output allowance.
+- The **hard boundary** is never intentionally crossed. If mandatory input plus the protected finish lane cannot fit, hold before dispatch. Provider truncation or rejection is a failure mode, not elastic capacity.
+
+The model may receive a compact round-boundary status such as whether exploration remains available, remaining reads/rounds and the final-output ceiling. This helps it choose whether to investigate or answer, but the runtime owns every limit. Standard inference APIs do not provide a reliable live meter for hidden reasoning while a request is executing; the application knows rendered input before dispatch and authoritative usage after settlement. Therefore stopping decisions occur at deterministic request/tool boundaries, while output and reasoning ceilings constrain the request itself.
+
+Provider-native compaction can be an adapter optimization for an operation-local trajectory when measured and supported. OpenAI's [server-side compaction](https://developers.openai.com/api/docs/guides/compaction) follows this pattern by compacting after a configured rendered-token threshold. It is not canonical game memory and must not replace source-linked state, facts or passages. Offscreen's default remains deterministic selection/repacking from authoritative data; opaque compaction must never gain authority or silently carry state between game turns.
+
 ## Bounded work, not an open-ended agent
 
 Status: the application implements the ordinary one-shot and explicit-repair recipes plus a persisted bounded memory/creative exploration recipe under the same account, run and operation envelope. Per-round exact packet review, reservation, dispatch, settlement, restart recovery, retained-read limits and final-answer reservation are connected. Repair permission is an explicit immutable recipe dimension: zero makes malformed output terminal, while one permits at most one additional attempt inside the existing total-round and operation ceilings. Ordinary gameplay remains tool-free and captures one round or one-plus-repair according to effective usage policy; local Story mode now permits the latter for newly admitted tasks. Commercial entitlement/editor selection, automatic task classification and reliable live tool-use evidence remain incomplete. Optional maintenance remains subject to the contract below and must not add a second budget manager.
