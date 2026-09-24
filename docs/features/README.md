@@ -6,7 +6,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Start one fresh bounded `storyteller.v15` Seyda opening and at most one informative consequence with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. Inspect finite and recurring-process outcomes plus note evidence before continuing. The v14 comparison made finite outcomes and consequence narration concrete, but one recurring process branch remained vague and new facts cited old passages; v15 targets those two narrow authority/provenance gaps without changing profile taste. The affected package builds and all 40 focused tests pass locally.
+**Next action:** Once a fresh daily funding window leaves comfortable headroom, begin the configured `storyteller.v15` 10–15-turn Seyda acceptance campaign with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. Release and reconcile one call at a time; do not retune during the run. The targeted v15 proof passed concrete finite/process outcomes, receipt-faithful narration and correct `current` provenance for a newly established clue note. The acceptance run must now demonstrate durable identity or relationship change and later recall under the selected story/profile.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 
