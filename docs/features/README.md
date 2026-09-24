@@ -6,13 +6,13 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Run one bounded `storyteller.v16` warehouse-path confirmation with 16,000 input tokens, 4,096 output tokens and the unchanged USD 0.11 operation ceiling. The first v15 sustained campaign stopped at turn four because every post-payment plan replayed the settled `+6 septims` effect. v16 now instructs against receipt-effect copying and rejects a settled effect repeated across every fresh plan. Reconcile one call at a time; if the targeted path passes, continue the 10–15-turn acceptance proof requiring durable identity or relationship change and later recall.
+**Next action:** Continue S3 of [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md) without another provider call. Add a bounded canonical-document dependency sidecar to mechanical action plans, resolve task-local handles to stable IDs at publication and load those exact current documents for the selected action's consequence. Then use the maintained Socucius material to prove interaction, unrelated play, departure and return recall. Fresh `storyteller.v16` play already passed the settled-effect checkpoint—one 1,800-second warehouse shift, one six-septim payment and no copied reward in later plans—but six coherent turns still produced no durable record for the repeatedly questioned clerk or the resulting mystery before scene restart.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 
 The connected program is the [generative POC proof](../engineering/connected-poc-proof.md). UI polish is lower priority.
 
-**Composing slices** (not the immediate next action):
+**Composing slices:**
 
 - [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/FEATURE.md) — honest local Story mode, pinned Vvardenfell start library, progressive entity materialization, five-turn return.
 - [Storyteller creative exploration](2026-09-21--14-13--storyteller-creative-exploration/FEATURE.md) — bounded divergent discovery when the model does not already know what to retrieve.

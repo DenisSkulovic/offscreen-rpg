@@ -57,9 +57,12 @@ Implementation owner: Codex for the current owner-requested implementation.
 
 ## Current checkpoint
 
-- Current phase: S4 connected-play diagnosis, dependent on the active
-  [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md)
-  and the fixed-second [time redesign](../../technical/ticks-and-tags.md#target-one-real-second-tick).
+- Current phase: S3 progressive entity continuity, informed by the active
+  [agency/taste calibration](../2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md).
+  Fixed-second timing, maintained warehouse authority and settled-effect replay
+  protection are now live-proved; S4 cannot pass until a selected mechanical
+  action can carry exact continuity context into its consequence and later
+  scene restart.
   Headless Story mode and the `story:play` client cover ordinary creation,
   observation, explicit selection, activity waiting and explicit retry without
   UI input. Each mutating CLI invocation requires `--confirm-live`; no automatic
@@ -68,15 +71,32 @@ Implementation owner: Codex for the current owner-requested implementation.
   private trajectory capture and guarded model/cost selection. Fresh local
   infrastructure, database inspection, provider evidence and Temporal history
   were available in this pass.
-- Unresolved findings: Sol materially improves character continuity, option
-  quality and process selection, but the drama run stretched a simple wage
-  dispute across multiple turns and still did not pay the declared `septims`
-  quantity. Luna's weaker behavior and Sol's better behavior are preserved as
-  separate baselines. Do not compensate with shared prompt hardcoding. The
-  engine still asks models for ticks directly and admitted the warehouse shift
-  as four seconds; implement fictional-duration conversion and deterministic
-  reward ownership before more live tuning. UI polish remains lower priority.
-- Provider spend and accounting certainty: fresh Driven Adventure story
+- Current evidence: fresh v16 story
+  `0da94438-d05b-4c86-821c-0dc61405bb4c` ran six successful Sol generations.
+  Its maintained warehouse process advanced exactly 1,800 fictional seconds,
+  paid six septims once, closed its occurrence and did not replay that effect
+  into later plans. Three subsequent exchanges with the same clerk remained
+  coherent in the active scene, but created no identity, relationship, thread
+  or continuity note. Leaving the warehouse restarted the scene with an empty
+  recall set. The manifest still held only the prepared Sellus/Socucius
+  identities and release-processing thread. This is an S3 materialization and
+  retrieval failure, not a pacing/profile/temperature defect.
+- Exact implementation slice: extend mechanical action plans with a bounded
+  canonical dependency sidecar analogous to narrative-choice document
+  references. Storyteller output may name captured existing document handles
+  and same-result document-change indices; publication resolves them to stable
+  document IDs, never persisting provider-facing handles. Selecting the action
+  loads the exact current versions for consequence generation under existing
+  caps. Empty dependencies remain valid for microbe and non-social play.
+- Provider-free exit evidence: a consequence creates or revises an identity,
+  relationship or thread; a later mechanical action depends on it; selection
+  loads the exact current version. Add negative coverage for unknown handles,
+  stale/unresolved change indices and a social-free action with no dependency.
+  Then drive a maintained Socucius interaction through unrelated play,
+  departure and return. This slice enables honest dependency carriage; it does
+  not infer biographies from nouns or force every mention to become an entity.
+  UI polish remains lower priority.
+- Historical provider checkpoint: fresh Driven Adventure story
   `0cfacb7a-9b96-4287-91ad-19c9b662bccf` spent USD 0.002755 on its opening and
   USD 0.003922 on its first consequence. The ledger is USD 0.032814 settled,
   USD 0 reserved, with no uncertain attempts. OpenRouter independently reported
