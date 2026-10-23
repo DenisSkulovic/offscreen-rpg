@@ -6,7 +6,11 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 ## Coding route
 
-**Next action:** Continue S3 of [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md) without another provider call. Add a bounded canonical-document dependency sidecar to mechanical action plans, resolve task-local handles to stable IDs at publication and load those exact current documents for the selected action's consequence. Then use the maintained Socucius material to prove interaction, unrelated play, departure and return recall. Fresh `storyteller.v16` play already passed the settled-effect checkpoint—one 1,800-second warehouse shift, one six-septim payment and no copied reward in later plans—but six coherent turns still produced no durable record for the repeatedly questioned clerk or the resulting mystery before scene restart.
+Current plan: [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md)
+
+Continue S3's provider-free canonical dependency handoff, then the Socucius leave/return proof. [Progress](../progress.md#orientation) owns the short status and next outcome; the selected plan owns exact edits and acceptance. This explicit `Current plan:` link is also the input to `pnpm repo:brief`; update it when changing the selected gameplay route.
+
+Repository maintenance in progress: [discovery and maintenance](2026-10-23--14-01--repository-discovery/PLAN.md). It preserves the gameplay route above and is removed when its scoped work finishes.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 

@@ -8,7 +8,7 @@ For research-backed options around context selection, retrieval, memory, tools, 
 
 For long histories specifically, [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
 
-For the next coding tranche, the [feature route](../features/README.md) points to a bounded file map per slice. Start with A1 rather than every outstanding feature. The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+For the next coding tranche, follow the current plan selected by the [feature route](../features/README.md#coding-route); phase names belong there, not in this map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner
 
@@ -27,7 +27,7 @@ For the next coding tranche, the [feature route](../features/README.md) points t
 
 ## Package boundaries
 
-`packages/game` owns pure mechanical rules. `packages/contracts` owns transport validation and projections of game values. `packages/storyteller` owns profile data, bounded context, task contracts, result validation and the provider adapter. `packages/application` composes those packages with `packages/db` to admit, persist and publish operations. API and Activity workers call application operations; neither should implement a second game resolver. `packages/workflows` is the deterministic Temporal bundle, separate from Activity implementations. `packages/config` holds shared configuration. Package manifests and exports are the authority for actual dependencies; this map does not duplicate every import.
+`packages/game` owns pure mechanical rules. `packages/contracts` owns transport validation and projections of game values. `packages/storyteller` owns profile data, bounded context, task contracts, result validation and the provider adapter. `packages/documents` owns immutable document objects/manifests; PostgreSQL selects the published root. `packages/application` composes these with `packages/db` to admit, persist and publish operations. API and Activity workers call application operations; neither should implement a second game resolver. `packages/workflows` is the deterministic Temporal bundle, separate from Activity implementations. `packages/cache` supplies the optional Redis projection-cache adapter; it has no authority over commands. `packages/config` holds shared configuration. Package manifests and exports are the authority for actual dependencies; this map does not duplicate every import.
 
 The [architecture specification](../technical/architecture.md) also describes intended infrastructure. Mention there does not imply an implemented integration.
 
@@ -51,7 +51,8 @@ The [architecture specification](../technical/architecture.md) also describes in
 
 For a change, locate its entry point, authoritative operation and output first. Then inspect only the policy, persistence and recovery branches it calls. Read tests as examples of an invariant, not as a substitute for tracing production wiring. Record a discovered cross-file invariant with its owner; leave a short link at a surprising caller. Proposed fixes belong in the active feature plan, not in comments that imply they are implemented.
 
-Navigation maintenance follows [the working agreement](../../.agents/rules/working-agreement.md#navigation-and-durable-understanding). The two package guides below are the first deeper maps; add another only when repeated exploration demonstrates a need.
+Navigation maintenance follows [the documentation rule](../../.agents/rules/documentation.md). These package guides are deeper maps; add another only when repeated exploration demonstrates a need.
 
 - [Application flows](../../packages/application/README.md)
 - [Storyteller responsibilities](../../packages/storyteller/README.md)
+- [Canonical document storage](../../packages/documents/README.md)

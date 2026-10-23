@@ -4,6 +4,22 @@ The POC is not established by schemas, canonical storage, retrieval benchmarks o
 
 This document owns that proof. The broader playthrough atlas supplies design pressure; feature plans own implementation slices; QA journeys own repeatable execution evidence.
 
+## Latest evidence — 2026-09-24
+
+The connected POC has **not passed**. The strongest recorded current-contract run is `storyteller.v16` story `0da94438-d05b-4c86-821c-0dc61405bb4c`. It contains six successful Sol generations and a separate deterministic completion passage. October 23 rediscovery inspected its saved headless trajectory; it did not rerun gameplay or recheck provider accounting.
+
+| Boundary | Observed result | What it establishes |
+| --- | --- | --- |
+| Opening → warehouse work | Authored warehouse commitment selected; completion at fictional second 1,800; six septims paid once | Connected generation, admitted mechanics and elapsed time for this scenario |
+| Three clerk exchanges | Published at seconds 1,875, 1,925 and 1,975 with coherent references to the disputed crate and slate | Short-term scene continuity, not durable memory |
+| Departure | Published at second 2,015; four new choices; saved trajectory ends here | A coherent exit, not a successful later return |
+| Durable memory inspection | September checkpoint reports no clerk identity/relationship/thread/note and an empty recall set on scene restart | Progressive materialization and mechanical dependency carriage remain the next proof gap |
+| Local accounting | Final story projection: USD 0.198915 settled, zero reserved | Historical story-scoped ledger observation; not today's external balance or the whole day's spend |
+
+The local trajectory is `data/story-agent/<storyId>.jsonl`; canonical objects live under the ignored `data/story-local-documents/` root, and selected provider diagnostics under `data/story-local-evidence/`. Full generation, attempt, publication and root identities are in the local database and inspection tooling described in [development](../development.md). These private artifacts are not guaranteed in a fresh clone. Do not reset the local database to re-create evidence before preserving what an investigation needs.
+
+The next dependency implementation is provider-free S3 in the [selected plan](../features/README.md#coding-route). After it, prove a maintained Socucius interaction through unrelated play, departure and return before spending on the sustained acceptance run. Earlier diagnostics below explain how authority and transport boundaries were discovered; their old task versions and measurements must not be presented as current regressions or fresh balances.
+
 ## First proof session
 
 Use the maintained Seyda Neen start: the player arrives as a released prisoner in a pinned world/rules/start package. Scenario content may name Vvardenfell, local people, places and opportunities. Shared runtime code must not branch on Seyda Neen, employment, human biology, Earth time or a chosen plot.

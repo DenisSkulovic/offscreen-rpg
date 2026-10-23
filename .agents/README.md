@@ -14,7 +14,7 @@ Codex/Cursor use the shared skill location. Claude has a thin skill adapter that
 
 Use the checked-in commands instead of reconstructing their Windows/database safety steps:
 
-- `pnpm repo:brief` prints compact Git, product-route and prepared-feature checkpoints for fresh-context orientation. It supplements, and does not replace, the entrypoint's required rule reads.
+- `pnpm repo:brief` prints Git, the current progress orientation and the selected gameplay plan. Add `--checkpoint` to include only that plan's current handoff. It reads the route from the feature index, fails visibly on a missing route/checkpoint, and never contacts services or providers. It supplements the entrypoint's required rule reads.
 - `pnpm infra -- <compose arguments>` finds Docker Desktop's CLI on this workstation even when it is missing from `PATH`. `infra:up` and `infra:down` use the same wrapper.
 - `pnpm db:baseline` replaces the one generated pre-POC migration and restores the prior files if generation fails. Review the resulting schema diff before commit.
 - `pnpm db:reset:test` recreates only `offscreen_auth_test` and applies the baseline.

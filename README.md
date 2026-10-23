@@ -1,29 +1,37 @@
 # Offscreen RPG
 
-**An AI storytelling RPG where your character’s life continues while you’re away.**
+**An AI storytelling RPG where your character's life continues while you're away.**
 
-Create a character in a world of your choosing. Follow their ordinary life, step into an unfolding story, make a decision between meetings, or leave them to their own judgment. Pause whenever you want.
+Choose a world, create a character, make occasional decisions and return to a life with accumulated history. Ordinary work, relationships and dramatic events can all matter. Time and consequences make progress earned: starting a journey does not mean arriving, and starting a shift does not grant its pay. The intended experience includes configurable autonomy, pause and eventually shared stories and notifications.
 
-An LLM storyteller creates scenes, remembers connections and introduces developments. The browser presents the current scene and story; a messaging integration could bring occasional updates and choices to your phone.
+## How it works
 
-**Current POC:** persistent drafts, reviewed authored openings, saved choices and waits, and an authored mechanical slice with d20 checks, consequences and editable storyteller/speed settings. Arbitrary-world generation and the tool-using DM planner remain unimplemented. Standard GitHub sign-in requires your own OAuth credentials; `pnpm chamber` opens the local application with a development session and no model keys. See [local development](docs/development.md) for setup and [progress](docs/progress.md) for the current implementation boundary.
+The Storyteller proposes narration and choices using a selected creative profile and bounded evidence. The application admits those proposals; deterministic rules own dice, elapsed fictional time and effects. An accepted commitment can continue while the player is away. Its settled result becomes evidence for the next Storyteller turn. Durable documents preserve the people, places and facts later turns need.
 
-A scripted browser prototype is available at `/demo` when the web app is running. Explore scenes, choices and chronology without signing in. Its time controls are manual and its state resets on refresh; it is not the persistent game.
+```mermaid
+flowchart LR
+  A[Player chooses] --> B[Application admits commitment]
+  B --> C[Rules and clock settle outcome]
+  C --> D[Storyteller proposes continuation]
+  D --> E[Application publishes story and memory]
+  E --> A
+```
 
-See the [implementation overview](docs/progress.md) for component coverage, missing user flows and the current focus. We are building the broader application with scripted generation before connecting paid services.
+The engine has no preferred tone or pace. A quiet life and an action story are both valid; creative configuration chooses the experience while code preserves authority, continuity and spending limits. Worlds are content, not branches in the engine.
 
-- [Vision](docs/vision.md): the experience and why we're making it.
-- [Gameplay](docs/gameplay.md): how the story could progress with little simulation.
-- [Player experience](docs/player-experience.md): entry, interaction and returning to a story.
-- [Storytelling](docs/storytelling.md): the storyteller's role and creative controls.
-- [Time and autonomy](docs/time-and-autonomy.md): waiting, response windows and absence.
-- [Story creation](docs/story-creation.md): from premise to a playable beginning.
-- [Continuity and consequences](docs/continuity-and-consequences.md): what the story must remember and respect.
-- [Playthroughs](docs/playthroughs.md): a concrete wizard-and-goblin walkthrough, including shared play.
-- [Open questions](docs/questions.md): the few choices to settle before building.
+## What exists
 
-This is a senior fullstack portfolio project. Its depth should come from compelling interaction, coherent persistent stories, reliable background execution and efficient AI.
+This is a local pre-POC with persistent story creation, reviewed openings, generated choices, D&D-style checks, timed commitments, saved consequences, canonical documents, bounded retrieval and provider accounting. **Real OpenRouter runs have happened.** A September 24 run completed a 1,800-fictional-second warehouse shift, paid six septims once and sustained a short coherent conversation. It then exposed a continuity gap: the repeatedly questioned clerk and mystery were not recorded for later recall.
 
-To work on the code, start with [Code navigation](docs/engineering/code-navigation.md): package owners, flow entry points and common terminology. [Architecture](docs/technical/architecture.md) describes the broader design using Next.js, NestJS, PostgreSQL and Temporal, including capabilities still to be built. The [build sequence](docs/technical/delivery-and-validation.md) explains delivery in playable slices.
+The next proof is a configuration-faithful 10–15-turn campaign with durable change and later recall. That proof has **not passed**. General arbitrary-premise mechanics, full combat/travel systems, shared play, notifications and a public hosted experience remain outside the demonstrated boundary. See [current progress](docs/progress.md) for the next action and [connected proof](docs/engineering/connected-poc-proof.md) for dated evidence and limits.
 
-Run `python scripts/check_docs.py` to check documentation links; it also runs in GitHub Actions. No project license has been selected yet.
+## Choose your entry
+
+- **Returning owner or new contributor:** this page → [progress](docs/progress.md) → [documentation map](docs/README.md) for one question.
+- **Coding agent:** [AGENTS.md](AGENTS.md), then `pnpm repo:brief`; follow the current plan and relevant [code route](docs/engineering/code-navigation.md).
+- **Try it locally:** [development](docs/development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
+- **Understand the intended product:** [vision](docs/vision.md), [concepts](docs/concepts.md), then the relevant product topic in the map.
+
+Next.js presents the game; NestJS and Temporal workers call shared application operations; PostgreSQL owns transactional state and published document roots. The [code map](docs/engineering/code-navigation.md) separates this wiring from the broader [architecture design](docs/technical/architecture.md).
+
+This is a senior fullstack portfolio project aiming at a convincing, persistent playable experience. No project license has been selected yet.
