@@ -31,7 +31,11 @@ Use roughly 200 words for orientation and 300 for a checkpoint as review trigger
 
 Read required safety rules, run the brief, then choose the relevant map/plan. State the unresolved question before opening large files. Locate headings or symbols first; read the owning section and immediate callers rather than concatenating entire libraries. Stop widening the search once the input, authoritative operation, output and relevant failure path are understood. Preserve a surprising discovery with its owner before compaction can erase it.
 
+Discover filenames with `rg --files` before guessing package paths. Size independent read batches to their combined output budget. If a read truncates, narrow to the missing section; do not reread the whole batch or treat unseen text as inspected.
+
 Classify evidence explicitly: **designed**, **implemented/source-inspected**, **fixture-exercised**, **live-observed**, or **human-accepted**. Use these ordinary words where needed; no custom tags or blanket file headers. Never upgrade one into another. Date monetary and runtime observations; avoid “today,” “currently green” or a historical balance without its observation date. Missing local artifacts do not invalidate history, but they limit what can be reverified.
+
+For a behavioral diagnosis, distinguish proposal, committed state, selected evidence and the final consumer input. An empty change list is not an empty state; a saved response is not proof of publication; omitted context is not deleted history. State the observation separately from its suspected cause and name a counterexample that would disprove that cause. A new field or subsystem is not a fix until the traced failure actually crosses its boundary.
 
 Replace obsolete claims in place. Git holds history; plans are not investigation diaries. Preserve original private run artifacts and compact useful evidence, without committing credentials or player payloads. When a discovery reveals confusing code ownership, record the actual boundary and a scoped repair; documentation alone does not fix the architecture.
 

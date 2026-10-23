@@ -8,6 +8,7 @@ Start with the [one-page overview](../README.md) and [current progress](progress
 | --- | --- | --- |
 | Product in one page | [Root README](../README.md) | Experience, core loop, demonstrated boundary and where to go next |
 | Current state | [Progress](progress.md) | What exists, what evidence supports it, largest gaps and next outcome |
+| Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
 | Execution route | [Feature index](features/README.md) → selected PLAN | Current work, exact next slice, acceptance and blockers |
 | Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |
 | Technical contract | `technical/`, selected below | Authority, state transitions, invariants and intended failure/retry semantics |

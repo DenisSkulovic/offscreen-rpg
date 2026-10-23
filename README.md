@@ -21,7 +21,7 @@ The engine has no preferred tone or pace. A quiet life and an action story are b
 
 ## What exists
 
-This is a local pre-POC with persistent story creation, reviewed openings, generated choices, D&D-style checks, timed commitments, saved consequences, canonical documents, bounded retrieval and provider accounting. **Real OpenRouter runs have happened.** A September 24 run completed a 1,800-fictional-second warehouse shift, paid six septims once and sustained a short coherent conversation. It then exposed a continuity gap: the repeatedly questioned clerk and mystery were not recorded for later recall.
+This is a local pre-POC with persistent story creation, reviewed openings, generated choices, D&D-style checks, timed commitments, saved consequences, canonical documents, bounded retrieval and provider accounting. **Real OpenRouter runs have happened.** A September 24 run completed a 1,800-fictional-second warehouse shift, paid six septims once and sustained a short coherent conversation. Its responses proposed clue-note updates but no descriptive identity/relationship/thread records. Recall after leaving and returning remains unproved.
 
 The next proof is a configuration-faithful 10–15-turn campaign with durable change and later recall. That proof has **not passed**. General arbitrary-premise mechanics, full combat/travel systems, shared play, notifications and a public hosted experience remain outside the demonstrated boundary. See [current progress](docs/progress.md) for the next action and [connected proof](docs/engineering/connected-poc-proof.md) for dated evidence and limits.
 
@@ -31,6 +31,7 @@ The next proof is a configuration-faithful 10–15-turn campaign with durable ch
 - **Coding agent:** [AGENTS.md](AGENTS.md), then `pnpm repo:brief`; follow the current plan and relevant [code route](docs/engineering/code-navigation.md).
 - **Try it locally:** [development](docs/development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
 - **Understand the intended product:** [vision](docs/vision.md), [concepts](docs/concepts.md), then the relevant product topic in the map.
+- **Understand the engine and its limits:** [engine model](docs/engineering/engine-model.md) connects mechanics, time, memory, authority, failure and next design decisions.
 
 Next.js presents the game; NestJS and Temporal workers call shared application operations; PostgreSQL owns transactional state and published document roots. The [code map](docs/engineering/code-navigation.md) separates this wiring from the broader [architecture design](docs/technical/architecture.md).
 

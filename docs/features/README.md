@@ -8,7 +8,7 @@ Maintain links to active feature folders here. Remove finished entries after use
 
 Current plan: [Story mode Vvardenfell continuity](2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md)
 
-Continue S3's provider-free canonical dependency handoff, then the Socucius leave/return proof. [Progress](../progress.md#orientation) owns the short status and next outcome; the selected plan owns exact edits and acceptance. This explicit `Current plan:` link is also the input to `pnpm repo:brief`; update it when changing the selected gameplay route.
+Continue S3: first distinguish memory writes, retained state, selection and final request coverage; then implement required mechanical-document dependencies and prove the Socucius leave/return flow. [Progress](../progress.md#orientation) owns the short status; the selected plan owns exact edits and acceptance. The [engine model](../engineering/engine-model.md) explains the diagnosis and alternatives. This explicit `Current plan:` link is also the input to `pnpm repo:brief`; update it when changing the selected gameplay route.
 
 Before sustained 30–50-turn evaluation in a private or sparsely documented setting, activate the prepared [canon-invention policy dossier](2026-09-24--01-30--canon-invention-policy/FEATURE.md): world-owned ceilings, a stricter story choice, task capture and provenance-bearing descriptive admission.
 

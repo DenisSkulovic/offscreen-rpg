@@ -2,6 +2,8 @@
 
 This is a map of implemented code, not the target architecture. Read [progress](../progress.md) for current gaps, then choose one route below. Follow imports only when that route's responsibility crosses a boundary. Do not load every linked document.
 
+For a conceptual understanding before source navigation, use the [engine model](engine-model.md): authority, execution, time, memory, mechanical limits and evidence. It distinguishes source-inspected behavior from demonstrated gameplay.
+
 To understand the intended gameplay before following code, use the [execution atlas](../technical/playthroughs/README.md). Its worked traces distinguish current source behavior from proposed rules and connect acceptance steps to owning feature phases.
 
 For research-backed options around context selection, retrieval, memory, tools, agent loops, observability, cost and evaluation, consult the [agentic systems field manual](agentic-systems-field-manual.md). Treat it as evolving engineering inspiration; product and technical specifications still own this repository's decisions.

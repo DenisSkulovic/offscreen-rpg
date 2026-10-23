@@ -55,14 +55,14 @@ Existing code uses `result.scene` for a result envelope containing content and n
 
 ## Worked example: one conversation, several decisions
 
-At world tick 10 a stranger arrives while Mara repairs the beacon. The activity records its earned progress and the event creates an interaction hold.
+At fictional second 600 a stranger arrives while Mara repairs the beacon. The activity records its earned progress and the event creates an interaction hold.
 
 1. Storyteller turn T1 prepares narration of the arrival and offers “Ask who sent you” or a supported withdrawal. Its publication creates passage P1 and decision point D1.
-2. The player asks. In this target example the offered exchange costs two simulation ticks; its execution advances the world to tick 12. T2 presents the receipt, narrates the claim and offers inspection of the badge or disengagement. P2/D2 are still part of the same conversation.
-3. The player inspects the badge for its admitted three ticks. The engine records the supported D20 result once and commits the outcome at tick 15. T3 describes that result and offers P3/D3. It cannot reroll to obtain a more convenient story.
+2. The player asks. In this illustrative offer the exchange costs 60 fictional seconds; its execution advances the world to second 660. T2 presents the receipt, narrates the claim and offers inspection of the badge or disengagement. P2/D2 are still part of the same conversation.
+3. The player inspects the badge for its admitted 90 fictional seconds. The engine records the supported D20 result once and commits the outcome at second 750. T3 describes that result and offers P3/D3. It cannot reroll to obtain a more convenient story.
 4. The player resolves the confrontation. T4 publishes the explicit activity handoff. The player selects authorized work or continues another available interaction.
 
-This is target behavior from the [committed-time contract](technical/committed-time.md); the current immediate-action path still spends zero ticks. The interrupted beacon earns no labor from the conversation, even though the world advances through it. Player deliberation and excess model latency add no ticks. This is one contextual scene with several turns, passages and decisions, without a larger literary structure.
+This illustrates the [committed-time contract](technical/committed-time.md), not a recorded live run. Finite automatic/check actions now have positive admitted durations and settle at their target fictional second; this complete beacon interaction remains a design example. The interrupted beacon earns no labor from the conversation, even though the world advances through it. Player deliberation and excess model latency add no fictional time. Durations belong to these illustrative offers, not universal conversation defaults. This is one contextual scene with several turns, passages and decisions, without a larger literary structure.
 
 In another run, a wait finishes quietly: receipt, updated state, and perhaps the next authorized activity, with no Storyteller turn. A report can arrive later without opening a decision. A microbe sensing a changed environment uses the same distinctions without a conversation, town or human identity.
 
