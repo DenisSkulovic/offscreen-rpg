@@ -2,7 +2,7 @@
 
 Shared rules live in rules/; reusable procedures live in skills/. Root AGENTS.md is a small router, not the rule library. CLAUDE.md, the Cursor rule and Copilot instructions point here rather than holding separate policies.
 
-Always read [Working agreement](rules/working-agreement.md) and [Spending](rules/spending.md). Read [Verification](rules/verification.md) when choosing checks and [Code quality](../docs/engineering/code-quality.md) for implementation/review. Use [feature-workflow](skills/feature-workflow/SKILL.md) for significant work.
+Always read [Working agreement](rules/working-agreement.md) and [Spending](rules/spending.md). The agreement routes conditional detail: [documentation maintenance](rules/documentation.md), [domain/benchmark design](rules/domain-design.md), [Storyteller tuning](rules/storyteller.md), [verification](rules/verification.md), and [code quality](../docs/engineering/code-quality.md). Read only those triggered by the task. Use [feature-workflow](skills/feature-workflow/SKILL.md) for significant work.
 
 For substantial Storyteller context, retrieval, memory, tooling, orchestration, tracing or evaluation work, use the [agentic systems field manual](../docs/engineering/agentic-systems-field-manual.md) as an evolving research reference. It is not a fixed architecture or exhaustive authority.
 

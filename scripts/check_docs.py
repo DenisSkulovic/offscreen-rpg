@@ -12,6 +12,10 @@ def check():
     for folder in ("docs", ".agents", ".claude", ".cursor", ".github"):
         files.extend((ROOT / folder).rglob("*.md"))
         files.extend((ROOT / folder).rglob("*.mdc"))
+    # Package guides are part of the maintained entry path. Keep the glob
+    # shallow so dependencies and generated output are never crawled.
+    for folder in ("packages", "apps", "tools"):
+        files.extend(ROOT.glob(f"{folder}/*/README.md"))
     errors = []
     for path in files:
         for href in re.findall(r"\[[^\]]*\]\(([^)]+)\)", path.read_text(encoding="utf-8")):

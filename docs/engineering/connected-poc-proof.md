@@ -37,6 +37,8 @@ Across the session, require:
 7. choices that remain meaningfully distinct, include a plausible quiet/non-escalating path when fiction permits it, and never trap the player behind a compulsory paid narration loop.
 8. at least one ordinary-life commitment with a substantial fictional duration—such as a warehouse shift—whose real wait is derived from the selected speed, whose progress remains visible for hundreds of one-second scheduler ticks when configured that way, and whose admitted completion produces a durable result such as earned coin.
 
+Remaining timing/profile acceptance is coordinated in S4 of the [current Story continuity plan](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md): exercise timed work and continuation under a captured profile and a legitimate contrasting profile. The fixed-second implementation and one live warehouse result do not establish owner enjoyment, profile robustness or sustained recall. The retired timing plan's remaining acceptance is preserved here, not waived.
+
 The first session may use an authored start package and authored mechanical definitions. Arbitrary premise-to-mechanics generation, general travel graphs, full combat, polished UI, semantic search and a ten-thousand-turn history are not prerequisites. The proof is invalid if the harness patches generated output, writes state directly, selects fixture-only backdoors or adds scenario-name branches to shared policy.
 
 ## Execution ladder

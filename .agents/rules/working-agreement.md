@@ -1,109 +1,58 @@
 # Working agreement
 
+Read this and [spending](spending.md) at the start of work. Task-specific detail is routed below; do not load every linked rule.
+
 ## Product → Technical → Code
 
-Code is an artifact of the product and technical specifications. Before changing behavior, update the affected product description, then its technical contract, then implement. For a structural change with no product effect, confirm the existing product contract and update only the relevant technical description; do not manufacture product changes.
+Code implements the product and technical specifications. Before behavior changes, update the affected product description, then its technical contract, then implement. For structural work with no product effect, confirm the existing product contract and update only the relevant technical owner. Correct a design problem at its owner; never leave known contradictions.
 
-Keep proposed behavior distinguishable from implemented and verified behavior. Update docs/progress.md when that boundary changes. If implementation reveals a design problem, correct the owning specification before proceeding; never leave the code and docs knowingly contradictory.
+Distinguish proposed, implemented and verified behavior; [progress](../../docs/progress.md) owns current coverage. Use [concepts](../../docs/concepts.md) before introducing gameplay nouns. Turns, decisions, scenes, passages, model rounds and memory segments are distinct; there are no chapters. The engine is world-independent and creatively neutral: profiles/campaign content choose tone and pace, while code owns rules, time, evidence, persistence, permissions and cost.
 
-Use [Concepts](../../docs/concepts.md) before introducing or reusing gameplay nouns. Storyteller turns, player decision points, contextual scenes, published passages, model rounds and memory segments are distinct. There are no chapters in the game model; an illustrative word must not silently become an entity, lifecycle or file partition. When the owner requests prepared implementation features, deliver FEATURE.md/PLAN.md with fixed scope, dependencies, acceptance and an exact next slice. Keep ordinary implementation choices inside those phases rather than leaving the whole feature behind another proposal-approval gate.
-
-Before changing shared domain contracts or progression logic, use [Vision](../../docs/vision.md) and the [benchmark playthroughs](../../docs/playthroughs.md) as design constraints. Distinguish a universal invariant, selected ruleset/content, an illustrative fixture and an explicit implementation limit. Trace the proposed boundary through the immediate example and a contrasting existing benchmark, including the small/abstract benchmark when introducing character, world or resource assumptions. Record the short reasoning in the active feature plan. This is source/design reasoning, not a requirement to run tests or implement every example. A fixture must exercise the same application contract as generated play; moving constants to a fixture file is insufficient if shared handlers still interpret scenario names. Do not weaken acceptance or relabel an unfinished integration as future work to declare completion.
-
-Treat the benchmark stories, examples and worked playthroughs as a living design corpus. Preserve them as long-term reference points even when the current POC does not implement their full behavior. Maintain existing traces when contracts change, expand the corpus when a new story or world exposes a materially different assumption, and link discovered gaps to the owning product or technical contract. Do not delete a difficult benchmark merely to simplify implementation, silently rewrite it to match current limitations, or turn every example detail into a universal subsystem. The purpose of the corpus is to keep the engine honest across radically different stories over time.
-
-During the POC, repeatedly drive connected game flows against that corpus; a checklist is a falsifiable expectation, not ceremonial release evidence. Classify each discrepancy before changing anything: implementation defect, missing mechanic, incomplete or incorrect expectation, fixture/harness limitation, or unresolved qualitative judgment. Fix the owning code or specification and update the nearest durable example/checklist when understanding changes. Preserve the original run evidence, and never weaken an expectation merely to make a run pass. Inspect exact provider packets without dispatch before live inference when prompt composition or authority is under investigation, but only after the corresponding application flow produces representative authoritative state.
-
-Documentation describes the current design. Replace or delete obsolete text in place. No superseded paragraphs, amendment tables, chronological logs or review-report dumps. Git holds history. Describe behavior, boundaries and consequential tradeoffs, not each branch of code. Keep open product choices in docs/questions.md until resolved. Brainstorming examples are inspiration, not automatic requirements.
+Keep one authoritative explanation per decision. Replace obsolete text in place; Git holds history. Open product choices belong in [questions](../../docs/questions.md). Brainstorming examples are not automatic requirements.
 
 ## Navigation and durable understanding
 
-Use [the code map](../../docs/engineering/code-navigation.md) to locate the owning flow, then read only the relevant package guide and implementation. Do not reload the entire architecture library for every task.
+Start with `pnpm repo:brief`, then the selected plan and [code map](../../docs/engineering/code-navigation.md). For rediscovery or an unfamiliar domain, use the [documentation map](../../docs/README.md). Read relevant sections, not whole libraries. Preserve non-obvious discoveries beside their owner during the same change; link rather than copy.
 
-Before substantially designing or revising Storyteller context, retrieval, memory, tools, agent loops, orchestration, tracing or evaluations, consult the [agentic systems field manual](../../docs/engineering/agentic-systems-field-manual.md). It is an evolving source of research-backed patterns and inspiration, not repository policy, final architecture or a substitute for current primary sources and local evidence. The industry changes rapidly and the manual is intentionally non-exhaustive.
-
-When investigation reveals a non-obvious cross-file relationship, authority boundary, retry rule or implementation limitation that another maintainer would otherwise have to rediscover, preserve the useful conclusion beside its owner during the same change. A local comment explains a local invariant; a package README explains entry points and flow; a technical specification owns the design decision; progress owns current coverage; an active feature plan owns unfinished work. Link between them instead of copying the explanation. Do not record exploration diaries or obvious syntax.
-
-Before adding documentation, find its existing owner. Keep one authoritative explanation per decision. Update or remove affected navigation links and stale claims when moving code or changing behavior. Package guides should give a short route from input to authority to output, identify surprising coupling and link to the defining contract. Add file headers only where they explain otherwise hidden responsibility or constraints; no mandatory header on every file, exhaustive import lists, custom tag vocabulary or duplicate FAQ catalogue.
-
-Persist only inspected facts as implemented behavior. Mark proposals and unverified assumptions explicitly. Record verification scope once with its limits; remove superseded failures/counts rather than appending contradictory status paragraphs. Documentation cannot substitute for fixing confusing ownership: identify the structural issue and keep its proposed resolution distinguishable from the current path.
+| Before this work | Read this owner |
+| --- | --- |
+| Documentation, navigation, rules or cross-file responsibility changes | [Documentation maintenance](documentation.md) |
+| Shared domain/progression contracts or benchmark/fixture changes | [Domain design and living benchmarks](domain-design.md) |
+| Code implementation or review | [Code quality](../../docs/engineering/code-quality.md) |
+| Checks or verification planning | [Verification](verification.md) |
+| Significant feature or rework | [Feature workflow](../skills/feature-workflow/SKILL.md) |
+| Storyteller quality, profile, prompt, context or route tuning | [Tuning discipline](storyteller.md) and [tuning procedure](../../docs/skills/storyteller-tuning/SKILL.md) |
+| Substantial context/retrieval/memory/tools/orchestration/tracing/evaluation design | Relevant sections of the [agentic systems field manual](../../docs/engineering/agentic-systems-field-manual.md); research reference, not policy or final architecture |
+| Starting or repairing infrastructure | [Local dependencies](../../docs/development.md#local-dependencies); use the verified Docker Desktop path and documented recovery |
 
 ## Lifecycle and scope
 
-This is a very raw POC/MVP, intended for intensive daily evolution and a strong senior fullstack portfolio. Bold redesigns are expected when they improve the approved product. The current project has no production or user-owned game data: discarded prototype schemas, saves and workflow formats must be reset and removed, not preserved through compatibility code, historical DTOs, decoders or migration chains. While that remains true, keep exactly one current baseline database migration: fold schema changes into it and reset disposable local/test databases instead of accumulating additive migrations. Begin an immutable additive migration history only after the owner explicitly declares a lifecycle change or identifies data that must survive. Credentials and external side effects always require explicit accounting.
+This is a raw, rapidly evolving POC and portfolio project. Build balanced connected flows; do not perfect a subsystem while the experience remains disconnected. Scripted fixtures are not a functioning AI storyteller.
 
-On this Windows workstation, read [Local dependencies](../../docs/development.md#local-dependencies) before starting or repairing project infrastructure. Docker Desktop with its WSL 2 backend is the verified path. Its known startup failure comes from stale AF_UNIX socket reparse points in two transient Local AppData directories, not from WSL or container data; repair both directories together while Docker is stopped instead of reinstalling software or bypassing the failure. Direct Docker Engine inside `Ubuntu-24.04` is recovery-only and must not publish the project ports concurrently with Docker Desktop.
+There is no production or user-owned game data. Remove discarded prototype formats instead of adding compatibility code. Keep exactly one current baseline migration; fold schema changes into it and reset disposable databases. Begin immutable additive migrations only after the owner declares a lifecycle change or identifies data that must survive. Preserve private evidence needed for an active investigation before resetting. Credentials and external side effects always require explicit accounting.
 
-Build in balanced passes across meaningful user flows. Do not perfect a small subsystem while major parts of the experience remain disconnected. Keep fixture behavior honest: scripted tests are not a functioning AI storyteller. The core is world-independent: D&D checks, storyteller judgment and time. Currency, employment, wages, species and example activities belong to scenario content, never mandatory character or outcome fields. Do not turn a brainstorming example into a universal mechanic. Favor generic story progression over simulations for every activity or population.
+Checks are optional under [verification](verification.md), which overrides stricter plan/guidance requirements until the owner changes the lifecycle. Default to no routine check commands. Backend work uses application operations, authenticated HTTP and direct artifact/state inspection; browser driving is for requested UI work or deliberate human-experience QA. Improve an inconvenient backend harness instead of defaulting to UI automation.
 
-Treat observability as product behavior, not final polish. Durable player-facing activity history records meaningful game facts; operational logs diagnose the machinery around them. New or changed flows should emit structured, actionable info, warning and error events at their owning boundaries, with stable event names and useful correlation identifiers. Never log credentials, provider payloads or private player content merely for convenience, and never mistake a transient process log for durable game history. Keep the relevant manual QA coverage current when behavior or its diagnostics change.
+Observability is product behavior: durable game history records meaningful facts; structured operational events diagnose machinery. Apply the [code-quality observability boundary](../../docs/engineering/code-quality.md#observability-and-game-history) when changing flows.
 
-Use the feature workflow for significant work. The user agrees the product vision before bulk implementation. Authorization then persists across the agreed phases; do not repeatedly request approval for routine details. A material change to that vision, scope or cost needs discussion. Small authorized fixes proceed directly.
+## Roles and handoffs
 
-Name every new feature folder `YYYY-MM-DD--HH-mm--feature-name`, using the repository's local timezone at creation and a lowercase kebab-case descriptive suffix. The timestamp is immutable after creation. Feature folders are temporary execution workspaces, not a backlog or archive. An active folder must own a genuinely unfinished authorized outcome, an exact next action and any concrete blocker. When its scoped phases are done, fold durable decisions, limits and remaining product gaps into their permanent product/technical/QA owners and delete the folder in the same coherent slice; Git retains its history. Do not leave a completed folder for “later cleanup,” keep a folder alive only for vague future enhancements, or create replacement folders to avoid resolving an existing checkpoint. If work is blocked, either solve the blocker, make the dependency the explicit active route, or move the deferred product need to its permanent roadmap/questions owner and remove the dormant feature folder. Review the feature index during checkpoints and keep only the smallest set of active folders that still coordinates real implementation.
+The owner prefers Codex for investigation/design/review and Cursor for bulk coding. Do not start large implementation passes without being asked, launch another task/agent, or switch subscriptions/models automatically. One implementation owner per slice; preserve unrelated working changes.
 
-Checks are optional throughout the current POC lifecycle. Default to fast, coherent vertical implementation slices without routine verification commands; do not chase green results or polish minor issues ahead of a connected playable experience. Follow [Verification](verification.md), which overrides stricter check requirements in plans or engineering guidance. Keep this policy until the owner explicitly changes it.
+Significant work uses the feature workflow. Agree the product vision before bulk implementation; existing authorization persists across agreed phases. Stop only for a material scope, vision or cost change. When asked to prepare implementation, deliver bounded phases with dependencies, acceptance and an exact next slice, not another blanket approval gate.
 
-For backend development during the pre-POC/POC stage, prefer application operations, authenticated HTTP endpoints and direct artifact/state inspection. Do not launch or visually drive the web UI merely to exercise backend behavior; browser and screenshot work is reserved for explicitly requested UI work or deliberate human-experience QA. If an important backend journey is inconvenient without the UI, improve its endpoint/test harness instead of making browser automation the default.
+Name feature folders `YYYY-MM-DD--HH-mm--feature-name` in local repository time; the creation timestamp is immutable. They are temporary execution workspaces, not a backlog/archive. Keep only genuinely unfinished authorized outcomes with exact next actions and concrete blockers. When complete, fold durable decisions/evidence/gaps into permanent owners and delete the folder in the same slice. Solve a blocker, select its dependency, or move deferred needs into permanent roadmap/questions owners; do not retain vague placeholder chains. Honor explicitly owner-retained dossiers.
 
-## Roles, handoffs and cost
+At handoff, rewrite PLAN's phase, reviewed revision, changes, verification limits, blocker and exact next step. Keep it short enough to resume without the conversation. Use existing tools/local substitutes; paid services and deployment require existing explicit authority under [spending](spending.md). Keep private payloads, credentials and player data out of Git.
 
-### Agent and prompt tuning discipline
+## Agent and prompt tuning discipline
 
-Treat a disappointing model result as evidence to classify, not permission to
-edit the nearest shared prompt. Before tuning, identify which layer owns the
-desired behavior:
-
-- shared task instructions own authority, evidence, output shape and universal
-  invariants only;
-- Storyteller profiles own tone, dramatic rhythm, initiative, surprise,
-  consequence style and normal choice character;
-- campaign direction owns whether this particular story cultivates a grand
-  narrative, recurring pressure or deliberately inert/ordinary life;
-- rules and canonical content own fictional facts, available mechanics and
-  time semantics;
-- route/model policy owns capability, latency and cost tradeoffs;
-- presentation owns what the player sees and how generated material is framed.
-
-Do not encode one reviewer preference—more action, fewer choices, greater
-brevity, stronger comedy, less inertia—as a universal task rule unless the
-product contract truly forbids the opposite. Contrast every proposed tuning
-against at least one profile or benchmark that legitimately wants the opposite
-behavior. Change the narrowest owning layer, preserve the original trace, and
-evaluate that change on both the target case and its contrast. If ownership is
-unclear, document the hypothesis and inspect exact saved packets before editing.
-Structural validity, profile adherence, campaign-direction adherence, model
-capability and subjective enjoyment are separate verdicts.
-
-For model-authored structured output, treat the transmitted schema as a task
-interface rather than a mirror of the persistence DTO. Before adding prompt
-warnings, lowering temperature or spending on another sample, compare that
-schema with downstream admission: remove fields code can derive, constrain
-references and ranges from captured state where the provider can express them,
-and compile the lean proposal into the authoritative internal shape. Keep
-semantic validation as defense in depth, and verify the provider's strict-schema
-subset separately from local type parsing. These constraints may enforce
-authority and validity, but must not encode a preferred creative style.
-
-Treat creative neutrality as an engine invariant. The shared runtime has no
-preferred pace, flavor, dramatic intensity, initiative level, choice density or
-kind of enjoyment. Judge generated gameplay first against the exact captured
-Storyteller profile, campaign direction, opening and established fiction. A
-reviewer's taste can reject that configured experience or motivate a profile
-change, but it cannot become an implicit engine default. Neutrality does not
-weaken engine authority over declared rules, time, evidence, persistence,
-permissions, safety or spending.
-
-The owner's preferred division is Codex for investigation, product/technical design and review; Cursor for bulk coding and refactoring. Prepare actionable phases instead of starting a large implementation pass in Codex without being asked. Do not launch another task, agent or subscription/model switch automatically.
-
-Keep one active implementation owner for a slice. Before work, inspect Git status and the current feature checkpoint. Preserve unrelated changes. At handoff, record the current phase, exact next step, relevant checks and unresolved blockers in PLAN.md; rewrite this snapshot rather than appending diary entries. Keep handoffs short enough that a fresh model can act without rereading the conversation.
-
-Use existing tools and local substitutes. Paid models, media, hosted integrations and deployment require explicit authorization. Read [Spending](spending.md). Keep private context, credentials and player data out of Git.
+Before tuning, read [the focused Storyteller rule](storyteller.md). It preserves creative neutrality, layer ownership, contrasting cases, exact-packet baselines and schema/admission alignment. A disappointing result alone does not authorize changing a shared prompt.
 
 ## Git checkpoint hygiene
 
-Git is the durable recovery boundary for this shared POC, not a final cleanup step. Inspect status before each substantial slice and preserve unrelated user changes. After a coherent vertical slice has its documentation/checkpoint updated and its chosen verification is complete, create a descriptive commit before beginning another substantial slice. During long sessions, do not allow more than a few independently meaningful slices or a full day of work to accumulate without a checkpoint commit.
+Inspect status before each substantial slice. After a coherent slice has updated docs/checkpoints and chosen verification, make a descriptive commit before another substantial slice. Do not let a few independent slices or a full day accumulate without a checkpoint.
 
-Before committing, review the status, diff summary, untracked files and `git diff --check`; confirm generated output, local data, credentials, provider payloads and temporary diagnostics are excluded. Never manufacture a clean tree by discarding unfamiliar changes. Prefer one honest checkpoint commit over pretending a multi-day dirty tree is a narrowly atomic change; return to smaller responsibility-focused commits afterward.
+Before commit, review status, diff summary, untracked files and `git diff --check`; exclude generated output, local data, credentials, provider payloads and temporary diagnostics. Never discard unfamiliar changes to manufacture a clean tree. Prefer an honest checkpoint over a falsely atomic multi-day commit.
 
-Push completed checkpoint commits to the configured project remote when the current branch is the established shared branch and the push is a normal fast-forward. Do not force-push, rewrite published history, change remotes, create surprise branches or push credentials. If authentication, branch protection, divergence or remote ownership is uncertain, keep the local commit and report the exact blocker. Record the commit and push state in the handoff when work remains in progress.
+Push completed checkpoints when this is the established shared branch and a normal fast-forward. No force-push, published-history rewrite, remote changes or surprise branches. If authentication, protection, divergence or ownership is uncertain, retain the local commit and report the exact blocker. Include commit/push state in an unfinished handoff.

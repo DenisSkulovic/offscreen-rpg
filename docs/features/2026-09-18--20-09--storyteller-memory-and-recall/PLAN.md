@@ -137,7 +137,7 @@ Exit: selected local search route, measured comparison and limitations documente
 
 ## Current checkpoint
 
-- Program route: begin evaluation E1 in the dedicated corpus folder, then lexical L1. The owner explicitly prioritized this program on 2026-09-21.
+- Program route: the earlier corpus/lexical work is complete and its temporary folders are retired. Follow [the selected S3 route](../README.md#coding-route) for mechanical dependency carriage and progressive continuity; this plan retains the broader linked-memory obligations, not a competing instruction to restart E1/L1.
 
 - Status: Phase 1's canonical task capture is partially implemented. Every post-start task captures a root-fenced campaign catalogue plus pinned world/rule catalogues, compact orientations, exact selected sections and an omission/byte trace. Narrative choices can privately hand up to four validated world-section handles to the selected successor; known mechanics bind tagged rule sections deterministically. Phase 2's durable linked episode/identity memory is not implemented.
 - Decisions: narrative documents and exact execution state have distinct owners; Storyteller turns, scenes, passages and memory segments are distinct; no chapters. Exact authored handles are preferred over prose keyword inference. Anticipatory choice hints add no model round, grant no authority, remain invisible to the player and are optional for sparse worlds.

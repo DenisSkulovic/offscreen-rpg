@@ -1,6 +1,6 @@
 # Code quality standard
 
-Read this before writing or reviewing implementation code. It defines how this repository should be maintained by a human engineering team. Passing tests and formatting is necessary but does not establish readability, good boundaries or an appropriate design. Existing code is not automatically an example to copy.
+Read this before writing or reviewing implementation code. It defines how this repository should be maintained by a human engineering team. Tests and formatting, when chosen under the optional POC verification policy, do not establish readability, good boundaries or an appropriate design. Existing code is not automatically an example to copy.
 
 ## Working agreement for coding agents
 
@@ -83,6 +83,10 @@ Use a small deliberate set of domain failure codes that callers can handle. Dist
 No empty catch without an explicit recovery policy. No floating promise unless ownership, rejection handling and cancellation are visible. Background work needs a lifecycle owner. Acquired resources must be released on partial startup failures as well as normal shutdown; cleanup failure must not prevent releasing the remaining resources.
 
 Give polling and retries bounds or a deliberate long-lived lifecycle. Distinguish cancellation of waiting from cancellation of an already admitted effect. A timeout does not prove an external action did not happen. Model billing uncertainty must stop further paid attempts under the spending rules in AGENTS.md.
+
+## Observability and game history
+
+Treat observability as product behavior, not final polish. Durable player-facing activity history records meaningful game facts; operational logs diagnose the machinery around them. New or changed flows should emit structured, actionable info, warning and error events at their owning boundaries, with stable event names and useful correlation identifiers. Never log credentials, provider payloads or private player content merely for convenience, and never mistake a transient process log for durable game history. Keep relevant manual QA coverage current when behavior or diagnostics change.
 
 ## React and user-facing state
 
