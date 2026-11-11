@@ -20,7 +20,7 @@ Keep each packet minimal: problem and observed baseline; technical authority; sm
 | Parked gameplay Change | [S3a: continuity evidence report](2026-11-11--s3a-continuity-report/CHANGE.md) | Proposed, historically selected but **deprioritized**; no implementation authorization |
 | Next portfolio Changes | Not yet specified | Select a focused expert review (e.g. React code quality **separately** from UI design) and inspect actual source before writing a packet |
 
-The [legacy feature dossiers](../features/README.md) describe initiatives, prior proposals, evaluation and historical implementation. They are not queued Changes. Four retirement candidates remain under audit; don't automatically import them into this queue. The explicitly owner-retained canon-invention policy remains dormant.
+The [legacy feature dossiers](../features/README.md) describe initiatives, prior proposals, evaluation and historical implementation. They are not queued Changes. Four evaluation/completed-history dossiers were retired with [preserved decisions and immutable sources](../features/RETIRED-2026-11-11.md); do not automatically import them into this queue. The explicitly owner-retained canon-invention policy remains dormant.
 
 ## Selecting and closing a Change
 

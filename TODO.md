@@ -14,7 +14,7 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 
 - [x] Define a **Change** as one bounded, verifiable planned source/test/script/executable-config delta, including refactors, bug fixes, tooling and migrations; distinguish it from initiative, design, investigation, documentation and evaluation.
 - [ ] Make `docs/changes/` the unambiguous execution route. It must represent **no active Change** honestly; no selected gameplay work by default.
-- [ ] Classify, preserve or retire every legacy `docs/features/` dossier. Carry unique decisions and historical evidence into their permanent owners; repair incoming links. Explicitly owner-retained dormant work must remain discoverable.
+- [x] Classify the thirteen legacy `docs/features/` dossiers; retire four redundant/evaluation-heavy pairs with preserved decisions and historical links; retain nine unfinished or explicitly owner-preserved initiatives outside the active Change queue.
 - [ ] Align agent rules, skill names/templates, handoff procedure, roadmap/navigation and read-only briefing with the new route. No duplicate competing active plans.
 - [ ] Review navigation and links, then validate the workflow using a fresh-agent read-only task before authorizing an implementation. Record actual outcomes rather than assuming the harness improved productivity.
 

@@ -22,15 +22,15 @@ For the owner's present work priorities see [engineering portfolio renewal](../.
 | [Inhabitable play](2026-09-19--00-26--inhabitable-play-and-return/FEATURE.md) | Owner-review UI/interaction proposal, not approved implementation |
 | [Canon-invention policy](2026-09-24--01-30--canon-invention-policy/FEATURE.md) | **Explicitly owner-retained dormant design; preserve** |
 
-## Candidates to retire from the documentation tree
+## Retired historical dossiers
 
-| Legacy dossier | Remaining decision/evidence owner |
-| --- | --- |
-| [Conservative model evaluation](2026-09-18--17-27--conservative-live-model-evaluation/FEATURE.md) | [Usage policy](../technical/usage-policy.md), [provider review](../technical/provider-dispatch-review.md), [QA](../engineering/qa-journeys.md) |
-| [Storyteller agency and taste](2026-09-19--00-26--storyteller-agency-and-taste/FEATURE.md) | [Storytelling](../storytelling.md), [runtime](../technical/storyteller-runtime.md), [QA](../engineering/qa-journeys.md) |
-| [Bounded memory exploration](2026-09-21--10-55--storyteller-memory-exploration/FEATURE.md) | [Memory research](../engineering/long-story-memory-and-retrieval.md), [connected proof](../engineering/connected-poc-proof.md) |
-| [Creative exploration](2026-09-21--14-13--storyteller-creative-exploration/FEATURE.md) | [Memory research](../engineering/long-story-memory-and-retrieval.md), [QA](../engineering/qa-journeys.md) |
+The following **four old FEATURE/PLAN pairs have been retired from the live tree** after preserving their distinct constraints, historical outcomes, still-unproved acceptance and immutable source revisions in the [retirement register](RETIRED-2026-11-11.md):
 
-**Retention rule:** these four are no longer candidates for active code work, but physical deletion requires preserving unique open decisions and repairing incoming links. Do not erase the owner-retained canon policy. The dated [audit](AUDIT-2026-11-11.md) captures the original classification; Git preserves older plan versions.
+- [Conservative live-model evaluation](RETIRED-2026-11-11.md#conservative-live-model-evaluation)
+- [Storyteller agency and taste](RETIRED-2026-11-11.md#storyteller-agency-and-taste)
+- [Bounded memory exploration](RETIRED-2026-11-11.md#bounded-memory-exploration)
+- [Creative exploration](RETIRED-2026-11-11.md#creative-exploration)
+
+Retirement does **not** claim human or connected game acceptance. The other nine legacy initiatives remain parked or explicitly retained for historical context; they are not automatically executable Changes.
 
 **Different kinds of work live in different places:** an initiative's goals in product/technical owners; engineering priorities in the [roadmap](../../TODO.md); evidence/evaluation in QA and engineering records; **only actual implementation outcomes** in `docs/changes/`.

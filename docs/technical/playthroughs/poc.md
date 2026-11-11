@@ -39,7 +39,7 @@ Aim for roughly a minute of active waiting at an explicit demo rate, not a real 
 
 | Proof | Exact trace anchors | Current boundary | Owning work |
 | --- | --- | --- | --- |
-| Options change with state and preserve quiet agency | SB-02 through SB-05 | Cover branch changes plans; failed reassurance reuses the opening family; quiet endpoint has no continuing-life route | [Agency/taste](../../features/2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md) |
+| Options change with state and preserve quiet agency | SB-02 through SB-05 | Cover branch changes plans; failed reassurance reuses the opening family; quiet endpoint has no continuing-life route | [Storytelling and owner taste](../../features/RETIRED-2026-11-11.md#storyteller-agency-and-taste) |
 | Effort, eligibility and ETA differ | BC-01/02, NH-02 | Contribution checks exist; alternate progress families are proposed | [Activity foundation](../../features/2026-09-18--16-48--activity-processes-and-progress/PLAN.md) |
 | Real A → B → A with no rewind | BC-04, NH-03 | Retention exists; current clock reconstruction can regress; integration shortcut does not prove B settlement | Activity phase 1 |
 | Quiet completion and bounded successor | BM-02/03, RM-02/06 | Implemented for finite linear chains, including horizon/cancellation/blocking and explicit player re-entry after a Storyteller scene handoff | [Autonomy](../../features/2026-09-19--00-26--bounded-autonomy-and-reentry/PLAN.md) U2a quiet settlement, U2c accepted successor |

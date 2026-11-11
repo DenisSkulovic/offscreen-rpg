@@ -1,6 +1,6 @@
 # SpongeBob: an actual short session
 
-Companion to the pineapple benchmark in the [agency/taste feature](../../features/2026-09-19--00-26--storyteller-agency-and-taste/FEATURE.md). Read the [status legend](README.md#how-to-read-a-claim). Current mechanics come from [character seeds](../../../packages/application/src/campaign/fixtures/content/mechanical-openings.json) and the [scripted Storyteller](../../../packages/storyteller/src/fixtures/mechanical.ts), not a live model.
+Companion to the pineapple benchmark in the [historical agency/taste work](../../features/RETIRED-2026-11-11.md#storyteller-agency-and-taste). Read the [status legend](README.md#how-to-read-a-claim). Current mechanics come from [character seeds](../../../packages/application/src/campaign/fixtures/content/mechanical-openings.json) and the [scripted Storyteller](../../../packages/storyteller/src/fixtures/mechanical.ts), not a live model.
 
 The desired feeling is a small absurd episode in which the player can be curious, cautious or simply get on with the day. It should not become a combat game because something rattles, or a slot machine where pressing Persuasion repeatedly eventually makes Gary comply.
 

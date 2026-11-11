@@ -34,7 +34,7 @@ Files to inspect: the existing session report; application `storyteller/memory.t
 
 Exit: an inspection can distinguish proposal, publication, retained memory and final input. Record one compact evidence row per boundary in the permanent proof/QA owner. Do not call missing descriptive records proof of failed note memory. No provider calls are needed.
 
-**Current implementation packet:** [S3a continuity report Change](../2026-11-11--s3a-continuity-report/CHANGE.md) owns the report-only code edit. S3a's provider-free source/return scenarios above are a *separate acceptance/evaluation obligation*, not permission to add a new trace framework or code everything in S3. The actual report file already summarizes some proposed/document-selection/publication metadata; inspect it before adding fields.
+**Parked historical implementation packet:** [S3a continuity report Change](../../changes/2026-11-11--s3a-continuity-report/CHANGE.md) owns the report-only code edit. S3a's provider-free source/return scenarios above are a *separate acceptance/evaluation obligation*, not permission to add a new trace framework or code everything in S3. The actual report file already summarizes some proposed/document-selection/publication metadata; inspect it before adding fields.
 
 #### S3b — Required dependency selection and final packing
 
@@ -66,7 +66,7 @@ Keep the compact evidence ledger in the permanent proof/QA owners. When all scop
 
 ## Current checkpoint
 
-- **Phase/next future edit:** Parent S3a remains the continuity outcome, but the selected implementation unit is the [bounded report-only Change](../2026-11-11--s3a-continuity-report/CHANGE.md). The real report path is `scripts/repo-tools/story-session-report.mjs`; first revalidate its existing fields. The provider-free note/document return scenario and S3b/c/d are separate work. No source changes in the November 11 planning audit.
+- **Phase/next future edit:** Parent S3a remains the continuity outcome, but the parked implementation proposal is the [bounded report-only Change](../../changes/2026-11-11--s3a-continuity-report/CHANGE.md). The real report path is `scripts/repo-tools/story-session-report.mjs`; first revalidate its existing fields. The provider-free note/document return scenario and S3b/c/d are separate work. No source changes in the November 11 planning audit.
 - **Inspected source:** gameplay `fc00d13`; documentation base `0c05006`; October 23 source/raw-response investigation. No runtime behavior changed in that investigation.
 - **Evidence:** v16 shows correct timed work and short conversation, clue-note create/update patches, zero descriptive document proposals and departure without recall cues. No return turn. [Correction and identities](../../engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 - **Following slices:** S3b required exact selection/final packing → S3c durable offer/execution carriage → S3d materialization/return. [Canonical contract](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design) defines ownership and failure behavior. Empty/social-free cases remain valid; sidecar success alone is insufficient.
