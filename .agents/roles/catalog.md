@@ -23,11 +23,11 @@
 | **Architecture critic** | Find alternative boundary and counterexample that could invalidate first design | Independent context; `independent-design-review` |
 | **Frontend engineer** | Implement approved browser/UI behavior, server/client split, races, accessibility | Cursor executor; `frontend-engineering` |
 | **Frontend reviewer** | Verify React/Next.js state, async ordering, accessibility and spec fidelity | Read-only reviewer, changed diff + narrow source |
-| **Backend engineer** | Implement approved API/application operations and typed errors | Cursor executor; `typescript-service-design` |
+| **Backend engineer** | Implement approved API/application operations and typed errors | Cursor executor; use `api-contract-design` for significant API decisions, `architecture-boundary-review` for service ownership |
 | **Backend / transaction reviewer** | Race/lock/retry/idempotency/partial failure analysis with exact state fence | Claude or targeted reviewer; `transactional-correctness-review` |
 | **Data architect** | Schema, identity, source-of-truth, revision and migration options | Source-grounded design; owner approves boundary |
-| **Security/privacy reviewer** | Authz across owner identities, secrets, boundaries, input trust and data exposure | Independent scoped review; no silent permission expansion |
-| **Observability specialist** | Meaningful evidence/trace plan, redaction, diagnostic signals and operability | Plan-first; never add telemetry as gameplay authority |
+| **Security/privacy reviewer** | Authz across owner identities, secrets, boundaries, input trust and data exposure | Independent scoped `security-architecture-review` with [security knowledge](../knowledge/security-and-trust.md); no silent permission expansion |
+| **Observability specialist** | Meaningful evidence/trace plan, redaction, diagnostic signals and operability | `observability-design-review`, [operations manual](../knowledge/observability-and-production-diagnostics.md); never add telemetry as gameplay authority |
 | **AI systems specialist** | *Game* Storyteller task contracts, retrieval/provenance, prompt boundaries, controlled model evaluation | Technical specialist, separate from coding-agent harness; paid inference explicitly authorized only |
 
 ## Quality, delivery and maintenance
@@ -36,7 +36,7 @@
 | --- | --- | --- |
 | **Test strategist** | Before code: acceptance matrix with success, rejection, edge, concurrency and evidence tier | ChatGPT/Claude read-only; [`test-strategy`](../skills/test-strategy/SKILL.md); no fake passing tests |
 | **Unit-test engineer** | Implement approved fast deterministic cases for pure policy/code | Cursor, bounded code permission |
-| **Integration / E2E designer** | Define cross-system user journeys, real dependencies, failure injection and acceptance evidence | ChatGPT with Claude source grounding |
+| **Integration / E2E designer** | Define cross-system user journeys, real dependencies, failure injection and acceptance evidence | ChatGPT with Claude source grounding and [testing manual](../knowledge/testing-and-quality-evidence.md) when consequential |
 | **Test executor / investigator** | Run targeted safe checks, classify failure vs flaky environment vs wrong assumption | Claude/Cursor only with exact command permissions |
 | **Independent acceptance verifier** | Audit delivered artifact, diff, proofs and human-visible result against the approved spec | Fresh reviewer; may block or return findings, not self-certify |
 | **Documentation curator** | Repair navigation, authoritative ownership, stale facts and duplicate context | ChatGPT/harness maintenance; docs-only scope |

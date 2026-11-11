@@ -4,7 +4,7 @@
 
 ## Deep professional knowledge (on demand)
 
-[Engineering knowledge packs](../../.agents/knowledge/README.md) hold **mechanistic know-how and decision spaces**, not just procedures or a list of common bugs. They let an architect, implementer, designer or reviewer retrieve the relevant body of expertise before generating a plausible but under-considered recommendation. Start with [architecture design choices](../../.agents/knowledge/architecture-decision-space.md), [visual interface design](../../.agents/knowledge/interface-design-craft.md), [frontend state](../../.agents/knowledge/frontend-state-and-async.md), or [stateful systems](../../.agents/knowledge/durable-operations.md), depending on the task. [Scenario laboratory](../../.agents/knowledge/scenario-lab.md) supplies exercises, not requirements.
+[Engineering knowledge packs](../../.agents/knowledge/README.md) hold **mechanistic know-how and decision spaces**, not just procedures or a list of common bugs. They let an architect, implementer, designer or reviewer retrieve the relevant body of expertise before generating a plausible but under-considered recommendation. Start with [architecture design choices](../../.agents/knowledge/architecture-decision-space.md), [visual interface design](../../.agents/knowledge/interface-design-craft.md), [frontend state](../../.agents/knowledge/frontend-state-and-async.md), or [stateful systems](../../.agents/knowledge/durable-operations.md), depending on the task. [API/network design](../../.agents/knowledge/api-and-network-contracts.md), [security/trust](../../.agents/knowledge/security-and-trust.md), [testing/evidence](../../.agents/knowledge/testing-and-quality-evidence.md) and [observability](../../.agents/knowledge/observability-and-production-diagnostics.md) now have dedicated references. [Scenario laboratory](../../.agents/knowledge/scenario-lab.md) supplies exercises, not requirements.
 
 ## Decide which type of knowledge is missing
 
@@ -37,7 +37,10 @@ Use the official documentation appropriate to the **installed** version rather t
 | Challenge a large idea after source investigation, before writing code | `independent-design-review` |
 | Convert approved FEATURE/PLAN/spec decisions into a cheap executor packet | `cursor-handoff` |
 | Implement a bounded, authorized slice | `implementation-slice` |
-| Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` |
+| Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` + [testing manual](../../.agents/knowledge/testing-and-quality-evidence.md) |
+| Design or review HTTP/API contract semantics, evolution and network behavior | `api-contract-design` + [API manual](../../.agents/knowledge/api-and-network-contracts.md) |
+| Review authentication, authorization, privacy and trust boundaries | `security-architecture-review` + [security manual](../../.agents/knowledge/security-and-trust.md) |
+| Design evidence, traces, logs, metrics or an operational diagnostic strategy | `observability-design-review` + [operations manual](../../.agents/knowledge/observability-and-production-diagnostics.md) |
 | Analyze architecture ownership / module boundaries | `architecture-boundary-review` |
 | Design player hierarchy and return experience | `player-experience-design` |
 | Select art direction, typography, responsive composition and critique a visual design | `ui-art-direction` |

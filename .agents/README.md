@@ -47,6 +47,9 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 - [`cursor-handoff`](skills/cursor-handoff/SKILL.md): create one low-context, approved implementation packet for the cheaper coding agent.
 - [`ui-art-direction`](skills/ui-art-direction/SKILL.md): choose and critique deliberate visual direction with on-demand professional interface-design knowledge.
 - [`frontend-engineering`](skills/frontend-engineering/SKILL.md): React/Next.js correctness, accessibility, state, async races and performance.
+- [`api-contract-design`](skills/api-contract-design/SKILL.md): API/resource semantics, retry, compatibility, pagination, caching and streaming contract design.
+- [`security-architecture-review`](skills/security-architecture-review/SKILL.md): authentication, authorization, multi-tenant isolation, trust/abuse and privacy choices.
+- [`observability-design-review`](skills/observability-design-review/SKILL.md): logs, metrics, traces, SLOs and operational diagnosis without deployment.
 - [`transactional-correctness-review`](skills/transactional-correctness-review/SKILL.md): PostgreSQL/Temporal/outbox concurrency, retries and exactly-once effects.
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
 - [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.

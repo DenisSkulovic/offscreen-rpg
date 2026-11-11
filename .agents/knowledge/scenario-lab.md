@@ -56,6 +56,38 @@ Do not require an agent to guess all hidden requirements; it should identify *wh
 
 **Design reversals:** start from product/technical **guarantees**, not implementation branches. Choose a falsifying test appropriate to the boundary: pure unit, real DB overlap, browser user journey or fault injection. A test proving “renders spinner” may be useful but is not evidence of settlement correctness. Consult [pack standard](pack-standard.md).
 
+### Scenario G: "Expose a convenient debug endpoint"
+
+**Brief:** Support needs an endpoint to inspect a blocked story and restart a failed action.
+
+**Challenge:** The inspection includes private Storyteller plans, tenant identity and raw provider metadata. The restart may repeat a paid external attempt. An authenticated user may know another story ID; CORS settings cannot protect object authorization.
+
+**Decision reversals:** distinguish identity, object/property/function authorization and environment gating; propose a scoped operator capability and privacy-safe projection; restart cannot replace reconciliation of uncertain dispatch. Compare dev-only local tool, gated admin operation and safer status-only view. See [security/trust](security-and-trust.md).
+
+### Scenario H: "Add a fast endpoint for story history"
+
+**Brief:** Return history to a web client with a simple GET returning an array.
+
+**Challenge:** History can become huge, writes continue during pagination, private versus public entries differ, an upstream CDN/proxy might cache by URL alone, and old web clients remain open after a deploy.
+
+**Decision reversals:** choose pagination consistency and stable order; explicit scope and caching; resource/command semantics and serialized version compatibility. A 200 and valid JSON do not prove correct completeness or privacy. See [API/network](api-and-network-contracts.md).
+
+### Scenario I: "All tests are green, ship it"
+
+**Brief:** A React test suite covers every component and reports high line coverage.
+
+**Challenge:** Tests mock the server as always accepting a command, ignore an ambiguous provider outcome, never reverse asynchronous reply ordering, and use fixed sleeps on a shared browser session.
+
+**Decision reversals:** derive quality evidence from accepted business constraints; choose targeted unit, real DB overlap, controlled browser race, and fault-injected workflow checks. Coverage and passing mocks alone cannot certify accepted effects. See [testing/evidence](testing-and-quality-evidence.md).
+
+### Scenario J: "We need better monitoring"
+
+**Brief:** Users report occasional 10-second waits. Add logging and an observability platform.
+
+**Challenge:** The API handler is fast; delay occurs in DB pool queueing or worker backlog; traces lose correlation after a Temporal wake; one tenant's debug logs include private prose; requests receive 202 before publication.
+
+**Decision reversals:** define the user-visible completion SLI first; compare logs, RED/USE metrics, spans and durable operation ledger; trace stage-specific IDs, privacy and cardinality. Don't install a giant monitoring stack before finding the missing evidence. See [observability/diagnostics](observability-and-production-diagnostics.md).
+
 ## Scoring that resists theater
 
 Evaluate **decision quality**, not the number of bullets or risk names:
