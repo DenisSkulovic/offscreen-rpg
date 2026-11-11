@@ -4,6 +4,7 @@ import {
 } from '@offscreen/contracts/usage-policy';
 import {
   prepareStorytellerTask,
+  maximumProviderCharge,
   storytellerTaskResourcesSchema,
   type ExecutionPolicy,
   type StorytellerTask,
@@ -17,26 +18,6 @@ import { resolveCreativeExplorationRecipe } from './creative-exploration-recipes
 
 function minimumMicrousd(left: string, right: string) {
   return BigInt(left) <= BigInt(right) ? left : right;
-}
-
-function executionMaximumCharge(
-  execution: Extract<ExecutionPolicy, { mode: 'provider' }>,
-) {
-  const admittedInputPrice = [
-    execution.policy.inputMicrousdPerMillion,
-    execution.policy.cacheReadMicrousdPerMillion ??
-      execution.policy.inputMicrousdPerMillion,
-    execution.policy.cacheWriteMicrousdPerMillion ??
-      execution.policy.inputMicrousdPerMillion,
-  ].reduce((maximum, price) => {
-    const parsed = BigInt(price);
-    return parsed > maximum ? parsed : maximum;
-  }, 0n);
-  const amount =
-    BigInt(execution.policy.maxInputTokens) * admittedInputPrice +
-    BigInt(execution.policy.maxOutputTokens) *
-      BigInt(execution.policy.outputMicrousdPerMillion);
-  return ((amount + 999_999n) / 1_000_000n).toString();
 }
 
 /**
@@ -66,7 +47,7 @@ export function resourcesForEffectiveUsagePolicy(
   );
   const maxMicrousdPerRequest = minimumMicrousd(
     policy.limits.maxMicrousdPerOperation,
-    executionMaximumCharge(execution),
+    maximumProviderCharge(execution),
   );
   const creativeExplorationAvailable =
     policy.limits.maxModelRoundsPerOperation > 1 &&
@@ -135,7 +116,7 @@ export function resourcesForEffectiveUsagePolicy(
   const maxMicrousd = minimumMicrousd(
     policy.limits.maxMicrousdPerOperation,
     (
-      BigInt(executionMaximumCharge(execution)) * BigInt(recipe.maxModelRounds)
+      BigInt(maximumProviderCharge(execution)) * BigInt(recipe.maxModelRounds)
     ).toString(),
   );
   return storytellerTaskResourcesSchema.parse({

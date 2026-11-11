@@ -16,6 +16,8 @@ import {
   executionPolicySchema,
   reservationForRequest,
   serializedRequestBytes,
+  calculatedProviderCharge as calculatedCharge,
+  estimatedProviderCharge as estimatedCharge,
   type ExecutionPolicy,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
@@ -96,74 +98,6 @@ function taskAttribution(task: StorytellerTask) {
     source: task.source,
     usageAuthority: task.resources.authority,
   };
-}
-
-function calculatedCharge(
-  execution: ProviderExecution,
-  usage: ProviderUsage,
-): bigint | null {
-  const cachedTokens = usage.cachedTokens ?? 0;
-  const cacheWriteTokens = usage.cacheWriteTokens ?? 0;
-  const ordinaryInputTokens =
-    usage.promptTokens - cachedTokens - cacheWriteTokens;
-  if (
-    ordinaryInputTokens < 0 ||
-    (cachedTokens > 0 &&
-      execution.policy.cacheReadMicrousdPerMillion === undefined) ||
-    (cacheWriteTokens > 0 &&
-      execution.policy.cacheWriteMicrousdPerMillion === undefined)
-  ) {
-    return null;
-  }
-  const amount =
-    BigInt(ordinaryInputTokens) *
-      BigInt(execution.policy.inputMicrousdPerMillion) +
-    BigInt(cachedTokens) *
-      BigInt(
-        execution.policy.cacheReadMicrousdPerMillion ??
-          execution.policy.inputMicrousdPerMillion,
-      ) +
-    BigInt(cacheWriteTokens) *
-      BigInt(
-        execution.policy.cacheWriteMicrousdPerMillion ??
-          execution.policy.inputMicrousdPerMillion,
-      ) +
-    BigInt(usage.completionTokens) *
-      BigInt(execution.policy.outputMicrousdPerMillion);
-  return (amount + 999_999n) / 1_000_000n;
-}
-
-function estimatedCharge(
-  execution: ProviderExecution,
-  requestBytes: number,
-  reservation: StorytellerDispatchReservation,
-) {
-  // A tokenizer token represents at least one encoded byte. This is a useful
-  // labelled input upper bound, not provider metering or a route tokenizer.
-  const estimatedInputTokens = Math.min(
-    execution.policy.maxInputTokens,
-    reservation.maxInputTokens,
-    requestBytes,
-  );
-  const admittedInputPrice = [
-    execution.policy.inputMicrousdPerMillion,
-    execution.policy.cacheReadMicrousdPerMillion ??
-      execution.policy.inputMicrousdPerMillion,
-    execution.policy.cacheWriteMicrousdPerMillion ??
-      execution.policy.inputMicrousdPerMillion,
-  ].reduce((maximum, price) => {
-    const parsed = BigInt(price);
-    return parsed > maximum ? parsed : maximum;
-  }, 0n);
-  const amount =
-    BigInt(estimatedInputTokens) * admittedInputPrice +
-    BigInt(reservation.maxGeneratedTokens) *
-      BigInt(execution.policy.outputMicrousdPerMillion);
-  return {
-    inputTokens: estimatedInputTokens,
-    microusd: (amount + 999_999n) / 1_000_000n,
-    method: 'serialized-byte-upper-bound.v1',
-  } as const;
 }
 
 async function lockAllowance(tx: Transaction, execution: ProviderExecution) {

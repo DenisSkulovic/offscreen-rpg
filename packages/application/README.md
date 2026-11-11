@@ -12,7 +12,7 @@ This package owns use cases, transactions and coordination. API controllers and 
 | Generation → publication | [storyteller/runtime.ts](src/storyteller/runtime.ts) | Execution, publication and recovery are separate operations |
 | Current story input | [storyteller/context.ts](src/storyteller/context.ts) | Locked SQL passage/clock/activity context and application-level task assembly |
 | Canonical knowledge loading | [storyteller/canonical-knowledge.ts](src/storyteller/canonical-knowledge.ts) | Exact pinned library/campaign reads, recall cues, byte/selection limits, omissions |
-| Provider authority/cost | [task-admission.ts](src/storyteller/task-admission.ts) | Budget, window accounting, dispatch authority |
+| Provider authority/cost | [task-admission.ts](src/storyteller/task-admission.ts) | Policy intersection and captured recipe; [budget.ts](src/storyteller/budget.ts) owns account/window/attempt transactions; pure pricing is [Storyteller provider-pricing](../storyteller/src/tasks/provider-pricing.ts) |
 | Public snapshot | [stories/reads.ts](src/stories/reads.ts) | [campaign/reads.ts](src/campaign/reads.ts); public contracts |
 | Local inspection/fixtures | [developer-tools/chamber.ts](src/developer-tools/chamber.ts) | QA catalogue/inspectors only for tooling tasks |
 

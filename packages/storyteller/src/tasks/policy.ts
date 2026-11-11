@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import { maximumInputMicrousdPerMillion } from './provider-pricing.js';
+export {
+  maximumInputMicrousdPerMillion,
+  maximumProviderCharge,
+  estimatedProviderCharge,
+  calculatedProviderCharge,
+} from './provider-pricing.js';
 
 export const microusdSchema = z.string().regex(/^(0|[1-9]\d{0,14})$/);
 export const modelPolicySchema = z.strictObject({
@@ -67,14 +74,7 @@ export function reservationForRequest(
   if (inputBound > maxSerializedRequestBytes) {
     throw new Error('context_too_large');
   }
-  const admittedInputPrice = [
-    policy.inputMicrousdPerMillion,
-    policy.cacheReadMicrousdPerMillion ?? policy.inputMicrousdPerMillion,
-    policy.cacheWriteMicrousdPerMillion ?? policy.inputMicrousdPerMillion,
-  ].reduce((maximum, price) => {
-    const parsed = BigInt(price);
-    return parsed > maximum ? parsed : maximum;
-  }, 0n);
+  const admittedInputPrice = maximumInputMicrousdPerMillion(policy);
   const amount =
     BigInt(Math.min(maxInputTokens, policy.maxInputTokens)) *
       admittedInputPrice +
