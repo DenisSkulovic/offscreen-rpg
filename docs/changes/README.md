@@ -4,7 +4,7 @@
 
 Current change: none
 
-**None is intentional.** The repository is currently refining its planning/documentation ecosystem; no implementation is selected or authorized. `pnpm repo:brief` must report this state without silently reviving an old gameplay plan. A linked Change indicates selection, **not** permission for provider spending, deployment, migration or unrelated code modification. Implementation requires its recorded state/owner approval and task-specific permissions.
+**None is intentional.** The first [React/Next target](../engineering/targets/react-next.md), [source audit](../engineering/audits/react-next-gap-2026-11-11.md) and seven proposed Changes exist; no implementation is selected or authorized. `pnpm repo:brief` must report this state without silently reviving an old gameplay plan. A linked Change indicates selection, **not** permission for provider spending, deployment, migration or unrelated code modification. Implementation requires its recorded state/owner approval and task-specific permissions.
 
 **Portfolio readiness requirement:** significant refactors/modernization require a [target-first design](../../.agents/rules/target-driven-renewal.md), source-grounded gap audit, and exact criterion → Change → proof mapping. A list of code smells is not enough. Candidate packets may be `Proposed`; they do not become executable until the target and selected scope are approved.
 
@@ -20,7 +20,7 @@ Keep each packet minimal: problem and observed baseline; technical authority; sm
 | --- | --- | --- |
 | **Active** | **None** | Do not infer work from the presence of a folder |
 | Parked gameplay Change | [S3a: continuity evidence report](2026-11-11--s3a-continuity-report/CHANGE.md) | Proposed, historically selected but **deprioritized**; no implementation authorization |
-| Next portfolio Changes | Not yet specified | Select a focused expert review (e.g. React code quality **separately** from UI design) and inspect actual source before writing a packet |
+| Proposed React/Next design sequence | [W01–W07 audit-linked packets](../engineering/audits/react-next-gap-2026-11-11.md#proposed-dependency-order-change-packets-not-marching-orders) | Seven **Proposed** code-sized work items for the [React/Next target](../engineering/targets/react-next.md), not Ready or authorized; approve a target and select one Change before Cursor implements |
 
 The [legacy feature dossiers](../features/README.md) describe initiatives, prior proposals, evaluation and historical implementation. They are not queued Changes. Four evaluation/completed-history dossiers were retired with [preserved decisions and immutable sources](../features/RETIRED-2026-11-11.md); do not automatically import them into this queue. The explicitly owner-retained canon-invention policy remains dormant.
 
