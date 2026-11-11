@@ -85,6 +85,8 @@ Reconcile documentation **as part of a completed slice** when contracts or imple
 
 For a targeted reorganization: map incoming links and owners → preserve the intended contracts → consolidate duplicates → update routes → check representative reading paths → validate claims against code/evidence → retire obsolete docs. Reducing bytes without protecting meaning is not an improvement.
 
+For maintenance, `pnpm repo:docs-health` (or `--json`) measures each temporary feature checkpoint without calling providers. Oversized checkpoints are review candidates, not errors: move unique experimental findings to their evidence owner, keep durable contracts in technical docs, and replace the checkpoint with the current phase and exact next action. The old detail remains available in Git history. Do not make this audit mandatory for unrelated coding tasks.
+
 ## When to change these rules
 
 After an actual frustrating task, identify the failure mode: bad context routing, missing product decision, weak source trace, unsuitable architecture, invalid test harness, or an ineffective reviewer. Fix the **smallest owning layer**. Prefer a deterministic hook/test for a rule that must never be violated; prose reminders are probabilistic, not enforcement. Avoid turning every failure into a new always-on rule.

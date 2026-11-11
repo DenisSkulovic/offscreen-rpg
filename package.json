@@ -18,6 +18,7 @@
     "db:baseline": "node scripts/repo-tools/baseline.mjs",
     "db:reset:test": "node scripts/repo-tools/reset-test-db.mjs",
     "repo:brief": "node scripts/repo-tools/brief.mjs",
+    "repo:docs-health": "node scripts/repo-tools/docs-health.mjs",
     "infra": "node scripts/repo-tools/compose.mjs",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",

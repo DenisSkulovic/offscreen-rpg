@@ -37,6 +37,7 @@ Cursor discovers project skills from `.agents/skills/` directly. Claude loads th
 ## Safe commands (inspect when relevant)
 
 - `pnpm repo:brief [--checkpoint]`: current Git state, progress and current feature; read-only, no provider call.
+- `pnpm repo:docs-health [--json]`: read-only feature-checkpoint word/byte report. Use during maintenance, not as a startup ritual.
 - `pnpm infra -- <args>`: local Docker compose wrapper; infrastructure changes are not automatic.
 - `pnpm test:focus -- <suite> [test-name]`: targeted offline integration, **resets the disposable test DB**; use only with that side effect understood.
 - `pnpm db:baseline`: rewrites the disposable POC baseline migration; review the result.

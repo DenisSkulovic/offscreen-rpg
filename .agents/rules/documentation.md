@@ -25,7 +25,7 @@ The root README should explain the project in roughly one page. Progress begins 
 
 Default brief output contains the orientation and plan path. `--checkpoint` adds only the selected checkpoint, not phase history or every feature. Keep that checkpoint short enough to act on: current phase, inspected revision, bounded next edits, acceptance, verification limits, blockers and spend. Put durable evidence in its permanent evidence owner. Temporary maintenance work can be listed separately without silently replacing the gameplay route.
 
-Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. Large coherent contracts can stay large; give them a useful opening boundary and headings so readers can select a section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
+Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. `pnpm repo:docs-health` reports checkpoint sizes without reading code, invoking models or imposing a CI gate; investigate flagged checkpoints rather than deleting evidence.  Large coherent contracts can stay large; give them a useful opening boundary and headings so readers can select a section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
 
 ## Fresh-context discovery
 

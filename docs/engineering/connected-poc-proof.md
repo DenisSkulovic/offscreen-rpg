@@ -20,6 +20,22 @@ The local trajectory is `data/story-agent/<storyId>.jsonl`; canonical objects li
 
 The next work is provider-free S3 in the [selected plan](../features/README.md#coding-route): distinguish retained state, selection and final request coverage before implementing the dependency guarantee. Then prove a maintained Socucius interaction through unrelated play, departure and return before the sustained acceptance run. Earlier diagnostics below explain how authority and transport boundaries were discovered; their old task versions and measurements must not be presented as current regressions or fresh balances.
 
+### Historical Storyteller contract evolution — 2026-09-24
+
+The September 24 experiments were **narrow diagnostic runs**, not successful sustained-play acceptance. The table is a compact record of why successive task versions changed; it does not imply those older versions are currently active. The original detailed experiments, packet ceilings, model calls and competing explanations remain in the [archived plan at revision `05c60fb3`](https://github.com/DenisSkulovic/offscreen-rpg/blob/05c60fb334e2432bde02197dfe18ab4f4773eff0/docs/features/2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md). Private provider payloads and player prose are not in Git.
+
+| Contract | Observed failure or correction | Narrow outcome and boundary |
+| --- | --- | --- |
+| v12 baseline | At a 2,048-token output ceiling a valid-looking consequence could be truncated; another plan deferred its promised explanation into future prose. A clue note reached 400 characters and ended mid-sentence. | Story mode gained explicit input/output caps and the v13 compact-note rewrite instruction. Increasing output limits is not proof of intention fulfillment. |
+| v13, three Sol generations | Under reviewed 16k-input/4,096-output limits, compact notes were complete at 193 and 220 characters and elapsed time/choices were coherent. Several success branches still promised unspecified future facts instead of freezing a result. | Semantic outcome incompleteness remained; the run stopped rather than spend on a repeat of the same finding. |
+| v14, three Sol generations | Finite action outcomes became concrete, but one process interval still said only “useful observation,” and updates cited old passages for facts first revealed in the new consequence. | v15 tightened process-result specificity and required `current`/arrival provenance for new facts. |
+| v15, two Sol generations | The inspected consequence included explicit recurring work outcomes, a six-septim completion and a complete 201-character note citing `current`. | Targeted authority and provenance checks passed. This did not establish long-term recall or general model quality. |
+| v16, six Sol generations | A prior run had copied the settled `+6 septims` reward into every unrelated next plan. The revised admission guard prevented that replay; a fresh warehouse shift earned six septims once in 1,800 fictional seconds. | Mechanic-replay check passed, but the clerk exchanges proposed no descriptive identity/relationship/thread documents. Later return/recall was not exercised. See [October memory correction](#memory-reinspection--2026-10-23). |
+
+**Recorded costs, not present balances:** v13 three-call experiment USD 0.103290; v14 USD 0.120856; v15 two calls USD 0.064658; fresh v16 six calls USD 0.198915. These are separate dated experiments, not a new total or current account authorization. Account reconciliation/budget history is preserved in the archived plan and prior evidence; no extra paid comparison is indicated before the S3 continuity handoff.
+
+Earlier Luna responses were uneven: Quiet Eerie Mystery maintained atmosphere better than Comedy or Driven Adventure; Sol's Character-Driven Drama was more grounded but sometimes overexplained dialogue. Some Luna responses devoted far more serialized bytes to private plan branches than the public scene. These observations motivate **controlled comparisons**, not a model ranking or a universal style mandate.
+
 ### Memory reinspection — 2026-10-23
 
 The initial rediscovery repeated an incorrect checkpoint claim that the v16 story created no note and lost its recall context on departure. Reading the saved provider envelopes contradicted it. All five consequence responses have empty `documentChanges`; their `currentNotes` are **patches**, not snapshots:
