@@ -69,6 +69,19 @@ For a representative UI feature, request a `role-orchestration` plan **without c
 
 Do not confuse creation of role Markdown or native subagent files with proof they improve productivity. A multi-agent plan that costs more and offers no new evidence should lose to one well-briefed agent.
 
+## Knowledge-activation evaluation
+
+A controlled read-only trial should ask the same model to recommend an architecture for a realistic task, once with the plain request and once with **the relevant professional knowledge manual**. Use comparable source revision/context where possible and avoid contaminating the second run with the first answer. Judge *selection quality*, not verbosity:
+
+- Does it identify 2–3 actually plausible alternatives, including doing less?
+- Does it name the constraints and domain interactions that change their ranking?
+- Does it recognize key lifecycle/evolution/operations costs, not just race bugs?
+- Does it express a reasoned preferred choice and which new fact would reverse it?
+- Does it identify correct authority and evidence, without inventing product requirements?
+- How many extra tokens/reads and human corrections did this deeper judgment cost?
+
+Use [scenario lab](../../.agents/knowledge/scenario-lab.md) as an adversarial source; it is **not** a benchmark result. No measured uplift in coding-agent design quality or usage efficiency is claimed yet.
+
 ## Current status
 
 - Existing small entrypoint, conditional skills, feature workflow and checkpoint-size audit: **implemented as repository documents**.

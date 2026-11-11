@@ -1,16 +1,35 @@
 # Standard for engineering knowledge packs and role proof obligations
 
-**Why:** Strong coding models often generate a plausible first design because the omitted edge cases are not in their immediate working set. An expert pack should activate *the mechanism and its consequences*, not merely demand "follow best practices."
+**Why:** Strong coding models often deliver an 80%-good *first reasonable answer* without retrieving the full professional design landscape. A knowledge pack must activate the concepts, alternatives, selection criteria, interacting factors, methods and trade-offs that experienced engineers bring to the problem **before proposing the design**. Edge cases and failures are an essential part, not the whole purpose. The goal is a conditional, well-defended recommendation, not maximal pessimism or checklist compliance.
+
+## A professional manual must activate design judgment
+
+Every consequential domain should teach **more than how things fail**:
+
+| Dimension | Material to include | Why it changes what an agent recommends |
+| --- | --- | --- |
+| Mental model | What the technology really does, which state/authority it owns | Prevents using the tool as a magical abstraction |
+| Design space | The realistic families of approaches, including doing less | Stops defaulting to whichever pattern appears most often in training data |
+| Selection criteria | Workload, scale, latency, consistency, cost, team, framework, reversibility | Explains **when** each approach is justified, not just what it is |
+| Mechanics | Lifecycles, APIs, ordering, data flow, examples and interactions | Makes a chosen design actionable instead of architectural poetry |
+| Cross-disciplinary effects | Caching vs privacy, async vs UX, storage vs migrations, networking vs retries | Exposes constraints that a single-role specialist might overlook |
+| Evolution | Maintenance, upgrades, observability, operational burden and migration | Prevents optimizing only for the first code generation |
+| Failure and counterexamples | Non-obvious race, security, correctness and performance mechanisms | Distinguishes a viable proposal from a superficially good one |
+| Evidence | Experiments/tests and observations that would change confidence | Avoids model consensus masquerading as truth |
+
+**Do not demand all eight as a form on every task.** The manual contains the reasoning; the role uses only what can materially change the current decision.
+
+An especially useful structure is **options → decision axes → provisional recommendation → changed-constraint counterexample**. The agent should ask only the important missing questions. Under uncertainty, rank alternatives conditionally instead of returning an endless questionnaire or a single universal pattern.
 
 ## A good pack is a working mental model
 
 A mature pack should answer, in this order:
 
 1. **Trigger and boundaries.** Which role and decision will be improved? Which neighboring concern belongs elsewhere? No unnecessary loading.
-2. **Authority and state model.** What owns the truth? What is merely a cache, prediction, suggestion, stale version or external observation? What identities and lifetimes matter?
-3. **Mechanistic explanation.** Why would a superficially valid solution fail? Show a specific transition or interleaving, including the state before, the competing actors and the incorrect after-state.
-4. **Alternatives and trade-offs.** Explain how two or three strategies differ. They need not all be equally good; a framework recommendation has applicability conditions.
-5. **Counterexamples.** Cases where a reasonable-looking proposal fails despite compiling or passing happy-path tests. Include at least one that defeats the *obvious fix*.
+2. **Design space and purpose.** Which approaches exist, why were they created, and which workloads/organizations/quality goals favor them? Include the credible minimal/no-new-infrastructure option.
+3. **Authority, mechanics and interaction.** What actually owns state and lifetimes? How do the components work and connect? Which distinctions change the design? Explain a representative flow.
+4. **Selection criteria and trade-offs.** Explain why alternatives win under different constraints, plus performance, maintainability, security, operations and evolution costs.
+5. **Counterexamples and second-order effects.** Cases where a reasonable choice loses after a factor changes, including the hidden failure, operating cost or architecture interaction. Include one that defeats the *obvious fix*.
 6. **Proof obligations.** A minimal adversarial fixture, failure injection or browser observation that would actually distinguish correct from wrong. State what the evidence *doesn't* establish.
 7. **Project integration.** Link to the relevant Offscreen RPG product/technical owner and actual package entrypoints, without copying that entire authority into a second place.
 8. **Primary/deep references.** Link to official installed-version docs and the author's [study corpus](https://github.com/DenisSkulovic/the-modern-software-engineer) for optional depth, with a short description of what to seek.
@@ -70,6 +89,6 @@ Start from the product/technical contract, not tests that already pass. For each
 
 For each documented failure case, ask: did agents using the pack **notice it before implementation**? Did the pack cause an irrelevant design detour? Were file reads, token usage and human corrections lower at comparable task scope? If unknown, report unknown.
 
-Measure knowledge coverage by **failure classes anticipated and disproven**, not the number of pages or skills. The [scenario lab](scenario-lab.md) contains read-only exercises to evaluate this without touching game code or spending model-provider credit.
+Measure knowledge coverage by **important alternatives considered correctly, constraints recognized, justified selections and failure classes anticipated**, not the number of pages or skills. The [scenario lab](scenario-lab.md) contains read-only exercises to evaluate this without touching game code or spending model-provider credit.
 
 Research base: [Anthropic skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices), [Anthropic context engineering](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents), and [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/).

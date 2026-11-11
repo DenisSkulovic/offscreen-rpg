@@ -9,6 +9,10 @@ description: Investigate or review transactional correctness for Offscreen RPG P
 
 Read the affected technical owner and transaction path. Primary references: [PostgreSQL transaction isolation](https://www.postgresql.org/docs/current/transaction-iso.html), [Temporal docs](https://docs.temporal.io/), [OWASP API authorization](https://owasp.org/API-Security/). Read only relevant sections and the actual installed versions.
 
+## Professional decision reference
+
+For a consequential design/review, select the relevant section of [durable operations and stateful-system choices](../../knowledge/durable-operations.md). It covers when to choose relational modeling, conditional updates, row locks, optimistic versions, serializable transactions, cache/read models, synchronous commands, outbox, queues, Temporal or external integration protocols. If the decision is mainly about module/services/deployment, also consult [architecture decision space](../../knowledge/architecture-decision-space.md). **Compare options before hunting for failures**, and do not require both manuals if one answers the question.
+
 ## Trace one operation end to end
 
 1. Name the command identity, owner, expected revision/fence, held resources, possible database writes, document staging, outbox event and external effect. Trace the path from API command through application transaction and worker wake back to public projection.

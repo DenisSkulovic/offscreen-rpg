@@ -11,6 +11,10 @@ description: Review or design React 19 and Next.js App Router implementation dec
 
 Open the affected product/technical heading, then route through `apps/web/src/features/` and the corresponding transport/API contract. Read the installed framework versions. Consult source knowledge in `docs/engineering/coding-agent-knowledge.md`; first-party details: [React effects](https://react.dev/learn/you-might-not-need-an-effect), [state snapshots](https://react.dev/learn/state-as-a-snapshot), [Next.js Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Vercel interface guidelines](https://vercel.com/design/guidelines), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/).
 
+## Professional decision reference (select, don't preload)
+
+For a consequential state/fetch/async design or review, read the relevant section of [frontend state and asynchronous correctness](../../knowledge/frontend-state-and-async.md). For broader feature/module architecture (layering, boundaries, server versus browser owner), consult [architecture decision space](../../knowledge/architecture-decision-space.md). Name **at least one credible alternative** and which identity/lifetime/usage facts favor the chosen approach. On a small existing-component fix, the manual may be unnecessary. Do not turn this into a mandatory 15-KB context load for each JSX edit.
+
 ## Diagnostic lenses
 
 - **Client vs server:** Keep secrets, owner checks and data access server-side. A `'use client'` module pulls its imports into the client graph. Browser state is presentation, not authoritative campaign state.

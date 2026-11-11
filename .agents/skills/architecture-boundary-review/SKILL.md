@@ -7,6 +7,10 @@ description: Review a consequential Offscreen RPG architectural change, oversize
 
 **Trigger:** A feature crosses packages, a module grows unclear, two paths mutate the same state, new infrastructure is proposed, or refactoring risks Temporal/SQL/document/Storyteller boundaries. This is a **read-only design procedure** unless a separate implementation slice is authorized. For a simple defect use the codebase-investigation skill instead.
 
+## Activate the relevant architectural design space
+
+For a nontrivial change, review the needed section in [architecture decision space](../../knowledge/architecture-decision-space.md) **before recommending a pattern**. Look for alternative module boundaries, ownership and data/communication choices, and why each may be superior under different constraints. A large file or fashionable framework alone is not a design argument. Don't preload the manual for an isolated bug fix.
+
 ## Select the contract and follow one vertical route
 
 1. State the player/developer problem and acceptance in two sentences. Read only the affected product page from `docs/README.md`, technical owner from `docs/technical/`, and actual source entry from `docs/engineering/code-navigation.md`. Architecture design describes *intended* components; package manifests/exports and executed code establish *present* wiring.

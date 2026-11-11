@@ -2,6 +2,10 @@
 
 **Purpose:** a navigation library for **software coding agents**, not the runtime Storyteller. Reviewed 2026-11-11. Load only the section relevant to a design decision. These sources are starting references, not immutable truths or permission to change agreed product behavior.
 
+## Deep professional knowledge (on demand)
+
+[Engineering knowledge packs](../../.agents/knowledge/README.md) hold **mechanistic know-how and decision spaces**, not just procedures or a list of common bugs. They let an architect, implementer, designer or reviewer retrieve the relevant body of expertise before generating a plausible but under-considered recommendation. Start with [architecture design choices](../../.agents/knowledge/architecture-decision-space.md), [frontend state](../../.agents/knowledge/frontend-state-and-async.md), or [stateful systems](../../.agents/knowledge/durable-operations.md), depending on the task. [Scenario laboratory](../../.agents/knowledge/scenario-lab.md) supplies exercises, not requirements.
+
 ## Decide which type of knowledge is missing
 
 - **Product knowledge:** what Offscreen RPG should feel like. Owner: `docs/vision.md`, `docs/player-experience.md`, relevant product topic.

@@ -2,14 +2,15 @@
 
 **Owner:** layer-zero coding-agent harness. **Audience:** architects, implementers, reviewers, test strategists and coordinators developing Offscreen RPG. **Not:** the in-game Storyteller. This is an **engineering memory library**, not a replacement for the game's product and technical contracts.
 
-**Purpose:** an intelligent coding model can reason deeply about a mechanism it recognizes, yet fail to **retrieve that mechanism at the decision where it matters**. This library brings the relevant theory, concrete failure cases, alternatives, and verification methods into the active role's working context *before* its design hardens. A short list of slogans is not an engineering manual.
+**Purpose:** a capable coding model can explain an engineering trade-off *when challenged* but still deliver its first convenient answer without considering that trade-off. This library is an external **professional memory and design-space activator**: mental models, legitimate approaches, when/why to choose them, interacting constraints, implementation techniques, evolution costs, failure mechanisms and proof. It should activate deeper engineering judgment *before* the initial recommendation, not merely help debug a bad implementation later.
 
 ## Choose one or two knowledge packs, not the whole shelf
 
 | When the role is deciding or reviewing… | Load this pack | What it brings that a generic checklist misses |
 | --- | --- | --- |
-| React and Next.js state, data fetching, transitions, stale replies, cache identities, forms | [Frontend state and asynchronous UI](frontend-state-and-async.md) | Authority and identity model, effect lifetimes, independent race/display consistency defects, competing architectures, adversarial tests |
-| PostgreSQL/Drizzle operations, jobs, Temporal, outbox, transactions, external effects, retry, multi-tenant boundaries | [Durable operations and concurrent state](durable-operations.md) | Commit/dispatch ambiguity, isolation anomalies, idempotency scope, lock/fence protocols, crash/interleaving matrix |
+| Cross-component architecture, modularity, service boundaries, patterns, technology selection | [Architecture decision space](architecture-decision-space.md) | Layers vs slices vs ports/adapters vs DDD vs modules/microservices; why each exists, selection criteria, reversibility and change cost |
+| React and Next.js state, data fetching, transitions, stale replies, cache identities, forms | [Frontend state and asynchronous UI](frontend-state-and-async.md) | State ownership, local/URL/server/query-cache options, effect lifetimes, competing update strategies, races and proof |
+| PostgreSQL/Drizzle operations, jobs, Temporal, outbox, transactions, external effects, retry, multi-tenant boundaries | [Durable operations and concurrent state](durable-operations.md) | Data storage/query choices, transactions/locks, caches, sync vs async, workflows, external integrations, operations and evidence |
 | A role needs to decide *what evidence proves a design* | [Knowledge pack standard and role proof obligations](pack-standard.md) | How expert knowledge enters design, reviews and test planning, and how to avoid false confidence |
 | Designing or judging a knowledge-assisted workflow | [Counterexample laboratory](scenario-lab.md) | Deliberately deceptive mini-specs plus hidden failure mechanisms that a plausible first-pass design can miss |
 
@@ -19,10 +20,10 @@ The packs are **portable expertise**, not system requirements. Product behavior 
 
 For a **consequential task**, the coordinator assigns a role, then the role should:
 
-1. Name the decision, the product/technical authority, and **which failure domains actually matter**.
+1. Name the decision, product/technical authority, **the plausible solution families and constraints that might change the answer**. Failure risk is one dimension, not the organizing principle.
 2. Select one relevant manual from the table. For cross-boundary changes a second manual may be needed; don't load unrelated manuals.
-3. Use its **decision model and failure timeline** to build or challenge the proposal. Do not just copy a checklist into the final answer.
-4. Produce a brief **knowledge receipt**: `consulted [pack/section] → applicable risks [specific] → counterexample [specific] → proposed guarantee/mitigation → cheapest discriminating evidence`.
+3. Use its **design-space map, trade-off/selection model, interactions and failure examples** to build or challenge the proposal. Do not just copy a checklist into the final answer.
+4. Produce a brief **knowledge receipt**: `consulted [pack/section] → options actually compared → decisive constraints and interactions → preferred choice and why → what could reverse it → minimum useful evidence`. Include risks where relevant, not as the only output.
 5. Before handing the work to Cursor, carry the **identified invariants and negative acceptance** in the small executor packet. Cursor should not need to read the same large manual if those decisions are already settled; the independent reviewer may read the relevant pack to challenge them.
 
 For a trivial local edit, a knowledge pack may be unnecessary. For a race, database migration, cross-tenant cache, retry or provider-side effect, omitting relevant domain knowledge is a design risk.
@@ -48,7 +49,7 @@ The owner's separate [Modern Software Engineer](https://github.com/DenisSkulovic
 
 ## Growth rule
 
-A new pack must have a unique audience/trigger, a coherent mental model, several concrete failure cases with competing remedies, a proof method, and trusted deep references. If those are already covered, improve the existing pack rather than inventing a seventh "senior engineer" skill.
+A new pack must have a unique audience/trigger, a coherent mental model, **a real design-option landscape and decision criteria**, relevant cross-technology interactions, concrete counterexamples, a proof method, and trusted deep references. If those are already covered, improve the existing pack rather than inventing a seventh "senior engineer" skill.
 
 Prioritized candidates after measured use: visual/interaction craft, application security and tenant isolation, data modeling and online migrations, testing strategy and E2E reliability, observability and incident diagnosis, API compatibility, performance and capacity, deployment/rollback, and specialized in-game AI-system engineering. These are **coverage candidates**, not declarations that those packs already exist.
 

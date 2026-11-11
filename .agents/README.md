@@ -9,6 +9,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 | `AGENTS.md` | Safety and essential task routing | Small; every agent session |
 | `.agents/rules/` | Durable project-specific constraints | Only if the task triggers them |
 | `.agents/skills/<name>/SKILL.md` | Repeatable *procedure*, templates and references | Discover description; load body on demand |
+| [`.agents/knowledge/`](knowledge/README.md) | Deep professional engineering manuals: concepts, alternatives, trade-offs, interactions and adversarial examples | One relevant domain/section when a consequential decision merits it, never universal startup |
 | `docs/` and package READMEs | Product intent, technical contracts, maps and evidence | Read the relevant owner/section |
 | `docs/features/<feature>/` | Temporary spec/plan/checkpoint for approved significant work | Current feature only |
 | Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |

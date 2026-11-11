@@ -27,6 +27,12 @@ The [role orchestration owner](roles/README.md) distinguishes **role responsibil
 
 For substantial work, the coordinating chat should first recommend a minimal role graph, specify the owning product/technical decision, then assign focused stages. A subagent or independent chat is an **optional paid/context cost**, not a mandatory step or automatic permission grant. An independent reviewer challenges the author's work rather than reusing its confident conclusion. A failed gate returns to the owning role, not to spontaneous implementation.
 
+## Professional knowledge activation
+
+[The engineering knowledge library](knowledge/README.md) is **not another rulebook**. It helps roles deliberately retrieve a technology's design space: why multiple valid approaches exist, when to prefer one, cross-system interactions, evolution and operational cost, then risks and evidence. Architecture and frontend state are distinct subjects; a transaction reviewer may combine them only when the interface/DB boundary really matters.
+
+At a significant design gate, the role selects **one relevant manual** (and maybe a second crossing a genuine domain boundary), compares plausible options, and carries the resulting decision factors into the small handoff. The **executor need not reload the entire manual** if the architect already resolved the choice and passed its invariants; a separate critic may consult the same domain independently to challenge the proposal. No manuals are always-on.
+
 ## Native subagent surfaces (opt-in)
 
 Only two initially: **design-challenger** and **test-strategist**. Their canonical procedures are linked from [role orchestration](roles/README.md). The `.claude/agents/` definitions restrict tools to read/search and plan mode, while `.cursor/agents/` uses client-supported read-only mode. They inherit the current model to avoid surprising model selection. Treat separate subagent context as a **usage cost**, not free parallel labor; explicit invocation is preferred until actual discovery/auto-delegation is understood.
