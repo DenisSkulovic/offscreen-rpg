@@ -17,6 +17,7 @@ This is a persistent-story RPG with **deterministic mechanical authority** and a
 - **Where are we?** `docs/progress.md` and `pnpm repo:brief` when resuming or disoriented; `docs/README.md` routes product and technical topics. Don't run the brief for a trivial known edit.
 - **What does the implementation do?** `docs/engineering/code-navigation.md` and the relevant package README, then trace the relevant source/callers. Don't load the full repository map for a local edit.
 - **New or materially changed behavior:** agree the affected product contract, then technical contract, before implementing. Use `.agents/skills/feature-workflow/SKILL.md` for significant features or refactors.
+- **Complex work needing several perspectives:** select a responsible role and optional review roles from `.agents/roles/README.md`. Roles define responsibility; skills provide method; agents/chats isolate context. Suggest another chat/subagent only when it adds independent evidence or judgment. No automatic extra agents or permissions.
 - **Investigate, implement, review or reconcile:** use the appropriately scoped skill in `.agents/skills/` when it improves the task. Skills are optional procedures, not required reading on every turn.
 - **Before code changes:** consult the relevant sections of `docs/engineering/code-quality.md`. **Before checks:** consult `.agents/rules/verification.md`. **Before docs/navigation changes:** consult `.agents/rules/documentation.md`.
 

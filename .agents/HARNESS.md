@@ -21,6 +21,12 @@ This harness governs **how** coding agents navigate the three authority layers: 
 
 **Cold start:** root instructions + user task. Find the correct authority **by topic**, then open one relevant section, a source symbol/caller when needed and the smallest useful proof. This file is a *map*, not mandatory startup reading. Do not preload all rules, skills, docs or code to exploit a large context window.
 
+## Role-centered development
+
+The [role orchestration owner](roles/README.md) distinguishes **role responsibility**, **specialized skill**, **agent/session context**, and **model/tool**. The [role catalog](roles/catalog.md) supports UI designers, architects, reviewers, test strategists, implementers, data/security/observability specialists and coordinators without creating a native subagent for every job title. [Assignment contracts](roles/assignments.md) and [UI example](roles/playbooks/ui-feature.md) explain how decisions move between roles.
+
+For substantial work, the coordinating chat should first recommend a minimal role graph, specify the owning product/technical decision, then assign focused stages. A subagent or independent chat is an **optional paid/context cost**, not a mandatory step or automatic permission grant. An independent reviewer challenges the author's work rather than reusing its confident conclusion. A failed gate returns to the owning role, not to spontaneous implementation.
+
 ## Five development modes
 
 1. **Harness setup:** compare an independent reference against `AGENTS.md`, skills, client-specific discovery and tool costs. Output harness Markdown/settings edits. **No gameplay/code changes.**

@@ -13,6 +13,13 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 | `docs/features/<feature>/` | Temporary spec/plan/checkpoint for approved significant work | Current feature only |
 | Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |
 
+## Roles and delegation
+
+- [Role orchestration](roles/README.md): responsibility, authority, context isolation, stage gates and economical multi-tool collaboration.
+- [Role catalog](roles/catalog.md): specialized design, frontend/backend/data, review, test, observability and integrator roles; not a list of always-on subagents.
+- [Role assignments](roles/assignments.md): short, lossless context handoffs and evidence receipts.
+- [UI multi-role playbook](roles/playbooks/ui-feature.md): example of ChatGPT + Claude + Cursor role sequencing and selective parallelism.
+
 ## Conditional rules
 
 - [`working-agreement`](rules/working-agreement.md): scope, handoffs, current lifecycle, responsibilities and Git etiquette; use for material work or ambiguous ownership.
@@ -25,6 +32,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 
 ## Skills
 
+- [`role-orchestration`](skills/role-orchestration/SKILL.md): choose narrowly accountable design/investigation/test/implementation roles and handoffs without spawning agents.
 - [`harness-audit`](skills/harness-audit/SKILL.md): audit Claude/Cursor/ChatGPT development setup and load behavior, without game code changes.
 - [`context-economics`](skills/context-economics/SKILL.md): diagnose development-agent context cost and redundant multi-tool handoffs.
 - [`feature-workflow`](skills/feature-workflow/SKILL.md): significant feature from approved intent to finished, documented implementation.

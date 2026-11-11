@@ -19,6 +19,10 @@ Update the owning technical contract with state and data authority, API/operatio
 
 ## 3. Plan independently reviewable slices
 
+For a **complex or cross-specialty** feature, first select roles, their actual decision authority, independent review lens, bounded context handoffs and safe parallel ownership using [role orchestration](../../roles/README.md). This is not a request to launch a swarm: one agent may fill multiple sequential roles, and only genuinely independent work should be delegated. Preserve the accepted product/technical contracts as the gates between phases.
+
+
+
 `PLAN.md` describes dependency-ordered outcomes. Each ready slice names owning files/areas, preserved behavior, concrete edit, acceptance and **smallest useful verification**. Keep future slices coarse; add implementation detail when they become next. Avoid giant handoffs listing every possible file. Identify the one next executable slice and its prerequisites. For a coding-agent handoff, follow [`implementation-slice`](../implementation-slice/SKILL.md).
 
 ## 4. Implement, verify and reconcile

@@ -25,6 +25,10 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 **Bug investigation.** Reproduce/identify the observation → compare competing causes against the full relevant source/trace → find an experiment that distinguishes them → fix the owning layer → regression check → update permanent owner if assumptions changed. Do not start by designing new systems.
 
+## Roles before tools
+
+A coding agent is a *general execution surface*, not a complete engineering team. For a significant task use [role orchestration](../../.agents/roles/README.md), the [specialist role catalog](../../.agents/roles/catalog.md) and [handoff contract](../../.agents/roles/assignments.md). A product strategist, visual critic, backend architect, test strategist and implementation verifier may all be needed at different **stages**; the selected ChatGPT/Claude/Cursor tool is secondary. A role is not automatically a new agent or simultaneous model request. For a feature, choose a minimal dependency graph with approval gates and optional independent critics, not a mandatory sequence of all possible roles.
+
 ## Tool roles, not a mandatory model procession
 
 | Role | Best-fit tool | Deliverable | Boundary |
