@@ -88,6 +88,30 @@ Do not require an agent to guess all hidden requirements; it should identify *wh
 
 **Decision reversals:** define the user-visible completion SLI first; compare logs, RED/USE metrics, spans and durable operation ledger; trace stage-specific IDs, privacy and cardinality. Don't install a giant monitoring stack before finding the missing evidence. See [observability/diagnostics](observability-and-production-diagnostics.md).
 
+### Scenario K: "Add a required field to every saved story"
+
+**Brief:** A new story setting is mandatory, so add a NOT NULL column with a default and update the API.
+
+**Challenge:** Real databases may contain millions of rows; an old worker is still writing old payloads; a long transaction holds a lock; a background backfill may overwrite a newer user change; an older deployed app may be rolled back after new data is written.
+
+**Decision reversals:** distinguish empty prototype DB versus live multi-version migration; choose additive schema, compatible writer/reader, idempotent bounded backfill, validation and delayed contraction where needed. Verify lock/runner semantics, don't assume Drizzle or PostgreSQL automatically makes this safe. See [data/migration](data-modeling-and-migrations.md).
+
+### Scenario L: "Redis will fix slow story pages"
+
+**Brief:** A team wants Redis because p95 page-load latency is uncomfortable.
+
+**Challenge:** DB SQL spends most of its time on one missing index; browser performs sequential fetch waterfall; the same Redis key expires for all users simultaneously; stale read repopulates after invalidation; a user session switch crosses cache scope.
+
+**Decision reversals:** profile critical path, compare SQL query/index and browser restructuring with local/Redis caches; specify data identity, stale tolerance, Redis-outage fallback and real load measurement. A cache isn't always the highest-value option. See [caching/performance](caching-and-performance.md).
+
+### Scenario M: "Roll back the worker if deployment fails"
+
+**Brief:** A release replaces a Temporal worker and API in rolling fashion. If anything fails, restore the previous container image.
+
+**Challenge:** Old and new worker versions overlap, one workflow has already been dispatched to a paid provider, a new migration changed a durable field and new browser tabs send a newer command shape. A probe reports healthy while accepted actions never publish.
+
+**Decision reversals:** code rollback is not data rollback, durable workflow replay is not a normal stateless restart, and provider dispatch is not undone by container replacement. Compare simple all-at-once release, rolling compatibility, feature flag, staged schema changes and recovery. See [release engineering](release-and-delivery-engineering.md).
+
 ## Scoring that resists theater
 
 Evaluate **decision quality**, not the number of bullets or risk names:

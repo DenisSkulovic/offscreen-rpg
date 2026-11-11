@@ -95,6 +95,18 @@ To evaluate whether the new professional manuals improve **first-pass design jud
 
 Record actual file/section reads, model usage if visible, extra investigation, counterexamples discovered, constraints that reverse the choice, answer quality and human corrections. **These are proposed experiments, not evidence that knowledge packs already improve outcomes.**
 
+## Data, caching and release knowledge trials
+
+The [scenario lab](../../.agents/knowledge/scenario-lab.md) now has K–M for three new specialties. A knowledge-assisted **read-only** design answer should identify alternatives and criteria that materially alter its initial recommendation:
+
+| Scenario | Knowledge that should change a strong first recommendation | Bad first answer |
+| --- | --- | --- |
+| K, required stored field | Empty versus live DB, lock/scan/backfill, old/new writers, versioned source and rollback | "Just make it NOT NULL" |
+| L, slow page and Redis | SQL/React critical path, cache identity/freshness, stampede and outage economics | "Install Redis and set a TTL" |
+| M, worker rollout | Artifact/runtime identity, mixed worker/schema/API versions, queued side effects and user-observed completion | "Roll back the Docker image" |
+
+Test with comparable independent contexts, with/without relevant manual, holding scenario constant and measuring first-pass decision quality, manual reads, actual token usage if shown, human corrections and false-positive complexity. These are **proposed trials**, not observed wins.
+
 ## Current status
 
 - Existing small entrypoint, conditional skills, feature workflow and checkpoint-size audit: **implemented as repository documents**.

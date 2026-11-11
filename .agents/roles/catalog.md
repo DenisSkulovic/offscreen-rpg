@@ -25,8 +25,9 @@
 | **Frontend reviewer** | Verify React/Next.js state, async ordering, accessibility and spec fidelity | Read-only reviewer, changed diff + narrow source |
 | **Backend engineer** | Implement approved API/application operations and typed errors | Cursor executor; use `api-contract-design` for significant API decisions, `architecture-boundary-review` for service ownership |
 | **Backend / transaction reviewer** | Race/lock/retry/idempotency/partial failure analysis with exact state fence | Claude or targeted reviewer; `transactional-correctness-review` |
-| **Data architect** | Schema, identity, source-of-truth, revision and migration options | Source-grounded design; owner approves boundary |
+| **Data architect** | Schema, identity, source-of-truth, revision and migration options | `data-model-review` + [modeling/migration manual](../knowledge/data-modeling-and-migrations.md); owner approves boundary |
 | **Security/privacy reviewer** | Authz across owner identities, secrets, boundaries, input trust and data exposure | Independent scoped `security-architecture-review` with [security knowledge](../knowledge/security-and-trust.md); no silent permission expansion |
+| **Performance/cache specialist** | Locate actual bottleneck, compare query/cache/async options, define freshness and resource costs | `cache-performance-review` + [performance manual](../knowledge/caching-and-performance.md); no infrastructure by default |
 | **Observability specialist** | Meaningful evidence/trace plan, redaction, diagnostic signals and operability | `observability-design-review`, [operations manual](../knowledge/observability-and-production-diagnostics.md); never add telemetry as gameplay authority |
 | **AI systems specialist** | *Game* Storyteller task contracts, retrieval/provenance, prompt boundaries, controlled model evaluation | Technical specialist, separate from coding-agent harness; paid inference explicitly authorized only |
 
@@ -40,7 +41,7 @@
 | **Test executor / investigator** | Run targeted safe checks, classify failure vs flaky environment vs wrong assumption | Claude/Cursor only with exact command permissions |
 | **Independent acceptance verifier** | Audit delivered artifact, diff, proofs and human-visible result against the approved spec | Fresh reviewer; may block or return findings, not self-certify |
 | **Documentation curator** | Repair navigation, authoritative ownership, stale facts and duplicate context | ChatGPT/harness maintenance; docs-only scope |
-| **Release / operations reviewer** | Evaluate deploy, migration, rollback and production risk; never deploy by default | Explicit human gate, separate authorized execution |
+| **Release / operations reviewer** | Evaluate deploy, migration, rollback and production risk; never deploy by default | `release-readiness-review` + [release manual](../knowledge/release-and-delivery-engineering.md), explicit human deployment gate |
 | **Workflow coordinator / integrator** | Select roles, dependencies, worktree ownership, handoff receipts and final convergence | ChatGPT or user-led session; no automatic agents |
 
 **Specialization is orthogonal:** a "test strategist for React async state" combines the *test strategist* role with *frontend-engineering* knowledge. A "data architect reviewing background delivery" combines the *data architect* role with *transactional-correctness-review*. We should not generate a new agent file for every Cartesian-product role combination.

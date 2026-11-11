@@ -50,6 +50,9 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 - [`api-contract-design`](skills/api-contract-design/SKILL.md): API/resource semantics, retry, compatibility, pagination, caching and streaming contract design.
 - [`security-architecture-review`](skills/security-architecture-review/SKILL.md): authentication, authorization, multi-tenant isolation, trust/abuse and privacy choices.
 - [`observability-design-review`](skills/observability-design-review/SKILL.md): logs, metrics, traces, SLOs and operational diagnosis without deployment.
+- [`data-model-review`](skills/data-model-review/SKILL.md): entity identity, SQL/JSON/documents, indexing, schema evolution and migration choices.
+- [`cache-performance-review`](skills/cache-performance-review/SKILL.md): workload bottlenecks, caching/Redis, stale data, resource budgets and measurement.
+- [`release-readiness-review`](skills/release-readiness-review/SKILL.md): delivery/provenance, compatibility, controlled exposure, rollback and recovery.
 - [`transactional-correctness-review`](skills/transactional-correctness-review/SKILL.md): PostgreSQL/Temporal/outbox concurrency, retries and exactly-once effects.
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
 - [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.
