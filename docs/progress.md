@@ -8,7 +8,7 @@
 
 **What remains unproved:** Consequence responses created and updated a clue note but proposed no descriptive identity/relationship/thread documents; departure requested no document recall cues. The trajectory ends at departure, so failed later recall was not observed. The October reinspection corrects the earlier “no notes/lost all recall” diagnosis.
 
-**Next future code unit:** [S3a continuity report](features/2026-11-11--s3a-continuity-report/CHANGE.md), a bounded diagnostic change extracted from the broad Vvardenfell initiative. It must distinguish proposed note/document changes, current retained evidence, publication and actual final request coverage without inventing history. **No code changes are authorized in the November 11 planning audit.** After a separately approved report change, use provider-free acceptance to separate source writes, selection and final packing, then pursue S3b/c/d as distinct code outcomes and later verify Socucius leave/return. The [work route](features/README.md#coding-route) owns the selected packet; [engine model](engineering/engine-model.md) explains the diagnosis.
+**Current development priority:** [portfolio engineering renewal](../TODO.md). Finish the bounded Change workflow, legacy dossier retirement and documentation navigation before selecting a code implementation. Then undertake one focused professional-quality refactor/improvement at a time, beginning with an owner-selected area such as React implementation or UI/UX. **There is no currently authorized gameplay Change.** The [S3a continuity report proposal](features/2026-11-11--s3a-continuity-report/CHANGE.md) and subsequent live return proof remain deferred, not silently cancelled. See [Change work routing](features/README.md) for the transition.
 
 ## Evidence and limits
 
@@ -38,9 +38,9 @@ The saved v16 trajectory ends at fictional second 2,015 with local story-scoped 
 
 ## Where to go next
 
-Use the [documentation map](README.md) to select a product/technical topic, the [code map](engineering/code-navigation.md) for implemented owners, and the [feature index](features/README.md) for execution work. Ordinary gameplay defaults to one-shot tasks with tools disabled. Richer bounded exploration exists, but its default use still needs gameplay evidence; building another agent framework is not the immediate gap.
+For near-term work, start with the [owner's engineering roadmap](../TODO.md) and the [Change workflow](features/README.md), not the next historical gameplay phase. Use the [documentation map](README.md) and [code map](engineering/code-navigation.md) to locate source ownership before choosing a bounded refactor. No Change is ready for automatic implementation while the planning system is being reorganized.
 
-After S3, resume the connected 10–15-turn proof. The owner-retained canon-invention dossier must be activated before a 30–50-turn private-world evaluation. General calendar expansion, broader simulation and UI polish remain deferred.
+Gameplay work including S3 continuity and its connected 10–15-turn proof is deferred. The explicitly owner-retained canon-invention dossier is preserved for eventual gameplay resumption, including its activation condition before a 30–50-turn private-world evaluation.
 
 ## What can be tried
 

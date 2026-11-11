@@ -4,6 +4,8 @@
 
 This is a persistent-story RPG with **deterministic mechanical authority** and an LLM Storyteller. The repository is a pre-POC, not a proven product. Be honest about what is designed, implemented, exercised with fixtures, observed live, and accepted by a human.
 
+**Current owner priority (November 2026):** [engineering portfolio renewal](TODO.md). Finish the Change workflow and legacy planning cleanup before taking on focused frontend/backend/UX/architecture improvements. Gameplay development and the older continuity proposal are intentionally deferred; their appearance in progress/history is not implementation permission.
+
 ## Non-negotiable boundaries
 
 - **Intended truth:** product docs say *what/why*; technical docs say *authority, invariants and failure semantics*; code and tests show *what is currently implemented*. Never quietly alter a requirement to make code look correct. Reconcile discrepancies at the owning layer.
