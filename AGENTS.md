@@ -13,6 +13,7 @@ This is a persistent-story RPG with **deterministic mechanical authority** and a
 
 ## Choose context by task, not by ritual
 
+- **Coding-agent harness, skills, token cost or development process:** start with `.agents/HARNESS.md` and the relevant `.agents/references/` section. This is a *developer-tooling* task; it does **not** authorize edits to game implementation, Storyteller prompts or provider billing.
 - **Where are we?** `docs/progress.md` and `pnpm repo:brief` when resuming or disoriented; `docs/README.md` routes product and technical topics. Don't run the brief for a trivial known edit.
 - **What does the implementation do?** `docs/engineering/code-navigation.md` and the relevant package README, then trace the relevant source/callers. Don't load the full repository map for a local edit.
 - **New or materially changed behavior:** agree the affected product contract, then technical contract, before implementing. Use `.agents/skills/feature-workflow/SKILL.md` for significant features or refactors.

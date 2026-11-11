@@ -26,6 +26,15 @@ Use a small ledger with:
 
 For a comparable baseline, hold goal/acceptance and repository revision as close as feasible; distinguish improvements from task familiarity, model-version changes or warmed caches. It is okay to compare *qualitatively* before paid tools are connected, but don't claim a cost saving from imagination.
 
+## First harness activation tests
+
+- Confirm Cursor loads root `AGENTS.md` and doesn't automatically inject the harness-only `.cursor/rules/project.mdc` on an unrelated coding task.
+- Inspect Cursor's available `.agents/skills/` and compatible `.claude/skills/` for duplicate skill names/advertisements.
+- When Claude Code is connected, check `/context all`, `/skills` and `/usage`; run `/doctor prompt-audit` where supported. Verify that the root import appears, conditional skills are callable and the cost model matches the installed plan.
+- Ask one read-only source question and record whether the agent found the correct product/technical owner without pre-reading unrelated docs. **Don't change game code just to validate harness discovery.**
+
+See [harness architecture](../../.agents/HARNESS.md) and [context reference](../../.agents/references/context-economics.md). Real-client discovery remains **unverified** until these checks are actually performed.
+
 ## Cheap smoke test before buying another subscription
 
 1. Start a fresh coding-agent context at repository root; confirm it sees only minimal rules, can find product and technical owners, and does not ingest all `docs/`.

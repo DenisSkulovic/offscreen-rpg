@@ -1,6 +1,6 @@
 # Agent knowledge and operating model
 
-Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. The [independent coding-agent target](../docs/engineering/coding-agent-target-standard.md), [curated expert sources](../docs/engineering/coding-agent-knowledge.md) and [evaluation protocol](../docs/engineering/coding-agent-evaluation.md) apply to **development tools**, never in-game Storyteller inference. This directory contains **conditional** rules and **on-demand** skills. The current tool-neutral workflow is [AI development system](../docs/engineering/ai-development-system.md). The product/technical docs remain the specification; agent instructions do not replace them.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero harness architecture](HARNESS.md), [industry evidence](references/industry-practices.md) and [context economics](references/context-economics.md) own the software coding-agent setup, not the in-game agent. The [independent coding-agent target](../docs/engineering/coding-agent-target-standard.md), [curated expert sources](../docs/engineering/coding-agent-knowledge.md) and [evaluation protocol](../docs/engineering/coding-agent-evaluation.md) apply to **development tools**, never in-game Storyteller inference. This directory contains **conditional** rules and **on-demand** skills. The current tool-neutral workflow is [AI development system](../docs/engineering/ai-development-system.md). The product/technical docs remain the specification; agent instructions do not replace them.
 
 ## Put knowledge in the correct place
 
@@ -25,6 +25,8 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. The [independ
 
 ## Skills
 
+- [`harness-audit`](skills/harness-audit/SKILL.md): audit Claude/Cursor/ChatGPT development setup and load behavior, without game code changes.
+- [`context-economics`](skills/context-economics/SKILL.md): diagnose development-agent context cost and redundant multi-tool handoffs.
 - [`feature-workflow`](skills/feature-workflow/SKILL.md): significant feature from approved intent to finished, documented implementation.
 - [`codebase-investigation`](skills/codebase-investigation/SKILL.md): evidence-bounded architecture/source investigation without edits.
 - [`architecture-boundary-review`](skills/architecture-boundary-review/SKILL.md): inspect risky package/state/async ownership and propose the smallest defensible design change.

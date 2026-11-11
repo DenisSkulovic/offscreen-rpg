@@ -1,5 +1,5 @@
 ---
-description: Offscreen RPG root policy and task-based routing
-alwaysApply: true
+description: Apply when auditing or redesigning the software coding-agent harness, skill discovery, instructions, process or development token economics
+alwaysApply: false
 ---
-Follow root `AGENTS.md`. Load only the task-relevant documents and skills; don't pre-read the full rules library. Implement the assigned slice without silently redesigning product intent.
+For coding-agent setup tasks, use `.agents/HARNESS.md` and the relevant primary-source reference under `.agents/references/`. Root `AGENTS.md` is already loaded by Cursor, so this rule is not a duplicate always-on project policy. Do not edit the game runtime when the task is agent-harness design.
