@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fail, root, run } from './process.mjs';
 
@@ -6,8 +6,7 @@ function read(relative) {
   return readFileSync(path.join(root, relative), 'utf8');
 }
 
-// These two small Markdown contracts are maintained in the documentation rule.
-// Fail visibly when an owner changes them instead of printing an empty brief.
+// These Markdown headings are maintained in the documentation rule.
 function section(document, heading, source) {
   const lines = document.split(/\r?\n/);
   const starts = lines.flatMap((line, index) =>
@@ -26,25 +25,32 @@ function section(document, heading, source) {
   return value;
 }
 
-function currentPlan(route) {
-  const links = [
-    ...route.matchAll(/^Current plan: \[[^\]]+\]\(([^)]+)\)\s*$/gm),
+// An intentionally empty implementation queue is valid. Never select a parked
+// gameplay Change merely to make the brief happy.
+function currentChange(route) {
+  const declarations = [
+    ...route.matchAll(/^Current change: (.+?)\s*$/gm),
   ];
-  if (links.length !== 1) {
+  if (declarations.length !== 1) {
     throw new Error(
-      'docs/features/README.md: expected one Current plan: Markdown link.',
+      'docs/changes/README.md: expected exactly one Current change declaration.',
     );
   }
-  const absolute = path.resolve(root, 'docs/features', links[0][1]);
-  const relative = path.relative(path.join(root, 'docs/features'), absolute);
+  const selected = declarations[0][1].trim();
+  if (selected === 'none') return null;
+  const match = /^\[[^\]]+\]\(([^)]+)\)$/.exec(selected);
+  if (!match || match[1].includes('#')) {
+    throw new Error('Current change must be none or a relative CHANGE.md link.');
+  }
+  const changeRoot = path.join(root, 'docs', 'changes');
+  const absolute = path.resolve(changeRoot, match[1]);
+  const relative = path.relative(changeRoot, absolute);
   if (
     relative.startsWith('..') ||
     path.isAbsolute(relative) ||
-    path.basename(absolute) !== 'PLAN.md'
+    path.basename(absolute) !== 'CHANGE.md'
   ) {
-    throw new Error(
-      'Current plan must point to a PLAN.md inside docs/features.',
-    );
+    throw new Error('Current change must point to CHANGE.md inside docs/changes.');
   }
   return path.relative(root, absolute).split(path.sep).join('/');
 }
@@ -54,7 +60,7 @@ try {
   if (args.includes('--help')) {
     console.log('Usage: pnpm repo:brief [--checkpoint]');
     console.log(
-      'Read-only Git/status/route summary. --checkpoint includes only the selected plan checkpoint.',
+      'Read-only Git/status/priority summary. --checkpoint includes a selected Change checkpoint, when one exists.',
     );
   } else {
     if (args.some((arg) => arg !== '--checkpoint')) {
@@ -67,8 +73,14 @@ try {
       '## Orientation',
       'docs/progress.md',
     );
-    const plan = currentPlan(read('docs/features/README.md'));
-    const checkpoint = section(read(plan), '## Current checkpoint', plan);
+    const change = currentChange(read('docs/changes/README.md'));
+    let checkpoint = null;
+    if (change && args.includes('--checkpoint')) {
+      const plan = path.posix.join(path.posix.dirname(change), 'PLAN.md');
+      checkpoint = existsSync(path.join(root, plan))
+        ? section(read(plan), '## Current checkpoint', plan)
+        : section(read(change), '## Handoff and next action', change);
+    }
 
     console.log('# Repository brief');
     console.log(
@@ -81,11 +93,15 @@ try {
     console.log('\n## Recent commits');
     console.log(run('git', ['log', '-3', '--oneline'], { capture: true }));
     console.log(`\n## Orientation (docs/progress.md)\n${orientation}`);
-    console.log(`\n## Current gameplay plan\n${plan}`);
+    console.log(`\n## Current Change\n${change ?? 'None selected (valid).'}`);
     if (args.includes('--checkpoint')) {
-      console.log(`\n## Current checkpoint\n${checkpoint}`);
+      console.log(
+        `\n## Current checkpoint\n${checkpoint ?? 'No active implementation Change.'}`,
+      );
     }
     console.log('\n## Read next');
+    console.log('TODO.md — current engineering-portfolio priority');
+    console.log('docs/changes/README.md — Change queue and execution contract');
     console.log('docs/README.md — choose a question and depth');
     console.log(
       'docs/engineering/code-navigation.md — find the implemented owner',
@@ -94,7 +110,7 @@ try {
       '.agents/README.md — conditional rules and repository commands',
     );
     console.log(
-      'Use --checkpoint to include the selected handoff; no services or providers are contacted.',
+      'Use --checkpoint for an active Change handoff; no services or providers are contacted.',
     );
   }
 } catch (error) {

@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | **Initiative** | An outcome/program that may span many changes, investigations, tests and human decisions | No | Authoritative product/technical topic plus a short initiative overview *only when needed* |
 | **Design / investigation** | Resolve an unknown, review an approach, define intent or choose a technical contract | No | Relevant permanent spec, evidence page or temporary research artifact; retire after synthesis |
-| **Change** | One bounded, independently verifiable implementation outcome with an explicit intended diff | **Yes, when executed** | One selected execution packet, currently under `docs/features/` for compatibility |
+| **Change** | One bounded, independently verifiable implementation outcome with an explicit intended diff | **Yes, when executed** | One selected execution packet under `docs/changes/`; no active Change is valid |
 | **Execution slice** | A smaller dependency-ordered portion of a change, with its own proof and handoff | Yes, as part of the change | Same change's short PLAN/checkpoint, not another duplicate dossier |
 | **Evaluation / acceptance** | Measure what already exists through inspection, tests, manual play or controlled live experiments | No, unless tooling/test code itself is being changed | QA/evidence owner, not a fake implementation ticket |
 | **Documentation / harness maintenance** | Improve rules, roles, manuals, product/technical navigation or accuracy | No, unless scripts/tests/executable configuration change | Owning document/skill; no compulsory feature dossier |
@@ -39,7 +39,7 @@ A fresh executor should be able to accept a Change packet without reconstructing
 - **Significant change:** `CHANGE.md` plus `PLAN.md` when dependencies, several independent code slices or a resumable checkpoint justify it.
 - **Large initiative:** retain an overview and pointers to selected Change packets. Do not hand the initiative's entire 30–70 KB dossier to Cursor as an executable instruction.
 
-Current tooling requires `PLAN.md` for the selected route; see compatibility below. This local requirement is an implementation constraint, **not** the ideal standard.
+The selected route is `docs/changes/README.md`. A small selected Change needs only `CHANGE.md`; `PLAN.md` is optional for a resumable execution checkpoint.
 
 ## Lifecycle and permissions
 
@@ -65,14 +65,13 @@ Current tooling requires `PLAN.md` for the selected route; see compatibility bel
 
 **Audit cadence:** when planning paths become confusing, classify each as active code work, program, proposal, evaluation, or completed history. Never delete a dossier merely because its checkpoint is old or large. Confirm unique decisions have a canonical home and inbound links are repaired before retirement.
 
-## Repository compatibility, November 2026
+## Current repository routing, November 2026
 
-The existing read-only `pnpm repo:brief` command parses **exactly one** `Current plan:` link in `docs/features/README.md`, and requires a `PLAN.md` *inside* `docs/features/`. The caller explicitly forbids code changes during this reorganization. Therefore:
-
-- **Keep `docs/features/` physically named for now**; it is a legacy compatibility path, not a claim all its children are executable features.
-- Use `CHANGE.md` for **new bounded code-bearing packets**, with a concise `PLAN.md` for a selected/current packet to satisfy the existing command.
-- Preserve legacy `FEATURE.md`/PLAN dossiers as **initiative/proposal/history context** until a source-backed migration or retirement is safe.
-- To rename/move the selected route later, commission a separate **code-bearing change** that updates `scripts/repo-tools/brief.mjs` and any related tools, plus all inbound links. That is intentionally out of scope now.
+- **`docs/changes/` is canonical** for bounded code-bearing packets. Its index declares exactly one `Current change:` value: `none` or a relative link to a selected `CHANGE.md`. The empty selection is deliberate and legitimate during design, evaluation and documentation work.
+- **`docs/features/` is frozen legacy initiative/history context.** Its old `FEATURE.md` and `PLAN.md` documents, including previous permissions, must never be treated as ready implementation Changes. The explicitly owner-retained canon policy remains intact.
+- **No active Change** means no default executor task. `pnpm repo:brief` reports `none` and `--checkpoint` reports no active checkpoint. A selected `CHANGE.md` may optionally have `PLAN.md`; when absent, the brief uses the Change's handoff section.
+- The [owner's engineering portfolio roadmap](../../TODO.md) supersedes historical product-build sequence as the near-term development priority. Actual implementation permission is still task-specific; an index link isn't authorization.
+- `pnpm repo:docs-health` reviews only existing Change PLAN checkpoints. The old feature dossiers are intentionally excluded from the active checkpoint queue.
 
 ## Independent industry references
 

@@ -1,8 +1,8 @@
 # S3a change: distinguish continuity evidence in the existing report
 
 **Type:** Code-bearing implementation Change (developer diagnostic tool, not a new product capability).
-**Status:** Proposed for the **next coding session**, not authorized or implemented by this documentation audit. Revalidate the source and obtain the owner's go-ahead when returning to coding.
-**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable--nearest-slice).
+**Status:** Proposed; **scheduling: Parked (gameplay track)**. Not the next implementation Change under the November 11 engineering-portfolio priority; no coding is authorized. Revalidate the source and obtain the owner's go-ahead when returning to coding.
+**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable--nearest-slice).
 **Technical authority:** [Canonical files and mechanical dependencies](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 
 ## One bounded code outcome
@@ -13,7 +13,7 @@ The goal is diagnostic attribution of a missed continuation, not automatic memor
 
 ## Source-verified starting point
 
-The real file on November 11 is [`scripts/repo-tools/story-session-report.mjs`](../../../scripts/repo-tools/story-session-report.mjs). The old parent plan incorrectly named `tools/chamber/scripts/story-session-report.mjs`, which is absent.
+The historically inspected file on November 11 was [`scripts/repo-tools/story-session-report.mjs`](../../../scripts/repo-tools/story-session-report.mjs). The old parent plan incorrectly named `tools/chamber/scripts/story-session-report.mjs`, which is absent.
 
 The script **already** reads generation/publication/attempt state from local PostgreSQL; summarizes output `documentChanges`, note-change counts and option `contextDependencies`; inspects canonical `loadedDocuments`/`documentSelection`; records final request message shapes; and optionally reads an HTTP story snapshot. Do **not** duplicate those fields or infer unseen current-note identities. Identify the actual missing evidence by tracing the current source owner.
 

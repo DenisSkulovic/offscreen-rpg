@@ -1,16 +1,17 @@
-// Read-only, zero-provider-cost audit of feature checkpoint context size.
-import { readdirSync, readFileSync } from 'node:fs';
+// Read-only, zero-provider-cost review of active Change execution checkpoints.
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './process.mjs';
 
-const featuresRoot = path.join(root, 'docs', 'features');
-const limit = 300; // Advisory review trigger from documentation policy; not a hard gate.
-const entries = readdirSync(featuresRoot, { withFileTypes: true })
+const changesRoot = path.join(root, 'docs', 'changes');
+const limit = 300; // Advisory review trigger; not a hard gate.
+const entries = readdirSync(changesRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name);
+  .map((entry) => entry.name)
+  .filter((name) => existsSync(path.join(changesRoot, name, 'PLAN.md')));
 
 const results = entries.map((name) => {
-  const pathname = path.join(featuresRoot, name, 'PLAN.md');
+  const pathname = path.join(changesRoot, name, 'PLAN.md');
   let text;
   try {
     text = readFileSync(pathname, 'utf8');
@@ -36,11 +37,12 @@ if (process.argv.length > 2 && !process.argv.slice(2).every((arg) => arg === '--
 } else if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ checkpointReviewWords: limit, results }, null, 2));
 } else {
-  console.log('Feature checkpoint health (read-only; advisory >' + limit + ' words):');
+  console.log('Change checkpoint health (read-only; advisory >' + limit + ' words):');
+  if (!results.length) console.log('No Change execution plans found. An empty queue is valid.');
   for (const result of results) {
     const flag = result.issue ? 'INVALID' : result.review ? 'REVIEW' : 'ok';
     console.log(String(result.words).padStart(5) + ' words | ' + String(result.bytes).padStart(6) + ' bytes | ' + flag.padEnd(7) + ' | ' + result.name);
     if (result.issue) console.log('  ' + result.issue);
   }
-  console.log('Review flags are not failure gates. Move durable evidence to its owner, keep checkpoints actionable, and preserve meaningful design.');
+  console.log('Review flags are not failure gates. Move durable evidence to its owner and keep checkpoints actionable.');
 }

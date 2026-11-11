@@ -11,7 +11,7 @@ Start with the [one-page overview](../README.md), [current engineering priority]
 | Product in one page | [Root README](../README.md) | Experience, core loop, demonstrated boundary and where to go next |
 | Current state | [Progress](progress.md) | What exists, what evidence supports it, largest gaps and next outcome |
 | Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
-| Execution route | [Change/legacy initiative index](features/README.md) → selected Change/PLAN | One future code-bearing outcome, its current permission, evidence and blockers; old initiatives are supporting context |
+| Execution route | [Current Change index](changes/README.md) → selected Change, if any; [legacy initiatives](features/README.md) only for historical context | One future code-bearing outcome, its current permission, evidence and blockers; old initiatives are supporting context |
 | Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |
 | Technical contract | [Technical owner index](technical/README.md), selected below | Authority, state transitions, invariants and intended failure/retry semantics |
 | Implemented flow | [Engineering index](engineering/README.md) → [code navigation](engineering/code-navigation.md) → package guide | Input → authoritative operation → output; concrete source entry points and current limits |
@@ -34,7 +34,7 @@ Technical specifications can include unbuilt design. Package guides describe wir
 | What owns storage, access and presentation? | [Player experience](player-experience.md) | [Data](technical/data.md), [persistence/cache](technical/persistence-and-caching.md), [architecture](technical/architecture.md) | API, web, database and cache entries in [code map](engineering/code-navigation.md) |
 | Did it actually work? | [Benchmark stories](playthroughs.md) | [Execution atlas](technical/playthroughs/README.md) | [Live POC proof](engineering/connected-poc-proof.md), [QA journeys](engineering/qa-journeys.md) |
 | How do I run or maintain it? | [Current progress](progress.md) | [Development](development.md), [code quality](engineering/code-quality.md) | [Agent rules/commands](../.agents/README.md), [verification policy](../.agents/rules/verification.md) |
-| What is still undecided? | [Open questions](questions.md) | Relevant contract's explicit proposed boundary | [Work-type audit](features/AUDIT-2026-11-11.md) distinguishes proposals, initiatives, evaluations and code Changes |
+| What is still undecided? | [Open questions](questions.md) | Relevant contract's explicit proposed boundary | [Current Change system](changes/README.md) and [dated legacy audit](features/AUDIT-2026-11-11.md) distinguish proposals, initiatives, evaluations and code Changes |
 
 ## Read with a question, stop with an answer
 
