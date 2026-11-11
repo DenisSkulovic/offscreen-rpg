@@ -1,3 +1,3 @@
-# Repository instructions
+# Claude Code entry
 
-Read @AGENTS.md and follow its linked shared rules. For substantial features or reworks, use the feature-workflow skill. Keep policies in .agents/, not in this adapter.
+Read @AGENTS.md. Use its task-based document routing rather than preloading all rules and specs. Shared portable skills are in `.agents/skills/`; thin Claude-discoverable adapters live in `.claude/skills/`. Do not duplicate project policy here. Investigations are read-only unless explicitly assigned implementation.

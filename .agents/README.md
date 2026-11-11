@@ -1,25 +1,46 @@
-# Agent configuration
+# Agent knowledge and operating model
 
-Shared rules live in rules/; reusable procedures live in skills/. Root AGENTS.md is a small router, not the rule library. CLAUDE.md, the Cursor rule and Copilot instructions point here rather than holding separate policies.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. This directory contains **conditional** rules and **on-demand** skills. The current tool-neutral workflow is [AI development system](../docs/engineering/ai-development-system.md). The product/technical docs remain the specification; agent instructions do not replace them.
 
-Always read [Working agreement](rules/working-agreement.md) and [Spending](rules/spending.md). The agreement routes conditional detail: [documentation maintenance](rules/documentation.md), [domain/benchmark design](rules/domain-design.md), [Storyteller tuning](rules/storyteller.md), [verification](rules/verification.md), and [code quality](../docs/engineering/code-quality.md). Read only those triggered by the task. Use [feature-workflow](skills/feature-workflow/SKILL.md) for significant work.
+## Put knowledge in the correct place
 
-For substantial Storyteller context, retrieval, memory, tooling, orchestration, tracing or evaluation work, use the [agentic systems field manual](../docs/engineering/agentic-systems-field-manual.md) as an evolving research reference. It is not a fixed architecture or exhaustive authority.
+| Kind | Purpose | Loading policy |
+| --- | --- | --- |
+| `AGENTS.md` | Safety and essential task routing | Small; every agent session |
+| `.agents/rules/` | Durable project-specific constraints | Only if the task triggers them |
+| `.agents/skills/<name>/SKILL.md` | Repeatable *procedure*, templates and references | Discover description; load body on demand |
+| `docs/` and package READMEs | Product intent, technical contracts, maps and evidence | Read the relevant owner/section |
+| `docs/features/<feature>/` | Temporary spec/plan/checkpoint for approved significant work | Current feature only |
+| Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |
 
-Add a focused rule only when a lasting decision needs it. Add a skill for a repeatable procedure with a clear trigger. Keep detail with its owner and link it; do not duplicate policies into every tool or create dozens of empty categories.
+## Conditional rules
 
-Codex/Cursor use the shared skill location. Claude has a thin skill adapter that reads the same procedure. If tool discovery is unavailable, ask the agent to read the skill path explicitly; the workflow must remain usable as plain Markdown. Native tool discovery has not been smoke-tested in each installed application.
+- [`working-agreement`](rules/working-agreement.md): scope, handoffs, current lifecycle, responsibilities and Git etiquette; use for material work or ambiguous ownership.
+- [`documentation`](rules/documentation.md): documentation structure, source-of-truth and link maintenance; use when docs/navigation change.
+- [`domain-design`](rules/domain-design.md): world-independent domain contracts and meaningful fixtures; use for mechanics/domain design.
+- [`storyteller`](rules/storyteller.md): task/prompt/context tuning and behavioral comparison; use for Storyteller changes.
+- [`verification`](rules/verification.md): safe, proportionate checks; use before choosing checks.
+- [`spending`](rules/spending.md): paid model and accounting permissions; required for provider/credit/credential work, never just because code contains an LLM package.
+- [`code quality`](../docs/engineering/code-quality.md): relevant sections for implementation and review.
 
-## Repeated repository operations
+## Skills
 
-Use the checked-in commands instead of reconstructing their Windows/database safety steps:
+- [`feature-workflow`](skills/feature-workflow/SKILL.md): significant feature from approved intent to finished, documented implementation.
+- [`codebase-investigation`](skills/codebase-investigation/SKILL.md): evidence-bounded architecture/source investigation without edits.
+- [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
+- [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.
+- [`documentation-reconciliation`](skills/documentation-reconciliation/SKILL.md): repair contradictions, navigation and unnecessary verbosity.
+- [`storyteller-tuning`](../docs/skills/storyteller-tuning/SKILL.md): exact-packet evaluation and targeted Storyteller quality changes.
 
-- `pnpm repo:brief` prints Git, the current progress orientation and the selected gameplay plan. Add `--checkpoint` to include only that plan's current handoff. It reads the route from the feature index, fails visibly on a missing route/checkpoint, and never contacts services or providers. It supplements the entrypoint's required rule reads.
-- `pnpm infra -- <compose arguments>` finds Docker Desktop's CLI on this workstation even when it is missing from `PATH`. `infra:up` and `infra:down` use the same wrapper.
-- `pnpm db:baseline` replaces the one generated pre-POC migration and restores the prior files if generation fails. Review the resulting schema diff before commit.
-- `pnpm db:reset:test` recreates only `offscreen_auth_test` and applies the baseline.
-- `pnpm test:focus -- <suite> "optional test name"` builds the integration workspace, resets that disposable database and runs one named offline suite/file. It is an explicit optional check, not a start-of-turn ritual.
+Cursor discovers project skills from `.agents/skills/` directly. Claude loads the adapters under `.claude/skills/`, which point to the same canonical skills. Discoverability should be smoke-tested in each installed client; direct path invocation remains valid if discovery misses a skill.
 
-These commands do not commit, push, repair Docker Desktop or authorize model calls. The focused integration command explicitly removes provider credentials and live opt-in from its build/test environment. Add another helper only after the same safe procedure has been repeated enough to justify maintaining it.
+## Safe commands (inspect when relevant)
 
-Directory conventions follow [Cursor's skill documentation](https://prod.cursor.com/docs/skills) and [Claude's project skill documentation](https://code.claude.com/docs/en/skills). Adapters contain routing only; edit the canonical skill when changing the procedure.
+- `pnpm repo:brief [--checkpoint]`: current Git state, progress and current feature; read-only, no provider call.
+- `pnpm infra -- <args>`: local Docker compose wrapper; infrastructure changes are not automatic.
+- `pnpm test:focus -- <suite> [test-name]`: targeted offline integration, **resets the disposable test DB**; use only with that side effect understood.
+- `pnpm db:baseline`: rewrites the disposable POC baseline migration; review the result.
+- `pnpm db:reset:test`: destroys and recreates only the designated test database.
+- `pnpm story:local` / `pnpm chamber`: interactive Story mode and fixture harness; check explicit provider opt-in and run mode before use.
+
+Do not require every new agent to run all commands or read the whole index. The next task determines the route.

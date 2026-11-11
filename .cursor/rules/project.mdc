@@ -1,6 +1,5 @@
 ---
-description: Shared project rules and feature workflow
+description: Offscreen RPG root policy and task-based routing
 alwaysApply: true
 ---
-
-Read AGENTS.md at the repository root and its required shared rules before work. Use .agents/skills/feature-workflow/SKILL.md for significant features and reworks. This file is a routing adapter; canonical policies live in .agents/.
+Follow root `AGENTS.md`. Load only the task-relevant documents and skills; don't pre-read the full rules library. Implement the assigned slice without silently redesigning product intent.

@@ -1,5 +1,3 @@
-# Repository instructions
+# Offscreen RPG instructions
 
-Read [AGENTS.md](../AGENTS.md) for scope, spending and verification rules. Before changing or reviewing implementation, read [Code quality](../docs/engineering/code-quality.md).
-
-Treat correctness and human maintainability as separate review criteria. Keep explicit domain boundaries, use named parameter objects for ambiguous identifiers, avoid nested ternaries and unjustified assertions, and preserve transaction/retry invariants. Do not copy poor existing patterns or launch broad cleanup. Never enable paid model calls from tests. These files are the canonical rules; do not create a competing style guide here.
+Follow the short `AGENTS.md` and load task-relevant instructions only. Product/technical docs define intended behavior; code and tests supply evidence of actual behavior. For implementation, consult only the relevant sections of `docs/engineering/code-quality.md` and `.agents/rules/verification.md`. Preserve game/mechanical authority and safe retry/transaction boundaries. Never turn on live AI providers for CI or tests. Avoid unrelated cleanup and duplicate documentation.

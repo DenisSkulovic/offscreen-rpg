@@ -86,7 +86,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @offscreen/api exec playwright install --with-deps chromium
+      - run: pnpm --filter @offscreen/api-integration exec playwright install --with-deps chromium
       - run: docker compose up temporal -d --wait --wait-timeout 120
       - run: pnpm test:auth
         env:

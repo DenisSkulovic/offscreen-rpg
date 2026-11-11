@@ -1,58 +1,39 @@
-# Working agreement
+# Working agreement for substantial work
 
-Read this and [spending](spending.md) at the start of work. Task-specific detail is routed below; do not load every linked rule.
+Root `AGENTS.md` owns minimal global boundaries. Read this agreement for a significant change, a cross-package task, or an ambiguous handoff. Do not automatically load it for a typo or a narrow, fully specified edit.
 
-## Product → Technical → Code
+## Authority and design order
 
-Code implements the product and technical specifications. Before behavior changes, update the affected product description, then its technical contract, then implement. For structural work with no product effect, confirm the existing product contract and update only the relevant technical owner. Correct a design problem at its owner; never leave known contradictions.
+1. **Product specification** defines player/developer outcomes and their observable acceptance. Start with `docs/vision.md`, `docs/concepts.md`, then the *affected* product owner via `docs/README.md`.
+2. **Technical specification** defines ownership, transitions, failure/retry semantics, data contracts and cost limits. Update the affected authoritative topic rather than cloning its explanation in a plan.
+3. **Code** implements the contracts; tests, traces and play are evidence of behavior. An implemented alternative is not automatically the accepted design.
 
-Distinguish proposed, implemented and verified behavior; [progress](../../docs/progress.md) owns current coverage. Use [concepts](../../docs/concepts.md) before introducing gameplay nouns. Turns, decisions, scenes, passages, model rounds and memory segments are distinct; there are no chapters. The engine is world-independent and creatively neutral: profiles/campaign content choose tone and pace, while code owns rules, time, evidence, persistence, permissions and cost.
+For new/changed behavior: update product intent, then technical contract, then code. For a bug where intent and contract already say the right thing: keep them, repair the code, and add an appropriate regression check. For an internal structural change with no product effect: confirm the existing product contract, update the technical owner if responsibility changes, then implement. Correct discovered drift; distinguish **designed**, **implemented**, **fixture-exercised**, **live-observed**, and **human-accepted** statements. `docs/progress.md` owns present coverage.
 
-Keep one authoritative explanation per decision. Replace obsolete text in place; Git holds history. Open product choices belong in [questions](../../docs/questions.md). Brainstorming examples are not automatic requirements.
+## Invariants not to optimize away
 
-## Navigation and durable understanding
+- Engine is world-independent and creatively neutral. The selected profile/world determines tone, pace and fiction. Game/application logic owns mechanics, fictional time, rights, persistence, model budget and publication.
+- A *Storyteller turn*, *scene*, *passage*, *model round* and *memory segment* are different concepts. Use `docs/concepts.md`; no chapters.
+- Narration, offers and model-generated changes are proposals until validated and published against the authoritative state. Do not convert fictional prose into mechanical effects without admission.
+- Idempotency, clock advancement, transaction ordering, durable outbox/Temporal execution, document-root commits, budget reservations and ambiguous provider failure are correctness boundaries. Never weaken them for convenience.
+- A saved fact is not proof that retrieval selected it; selection is not proof it survived request packing; generation is not publication. Trace the complete path when diagnosing continuity.
+- Pre-POC uses disposable local data and one baseline migration by policy. Never generalize that permission to external/user-owned data.
 
-Start with `pnpm repo:brief`, then the selected plan and [code map](../../docs/engineering/code-navigation.md). For rediscovery or an unfamiliar domain, use the [documentation map](../../docs/README.md). Read relevant sections, not whole libraries. Preserve non-obvious discoveries beside their owner during the same change; link rather than copy.
+## Operating behavior
 
-| Before this work | Read this owner |
-| --- | --- |
-| Documentation, navigation, rules or cross-file responsibility changes | [Documentation maintenance](documentation.md) |
-| Shared domain/progression contracts or benchmark/fixture changes | [Domain design and living benchmarks](domain-design.md) |
-| Code implementation or review | [Code quality](../../docs/engineering/code-quality.md) |
-| Checks or verification planning | [Verification](verification.md) |
-| Significant feature or rework | [Feature workflow](../skills/feature-workflow/SKILL.md) |
-| Storyteller quality, profile, prompt, context or route tuning | [Tuning discipline](storyteller.md) and [tuning procedure](../../docs/skills/storyteller-tuning/SKILL.md) |
-| Substantial context/retrieval/memory/tools/orchestration/tracing/evaluation design | Relevant sections of the [agentic systems field manual](../../docs/engineering/agentic-systems-field-manual.md); research reference, not policy or final architecture |
-| Starting or repairing infrastructure | [Local dependencies](../../docs/development.md#local-dependencies); use the verified Docker Desktop path and documented recovery |
+- Trace the **narrow actual route** before proposing changes. Prefer an existing owning operation over a new framework, service, abstraction or parallel truth store.
+- A significant feature/rework uses `feature-workflow`; a bounded authorized coding task uses `implementation-slice`. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
+- Architectural discoveries should identify the owner, actual source, consequence, and the smallest useful next step. Do not write long exploratory transcripts into durable docs.
+- Product intent and technical architecture can be creatively designed in ChatGPT; a codebase-connected investigator can validate feasibility; Cursor usually implements bounded slices. Tool allocation is an economic default, not a mandatory three-model ceremony.
+- A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass.
+- Use a focused read/review budget: find symbols and headings first; inspect the owner and immediate edges; expand only when the evidence requires it. Summarize useful discoveries in a current owner, not duplicated in five places.
 
-## Lifecycle and scope
+## Checkpoints and Git
 
-This is a raw, rapidly evolving POC and portfolio project. Build balanced connected flows; do not perfect a subsystem while the experience remains disconnected. Scripted fixtures are not a functioning AI storyteller.
+At a meaningful interruption, update the active feature PLAN's **current checkpoint**: revised phase, specific edited files, checks and limits, unresolved issue, exact next step and source revision. The plan is an execution workspace, not a diary. Completed plans are retired after durable facts are folded into their permanent owners; Git is the archive. Preserve explicitly retained dossiers.
 
-There is no production or user-owned game data. Remove discarded prototype formats instead of adding compatibility code. Keep exactly one current baseline migration; fold schema changes into it and reset disposable databases. Begin immutable additive migrations only after the owner declares a lifecycle change or identifies data that must survive. Preserve private evidence needed for an active investigation before resetting. Credentials and external side effects always require explicit accounting.
+Inspect Git status before broad editing and before a commit. Preserve unrelated changes. Prefer coherent commits, but do not silently force push, rewrite history, deploy, or push changes when handoff expectations are unclear. A local checkpoint and explicit report are safer than a surprise remote mutation.
 
-Checks are optional under [verification](verification.md), which overrides stricter plan/guidance requirements until the owner changes the lifecycle. Default to no routine check commands. Backend work uses application operations, authenticated HTTP and direct artifact/state inspection; browser driving is for requested UI work or deliberate human-experience QA. Improve an inconvenient backend harness instead of defaulting to UI automation.
+## Verification and spend
 
-Observability is product behavior: durable game history records meaningful facts; structured operational events diagnose machinery. Apply the [code-quality observability boundary](../../docs/engineering/code-quality.md#observability-and-game-history) when changing flows.
-
-## Roles and handoffs
-
-The owner prefers Codex for investigation/design/review and Cursor for bulk coding. Do not start large implementation passes without being asked, launch another task/agent, or switch subscriptions/models automatically. One implementation owner per slice; preserve unrelated working changes.
-
-Significant work uses the feature workflow. Agree the product vision before bulk implementation; existing authorization persists across agreed phases. Stop only for a material scope, vision or cost change. When asked to prepare implementation, deliver bounded phases with dependencies, acceptance and an exact next slice, not another blanket approval gate.
-
-Name feature folders `YYYY-MM-DD--HH-mm--feature-name` in local repository time; the creation timestamp is immutable. They are temporary execution workspaces, not a backlog/archive. Keep only genuinely unfinished authorized outcomes with exact next actions and concrete blockers. When complete, fold durable decisions/evidence/gaps into permanent owners and delete the folder in the same slice. Solve a blocker, select its dependency, or move deferred needs into permanent roadmap/questions owners; do not retain vague placeholder chains. Honor explicitly owner-retained dossiers.
-
-At handoff, rewrite PLAN's phase, reviewed revision, changes, verification limits, blocker and exact next step. Keep it short enough to resume without the conversation. Use existing tools/local substitutes; paid services and deployment require existing explicit authority under [spending](spending.md). Keep private payloads, credentials and player data out of Git.
-
-## Agent and prompt tuning discipline
-
-Before tuning, read [the focused Storyteller rule](storyteller.md). It preserves creative neutrality, layer ownership, contrasting cases, exact-packet baselines and schema/admission alignment. A disappointing result alone does not authorize changing a shared prompt.
-
-## Git checkpoint hygiene
-
-Inspect status before each substantial slice. After a coherent slice has updated docs/checkpoints and chosen verification, make a descriptive commit before another substantial slice. Do not let a few independent slices or a full day accumulate without a checkpoint.
-
-Before commit, review status, diff summary, untracked files and `git diff --check`; exclude generated output, local data, credentials, provider payloads and temporary diagnostics. Never discard unfamiliar changes to manufacture a clean tree. Prefer an honest checkpoint over a falsely atomic multi-day commit.
-
-Push completed checkpoints when this is the established shared branch and a normal fast-forward. No force-push, published-history rewrite, remote changes or surprise branches. If authentication, protection, divergence or ownership is uncertain, retain the local commit and report the exact blocker. Include commit/push state in an unfinished handoff.
+Use [proportionate verification](verification.md); code and docs checks have no live-provider permission. Review of a diff is still needed even if checks pass. Paid calls, cloud deployment and credentials are governed by [spending](spending.md) and task-specific explicit authority. Recorded historical credit amounts are not a current balance. End each material slice with outcome, evidence and spending status.

@@ -1,44 +1,32 @@
 ---
 name: feature-workflow
-description: Design, phase, implement or review a significant Offscreen RPG feature or cross-component rework with persistent handoff documents. Use for substantial behavior or architecture changes; routine fixes and simple documentation edits need no feature folder.
+description: Carry a significant Offscreen RPG feature or refactor from agreed intent through technical design, bounded implementation, convergence and handoff; not for small fixes.
 ---
 
-# Feature workflow
+# Significant feature workflow
 
-Read the repository entrypoint and relevant rules. Use `docs/features/YYYY-MM-DD--HH-mm--<descriptive-kebab-case-name>/FEATURE.md` and `PLAN.md` for one significant change. Use the repository's local timezone at creation; keep the timestamp unchanged for the life of the feature. Search for an existing active feature before creating another. Read only the current feature and the product/technical material it touches.
+Use one existing or new `docs/features/YYYY-MM-DD--HH-mm--descriptive-name/` workspace with `FEATURE.md` and `PLAN.md`. Existing templates: [`FEATURE`](assets/FEATURE.md), [`PLAN`](assets/PLAN.md). Keep the initial timestamp. Do not make a new dossier for a two-line bug fix, or accumulate duplicate feature folders.
 
-## Shape the feature
+## 1. Specify the outcome
 
-Trace an actual user flow and inspect the current implementation. Distinguish the user's brainstorming from requirements. Explain worthwhile alternatives and consequential unknowns; do not translate each example into a new subsystem.
+Start from the **player/developer behavior**, not a component idea. Trace the relevant current flow and contrast it with one representative desired flow. Write acceptance that is observable: expected state and narration, unhappy path, interruption/retry, cost where relevant. Record alternatives and consequential uncertainty, without turning examples into universal requirements. Ask for a product decision only if not already authorized.
 
-Draft FEATURE.md using [the feature template](assets/FEATURE.md). Make scope and acceptance observable enough for the owner to recognize the intended product. Include a representative playthrough and relevant unavailable/late/retry behavior. Technical-only reworks instead describe the maintainer/developer outcome and invariants; do not invent player features.
+`FEATURE.md` is a **temporary decision/handoff artifact**, not a second product specification. After agreement, update permanent product docs at their owners. Keep status explicit: proposal, approved scope, implementation, evidence.
 
-Keep the document a focused proposal. Ask the user to agree the vision before bulk implementation, unless they already explicitly approved this same scope. Record the actual approval and its scope in the current status, never infer approval from silence. Preparing this proposal and plan is not permission for paid calls or deployment.
+## 2. Establish technical ownership
 
-## Establish the technical contract and phases
+Update the owning technical contract with state and data authority, API/operation boundaries, failure/retry/idempotency, cost/security limits and affected interfaces. Trace real code before finalizing a technically exact plan. Reject proposals that solve one seam by duplicating authority in another. Prefer small modifications to an established owner over speculative framework growth.
 
-Once the vision is agreed, update the owning product documents, then the relevant technical documents. Their current text becomes the maintained specification; link it from FEATURE.md rather than copying it. Preserve the honest distinction between intended and implemented behavior.
+## 3. Plan independently reviewable slices
 
-Use [the plan template](assets/PLAN.md). Each phase needs a concrete outcome, owning components, dependencies, bounded edits, acceptance/checks and an exit condition. Size phases so a fresh coding chat can implement and verify one without understanding the entire repository. Separate independently reviewable responsibilities, while keeping transactions or inseparable contract changes coherent.
+`PLAN.md` describes dependency-ordered outcomes. Each ready slice names owning files/areas, preserved behavior, concrete edit, acceptance and **smallest useful verification**. Keep future slices coarse; add implementation detail when they become next. Avoid giant handoffs listing every possible file. Identify the one next executable slice and its prerequisites. For a coding-agent handoff, follow [`implementation-slice`](../implementation-slice/SKILL.md).
 
-Put executable detail only in the nearest ready phase. Later phases need enough scope to prevent drift, not speculative function-by-function designs. Resolve material data ownership, async/retry and authorization questions before a dependent phase starts.
+## 4. Implement, verify and reconcile
 
-For this project, default to preparing the implementation handoff for Cursor. Codex reviews/designs unless the user asks it to implement. Do not dispatch another tool or agent yourself.
+Implement one approved slice, inspect actual diff, run risk-proportionate provider-free checks, and compare against acceptance. No automatic new feature, independent subagent, broad cleanup or paid inference. A discrepancy between product and code is a defect to diagnose, not permission to reduce the specification. Human gameplay evidence is needed for claims about fun, pacing and atmosphere.
 
-## Execute an authorized phase
+## 5. Checkpoint, converge, retire
 
-Read its checkpoint, inspect Git status and confirm assumptions against code. Identify existing behavior to preserve and intentional changes. Implement one coherent phase. Checks are optional during the POC lifecycle under the verification rule; if requested or directly useful, batch only the selected checks after the code. Do not chase green results or let minor issues prolong the work.
+After each material slice, rewrite `PLAN.md`'s `## Current checkpoint`: phase, inspected revision, what changed, observed checks and limits, blocker, exactly next action, spend. Update `docs/progress.md` only when capability/evidence genuinely changed. The reviewer can use [`diff-review`](../diff-review/SKILL.md) to compare code to feature acceptance and technical invariants.
 
-Review the diff and trace the main path plus relevant failure/retry behavior. A green check is not proof of good design. If blocked, fix within the agreed scope or narrow the next action; do not mark the phase complete or keep expanding the task.
-
-After each phase, update PLAN.md's current checkpoint and docs/progress.md where project status changed. Record actual commands/results and any limits, not raw terminal output. Move on to the next authorized phase when its dependencies pass. Do not add an approval ritual after every phase; pause only for a material scope/design decision or an explicit review boundary.
-
-## Review and finish
-
-A reviewer compares the actual diff with approved acceptance, documentation and behavioral evidence. Report concrete defects with locations, consequences and a focused repair/check. Distinguish regressions, unfinished planned work and pre-existing debt. Do not certify untested behavior or create a separate review.md.
-
-A feature is complete when its agreed implementation scope is delivered, significant known blockers are resolved and permanent docs reflect the result. During the POC lifecycle, passing checks is not a completion gate; distinguish implemented behavior from verified behavior and record minor follow-ups without delaying handoff. Feature folders are temporary: at every checkpoint decide whether the folder still owns executable work. When scoped phases are complete, fold lasting behavior, tradeoffs, acceptance limits and follow-on gaps into permanent product, technical, QA or questions documents, update incoming links, and delete the folder in the same slice. Git is the archive. Never retain a completed folder merely as history, a list of possible enhancements or a reminder to clean up later.
-
-If a folder is blocked, name the concrete dependency and exact unblocking action. Resolve it when it is the active route; otherwise move the deferred need into the permanent owner or a single dependency feature and delete redundant or dormant folders. Avoid chains of placeholder feature folders that only point at one another. Keep docs/features/README.md a current index, not a completed-work ledger.
-
-For interruption or handoff, leave only the latest checkpoint: phase, base/reviewed revision, working changes, verification, unresolved questions and exact next action. Resume from that state rather than regenerating the plan.
+Completion requires planned scope, durable documentation and a truthful evidence receipt. Do not keep finished feature folders as an archive: fold enduring decisions into permanent docs, preserve outstanding questions in the right owner, update links and retire the folder. Preserve explicit owner-retained dossiers. Git holds history.
