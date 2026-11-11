@@ -1,6 +1,6 @@
 ---
 name: cursor-handoff
-description: Translate a settled Offscreen RPG product/technical decision and feature PLAN into one economical, bounded Cursor coding-agent instruction with precise context anchors and verification. No implementation.
+description: Translate a settled Offscreen RPG product/technical decision and bounded code-bearing Change/PLAN into one economical, bounded Cursor coding-agent instruction with precise context anchors and verification. No implementation.
 ---
 
 # Cheap executor handoff: approved specification to Cursor
@@ -9,9 +9,9 @@ description: Translate a settled Offscreen RPG product/technical decision and fe
 
 ## Source of truth
 
-Use the approved product contract, owning technical section, selected PLAN checkpoint and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.
+Use the approved product contract, owning technical section, selected CHANGE.md/PLAN checkpoint (if any) and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.
 
-Read the current source path(s) sufficiently to avoid fictitious file names; list paths as starting anchors, not as a giant exhaustive file list. Reuse the feature's existing PLAN; don't generate a second task document for every small slice.
+Read the current source path(s) sufficiently to avoid fictitious file names; list paths as starting anchors, not as a giant exhaustive file list. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
 
 ## Deliver this bounded packet
 

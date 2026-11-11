@@ -1,36 +1,48 @@
 ---
 name: feature-workflow
-description: Carry a significant Offscreen RPG feature or refactor from agreed intent through technical design, bounded implementation, convergence and handoff; not for small fixes.
+description: Plan and carry out one bounded code-bearing implementation Change from approved product/technical intent to scoped execution, verification and retirement. Legacy skill path retained for existing repo routing; do not use for design-only or evaluation tasks.
 ---
 
-# Significant feature workflow
+# Code-bearing Change workflow (legacy skill filename)
 
-Use one existing or new `docs/features/YYYY-MM-DD--HH-mm--descriptive-name/` workspace with `FEATURE.md` and `PLAN.md`. Existing templates: [`FEATURE`](assets/FEATURE.md), [`PLAN`](assets/PLAN.md). Keep the initial timestamp. Do not make a new dossier for a two-line bug fix, or accumulate duplicate feature folders.
+**Start with the [independent work-unit standard](../../references/change-work-unit-standard.md).** The word "feature" in this skill's path is historical. In this harness a **Change** is an independently reviewable outcome whose execution modifies source code, tests, scripts, migrations or executable configuration. Product initiatives, architectural research, story-quality evaluations and docs-only maintenance are different work types. They must not generate fake coding tickets.
 
-## 1. Specify the outcome
+**Present compatibility:** `pnpm repo:brief` currently requires one selected `PLAN.md` under `docs/features/`. Preserve that route until the owner separately authorizes a script change. New packets use [`CHANGE.md`](assets/CHANGE.md), plus [`PLAN.md`](assets/PLAN.md) when selected or needing multiple implementation slices. Existing `FEATURE.md` dossiers are *legacy initiative/proposal/history*, not automatic implementation orders.
 
-Start from the **player/developer behavior**, not a component idea. Trace the relevant current flow and contrast it with one representative desired flow. Write acceptance that is observable: expected state and narration, unhappy path, interruption/retry, cost where relevant. Record alternatives and consequential uncertainty, without turning examples into universal requirements. Ask for a product decision only if not already authorized.
+## 1. Select a measurable code outcome
 
-`FEATURE.md` is a **temporary decision/handoff artifact**, not a second product specification. After agreement, update permanent product docs at their owners. Keep status explicit: proposal, approved scope, implementation, evidence.
+First establish the real product/developer objective. Distinguish what is **already implemented**, what needs human design/acceptance, and what still requires code. One Change should be small enough to implement, verify, review and close without reopening an entire initiative.
 
-## 2. Establish technical ownership
+- **Code delta required:** name the actual executable/test/configuration boundary expected to change. A design review or test *run* without code modification is not a Change.
+- **Scope:** one cohesive outcome and the dependencies genuinely needed to prove it. Split unrelated deliverables, risky permission domains or design-dependent outcomes.
+- **No arbitrary size cap:** cost depends on conceptual scope, source fanout, dependencies, evidence and potential harm, not lines or prompts alone.
 
-Update the owning technical contract with state and data authority, API/operation boundaries, failure/retry/idempotency, cost/security limits and affected interfaces. Trace real code before finalizing a technically exact plan. Reject proposals that solve one seam by duplicating authority in another. Prefer small modifications to an established owner over speculative framework growth.
+Do not make a new folder for a trivial correction already clear from its contract; a direct bounded task is fine. Do not create duplicate folders for the same unfinished outcome.
 
-## 3. Plan independently reviewable slices
+## 2. Resolve intent and authority before implementation
 
-For a **complex or cross-specialty** feature, first select roles, their actual decision authority, independent review lens, bounded context handoffs and safe parallel ownership using [role orchestration](../../roles/README.md). This is not a request to launch a swarm: one agent may fill multiple sequential roles, and only genuinely independent work should be delegated. Preserve the accepted product/technical contracts as the gates between phases.
+Consult the relevant product/technical specification headings; these are authoritative, not the temporary Change packet. Trace actual source and tests narrowly, and compare with the proposed scope. **Stale file paths or old implementation approvals are not evidence.**
 
+For a significant architecture/design decision, use [role orchestration](../../roles/README.md), appropriate professional knowledge and an independent critical lens when warranted. The purpose is to settle *alternatives and constraints* before Cursor implements, not to spawn a meeting factory.
 
+A proposal remains Proposed until scope, current owner, relevant safeguards, proof and user permission are clear. Provider calls, DB migrations, hosted actions and broad checks require their separate permissions.
 
-`PLAN.md` describes dependency-ordered outcomes. Each ready slice names owning files/areas, preserved behavior, concrete edit, acceptance and **smallest useful verification**. Keep future slices coarse; add implementation detail when they become next. Avoid giant handoffs listing every possible file. Identify the one next executable slice and its prerequisites. For a coding-agent handoff, follow [`implementation-slice`](../implementation-slice/SKILL.md).
+## 3. Write a self-contained executor handoff
 
-## 4. Implement, verify and reconcile
+`CHANGE.md` records the one outcome, authorities, current source/unknowns, intended code/test delta, exclusions, success and discriminating negative acceptance. Its purpose is a cheap transfer between ChatGPT design, source-connected Claude investigation and Cursor implementation.
 
-Implement one approved slice, inspect actual diff, run risk-proportionate provider-free checks, and compare against acceptance. No automatic new feature, independent subagent, broad cleanup or paid inference. A discrepancy between product and code is a defect to diagnose, not permission to reduce the specification. Human gameplay evidence is needed for claims about fun, pacing and atmosphere.
+Use `PLAN.md` **only** for a selected compatibility route or meaningful multi-step implementation. Describe dependency-ordered *code* outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
 
-## 5. Checkpoint, converge, retire
+Use [cursor-handoff](../cursor-handoff/SKILL.md) for an executable prompt; it must not send entire initiative histories or let Cursor redefine product intent.
 
-After each material slice, rewrite `PLAN.md`'s `## Current checkpoint`: phase, inspected revision, what changed, observed checks and limits, blocker, exactly next action, spend. Update `docs/progress.md` only when capability/evidence genuinely changed. The reviewer can use [`diff-review`](../diff-review/SKILL.md) to compare code to feature acceptance and technical invariants.
+## 4. Implement only when authorized
 
-Completion requires planned scope, durable documentation and a truthful evidence receipt. Do not keep finished feature folders as an archive: fold enduring decisions into permanent docs, preserve outstanding questions in the right owner, update links and retire the folder. Preserve explicit owner-retained dossiers. Git holds history.
+One owner applies the approved delta, inspects diff, runs safe proportionate checks and evaluates expected *and negative* behavior. No automatic unrelated refactors, new provider spend, staging DB reset, agent swarms or new feature invention.
+
+If code reveals that the approved contract is wrong/incomplete, **return that decision to the owning design role**, reconcile permanent specs, then resume implementation under a revised Change. A green fixture is not proof of connected gameplay.
+
+## 5. Converge, record evidence and retire
+
+Record what landed, tests/inspection actually run, affected revision, remaining risk and exact next action. Update permanent product/technical/evidence owners only when relevant. A completed Change is removed from the **active** route; Git keeps historical snapshots. Don't preserve a duplicate living implementation history when its decisions have a durable owner.
+
+Owner-retained and dormant legacy dossiers require explicit preservation. Before deleting/moving any old folder, inspect its unique decisions, inbound links and approval boundaries. See the [dated legacy audit](../../../docs/features/AUDIT-2026-11-11.md).

@@ -1,28 +1,15 @@
-# Feature title
+# Legacy FEATURE template (do not use for new code packets)
 
-Status: Draft / Agreed / Implementing (choose one)
-Approval: Pending, or the user's agreed scope and date.
+This was the original feature/initiative template. It is preserved so old FEATURE.md dossiers remain interpretable; **new implementation work uses [CHANGE.md](CHANGE.md)** and the [work-unit standard](../../../references/change-work-unit-standard.md). An initiative or design-only exploration is **not** an implementation Change.
 
-## Intended outcome
+## Historical fields
 
-Who benefits, what changes for them, and why this belongs in the current POC.
+- Feature title
+- Status and original owner approval
+- Intended product outcome and representative flow
+- Scope and boundaries
+- Acceptance and negative examples
+- Decisions still needed
+- Product/technical specification owners
 
-## Representative flow
-
-Describe entry, action, visible result and continuation. Include the failure, timing or return-to-story cases that materially shape this feature.
-
-## Scope and boundaries
-
-What this change includes; explicitly deferred adjacent work. State intentional behavior changes and important existing invariants.
-
-## Acceptance
-
-Observable conditions for calling this feature usable. Distinguish an offline fixture from a connected product flow.
-
-## Decisions still needed
-
-Only questions that affect scope or implementation. Remove when resolved and update the relevant text.
-
-## Owning specifications
-
-Link the relevant product and technical documents. After agreement, maintain those as the source of truth.
+When reviewing existing files, do not interpret old status strings as current code permission or rely on old source paths without reinspection.

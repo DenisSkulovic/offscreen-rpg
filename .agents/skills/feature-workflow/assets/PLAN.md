@@ -1,27 +1,29 @@
-# Implementation plan
+# Change execution plan (only if needed)
 
-Feature: link to FEATURE.md.
-Execution scope: approved phases and any explicit review boundary.
-Implementation owner: Cursor by default; reviewer: Codex unless assigned otherwise.
+Change: link to CHANGE.md.
+State: Proposed / Ready / Implementing / Verifying / Blocked / Done / Cancelled.
+Execution scope and code-bearing outcome: [one approved result, not an initiative].
+Implementation owner and independent review: [assigned roles if necessary].
+Permission: [current human approval; provider/DB/deploy actions separately authorized].
 
 ## Phases
 
-For each phase, state:
+For each **bounded code/test/configuration slice**:
+- Intended outcome and dependency.
+- Real source owner(s), or a required reinspection gate.
+- What behavior and contract must remain unchanged.
+- Exact implementation delta (no unrelated architecture rewrite).
+- A focused success/negative test, verification cost and safety constraints.
+- Completion evidence and status.
 
-- Outcome and dependencies.
-- Owning components and bounded changes.
-- Contracts/invariants, including intentional changes.
-- Targeted checks and why they cover the risk.
-- Exit condition and status.
-
-Detail the next ready phase; keep later phases concise.
+Detail only the next ready slice. **Evaluation-only, design-only and documentation-only tasks belong in their own owners**, not as pretend coding phases. For a small task, CHANGE.md alone is normally enough, unless selected `pnpm repo:brief` compatibility requires this file.
 
 ## Current checkpoint
 
-- Current phase and exact next action:
-- Base/reviewed Git revision and relevant uncommitted changes:
-- Actual checks/results for this revision; checks not run:
-- Unresolved findings/blockers:
-- Provider spend and accounting certainty:
+- Current phase and exact next permitted action:
+- Inspected source revision, changed files and meaningful worktree state:
+- Actual checks/results at that revision; unexecuted checks:
+- Unresolved decision or blocker and who owns it:
+- Provider/DB/deployment side effects and certainty:
 
-Replace this checkpoint as work advances. No chronological log, copied terminal output or repeated summaries.
+Rewrite this checkpoint instead of appending chronological tool output. Close the packet after evidence reconciliation and remove it from the active route; keep important accepted decisions in permanent specifications.

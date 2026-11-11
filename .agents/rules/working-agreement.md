@@ -22,7 +22,7 @@ For new/changed behavior: update product intent, then technical contract, then c
 ## Operating behavior
 
 - Trace the **narrow actual route** before proposing changes. Prefer an existing owning operation over a new framework, service, abstraction or parallel truth store.
-- A significant feature/rework uses `feature-workflow`; a bounded authorized coding task uses `implementation-slice`. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
+- A significant **code-bearing Change** uses the existing `feature-workflow` skill (legacy filename, new Change semantics); a bounded authorized coding task uses `implementation-slice`. Design, evaluation and documentation-only work do not need implementation dossiers. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
 - Architectural discoveries should identify the owner, actual source, consequence, and the smallest useful next step. Do not write long exploratory transcripts into durable docs.
 - Product intent and technical architecture can be creatively designed in ChatGPT; a codebase-connected investigator can validate feasibility; Cursor usually implements bounded slices. Tool allocation is an economic default, not a mandatory three-model ceremony.
 - A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass.
@@ -30,7 +30,7 @@ For new/changed behavior: update product intent, then technical contract, then c
 
 ## Checkpoints and Git
 
-At a meaningful interruption, update the active feature PLAN's **current checkpoint**: revised phase, specific edited files, checks and limits, unresolved issue, exact next step and source revision. The plan is an execution workspace, not a diary. Completed plans are retired after durable facts are folded into their permanent owners; Git is the archive. Preserve explicitly retained dossiers.
+At a meaningful interruption, update the selected Change PLAN's **current checkpoint** (if any): revised phase, specific edited files, checks and limits, unresolved issue, exact next step and source revision. The plan is an execution workspace, not a diary. Completed code Changes are retired after durable facts are folded into permanent owners; Git is the archive. Historical initiative dossiers remain contextual only until safely reconciled; the [work-unit standard](../references/change-work-unit-standard.md) defines classification and readiness. Preserve explicitly retained dossiers.
 
 Inspect Git status before broad editing and before a commit. Preserve unrelated changes. Prefer coherent commits, but do not silently force push, rewrite history, deploy, or push changes when handoff expectations are unclear. A local checkpoint and explicit report are safer than a surprise remote mutation.
 
