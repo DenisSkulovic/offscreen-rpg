@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | 0. Desired experience | Product strategist + UX designer, ChatGPT UI | Prioritized journey, states, non-goals; user decides | Player-visible outcome is coherent and agreed |
 | 1. Current feasibility | Source investigator, read-only Claude/Explore (optional) | Real routes, server/client ownership, 3–8 source anchors, contradictions | Unknown current behavior is resolved; no code edits |
-| 2. Visual proposal | Visual/interaction designer, ChatGPT UI | Layout hierarchy, responsive states, component design direction | Owner accepts design intent, not a fabricated screenshot claim |
+| 2. Visual proposal | Visual designer, ChatGPT UI + on-demand `ui-art-direction` and interface craft manual | Layout hierarchy, responsive states, component design direction | Owner accepts design intent, not a fabricated screenshot claim |
 | 3. Independent critique | UX/visual critic in fresh context, **only if consequential** | Alternative hierarchy, accessibility/edge critique, missing states | Specific issues reconciled or explicitly accepted |
 | 4. Technical contract | Frontend architect, with backend/data owner only if boundary affected | Server/client contract, loading/retry/race semantics; relevant tech-doc edits | The approved technical owner is known |
 | 5. Test design | Test strategist + optional E2E designer, separate read-only context | Acceptance matrix: loading, stale reply, duplicate click, failure, a11y/viewport | Negative cases are falsifiable before code |
