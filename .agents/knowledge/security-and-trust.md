@@ -42,7 +42,7 @@ Before introducing a control, record the relevant entries:
 | Application-level authorization | Central use-case commands have rich domain semantics | Requires every route/caller to use the same owner-enforcing operation |
 | Per-service capability token | Delegated restricted operations and least privilege | Token scope/expiry/rotation, replay and confused deputy risks |
 
-**A user can be correctly logged in and still be unauthorized.** The classic IDOR/BOLA failure: GET §/stories/other-users-id§ validates UUID and cookie, then selects by ID without confirming ownership. Fix the *object authorization* at the actual owning operation. A UI-hidden button or a frontend route guard is not sufficient.
+**A user can be correctly logged in and still be unauthorized.** The classic IDOR/BOLA failure: GET `/stories/other-users-id` validates UUID and cookie, then selects by ID without confirming ownership. Fix the *object authorization* at the actual owning operation. A UI-hidden button or a frontend route guard is not sufficient.
 
 **Property-level access differs from object-level access.** A user may read a story but must not read a secret private plan or internal provider telemetry. Returning an entire ORM row and hiding fields in React creates a disclosure risk; use explicitly authorized public projections.
 
@@ -54,7 +54,7 @@ Before introducing a control, record the relevant entries:
 - RLS can add database defense in depth, but cannot replace policy on non-SQL services, Redis, files, search or messages.
 - Separate schemas/databases improve some isolation and operational boundaries at added migration/pooling/deployment cost.
 - Shared caches, document manifests, search indexes, object storage paths and logs must carry correct tenant/visibility identity.
-- Avoid accepting a client-supplied §tenantId§ as authority. Derive effective scope from the authenticated principal and owning records.
+- Avoid accepting a client-supplied `tenantId` as authority. Derive effective scope from the authenticated principal and owning records.
 
 **Decision discriminator:** how many tenants, what isolation obligations, how rich is object authorization, how many query paths, which shared workers and caches, what is the operating team's capacity?
 
