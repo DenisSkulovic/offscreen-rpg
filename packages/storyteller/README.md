@@ -10,10 +10,12 @@ This package prepares bounded tasks, projects provider requests and validates re
 | --- | --- | --- |
 | Load committed evidence | Application [context.ts](../application/src/storyteller/context.ts) | Story/root-scoped storage reads |
 | Bound context | [context/index.ts](src/context/index.ts) | Required sources, complete bodies, recent window and overflow |
-| Capture task and exact request | [tasks/index.ts](src/tasks/index.ts) | `prepareStorytellerTask`, `requestFor`, captured profile and task-specific schema |
+| Task/result contracts | [task-contracts.ts](src/tasks/task-contracts.ts) | Stored task/result schemas, task versions, task-specific provider opening schemas and normalization |
+| Construct and capture request | [tasks/index.ts](src/tasks/index.ts) | `prepareStorytellerTask`, exact profile/context request, bounded immutable task |
+| Validate result and repair evidence | [result-validation.ts](src/tasks/result-validation.ts) | Semantic admission, historical evidence/provenance validation, diagnostic and explicit correction packet |
 | Bound work and route | [resources.ts](src/tasks/resources.ts), [policy.ts](src/tasks/policy.ts) | Recipe/envelope versus provider policy; application admission supplies authority |
 | Produce output | [fixtures](src/fixtures/index.ts) or [OpenRouter adapter](src/providers/openrouter.ts) | Offline data versus explicit provider transport |
-| Validate/compile | [tasks/index.ts](src/tasks/index.ts) | `validateStorytellerResult`; provider shape is not always stored shape |
+
 | Publish | Application [publication.ts](../application/src/storyteller/publication.ts) | Independent state fence and atomic commit |
 
 Internal `contextInputSchema` and provider `contextRequestSections` are different projections. Narrative evidence uses task-local handles; some resolution data deliberately retains internal receipt identity. Inspect the exact packet before claiming which IDs or evidence the model sees. The [worked request trace](../../docs/technical/playthroughs/storyteller.md) illustrates the boundary.
@@ -31,7 +33,7 @@ Continuation/consequence may propose an active-scene restart, committed only wit
 
 Task preparation owns the current input/prompt version; a saved task keeps its captured version. Mechanical schemas constrain nonzero quantity deltas, satisfied prerequisites and allowed references from captured state. Compact opening compilation removes derivable fields. Semantic admission remains authoritative; stricter JSON decoding does not prove that an intention was fulfilled.
 
-[Provider-schema projection](src/tasks/provider-schema-projection.ts) owns the **pure, state-bounded JSON Schema transforms** for fresh offers, evidence handles, allowed prerequisites, typed transitions and captured document handles. [Task assembly](src/tasks/index.ts) owns their order, task-specific prompt rules, immutable request capture and output admission. This separation does not authorize inference, change any stored schema or replace local semantic validation. Read the projection file only for provider-visible schema issues; read the validator for rejected or inconsistent results.
+[Provider-schema projection](src/tasks/provider-schema-projection.ts) owns the **pure, state-bounded JSON Schema transforms** for fresh offers, evidence handles, allowed prerequisites, typed transitions and captured document handles. [Task assembly](src/tasks/index.ts) owns their order, task-specific prompt rules and immutable request capture. [Result validation](src/tasks/result-validation.ts) owns local admission and bounded repair diagnostics. This separation does not authorize inference, change any stored schema or replace local semantic validation. Read the projection file only for provider-visible schema issues; read the validator for rejected or inconsistent results.
 
 The OpenRouter packet builder and inspector use the same body as live serialization. [Request audit](src/providers/request-audit.ts) reports packet/schema bytes, hashes, sections and omitted evidence without I/O. Bytes are not verified tokenizer counts, cache hits or savings.
 
