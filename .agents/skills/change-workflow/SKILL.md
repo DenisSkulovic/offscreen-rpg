@@ -9,6 +9,8 @@ description: Plan and carry out one bounded code-bearing implementation Change f
 
 **Current route:** [`docs/changes/`](../../../docs/changes/README.md) owns significant implementation packets and explicitly allows **no active Change**. New packets use [`CHANGE.md`](assets/CHANGE.md), plus [`PLAN.md`](assets/PLAN.md) only for meaningful multi-step execution. Old `docs/features/FEATURE.md` dossiers are initiative/proposal/history context, never automatic implementation orders.
 
+**Target-first portfolio modernization:** Before auditing, author an explicit end-state target independently of the existing code, then compare actual source to it. Read [target-driven renewal](../../rules/target-driven-renewal.md). A portfolio/refactor Change is not Ready without a target criterion → audited gap → bounded diff → falsifiable proof. Do not optimize for whatever code smells happened to be noticed first.
+
 ## 1. Select a measurable code outcome
 
 First establish the real product/developer objective. Distinguish what is **already implemented**, what needs human design/acceptance, and what still requires code. One Change should be small enough to implement, verify, review and close without reopening an entire initiative.
@@ -29,7 +31,7 @@ A proposal remains Proposed until scope, current owner, relevant safeguards, pro
 
 ## 3. Write a self-contained executor handoff
 
-`CHANGE.md` records the one outcome, authorities, current source/unknowns, intended code/test delta, exclusions, success and discriminating negative acceptance. Its purpose is a cheap transfer between ChatGPT design, source-connected Claude investigation and Cursor implementation.
+`CHANGE.md` records the one outcome, authorities, current source/unknowns, intended code/test delta, exclusions, success and discriminating negative acceptance. For portfolio changes it must also link a **pre-existing area target criterion** and a **source-grounded audit finding**, not merely say "this file could be cleaner." Its purpose is a cheap transfer between ChatGPT design, source-connected Claude investigation and Cursor implementation.
 
 Use `PLAN.md` **only** for meaningful multi-step implementation. Describe dependency-ordered *code* outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
 

@@ -7,6 +7,8 @@ description: Review or design React 19 and Next.js App Router implementation dec
 
 **Trigger:** A real `apps/web` feature or high-risk React/Next.js diff, especially scene state, saved choice, pending narration, historical data, forms, accessibility or rendering performance. Use `player-experience-design` separately to settle *what the player should experience*. This skill is about building that experience correctly.
 
+**For an area-wide React/Next.js renewal:** start from the agreed [target-driven renewal process](../../rules/target-driven-renewal.md), define the intended render/state/data/auth/accessibility/testing architecture before scoring existing components, and audit source against that target. Keep visual art direction as a separate but compatible design track. For a narrow bug, use the current technical contract directly.
+
 ## Read narrowly
 
 Open the affected product/technical heading, then route through `apps/web/src/features/` and the corresponding transport/API contract. Read the installed framework versions. Consult source knowledge in `docs/engineering/coding-agent-knowledge.md`; first-party details: [React effects](https://react.dev/learn/you-might-not-need-an-effect), [state snapshots](https://react.dev/learn/state-as-a-snapshot), [Next.js Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Vercel interface guidelines](https://vercel.com/design/guidelines), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/).

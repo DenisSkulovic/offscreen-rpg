@@ -5,6 +5,14 @@
 **Kind:** behavior / defect / refactor / test code / tool or executable configuration / migration.
 **Parent initiative (optional):** [link only, not a copied plan].
 
+## Target alignment (required for portfolio-modernization Changes)
+
+- End-state specification and exact target criterion: [link to proposed/approved area target heading; write target before auditing source].
+- Source-grounded gap finding: [link to audit with revision/paths and evidence level].
+- Contribution to final architecture: [which target guarantee this bounded diff enables, and what still remains].
+- Competing alternative and why not chosen: [include keeping current code when plausible].
+- **Readiness gate:** no `Ready` status without owner-reviewed target, grounded gap, code scope and negative proof. Audit/target uncertainty keeps this `Proposed`.
+
 ## Outcome and motivation
 
 One observable change to executable code/tests/configuration and why it matters. What is the smallest complete result a reviewer can verify? If there is **no intended code diff**, do not create a Change: use a design/investigation/evaluation/documentation task instead.

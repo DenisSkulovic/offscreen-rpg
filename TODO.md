@@ -21,6 +21,8 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 
 **Exit criterion:** a new agent can identify the present priority and absence/presence of a ready Change; distinguish design/evaluation from code; select one well-defined diff outcome, its source owners and negative proof; execute and close it without absorbing historical initiatives or inventing work. Keep the bureaucracy smaller than the engineering problem.
 
+**Stage 1 planning principle:** for each major area, define a desired **end state and acceptance contract** before auditing what exists. Then measure the current source against that target, author a gap register, and sequence bounded Changes that converge. The [target-first engineering rule](.agents/rules/target-driven-renewal.md) is mandatory for portfolio-modernization campaigns. Isolated code smells and resume-driven technology shopping are not our work program.
+
 ## Stage 1: focused engineering craftsmanship (later, not in this planning pass)
 
 Choose **one area per session**. Begin as an expert review/design discussion, inspect actual code, decide what is worth changing, then cut one or more narrowly justified Changes for an implementation agent such as Cursor. This table is a *candidate menu*, **not a commitment to introduce every technology**.

@@ -17,6 +17,8 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 **Docs-first is a change-order rule, not a denial of implementation evidence.** To build new behavior, settle product intent first, technical ownership second, code third, evidence fourth. To fix a bug against an already correct contract, investigate code first, repair it and add evidence; update documentation only where it drifted. A generated solution never wins merely because it exists.
 
+**Target-first renewal:** for a significant code-quality, architecture or UI-modernization campaign, first establish a coherent desired end state independent of the current implementation. The target is the basis for a source-grounded gap audit, then small sequential implementation Changes that converge on it. The [target-first rule](../../.agents/rules/target-driven-renewal.md) and area target documents govern that path. Do not substitute random local cleanups for a destination.
+
 ## Task sizes and process
 
 **Small code task (fix, copy, local refactor).** Agent reads the supplied task and narrow owner/source, edits one coherent slice, runs the cheapest useful check, inspects diff, reports. No Change dossier, architecture meeting, or mandatory full handbook read.

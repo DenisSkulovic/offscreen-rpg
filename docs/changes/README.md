@@ -6,6 +6,8 @@ Current change: none
 
 **None is intentional.** The repository is currently refining its planning/documentation ecosystem; no implementation is selected or authorized. `pnpm repo:brief` must report this state without silently reviving an old gameplay plan. A linked Change indicates selection, **not** permission for provider spending, deployment, migration or unrelated code modification. Implementation requires its recorded state/owner approval and task-specific permissions.
 
+**Portfolio readiness requirement:** significant refactors/modernization require a [target-first design](../../.agents/rules/target-driven-renewal.md), source-grounded gap audit, and exact criterion → Change → proof mapping. A list of code smells is not enough. Candidate packets may be `Proposed`; they do not become executable until the target and selected scope are approved.
+
 ## What belongs here
 
 One `CHANGE.md` per **significant, bounded, code-bearing outcome**: source, test, script, schema, migration or executable configuration. This includes behavior, bugs, refactors, performance, security, tooling and architectural simplification. It need not add game functionality; a React maintainability improvement or correct realtime event boundary can be a Change. An investigation, product brainstorm, documentation-only cleanup, evaluation run, or broad modernization theme **is not** a Change.

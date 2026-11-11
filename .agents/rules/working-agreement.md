@@ -10,6 +10,8 @@ Root `AGENTS.md` owns minimal global boundaries. Read this agreement for a signi
 
 For new/changed behavior: update product intent, then technical contract, then code. For a bug where intent and contract already say the right thing: keep them, repair the code, and add an appropriate regression check. For an internal structural change with no product effect: confirm the existing product contract, update the technical owner if responsibility changes, then implement. Correct discovered drift; distinguish **designed**, **implemented**, **fixture-exercised**, **live-observed**, and **human-accepted** statements. `docs/progress.md` owns present coverage.
 
+**Portfolio-renewal gate:** for any significant React/Next, backend, UX or architecture redesign, use [target-first engineering](target-driven-renewal.md) before diagnosing code or cutting Changes. Agree the intended end state, then document evidence-based gaps, then Changes that move toward it. A random cleanup or technology insertion with no target trace is not an approved plan.
+
 ## Invariants not to optimize away
 
 - Engine is world-independent and creatively neutral. The selected profile/world determines tone, pace and fiction. Game/application logic owns mechanics, fictional time, rights, persistence, model budget and publication.

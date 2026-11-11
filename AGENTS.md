@@ -4,7 +4,7 @@
 
 This is a persistent-story RPG with **deterministic mechanical authority** and an LLM Storyteller. The repository is a pre-POC, not a proven product. Be honest about what is designed, implemented, exercised with fixtures, observed live, and accepted by a human.
 
-**Current owner priority (November 2026):** [engineering portfolio renewal](TODO.md). Finish the Change workflow and legacy planning cleanup before taking on focused frontend/backend/UX/architecture improvements. Gameplay development and the older continuity proposal are intentionally deferred; their appearance in progress/history is not implementation permission.
+**Current owner priority (November 2026):** [engineering portfolio renewal](TODO.md). Before any significant portfolio-modernization audit or Change, follow [target-first engineering](.agents/rules/target-driven-renewal.md): define an end-state contract **before** auditing current shortcomings; map each planned diff to the target. Gameplay expansion and the older continuity proposal remain deferred.
 
 ## Non-negotiable boundaries
 
