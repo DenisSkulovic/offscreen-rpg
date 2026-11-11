@@ -2,6 +2,10 @@
 
 This is a **small routing index** for software engineering and verification. It is not the product or technical specification. Begin with the [product map](../README.md) and the [technical owners](../technical/README.md) when deciding desired behavior or architectural correctness.
 
+## Target-first engineering renewal
+
+For significant portfolio-grade modernization, start from [area-level end states](targets/README.md), then their [source-grounded gap audits](audits/react-next-gap-2026-11-11.md) and only then [bounded implementation Changes](../changes/README.md). The first proposed target is [React/Next.js](targets/react-next.md). These are **engineering targets**, not additional game product requirements or permission to code.
+
 ## Coding agents developing this repository
 
 **These concern ChatGPT, Claude Code, Cursor and other development tools, not the in-game Storyteller.**

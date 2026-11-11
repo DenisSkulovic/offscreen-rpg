@@ -29,7 +29,7 @@ Choose **one area per session**. Begin as an expert review/design discussion, in
 
 | Candidate focus | Questions and credible outcomes |
 | --- | --- |
-| **React/frontend code** | Component boundaries, data ownership, hooks/effects, async races, state machines, forms, error/loading/empty states, accessibility, rendering/performance, maintainability and effective tests. Make the implementation explainable, not merely pretty. |
+| **React/frontend code** | [Proposed target architecture](docs/engineering/targets/react-next.md); audit and Changes follow its F1–F10 criteria. Component boundaries, data ownership, hooks/effects, async races, state machines, forms, error/loading/empty states, accessibility, rendering/performance, maintainability and effective tests. Make the implementation explainable, not merely pretty. |
 | **UI/UX and art direction** | Separate design work from React code quality: information architecture, coherent visual language, layout/typography, responsiveness, accessibility, interaction feedback and usability. Establish a design system only if useful. |
 | **Next.js architecture** | **Next.js already exists in this repository.** Audit how it is used; evaluate server/client component boundaries, SSR/streaming/caching/rendering strategies, data fetching and auth. Do not pretend adoption is a new achievement. |
 | **Backend/application design** | NestJS/API responsibilities, contracts/validation, domain boundaries, error semantics, transaction safety, concurrency, idempotency, orchestration and testability. Improve what is real before abstracting more. |
