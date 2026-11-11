@@ -27,6 +27,8 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. This director
 
 - [`feature-workflow`](skills/feature-workflow/SKILL.md): significant feature from approved intent to finished, documented implementation.
 - [`codebase-investigation`](skills/codebase-investigation/SKILL.md): evidence-bounded architecture/source investigation without edits.
+- [`architecture-boundary-review`](skills/architecture-boundary-review/SKILL.md): inspect risky package/state/async ownership and propose the smallest defensible design change.
+- [`player-experience-design`](skills/player-experience-design/SKILL.md): translate player-intent and runtime states into an inhabitable, testable UI without inventing mechanics.
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
 - [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.
 - [`documentation-reconciliation`](skills/documentation-reconciliation/SKILL.md): repair contradictions, navigation and unnecessary verbosity.
