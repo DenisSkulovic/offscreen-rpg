@@ -54,6 +54,20 @@ These identities are in the ignored `data/story-local-evidence/provider-response
 
 **Evidence limit:** the trajectory records published passages corresponding to these responses; raw envelopes prove their proposed patches. Docker was unavailable during this reinspection, so persisted note state, generation-to-publication linkage and the final successor request were not freshly queried from the database. There is no return turn in the saved trajectory. The source supports note retention on successful publication; actual later recall and progressive descriptive materialization remain unproved. The absence of descriptive proposals cannot be fixed solely by retrieving documents that were never created.
 
+### Evaluation harness and provider compatibility — September 2026
+
+These are dated **diagnostics, not proof of connected gameplay**. Exact packet hashes, ledger amounts and failure reproductions remain in [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/2026-09-18--17-27--conservative-live-model-evaluation/PLAN.md). The acceptance ladder is [P0–P4](#execution-ladder).
+
+| Finding | Historical observation | Retained engineering conclusion |
+| --- | --- | --- |
+| One request does not prove a campaign | Gate 1 could release one reviewed opening; early run plumbing had no demonstrated operator-selected opening → Start → continuation under a shared envelope. | Use ordinary authenticated APIs to prove a finite interactive session before another paid live run. |
+| Endpoint/accounting mismatch | A Sol endpoint charged cached input writes above ordinary input rates; held-manifest and runtime reservations disagreed, producing pre-transport budget stops. | Snapshot exact provider endpoint/tier and all ordinary/cache-write/cache-read/output prices. Manifest, admission and runtime need one conservative reservation rule. |
+| Structured JSON is insufficient | Mistral-Nemo and verified-free Nex-route samples produced single-letter options, malformed nesting, missing fields or incorrect arrays despite advertised structured output. | Local structural, semantic and basic human-readable field checks remain necessary. |
+| Provider contract vs persisted contract | A v6 prompt asked for stored-only note/document arrays even though the opening provider schema accepted only `version + scene`. | v7 aligned the example with the actual provider-facing schema; one pinned zero-price generation produced three readable paragraphs and four distinct options. |
+| Failure evidence and money | Invalid provider responses needed a bounded private raw-envelope artifact and content-free diagnostic stage/path; reported zero price alone did not establish settlement. | Never silently coerce output, auto-retry, suppress uncertain billability or treat a free label as a settled zero charge. |
+
+The v7 one-call result used 710 prompt / 398 completion tokens, zero reasoning and a reconciled zero charge **at the time of that run**. It was not a 10–15-turn POC, nor are past route prices/account balances new spending authority.
+
 ## First proof session
 
 Use the maintained Seyda Neen start: the player arrives as a released prisoner in a pinned world/rules/start package. Scenario content may name Vvardenfell, local people, places and opportunities. Shared runtime code must not branch on Seyda Neen, employment, human biology, Earth time or a chosen plot.

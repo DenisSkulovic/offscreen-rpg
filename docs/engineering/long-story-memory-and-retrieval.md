@@ -331,6 +331,15 @@ These are durable acceptance gates, not standing implementation folders:
 - Relational or global synthesis is adopted only when explicit multi-hop or broad-synthesis oracle cases materially beat flat retrieval within declared work and context budgets. Begin with admitted links and query-focused synthesis; graph/community or hierarchy machinery must independently earn its maintenance cost.
 - Scale evidence includes the 2,000-scene profile and a connected playable return. Report query work, candidates, reads, bytes, rounds, latency, provider spend and retrieval/assembly/generation-use failures separately. Synthetic success is not model comprehension or enjoyable play.
 
+### Connected exploration evidence — September 2026
+
+These are **historical sample results**, not a measured success rate, accepted end-to-end memory or authorization for further paid inference. Full run identities and exact accounting are in [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/2026-09-21--10-55--storyteller-memory-exploration/PLAN.md) and [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/2026-09-21--14-13--storyteller-creative-exploration/PLAN.md).
+
+- One same-context Sol branch settled at USD 0.023903. A missing-context branch used two model rounds and one application-owned lexical read, recovered the old hiding place “beneath the blue ledger,” cited relationship/identity sources and offered relevant alternatives, but the final hit a **1,024-token output cap**; its matched charge was USD 0.021172.
+- A subsequent controlled experiment allocated **256 tokens to the retrieval decision and 1,792 to the final**. The decision used 68 tokens; the final completed in 1,068 tokens and returned grounded choices with no retry/fallback/reasoning. It charged approximately USD 0.012945. Nevertheless, **publication correctly failed** because two private creative directions were marked selected and temporary `m1:...` retrieval item IDs were used as canonical-note evidence.
+- The narrow instruction repair required exactly one selected direction and source/current provenance rather than temporary memory handles. Focused provider-free tests passed, but a subsequently accepted live publication of the corrected output was **not established**.
+- The diagnostic chain must remain separately inspectable: **need → candidate search → current-version source → exact body read → final packed packet → local admission → publication → later player return**. Good retrieval and good prose alone do not prove memory continuity.
+
 ## What not to copy blindly
 
 - A vector database as the source of truth.

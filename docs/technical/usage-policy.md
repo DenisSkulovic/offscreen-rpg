@@ -67,6 +67,12 @@ Optional reports/maintenance can defer without pausing unrelated work. A configu
 
 At window recovery, a durable version-fenced wake-up rechecks availability and marks the task eligible. Default recovery performs no model call until Resume. Explicit opt-in auto-resume may retry only previously admitted work after all limits, ownership, clock/scene fences and manual holds pass; it may not choose for the player or clear manual pause. Development never grants auto-live-resume. A saved successful result can be published under normal fences without paying again. Stale prepared work is cancelled/recaptured explicitly, not regenerated invisibly on a timer.
 
+### Historical recovery evidence — September 2026
+
+An explicit B2c repair was demonstrated using fake-provider paths and one live Sol opening. A billed, semantically invalid candidate retained its operation and exact evidence; one deliberate retry completed under its existing captured envelope (21,554 + 7,902 microusd, matched settlement), with exactly one published opening. See [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/2026-09-19--19-08--bounded-storyteller-cost/PLAN.md). This is **case evidence**, not blanket permission for retries.
+
+Separately, a stopped-account incident occurred after two fully settled requests despite no persisted uncertain liability. The identified duplicate/racing uncertainty callback could produce that shape and the stop scope was repaired; retained rows **do not prove causality**. If the symptom returns, capture durable account/operation/attempt-scoped stop provenance, not a guessed cause or global reset. September provider balances are not current.
+
 ## Conservative development preset and first paid gate
 
 Always start offline. Implement the policies, window admission/holds and fake-provider failure evidence before a live run. Synthetic free/paid profiles and synthetic clock advances exercise commercial semantics without a payment processor or provider call. No subscription system is required to establish spending safety.
