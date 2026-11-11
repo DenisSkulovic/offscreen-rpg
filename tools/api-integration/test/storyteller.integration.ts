@@ -4327,6 +4327,105 @@ test(
           },
         );
         await t.test(
+          'over-reservation settlement stops only the paying funding account',
+          async () => {
+            const chargedAccountId = randomUUID();
+            const unrelatedAccountId = randomUUID();
+            const runId = randomUUID();
+            const verifiedAt = new Date();
+            await database.db.insert(storytellerFunding).values([
+              {
+                id: chargedAccountId,
+                limitMicrousd: 1_000_000n,
+                stopped: false,
+                verifiedAt,
+              },
+              {
+                id: unrelatedAccountId,
+                limitMicrousd: 1_000_000n,
+                stopped: false,
+                verifiedAt,
+              },
+            ]);
+            await database.db.insert(storytellerRun).values({
+              id: runId,
+              accountId: chargedAccountId,
+              limitMicrousd: 1_000_000n,
+              maxAttempts: 2,
+              enabled: true,
+            });
+            const execution: ExecutionPolicy = {
+              mode: 'provider',
+              accountId: chargedAccountId,
+              runId,
+              dispatchReview: { mode: 'off' },
+              policy: {
+                version: 'funding-isolation.v1',
+                route: 'fake:account-isolation',
+                model: 'fake/model',
+                provider: 'fake',
+                priceVersion: 'test-only',
+                inputMicrousdPerMillion: '100000',
+                cacheReadMicrousdPerMillion: '10000',
+                cacheWriteMicrousdPerMillion: '250000',
+                outputMicrousdPerMillion: '100000',
+                maxInputTokens: 100000,
+                maxOutputTokens: 2000,
+                timeoutMs: 1000,
+              },
+            };
+            const draftId = randomUUID();
+            await drafts.save(ownerId, draftId, {
+              title: 'Funding isolation',
+              premise: 'A quiet offline opening for a provider accounting check.',
+              storytellingDirection: '',
+              storyteller: { id: 'absurd-action-comedy', revision: 1 },
+              expectedRevision: 0,
+            });
+            const generationId = randomUUID();
+            await createStorytellerOpenings(
+              database,
+              execution,
+              createTestUsagePolicy(execution.policy.route),
+            ).request(ownerId, draftId, generationId, 1);
+            let providerCalls = 0;
+            await createStorytellerRuntime(database, {
+              dispatchAuthority: ({ task }) =>
+                task.resources.authority.kind === 'effective-usage-policy'
+                  ? task.resources.authority.policy
+                  : null,
+              provider: async (task) => {
+                providerCalls += 1;
+                return {
+                  kind: 'result',
+                  output: scriptedStorytellerResult(task),
+                  usage: fakeUsage(100_000n),
+                  telemetry: fakeTelemetry('fake-overreservation'),
+                };
+              },
+            }).complete(generationId);
+            assert.equal(providerCalls, 1);
+            const [attempt] = await database.db
+              .select()
+              .from(storytellerAttempt)
+              .where(eq(storytellerAttempt.generationId, generationId));
+            assert.equal(attempt?.state, 'settled');
+            assert.ok(attempt?.reservedMicrousd !== undefined);
+            assert.ok(
+              (attempt?.chargedMicrousd ?? 0n) >
+                (attempt?.reservedMicrousd ?? 0n),
+              'The fake provider must actually exceed its reservation',
+            );
+            const budget = createStorytellerBudget(database);
+            assert.equal((await budget.inspect(chargedAccountId)).stopped, true);
+            assert.equal(
+              (await budget.inspect(unrelatedAccountId)).stopped,
+              false,
+              'One account overrun must not halt another payer',
+            );
+          },
+        );
+        await t.test(
           'provider recovery retries only work proven unsent',
           async () => {
             async function providerStory(
