@@ -4,7 +4,7 @@
 
 ## Deep professional knowledge (on demand)
 
-[Engineering knowledge packs](../../.agents/knowledge/README.md) hold **mechanistic know-how and decision spaces**, not just procedures or a list of common bugs. They let an architect, implementer, designer or reviewer retrieve the relevant body of expertise before generating a plausible but under-considered recommendation. Start with [architecture design choices](../../.agents/knowledge/architecture-decision-space.md), [frontend state](../../.agents/knowledge/frontend-state-and-async.md), or [stateful systems](../../.agents/knowledge/durable-operations.md), depending on the task. [Scenario laboratory](../../.agents/knowledge/scenario-lab.md) supplies exercises, not requirements.
+[Engineering knowledge packs](../../.agents/knowledge/README.md) hold **mechanistic know-how and decision spaces**, not just procedures or a list of common bugs. They let an architect, implementer, designer or reviewer retrieve the relevant body of expertise before generating a plausible but under-considered recommendation. Start with [architecture design choices](../../.agents/knowledge/architecture-decision-space.md), [visual interface design](../../.agents/knowledge/interface-design-craft.md), [frontend state](../../.agents/knowledge/frontend-state-and-async.md), or [stateful systems](../../.agents/knowledge/durable-operations.md), depending on the task. [Scenario laboratory](../../.agents/knowledge/scenario-lab.md) supplies exercises, not requirements.
 
 ## Decide which type of knowledge is missing
 
@@ -40,6 +40,7 @@ Use the official documentation appropriate to the **installed** version rather t
 | Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` |
 | Analyze architecture ownership / module boundaries | `architecture-boundary-review` |
 | Design player hierarchy and return experience | `player-experience-design` |
+| Select art direction, typography, responsive composition and critique a visual design | `ui-art-direction` |
 | Engineer React/Next.js interactive behavior, rendering and accessibility | `frontend-engineering` |
 | Evaluate data transactions, idempotency and asynchronous failure paths | `transactional-correctness-review` |
 | Diagnose a bug against actual code | `codebase-investigation` |
