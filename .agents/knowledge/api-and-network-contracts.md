@@ -41,7 +41,7 @@ These are **communication interface designs**, not architecture rankings.
 | Bulk snapshot/export | Large, repeatable data extraction or sync | Memory, pagination consistency, async export identity and retention |
 | Simple function in same process | No independent consumer/reliability boundary | Cross-process needs may emerge later; don't split early |
 
-**False choice:** REST does not require mapping every SQL table 1:1 to routes. A resource-oriented model can expose an operation resource, such as §/exports/{id}§ or §/stories/{id}/resolutions/{operationId}§. GraphQL doesn't remove backend cost; its graph still requires authorization, batching and bounded query complexity.
+**False choice:** REST does not require mapping every SQL table 1:1 to routes. A resource-oriented model can expose an operation resource, such as `/exports/{id}` or `/stories/{id}/resolutions/{operationId}`. GraphQL doesn't remove backend cost; its graph still requires authorization, batching and bounded query complexity.
 
 **Decision axis:** consumers, shape variability, lifecycle, latency, cacheability, deployment coupling, independent evolution, tracing and operational cost. Start with existing infrastructure if it satisfies those, not with an API fashion contest.
 
@@ -53,24 +53,24 @@ These are **communication interface designs**, not architecture rankings.
 
 | Observed response | What it can reasonably mean | What it must not silently mean |
 | --- | --- | --- |
-| §200 OK§ | Request returned successful representation or result according to endpoint contract | Every later background step completed |
-| §201 Created§ | A resource was created; identify it, usually via Location and response | Related external systems all settled |
-| §202 Accepted§ | Processing accepted; completion may occur later | Accepted request finished successfully |
-| §204 No Content§ | Operation succeeded with no body | An unobserved provider result was generated |
-| §304 Not Modified§ | Conditional cache validation says previous representation usable | Business data can never change again |
-| §400/422§ | Malformed or semantically invalid request according to policy | Caller should always retry identically |
-| §401 vs 403§ | Authentication challenge vs refused authorization in typical API use | Exact object existence can safely be disclosed |
-| §404§ | Not found or intentionally hidden resource | Client definitely owns a related resource |
-| §409§ | Conflict with existing state/operation | Only generic "try again" UX is possible |
-| §412§ | Precondition (e.g. If-Match) failed | No further concurrency strategy is needed |
-| §429§ | Too many requests/resource budget exceeded | Blind immediate retry is sensible |
-| §5xx / transport timeout§ | Server/intermediary or communication failure | Irreversible business effect definitely did not happen |
+| `200 OK` | Request returned successful representation or result according to endpoint contract | Every later background step completed |
+| `201 Created` | A resource was created; identify it, usually via Location and response | Related external systems all settled |
+| `202 Accepted` | Processing accepted; completion may occur later | Accepted request finished successfully |
+| `204 No Content` | Operation succeeded with no body | An unobserved provider result was generated |
+| `304 Not Modified` | Conditional cache validation says previous representation usable | Business data can never change again |
+| `400/422` | Malformed or semantically invalid request according to policy | Caller should always retry identically |
+| `401 vs 403` | Authentication challenge vs refused authorization in typical API use | Exact object existence can safely be disclosed |
+| `404` | Not found or intentionally hidden resource | Client definitely owns a related resource |
+| `409` | Conflict with existing state/operation | Only generic "try again" UX is possible |
+| `412` | Precondition (e.g. If-Match) failed | No further concurrency strategy is needed |
+| `429` | Too many requests/resource budget exceeded | Blind immediate retry is sensible |
+| `5xx / transport timeout` | Server/intermediary or communication failure | Irreversible business effect definitely did not happen |
 
 The status is a **protocol observation**, not a complete business state. The response body should include stable codes and allowed next actions when the domain requires them. Don't return internal stack traces or private owner data.
 
 ### Conditional writes and optimistic concurrency
 
-A client edits version V7 while someone else publishes V8. A blind PUT replacing the entire object overwrites V8. An HTTP precondition such as §If-Match§ with a strong representation ETag can reject the stale write with 412, but the server must make the check against the **actual authoritative state**. In applications using a domain-specific version, the same invariant may be enforced in a typed command payload and transaction.
+A client edits version V7 while someone else publishes V8. A blind PUT replacing the entire object overwrites V8. An HTTP precondition such as `If-Match` with a strong representation ETag can reject the stale write with 412, but the server must make the check against the **actual authoritative state**. In applications using a domain-specific version, the same invariant may be enforced in a typed command payload and transaction.
 
 Choose based on consumers, cache/representation semantics, expected revision granularity and whether multiple resources participate in one business operation. A matching ETag alone doesn't atomically coordinate an unrelated payment or workflow.
 
@@ -120,7 +120,7 @@ A user-visible request may travel through browser, DNS, TLS, CDN, reverse proxy,
 ### Network and proxy design decisions
 
 - TLS may terminate before the origin; trace the trust boundary for original scheme/host/client IP.
-- §X-Forwarded-*§ is only trustworthy from explicitly configured proxies, not from arbitrary clients.
+- `X-Forwarded-*` is only trustworthy from explicitly configured proxies, not from arbitrary clients.
 - A proxy may buffer response streams, rewrite headers, enforce timeouts or cache representations.
 - HTTP/2 multiplexing and HTTP/3 transport affect performance/connection behavior, not permission or business semantics.
 - Retries can happen at several layers. A client, proxy and server each retrying independently creates amplification.
@@ -130,7 +130,7 @@ A user-visible request may travel through browser, DNS, TLS, CDN, reverse proxy,
 
 ### Cache policy is an API promise
 
-§Cache-Control§, §ETag§, §Vary§ and personalized response semantics determine when a cached response can be used. The correct policy depends on whether the representation is public/static, authenticated/user-specific, immutable revision or current mutable view.
+`Cache-Control`, `ETag`, `Vary` and personalized response semantics determine when a cached response can be used. The correct policy depends on whether the representation is public/static, authenticated/user-specific, immutable revision or current mutable view.
 
 A cache key is a declaration of **which responses may be treated as equal**. If two principals are not authorized to see the same value, don't make them share an improperly keyed public cache. See [security manual](security-and-trust.md) and [durable operations caching](durable-operations.md) for the authorization/invalidation dimensions.
 
