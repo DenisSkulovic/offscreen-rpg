@@ -2,7 +2,7 @@
 
 **Type:** Code-bearing implementation Change (developer diagnostic tool, not a new product capability).
 **Status:** Proposed for the **next coding session**, not authorized or implemented by this documentation audit. Revalidate the source and obtain the owner's go-ahead when returning to coding.
-**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable).
+**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable--nearest-slice).
 **Technical authority:** [Canonical files and mechanical dependencies](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 
 ## One bounded code outcome

@@ -22,7 +22,7 @@ The intended boundary remains mention → registered identity → continuity-rel
 
 **Selected outcome:** a current admitted continuity record reaches the later mechanical consequence that explicitly depends on it, or preparation stops with an inspectable reason before provider dispatch. No cap increase, hidden retrieval call, reroll or new social/combat simulation. The [canonical dependency contract](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design) owns semantics and failure behavior; the phases below own execution.
 
-#### S3a — Make the causal baseline inspectable — parent outcome; first code Change extracted
+#### S3a — Make the causal baseline inspectable — nearest slice
 
 Outcome: distinguish a missing write from a missing selection or packed-out record before changing the handoff.
 

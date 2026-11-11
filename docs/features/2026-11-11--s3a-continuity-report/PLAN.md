@@ -2,7 +2,7 @@
 
 Change: [S3a continuity evidence report](CHANGE.md).
 Status: **Proposed, not implementing**. The owner is currently reviewing/reorganizing work planning and has explicitly forbidden application/code edits in this session.
-Execution route: historical [Vvardenfell initiative](../2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable). This is one bounded code outcome, not the full S3 program.
+Execution route: historical [Vvardenfell initiative](../2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md#s3a--make-the-causal-baseline-inspectable--nearest-slice). This is one bounded code outcome, not the full S3 program.
 
 ## Phases
 
