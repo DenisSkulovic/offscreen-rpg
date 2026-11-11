@@ -55,6 +55,13 @@ For a change, locate its entry point, authoritative operation and output first. 
 
 Navigation maintenance follows [the documentation rule](../../.agents/rules/documentation.md). These package guides are deeper maps; add another only when repeated exploration demonstrates a need.
 
+- [Pure game policy](../../packages/game/README.md)
+- [Public/shared validated contracts](../../packages/contracts/README.md)
+- [SQL schemas and migrations](../../packages/db/README.md)
+- [Temporal workflow coordination](../../packages/workflows/README.md)
+- [Web routes and interactive screens](../../apps/web/README.md)
+- [API routes and authentication](../../apps/api/README.md)
+- [Worker outbox and Activities](../../apps/worker/README.md)
 - [Application flows](../../packages/application/README.md)
 - [Storyteller responsibilities](../../packages/storyteller/README.md)
 - [Canonical document storage](../../packages/documents/README.md)
