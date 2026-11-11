@@ -16,7 +16,8 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 - [x] Make `docs/changes/` the canonical execution route, with **no active Change** valid and no automatic gameplay selection; adapt the read-only briefing tools.
 - [x] Classify the thirteen legacy `docs/features/` dossiers; retire four redundant/evaluation-heavy pairs with preserved decisions and historical links; retain nine unfinished or explicitly owner-preserved initiatives outside the active Change queue.
 - [x] Align agent rules, `change-workflow` skill/adapters/templates, handoff procedure and roadmap/navigation with the new route; remove the old `feature-workflow` skill.
-- [ ] Review navigation and links, then validate the workflow using a fresh-agent read-only task before authorizing an implementation. Record actual outcomes rather than assuming the harness improved productivity.
+- [x] Review the changed Markdown's local link targets against the committed GitHub tree and inspect the selected-work/skill routing. This was a **static remote check**, not a local CLI/test run or a full historical-heading audit.
+- [ ] Validate the workflow in a fresh Cursor/Claude read-only session: confirm discovery of `change-workflow`, `repo:brief` output with **no active Change**, correct classification of parked S3a and a believable prospective React Change. Record actual outputs/usage before calling the harness proven.
 
 **Exit criterion:** a new agent can identify the present priority and absence/presence of a ready Change; distinguish design/evaluation from code; select one well-defined diff outcome, its source owners and negative proof; execute and close it without absorbing historical initiatives or inventing work. Keep the bureaucracy smaller than the engineering problem.
 

@@ -1,4 +1,4 @@
-// Read-only, zero-provider-cost review of active Change execution checkpoints.
+// Read-only, zero-provider-cost review of Change execution checkpoints, including parked plans.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './process.mjs';
