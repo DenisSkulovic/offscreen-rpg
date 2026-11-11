@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F1–F2.
+- **Desired architectural end state:** [F1](../../engineering/targets/react-next.md#f1-serverclient-rendering-boundary) and [F2](../../engineering/targets/react-next.md#f2-authentication-privacy-and-api-ownership).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G05.
 - **Why this slice belongs:** After W01; independent of client controllers. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Extract one small server-only authenticated Nest read/error/timeout helper, used
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/src/lib/viewer.ts`, `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/page.tsx`, `apps/web/app/stories/[id]/page.tsx`, `apps/web/next.config.ts` (inspection only unless needed). Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** frontend-engineering; API/network-contracts; security-and-trust. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [frontend-engineering](../../../.agents/skills/frontend-engineering/SKILL.md); [API status and retry semantics](../../../.agents/knowledge/api-and-network-contracts.md#3-method-status-identity-and-retry-semantics); [browser session security](../../../.agents/knowledge/security-and-trust.md#3-browser-sessions-and-cross-origin-threats). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Determine response-status treatment for forbidden resources using current Nest contract; prove server-only boundary and auth/no-store header behavior without modifying underlying owner checks.
 
 ## Code scope, exclusions and safety
 
-Extract one small server-only authenticated Nest read/error/timeout helper, used first by the Play and story-list server routes; remove redundant request-handling boilerplate without migrating game authority. Consider parallelizing independent story-list/draft-list reads after validating error policy; do not claim a measured speedup without a trace.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No new Next API write handlers, DB access from Next, auth library replacement, speculative caching layer, deployment/proxy overhaul or broad page redesign. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

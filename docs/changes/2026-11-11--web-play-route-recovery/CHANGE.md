@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F9 (and F1's route behavior).
+- **Desired architectural end state:** [F9](../../engineering/targets/react-next.md#f9-accessible-resilient-ux-engineering-distinct-from-art-direction).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G08.
 - **Why this slice belongs:** After stable snapshot/command state; can first prepare read-only UX scenarios. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Add appropriately scoped Play route loading/error/not-found treatment, semantic 
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/error.tsx`, `apps/web/src/features/play/view.tsx`, `apps/web/app/style.css`, `docs/technical/client-and-identity.md`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** player-experience-design; frontend-engineering; interface-design-craft; testing-and-quality-evidence. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [player-experience-design](../../../.agents/skills/player-experience-design/SKILL.md); [interaction and accessibility](../../../.agents/knowledge/interface-design-craft.md#5-behavior-feedback-and-accessibility); [Next.js error boundaries](https://nextjs.org/docs/app/api-reference/file-conventions/error). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Agree expected/uncaught error classification with Next 16 route boundaries and test representative mobile/keyboard cases in a real browser. A source-only audit cannot prove WCAG.
 
 ## Code scope, exclusions and safety
 
-Add appropriately scoped Play route loading/error/not-found treatment, semantic and focus-safe recovery for existing pending/conflict/failed/blocked/uncertain states; ensure 401 goes through approved sign-in flow. Use existing visual language until a separate owner-approved art-direction target exists.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No sweeping visual redesign, new design system, provider calls, disabling meaningful status, or automatic retry of story commands. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

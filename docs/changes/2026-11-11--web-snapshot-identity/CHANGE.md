@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F3–F4.
+- **Desired architectural end state:** [F3](../../engineering/targets/react-next.md#f3-identity-and-state-ownership) and [F4](../../engineering/targets/react-next.md#f4-versioned-snapshot-reconciliation).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G01–G02.
 - **Why this slice belongs:** After W01; before command/refresh migrations. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Create a pure, tested resource-scoped snapshot acceptance/reconciliation policy 
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/play/view.tsx`, `apps/web/src/features/play/history.tsx`, `apps/web/app/play/[id]/page.tsx`, `packages/contracts/src/stories.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** frontend-engineering; frontend-state-and-async; test-strategy. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [frontend state inventory](../../../.agents/knowledge/frontend-state-and-async.md#1-state-inventory-before-library-choice); [race testing](../../../.agents/knowledge/testing-and-quality-evidence.md#5-concurrency-fault-injection-and-sequence-coverage). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Source-inspect App Router remount behavior and validate it with a controlled browser navigation rather than assuming a mounted instance survives. Choose parent keying versus explicit resource identity controller according to observed behavior.
 
 ## Code scope, exclusions and safety
 
-Create a pure, tested resource-scoped snapshot acceptance/reconciliation policy and apply it to the Play screen. Ensure route/story identity changes reset or isolate story/history/operation-local state deliberately. Limit Chamber changes to adapter compatibility if genuinely required; otherwise plan them separately.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No global state library, rewriting Nest snapshot schema, business-state mutations, SSE/WebSockets or unrelated UI style changes. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F10 (with F3/F4 as first proof candidates).
+- **Desired architectural end state:** [F10](../../engineering/targets/react-next.md#f10-evidence-and-maintainability).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G04.
 - **Why this slice belongs:** First; baseline for following frontend Changes. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Add a fast, provider-free `@offscreen/web` test command and focused pure/compone
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/package.json`, `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/play/view.tsx`, `tools/api-integration/test/stories-browser.integration.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** test-strategy; testing-and-quality-evidence; frontend-engineering. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [test-strategy](../../../.agents/skills/test-strategy/SKILL.md); [test proof boundaries](../../../.agents/knowledge/testing-and-quality-evidence.md#2-choose-the-cheapest-truthful-test-boundary). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Select a single web-local test runner compatible with installed Node 24/Next 16/React 19 and report its incremental maintenance cost. If current source fails a desired target test, record it as a gap and leave that test unmerged or explicitly red pending the owning Change.
 
 ## Code scope, exclusions and safety
 
-Add a fast, provider-free `@offscreen/web` test command and focused pure/component checks. Evaluate Vitest + React Testing Library against existing Node test/Playwright infrastructure; choose one simple setup, not two competing runners. Preserve the existing integrated Playwright tests under `tools/api-integration`.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** Do not fix app behavior to make tests green; don't write imagined expectations, execute integration DB resets or replace existing end-to-end coverage. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

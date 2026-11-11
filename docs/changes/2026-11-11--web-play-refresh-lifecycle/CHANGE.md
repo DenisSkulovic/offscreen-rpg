@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F6 (depends on F3/F4).
+- **Desired architectural end state:** [F6](../../engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G06.
 - **Why this slice belongs:** After W03; may follow W04 for shared reconciliation owner. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Centralize Play's read-only refresh scheduling and cancellation around one story
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/src/features/play/view.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/developer-tools/chamber/use-chamber-play.ts` (comparison only), `apps/web/src/features/stories/opening-preview.tsx` (comparison only). Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** frontend-engineering; frontend-state-and-async; API/network-contracts. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [Effects and lifetimes](../../../.agents/knowledge/frontend-state-and-async.md#2-effects-are-lifetimes-not-generic-event-handlers); [React sync with Effects](https://react.dev/learn/synchronizing-with-effects). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Choose an explicit pause/resume policy for hidden tabs and re-entry, verifying whether an unresolved operation requires background polling; rely on a fresh authoritative read when visible.
 
 ## Code scope, exclusions and safety
 
-Centralize Play's read-only refresh scheduling and cancellation around one story identity/version owner. Preserve the existing immediate server-supplied snapshot, pause/hold semantics and 2-second diagnostic baseline unless evidence favors another interval. Specify background/foreground behavior and visible recovery from persistent read failure.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No SSE/WebSockets introduction, new backend events, service workers or unrelated Chamber/preview refactor. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F5 (F3/F4 dependency).
+- **Desired architectural end state:** [F5](../../engineering/targets/react-next.md#f5-one-recoverable-mutation-model).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G03.
 - **Why this slice belongs:** After W01+W03; focus ordinary Play and campaign commands. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Define a small typed command state transition and stable operation/payload ident
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/src/features/play/view.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/resolution-recovery.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/api/src/modules/stories/controller.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** frontend-state-and-async; API/network-contracts; testing-and-quality-evidence. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [state, mutations and optimism](../../../.agents/knowledge/frontend-state-and-async.md#5-mutations-and-optimism-are-temporary-claims); [idempotency and retries](../../../.agents/knowledge/api-and-network-contracts.md#3-method-status-identity-and-retry-semantics). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Decide the minimal common state interface after tracing the actual 200/202/409/400/401 and recovery semantics; a single universal helper is not an objective.
 
 ## Code scope, exclusions and safety
 
-Define a small typed command state transition and stable operation/payload identity for Play choice/control and campaign command flows, reusing the authoritative snapshot controller. Consolidate identical retry/conflict handling while preserving endpoint-specific legality. Don't fold preview/presets/Chamber into a huge generic sender.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No Storyteller/provider retry without authorization, API schema redesign, charging inference, new app framework, replacement of backend idempotency or silent command re-dispatch. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 

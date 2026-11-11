@@ -7,7 +7,7 @@
 
 ## Target alignment
 
-- **Desired architectural end state:** [React/Next F criteria](../../engineering/targets/react-next.md#end-state-architectural-contract): F7 (with F9 semantic preservation).
+- **Desired architectural end state:** [F7](../../engineering/targets/react-next.md#f7-screen-and-component-responsibility).
 - **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G07.
 - **Why this slice belongs:** After W03/W04 where required; do not parallel edit their files. This contributes a checkable part of the target, not a free-standing cleanup campaign.
 
@@ -19,12 +19,12 @@ Refactor only `CampaignPlay` into meaningful presentational sections for current
 
 - **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
 - **Actual source starting points:** `apps/web/src/features/play/campaign-play.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/view.tsx`, `packages/contracts/src/campaign.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Relevant professional lenses:** architecture-decision-space; frontend-engineering; player-experience-design. Use selected `.agents/skills/` and `.agents/knowledge/` sections before design/execution; do not preload everything merely for ceremony.
+- **Required professional review routes:** [ownership and cohesion](../../../.agents/knowledge/architecture-decision-space.md#3-ownership-cohesion-and-change-coupling); [frontend-engineering](../../../.agents/skills/frontend-engineering/SKILL.md). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
 - **Decisions that remain open:** Before extraction, diagram which sections are pure view/derivation and which coordinate interaction. Document the strongest reason to **keep** a cohesive section un-split.
 
 ## Code scope, exclusions and safety
 
-Refactor only `CampaignPlay` into meaningful presentational sections for current state, activities/time, contextual actions and prior reports, with pure derived selectors where valuable. Keep state/command ownership in one understandable place; avoid one component per paragraph or a generic UI framework.
+The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
 
 **Preserve/exclude:** No new gameplay mechanics, no new visual theme, no rewriting the command API, no splitting by line-count quotas, no new global store. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
 
