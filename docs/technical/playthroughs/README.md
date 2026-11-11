@@ -8,7 +8,7 @@ The center of the game is a **life with persistent consequences**, not a stream 
 
 ## Read in this order
 
-For the coding handoff, start with the [gold harbor session](harbor-session.md), [connected solo contract](../solo-gameplay-contract.md) and [ordered feature route](../../features/README.md). They resolve cross-component implementation seams and define the first connected proof. The individual benchmark traces below remain contrasting constraints, not a demand to implement all worlds before playing.
+For a future **gameplay** handoff, start with the [gold harbor session](harbor-session.md) and [connected solo contract](../solo-gameplay-contract.md), then select a bounded [Change](../../changes/README.md). The older [initiative dossiers](../../features/README.md) explain historical phase decisions, not today's coding order. The individual benchmark traces below remain contrasting constraints, not a demand to implement all worlds before playing.
 
 1. [Execution language](execution-language.md): what a scene, offer, activity, roll and pause actually mean in these traces.
 2. [SpongeBob](spongebob.md): a minute-by-minute active session, including a failed check, different options and proposed quiet work. Closest look at what the player actually reads.
@@ -42,7 +42,7 @@ Every target chain uses a finite list of accepted intentions, not generated exec
 
 ## Ownership and limits
 
-This atlas owns **worked examples and their observable acceptance**. [Rules and activities](../rules-and-activities.md), [time](../ticks-and-tags.md), [context/cost](../context-and-cost.md) and active feature plans own reusable contracts. When a trace reveals a missing contract, link it to that owner; do not grow a second specification here.
+This atlas owns **worked examples and their observable acceptance**. [Rules and activities](../rules-and-activities.md), [time](../ticks-and-tags.md), [context/cost](../context-and-cost.md) and permanent product/technical owners define reusable contracts; a selected Change only scopes an implementation. When a trace reveals a missing contract, link it to that owner; do not grow a second specification here.
 
 Maintain this atlas as a living regression map for product assumptions. When shared behavior changes, update affected traces without removing the pressure they were designed to apply. When a proposed story cannot be explained by an existing trace without hand-waving, add a focused benchmark or contrast and identify the new assumption explicitly. Keep unsupported target behavior visible, keep source-grounded status honest, and prefer extending an existing trace over creating near-duplicate examples. Examples challenge the architecture; they do not become hardcoded runtime branches or mandatory mechanics merely by being documented.
 

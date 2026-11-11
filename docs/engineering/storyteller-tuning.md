@@ -67,7 +67,7 @@ Evaluate choices against plausible player goals here, not a mandatory fight/talk
 
 ## Controlled experiments
 
-Keep a compact record in the active feature plan:
+When the owner has explicitly selected a code-bearing Change, keep a compact record in its checkpoint; otherwise put the diagnostic evidence in QA/technical owners:
 
 ```text
 Question / falsifiable hypothesis:

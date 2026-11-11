@@ -83,7 +83,7 @@ The September 24 v16 responses proposed creating and twice updating a clue note,
 
 | Candidate | Information or capability gained | Decision |
 | --- | --- | --- |
-| Connected continuity slice | Distinguishes retained notes, record creation, dependency selection and final request retention; proves one changed fact survives departure and return. | **Selected S3.** Follow the [bounded phases](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md), not a blind sidecar-only implementation. |
+| Connected continuity slice | Distinguishes retained notes, record creation, dependency selection and final request retention; proves one changed fact survives departure and return. | **Parked S3 (gameplay track).** If reactivated, follow the [bounded phases](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md), not a blind sidecar-only implementation. |
 | More live campaign turns immediately | Reveals model behavior, but leaves the same missing causal evidence and can repeat an already-known gap. | Use a short falsifiable live experiment after the relevant structural change; retain every failed result. |
 | Broader mechanics/autonomy | Enables more kinds of life, conflict and absence. | Keep product questions explicit; choose the next mechanic from a concrete playthrough rather than accumulating generic engine primitives. |
 | Canonical migration or semantic search | Improves ownership consistency or retrieval reach. | Important later work, but neither by itself explains absent document proposals in a six-generation run. |

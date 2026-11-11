@@ -2,7 +2,7 @@
 
 Status: proposed selection and acceptance reference, not a new claim of implementation or owner approval. Runtime coverage remains in [progress](../../progress.md). This document chooses a small connected proof from the larger examples; it does not replace the owning feature phases.
 
-The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../solo-gameplay-contract.md) for selected timing, publication, hold and authority defaults, and the [feature route](../../features/README.md) for bounded coding order.
+The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../solo-gameplay-contract.md) for selected timing, publication, hold and authority defaults, and the [Change queue](../../changes/README.md) for any future authorized implementation. The old [initiative dossiers](../../features/README.md) are historical context.
 
 ## The player-facing promise
 
@@ -53,7 +53,7 @@ Aim for roughly a minute of active waiting at an explicit demo rate, not a real 
 
 ## Ready-to-implement reasoning, not another engine rewrite
 
-The first dependency remains activity identity/shared chronology. Activity A1 now has the concrete BC-04 oracle, source map and selected clock/collision semantics. Old A effort is retained; B advances world time; exact A resumes at the current position. Preserve receipts/private plans and existing immediate resolution. Follow the feature route rather than implementing all atlas scenarios.
+The first dependency remains activity identity/shared chronology. Activity A1 now has the concrete BC-04 oracle, source map and selected clock/collision semantics. Old A effort is retained; B advances world time; exact A resumes at the current position. Preserve receipts/private plans and existing immediate resolution. Select one authorized, measurable Change instead of implementing all atlas scenarios.
 
 Next, situation S1 establishes choice authority; activity A2 adds genuine wait; S2/U2a jointly establish quiet player-directed reuse; U2b separates reports/scenes; S3 extends bounded preparation; U2c adds accepted chains. Queue transitions and effects share an atomic boundary/explicit handoff so duplicate wakes cannot start children. Do not implement these as one giant phase or postpone them behind complete cooperation/every rule family.
 

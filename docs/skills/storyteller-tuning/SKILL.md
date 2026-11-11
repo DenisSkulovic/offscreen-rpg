@@ -9,7 +9,7 @@ Use the [working agreement](../../../.agents/rules/working-agreement.md#agent-an
 
 ## Diagnose before changing
 
-Turn the complaint into an observable expectation for this profile, campaign and selected intention. Read the current feature checkpoint. Inspect the smallest useful trajectory: offered intention and private plan → accepted resolution → exact captured request → raw response → admitted/published result. Use `pnpm story:inspect <story-id>` after reviewing its read-only call path. Inspect private evidence locally; never commit provider packets, credentials or player prose. If an artifact is inaccessible, identify the missing link and narrow the conclusion.
+Turn the complaint into an observable expectation for this profile, campaign and selected intention. Read the selected Change checkpoint **if** one exists; otherwise this is a read-only diagnostic/evaluation. Inspect the smallest useful trajectory: offered intention and private plan → accepted resolution → exact captured request → raw response → admitted/published result. Use `pnpm story:inspect <story-id>` after reviewing its read-only call path. Inspect private evidence locally; never commit provider packets, credentials or player prose. If an artifact is inaccessible, identify the missing link and narrow the conclusion.
 
 Separate observations, owner judgment, hypotheses and unknowns. Locate the earliest deficient boundary. An action that only approaches an NPC cannot be repaired honestly by a consequence narrator pretending the conversation resolved. A funding stop is not bad model reasoning. A valid response is not proof of agency or enjoyment.
 
@@ -27,4 +27,4 @@ Do not require repeated cheap-model failures before a bounded stronger-model pro
 
 Return separate verdicts for authority, intent fulfillment, profile/campaign adherence, choices, continuity, time, latency/cost and owner preference. Cite concrete evidence for material failures. One response is exploratory evidence, not a reliability estimate.
 
-Adopt only the narrow supported change; otherwise retain the baseline or leave the finding unresolved. Update the owning specification and feature checkpoint with one exact next action. Significant runtime changes follow feature-workflow and the established implementation owner. Leave shared prompts alone when evidence points to configuration, missing mechanics or an unresolved product contract.
+Adopt only the narrow supported change; otherwise retain the baseline or leave the finding unresolved. Update the owning specification and the selected Change checkpoint (if any) with one exact next action. Significant runtime changes follow change-workflow and the established implementation owner. Leave shared prompts alone when evidence points to configuration, missing mechanics or an unresolved product contract.

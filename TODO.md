@@ -13,9 +13,9 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 ## Stage 0: finish the development work system (current)
 
 - [x] Define a **Change** as one bounded, verifiable planned source/test/script/executable-config delta, including refactors, bug fixes, tooling and migrations; distinguish it from initiative, design, investigation, documentation and evaluation.
-- [ ] Make `docs/changes/` the unambiguous execution route. It must represent **no active Change** honestly; no selected gameplay work by default.
+- [x] Make `docs/changes/` the canonical execution route, with **no active Change** valid and no automatic gameplay selection; adapt the read-only briefing tools.
 - [x] Classify the thirteen legacy `docs/features/` dossiers; retire four redundant/evaluation-heavy pairs with preserved decisions and historical links; retain nine unfinished or explicitly owner-preserved initiatives outside the active Change queue.
-- [ ] Align agent rules, skill names/templates, handoff procedure, roadmap/navigation and read-only briefing with the new route. No duplicate competing active plans.
+- [x] Align agent rules, `change-workflow` skill/adapters/templates, handoff procedure and roadmap/navigation with the new route; remove the old `feature-workflow` skill.
 - [ ] Review navigation and links, then validate the workflow using a fresh-agent read-only task before authorizing an implementation. Record actual outcomes rather than assuming the harness improved productivity.
 
 **Exit criterion:** a new agent can identify the present priority and absence/presence of a ready Change; distinguish design/evaluation from code; select one well-defined diff outcome, its source owners and negative proof; execute and close it without absorbing historical initiatives or inventing work. Keep the bureaucracy smaller than the engineering problem.

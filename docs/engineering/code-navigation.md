@@ -10,7 +10,7 @@ For research-backed options around context selection, retrieval, memory, tools, 
 
 For long histories specifically, [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
 
-For the next coding tranche, follow the current plan selected by the [feature route](../features/README.md#coding-route); phase names belong there, not in this map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+For a new code implementation, check the [Change index](../changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../features/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner
 
@@ -51,7 +51,7 @@ The [architecture specification](../technical/architecture.md) also describes in
 
 ## Reading discipline
 
-For a change, locate its entry point, authoritative operation and output first. Then inspect only the policy, persistence and recovery branches it calls. Read tests as examples of an invariant, not as a substitute for tracing production wiring. Record a discovered cross-file invariant with its owner; leave a short link at a surprising caller. Proposed fixes belong in the active feature plan, not in comments that imply they are implemented.
+For a change, locate its entry point, authoritative operation and output first. Then inspect only the policy, persistence and recovery branches it calls. Read tests as examples of an invariant, not as a substitute for tracing production wiring. Record a discovered cross-file invariant with its owner; leave a short link at a surprising caller. Significant proposed code fixes belong in a bounded Change when authorized; design-only findings belong in their technical owner. Don't write comments that imply an unimplemented proposal exists.
 
 Navigation maintenance follows [the documentation rule](../../.agents/rules/documentation.md). These package guides are deeper maps; add another only when repeated exploration demonstrates a need.
 

@@ -262,7 +262,7 @@ This section is the next implementation contract, **not current behavior**. It m
 
 **Materialization remains separate.** This contract carries records that exist or are admitted with the source result. It does not force the model to propose a needed record, infer an entity from every noun or make a descriptive record executable. Preserve a note-only contrasting flow. If live output still omits a needed identity/thread, inspect the exact task, supported proposal schema and publication result before changing the owning prompt/content. Source-backed clue notes can be useful memory without constituting identity/relationship materialization.
 
-The [S3 plan](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md) orders the implementation and acceptance; the [engine model](../engineering/engine-model.md#memory-persistence--selection--final-request) explains the source-inspected gaps that motivate it.
+The [parked S3 plan](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md) describes a proposed future implementation and acceptance sequence, not current coding authorization; the [engine model](../engineering/engine-model.md#memory-persistence--selection--final-request) explains the source-inspected gaps that motivate it.
 
 ## Extract, summarize and revise deliberately
 
