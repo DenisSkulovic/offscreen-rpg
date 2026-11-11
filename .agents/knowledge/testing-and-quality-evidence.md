@@ -97,10 +97,10 @@ A race test needs control of the critical ordering; sleeping a random duration i
 
 ### Deliberate event schedule
 
-§T0§: two operations hold the same expected version.
-§T1§: A commits.
-§T2§: B attempts stale commit.
-§T3§: assert only one accepted effect and B observes conflict/original result.
+`T0`: two operations hold the same expected version.
+`T1`: A commits.
+`T2`: B attempts stale commit.
+`T3`: assert only one accepted effect and B observes conflict/original result.
 
 Test the **persisted receipt and public projection**, not merely the number of calls to a fake function.
 
