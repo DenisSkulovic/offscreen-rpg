@@ -65,7 +65,7 @@ A good correlation model distinguishes:
 
 **Example state path:**
 
-§§§text
+```text
 HTTP submit [request R1]
   → application admits [operation O, story revision V8]
   → SQL commits [receipt/admission A]
@@ -75,7 +75,7 @@ HTTP submit [request R1]
   → semantic validation
   → publication [source revision V8 still valid?]
   → public snapshot [V9 or blocked]
-§§§
+```
 
 If an outbox notice repeats, two *delivery events* may share one *business operation*. Treating them as distinct accepted actions in logs causes false conclusions. Correlation helps identify duplicates; application-side durable constraints actually prevent wrong effects.
 
@@ -89,10 +89,10 @@ Logs and traces can be dropped, delayed or sampled. **They must not be the sourc
 
 Request time is often a **sum of waits**, not a single slow function:
 
-§§§text
+```text
 T_total = client/network + reverse proxy + app queue
         + DB pool wait + SQL execution + downstream queue/provider + publish
-§§§
+```
 
 The critical path may contain parallel branches; their durations don't simply add. Inspect a representative trace and resource saturation before recommending a cache, worker pool, timeout increase or service split.
 
