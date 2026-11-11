@@ -13,7 +13,7 @@ Open the affected product/technical heading, then route through `apps/web/src/fe
 
 ## Professional decision reference (select, don't preload)
 
-For a consequential state/fetch/async design or review, read the relevant section of [frontend state and asynchronous correctness](../../knowledge/frontend-state-and-async.md). For broader feature/module architecture (layering, boundaries, server versus browser owner), consult [architecture decision space](../../knowledge/architecture-decision-space.md). Name **at least one credible alternative** and which identity/lifetime/usage facts favor the chosen approach. On a small existing-component fix, the manual may be unnecessary. Do not turn this into a mandatory 15-KB context load for each JSX edit.
+For a consequential state/fetch/async design or review, read the relevant section of [frontend state and asynchronous correctness](../../knowledge/frontend-state-and-async.md). For broader feature/module architecture (layering, boundaries, server versus browser owner), consult [architecture decision space](../../knowledge/architecture-decision-space.md). Name **at least one credible alternative** and which identity/lifetime/usage facts favor the chosen approach. If the change primarily affects browser/API semantics (status, retries, pagination, caching), consult [API and network contracts](../../knowledge/api-and-network-contracts.md) instead; for session/privacy changes use [security and trust](../../knowledge/security-and-trust.md). A developer need not load all four manuals. On a small existing-component fix, the manual may be unnecessary. Do not turn this into a mandatory 15-KB context load for each JSX edit.
 
 ## Diagnostic lenses
 

@@ -7,7 +7,7 @@ description: Independently inspect an Offscreen RPG code or documentation diff f
 
 Read the task's acceptance and the **affected** product/technical contract before reading the diff. Do not relitigate the approved product vision unless the implementation exposes a real contradiction.
 
-Review the actual changed lines plus enough surrounding code to trace ownership. Prioritize:
+Review the actual changed lines plus enough surrounding code to trace ownership. For a consequential security, API/network, test-evidence or operational change, select **one matching professional manual** from [engineering knowledge](../../knowledge/README.md) to challenge the author's assumptions. This is a targeted expertise read, not a requirement to load the entire library. Prioritize:
 
 1. **Authority and safety:** model proposal vs committed game state, data/permission boundaries, billing, secret handling, document publication.
 2. **Lifecycle correctness:** races, duplicate work, state revision fences, failed/partial provider work, retries, time and transactional atomicity.

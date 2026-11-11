@@ -82,6 +82,19 @@ A controlled read-only trial should ask the same model to recommend an architect
 
 Use [scenario lab](../../.agents/knowledge/scenario-lab.md) as an adversarial source; it is **not** a benchmark result. No measured uplift in coding-agent design quality or usage efficiency is claimed yet.
 
+## Security, API, test and observability knowledge trials
+
+To evaluate whether the new professional manuals improve **first-pass design judgment**, use the read-only [decision lab](../../.agents/knowledge/scenario-lab.md) scenarios G–J. For each, give a fresh agent a fixed brief *without* a manual, and an independent fresh context the same brief with its appropriate manual. Avoid letting the first answer leak into the second trial. Compare **quality per total context cost** rather than number of buzzwords.
+
+| Trial | Initial-design signal worth measuring | Weak response it should defeat |
+| --- | --- | --- |
+| G, privileged debug endpoint | Distinguishes authentication, object/property/function authorization, provider-spend authority and environment isolation | "Just add auth middleware and hide the route" |
+| H, paginated history API | Compares pagination/consistency, caching/privacy, client compatibility and HTTP status semantics | "GET all rows and return 200" |
+| I, green test suite | Chooses tests at the correct boundary and challenges mock/shared-state assumptions | "Coverage is high, ship" |
+| J, slow request | Compares latency/queue hypotheses and selects the least costly discriminating telemetry | "Add more logging and increase timeout" |
+
+Record actual file/section reads, model usage if visible, extra investigation, counterexamples discovered, constraints that reverse the choice, answer quality and human corrections. **These are proposed experiments, not evidence that knowledge packs already improve outcomes.**
+
 ## Current status
 
 - Existing small entrypoint, conditional skills, feature workflow and checkpoint-size audit: **implemented as repository documents**.

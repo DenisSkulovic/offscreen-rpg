@@ -9,7 +9,7 @@ description: Review a consequential Offscreen RPG architectural change, oversize
 
 ## Activate the relevant architectural design space
 
-For a nontrivial change, review the needed section in [architecture decision space](../../knowledge/architecture-decision-space.md) **before recommending a pattern**. Look for alternative module boundaries, ownership and data/communication choices, and why each may be superior under different constraints. A large file or fashionable framework alone is not a design argument. Don't preload the manual for an isolated bug fix.
+For a nontrivial change, review the needed section in [architecture decision space](../../knowledge/architecture-decision-space.md) **before recommending a pattern**. Look for alternative module boundaries, ownership and data/communication choices, and why each may be superior under different constraints. A large file or fashionable framework alone is not a design argument. For an API/network or trust boundary use [API/network contract](../../knowledge/api-and-network-contracts.md) or [security/trust](../../knowledge/security-and-trust.md) instead of reading every architecture manual. For operationally complex decisions add [observability/diagnostics](../../knowledge/observability-and-production-diagnostics.md) only if it changes the proposed design. Don't preload any manual for an isolated bug fix.
 
 ## Select the contract and follow one vertical route
 
