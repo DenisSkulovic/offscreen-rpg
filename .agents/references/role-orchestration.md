@@ -14,6 +14,12 @@
 | [OpenAI Harness Engineering](https://openai.com/index/harness-engineering/) | Repo knowledge and enforceable boundaries are an agent's environment; humans steer outcomes and feedback loops | Role outputs and checks return to authoritative docs, not untracked model memory |
 | [Claude Code best practices](https://code.claude.com/docs/en/best-practices) | Model instructions are probabilistic; hooks/permissions/actual checks are deterministic levers | Give role charters explicit responsibilities and use native read-only settings where feasible; never promise a prompt will *force* compliance |
 
+## Native compatibility and cost gotchas
+
+Official Claude [custom subagent configuration](https://code.claude.com/docs/en/sub-agents) supports `tools`, `permissionMode`, `model`, `maxTurns`; its docs caution that a parent in `auto` or bypass modes may override the subagent's `permissionMode`. Our **tool allowlist** prevents edit tools being exposed to the read-only specialists irrespective of that override. Cursor's [subagents](https://cursor.com/docs/subagents) support `readonly: true` and recognize compatible `.claude/agents/` definitions, with `.cursor/agents/` taking precedence for same-name entries.
+
+**Do not rely on one shared cross-client frontmatter file** for read-only enforcement: Claude's `permissionMode` and Cursor's `readonly` fields have different meanings. We keep tiny client-native wrappers with one shared conceptual role/procedure instead. No repository script should automatically spawn these agents or pin a paid model.
+
 ## Derived architecture: role ≠ skill ≠ agent ≠ model
 
 A **role** is the agreed decision/evidence responsibility; a **skill** supplies expert method and knowledge; an **agent/chat** creates an execution/context boundary; a **model/tool** sets capabilities and budget. The many-to-many relationship is intentional: "test strategist" can run in ChatGPT, a read-only Claude subagent or Cursor Ask. A frontend developer may combine the implementation role with the frontend skill and a narrow source packet.

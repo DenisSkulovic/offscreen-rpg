@@ -33,6 +33,7 @@ Use the official documentation appropriate to the **installed** version rather t
 | Challenge a large idea after source investigation, before writing code | `independent-design-review` |
 | Convert approved FEATURE/PLAN/spec decisions into a cheap executor packet | `cursor-handoff` |
 | Implement a bounded, authorized slice | `implementation-slice` |
+| Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` |
 | Analyze architecture ownership / module boundaries | `architecture-boundary-review` |
 | Design player hierarchy and return experience | `player-experience-design` |
 | Engineer React/Next.js interactive behavior, rendering and accessibility | `frontend-engineering` |

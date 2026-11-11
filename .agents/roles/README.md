@@ -31,6 +31,17 @@ For significant work, the person or coordinating chat first identifies **the sma
 
 **No automatic agent teams.** Claude agent teams are experimental and more expensive than subagents; Cursor also bills subagent requests. A new native subagent costs real allowance, even when its final reply is short. The parent/coordinator must explain the **information gain** before suggesting expansion.
 
+## Optional native subagents: start with only two
+
+The canonical role catalog is larger than the installed **native** subagent roster. The first two deliberately opt-in, read-only specialists are:
+
+- **`design-challenger`**: independently challenges a proposed design against product/technical contracts before implementation. Canonical procedure: `independent-design-review`.
+- **`test-strategist`**: proposes a falsifiable, risk-weighted unit/integration/E2E plan before anyone writes or executes tests. Canonical procedure: `test-strategy`.
+
+Claude uses `.claude/agents/` definitions with `tools: Read, Glob, Grep` and `permissionMode: plan`; Cursor uses `.cursor/agents/` definitions with `readonly: true`. Both inherit the selected parent model rather than silently pinning an expensive one. They do **not** automatically authorize model calls or additional agents. Cursor may also discover compatible Claude definitions; its documented project precedence resolves same-name collisions, but actual discovery should be tested in the installed version.
+
+**Why not create twenty?** Built-in Explore already handles ordinary source searches; most catalog roles need only a role assignment plus an existing skill or a fresh ChatGPT conversation. Each custom subagent advertises instructions and consumes tokens when invoked, so native roles must earn their place through repeated usefulness. Do not confuse availability with a requirement to delegate.
+
 ## Three service levels
 
 - **Direct:** one role performs one bounded known task; reference the relevant skill; no planning ceremony or reviewer swarm. Typical bug/typo/source lookup.

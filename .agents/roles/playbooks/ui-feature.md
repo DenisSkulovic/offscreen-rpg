@@ -18,6 +18,8 @@
 | 7. Independent verification | Frontend reviewer + test executor, preferably different context | Diff findings + actual browser/test output, no false "looks good" | Important issues fixed; tests/screenshot/human review identified |
 | 8. Converge | Coordinator + owner | Accepted design/technical docs, checkpoint, remaining limits | No unresolved critical contradiction or fabricated evidence |
 
+For separate, read-only execution the installed `design-challenger` and `test-strategist` native subagents are optional. Start them only when the role assignment and tool allowance justify the extra context; do not run both merely because this example mentions them.
+
 **Not all roles need a new process.** The product strategist and UX designer can be one ChatGPT chat; source investigator can be Cursor's built-in Explore; visual critic can be a second ChatGPT conversation; test strategist can be a separate read-only Claude subagent; Cursor implements. One tool may hold several sequential roles if independence is not at risk.
 
 ## Useful independence and parallelism

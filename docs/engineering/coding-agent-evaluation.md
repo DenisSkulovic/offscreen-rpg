@@ -59,6 +59,10 @@ Use these **read-only** questions in a fresh coding-agent context; assess whethe
 
 The current repository has **no measured token reduction or retrieval success rate** for these cases. A passing file-link check is only a structural sanity check.
 
+## Native role discovery and permissions
+
+After installation, check that Claude sees exactly the two relevant `.claude/agents/` specialists and that Cursor resolves the same names from `.cursor/agents/` without creating confusing duplicates. Invoke one on a **read-only question** with exact authority references; verify its output is a critical design/test receipt rather than edits or an extra agent team. Inspect actual client-reported subagent model/usage; the wrappers intentionally use `inherit`, not a claimed cheap price. This test remains **not performed** in the real clients.
+
 ## Role-orchestration smoke test
 
 For a representative UI feature, request a `role-orchestration` plan **without coding**. The response should identify product/technical authorities, a minimal role sequence, 1–2 valuable independent judgments, explicit write/test permissions, handoff receipts, a negative acceptance case and how to return contradictions upstream. Compare with a plain one-agent plan. Record *actual* role drift, irrelevant reads, human corrections, extra agent calls and quality findings when the workflow is used.

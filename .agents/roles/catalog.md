@@ -34,7 +34,7 @@
 
 | Role | Responsibility and distinctive deliverable | Typical vehicle / permission |
 | --- | --- | --- |
-| **Test strategist** | Before code: acceptance matrix with success, rejection, edge, concurrency and evidence tier | ChatGPT/Claude read-only; no fake passing tests |
+| **Test strategist** | Before code: acceptance matrix with success, rejection, edge, concurrency and evidence tier | ChatGPT/Claude read-only; [`test-strategy`](../skills/test-strategy/SKILL.md); no fake passing tests |
 | **Unit-test engineer** | Implement approved fast deterministic cases for pure policy/code | Cursor, bounded code permission |
 | **Integration / E2E designer** | Define cross-system user journeys, real dependencies, failure injection and acceptance evidence | ChatGPT with Claude source grounding |
 | **Test executor / investigator** | Run targeted safe checks, classify failure vs flaky environment vs wrong assumption | Claude/Cursor only with exact command permissions |

@@ -27,6 +27,10 @@ The [role orchestration owner](roles/README.md) distinguishes **role responsibil
 
 For substantial work, the coordinating chat should first recommend a minimal role graph, specify the owning product/technical decision, then assign focused stages. A subagent or independent chat is an **optional paid/context cost**, not a mandatory step or automatic permission grant. An independent reviewer challenges the author's work rather than reusing its confident conclusion. A failed gate returns to the owning role, not to spontaneous implementation.
 
+## Native subagent surfaces (opt-in)
+
+Only two initially: **design-challenger** and **test-strategist**. Their canonical procedures are linked from [role orchestration](roles/README.md). The `.claude/agents/` definitions restrict tools to read/search and plan mode, while `.cursor/agents/` uses client-supported read-only mode. They inherit the current model to avoid surprising model selection. Treat separate subagent context as a **usage cost**, not free parallel labor; explicit invocation is preferred until actual discovery/auto-delegation is understood.
+
 ## Five development modes
 
 1. **Harness setup:** compare an independent reference against `AGENTS.md`, skills, client-specific discovery and tool costs. Output harness Markdown/settings edits. **No gameplay/code changes.**
