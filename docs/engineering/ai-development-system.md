@@ -1,5 +1,7 @@
 # AI-assisted development operating system
 
+**Design target:** [independent coding-agent standard](coding-agent-target-standard.md). **Expert sources:** [coding-agent knowledge](coding-agent-knowledge.md). **Measurement:** [evaluation protocol](coding-agent-evaluation.md). All three address tools developing the game, not the in-game model.
+
 **Status:** Engineering method, revised 2026-11-11. This document guides *development agents*; Storyteller inference and gameplay spending have separate contracts. Root `AGENTS.md` is the small agent entrypoint. Product and technical specifications remain the authority for game behavior.
 
 ## The ideal: intention, implementation, evidence

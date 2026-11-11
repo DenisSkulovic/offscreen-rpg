@@ -1,4 +1,6 @@
-# Offscreen RPG | Agent entry
+# Offscreen RPG | Coding-agent entry
+
+**Audience:** AI agents helping developers research, specify, write, test and review this repository. These are NOT operating instructions for the game's in-world Storyteller. Optimize development decisions and context consumption, not runtime inference, unless specifically asked.
 
 This is a persistent-story RPG with **deterministic mechanical authority** and an LLM Storyteller. The repository is a pre-POC, not a proven product. Be honest about what is designed, implemented, exercised with fixtures, observed live, and accepted by a human.
 
@@ -19,4 +21,4 @@ This is a persistent-story RPG with **deterministic mechanical authority** and a
 
 ## End-of-slice report
 
-State: changed files/outcome; checks actually run and their results; important gaps; next concrete action; whether paid model calls occurred. Keep it brief. The operating model and tool handoffs live in `docs/engineering/ai-development-system.md`.
+State: changed files/outcome; checks actually run and their results; important gaps; next concrete action; whether paid model calls occurred. Keep it brief. The [independent coding-agent target](docs/engineering/coding-agent-target-standard.md), [current workflow](docs/engineering/ai-development-system.md), and [expert knowledge index](docs/engineering/coding-agent-knowledge.md) define how development agents collaborate. Do not load them all for a small task.

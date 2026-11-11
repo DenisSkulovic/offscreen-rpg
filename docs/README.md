@@ -1,5 +1,7 @@
 # Documentation map
 
+**For AI coding tools developing this repository**, use the [independent target standard](engineering/coding-agent-target-standard.md), [expert knowledge index](engineering/coding-agent-knowledge.md) and [evaluation protocol](engineering/coding-agent-evaluation.md). These do **not** govern the runtime Storyteller.
+
 Start with the [one-page overview](../README.md) and [current progress](progress.md). Then choose a question below. This is a routing map, not a reading list: a small change should not require the whole library.
 
 ## Choose the level of detail

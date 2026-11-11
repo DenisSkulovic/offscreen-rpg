@@ -1,6 +1,6 @@
 # Agent knowledge and operating model
 
-Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. This directory contains **conditional** rules and **on-demand** skills. The current tool-neutral workflow is [AI development system](../docs/engineering/ai-development-system.md). The product/technical docs remain the specification; agent instructions do not replace them.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. The [independent coding-agent target](../docs/engineering/coding-agent-target-standard.md), [curated expert sources](../docs/engineering/coding-agent-knowledge.md) and [evaluation protocol](../docs/engineering/coding-agent-evaluation.md) apply to **development tools**, never in-game Storyteller inference. This directory contains **conditional** rules and **on-demand** skills. The current tool-neutral workflow is [AI development system](../docs/engineering/ai-development-system.md). The product/technical docs remain the specification; agent instructions do not replace them.
 
 ## Put knowledge in the correct place
 
@@ -29,6 +29,10 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. This director
 - [`codebase-investigation`](skills/codebase-investigation/SKILL.md): evidence-bounded architecture/source investigation without edits.
 - [`architecture-boundary-review`](skills/architecture-boundary-review/SKILL.md): inspect risky package/state/async ownership and propose the smallest defensible design change.
 - [`player-experience-design`](skills/player-experience-design/SKILL.md): translate player-intent and runtime states into an inhabitable, testable UI without inventing mechanics.
+- [`independent-design-review`](skills/independent-design-review/SKILL.md): challenge the first design with external knowledge and counterexamples before authorizing code.
+- [`cursor-handoff`](skills/cursor-handoff/SKILL.md): create one low-context, approved implementation packet for the cheaper coding agent.
+- [`frontend-engineering`](skills/frontend-engineering/SKILL.md): React/Next.js correctness, accessibility, state, async races and performance.
+- [`transactional-correctness-review`](skills/transactional-correctness-review/SKILL.md): PostgreSQL/Temporal/outbox concurrency, retries and exactly-once effects.
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
 - [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.
 - [`documentation-reconciliation`](skills/documentation-reconciliation/SKILL.md): repair contradictions, navigation and unnecessary verbosity.
