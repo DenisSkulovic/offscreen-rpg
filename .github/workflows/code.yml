@@ -14,13 +14,29 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
-      - run: docker compose config --quiet
+      - name: Install dependencies
+        id: dependencies
+        run: pnpm install --frozen-lockfile
+      # A failing style check must not conceal lint, typing, unit tests or build
+      # failures. Do not weaken any check to manufacture a green workflow.
+      - name: Check formatting
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm format:check
+      - name: Lint
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm lint
+      - name: Typecheck
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm typecheck
+      - name: Unit tests
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm test
+      - name: Build
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm build
+      - name: Validate Docker Compose
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: docker compose config --quiet
   infrastructure:
     runs-on: ubuntu-latest
     timeout-minutes: 10
