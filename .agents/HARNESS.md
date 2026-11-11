@@ -17,6 +17,8 @@ This harness governs **how** coding agents navigate the three authority layers: 
 | `.agents/references/` | Selected primary-source or economic question | Curated expertise, industry evidence and investigation strategy |
 | `docs/`, packages and tests | After scope and authority selection | Product intent, technical contract, current implementation and verification |
 
+**Documentation retrieval standard:** [layer-zero document architecture](references/documentation-navigation-standard.md) governs how coding agents find and maintain product/technical knowledge. [Technical owner index](../docs/technical/README.md) and [engineering index](../docs/engineering/README.md) are on-demand routers, not mandatory startup context.
+
 **Cold start:** root instructions + user task. Find the correct authority **by topic**, then open one relevant section, a source symbol/caller when needed and the smallest useful proof. This file is a *map*, not mandatory startup reading. Do not preload all rules, skills, docs or code to exploit a large context window.
 
 ## Five development modes

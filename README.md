@@ -28,7 +28,7 @@ The next proof is a configuration-faithful 10–15-turn campaign with durable ch
 ## Choose your entry
 
 - **Returning owner or new contributor:** this page → [progress](docs/progress.md) → [documentation map](docs/README.md) for one question.
-- **Coding agent:** [AGENTS.md](AGENTS.md), then `pnpm repo:brief`; follow the current plan and relevant [code route](docs/engineering/code-navigation.md).
+- **Coding agent:** start with [AGENTS.md](AGENTS.md). Use `pnpm repo:brief` when resuming or disoriented, then route the question via [documentation](docs/README.md) → [technical owner](docs/technical/README.md) → [code navigation](docs/engineering/code-navigation.md) only as needed.
 - **Try it locally:** [development](docs/development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
 - **Understand the intended product:** [vision](docs/vision.md), [concepts](docs/concepts.md), then the relevant product topic in the map.
 - **Understand the engine and its limits:** [engine model](docs/engineering/engine-model.md) connects mechanics, time, memory, authority, failure and next design decisions.

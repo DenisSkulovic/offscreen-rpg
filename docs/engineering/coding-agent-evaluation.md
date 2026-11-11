@@ -45,6 +45,20 @@ See [harness architecture](../../.agents/HARNESS.md) and [context reference](../
 
 A skills menu rendering successfully is **discoverability**, not proof of coding quality. "All tests pass" is verification evidence for a declared scope, not proof of playability, design quality or lower development cost.
 
+## Documentation retrieval smoke cases
+
+Use these **read-only** questions in a fresh coding-agent context; assess whether the agent finds the correct owner/heading without a whole-codebase investigation. Record files read, wrong detours, actual reported tokens (if available), answer accuracy and human intervention.
+
+| Fresh-agent question | Expected documentation route |
+| --- | --- |
+| When is fictional time allowed to advance after an action is accepted? | [Time and autonomy](../time-and-autonomy.md) → [committed time](../technical/committed-time.md#permission-to-advance); inspect code only to verify current implementation |
+| What makes an NPC/relationship detail canonical and recallable? | [Continuity](../continuity-and-consequences.md) → [canonical ownership](../technical/canonical-files.md#one-owner-per-kind-of-truth); retrieval research only when the question concerns discovery |
+| What happens if a provider times out after dispatch? | [Temporal/execution recovery](../technical/execution.md#retry-boundaries-and-uncertain-side-effects) → [usage holds](../technical/usage-policy.md#hold-and-recovery-semantics) |
+| Who owns a form's server state, and what should the player see? | [Player experience](../player-experience.md) → [client/identity](../technical/client-and-identity.md) → [code map](code-navigation.md) |
+| Was a saved clue note actually recalled after leaving a scene? | [Connected evidence](connected-poc-proof.md#memory-reinspection--2026-10-23) → exact proposed/published/selected/packed evidence, **not** a guessed success from a note patch |
+
+The current repository has **no measured token reduction or retrieval success rate** for these cases. A passing file-link check is only a structural sanity check.
+
 ## Current status
 
 - Existing small entrypoint, conditional skills, feature workflow and checkpoint-size audit: **implemented as repository documents**.

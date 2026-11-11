@@ -2,7 +2,7 @@
 
 **For AI coding tools developing this repository**, use the [independent target standard](engineering/coding-agent-target-standard.md), [expert knowledge index](engineering/coding-agent-knowledge.md) and [evaluation protocol](engineering/coding-agent-evaluation.md). These do **not** govern the runtime Storyteller.
 
-Start with the [one-page overview](../README.md) and [current progress](progress.md). Then choose a question below. This is a routing map, not a reading list: a small change should not require the whole library.
+Start with the [one-page overview](../README.md) and [current progress](progress.md). Then choose a question below. For a specific design owner, use [technical contracts](technical/README.md); for source navigation, proof and specialist research, use [engineering knowledge](engineering/README.md). These are **small routes**, not additional authorities. This is a routing map, not a reading list: a small change should not require the whole library.
 
 ## Choose the level of detail
 
@@ -13,10 +13,10 @@ Start with the [one-page overview](../README.md) and [current progress](progress
 | Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
 | Execution route | [Feature index](features/README.md) → selected PLAN | Current work, exact next slice, acceptance and blockers |
 | Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |
-| Technical contract | `technical/`, selected below | Authority, state transitions, invariants and intended failure/retry semantics |
-| Implemented flow | [Code navigation](engineering/code-navigation.md) → package guide | Input → authoritative operation → output; concrete source entry points and current limits |
+| Technical contract | [Technical owner index](technical/README.md), selected below | Authority, state transitions, invariants and intended failure/retry semantics |
+| Implemented flow | [Engineering index](engineering/README.md) → [code navigation](engineering/code-navigation.md) → package guide | Input → authoritative operation → output; concrete source entry points and current limits |
 | Local detail | Relevant source and tests | Algorithm, transaction ordering, local invariant and executable examples |
-| Evidence | [Connected proof](engineering/connected-poc-proof.md), [QA](engineering/qa-journeys.md) | What was actually exercised, on which contract/date, and what it did not establish |
+| Evidence | [Engineering index](engineering/README.md) → [connected proof](engineering/connected-poc-proof.md) or [QA](engineering/qa-journeys.md) | What was actually exercised, on which contract/date, and what it did not establish |
 
 Technical specifications can include unbuilt design. Package guides describe wiring; progress describes coverage. When they disagree, inspect the narrow source/evidence boundary and fix the owning claim rather than averaging their stories. An old run or green fixture is not proof of today's complete product.
 

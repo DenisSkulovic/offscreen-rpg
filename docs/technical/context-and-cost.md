@@ -1,5 +1,7 @@
 # Context, caching, prompts and spending
 
+**Quick route by question:** [what goes into one request?](#build-context-for-a-specific-decision) · [bounded work and model rounds](#bounded-work-not-an-open-ended-agent) · [continuity summaries](#summaries-without-losing-the-story) · [which cache is which?](#three-different-caches) · [provider budget accounting](#budget-accounting) · [concrete spending envelope](#a-concrete-cost-envelope). This is **in-game Storyteller inference**, not the cost of Claude Code or Cursor developing the repository; see [coding-agent context economics](../../.agents/references/context-economics.md) for that.
+
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.
 
 For concrete request packets, current-versus-proposed tools, per-call token envelopes and branch-specific gameplay ledgers, see the [Storyteller walkthrough](playthroughs/storyteller.md). Those offline estimates are not measured usage or permission to enable inference; this document owns the shared accounting/context contract.

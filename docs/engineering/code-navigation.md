@@ -1,6 +1,6 @@
 # Code navigation
 
-This is a map of implemented code, not the target architecture. Read [progress](../progress.md) for current gaps, then choose one route below. Follow imports only when that route's responsibility crosses a boundary. Do not load every linked document.
+This is a map of implemented code, not the target architecture. Product *intent* is in the [product documentation map](../README.md); technical *invariants/ownership* are in the [technical owner index](../technical/README.md). The [engineering index](README.md) separates source navigation from observed evidence and research. Read [progress](../progress.md) for current gaps, then choose one route below. Follow imports only when that route's responsibility crosses a boundary. Do not load every linked document.
 
 For a conceptual understanding before source navigation, use the [engine model](engine-model.md): authority, execution, time, memory, mechanical limits and evidence. It distinguishes source-inspected behavior from demonstrated gameplay.
 

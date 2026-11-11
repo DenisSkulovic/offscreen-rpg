@@ -1,6 +1,6 @@
 # Documentation and discovery maintenance
 
-Read when changing documentation, navigation, rules or a cross-file responsibility. The [documentation map](../../docs/README.md) routes readers; this rule defines maintenance. Existing product, spending and verification authority is unchanged.
+Read when changing documentation, navigation, rules or a cross-file responsibility. The [independent documentation-navigation standard](../references/documentation-navigation-standard.md) defines the ideal information architecture before auditing existing files. The [documentation map](../../docs/README.md) routes readers; this rule defines maintenance. Existing product, spending and verification authority is unchanged.
 
 ## One explanation, several useful levels
 
@@ -25,11 +25,11 @@ The root README should explain the project in roughly one page. Progress begins 
 
 Default brief output contains the orientation and plan path. `--checkpoint` adds only the selected checkpoint, not phase history or every feature. Keep that checkpoint short enough to act on: current phase, inspected revision, bounded next edits, acceptance, verification limits, blockers and spend. Put durable evidence in its permanent evidence owner. Temporary maintenance work can be listed separately without silently replacing the gameplay route.
 
-Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. `pnpm repo:docs-health` reports checkpoint sizes without reading code, invoking models or imposing a CI gate; investigate flagged checkpoints rather than deleting evidence.  Large coherent contracts can stay large; give them a useful opening boundary and headings so readers can select a section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
+Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. `pnpm repo:docs-health` reports checkpoint sizes without reading code, invoking models or imposing a CI gate; investigate flagged checkpoints rather than deleting evidence.  Large coherent contracts can stay large; give them a useful opening boundary, a short question-to-section quick route where beneficial, and headings so readers can select the relevant section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
 
 ## Fresh-context discovery
 
-Read required safety rules, run the brief, then choose the relevant map/plan. State the unresolved question before opening large files. Locate headings or symbols first; read the owning section and immediate callers rather than concatenating entire libraries. Stop widening the search once the input, authoritative operation, output and relevant failure path are understood. Preserve a surprising discovery with its owner before compaction can erase it.
+Read relevant safety rules, then route the task using the appropriate map. Run the brief **when resuming or disoriented**, not for a fully specified narrow change. State the unresolved question before opening large files. Locate headings or symbols first; read the owning section and immediate callers rather than concatenating entire libraries. Stop widening the search once the input, authoritative operation, output and relevant failure path are understood. Preserve a surprising discovery with its owner before compaction can erase it.
 
 Discover filenames with `rg --files` before guessing package paths. Size independent read batches to their combined output budget. If a read truncates, narrow to the missing section; do not reread the whole batch or treat unseen text as inspected.
 
