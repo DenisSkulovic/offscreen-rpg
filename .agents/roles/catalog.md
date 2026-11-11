@@ -9,7 +9,7 @@
 | **Product strategist** | Define opportunity, user value, non-goals and impact tradeoffs, independent of present implementation | ChatGPT + owner; owner approves |
 | **Product spec author** | Turn accepted player behavior into crisp product doc + examples/negative acceptance | ChatGPT, with source support; documentation only |
 | **UX / interaction designer** | User journeys, information architecture, state/action hierarchy, flows and recoveries | ChatGPT; `player-experience-design` |
-| **Visual designer** | Typography, composition, responsive design language, detailed component states | ChatGPT; `ui-visual-review` when available |
+| **Visual designer** | Typography, composition, responsive design language, detailed component states | ChatGPT; `ui-art-direction` for professional art direction |
 | **UX / visual critic** | Independent alternative, friction/cognitive load, actual screenshot or flow discrepancies | Fresh ChatGPT or read-only critic; no code edits |
 | **Accessibility reviewer** | Keyboard/focus/semantics/contrast and recovery acceptance against target UI | Targeted review with `frontend-engineering`; actual browser evidence needed |
 | **Design-system steward** | Shared UI tokens, component variants, consistency and migration cost | Technical designer; don't create abstractions before repeated need |
