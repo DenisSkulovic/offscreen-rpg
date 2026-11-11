@@ -45,6 +45,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 - [`player-experience-design`](skills/player-experience-design/SKILL.md): translate player-intent and runtime states into an inhabitable, testable UI without inventing mechanics.
 - [`independent-design-review`](skills/independent-design-review/SKILL.md): challenge the first design with external knowledge and counterexamples before authorizing code.
 - [`cursor-handoff`](skills/cursor-handoff/SKILL.md): create one low-context, approved implementation packet for the cheaper coding agent.
+- [`ui-art-direction`](skills/ui-art-direction/SKILL.md): choose and critique deliberate visual direction with on-demand professional interface-design knowledge.
 - [`frontend-engineering`](skills/frontend-engineering/SKILL.md): React/Next.js correctness, accessibility, state, async races and performance.
 - [`transactional-correctness-review`](skills/transactional-correctness-review/SKILL.md): PostgreSQL/Temporal/outbox concurrency, retries and exactly-once effects.
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
