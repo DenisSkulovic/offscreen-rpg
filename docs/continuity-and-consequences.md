@@ -1,5 +1,7 @@
 # Continuity and consequences
 
+**Explore by question:** [when to materialize a person or place](#sparse-world-progressive-materialization) · [what happened versus what is true](#what-happened-what-is-true-what-might-happen) · [maps and movement](#space-movement-and-maps) · [identities and relationships](#people-objects-and-capabilities) · [possessions/exchanges](#possessions-and-exchanges) · [knowledge/perspective](#knowledge-and-perspective). Read the relevant section rather than loading this entire document.
+
 The world can be sparsely described without being forgetful. Record enough to make player choices and later consequences believable; do not simulate a population merely to justify something the storyteller can introduce.
 
 ## Sparse world, progressive materialization

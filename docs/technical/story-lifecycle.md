@@ -1,5 +1,7 @@
 # Story creation, control and completion
 
+**Find the section:** [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
+
 ## Forked continuities
 
 A story may record that it forked from one exact committed passage in another owned story. The fork is a new story identity with independent mutable state; its lineage is provenance, not a live parent-child synchronization relationship. Creating it performs no inference and cannot copy pending provider work, unsettled mechanics or running timers as completed facts.

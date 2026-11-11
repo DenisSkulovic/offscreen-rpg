@@ -1,5 +1,7 @@
 # Local development
 
+**Explore by question:** [local requirements and startup](#requirements-and-startup) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
+
 The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [progress](progress.md) for demonstrated coverage and [the engine model](engineering/engine-model.md) for current mechanics, time and memory limits; general inventory/combat and shared play remain unfinished.
 
 ## Requirements and startup

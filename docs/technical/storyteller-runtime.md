@@ -1,5 +1,7 @@
 # Storyteller runtime and model routing
 
+**Find the section:** [profile and task contract](#profile-and-task-contracts) · [context and continuity](#context-and-continuity) · [execution and publication](#execution-and-publication) · [provider budget boundary](#provider-and-budget-boundary) · [tool use and remaining design](#tools-rules-and-the-remaining-dm-task) · [proven limits](#supported-behavior-and-evidence-limits). Read the relevant section rather than loading this entire document.
+
 A storyteller is a versioned content profile over shared application capabilities. It is not an agent instance or a provider/model selection. The runtime currently has opening, narrative continuation, mechanical consequence and historical-report task contracts, surrounded by context assembly, validation, accounting and publication. Mechanical opening and consequence outputs can propose bounded private action plans; deterministic code owns their admission. Gameplay admits source-frozen report tasks for supported activity follow-ups; historical publication attaches the result to its report hook without replacing the current decision. Targeted memory retrieval and private creative discovery share one bounded protocol and persisted controller. A provider task carrying the memory recipe now runs that controller through the ordinary generation executor, saves its accepted final candidate as the generation output and enters the existing publication path; neither a graph framework nor an agent per NPC is required.
 
 ## Profile and task contracts

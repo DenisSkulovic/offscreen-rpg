@@ -1,5 +1,7 @@
 # Story execution with Temporal
 
+**Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery). Read the relevant section rather than loading this entire document.
+
 Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome.
 
 ## Implemented opening flow

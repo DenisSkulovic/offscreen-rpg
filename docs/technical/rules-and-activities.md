@@ -1,5 +1,7 @@
 # Rules, admitted actions and storyteller consequences
 
+**Find the section:** [mechanical authority](#content-and-authority) · [accepted action and time](#admitted-action-and-time) · [consequence narration](#consequence-narration) · [prepared opportunities](#prepared-local-opportunities) · [eligibility versus ongoing permission](#start-eligibility-is-not-ongoing-validity) · [storage and limits](#persistence-and-known-limits). Read the relevant section rather than loading this entire document.
+
 The implemented mechanical slice uses offer-local private immediate-action plans and the existing storyteller execution/publication lifecycle. It remains an authored, offline slice. Opening and consequence tasks now return freshly validated plans, but their scripted source recognizes only controlled benchmark state; this is not general model adjudication or world understanding. Combat, private encounter disclosure and the bounded planning agent are not implemented. Those limits do not change the product requirements in [Game rules](../game-rules.md).
 
 ## Content and authority
