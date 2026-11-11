@@ -9,6 +9,7 @@
 | When the role is deciding or reviewing… | Load this pack | What it brings that a generic checklist misses |
 | --- | --- | --- |
 | Cross-component architecture, modularity, service boundaries, patterns, technology selection | [Architecture decision space](architecture-decision-space.md) | Layers vs slices vs ports/adapters vs DDD vs modules/microservices; why each exists, selection criteria, reversibility and change cost |
+| Visual/interaction design, interface personality, typography, hierarchy and UI critique | [Interface design craft](interface-design-craft.md) | Visual direction, competing layouts, user attention, responsive composition, design-system trade-offs and actual rendered review |
 | React and Next.js state, data fetching, transitions, stale replies, cache identities, forms | [Frontend state and asynchronous UI](frontend-state-and-async.md) | State ownership, local/URL/server/query-cache options, effect lifetimes, competing update strategies, races and proof |
 | PostgreSQL/Drizzle operations, jobs, Temporal, outbox, transactions, external effects, retry, multi-tenant boundaries | [Durable operations and concurrent state](durable-operations.md) | Data storage/query choices, transactions/locks, caches, sync vs async, workflows, external integrations, operations and evidence |
 | A role needs to decide *what evidence proves a design* | [Knowledge pack standard and role proof obligations](pack-standard.md) | How expert knowledge enters design, reviews and test planning, and how to avoid false confidence |
@@ -51,6 +52,6 @@ The owner's separate [Modern Software Engineer](https://github.com/DenisSkulovic
 
 A new pack must have a unique audience/trigger, a coherent mental model, **a real design-option landscape and decision criteria**, relevant cross-technology interactions, concrete counterexamples, a proof method, and trusted deep references. If those are already covered, improve the existing pack rather than inventing a seventh "senior engineer" skill.
 
-Prioritized candidates after measured use: visual/interaction craft, application security and tenant isolation, data modeling and online migrations, testing strategy and E2E reliability, observability and incident diagnosis, API compatibility, performance and capacity, deployment/rollback, and specialized in-game AI-system engineering. These are **coverage candidates**, not declarations that those packs already exist.
+Prioritized candidates after measured use: application security and tenant isolation, data modeling and online migrations, testing strategy and E2E reliability, observability and incident diagnosis, API compatibility, performance and capacity, deployment/rollback, and specialized in-game AI-system engineering. These are **coverage candidates**, not declarations that those packs already exist.
 
 **Status:** This first edition is source-grounded and link-checked, not proven by actual Claude/Cursor role trials. The [evaluation protocol](../../docs/engineering/coding-agent-evaluation.md) owns quality and cost measurements.
