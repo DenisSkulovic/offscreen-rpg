@@ -19,9 +19,9 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 ## Task sizes and process
 
-**Small task (fix, copy, local refactor).** Agent reads the supplied task and narrow owner/source, edits one coherent slice, runs the cheapest useful check, inspects diff, reports. No feature dossier, architecture meeting, or mandatory full handbook read.
+**Small code task (fix, copy, local refactor).** Agent reads the supplied task and narrow owner/source, edits one coherent slice, runs the cheapest useful check, inspects diff, reports. No Change dossier, architecture meeting, or mandatory full handbook read.
 
-**Significant behavior or cross-package rework.** Product ideation → current-code investigation → short feature intent and alternatives → agreed product/technical contracts → implementation slices → targeted evidence → independent review where risk merits it → reconcile docs and retire temporary feature folder. The skill `feature-workflow` owns how `FEATURE.md` and `PLAN.md` work. Prefer one selected active plan; don't use dossiers as a generalized backlog.
+**Significant code-bearing Change or cross-package rework.** Product ideation → current-code investigation → a bounded Change with alternatives and one planned code delta → agreed product/technical contracts → implementation slices → targeted evidence → independent review where risk merits it → reconcile docs and retire temporary feature folder. The skill `feature-workflow` owns how `FEATURE.md` and `PLAN.md` work. Prefer one selected active plan; don't use dossiers as a generalized backlog.
 
 **Bug investigation.** Reproduce/identify the observation → compare competing causes against the full relevant source/trace → find an experiment that distinguishes them → fix the owning layer → regression check → update permanent owner if assumptions changed. Do not start by designing new systems.
 
@@ -91,7 +91,7 @@ Reconcile documentation **as part of a completed slice** when contracts or imple
 
 For a targeted reorganization: map incoming links and owners → preserve the intended contracts → consolidate duplicates → update routes → check representative reading paths → validate claims against code/evidence → retire obsolete docs. Reducing bytes without protecting meaning is not an improvement.
 
-For maintenance, `pnpm repo:docs-health` (or `--json`) measures each temporary feature checkpoint without calling providers. Oversized checkpoints are review candidates, not errors: move unique experimental findings to their evidence owner, keep durable contracts in technical docs, and replace the checkpoint with the current phase and exact next action. The old detail remains available in Git history. Do not make this audit mandatory for unrelated coding tasks.
+For maintenance, `pnpm repo:docs-health` (or `--json`) measures each selected Change or legacy initiative checkpoint without calling providers. Oversized checkpoints are review candidates, not errors: move unique experimental findings to their evidence owner, keep durable contracts in technical docs, and replace the checkpoint with the current phase and exact next action. The old detail remains available in Git history. Do not make this audit mandatory for unrelated coding tasks.
 
 ## When to change these rules
 

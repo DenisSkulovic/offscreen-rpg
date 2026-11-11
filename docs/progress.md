@@ -8,7 +8,7 @@
 
 **What remains unproved:** Consequence responses created and updated a clue note but proposed no descriptive identity/relationship/thread documents; departure requested no document recall cues. The trajectory ends at departure, so failed later recall was not observed. The October reinspection corrects the earlier “no notes/lost all recall” diagnosis.
 
-**Next action:** Continue S3 with a provider-free continuity trace that separates saved notes/records, selection and final request packing; implement required mechanical-document dependencies against that acceptance. Then prove a maintained Socucius interaction survives unrelated play, departure and return. The [feature route](features/README.md#coding-route) owns the exact phases; the [engine model](engineering/engine-model.md) explains why this comes next.
+**Next future code unit:** [S3a continuity report](features/2026-11-11--s3a-continuity-report/CHANGE.md), a bounded diagnostic change extracted from the broad Vvardenfell initiative. It must distinguish proposed note/document changes, current retained evidence, publication and actual final request coverage without inventing history. **No code changes are authorized in the November 11 planning audit.** After a separately approved report change, use provider-free acceptance to separate source writes, selection and final packing, then pursue S3b/c/d as distinct code outcomes and later verify Socucius leave/return. The [work route](features/README.md#coding-route) owns the selected packet; [engine model](engineering/engine-model.md) explains the diagnosis.
 
 ## Evidence and limits
 

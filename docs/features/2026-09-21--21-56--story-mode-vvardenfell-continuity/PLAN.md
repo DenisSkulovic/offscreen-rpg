@@ -22,17 +22,19 @@ The intended boundary remains mention → registered identity → continuity-rel
 
 **Selected outcome:** a current admitted continuity record reaches the later mechanical consequence that explicitly depends on it, or preparation stops with an inspectable reason before provider dispatch. No cap increase, hidden retrieval call, reroll or new social/combat simulation. The [canonical dependency contract](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design) owns semantics and failure behavior; the phases below own execution.
 
-#### S3a — Make the causal baseline inspectable — nearest slice
+#### S3a — Make the causal baseline inspectable — parent outcome; first code Change extracted
 
 Outcome: distinguish a missing write from a missing selection or packed-out record before changing the handoff.
 
-1. Extend the existing `tools/chamber/scripts/story-session-report.mjs` summary narrowly: separate result note/document **patches**, retained note identities/source references, current document identities/revisions, publication status and final request loaded/omitted dependencies. Inspect existing fields first; reuse them rather than building a trace explorer. Default output contains metadata, not raw private prose. Read-only queries must not enqueue work or dispatch a provider.
+1. Extend the existing `scripts/repo-tools/story-session-report.mjs` summary narrowly: separate result note/document **patches**, retained note identities/source references, current document identities/revisions, publication status and final request loaded/omitted dependencies. Inspect existing fields first; reuse them rather than building a trace explorer. Default output contains metadata, not raw private prose. Read-only queries must not enqueue work or dispatch a provider.
 2. Preserve the existing v16 artifacts. When Docker/PostgreSQL is available, inspect only the saved story; do not launch a live worker to reconstruct it. Join generation/publication identities and current note state. If artifacts are missing, label that fact and use a fresh provider-free case; do not invent historical state.
 3. Through ordinary application operations and the existing fake-provider harness, capture two small cases: a note-only flow whose empty later patch preserves memory across restart, and a source-linked document create/revise followed by an unrelated offer and a dependent return. Capture state, selected IDs and the final packet at each boundary. Establish the current missing-handoff behavior rather than patching database state to fake it.
 
 Files to inspect: the existing session report; application `storyteller/memory.ts`, `publication.ts`, `admission.ts`, `context.ts`; Storyteller `context/continuity.ts`; the relevant case in `tools/api-integration/test/start-package.integration.ts` or `storyteller.integration.ts`. Search symbols before opening whole files. Runtime exercises/checks are optional under repository policy; if unavailable, retain the source-inspected baseline and state exactly which causal observations remain missing.
 
 Exit: an inspection can distinguish proposal, publication, retained memory and final input. Record one compact evidence row per boundary in the permanent proof/QA owner. Do not call missing descriptive records proof of failed note memory. No provider calls are needed.
+
+**Current implementation packet:** [S3a continuity report Change](../2026-11-11--s3a-continuity-report/CHANGE.md) owns the report-only code edit. S3a's provider-free source/return scenarios above are a *separate acceptance/evaluation obligation*, not permission to add a new trace framework or code everything in S3. The actual report file already summarizes some proposed/document-selection/publication metadata; inspect it before adding fields.
 
 #### S3b — Required dependency selection and final packing
 
@@ -64,7 +66,7 @@ Keep the compact evidence ledger in the permanent proof/QA owners. When all scop
 
 ## Current checkpoint
 
-- **Phase/next edit:** S3a. Narrowly extend the existing session report to distinguish proposed patches, retained notes/current documents, publication and final packet coverage. Then use the ordinary provider-free harness for note-only and document-backed restart/return cases. No new trace framework.
+- **Phase/next future edit:** Parent S3a remains the continuity outcome, but the selected implementation unit is the [bounded report-only Change](../2026-11-11--s3a-continuity-report/CHANGE.md). The real report path is `scripts/repo-tools/story-session-report.mjs`; first revalidate its existing fields. The provider-free note/document return scenario and S3b/c/d are separate work. No source changes in the November 11 planning audit.
 - **Inspected source:** gameplay `fc00d13`; documentation base `0c05006`; October 23 source/raw-response investigation. No runtime behavior changed in that investigation.
 - **Evidence:** v16 shows correct timed work and short conversation, clue-note create/update patches, zero descriptive document proposals and departure without recall cues. No return turn. [Correction and identities](../../engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 - **Following slices:** S3b required exact selection/final packing → S3c durable offer/execution carriage → S3d materialization/return. [Canonical contract](../../technical/canonical-files.md#mechanical-continuity-dependencies--s3-design) defines ownership and failure behavior. Empty/social-free cases remain valid; sidecar success alone is insufficient.
