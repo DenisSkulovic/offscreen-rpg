@@ -10,10 +10,17 @@ This package owns use cases, transactions and coordination. API controllers and 
 | Mechanical selection | [campaign/actions.ts](src/campaign/actions.ts) | Private plans, prerequisites, finite action vs process |
 | Settlement and time | [action-execution-transition.ts](src/campaign/action-execution-transition.ts) | [action-executions.ts](src/campaign/action-executions.ts), [activities.ts](src/campaign/activities.ts) |
 | Generation → publication | [storyteller/runtime.ts](src/storyteller/runtime.ts) | Execution, publication and recovery are separate operations |
-| Exact task inputs | [storyteller/context.ts](src/storyteller/context.ts) | Captured root, source passages and selected canonical bodies |
+| Current story input | [storyteller/context.ts](src/storyteller/context.ts) | Locked SQL passage/clock/activity context and application-level task assembly |
+| Canonical knowledge loading | [storyteller/canonical-knowledge.ts](src/storyteller/canonical-knowledge.ts) | Exact pinned library/campaign reads, recall cues, byte/selection limits, omissions |
 | Provider authority/cost | [task-admission.ts](src/storyteller/task-admission.ts) | Budget, window accounting, dispatch authority |
 | Public snapshot | [stories/reads.ts](src/stories/reads.ts) | [campaign/reads.ts](src/campaign/reads.ts); public contracts |
 | Local inspection/fixtures | [developer-tools/chamber.ts](src/developer-tools/chamber.ts) | QA catalogue/inspectors only for tooling tasks |
+
+## Follow Storyteller context without loading everything
+
+Start in `storyteller/context.ts:loadStorytellerContext` for current SQL-owned state, accepted passage evidence, fictional time, and activity commitments. If the question is **which documents were selected**, follow `storyteller/canonical-knowledge.ts:loadCanonicalKnowledge` and its `loadCanonicalLibraries` policy. `storyteller/canonical-search.ts` owns source-root-scoped cue discovery. The public entrypoint continues to re-export its prior functions, so callers do not change.
+
+**Separate checkpoints:** stored source → selected exact current revision/section → loaded body and omission trace → whole-request bounding in `@offscreen/storyteller/context` → captured provider packet in `@offscreen/storyteller/tasks` → validated output → publication. Neither a catalogue entry nor an optional loaded document guarantees model-visible context; don't diagnose failed recall from storage alone. SQL item/mechanical state remains authoritative until its documented ownership transfer is completed.
 
 ## Opening and Start
 
