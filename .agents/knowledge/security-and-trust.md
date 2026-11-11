@@ -2,7 +2,7 @@
 
 **Audience:** security/privacy reviewer, product architect, API/backend/frontend engineer, data architect and test strategist. **Trigger:** sessions, ownership, privileged actions, multi-tenant data, files/URLs, external providers, public APIs, deployments or personally sensitive information. **Not:** a mandatory security ceremony for every private helper. This is professional *coding-agent knowledge*, not a change to Offscreen RPG's security requirements.
 
-**Route:** [threat model](#1-model-assets-actors-and-trust-boundaries) · [identity and authorization](#2-authentication-authorization-and-tenant-isolation) · [browser security](#3-browser-sessions-and-cross-origin-threats) · [untrusted inputs](#4-data-code-and-external-content-are-different-trust-levels) · [secrets and infrastructure](#5-secrets-supply-chain-and-deployment-choices) · [resource fairness](#6-abuse-control-and-resource-governance) · [evidence](#7-security-review-and-proof).
+**Route:** [threat model](#1-model-assets-actors-and-trust-boundaries) · [identity and authorization](#2-authentication-authorization-and-tenant-isolation) · [browser security](#3-browser-sessions-and-cross-origin-threats) · [untrusted inputs](#4-data-code-and-external-content-have-different-trust-levels) · [secrets and infrastructure](#5-secrets-supply-chain-and-deployment-choices) · [resource fairness](#6-abuse-control-and-resource-governance) · [evidence](#7-security-review-and-proof).
 
 ## Central engineering model
 
