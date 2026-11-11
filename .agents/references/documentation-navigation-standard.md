@@ -22,7 +22,8 @@ The goal is lower **total cost of correct engineering**. A clear 60-KB contract 
 | Architecture, state authority, failure/retry invariants | `docs/technical/` | **Correctness contract**, decisions and alternatives | That intended architecture equals the current implementation |
 | Actual software entry points, package interfaces | `docs/engineering/code-navigation.md`, package READMEs | Where code and tests live, what currently calls what | A second product or technical specification |
 | Recorded status, QA, real play | `docs/progress.md`, engineering evidence | Dated evidence, tested boundary and remaining unknowns | A general current pass based on historical fixtures |
-| Temporary feature decisions and next work | Selected `docs/features/*/FEATURE.md` and `PLAN.md` | Accepted scope and one next implementation slice | An archival copy of all permanent documentation |
+| Significant implementation work | `docs/changes/*/CHANGE.md`, optional `PLAN.md`, and [selection index](../../docs/changes/README.md) | One bounded approved source/test/config outcome, or an explicit empty queue | An archive of initiatives, a design-only task or another permanent technical specification |
+| Legacy initiative/design history | `docs/features/` | Historical decisions and prior phases when relevant | A ready/current Change or fresh approval |
 | Development-agent operation | `.agents/` | How Claude/Cursor/ChatGPT retrieve, design, execute and review | Runtime game-agent policy |
 | Research and expert references | `docs/engineering/`, `.agents/references/` | Techniques, alternatives and measured experiments | Automatic authority over approved product decisions |
 

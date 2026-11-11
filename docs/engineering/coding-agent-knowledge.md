@@ -20,7 +20,7 @@ No skill needs to reproduce React docs, a database manual or a design system. Li
 | When designing or reviewing | Preferred primary references | Applied question |
 | --- | --- | --- |
 | Agent setup / context costs | [OpenAI harness engineering](https://openai.com/index/harness-engineering/), [Anthropic steering Claude](https://claude.com/resources/articles/steering-claude-code-skills-hooks-rules-subagents-and-more), [Cursor skills](https://prod.cursor.com/docs/skills) | What is mandatory context, what loads on demand, and what can be enforced mechanically? |
-| Feature specs / design alternatives | [GitHub Spec Kit](https://github.github.com/spec-kit/), [agent skills format](https://agentskills.io/specification) | Is acceptance defined before code, and are handoffs portable without framework ceremony? |
+| Change specs / design alternatives | [GitHub Spec Kit](https://github.github.com/spec-kit/), [agent skills format](https://agentskills.io/specification) | Is acceptance defined before code, and are handoffs portable without framework ceremony? |
 | React state and effects | [React state snapshots](https://react.dev/learn/state-as-a-snapshot), [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) | Is state derived, stale, over-synchronized or vulnerable to a response race? |
 | Next.js App Router | [Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components) | Which data/secret belongs on the server? What actually crosses the client boundary? |
 | Interface implementation and usability | [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines), [WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) | Keyboard, focus, forms, long content, responsive states, affordances and accessible labeling |
@@ -35,7 +35,7 @@ Use the official documentation appropriate to the **installed** version rather t
 | Decision needed | Load |
 | --- | --- |
 | Challenge a large idea after source investigation, before writing code | `independent-design-review` |
-| Convert approved FEATURE/PLAN/spec decisions into a cheap executor packet | `cursor-handoff` |
+| Convert an approved CHANGE.md/optional PLAN and authoritative contract into a cheap executor packet | `cursor-handoff` |
 | Implement a bounded, authorized slice | `implementation-slice` |
 | Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` + [testing manual](../../.agents/knowledge/testing-and-quality-evidence.md) |
 | Design or review HTTP/API contract semantics, evolution and network behavior | `api-contract-design` + [API manual](../../.agents/knowledge/api-and-network-contracts.md) |

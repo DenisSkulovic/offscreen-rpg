@@ -1,13 +1,13 @@
 ---
-name: feature-workflow
+name: change-workflow
 description: Plan and carry out one bounded code-bearing implementation Change from approved product/technical intent to scoped execution, verification and retirement. Legacy skill path retained for existing repo routing; do not use for design-only or evaluation tasks.
 ---
 
-# Code-bearing Change workflow (legacy skill filename)
+# Code-bearing Change workflow
 
-**Start with the [independent work-unit standard](../../references/change-work-unit-standard.md).** The word "feature" in this skill's path is historical. In this harness a **Change** is an independently reviewable outcome whose execution modifies source code, tests, scripts, migrations or executable configuration. Product initiatives, architectural research, story-quality evaluations and docs-only maintenance are different work types. They must not generate fake coding tickets.
+**Start with the [independent work-unit standard](../../references/change-work-unit-standard.md).** In this harness a **Change** is an independently reviewable outcome whose execution modifies source code, tests, scripts, migrations or executable configuration. Product initiatives, architectural research, story-quality evaluations and docs-only maintenance are different work types. They must not generate fake coding tickets.
 
-**Present compatibility:** `pnpm repo:brief` currently requires one selected `PLAN.md` under `docs/features/`. Preserve that route until the owner separately authorizes a script change. New packets use [`CHANGE.md`](assets/CHANGE.md), plus [`PLAN.md`](assets/PLAN.md) when selected or needing multiple implementation slices. Existing `FEATURE.md` dossiers are *legacy initiative/proposal/history*, not automatic implementation orders.
+**Current route:** [`docs/changes/`](../../../docs/changes/README.md) owns significant implementation packets and explicitly allows **no active Change**. New packets use [`CHANGE.md`](assets/CHANGE.md), plus [`PLAN.md`](assets/PLAN.md) only for meaningful multi-step execution. Old `docs/features/FEATURE.md` dossiers are initiative/proposal/history context, never automatic implementation orders.
 
 ## 1. Select a measurable code outcome
 
@@ -31,7 +31,7 @@ A proposal remains Proposed until scope, current owner, relevant safeguards, pro
 
 `CHANGE.md` records the one outcome, authorities, current source/unknowns, intended code/test delta, exclusions, success and discriminating negative acceptance. Its purpose is a cheap transfer between ChatGPT design, source-connected Claude investigation and Cursor implementation.
 
-Use `PLAN.md` **only** for a selected compatibility route or meaningful multi-step implementation. Describe dependency-ordered *code* outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
+Use `PLAN.md` **only** for meaningful multi-step implementation. Describe dependency-ordered *code* outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
 
 Use [cursor-handoff](../cursor-handoff/SKILL.md) for an executable prompt; it must not send entire initiative histories or let Cursor redefine product intent.
 

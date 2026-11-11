@@ -16,7 +16,7 @@ For each **bounded code/test/configuration slice**:
 - A focused success/negative test, verification cost and safety constraints.
 - Completion evidence and status.
 
-Detail only the next ready slice. **Evaluation-only, design-only and documentation-only tasks belong in their own owners**, not as pretend coding phases. For a small task, CHANGE.md alone is normally enough, unless selected `pnpm repo:brief` compatibility requires this file.
+Detail only the next ready slice. **Evaluation-only, design-only and documentation-only tasks belong in their own owners**, not as pretend coding phases. For a small task, CHANGE.md alone is normally enough, `pnpm repo:brief` accepts a selected `CHANGE.md` without a PLAN.
 
 ## Current checkpoint
 

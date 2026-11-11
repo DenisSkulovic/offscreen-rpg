@@ -10,7 +10,7 @@ Find the existing owner before adding a document. Put the full explanation there
 | --- | --- |
 | Product purpose or demonstrated core loop | Root README; link to progress for current coverage |
 | Implemented capability, evidence or next outcome | `docs/progress.md`; evidence owner with date, run/revision identity and limits |
-| Selected work or exact next slice | `docs/features/README.md` current-plan link; selected PLAN checkpoint |
+| Selected code work or next slice | `docs/changes/README.md` Current change declaration; selected CHANGE.md and optional PLAN checkpoint |
 | Domain meaning, behavior or authority | Product/concepts first, then owning technical contract |
 | Entry point, cross-file flow or package boundary | Code map or package guide; link to the contract |
 | Non-obvious local invariant, ordering or retry constraint | Comment beside the owning code; no syntax narration |
@@ -21,9 +21,11 @@ Before finishing a slice, ask whether a fresh reader can find its purpose, curre
 
 ## Keep the entry cheap
 
-The root README should explain the project in roughly one page. Progress begins with a short `## Orientation` section: status, demonstrated result, principal gap and next action. The feature index has exactly one `Current plan:` line followed by a Markdown link to the selected relative `PLAN.md` path. `pnpm repo:brief` consumes these two contracts and checks that the selected plan has a nonempty `## Current checkpoint`; update the helper if intentionally changing them. It must never hard-code a list of dated feature folders.
+The root README should explain the project in roughly one page. Progress begins with a short `## Orientation`: status, demonstrated evidence and current owner priority. The [owner roadmap](../../TODO.md) explains the engineering-portfolio sequence; it is **not** an implementation queue.
 
-Default brief output contains the orientation and plan path. `--checkpoint` adds only the selected checkpoint, not phase history or every feature. Keep that checkpoint short enough to act on: current phase, inspected revision, bounded next edits, acceptance, verification limits, blockers and spend. Put durable evidence in its permanent evidence owner. Temporary maintenance work can be listed separately without silently replacing the gameplay route.
+The [Change index](../../docs/changes/README.md) must contain **exactly one** declaration of `Current change: none` or `Current change: [name](relative/CHANGE.md)`. A deliberate **none** is valid during planning, design, evaluation and documentation work. `pnpm repo:brief` consumes progress orientation and this declaration. With a selected Change, `--checkpoint` reports the matching `PLAN.md` checkpoint if present, otherwise its `CHANGE.md` handoff section. The helper is read-only and does not authorize implementation or provider calls.
+
+Keep the selected Change's handoff compact: owner, state and permission, affected source, scoped next delta, acceptance including a negative case, actual checks and blocker. Permanent engineering and product knowledge belongs in its owner. The older `docs/features/` dossiers are legacy initiative/history, **not** selected Change packets. `pnpm repo:docs-health` audits Change PLAN checkpoints only.
 
 Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. `pnpm repo:docs-health` reports checkpoint sizes without reading code, invoking models or imposing a CI gate; investigate flagged checkpoints rather than deleting evidence.  Large coherent contracts can stay large; give them a useful opening boundary, a short question-to-section quick route where beneficial, and headings so readers can select the relevant section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
 

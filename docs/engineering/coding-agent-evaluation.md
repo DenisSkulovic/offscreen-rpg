@@ -38,7 +38,7 @@ See [harness architecture](../../.agents/HARNESS.md) and [context reference](../
 ## Cheap smoke test before buying another subscription
 
 1. Start a fresh coding-agent context at repository root; confirm it sees only minimal rules, can find product and technical owners, and does not ingest all `docs/`.
-2. Ask the agent a **read-only** question: identify the selected feature's next concrete slice, its product/technical authority, and actual source entry points. Require a compact, source-anchored answer with uncertainty clearly marked.
+2. Ask the agent a **read-only** question: report the active Change **or correctly identify that none is selected**, distinguish the parked S3a packet, and locate authority/source only for a genuinely selected task. Require a compact, source-anchored answer with uncertainty clearly marked.
 3. Invoke `/independent-design-review` (or point directly to its skill) on a draft. Check whether it raises a real competing design and failure case instead of praising or inventing requirements.
 4. For Cursor, provide the `cursor-handoff` packet to a narrow **approved** change. Require smallest safe verification, no unapproved provider spend, and a factual diff report.
 5. Record human time, unnecessary reads, budget/tool usage if exposed, errors caught and what the next agent needed. Revisit the system only in response to concrete recurring friction.

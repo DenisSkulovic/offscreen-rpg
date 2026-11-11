@@ -37,7 +37,7 @@ At a significant design gate, the role selects **one relevant manual** (and mayb
 
 Only two initially: **design-challenger** and **test-strategist**. Their canonical procedures are linked from [role orchestration](roles/README.md). The `.claude/agents/` definitions restrict tools to read/search and plan mode, while `.cursor/agents/` uses client-supported read-only mode. They inherit the current model to avoid surprising model selection. Treat separate subagent context as a **usage cost**, not free parallel labor; explicit invocation is preferred until actual discovery/auto-delegation is understood.
 
-**Planning-unit boundary:** the [Change work-unit standard](references/change-work-unit-standard.md) separates initiatives, research, design, evaluation and docs maintenance from actual code-bearing Changes. The [dated legacy-dossier audit](../docs/features/AUDIT-2026-11-11.md) identifies what in `docs/features/` is not ready to implement. The folder name is temporarily hardcoded in `repo:brief`; a docs-only reorganization must not edit that script.
+**Planning-unit boundary:** the [Change work-unit standard](references/change-work-unit-standard.md) separates initiatives, research, design, evaluation and docs maintenance from actual code-bearing Changes. The [dated legacy-dossier audit](../docs/features/AUDIT-2026-11-11.md) identifies what in `docs/features/` is not ready to implement. That audit remains historical context. The canonical execution route is now [Changes](../docs/changes/README.md); `repo:brief` permits no active Change. No gameplay implementation is selected by default.
 
 ## Five development modes
 

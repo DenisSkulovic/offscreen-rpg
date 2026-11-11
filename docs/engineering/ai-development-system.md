@@ -21,7 +21,7 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 **Small code task (fix, copy, local refactor).** Agent reads the supplied task and narrow owner/source, edits one coherent slice, runs the cheapest useful check, inspects diff, reports. No Change dossier, architecture meeting, or mandatory full handbook read.
 
-**Significant code-bearing Change or cross-package rework.** Product ideation → current-code investigation → a bounded Change with alternatives and one planned code delta → agreed product/technical contracts → implementation slices → targeted evidence → independent review where risk merits it → reconcile docs and retire temporary feature folder. The skill `feature-workflow` owns how `FEATURE.md` and `PLAN.md` work. Prefer one selected active plan; don't use dossiers as a generalized backlog.
+**Significant code-bearing Change or cross-package rework.** Choose an owner-prioritized engineering or product outcome → inspect actual source and alternatives → settle the relevant product/technical boundary → write one bounded `CHANGE.md` with a planned source/test/config delta and discriminating negative proof → authorize and implement in small slices → review actual evidence → reconcile permanent docs and retire the packet. The `change-workflow` skill owns this route. `docs/changes/README.md` may intentionally select **none**. Historical `docs/features/` dossiers are never an implicit coding queue; a portfolio refactor need not add gameplay functionality.
 
 **Bug investigation.** Reproduce/identify the observation → compare competing causes against the full relevant source/trace → find an experiment that distinguishes them → fix the owning layer → regression check → update permanent owner if assumptions changed. Do not start by designing new systems.
 
@@ -39,7 +39,7 @@ A coding agent is a *general execution surface*, not a complete engineering team
 | Independent reviewer | ChatGPT/Claude/Cursor as warranted | Concrete contract violations and discriminating tests | Usually no edits; use for higher-risk seams, not every typo |
 | Deterministic harness | Tests, scripts, typechecker, CI and manual play | Reproducible evidence and limits | No paid inference or unapproved destructive side effects |
 
-A model handoff should include **new information**, not a repeated wall of the same README. Start a fresh tool context when the role changes, carry forward the approved feature contract, exact file anchors, evidence and next slice. No automatic subagent multiplication. A separate reviewer is valuable when it has an independent perspective, not when it reads the same 50 files a second time.
+A model handoff should include **new information**, not a repeated wall of the same README. Start a fresh tool context when the role changes, carry forward the approved Change contract, exact file anchors, evidence and next slice. No automatic subagent multiplication. A separate reviewer is valuable when it has an independent perspective, not when it reads the same 50 files a second time.
 
 ## One efficient implementation packet
 

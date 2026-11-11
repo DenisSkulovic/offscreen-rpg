@@ -9,7 +9,7 @@ Read this before writing or reviewing implementation code. It defines how this r
 - Write one reviewable slice. Keep structural cleanup separate from behavior changes unless separation would be artificial or leave the new behavior unreadable.
 - Read the completed diff as a maintainer, not as its author. Trace the normal path, a rejection and a retry. Check names, dependencies and cleanup as well as assertions.
 - Do not treat green tests as approval of a confusing design. Report remaining design limitations separately from successful checks.
-- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. A cleanup needs an explicit task, bounded scope and behavioral safeguards. For substantial work, follow the [feature workflow](../../.agents/skills/feature-workflow/SKILL.md).
+- Do not launch repository-wide refactors, delegate refactoring, switch models or spend API credit merely to satisfy these rules. A cleanup needs an explicit task, bounded scope and behavioral safeguards. For substantial work, follow the [Change workflow](../../.agents/skills/change-workflow/SKILL.md).
 - Preserve unrelated working-tree changes. Never run broad autofixes over another person's edits.
 
 ## Readability is the default

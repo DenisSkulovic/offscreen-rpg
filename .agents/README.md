@@ -11,7 +11,9 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 | `.agents/skills/<name>/SKILL.md` | Repeatable *procedure*, templates and references | Discover description; load body on demand |
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional engineering manuals: concepts, alternatives, trade-offs, interactions and adversarial examples | One relevant domain/section when a consequential decision merits it, never universal startup |
 | `docs/` and package READMEs | Product intent, technical contracts, maps and evidence | Read the relevant owner/section |
-| `docs/features/<feature>/` | Temporary spec/plan/checkpoint for approved significant work | Current feature only |
+| `docs/changes/<change>/CHANGE.md` | Significant, bounded code-bearing implementation outcome | Only when selected; no active Change is valid |
+| `docs/features/` | Dated legacy initiatives, design and evaluation context | Only for the historical topic; never an execution queue |
+| `TODO.md` | Owner's portfolio-engineering goals and sequence | When choosing the next engineering area |
 | Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |
 
 ## Roles and delegation
@@ -39,7 +41,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 - [`role-orchestration`](skills/role-orchestration/SKILL.md): choose narrowly accountable design/investigation/test/implementation roles and handoffs without spawning agents.
 - [`harness-audit`](skills/harness-audit/SKILL.md): audit Claude/Cursor/ChatGPT development setup and load behavior, without game code changes.
 - [`context-economics`](skills/context-economics/SKILL.md): diagnose development-agent context cost and redundant multi-tool handoffs.
-- [`feature-workflow`](skills/feature-workflow/SKILL.md): significant feature from approved intent to finished, documented implementation.
+- [`change-workflow`](skills/change-workflow/SKILL.md): scope, authorize, verify and retire one significant code-bearing Change; do not fabricate dossiers for design-only work.
 - [`codebase-investigation`](skills/codebase-investigation/SKILL.md): evidence-bounded architecture/source investigation without edits.
 - [`architecture-boundary-review`](skills/architecture-boundary-review/SKILL.md): inspect risky package/state/async ownership and propose the smallest defensible design change.
 - [`player-experience-design`](skills/player-experience-design/SKILL.md): translate player-intent and runtime states into an inhabitable, testable UI without inventing mechanics.
@@ -63,8 +65,8 @@ Cursor discovers project skills from `.agents/skills/` directly. Claude loads th
 
 ## Safe commands (inspect when relevant)
 
-- `pnpm repo:brief [--checkpoint]`: current Git state, progress and current feature; read-only, no provider call.
-- `pnpm repo:docs-health [--json]`: read-only feature-checkpoint word/byte report. Use during maintenance, not as a startup ritual.
+- `pnpm repo:brief [--checkpoint]`: current Git state, progress and **selected Change or none**; read-only, no provider call.
+- `pnpm repo:docs-health [--json]`: read-only Change PLAN checkpoint word/byte report. Use during maintenance, not as a startup ritual.
 - `pnpm infra -- <args>`: local Docker compose wrapper; infrastructure changes are not automatic.
 - `pnpm test:focus -- <suite> [test-name]`: targeted offline integration, **resets the disposable test DB**; use only with that side effect understood.
 - `pnpm db:baseline`: rewrites the disposable POC baseline migration; review the result.

@@ -22,7 +22,7 @@ For new/changed behavior: update product intent, then technical contract, then c
 ## Operating behavior
 
 - Trace the **narrow actual route** before proposing changes. Prefer an existing owning operation over a new framework, service, abstraction or parallel truth store.
-- A significant **code-bearing Change** uses the existing `feature-workflow` skill (legacy filename, new Change semantics); a bounded authorized coding task uses `implementation-slice`. Design, evaluation and documentation-only work do not need implementation dossiers. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
+- A significant **code-bearing Change** uses the `change-workflow` skill and [Change index](../../docs/changes/README.md); a bounded authorized coding task uses `implementation-slice`. Design, evaluation and documentation-only work do not need implementation dossiers. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
 - Architectural discoveries should identify the owner, actual source, consequence, and the smallest useful next step. Do not write long exploratory transcripts into durable docs.
 - Product intent and technical architecture can be creatively designed in ChatGPT; a codebase-connected investigator can validate feasibility; Cursor usually implements bounded slices. Tool allocation is an economic default, not a mandatory three-model ceremony.
 - A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass.
