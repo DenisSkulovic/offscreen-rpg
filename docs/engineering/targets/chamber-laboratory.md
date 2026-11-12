@@ -15,7 +15,7 @@
 | Fault injection | [Failure and concurrency](#5-controlled-failure-and-concurrency) |
 | Developer experience | [Workbench](#6-interactive-workbench) |
 | Debugging/result quality | [Evidence](#7-inspection-causality-and-evidence) |
-| Coverage, money, safety | [Catalogue](#8-mechanics-catalogue), [Isolation](#9-authority-safety-and-cost) |
+| Coverage, money, safety | [Catalogue](#8-mechanics-catalogue-and-evolution), [Isolation](#9-authority-safety-and-cost) |
 | Definition of success | [Acceptance C01–C16](#11-verifiable-acceptance-c01c16) |
 | Alternative approaches | [Trade-offs](#12-architectural-challenges-and-decisions) |
 
