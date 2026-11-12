@@ -35,6 +35,7 @@ Technical specifications can include unbuilt design. Package guides describe wir
 | What owns storage, access and presentation? | [Player experience](player-experience.md) | [Data](technical/data.md), [persistence/cache](technical/persistence-and-caching.md), [architecture](technical/architecture.md) | API, web, database and cache entries in [code map](engineering/code-navigation.md) |
 | Did it actually work? | [Benchmark stories](playthroughs.md) | [Execution atlas](technical/playthroughs/README.md) | [Live POC proof](engineering/connected-poc-proof.md), [QA journeys](engineering/qa-journeys.md) |
 | How do I run or maintain it? | [Current progress](progress.md) | [Development](development.md), [code quality](engineering/code-quality.md) | [Agent rules/commands](../.agents/README.md), [verification policy](../.agents/rules/verification.md) |
+| What is the selected React/Next implementation destination? | [Engineering portfolio roadmap](../TODO.md) | [React/Next F1–F15 target](engineering/targets/react-next.md) | [Source gap audit](engineering/audits/react-next-gap-2026-11-12.md) → [W01–W19 Change queue](changes/README.md); no active code Change |
 | What is still undecided? | [Open questions](questions.md) | Relevant contract's explicit proposed boundary | [Current Change system](changes/README.md) and [dated legacy audit](features/AUDIT-2026-11-11.md) distinguish proposals, initiatives, evaluations and code Changes |
 
 ## Read with a question, stop with an answer

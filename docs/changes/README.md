@@ -1,47 +1,49 @@
-# Code-bearing Changes
+# Code-bearing Changes | React/Next engineering execution program
 
-**Priority:** [engineering portfolio renewal](../../TODO.md), currently focused on the **internal React/Next.js engineering target**, not gameplay features or visual redesign. This is a code/test/config *implementation queue*, not a list of experiments or documents to write. Read the [Change standard](../../.agents/references/change-work-unit-standard.md) and [workflow skill](../../.agents/skills/change-workflow/SKILL.md).
+**Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
 
 Current change: none
 
-**No active Change, by design.** The [revised F1–F15 React/Next end-state](../engineering/targets/react-next.md), [November 12 source audit](../engineering/audits/react-next-gap-2026-11-12.md), and the **14 proposed W01–W14** packets are design deliverables, not approvals or an implicit instruction to Cursor. Implementation begins only after the owner reviews the proposed destination, explicitly selects a single Change and authorizes its code/test scope. A selected Change never automatically grants database resets, provider calls or deployment. The historic [November 11 audit](../engineering/audits/react-next-gap-2026-11-11.md) and its original seven packets were critically revisited rather than treated as final authority.
+**Architecture is decided; no Change is active.** There are **19 fully specified, code-bearing candidate packets (W01–W19)**. `Proposed` in a packet now means execution is **not selected/authorized**, *not* that Cursor may reopen its technology decisions. The owner will explicitly tell Cursor when to implement. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy. Independent Change boundaries keep diffs reviewable even though the owner placed no artificial cap on total engineering effort.
 
-## Queue and dependency guide
+## Execution dependency DAG (source and test changes)
 
-| State/group | Future code-bearing Change | Prerequisites and purpose |
-| --- | --- | --- |
-| **Active** | **None** | No coding agent should pick a Change automatically |
-| Parked product work | [S3a continuity report](2026-11-11--s3a-continuity-report/CHANGE.md) | Deprioritized; do not resume as default |
-| Foundation | [W01 fast React tests](2026-11-11--web-test-foundation/CHANGE.md) | Usually first; cheap provider-free unit/component proofs |
-| Private boundary | [W02 typed Next server reads](2026-11-11--web-server-read-boundary/CHANGE.md) | W01 recommended; private SSR/Nest/session/routing contract |
-| State identity | [W03 snapshot ownership](2026-11-11--web-snapshot-identity/CHANGE.md) | After W01; key prerequisite for async work |
-| Play state | [W04 recoverable command lifecycle](2026-11-11--web-play-command-lifecycle/CHANGE.md) | W01 W03; immutable intent envelopes, distinct 200/202 |
-| Play state | [W05 refresh lifecycle](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | W03 (W04 desirable); visibility/failure/lifetime policy |
-| Component ownership | [W06 campaign composition](2026-11-11--web-campaign-composition/CHANGE.md) | W04; feature cohesion, pure pace definitions |
-| Route resilience | [W07 Play error/loading/accessibility](2026-11-11--web-play-route-recovery/CHANGE.md) | W02 W03, W04 as needed; no art/UX redesign |
-| Creation independently | [W08 draft editing lifecycle](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) | W01 W02; dirty/revision/conflict/navigation |
-| Creation independently | [W09 opening/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | W01 W02; frozen retry body and GET-first reload |
-| Paged readers | [W10 lists/history pagination](2026-11-12--web-pagination-navigation/CHANGE.md) | W01 W02 W03; identity/cursor/late reply |
-| Settings independently | [W11 settings/preset lifecycle](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) | W01 W04; unsaved edit and preset identity |
-| QA laboratory | [W12 Chamber/QA isolation](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | W01 W03 W05; backend developer-access policy remains separate |
-| Architecture checks | [W13 import/type guardrails](2026-11-12--web-import-type-guardrails/CHANGE.md) | W02 W06; cheap testable dependency rules |
-| Evidence | [W14 SSR/private-cache/performance proof](2026-11-12--web-private-route-evidence/CHANGE.md) | W01 W02 W03 W07; provider-free connected browser and honest metrics |
+| Phase | Packet | Exact selected result | Dependencies |
+| --- | --- | --- | --- |
+| **A: proof** | [W01 test foundation](2026-11-11--web-test-foundation/CHANGE.md) | Vitest + RTL + user-event + MSW | None |
+| **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | Server-only authenticated reader, route group, same-origin config | W01 preferred |
+| **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | Query v5 provider, per-request prefetch/dehydrate/HydrationBoundary, viewer keys | W01 W02 |
+| **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | Only one viewer/story authoritative Query projection and version gate | W15 |
+| **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | Read-only Nest resolution status/identity endpoint | W02 |
+| **B: commands** | [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md) | Intent FSM, immutable payload, verified lost-ACK/reload recovery | W03 W19 |
+| **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | Visibility-aware, bounded conditional GET | W03 W04 |
+| **C: forms** | [W08 RHF draft editor](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) | RHF/Zod, dirty revision/save conflict | W15 |
+| **C: creation** | [W09 generation/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | Query preview, separate useMutation and frozen Start | W15 |
+| **C: paging** | [W10 infinite lists/history](2026-11-12--web-pagination-navigation/CHANGE.md) | useInfiniteQuery with typed cursor/identity | W15 W03 |
+| **C: settings** | [W11 RHF settings/presets](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) | RHF/Zod, Query presets/history, revision-safe dirty editing | W15 W04 |
+| **C: lab** | [W12 Chamber/QA developer isolation](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | Query lab state + Nest developer-only policy | W15 W03 W05 |
+| **C: components** | [W06 cohesive feature composition](2026-11-11--web-campaign-composition/CHANGE.md) | Feature model/API/UI boundaries and shared pure pace | W15 W04 |
+| **D: SSE server** | [W16 Nest SSE invalidation](2026-11-12--web-sse-backend-invalidation/CHANGE.md) | Authenticated PG-backed committed-version hints | W02 |
+| **D: SSE client** | [W17 EventSource Query bridge](2026-11-12--web-sse-query-client/CHANGE.md) | Invalidate/refetch, reconnect, 30s safety + 2s fallback | W03 W05 W16 |
+| **E: recovery** | [W07 route/a11y engineering](2026-11-11--web-play-route-recovery/CHANGE.md) | Next/Query error boundaries and keyboard recovery | W02 W03 W04 |
+| **E: enforcement** | [W13 import/lint guardrails](2026-11-12--web-import-type-guardrails/CHANGE.md) | Strict React/Next/TanStack lint and server/client boundaries | W02 W15 W06 |
+| **E: workbench** | [W18 Storybook states](2026-11-12--web-storybook-state-workbench/CHANGE.md) | Provider-free deterministic normal/error/recovery stories | W01 W06 W08 W11 |
+| **E: evidence** | [W14 private SSR/route/perf proof](2026-11-12--web-private-route-evidence/CHANGE.md) | Production-like real browser/cache/SSE/bundle evidence | W02 W15 W03 W07 W17 |
 
-**This is a dependency DAG, not fourteen mandatory sequential refactors.** Once W01 exists, W02, W03 and creation work can be staged with separate owners; don't concurrently edit the same modules. A falsifying test may justify **cancelling** a packet instead of changing working code. Existing source may have advanced since the [audited code revision](../engineering/audits/react-next-gap-2026-11-12.md); every selected packet must re-inspect live source before implementation.
+**Parallelism:** W19 and W15 may follow W02 independently; W08/W09 may run after W15 without waiting on Play; W16 backend may run after W02. **One active Change at a time by default**, especially for overlapping Play source owners. This is not a requirement to implement the queue in numeric order, and the owner may authorize a bounded group only with explicit source conflict control.
 
-## Defining the unit
+## What these words mean
 
-A Change is one bounded, verifiable future delta to source, tests, scripts or executable configuration, including quality refactors. Pure design, source audit, documentation, visual/UX brainstorming, exploratory test *runs*, QA reports or architecture evaluation are **not** Changes. Don't create a code folder simply to consume tokens or satisfy a checklist. `CHANGE.md` is sufficient for most slices; use optional `PLAN.md` only when resumable execution genuinely requires a checkpoint.
+- **Design selected:** the stack and invariants have been chosen by owner direction. Cursor is not invited to choose SWR instead of TanStack, rebuild forms with plain useState, avoid SSR hydration, swap SSE for sockets or change gameplay semantics.
+- **Proposed packet:** scope/design/acceptance specified, not yet selected or code-authorized. Code implementation requires explicit current owner instruction. `Ready` has the stricter meaning in the [Change standard](../../.agents/references/change-work-unit-standard.md).
+- **Change:** expected executable source/test/config delta with a falsifiable normal and negative case. A design debate, read-only audit, markdown minutes or an existing test run alone is **not** a Change.
+- **Evidence:** source inspection != passing test != browser integration != production guarantee. A completed code packet carries its own exact command/behavior receipt; a library appearing in package.json is not engineering achievement.
 
-A viable packet links target criterion, source-grounded gap, owning modules and intentional exclusions; names a normal and discriminating failure case; states test side effects and permission. `Proposed` means **no application edits**. `Ready` requires human approval, a current source check and explicit permission.
+## Selecting and converging
 
-## Selecting and closing
+1. Read [target](../engineering/targets/react-next.md), [audit](../engineering/audits/react-next-gap-2026-11-12.md) and the one candidate packet. Reinspect current code/branch/worktree and the latest [minutes](../minutes/2026-11-12.md).
+2. Owner selects W01 (recommended start) or another dependency-ready outcome and authorizes bounded code and safe verification. Change the single `Current change: none` declaration to the selected packet link and mark it Ready only under actual permission.
+3. Cursor implements exactly the packet, with no provider spend, automatic database reset or deployment. Return normal/negative evidence, diff and honest unproved claims, not a new architecture.
+4. Review actual source/behavior against the fixed target; mark Done/cancelled/superseded as warranted and clear current selection. Replan future packet dependencies if evidence genuinely demands it, not for technology shopping.
 
-1. Owner chooses one proposed outcome and approves/refines the architectural contract and any unresolved external-policy dependency.
-2. Revalidate current branch/worktree and requirements. Mark only the chosen packet `Ready` with explicit code scope and permitted verification. Replace the one `Current change: none` declaration above with its link; do not implicitly activate siblings.
-3. Send [bounded Cursor handoff](../../.agents/skills/cursor-handoff/SKILL.md), specifying authoritative headings, likely source owners, normal/negative proofs, exclusions and receipt.
-4. Inspect the diff, run safe proportionate checks, reconcile permanent docs/evidence, close the packet, return `Current change: none`. Git keeps history.
-
-The [legacy feature dossiers](../features/README.md) are initiatives/history, not an alternative execution queue. The owner-retained canon policy stays dormant.
-
-**Session handoff:** [November 12 minutes](../minutes/2026-11-12.md) explain the owner's reasons, the richer target and outstanding decisions. There is no automatic W01 go-ahead.
+**Out of scope:** [parked S3a continuity work](2026-11-11--s3a-continuity-report/CHANGE.md), [legacy game initiatives](../features/README.md), UI art direction, gameplay and features. The original [Nov 11 seven-packet audit](../engineering/audits/react-next-gap-2026-11-11.md) remains historical provenance.

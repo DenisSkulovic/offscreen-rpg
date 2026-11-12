@@ -4,7 +4,7 @@ This is a **small routing index** for software engineering and verification. It 
 
 ## Target-first engineering renewal
 
-For significant portfolio-grade modernization, start from [area-level end states](targets/README.md), then their [source-grounded gap audits](audits/react-next-gap-2026-11-12.md) and only then [bounded implementation Changes](../changes/README.md). The revised [React/Next.js F1–F15 proposal](targets/react-next.md) and [14 prospective Change packets](../changes/README.md) remain unapproved implementation work. These are **engineering targets**, not additional game product requirements or permission to code.
+For significant portfolio-grade modernization, start from [area-level end states](targets/README.md), then their [source-grounded gap audits](audits/react-next-gap-2026-11-12.md) and only then [bounded implementation Changes](../changes/README.md). The owner-selected [React/Next.js F1–F15 architecture](targets/react-next.md) and [19 scoped implementation packets](../changes/README.md) are complete as **Markdown designs**. Code execution is not selected; all packets remain inactive until a separate Cursor instruction. These are **engineering targets**, not additional game product requirements or permission to code.
 
 ## Coding agents developing this repository
 
