@@ -9,7 +9,7 @@
 | Script details | [`chamber-fixtures.ts`](chamber-fixtures.ts): `chamberFixtures` | v1 read-only, v2 conversation, v3 20s wait, v4 15s deadline, v5 letter transfer; no arbitrary overlays |
 | Point-in-time inspector | [`chamber-inspector.ts`](chamber-inspector.ts): `createChamberInspector.inspect` | reads snapshot + separate SQL queries for passage/resolution/activity/provider; not one full consistent transaction |
 | Manual evidence journal | [`qa-journeys.ts`](qa-journeys.ts): `createQaJourneys.open/recordStage` | stores versioned immutable case, revision-fenced append-only operator observations; does **not** execute case |
-| QA catalogue | [`qa-catalog.ts`](qa-catalog.ts), [qa-catalog/](qa-catalog/) | 15 authored cases, some planned; driver names are metadata, not executable drivers |
+| QA catalogue | [`qa-catalog.ts`](qa-catalog.ts), [activity lifecycle cases](qa-catalog/activity-lifecycle.ts) | 15 authored cases, some planned; driver names are metadata, not executable drivers |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
 | Pending future lab | **CH01–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | typed scenarios, fixture/reset, controlled lane, trace/evidence and workbench |
