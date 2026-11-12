@@ -1,0 +1,24 @@
+# Change CH15 | Mechanics coverage catalogue and truthful availability
+
+> **Cursor first look:** [developer-tooling source map](../../../packages/application/src/developer-tools/README.md), [QA catalogue](../../../packages/application/src/developer-tools/qa-catalog.ts) and [target `8](../../engineering/targets/chamber-laboratory.md#8-mechanics-catalogue-and-evolution). **Source gap:** [H12/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a listed or manually assessed case is not automatically an executable, successful scenario.
+
+**State:** Specified/Proposed, no code authorization. **Dependencies:** CH01, CH02, CH03, CH06, CH09, CH10; CH13 for Connected coverage where applicable. **Inspected baseline:** `470a5df`.
+
+## One bounded executable outcome
+
+Implement a **cross-mechanic, per-lane coverage registry** mapping current game mechanics to real Bench/Sandbox/Connected/Packet scenario IDs, fixture versions, production owning symbols, available/blocked/planned states and evidence tier. Register a representative vertical pack for existing finite activity/time and item-transfer mechanics with executable scenarios, boundary conditions and invariant assertions. This Change does **not** add combat, inventory complexity or unsupported gameplay.
+
+## Binding technical design
+
+- Every coverage entry declares the real domain invariant, owning exported policy/use case, supported lanes, fixture, cheap proof, durable/worker proof where necessary, injected failure case and exact test anchor. A scenario that cannot run is `blocked/planned` with a reason; never silently construct a fake substitute game engine.
+- Preserve `chamber.v1–v5` and current QA IDs; they remain source/historical identities, while new LabRun cases declare what they truly execute.
+- Test representative equivalence classes and limited seeded properties, not a gigantic Cartesian matrix. A pure policy is not automatically proof of persisted time/reward accounting.
+- New mechanics later extend this registry and relevant domain fixture, not the giant launcher or every React inspector component.
+
+## Acceptance
+
+**Normal:** query “finite activity, duplicate settlement” or “item transfer, stale version” to obtain an actual runnable scenario at its truthful lane with owner/source and evidence reference.  
+**Negative:** planned mechanic, unavailable fixture, unrun manual QA, mock assertion or nonexistent production policy cannot display as “automated passed”; a mutation of relevant production policy is detected in the scenario.  
+**Proof:** pure catalogue/coverage tests plus one authorized real DB exercise for persisted claims; no blanket browser/worker startup. No provider calls.
+
+**Cursor handoff:** CH01 catalogue + the two selected mechanics owners + this packet only. Return source/test diff, real negative proof and unsupported holes.
