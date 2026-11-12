@@ -796,6 +796,7 @@ const app = await createApp(
   createAuth(database, authConfig),
   origin,
   {
+    databaseConfig: config,
     identity: chamberIdentity,
     documentStore,
     defaultRules: {

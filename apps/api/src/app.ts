@@ -13,12 +13,13 @@ import {
   Inject,
   Injectable,
   Module,
+  Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response, NextFunction, Express } from 'express';
-import type { Database } from '@offscreen/db';
+import type { Database, DatabaseConfig } from '@offscreen/db';
 import { toNodeHandler } from 'better-auth/node';
 import type { Auth } from './modules/auth/auth.js';
 import {
@@ -39,7 +40,15 @@ import {
   type ChamberStorytellerControl,
 } from '@offscreen/application/developer-tools';
 import { createStoryApplication } from '@offscreen/application/stories';
-import { STORIES, StoriesController } from './modules/stories/controller.js';
+import {
+  STORIES,
+  STORY_UPDATE_HUB,
+  StoriesController,
+} from './modules/stories/controller.js';
+import {
+  createStoryUpdateHub,
+  type StoryUpdateHub,
+} from './modules/stories/story-update-hub.js';
 import {
   CHAMBER,
   ChamberStoriesController,
@@ -71,6 +80,18 @@ class CacheLifecycle {
   ) {}
   onApplicationShutdown() {
     return this.closeCache();
+  }
+}
+
+@Injectable()
+class StoryUpdateHubLifecycle {
+  constructor(
+    @Optional()
+    @Inject(STORY_UPDATE_HUB)
+    private readonly hub: StoryUpdateHub | null,
+  ) {}
+  onApplicationShutdown() {
+    return this.hub?.close();
   }
 }
 
@@ -109,6 +130,10 @@ export type CreateAppOptions = Readonly<{
   defaultRules?: RulePackageReference;
   openingContent?: readonly import('@offscreen/application/storyteller').OpeningContentEntry[];
   scriptedOpeningFallback?: boolean;
+  /** Enables PostgreSQL LISTEN → SSE story view hints (W16). */
+  databaseConfig?: DatabaseConfig;
+  /** Test override; when set, skips creating a listener from databaseConfig. */
+  storyUpdateHub?: StoryUpdateHub | null;
   qaContext?: {
     git: z.infer<typeof qaGitStateSchema>;
     environment: z.infer<typeof qaEnvironmentSchema>;
@@ -121,6 +146,15 @@ export async function createApp(
   origin: string,
   options: CreateAppOptions = {},
 ) {
+  const storyUpdateHub =
+    options.storyUpdateHub === undefined
+      ? options.databaseConfig
+        ? createStoryUpdateHub(options.databaseConfig)
+        : null
+      : options.storyUpdateHub;
+  if (storyUpdateHub) {
+    await storyUpdateHub.start();
+  }
   const app = await NestFactory.create<NestExpressApplication>(
     {
       module: AppModule,
@@ -145,11 +179,13 @@ export async function createApp(
           : IdentityService,
         DatabaseLifecycle,
         CacheLifecycle,
+        StoryUpdateHubLifecycle,
         { provide: DATABASE, useValue: database },
         {
           provide: CACHE_CLOSE,
           useValue: options.closeCache ?? (async () => {}),
         },
+        { provide: STORY_UPDATE_HUB, useValue: storyUpdateHub },
         { provide: AUTH, useValue: auth },
         { provide: DRAFTS, useValue: createDrafts(database) },
         {

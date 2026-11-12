@@ -2,7 +2,7 @@
 
 **First look:** The Nest `StoriesController` delegates to `createStoryApplication`, which composes persisted use cases and an **owner-scoped public snapshot**. The controller is not the correct place to duplicate DB command logic. This is the high-value map for W19 receipt and W16 SSE work.
 **Start:** [createStoryApplication](index.ts) → [createStoryResolution.admit](resolution.ts) / [createResolutionReceiptReader.read](resolution-receipt.ts) or [createStoryReads/readSnapshot](reads.ts) → [story persistence helpers](persistence.ts). Open only the path corresponding to your Change.
-**Source basis:** W19 implementation on `main` after W03; recheck symbols before editing. **Target:** immutable public command receipts **implemented for resolution GET**; committed-version SSE hints still W16.
+**Source basis:** post-W16 `main`; recheck symbols before editing. **Target:** resolution receipt GET (W19) and committed-version SSE NOTIFY (W16) are implemented; browser EventSource bridge remains W17.
 
 ## Source responsibilities
 
@@ -42,7 +42,7 @@ GET /api/stories/:storyId/resolutions/:operationId/receipt
 
 ## SSE commit hint reasoning (W16)
 
-Not all story mutations originate in HTTP. Workers may commit narrative, mechanics and timing. `persistence.ts:advanceStoryView` and `incrementStoryViewVersion` are currently the main helpers; `campaign/persistence.ts` also advances views. **Before editing, do one narrow call-site search for these exact symbols** and verify every authoritative version write site. Publish minimal `storyId/viewVersion/kind` hint transactionally (PostgreSQL NOTIFY delivered only at commit) and listen with a dedicated API connection. No raw narrative, internal model payload or durable-replay promise. The SSE hint invalidates a browser Query entry, never becomes state authority.
+Not all story mutations originate in HTTP. Workers may commit narrative, mechanics and timing. `persistence.ts:advanceStoryView` and `incrementStoryViewVersion` both write `viewVersion` and `pg_notify` `offscreen_story_view` in the **same transaction** (so campaign paths that call those helpers also emit). Nest `story-update-hub` uses a dedicated LISTEN connection and fans out only to authorized SSE subscribers. No raw narrative, internal model payload or durable-replay promise. The SSE hint invalidates a browser Query entry (W17), never becomes state authority.
 
 ## Tests and reading boundaries
 

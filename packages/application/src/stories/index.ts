@@ -297,3 +297,5 @@ export {
   resolutionRequestDigest,
   publicReceiptState,
 } from './resolution-receipt';
+/** Test/worker seam: transactional viewVersion write also NOTIFYs SSE listeners (W16). */
+export { incrementStoryViewVersion } from './persistence';

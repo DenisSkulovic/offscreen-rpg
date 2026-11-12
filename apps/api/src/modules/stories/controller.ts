@@ -2,16 +2,21 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpException,
   Inject,
+  Optional,
   Param,
   Put,
   Query,
   Req,
   ServiceUnavailableException,
+  Sse,
+  type MessageEvent,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import type { Observable } from 'rxjs';
 import type { createStoryApplication } from '@offscreen/application/stories';
 import { StoryError } from '@offscreen/application/stories';
 import {
@@ -19,14 +24,19 @@ import {
   startStorySchema,
 } from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
+import type { StoryUpdateHub } from './story-update-hub.js';
 
 export const STORIES = Symbol('STORIES');
+export const STORY_UPDATE_HUB = Symbol('STORY_UPDATE_HUB');
 @Controller('stories')
 export class StoriesController {
   constructor(
     @Inject(IdentityService) private readonly identity: IdentityService,
     @Inject(STORIES)
     private readonly stories: ReturnType<typeof createStoryApplication>,
+    @Optional()
+    @Inject(STORY_UPDATE_HUB)
+    private readonly updates: StoryUpdateHub | null,
   ) {}
   private async run<T>(request: Request, work: (owner: string) => Promise<T>) {
     const user = await this.identity.requireUser(request.headers);
@@ -192,6 +202,62 @@ export class StoriesController {
     return this.run(request, (ownerId) =>
       this.stories.retryResolution({ ownerId, storyId, retryId }),
     );
+  }
+  /**
+   * Authenticated committed-view invalidation hints (W16).
+   * Never emits narrative; clients must GET the authorized snapshot.
+   */
+  @Sse(':id/updates')
+  @Header('Cache-Control', 'no-store, no-transform')
+  @Header('X-Accel-Buffering', 'no')
+  async storyUpdates(
+    @Req() request: Request,
+    @Param('id') id: string,
+  ): Promise<Observable<MessageEvent>> {
+    if (!this.updates) {
+      throw new ServiceUnavailableException('Story updates unavailable');
+    }
+    const user = await this.identity.requireUser(request.headers);
+    try {
+      await this.stories.read({ ownerId: user.id, storyId: id });
+    } catch (error) {
+      if (error instanceof StoryError) {
+        throw new HttpException(
+          {
+            code: error.code,
+            ...(error.reason ? { reason: error.reason } : {}),
+          },
+          { invalid: 400, not_found: 404, conflict: 409, unavailable: 503 }[
+            error.code
+          ],
+        );
+      }
+      throw new ServiceUnavailableException('Story unavailable');
+    }
+    try {
+      return this.updates.subscribe({
+        ownerId: user.id,
+        storyId: id,
+        stillAuthorized: async () => {
+          try {
+            await this.identity.requireUser(request.headers);
+            await this.stories.read({ ownerId: user.id, storyId: id });
+            return true;
+          } catch {
+            return false;
+          }
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.message === 'story_stream_limit' ||
+          error.message === 'owner_stream_limit')
+      ) {
+        throw new HttpException({ code: 'rate_limited' }, 429);
+      }
+      throw new ServiceUnavailableException('Story updates unavailable');
+    }
   }
   @Get(':id')
   read(@Req() request: Request, @Param('id') id: string) {

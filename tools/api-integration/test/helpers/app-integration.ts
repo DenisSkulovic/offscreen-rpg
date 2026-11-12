@@ -108,6 +108,7 @@ export async function withAppIntegration(
   });
   const app = await createApp(database, auth, origin, {
     developerTools: true,
+    databaseConfig: config,
     ...(options.chamberStorytellerControl
       ? { chamberStorytellerControl: options.chamberStorytellerControl }
       : {}),

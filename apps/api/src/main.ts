@@ -18,7 +18,8 @@ import { resolve } from 'node:path';
 async function main() {
   const config = readConfig(process.env);
   const authConfig = readAuthConfig(process.env);
-  const database = createDatabase(readDatabaseConfig(process.env), () =>
+  const databaseConfig = readDatabaseConfig(process.env);
+  const database = createDatabase(databaseConfig, () =>
     writeRuntimeLog({
       level: 'error',
       event: 'api.database.background_error',
@@ -57,6 +58,7 @@ async function main() {
       createAuth(database, authConfig),
       authConfig.origin,
       {
+        databaseConfig,
         ...(documentStore ? { documentStore } : {}),
         ...(defaultRulePackage
           ? {

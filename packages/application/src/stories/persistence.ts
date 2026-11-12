@@ -1,4 +1,8 @@
 import { interactionSchema } from '@offscreen/contracts/interactions';
+import {
+  STORY_VIEW_NOTIFY_CHANNEL,
+  storyUpdateHintSchema,
+} from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import {
   story,
@@ -274,6 +278,22 @@ export async function insertContinuationPassage(
   return passageId;
 }
 
+/** Emit a compact committed-view hint inside the same transaction as the version write. */
+export async function notifyCommittedStoryView(
+  tx: Transaction,
+  args: { storyId: string; viewVersion: number },
+) {
+  const hint = storyUpdateHintSchema.parse({
+    eventId: randomUUID(),
+    storyId: args.storyId,
+    viewVersion: args.viewVersion,
+    kind: 'committed-view',
+  });
+  await tx.execute(
+    sql`select pg_notify(${STORY_VIEW_NOTIFY_CHANNEL}, ${JSON.stringify(hint)})`,
+  );
+}
+
 export async function advanceStoryView(
   tx: Transaction,
   args: { storyId: string; revision: number; viewVersion: number },
@@ -282,6 +302,10 @@ export async function advanceStoryView(
     .update(story)
     .set({ revision: args.revision, viewVersion: args.viewVersion })
     .where(eq(story.id, args.storyId));
+  await notifyCommittedStoryView(tx, {
+    storyId: args.storyId,
+    viewVersion: args.viewVersion,
+  });
 }
 
 /** Replace only at a committed publication boundary; earlier passages remain history. */
@@ -315,6 +339,10 @@ export async function incrementStoryViewVersion(
     .update(story)
     .set({ viewVersion: args.viewVersion })
     .where(eq(story.id, args.storyId));
+  await notifyCommittedStoryView(tx, {
+    storyId: args.storyId,
+    viewVersion: args.viewVersion,
+  });
 }
 
 export async function enqueueContinuationNotices(

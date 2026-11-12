@@ -217,3 +217,18 @@ export const storyListSchema = z.strictObject({
   nextBefore: z.uuid().nullable(),
 });
 export type StoryList = z.infer<typeof storyListSchema>;
+
+/**
+ * Public SSE invalidation hint only (W16). Never carries narration, plans,
+ * receipts or private logs. Clients must GET the authorized snapshot.
+ */
+export const storyUpdateHintSchema = z.strictObject({
+  eventId: z.uuid(),
+  storyId: z.uuid(),
+  viewVersion: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  kind: z.literal('committed-view'),
+});
+export type StoryUpdateHint = z.infer<typeof storyUpdateHintSchema>;
+
+/** PostgreSQL NOTIFY channel for committed story viewVersion bumps. */
+export const STORY_VIEW_NOTIFY_CHANNEL = 'offscreen_story_view' as const;

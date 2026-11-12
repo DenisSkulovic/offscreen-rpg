@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W06, W08, W09, W15, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W16](2026-11-12--web-sse-backend-invalidation/CHANGE.md) SSE backend, [W10](2026-11-12--web-pagination-navigation/CHANGE.md) paging, or [W07](2026-11-11--web-play-route-recovery/CHANGE.md) route recovery. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W06/W08/W09/W15/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W06, W08, W09, W15, W16, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W17](2026-11-12--web-sse-query-client/CHANGE.md) SSE client, [W10](2026-11-12--web-pagination-navigation/CHANGE.md) paging, or [W07](2026-11-11--web-play-route-recovery/CHANGE.md) route recovery. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W06/W08/W09/W15/W16/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -26,7 +26,7 @@ Current change: none
 | **C: settings** | [W11 RHF settings/presets](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) | RHF/Zod, Query presets/history, revision-safe dirty editing | W15 W04 |
 | **C: lab, superseded** | [W12 historical Chamber/QA](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | **DO NOT IMPLEMENT:** requirements transferred to [CH10–CH11 Chamber redesign](../engineering/chamber-program.md) | Superseded |
 | **C: components** | [W06 cohesive feature composition](2026-11-11--web-campaign-composition/CHANGE.md) | **Done:** Feature model/API/UI boundaries and shared pure pace | W15 W04 |
-| **D: SSE server** | [W16 Nest SSE invalidation](2026-11-12--web-sse-backend-invalidation/CHANGE.md) | Authenticated PG-backed committed-version hints | W02 |
+| **D: SSE server** | [W16 Nest SSE invalidation](2026-11-12--web-sse-backend-invalidation/CHANGE.md) | **Done:** Authenticated PG-backed committed-version hints | W02 |
 | **D: SSE client** | [W17 EventSource Query bridge](2026-11-12--web-sse-query-client/CHANGE.md) | Invalidate/refetch, reconnect, 30s safety + 2s fallback | W03 W05 W16 |
 | **E: recovery** | [W07 route/a11y engineering](2026-11-11--web-play-route-recovery/CHANGE.md) | Next/Query error boundaries and keyboard recovery | W02 W03 W04 |
 | **E: enforcement** | [W13 import/lint guardrails](2026-11-12--web-import-type-guardrails/CHANGE.md) | Strict React/Next/TanStack lint and server/client boundaries | W02 W15 W06 |
