@@ -64,6 +64,13 @@ class FakeEventSource implements StoryUpdateEventSource {
       listener(event);
     }
   }
+
+  emitListenerRecovered() {
+    const event = { data: '' } as MessageEvent<string>;
+    for (const listener of this.listeners.get('listener-recovered') ?? []) {
+      listener(event);
+    }
+  }
 }
 
 function hint(
@@ -144,6 +151,20 @@ describe('openStoryUpdateStream', () => {
       }),
     );
     expect(onHint).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats listener-recovered as an authoritative refresh signal', () => {
+    setStoryUpdateEventSourceFactoryForTests((url) => new FakeEventSource(url));
+    const onOpen = vi.fn();
+    openStoryUpdateStream({
+      storyId: fixtureIds.storyId,
+      onOpen,
+      onHint: () => undefined,
+      onError: () => undefined,
+    });
+    const source = requireSource();
+    source.emitListenerRecovered();
+    expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
   it('closes cleanly and stops delivering hints', () => {

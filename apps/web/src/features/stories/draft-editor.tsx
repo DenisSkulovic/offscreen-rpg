@@ -118,30 +118,36 @@ export function DraftEditor({
         expectedRevision: saved?.revision ?? 0,
         content: toDraftContent(values),
       };
-      const result = await save.mutateAsync(frozen);
-      if (result.kind === 'conflict') {
-        setConflict(true);
-        setMessage(
-          'This setup changed elsewhere. Your choices are still here; load the saved version or keep this one open while you compare.',
-        );
-        return;
-      }
-      if (result.kind === 'unauthorized') {
-        setMessage(
-          'Your session expired. Sign in again, then save this setup.',
-        );
-        return;
-      }
-      if (result.kind === 'unavailable') {
+      try {
+        const result = await save.mutateAsync(frozen);
+        if (result.kind === 'conflict') {
+          setConflict(true);
+          setMessage(
+            'This setup changed elsewhere. Your choices are still here; load the saved version or keep this one open while you compare.',
+          );
+          return;
+        }
+        if (result.kind === 'unauthorized') {
+          setMessage(
+            'Your session expired. Sign in again, then save this setup.',
+          );
+          return;
+        }
+        if (result.kind === 'unavailable') {
+          setMessage(
+            'The save could not be confirmed. Your setup is still on this screen; retry when ready.',
+          );
+          return;
+        }
+        setDraftKnown(true);
+        resetDefaultValues(contentFromDraft(result.draft));
+        setMessage('Setup saved. It is ready to create an opening.');
+        window.history.replaceState(null, '', `/stories/${id}`);
+      } catch {
         setMessage(
           'The save could not be confirmed. Your setup is still on this screen; retry when ready.',
         );
-        return;
       }
-      setDraftKnown(true);
-      resetDefaultValues(contentFromDraft(result.draft));
-      setMessage('Setup saved. It is ready to create an opening.');
-      window.history.replaceState(null, '', `/stories/${id}`);
     },
     (formErrors) => {
       setMessage('Check the highlighted fields, then try again.');
@@ -455,7 +461,15 @@ export function DraftEditor({
         </fieldset>
       </form>
 
-      <p role={conflict ? 'alert' : 'status'}>{message}</p>
+      <p
+        role={
+          conflict || /could not be confirmed|session expired/i.test(message)
+            ? 'alert'
+            : 'status'
+        }
+      >
+        {message}
+      </p>
       {conflict ? (
         <p>
           <button

@@ -14,7 +14,7 @@
 | `/stories/new?id=UUID` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
 | `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
-| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | SSR prefetch + hydrate; `loading`/`error`/`not-found`; typed Query recovery |
+| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | Nest read first (401/404/503 propagate), then seed Query + hydrate; `loading`/`error`/`not-found` |
 | `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate; `loading`/`error` |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
 | `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |

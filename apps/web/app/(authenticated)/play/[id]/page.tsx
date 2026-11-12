@@ -4,6 +4,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
+import { seedAuthorizedQuery } from '@/src/server/seed-authorized-query';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
 import { PlayQueryBoundary } from '@/src/features/play/play-query-boundary';
@@ -20,12 +21,19 @@ export default async function PlayPage({
     notFound();
   }
   const storyId = parsed.data;
+  // Read through Nest route policy first so 401/404/503 propagate to Next.
+  // prefetchQuery alone would swallow queryFn failures into the Query cache.
+  const snapshot = await readNestJson(
+    viewer,
+    `/api/stories/${storyId}`,
+    storySnapshotSchema,
+  );
   const queryClient = createServerQueryClient();
-  await queryClient.prefetchQuery({
-    ...storySnapshotQueryOptions(viewer.user.id, storyId),
-    queryFn: () =>
-      readNestJson(viewer, `/api/stories/${storyId}`, storySnapshotSchema),
-  });
+  await seedAuthorizedQuery(
+    queryClient,
+    { queryKey: storySnapshotQueryOptions(viewer.user.id, storyId).queryKey },
+    snapshot,
+  );
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <PlayQueryBoundary>

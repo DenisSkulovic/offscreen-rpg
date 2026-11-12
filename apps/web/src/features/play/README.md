@@ -8,7 +8,7 @@
 
 | When changing… | Current source owner | Follow only if needed |
 | --- | --- | --- |
-| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | prefetch + `HydrationBoundary` + [PlayQueryBoundary](play-query-boundary.tsx); route `loading`/`error`/`not-found` |
+| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | `readNestJson` then [seedAuthorizedQuery](../../server/seed-authorized-query.ts) + `HydrationBoundary` + [PlayQueryBoundary](play-query-boundary.tsx); never Nest-read inside `prefetchQuery` queryFn |
 | Initial / thrown read recovery | [PlayScene](view.tsx) + [RouteRecoveryPanel](../recovery/route-recovery.tsx) | 401 sign-in, 404 unavailable, 503 retry; never auto-PUT |
 | Scene selection and status | [PlayScene](view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
 | Current snapshot refresh/merge | [playStorySnapshotQueryOptions](../../shared/api/story-snapshot-query.ts) + [storyNeedsPendingRefresh](../../shared/api/story-pending-refresh.ts) → `writeStorySnapshot` | [useStoryLiveUpdates](use-story-live-updates.ts) + [openStoryUpdateStream](../../shared/api/story-update-stream.ts): hint → invalidate → GET; 30s safety / 2s fallback |
@@ -27,9 +27,9 @@
 
 ```text
 URL /play/:id
-  -> PlayPage prefetch + HydrationBoundary
+  -> PlayPage Nest read (route policy) + seedAuthorizedQuery + HydrationBoundary
   -> PlayScene useQuery + useResolutionCommand
-  -> user chooses -> freeze envelope (UUID/body/digest) in sessionStorage
+  -> user chooses -> sync capture lock, then freeze envelope (UUID/body/digest) in sessionStorage
   -> useMutation PUT /resolutions/:operationId (retry:0); writeStorySnapshot on 202
   -> reload: load envelope -> GET receipt + story first; user may retry same frozen body only
   -> useStoryLiveUpdates EventSource → invalidate scoped snapshot on open/hint (GET only)

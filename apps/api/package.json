@@ -26,7 +26,8 @@
     "dev": "tsc-watch --onSuccess \"node --env-file-if-exists=../../.env dist/src/main.js\"",
     "start": "node --env-file-if-exists=../../.env dist/src/main.js",
     "schema:generate": "auth generate --config auth.generate.ts --output ../../packages/db/src/schema/auth.ts --yes",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run build && node --test test/*.test.mjs"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.5",

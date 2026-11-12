@@ -35,6 +35,8 @@ advanceStoryView / incrementStoryViewVersion (same DB transaction)
   -> browser must GET /api/stories/:id (W17); hint is not authority
 ```
 
+LISTEN `error`/`end` marks the hub unhealthy, reconnects with backoff, and emits SSE `listener-recovered` so open clients refresh via GET. Heartbeats may continue while LISTEN is down; do not treat heartbeat as proof of NOTIFY health.
+
 Proxy note: responses set `Cache-Control: no-store, no-transform` and `X-Accel-Buffering: no`. Heartbeat ≈15s; reconnect re-authorizes.
 
 ## Developer routes are conditional, not globally public

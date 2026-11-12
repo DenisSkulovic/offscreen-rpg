@@ -117,9 +117,18 @@ export function openStoryUpdateStream(
     }
   };
 
+  function handleListenerRecovered() {
+    if (closed) {
+      return;
+    }
+    // LISTEN reconnected while this SSE socket stayed open — refresh via GET.
+    args.onOpen();
+  }
+
   source.onopen = onOpen;
   source.onerror = onError;
   source.addEventListener('story-update', handleHintMessage);
+  source.addEventListener('listener-recovered', handleListenerRecovered);
 
   return {
     close() {
@@ -128,6 +137,7 @@ export function openStoryUpdateStream(
       }
       closed = true;
       source.removeEventListener('story-update', handleHintMessage);
+      source.removeEventListener('listener-recovered', handleListenerRecovered);
       source.onopen = null;
       source.onerror = null;
       source.close();

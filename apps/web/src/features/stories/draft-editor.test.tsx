@@ -219,6 +219,41 @@ describe('DraftEditor RHF lifecycle', () => {
     ).toHaveValue('Typed after submit.');
   });
 
+  it('keeps dirty values and shows an error when save fetch rejects (negative)', async () => {
+    const user = userEvent.setup();
+    const initial = makeDraft({
+      revision: 1,
+      premise: 'Baseline premise.',
+      title: 'Local title',
+    });
+    server.use(
+      http.put(`/api/drafts/${fixtureDraftId}`, () => HttpResponse.error()),
+    );
+
+    renderEditor(initial);
+    await user.click(screen.getByRole('button', { name: 'Edit setup' }));
+    await user.click(screen.getByRole('button', { name: /Back/i }));
+    const premise = screen.getByLabelText(
+      /World, character and starting circumstances|Your prisoner/i,
+    );
+    await user.clear(premise);
+    await user.type(premise, 'Unsaved after network failure.');
+    await user.click(
+      screen.getByRole('button', { name: 'Continue to Storyteller' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Review setup' }));
+    await user.click(screen.getByRole('button', { name: 'Save setup' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /could not be confirmed/i,
+      );
+    });
+    expect(
+      screen.getByText('Unsaved after network failure.'),
+    ).toBeInTheDocument();
+  });
+
   it('ignores background Query updates while the form is dirty (negative)', async () => {
     const user = userEvent.setup();
     const initial = makeDraft({

@@ -46,6 +46,17 @@ export function useResolutionCommand(args: {
     status: 'idle',
   } satisfies PlayResolutionIntent);
   const recoveryStarted = useRef(false);
+  /** Mirrors intent for sync guards across awaits (digest / recovery races). */
+  const intentRef = useRef(intent);
+  /** Held from first click until intent returns to idle — closes pre-digest double-submit window. */
+  const captureLockRef = useRef(false);
+
+  useEffect(() => {
+    intentRef.current = intent;
+    if (intent.status === 'idle') {
+      captureLockRef.current = false;
+    }
+  }, [intent]);
 
   const acceptSnapshot = useCallback(
     (next: StorySnapshot, epoch?: number) => {
@@ -220,32 +231,48 @@ export function useResolutionCommand(args: {
     interactionId: string;
     optionId: string;
   }) {
-    if (mutation.isPending || intentEnvelope(intent)) {
+    if (
+      mutation.isPending ||
+      intentEnvelope(intentRef.current) ||
+      captureLockRef.current
+    ) {
       return;
     }
-    const body = respondToStorySchema.parse({
-      expectedRevision: input.expectedRevision,
-      submission: {
-        interactionId: input.interactionId,
-        answer: { kind: 'choice.v1', optionId: input.optionId },
-      },
-    });
-    const operationId = crypto.randomUUID();
-    const requestDigest = await digestResolutionRequest(body);
-    const envelope: FrozenResolutionEnvelope = {
-      version: 1,
-      kind: 'resolution',
-      viewerId,
-      storyId,
-      operationId,
-      endpoint: `/api/stories/${storyId}/resolutions/${operationId}`,
-      body,
-      requestDigest,
-      createdAt: Date.now(),
-    };
-    saveResolutionEnvelope(envelope);
-    dispatch({ type: 'begin', envelope });
-    mutation.mutate(envelope);
+    // Reserve synchronously before any await so a second click cannot allocate another UUID.
+    captureLockRef.current = true;
+    try {
+      const body = respondToStorySchema.parse({
+        expectedRevision: input.expectedRevision,
+        submission: {
+          interactionId: input.interactionId,
+          answer: { kind: 'choice.v1', optionId: input.optionId },
+        },
+      });
+      const operationId = crypto.randomUUID();
+      const requestDigest = await digestResolutionRequest(body);
+      if (intentEnvelope(intentRef.current)) {
+        captureLockRef.current = false;
+        return;
+      }
+      const envelope: FrozenResolutionEnvelope = {
+        version: 1,
+        kind: 'resolution',
+        viewerId,
+        storyId,
+        operationId,
+        endpoint: `/api/stories/${storyId}/resolutions/${operationId}`,
+        body,
+        requestDigest,
+        createdAt: Date.now(),
+      };
+      saveResolutionEnvelope(envelope);
+      const submitting = { status: 'submitting' as const, envelope };
+      intentRef.current = submitting;
+      dispatch({ type: 'begin', envelope });
+      mutation.mutate(envelope);
+    } catch {
+      captureLockRef.current = false;
+    }
   }
 
   function retryFrozen() {
