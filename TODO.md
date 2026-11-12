@@ -33,7 +33,7 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 
 ## Stage 1: focused engineering craftsmanship (architecture selected; implementation delegated later)
 
-The first area is **React/Next.js**, with an approved-by-owner design direction and source-grounded [W01–W19 implementation plan](docs/changes/README.md). No code was changed by the planning agent. Other areas may receive their own target-first design sessions later. This table is a *candidate menu*, **not a commitment to introduce every technology**.
+The first area is **React/Next.js**, with an approved-by-owner design direction and source-grounded [W01–W21 implementation plan](docs/changes/README.md). No code was changed by the planning agent. Other areas may receive their own target-first design sessions later. This table is a *candidate menu*, **not a commitment to introduce every technology**.
 
 | Candidate focus | Questions and credible outcomes |
 | --- | --- |
