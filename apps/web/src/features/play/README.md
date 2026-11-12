@@ -20,7 +20,7 @@
 | Offer path local navigation | [model/use-offer-path](model/use-offer-path.ts) + [ui/campaign-offer](ui/campaign-offer.tsx) | Resets on offer id change; must not clear command retry |
 | Character, holds, receipts | [ui/campaign-status](ui/campaign-status.tsx) / [activity](ui/campaign-activity.tsx) / [records](ui/campaign-records.tsx) | Pure projections in [model/campaign-projections](model/campaign-projections.ts) |
 | Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
-| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | Later RHF/Query (W11) |
+| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | RHF edit session keyed by story; Query catalogue/presets/history; frozen preset save |
 | Read-only chronology | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts) | Numeric `before`; viewer+story infinite key; explicit open/reset |
 
 ## One useful command path

@@ -332,7 +332,8 @@ export function PlayScene({
           <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
           {scene.campaign ? (
             <CampaignSettingsEditor
-              key={scene.campaign.settings.revision}
+              key={scene.id}
+              viewerId={viewerId}
               story={scene}
               campaign={scene.campaign}
               onSnapshot={acceptSnapshot}

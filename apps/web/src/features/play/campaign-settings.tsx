@@ -1,22 +1,25 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { z } from 'zod';
-import type { StorySnapshot } from '@offscreen/contracts/stories';
-import {
-  creativeSettingsSchema,
-  campaignSettingsSchema,
-  type CampaignView,
-  type CreativeSettings,
-} from '@offscreen/contracts/campaign';
-import { useCampaignCommand } from './use-campaign-command';
-import { submitStoryJson } from '@/src/lib/story-transport';
 
-const presetSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  creative: creativeSettingsSchema,
-});
-type Preset = z.infer<typeof presetSchema>;
+import { useEffect, useId, useRef, useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { StorySnapshot } from '@offscreen/contracts/stories';
+import type { CampaignView } from '@offscreen/contracts/campaign';
+import { useCampaignCommand } from './use-campaign-command';
+import {
+  creativeToFormValues,
+  formValuesToCreative,
+  settingsEditorFormSchema,
+  type SettingsEditorFormValues,
+} from './settings-form';
+import { usePresetSave } from './use-preset-save';
+import {
+  ownedPresetsQueryOptions,
+  presetCatalogueQueryOptions,
+  settingsHistoryQueryOptions,
+} from '@/src/shared/api/settings-query';
+
 const suggestedTags = [
   {
     id: 'melancholy',
@@ -36,107 +39,151 @@ const suggestedTags = [
 ];
 
 export function CampaignSettingsEditor({
+  viewerId,
   story,
   campaign,
   onSnapshot,
 }: {
+  viewerId: string;
   story: StorySnapshot;
   campaign: CampaignView;
   onSnapshot: (story: StorySnapshot) => void;
 }) {
-  const [creative, setCreative] = useState(campaign.settings.creative);
-  const [catalogue, setCatalogue] = useState<Preset[]>([]);
-  const [presets, setPresets] = useState<Preset[]>([]);
-  const [name, setName] = useState('My storyteller');
-  const [presetId, setPresetId] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
-  const [savingPreset, setSavingPreset] = useState(false);
-  const [history, setHistory] = useState<
-    { revision: number; tone: string; createdAt: string }[]
-  >([]);
-  const presetRequest = useRef<{
-    id: string;
-    body: { name: string; creative: CreativeSettings };
-  } | null>(null);
+  const formId = useId();
+  const queryClient = useQueryClient();
   const command = useCampaignCommand(story.id, onSnapshot);
+  const presetSave = usePresetSave(viewerId);
+  const [presetId, setPresetId] = useState<string | null>(null);
+  const [localMessage, setLocalMessage] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const baselineRevision = useRef(campaign.settings.revision);
+  const profile = campaign.settings.creative.profile;
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    getValues,
+    setValue,
+    setFocus,
+    watch,
+    formState: { isDirty, errors },
+  } = useForm<SettingsEditorFormValues>({
+    resolver: zodResolver(settingsEditorFormSchema),
+    mode: 'onTouched',
+    defaultValues: creativeToFormValues(campaign.settings.creative),
+  });
+
+  const tagsArray = useFieldArray({ control, name: 'tags' });
+  const guidanceValues = watch('guidance');
+
+  const catalogueQuery = useQuery(presetCatalogueQueryOptions(viewerId));
+  const ownedQuery = useQuery(ownedPresetsQueryOptions(viewerId));
+  const historyQuery = useQuery({
+    ...settingsHistoryQueryOptions(viewerId, story.id),
+    enabled: historyOpen,
+  });
+
+  const catalogue = catalogueQuery.data ?? [];
+  const presets = ownedQuery.data ?? [];
+  const staleWhileDirty =
+    isDirty && campaign.settings.revision !== baselineRevision.current;
+
   useEffect(() => {
-    const controller = new AbortController();
-    async function load() {
-      const results = await Promise.allSettled(
-        ['/api/stories/presets/catalogue', '/api/stories/presets'].map(
-          async (url) => {
-            const response = await fetch(url, { signal: controller.signal });
-            if (!response.ok) throw new Error('Unavailable');
-            return z.array(presetSchema).parse(await response.json());
-          },
-        ),
-      );
-      if (controller.signal.aborted) return;
-      if (results[0]?.status === 'fulfilled') setCatalogue(results[0].value);
-      if (results[1]?.status === 'fulfilled') setPresets(results[1].value);
-      if (results.some((result) => result.status === 'rejected'))
-        setMessage(
-          'Some presets could not be loaded. Current settings are preserved.',
-        );
-    }
-    void load();
-    return () => controller.abort();
-  }, []);
-  async function savePreset() {
-    if (savingPreset) return;
-    const parsed = creativeSettingsSchema.safeParse(creative);
-    if (!parsed.success) {
-      setMessage('Review the field limits before saving.');
+    if (isDirty) {
       return;
     }
-    presetRequest.current ??= {
-      id: crypto.randomUUID(),
-      body: { name, creative: parsed.data },
-    };
-    setSavingPreset(true);
-    try {
-      const response = await submitStoryJson({
-        url: `/api/stories/presets/${presetRequest.current.id}`,
-        body: presetRequest.current.body,
-      });
-      if (!response.ok) throw new Error('Unavailable');
-      const saved = presetSchema.parse(await response.json());
-      setPresets((prior) => [
-        ...prior.filter((item) => item.id !== saved.id),
-        saved,
-      ]);
-      presetRequest.current = null;
-      setMessage('Private preset saved.');
-    } catch {
-      setMessage(
-        'Could not confirm preset save. The next save retries the same captured values.',
-      );
-    } finally {
-      setSavingPreset(false);
+    baselineRevision.current = campaign.settings.revision;
+    reset(creativeToFormValues(campaign.settings.creative, getValues('presetName')));
+  }, [
+    campaign.settings.revision,
+    campaign.settings.creative,
+    isDirty,
+    reset,
+    getValues,
+  ]);
+
+  function adoptServerSettings() {
+    baselineRevision.current = campaign.settings.revision;
+    reset(creativeToFormValues(campaign.settings.creative, getValues('presetName')));
+    setPresetId(null);
+    setLocalMessage('Loaded the latest saved settings.');
+  }
+
+  function focusFirstError(fieldErrors: typeof errors) {
+    if (fieldErrors.tone) {
+      setFocus('tone');
+      return;
+    }
+    if (fieldErrors.emphasis) {
+      setFocus('emphasis');
+      return;
+    }
+    if (fieldErrors.surprises) {
+      setFocus('surprises');
+      return;
+    }
+    if (fieldErrors.tags?.[0]?.id) {
+      setFocus('tags.0.id');
+      return;
+    }
+    if (fieldErrors.guidance?.[0]) {
+      setFocus('guidance.0');
     }
   }
-  async function showHistory() {
-    try {
-      const response = await fetch(`/api/stories/${story.id}/settings`, {
-        cache: 'no-store',
-      });
-      if (!response.ok) throw new Error('Unavailable');
-      const rows = z
-        .array(
-          z.object({ settings: campaignSettingsSchema, createdAt: z.string() }),
-        )
-        .parse(await response.json());
-      setHistory(
-        rows.map((row) => ({
-          revision: row.settings.revision,
-          tone: row.settings.creative.tone,
-          createdAt: row.createdAt,
-        })),
+
+  const onSaveSettings = handleSubmit(
+    (values) => {
+      if (staleWhileDirty) {
+        setLocalMessage(
+          'Saved settings changed while you were editing. Adopt the latest revision before saving, or keep editing and expect a conflict.',
+        );
+        return;
+      }
+      try {
+        const creative = formValuesToCreative(values, profile);
+        void command.send('settings', {
+          expectedRevision: baselineRevision.current,
+          creative,
+          ...(presetId ? { presetId } : {}),
+        });
+        setLocalMessage('');
+      } catch {
+        setLocalMessage(
+          'Use unique lowercase tag IDs, nonempty descriptions/guidance, and the displayed field limits.',
+        );
+      }
+    },
+    (fieldErrors) => {
+      focusFirstError(fieldErrors);
+      setLocalMessage(
+        'Use unique lowercase tag IDs, nonempty descriptions/guidance, and the displayed field limits.',
       );
+    },
+  );
+
+  function savePresetFromForm() {
+    const values = getValues();
+    try {
+      const creative = formValuesToCreative(values, profile);
+      presetSave.save({ name: values.presetName, creative });
+      setLocalMessage('');
     } catch {
-      setMessage('Settings history is unavailable.');
+      setLocalMessage(
+        'Use unique lowercase tag IDs, nonempty descriptions/guidance, and the displayed field limits.',
+      );
     }
   }
+
+  const statusMessage =
+    localMessage ||
+    presetSave.message ||
+    command.message ||
+    (catalogueQuery.isError || ownedQuery.isError
+      ? 'Some presets could not be loaded. Current settings are preserved.'
+      : '');
+
   return (
     <details>
       <summary>
@@ -144,8 +191,8 @@ export function CampaignSettingsEditor({
         {campaign.settings.locked ? ' · locked' : ''}
       </summary>
       <p>
-        Change the DM's creative direction without changing your character or
-        past outcomes. An admitted action keeps its original settings; these
+        Change the DM&apos;s creative direction without changing your character
+        or past outcomes. An admitted action keeps its original settings; these
         edits apply to the next action.
       </p>
       <p>
@@ -153,255 +200,227 @@ export function CampaignSettingsEditor({
           ? 'Changes apply to the next bounded Storyteller turn; they do not rewrite past scenes or mechanical outcomes.'
           : 'Offline rehearsal uses authored scenes and mechanical summaries. Custom guidance is saved for generated tasks; it does not make the fixture improvise.'}
       </p>
-      <fieldset
-        disabled={campaign.settings.locked || command.busy || command.retry}
-      >
-        <legend>Effective creative settings</legend>
-        <label>
-          Apply a preset{' '}
-          <select
-            value=""
-            onChange={(event) => {
-              const preset = [...catalogue, ...presets].find(
-                (item) => item.id === event.target.value,
-              );
-              if (preset) {
-                setCreative(preset.creative);
+      {staleWhileDirty ? (
+        <p role="status">
+          A newer revision ({campaign.settings.revision}) arrived while these
+          fields were dirty. Your edits are kept until you adopt the saved
+          settings or save and accept a possible conflict.
+          <button type="button" onClick={adoptServerSettings}>
+            Adopt saved settings
+          </button>
+        </p>
+      ) : null}
+      <form id={formId} onSubmit={onSaveSettings}>
+        <fieldset
+          disabled={campaign.settings.locked || command.busy || command.retry}
+        >
+          <legend>Effective creative settings</legend>
+          <label>
+            Apply a preset{' '}
+            <select
+              value=""
+              onChange={(event) => {
+                const selected = [...catalogue, ...presets].find(
+                  (item) => item.id === event.target.value,
+                );
+                if (!selected) {
+                  return;
+                }
+                reset(
+                  creativeToFormValues(
+                    selected.creative,
+                    getValues('presetName'),
+                  ),
+                  { keepDefaultValues: true },
+                );
                 setPresetId(
-                  presets.some((item) => item.id === preset.id)
-                    ? preset.id
+                  presets.some((item) => item.id === selected.id)
+                    ? selected.id
                     : null,
                 );
-              }
-            }}
-          >
-            <option value="">Choose a preset</option>
-            {[...catalogue, ...presets].map((preset) => (
-              <option value={preset.id} key={preset.id}>
-                {preset.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Tone{' '}
-          <textarea
-            maxLength={1200}
-            value={creative.tone}
-            onChange={(event) =>
-              setCreative({ ...creative, tone: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Emphasis{' '}
-          <select
-            value={creative.emphasis}
-            onChange={(event) =>
-              setCreative({
-                ...creative,
-                emphasis: creativeSettingsSchema.shape.emphasis.parse(
-                  event.target.value,
-                ),
-              })
-            }
-          >
-            {['balanced', 'economy', 'growth', 'adventure', 'social'].map(
-              (value) => (
-                <option key={value}>{value}</option>
-              ),
-            )}
-          </select>
-        </label>
-        <label>
-          Narrative surprise preference{' '}
-          <select
-            value={creative.surprises}
-            onChange={(event) =>
-              setCreative({
-                ...creative,
-                surprises: creativeSettingsSchema.shape.surprises.parse(
-                  event.target.value,
-                ),
-              })
-            }
-          >
-            {['rare', 'occasional', 'frequent'].map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-        <p>
-          This guidance does not change the probability of mechanical events.
-        </p>
-        <p>
-          Suggested narrative tags:{' '}
-          {suggestedTags.map((tag) => (
-            <button
-              key={tag.id}
-              type="button"
-              disabled={creative.tags.length >= 16}
-              onClick={() =>
-                setCreative({
-                  ...creative,
-                  tags: [
-                    ...creative.tags.filter((item) => item.id !== tag.id),
-                    tag,
-                  ],
-                })
-              }
+              }}
             >
-              {tag.id}
-            </button>
-          ))}
-        </p>
-        {creative.tags.map((tag, index) => (
-          <div key={index}>
-            <label>
-              Tag ID{' '}
-              <input
-                maxLength={60}
-                value={tag.id}
-                onChange={(event) =>
-                  setCreative({
-                    ...creative,
-                    tags: creative.tags.map((item, i) =>
-                      i === index ? { ...item, id: event.target.value } : item,
-                    ),
-                  })
-                }
-              />
-            </label>
-            <label>
-              Description{' '}
-              <textarea
-                maxLength={400}
-                value={tag.description}
-                onChange={(event) =>
-                  setCreative({
-                    ...creative,
-                    tags: creative.tags.map((item, i) =>
-                      i === index
-                        ? { ...item, description: event.target.value }
-                        : item,
-                    ),
-                  })
-                }
-              />
-            </label>
-            <button
-              onClick={() =>
-                setCreative({
-                  ...creative,
-                  tags: creative.tags.filter((_, i) => i !== index),
-                })
-              }
-            >
-              Remove tag
-            </button>
-          </div>
-        ))}
-        <button
-          disabled={creative.tags.length >= 16}
-          onClick={() =>
-            setCreative({
-              ...creative,
-              tags: [
-                ...creative.tags,
-                { id: `custom-${creative.tags.length + 1}`, description: '' },
-              ],
-            })
-          }
-        >
-          Add custom narrative tag
-        </button>
-        <p>
-          Tags describe creative intent. They do not grant coins, powers or rule
-          changes.
-        </p>
-        {creative.guidance.map((snippet, index) => (
-          <label key={index}>
-            Guidance {index + 1}
-            <textarea
-              maxLength={1200}
-              value={snippet}
-              onChange={(event) =>
-                setCreative({
-                  ...creative,
-                  guidance: creative.guidance.map((item, i) =>
-                    i === index ? event.target.value : item,
-                  ),
-                })
-              }
-            />
-            <button
-              onClick={() =>
-                setCreative({
-                  ...creative,
-                  guidance: creative.guidance.filter((_, i) => i !== index),
-                })
-              }
-            >
-              Remove guidance
-            </button>
+              <option value="">Choose a preset</option>
+              {[...catalogue, ...presets].map((preset) => (
+                <option value={preset.id} key={preset.id}>
+                  {preset.name}
+                </option>
+              ))}
+            </select>
           </label>
-        ))}
-        <button
-          disabled={creative.guidance.length >= 4}
-          onClick={() =>
-            setCreative({ ...creative, guidance: [...creative.guidance, ''] })
-          }
-        >
-          Add guidance
-        </button>
-        <button
-          onClick={() => {
-            const parsed = creativeSettingsSchema.safeParse(creative);
-            if (!parsed.success) {
-              setMessage(
-                'Use unique lowercase tag IDs, nonempty descriptions/guidance, and the displayed field limits.',
-              );
-              return;
+          <label>
+            Tone{' '}
+            <textarea maxLength={1200} aria-invalid={Boolean(errors.tone)} {...register('tone')} />
+          </label>
+          <label>
+            Emphasis{' '}
+            <select {...register('emphasis')}>
+              {['balanced', 'economy', 'growth', 'adventure', 'social'].map(
+                (value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+          <label>
+            Narrative surprise preference{' '}
+            <select {...register('surprises')}>
+              {['rare', 'occasional', 'frequent'].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p>
+            This guidance does not change the probability of mechanical events.
+          </p>
+          <p>
+            Suggested narrative tags:{' '}
+            {suggestedTags.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                disabled={tagsArray.fields.length >= 16}
+                onClick={() => {
+                  const current = getValues('tags') ?? [];
+                  if (current.some((entry) => entry.id === tag.id)) {
+                    return;
+                  }
+                  tagsArray.append(tag);
+                }}
+              >
+                {tag.id}
+              </button>
+            ))}
+          </p>
+          {tagsArray.fields.map((field, index) => (
+            <div key={field.id}>
+              <label>
+                Tag ID{' '}
+                <input
+                  maxLength={60}
+                  aria-invalid={Boolean(errors.tags?.[index]?.id)}
+                  {...register(`tags.${index}.id`)}
+                />
+              </label>
+              <label>
+                Description{' '}
+                <textarea
+                  maxLength={400}
+                  aria-invalid={Boolean(errors.tags?.[index]?.description)}
+                  {...register(`tags.${index}.description`)}
+                />
+              </label>
+              <button type="button" onClick={() => tagsArray.remove(index)}>
+                Remove tag
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            disabled={tagsArray.fields.length >= 16}
+            onClick={() =>
+              tagsArray.append({
+                id: `custom-${tagsArray.fields.length + 1}`,
+                description: '',
+              })
             }
-            void command.send('settings', {
-              expectedRevision: campaign.settings.revision,
-              creative: parsed.data,
-              ...(presetId ? { presetId } : {}),
-            });
-          }}
-        >
-          Save these settings for the next action
-        </button>
-        <label>
-          Private preset name{' '}
-          <input
-            maxLength={100}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </label>
-        <button disabled={savingPreset} onClick={() => void savePreset()}>
-          Save as a private preset
-        </button>
-      </fieldset>
+          >
+            Add custom narrative tag
+          </button>
+          <p>
+            Tags describe creative intent. They do not grant coins, powers or
+            rule changes.
+          </p>
+          {(guidanceValues ?? []).map((_, index) => (
+            <label key={`guidance-${index}`}>
+              Guidance {index + 1}
+              <textarea
+                maxLength={1200}
+                aria-invalid={Boolean(errors.guidance?.[index])}
+                {...register(`guidance.${index}`)}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const next = [...(getValues('guidance') ?? [])];
+                  next.splice(index, 1);
+                  setValue('guidance', next, { shouldDirty: true });
+                }}
+              >
+                Remove guidance
+              </button>
+            </label>
+          ))}
+          <button
+            type="button"
+            disabled={(guidanceValues?.length ?? 0) >= 4}
+            onClick={() =>
+              setValue('guidance', [...(getValues('guidance') ?? []), ''], {
+                shouldDirty: true,
+              })
+            }
+          >
+            Add guidance
+          </button>
+          <button type="submit">Save these settings for the next action</button>
+          <label>
+            Private preset name{' '}
+            <input maxLength={100} {...register('presetName')} />
+          </label>
+          <button
+            type="button"
+            disabled={presetSave.busy}
+            onClick={savePresetFromForm}
+          >
+            Save as a private preset
+          </button>
+        </fieldset>
+      </form>
       <p>
         Rules: SRD 5.2.1 subset. Risk: nonlethal. Creative presets leave speed
         and these permissions unchanged.
       </p>
-      {message || command.message ? (
-        <p role="status">{message || command.message}</p>
-      ) : null}
+      {statusMessage ? <p role="status">{statusMessage}</p> : null}
       {command.retry ? (
-        <button disabled={command.busy} onClick={() => void command.send()}>
+        <button
+          type="button"
+          disabled={command.busy}
+          onClick={() => void command.send()}
+        >
           Retry settings save
         </button>
       ) : null}
-      <button onClick={() => void showHistory()}>
+      {presetSave.canRetry ? (
+        <button
+          type="button"
+          disabled={presetSave.busy}
+          onClick={() => presetSave.retry()}
+        >
+          Retry preset save
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => {
+          setHistoryOpen(true);
+          void queryClient.invalidateQueries({
+            queryKey: settingsHistoryQueryOptions(viewerId, story.id).queryKey,
+          });
+        }}
+      >
         Show saved settings history
       </button>
-      {history.map((entry) => (
-        <p key={entry.revision}>
-          Revision {entry.revision} · {entry.createdAt} · {entry.tone}
+      {historyOpen && historyQuery.isError ? (
+        <p role="status">Settings history is unavailable.</p>
+      ) : null}
+      {historyQuery.data?.map((entry) => (
+        <p key={`${story.id}:${entry.settings.revision}:${entry.createdAt}`}>
+          Revision {entry.settings.revision} · {entry.createdAt} ·{' '}
+          {entry.settings.creative.tone}
         </p>
       ))}
     </details>

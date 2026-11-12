@@ -19,5 +19,6 @@
 | `drafts-list-query.ts` | Infinite drafts list; opaque `cursor` page param |
 | `story-history-query.ts` | Infinite chronology; numeric `before` page param |
 | `list-page.ts` | Stable flatten/dedupe by item id across infinite pages |
+| `settings-query.ts` | Preset catalogue / owned presets / settings history query options |
 
 **Maintenance:** update when key shapes, cache policies or snapshot write gates change.
