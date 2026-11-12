@@ -20,7 +20,7 @@
 | Character, holds, receipts | [ui/campaign-status](ui/campaign-status.tsx) / [activity](ui/campaign-activity.tsx) / [records](ui/campaign-records.tsx) | Pure projections in [model/campaign-projections](model/campaign-projections.ts) |
 | Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
 | Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | Later RHF/Query (W11) |
-| Read-only chronology | [StoryHistoryView](history.tsx) | GET `/:id/history?before=number` |
+| Read-only chronology | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts) | Numeric `before`; viewer+story infinite key; explicit open/reset |
 
 ## One useful command path
 

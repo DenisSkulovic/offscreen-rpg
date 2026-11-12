@@ -307,7 +307,7 @@ export function PlayScene({
           ) : null}
         </section>
         <aside className="play-sidebar" aria-label="Story information">
-          <StoryHistoryView storyId={scene.id} />
+          <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
           {scene.campaign ? (
             <CampaignSettingsEditor
               key={scene.campaign.settings.revision}

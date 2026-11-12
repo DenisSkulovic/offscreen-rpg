@@ -20,5 +20,11 @@ export default async function ChamberPage({
         optional: true,
       })
     : null;
-  return <Chamber initial={initial} initialId={id ?? null} />;
+  return (
+    <Chamber
+      viewerId={viewer.user.id}
+      initial={initial}
+      initialId={id ?? null}
+    />
+  );
 }

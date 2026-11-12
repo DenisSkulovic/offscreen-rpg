@@ -1,45 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { draftListSchema } from '@offscreen/contracts/drafts';
-import type { Draft } from '@offscreen/contracts/drafts';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
+import { flattenUniqueById } from '@/src/shared/api/list-page';
 
-export function DraftList({
-  initial,
-}: {
-  initial: { items: Draft[]; nextCursor: string | null };
-}) {
-  const [items, setItems] = useState(initial.items);
-  const [cursor, setCursor] = useState(initial.nextCursor);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState(false);
-  async function more() {
-    setPending(true);
-    setError(false);
-    try {
-      const response = await fetch(`/api/drafts?cursor=${cursor}`, {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!response.ok) throw new Error('Unavailable');
-      const page = draftListSchema.parse(await response.json());
-      setItems((current) => [
-        ...current,
-        ...page.items.filter(
-          (item) => !current.some((old) => old.id === item.id),
-        ),
-      ]);
-      setCursor(page.nextCursor);
-    } catch {
-      setError(true);
-    } finally {
-      setPending(false);
-    }
-  }
+export function DraftList({ viewerId }: { viewerId: string }) {
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteQuery(draftsListInfiniteOptions(viewerId));
+  const items = flattenUniqueById(data?.pages);
+  const pending = isPending || isFetchingNextPage;
+
   return (
     <section aria-label="Story drafts">
-      {items.length === 0 ? (
+      {items.length === 0 && !isPending ? (
         <p>No stories yet. Start with a thought, a character, or a place.</p>
       ) : (
         <ul className="draft-list">
@@ -53,14 +33,25 @@ export function DraftList({
           ))}
         </ul>
       )}
-      {cursor && (
-        <button disabled={pending} onClick={() => void more()}>
-          {pending ? 'Loading…' : 'More drafts'}
+      {hasNextPage ? (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            if (isFetchingNextPage) {
+              return;
+            }
+            void fetchNextPage();
+          }}
+        >
+          {isFetchingNextPage ? 'Loading…' : 'More drafts'}
         </button>
-      )}
-      {error && (
+      ) : items.length > 0 ? (
+        <p role="status">End of drafts.</p>
+      ) : null}
+      {error ? (
         <p role="alert">Couldn’t load more drafts. Please try again.</p>
-      )}
+      ) : null}
     </section>
   );
 }

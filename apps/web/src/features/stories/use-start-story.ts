@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   clearStartEnvelope,
   loadStartEnvelope,
@@ -9,6 +9,7 @@ import {
   type FrozenStartEnvelope,
 } from '@/src/shared/api/start-intent-store';
 import { readLatestOpening } from '@/src/shared/api/opening-query';
+import { queryKeys } from '@/src/shared/api/query-keys';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 
 export type StartStoryResult =
@@ -75,6 +76,7 @@ export function useStartStory(args: {
   draftId: string;
 }) {
   const { viewerId, draftId } = args;
+  const queryClient = useQueryClient();
   const envelopeRef = useRef<FrozenStartEnvelope | null>(null);
   const recoveryStarted = useRef(false);
   const [recovery, setRecovery] = useState<StartRecoveryState>({
@@ -95,6 +97,9 @@ export function useStartStory(args: {
         clearStartEnvelope(viewerId, envelope.storyId);
         envelopeRef.current = null;
         setMessage('');
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.storiesList(viewerId),
+        });
         setRecovery({ status: 'navigating', storyId: result.storyId });
         window.location.assign(`/play/${result.storyId}`);
         return;

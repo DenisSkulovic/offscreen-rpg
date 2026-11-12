@@ -6,9 +6,11 @@ import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { QaWorkspace } from './qa-workspace';
 
 export function Chamber({
+  viewerId,
   initial,
   initialId,
 }: {
+  viewerId: string;
   initial: StorySnapshot | null;
   initialId: string | null;
 }) {
@@ -23,6 +25,7 @@ export function Chamber({
       </p>
       {play.story ? (
         <ChamberScene
+          viewerId={viewerId}
           story={play.story}
           pending={play.pending}
           controlPending={play.controlOperation.current !== null}

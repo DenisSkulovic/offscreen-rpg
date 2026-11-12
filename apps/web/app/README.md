@@ -15,6 +15,7 @@
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
 | `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
 | `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `src/features/play/view.tsx` | SSR prefetch + `HydrationBoundary` + `useQuery` snapshot |
+| `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate first pages |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
 | `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |
 | `/rules` | [rules page](rules/page.tsx) | none | public |

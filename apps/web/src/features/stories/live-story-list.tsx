@@ -1,56 +1,57 @@
 'use client';
-import Link from 'next/link';
-import { useState } from 'react';
-import { storyListSchema, type StoryList } from '@offscreen/contracts/stories';
 
-export function LiveStoryList({ initial }: { initial: StoryList }) {
-  const [page, setPage] = useState(initial);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState('');
-  async function older() {
-    if (!page.nextBefore || pending) {
-      return;
-    }
-    setPending(true);
-    setError('');
-    try {
-      const response = await fetch(
-        `/api/stories?before=${encodeURIComponent(page.nextBefore)}`,
-        { cache: 'no-store', signal: AbortSignal.timeout(10000) },
-      );
-      if (!response.ok) {
-        throw new Error('Unavailable');
-      }
-      setPage(storyListSchema.parse(await response.json()));
-    } catch {
-      setError('Stories could not be loaded. Try again.');
-    } finally {
-      setPending(false);
-    }
-  }
+import Link from 'next/link';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { flattenUniqueById } from '@/src/shared/api/list-page';
+import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
+
+export function LiveStoryList({ viewerId }: { viewerId: string }) {
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteQuery(storiesListInfiniteOptions(viewerId));
+  const items = flattenUniqueById(data?.pages);
+  const pending = isPending || isFetchingNextPage;
+
   return (
     <section aria-label="Live stories">
       <h2>Your live stories</h2>
-      {page.items.length === 0 ? (
+      {items.length === 0 && !isPending ? (
         <p>No live stories yet. Review an opening and choose Start.</p>
       ) : null}
-      {page.items.map((story) => (
+      {items.map((story) => (
         <article key={story.id}>
           <h3>
             <Link href={`/play/${story.id}`}>{story.title}</Link>
           </h3>
           <p>
-            {story.storyteller?.name ?? 'Scripted story'} ·{' '}
-            {story.status}
+            {story.storyteller?.name ?? 'Scripted story'} · {story.status}
           </p>
         </article>
       ))}
-      {page.nextBefore ? (
-        <button disabled={pending} onClick={() => void older()}>
+      {hasNextPage ? (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            if (isFetchingNextPage) {
+              return;
+            }
+            void fetchNextPage();
+          }}
+        >
           Older stories
         </button>
+      ) : items.length > 0 ? (
+        <p role="status">End of live stories.</p>
       ) : null}
-      {error ? <p role="status">{error}</p> : null}
+      {error ? (
+        <p role="status">Stories could not be loaded. Try again.</p>
+      ) : null}
     </section>
   );
 }

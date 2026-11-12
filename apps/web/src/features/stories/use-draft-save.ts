@@ -56,6 +56,9 @@ export function useDraftSave(viewerId: string) {
         queryKeys.draft(viewerId, frozen.draftId),
         result.draft,
       );
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.draftsList(viewerId),
+      });
     },
   });
 }

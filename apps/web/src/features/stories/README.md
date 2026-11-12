@@ -2,7 +2,7 @@
 
 **First look:** Draft edit uses viewer-keyed Query + React Hook Form (`mode: onTouched`, Zod form schema). Save freezes `{draftId, expectedRevision, content}` in `useMutation` (retry 0). RHF owns unsaved values; Query owns acknowledged `Draft`. **Start is a separate durable intent:** freeze full body/story UUID once, GET-by-story before replay.
 **Start:** [new draft route](../../../app/(authenticated)/stories/new/page.tsx) / [saved draft route](../../../app/(authenticated)/stories/[id]/page.tsx) → [DraftEditor](draft-editor.tsx) → [preview route](../../../app/(authenticated)/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](opening-preview.tsx).
-**Source basis:** post-W09 `main`; recheck symbols before editing. W10 owns list paging.
+**Source basis:** post-W10 `main`; recheck symbols before editing.
 
 ## Where a question belongs
 
@@ -13,8 +13,8 @@
 | Unsaved values, multi-step form, dirty guard | [DraftEditor](draft-editor.tsx) RHF + [draftEditorFormSchema](draft-content.ts); `isDirty` / beforeunload | Query must not auto-`reset` dirty values |
 | Draft save and conflict | [useDraftSave](use-draft-save.ts) frozen PUT; 409 → keep edits; `resetDefaultValues` on success | `PUT /api/drafts/:id` + `expectedRevision`; explicit Load saved adopts server |
 | Storyteller catalogue | [StorytellerSelect](storyteller-select.tsx) | GET `/api/storytellers` via client effect |
-| Draft list, more pages | [DraftList](draft-list.tsx) | GET `/api/drafts?cursor=opaque`; client append/dedupes |
-| Live story list | [LiveStoryList](live-story-list.tsx) | GET `/api/stories?before=UUID`; currently replaces page rather than appends |
+| Draft list, more pages | [DraftList](draft-list.tsx) + [draftsListInfiniteOptions](../../shared/api/drafts-list-query.ts) | Opaque `cursor`; `useInfiniteQuery` append/dedupe; SSR first-page hydrate |
+| Live story list | [LiveStoryList](live-story-list.tsx) + [storiesListInfiniteOptions](../../shared/api/stories-list-query.ts) | UUID `before`; append/dedupe; SSR first-page hydrate |
 | Opening candidate load | preview page + [openingQueryOptions](../../shared/api/opening-query.ts) | SSR hydrate `queryKeys.draftOpening`; GET `/latest` polls while pending/running |
 | Generation admission | [useOpeningGenerate](use-opening-generate.ts) | Frozen `PUT .../openings/:attemptId` **202**; no automatic paid retry |
 | Start a reviewed candidate | [useStartStory](use-start-story.ts) + [start-intent-store](../../shared/api/start-intent-store.ts) | Freeze body once; sessionStorage 24h TTL; GET story before replay |
@@ -40,6 +40,6 @@ Start: preview succeeded/current -> PUT /stories/:storyId/start
 ## Tests, chosen standards and stop rule
 
 - Selected architecture: [F5/F8/F11 target](../../../../../docs/engineering/targets/react-next.md) and [story lifecycle contract](../../../../../docs/technical/story-lifecycle.md). Read relevant **section**, not full file.
-- Fast cases (`pnpm test:fast`): dirty survives 409; Start GET-first remount without auto-PUT; frozen pace survives retry; missing capture blocks; pending opening polls without generation PUT.
+- Fast cases (`pnpm test:fast`): dirty survives 409; Start GET-first remount without auto-PUT; frozen pace survives retry; missing capture blocks; pending opening polls without generation PUT; story/draft infinite append + rapid-fetch guard; history story A→B isolation.
 - Integrated proof if authorized: [draft browser](../../../../../tools/api-integration/test/drafts.browser.ts) and [Start integration](../../../../../tools/api-integration/test/story-start.integration.ts). [Integration warning](../../../../../tools/api-integration/README.md) explains disposable DB reset.
 - Update this map only when a route, edit/command owner, wire shape or recovery lifecycle changes. Don't duplicate the normative technical contract or annotate every JSX file. No gameplay, visual redesign or live model work is authorized here.

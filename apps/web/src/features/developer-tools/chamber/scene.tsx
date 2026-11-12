@@ -26,6 +26,7 @@ function defaultDecisionLabel(story: StorySnapshot) {
 }
 
 export function ChamberScene(args: {
+  viewerId: string;
   story: StorySnapshot;
   pending: boolean;
   controlPending: boolean;
@@ -147,6 +148,7 @@ export function ChamberScene(args: {
       <p>Bookmark this URL to reopen the same story.</p>
       <StoryHistoryView
         key={`${story.id}:${story.revision}`}
+        viewerId={args.viewerId}
         storyId={story.id}
       />
       <a href="/chamber">Prepare a fresh chamber</a>

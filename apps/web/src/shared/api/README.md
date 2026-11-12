@@ -15,5 +15,9 @@
 | `story-snapshot-reconcile.ts` | Pure viewer/story/`viewVersion`/epoch gate |
 | `story-snapshot-write.ts` | Sole Play Query write for snapshots |
 | `draft-query.ts` | Viewer-scoped draft `queryOptions` + browser GET; no focus refetch into RHF |
+| `stories-list-query.ts` | Infinite stories list; UUID `before` page param |
+| `drafts-list-query.ts` | Infinite drafts list; opaque `cursor` page param |
+| `story-history-query.ts` | Infinite chronology; numeric `before` page param |
+| `list-page.ts` | Stable flatten/dedupe by item id across infinite pages |
 
 **Maintenance:** update when key shapes, cache policies or snapshot write gates change.
