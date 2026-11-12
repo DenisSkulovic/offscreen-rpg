@@ -245,7 +245,8 @@ export class StoriesController {
   ) {
     return this.run(request, (ownerId) => {
       if (!this.stories.documents) throw new StoryError('unavailable');
-      const parsedRevision = revision === undefined ? undefined : Number(revision);
+      const parsedRevision =
+        revision === undefined ? undefined : Number(revision);
       if (
         parsedRevision !== undefined &&
         (!Number.isInteger(parsedRevision) || parsedRevision < 1)
@@ -315,6 +316,20 @@ export class StoriesController {
         ...(parsed.data.campaign ? { campaign: parsed.data.campaign } : {}),
       });
     });
+  }
+  @Get(':id/resolutions/:operationId/receipt')
+  resolutionReceipt(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('operationId') operationId: string,
+  ) {
+    return this.run(request, (ownerId) =>
+      this.stories.readResolutionReceipt({
+        ownerId,
+        storyId: id,
+        operationId,
+      }),
+    );
   }
   @Put(':id/resolutions/:operationId')
   @HttpCode(202)

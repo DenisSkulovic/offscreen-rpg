@@ -154,6 +154,49 @@ export const respondToStorySchema = z.strictObject({
   expectedRevision: z.number().int().positive().max(2147483646),
   submission: interactionSubmissionSchema,
 });
+/** Owner-scoped read-only resolution operation receipt (W19). Never includes submission body. */
+export const resolutionOperationReceiptSchema = z.strictObject({
+  operationId: z.uuid(),
+  storyId: z.uuid(),
+  state: z.enum(['admitted', 'processing', 'settled', 'failed', 'uncertain']),
+  viewVersion: z.number().int().positive(),
+  resolutionVersion: z.number().int().nonnegative(),
+  reason: z.string().max(80).nullable(),
+  recovery: z.enum(['retry', 'refresh', 'operator', 'none']).nullable(),
+  requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+});
+export type ResolutionOperationReceipt = z.infer<
+  typeof resolutionOperationReceiptSchema
+>;
+/**
+ * Deterministic JSON for SHA-256 requestDigest. Object keys are sorted at every
+ * level so Postgres jsonb round-trips and client envelopes compare equal.
+ */
+export function canonicalResolutionRequestJson(input: {
+  expectedRevision: number;
+  submission: unknown;
+}): string {
+  return canonicalJsonValue({
+    expectedRevision: input.expectedRevision,
+    submission: input.submission,
+  });
+}
+function canonicalJsonValue(value: unknown): string {
+  if (value === null || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => canonicalJsonValue(entry)).join(',')}]`;
+  }
+  const entries = Object.entries(value as Record<string, unknown>).sort(
+    ([left], [right]) => left.localeCompare(right),
+  );
+  return `{${entries
+    .map(
+      ([key, entry]) => `${JSON.stringify(key)}:${canonicalJsonValue(entry)}`,
+    )
+    .join(',')}}`;
+}
 export const controlIntervalSchema = z.strictObject({
   intervalId: z.uuid(),
   expectedControlRevision: z.number().int().nonnegative().max(2147483646),

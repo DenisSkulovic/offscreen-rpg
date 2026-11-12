@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { TestContext } from 'node:test';
-import { storySnapshotSchema } from '@offscreen/contracts/stories';
+import {
+  resolutionOperationReceiptSchema,
+  storySnapshotSchema,
+} from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
 import { createChamber } from '@offscreen/application/developer-tools';
 import {
@@ -17,7 +20,11 @@ import {
   scriptedOpeningPresentation,
   scriptedPlayableOpening,
 } from '@offscreen/application/generations';
-import { createStories, StoryError } from '@offscreen/application/stories';
+import {
+  createStories,
+  resolutionRequestDigest,
+  StoryError,
+} from '@offscreen/application/stories';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
@@ -219,6 +226,70 @@ export async function checkGeneratedResolution({
       assert.equal(pending.canRespond, false);
       const publicBody = JSON.stringify(pending);
       assertNoHiddenIntentions(publicBody);
+      const receiptPath = `${origin}/api/stories/${storyId}/resolutions/${operationId}/receipt`;
+      const admittedReceipt = resolutionOperationReceiptSchema.parse(
+        await (await fetch(receiptPath, { headers: { cookie } })).json(),
+      );
+      assert.equal(admittedReceipt.operationId, operationId);
+      assert.equal(admittedReceipt.storyId, storyId);
+      assert.ok(
+        admittedReceipt.state === 'admitted' ||
+          admittedReceipt.state === 'processing',
+        `expected admitted/processing, got ${admittedReceipt.state}`,
+      );
+      assert.equal(
+        admittedReceipt.requestDigest,
+        resolutionRequestDigest({
+          expectedRevision: body.expectedRevision,
+          submission: body.submission,
+        }),
+      );
+      assert.equal(JSON.stringify(admittedReceipt).includes(optionId), false);
+      assert.equal(
+        (
+          await fetch(receiptPath, {
+            headers: { cookie: otherCookie },
+          })
+        ).status,
+        404,
+      );
+      assert.equal(
+        (
+          await fetch(receiptPath, {
+            headers: { cookie: '' },
+          })
+        ).status,
+        401,
+      );
+      assert.equal(
+        (
+          await fetch(
+            `${origin}/api/stories/${storyId}/resolutions/${randomUUID()}/receipt`,
+            { headers: { cookie } },
+          )
+        ).status,
+        404,
+      );
+      const outboxBefore = await database.db.$client.query(
+        'SELECT count(*)::int AS count FROM outbox',
+      );
+      const generationBefore = await database.db.$client.query(
+        'SELECT state, status_revision FROM generation WHERE id = $1',
+        [operationId],
+      );
+      assert.equal(
+        (await fetch(receiptPath, { headers: { cookie } })).status,
+        200,
+      );
+      const outboxAfter = await database.db.$client.query(
+        'SELECT count(*)::int AS count FROM outbox',
+      );
+      const generationAfter = await database.db.$client.query(
+        'SELECT state, status_revision FROM generation WHERE id = $1',
+        [operationId],
+      );
+      assert.equal(outboxAfter.rows[0].count, outboxBefore.rows[0].count);
+      assert.deepEqual(generationAfter.rows[0], generationBefore.rows[0]);
       const retried = await fetch(
         `${origin}/api/stories/${storyId}/resolutions/${operationId}`,
         {
@@ -278,6 +349,11 @@ export async function checkGeneratedResolution({
       );
       await continuations.complete(operationId);
       const travelling = await waitForRevision(origin, cookie, storyId, 2);
+      const settledReceipt = resolutionOperationReceiptSchema.parse(
+        await (await fetch(receiptPath, { headers: { cookie } })).json(),
+      );
+      assert.equal(settledReceipt.state, 'settled');
+      assert.equal(settledReceipt.requestDigest, admittedReceipt.requestDigest);
       assert.equal(travelling.resolution, null);
       assert.equal(travelling.canRespond, false);
       assert.equal(travelling.current.interaction, null);

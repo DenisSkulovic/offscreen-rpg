@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | Better Auth cookie/owner/CSRF | [auth.integration.ts](auth.integration.ts) | Real session composition; not full external GitHub OAuth exchange |
 | Story HTTP owner/errors | [stories-http.integration.ts](stories-http.integration.ts) | API route/status semantics |
-| Stored resolution/retry | [story-resolution.integration.ts](story-resolution.integration.ts) | Durable admission, duplicate/conflict, publication against real DB |
+| Stored resolution/retry/receipt | [story-resolution.integration.ts](story-resolution.integration.ts) | Durable admission, duplicate/conflict, W19 owner-scoped read-only receipt GET, publication against real DB |
 | Start from reviewed candidate | [story-start.integration.ts](story-start.integration.ts) | Persisted Start, current published opening, same ID retry |
 | Real navigation/Play/Chamber | [stories-browser.integration.ts](stories-browser.integration.ts) | Browser UI, reload and persisted story scenario with local fixture |
 | Draft two-tab/version | [drafts.browser.ts](drafts.browser.ts) | React edit/draft conflict, browser session interaction |

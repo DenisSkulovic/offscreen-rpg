@@ -19,6 +19,7 @@ import { StoryError } from './errors';
 import { createStoryInitialization } from './initialization';
 import { createStoryReads } from './reads';
 import { createStoryResolution } from './resolution';
+import { createResolutionReceiptReader } from './resolution-receipt';
 import { createStoryStart, playableOpeningStorySource } from './start';
 import { createStoryTiming } from './timing';
 import { createStoryForks } from './forks';
@@ -57,6 +58,7 @@ export function createStories(
   );
   const continuation = createStoryContinuation(database);
   const resolution = createStoryResolution(database, options.documentStore);
+  const resolutionReceipts = createResolutionReceiptReader(database);
   const timing = createStoryTiming(database);
   const forkCurrent = createStoryForks(database);
   const documents = options.documentStore
@@ -95,6 +97,13 @@ export function createStories(
     },
     read(args: { ownerId: string; storyId: string }) {
       return reads.readSnapshot(args);
+    },
+    readResolutionReceipt(args: {
+      ownerId: string;
+      storyId: string;
+      operationId: string;
+    }) {
+      return resolutionReceipts.read(args);
     },
     async fork(args: {
       ownerId: string;
@@ -284,3 +293,7 @@ export { StoryError };
 export { playableOpeningStorySource } from './start';
 export { campaignConsequenceTopic };
 export { createCampaignDocuments, knowledgeIndexTopic } from './documents';
+export {
+  resolutionRequestDigest,
+  publicReceiptState,
+} from './resolution-receipt';

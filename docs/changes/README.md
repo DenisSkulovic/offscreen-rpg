@@ -2,9 +2,9 @@
 
 **Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Implementation retrieval:** [source-adjacent owner maps](../../apps/web/README.md) before code, [staged toolchain](../engineering/frontend-execution-playbook.md) only if needed. **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
 
-Current change: none
+Current change: [W19 operation receipts](2026-11-12--web-resolution-operation-receipts/CHANGE.md)
 
-**Architecture is decided; W01–W03, W15, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W19 operation receipts](2026-11-12--web-resolution-operation-receipts/CHANGE.md) (before W04), or [W05]/[W08](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) form/list work after W15. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W03/W15/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W03, W15, W20 and W21 are Done.** Active: W19 read-only Nest resolution receipt GET (required before W04). After W19: [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md), or [W05]/[W08](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) form/list work. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W03/W15/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -17,7 +17,7 @@ Current change: none
 | **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | **Done:** server-only reader, `(authenticated)` group, `API_PROXY_ORIGIN` | W01 preferred |
 | **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | **Done:** Query v5 provider, Play prefetch/hydrate, viewer keys | W01 W02 |
 | **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | **Done:** viewer/story/`viewVersion`/epoch Query write gate | W15 |
-| **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | Read-only Nest resolution status/identity endpoint | W02 |
+| **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | **Ready:** read-only Nest resolution status/identity endpoint | W02 |
 | **B: commands** | [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md) | Intent FSM, immutable payload, verified lost-ACK/reload recovery | W03 W19 |
 | **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | Visibility-aware, bounded conditional GET | W03 W04 |
 | **C: forms** | [W08 RHF draft editor](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) | RHF/Zod, dirty revision/save conflict | W15 |
