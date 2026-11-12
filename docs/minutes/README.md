@@ -8,7 +8,7 @@
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
-| [2026-11-12](2026-11-12.md) | Daily minutes convention and handoff continuity | Rule and first entries introduced |
+| [2026-11-12](2026-11-12.md) | Daily minutes, React/Next architecture F1–F15, audit and W01–W14 queue | Target/Changes proposed, **no active coding Change** |
 | [2026-11-11](2026-11-11.md) | Harness/knowledge, Feature→Change redesign, portfolio direction, target-first React/Next planning | Historical reconstruction from discussions and commits; no active coding Change |
 
 ## Fresh-chat handoff (read selectively)
