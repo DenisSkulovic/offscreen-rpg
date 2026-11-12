@@ -10,6 +10,8 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 
 **Current order of work:** finish the coding-agent and documentation ecosystem, especially the **Change** work-unit system and legacy dossier cleanup; **then** conduct focused engineering-improvement sessions; resume gameplay/product expansion only by a later explicit owner decision. No game implementation, live-model experimentation or broad application refactor is authorized by this roadmap.
 
+**Conversation continuity:** [Daily repository minutes](docs/minutes/README.md) now preserve important owner directions, technical reasoning, decisions and next steps across chats. See [the logging rule](.agents/rules/session-minutes.md). Minutes explain the history; targets, technical contracts and Changes still govern approved work.
+
 ## Stage 0: finish the development work system (current)
 
 - [x] Define a **Change** as one bounded, verifiable planned source/test/script/executable-config delta, including refactors, bug fixes, tooling and migrations; distinguish it from initiative, design, investigation, documentation and evaluation.
@@ -19,6 +21,7 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 - [x] Review the changed Markdown's local link targets against the committed GitHub tree and inspect the selected-work/skill routing. This was a **static remote check**, not a local CLI/test run or a full historical-heading audit.
 - [x] Define the [proposed React/Next end state](docs/engineering/targets/react-next.md) independently of implementation, then publish the [gap audit](docs/engineering/audits/react-next-gap-2026-11-11.md) and seven bounded Proposed Changes without opening an active coding queue.
 - [ ] Review/approve or revise the React/Next target and first Change packet before assigning Cursor. Confirm actual CLI and browser-test evidence when implementation begins.
+- [x] Introduce a [daily session-minutes log](docs/minutes/README.md), reconstruct [November 11](docs/minutes/2026-11-11.md), and require substantial cross-chat handoffs to preserve consequential owner intent in Markdown.
 - [ ] Validate the workflow in a fresh Cursor/Claude read-only session: confirm discovery of `change-workflow`, `repo:brief` output with **no active Change**, correct classification of parked S3a and a believable prospective React Change. Record actual outputs/usage before calling the harness proven.
 
 **Exit criterion:** a new agent can identify the present priority and absence/presence of a ready Change; distinguish design/evaluation from code; select one well-defined diff outcome, its source owners and negative proof; execute and close it without absorbing historical initiatives or inventing work. Keep the bureaucracy smaller than the engineering problem.

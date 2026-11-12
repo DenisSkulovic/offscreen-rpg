@@ -16,6 +16,7 @@ Find the existing owner before adding a document. Put the full explanation there
 | Non-obvious local invariant, ordering or retry constraint | Comment beside the owning code; no syntax narration |
 | New topic, moved/removed owner or changed heading | Affected incoming links and relevant map row |
 | Repeated operating mistake | Small rule at the right trigger, or procedure in a skill; avoid unconditional policy growth |
+| Consequential owner remarks, decisions, alternatives, exclusions or session handoff | Append chronological entry in the [day's minutes](../../docs/minutes/README.md); promote lasting decisions to their owning spec/Change separately |
 
 Before finishing a slice, ask whether a fresh reader can find its purpose, current boundary, owner and evidence from the nearest map without reverse-engineering source. Repair the missing link or summary during that slice. This is a reasoning check, not a mandatory validation command or a repository-wide rewrite.
 
@@ -28,6 +29,10 @@ The [Change index](../../docs/changes/README.md) must contain **exactly one** de
 Keep the selected Change's handoff compact: owner, state and permission, affected source, scoped next delta, acceptance including a negative case, actual checks and blocker. Permanent engineering and product knowledge belongs in its owner. The older `docs/features/` dossiers are legacy initiative/history, **not** selected Change packets. `pnpm repo:docs-health` audits Change PLAN checkpoints only.
 
 Use roughly 200 words for orientation and 300 for a checkpoint as review triggers, not enforced caps. `pnpm repo:docs-health` reports checkpoint sizes without reading code, invoking models or imposing a CI gate; investigate flagged checkpoints rather than deleting evidence.  Large coherent contracts can stay large; give them a useful opening boundary, a short question-to-section quick route where beneficial, and headings so readers can select the relevant section. Do not split documents into arbitrary fragments to game size. A map should route questions across product, authority, execution, data, presentation and evidence, not just enumerate directories.
+
+## Daily session continuity
+
+The [daily minutes convention](session-minutes.md) preserves human discussion context **outside chat**. On each meaningful repository working day, use the local Europe/Vilnius date and append significant entries to `docs/minutes/YYYY-MM-DD.md` as the discussion unfolds. Log scope changes, detailed owner intent, rejected alternatives, technical consequences and actual checks/commits, with honest statuses. The minutes explain decisions; they do not replace current Change permission, product/technical authority or source evidence. Refresh `docs/minutes/README.md` for new dates. Never overwrite an older decision silently; append a correction/supersession instead.
 
 ## Fresh-context discovery
 

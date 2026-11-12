@@ -2,7 +2,7 @@
 
 **For AI coding tools developing this repository**, use the [independent target standard](engineering/coding-agent-target-standard.md), [expert knowledge index](engineering/coding-agent-knowledge.md) and [evaluation protocol](engineering/coding-agent-evaluation.md). These do **not** govern the runtime Storyteller.
 
-Start with the [one-page overview](../README.md), [current engineering priority](../TODO.md) and [current progress](progress.md). Then choose a question below. For a specific design owner, use [technical contracts](technical/README.md); for source navigation, proof and specialist research, use [engineering knowledge](engineering/README.md). These are **small routes**, not additional authorities. This is a routing map, not a reading list: a small change should not require the whole library.
+Start with the [one-page overview](../README.md), [current engineering priority](../TODO.md) and [current progress](progress.md). For continuity after a chat/agent switch, consult the [latest session minutes](minutes/README.md) before reconstructing old decisions from scratch. Then choose a question below. For a specific design owner, use [technical contracts](technical/README.md); for source navigation, proof and specialist research, use [engineering knowledge](engineering/README.md). These are **small routes**, not additional authorities. This is a routing map, not a reading list: a small change should not require the whole library.
 
 ## Choose the level of detail
 
@@ -10,6 +10,7 @@ Start with the [one-page overview](../README.md), [current engineering priority]
 | --- | --- | --- |
 | Product in one page | [Root README](../README.md) | Experience, core loop, demonstrated boundary and where to go next |
 | Current state | [Progress](progress.md) | What exists, what evidence supports it, largest gaps and next outcome |
+| Discussion continuity | [Session minutes](minutes/README.md) | What the owner actually intended, why an approach was chosen or rejected, what is still unresolved across chats; historical context, not authority |
 | Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
 | Execution route | [Current Change index](changes/README.md) → selected Change, if any; [legacy initiatives](features/README.md) only for historical context | One future code-bearing outcome, its current permission, evidence and blockers; old initiatives are supporting context |
 | Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |

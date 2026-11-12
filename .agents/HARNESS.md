@@ -21,6 +21,10 @@ This harness governs **how** coding agents navigate the three authority layers: 
 
 **Cold start:** root instructions + user task. Find the correct authority **by topic**, then open one relevant section, a source symbol/caller when needed and the smallest useful proof. This file is a *map*, not mandatory startup reading. Do not preload all rules, skills, docs or code to exploit a large context window.
 
+## Durable session context across chats
+
+The [daily session-minutes rule](rules/session-minutes.md) makes significant owner statements, decisions, alternatives, rejected work and evidence persist as dated [tracked minutes](../docs/minutes/README.md). **Fresh substantive sessions** should consult the latest relevant log and current roadmap/Change selection before making assumptions; focused known edits need not reread old discussions. **During** important chats or role handoffs, authorized agents append the current day's minutes, and update permanent specs separately when a decision actually changes them. Meeting minutes are history and context, not source-of-truth contracts or permission to execute. No automatic always-on loading of the full archive.
+
 ## Role-centered development
 
 The [role orchestration owner](roles/README.md) distinguishes **role responsibility**, **specialized skill**, **agent/session context**, and **model/tool**. The [role catalog](roles/catalog.md) supports UI designers, architects, reviewers, test strategists, implementers, data/security/observability specialists and coordinators without creating a native subagent for every job title. [Assignment contracts](roles/assignments.md) and [UI example](roles/playbooks/ui-feature.md) explain how decisions move between roles.

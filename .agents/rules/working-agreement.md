@@ -30,6 +30,10 @@ For new/changed behavior: update product intent, then technical contract, then c
 - A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass.
 - Use a focused read/review budget: find symbols and headings first; inspect the owner and immediate edges; expand only when the evidence requires it. Summarize useful discoveries in a current owner, not duplicated in five places.
 
+## Session history and cross-chat continuity
+
+For substantial conversations and work, follow [daily session minutes](session-minutes.md): record the owner's important remarks, rationale, rejected choices, agreed constraints, decisions and actual evidence in one local-date log. Do this throughout the session, **before** switching tool/chat, not solely at the end. Minute entries are historical context; accepted contracts still belong in their permanent owner and significant code work still requires a selected, authorized Change. If write access is unavailable, provide an unpersisted handoff entry rather than pretending it was saved.
+
 ## Checkpoints and Git
 
 At a meaningful interruption, update the selected Change PLAN's **current checkpoint** (if any): revised phase, specific edited files, checks and limits, unresolved issue, exact next step and source revision. The plan is an execution workspace, not a diary. Completed code Changes are retired after durable facts are folded into permanent owners; Git is the archive. Historical initiative dossiers remain contextual only until safely reconciled; the [work-unit standard](../references/change-work-unit-standard.md) defines classification and readiness. Preserve explicitly retained dossiers.

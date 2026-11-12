@@ -16,6 +16,8 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 | `TODO.md` | Owner's portfolio-engineering goals and sequence | When choosing the next engineering area |
 | Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |
 
+**Working-session continuity:** the [daily minutes rule](rules/session-minutes.md) governs consequential conversation decisions and handoffs. Read the [latest relevant log](../docs/minutes/README.md) when returning in a fresh context; append the active day's minutes with actual write permission rather than relying on disappearing chat context.
+
 ## Roles and delegation
 
 - [Role orchestration](roles/README.md): responsibility, authority, context isolation, stage gates and economical multi-tool collaboration.

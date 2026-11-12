@@ -13,6 +13,8 @@ This is a persistent-story RPG with **deterministic mechanical authority** and a
 - **No surprising side effects:** never invoke live AI providers, spend credit, turn on auto-retries, deploy, migrate non-disposable data, reset a database, read/expose secrets, or launch broad/destructive operations without explicit task-specific authority. A local API key is not authorization. See `.agents/rules/spending.md` for provider-facing work.
 - **One bounded slice:** respect the requested scope and working tree; do not start extra agents or unrelated cleanup. Report unknowns rather than inventing evidence. Don't claim a check or game run occurred unless it did.
 
+**Session continuity (all development agents):** For each substantial repository working day, follow [daily session-minutes rule](.agents/rules/session-minutes.md). Append the owner's significant technical thoughts, constraints, alternatives, decisions, evidence and handoff to the local-date file under [docs/minutes/](docs/minutes/README.md) **during** the session and before switching chats. At a fresh substantial session, read the latest relevant minutes; do not preload the entire archive or mistake minutes for coding authorization. When Git writes are unavailable, supply an explicitly unpersisted entry.
+
 ## Choose context by task, not by ritual
 
 - **Coding-agent harness, skills, token cost or development process:** start with `.agents/HARNESS.md` and the relevant `.agents/references/` section. This is a *developer-tooling* task; it does **not** authorize edits to game implementation, Storyteller prompts or provider billing.
