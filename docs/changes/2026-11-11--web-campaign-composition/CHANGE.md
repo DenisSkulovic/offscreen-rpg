@@ -1,41 +1,40 @@
-# Change W06: Cohesive CampaignPlay composition and derived state
+# Change W06 | Campaign Play responsibility partition without visual redesign
 
-**State:** Proposed. **Owner:** human repository owner (design approval required); **executor:** Cursor or another explicitly selected coding agent after approval. **Permission:** documentation planning only now; no application edits/tests/service/provider/deployment authorized by this packet.
-**Type:** bounded code/test/config improvement, **not a gameplay feature**.
-**Scheduling:** After W03/W04 where required; do not parallel edit their files.
-**Source baseline:** GitHub `a92695e8dbf4403aa7e52e8ff9a66dbe760ea06d` (source inspected; no tests run); revalidate the branch, working tree, and actual source before Ready.
+**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
+**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
+**Dependency:** W01 + W04; W03 identity settled; avoid simultaneous edits to Play/campaign command owners.
 
-## Target alignment
+## Why this is a Change
 
-- **Desired architectural end state:** [F7](../../engineering/targets/react-next.md#f7-screen-and-component-responsibility).
-- **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G07.
-- **Why this slice belongs:** After W03/W04 where required; do not parallel edit their files. This contributes a checkable part of the target, not a free-standing cleanup campaign.
+**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F7 F14**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G21 (and G17 key lifecycle adjacency)**.  
+**Desired single code/test/config outcome:** Campaign presentation becomes navigable and independently testable at genuine responsibility boundaries; story intent dispatch and derived world views have traceable single owners. Existing rendered controls/behavior remain unchanged.
 
-## Outcome and motivation
+**Observed source owners:** `apps/web/src/features/play/campaign-play.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/stories/opening-preview.tsx` (pace import), `packages/contracts/src/campaign.ts` (read).
 
-Refactor only `CampaignPlay` into meaningful presentational sections for current state, activities/time, contextual actions and prior reports, with pure derived selectors where valuable. Keep state/command ownership in one understandable place; avoid one component per paragraph or a generic UI framework.
+## Proposed design contract (not an invitation to redesign)
 
-## Authority and source
+First map actual reasons-to-change: (a) pure campaign projection/formatting, (b) offer path and successor editing, (c) time/activity/action controls, (d) passive receipts/world/character panels. Extract a small number of coherent siblings only when they can be tested or reviewed independently; do **not** turn a 649-line file into 14 tightly coupled props layers. Keep action status and command identity in W04 controller; keep view-only pace/path/selection state scoped to the offer identity without remounting an uncertain command merely because an offer changed. Move `paceOptions` to a small client-safe neutral module so preview does not import a whole Play Client feature for a constant. Preserve exact server-derived terminology and action gating.
 
-- **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
-- **Actual source starting points:** `apps/web/src/features/play/campaign-play.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/view.tsx`, `packages/contracts/src/campaign.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Required professional review routes:** [ownership and cohesion](../../../.agents/knowledge/architecture-decision-space.md#3-ownership-cohesion-and-change-coupling); [frontend-engineering](../../../.agents/skills/frontend-engineering/SKILL.md). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
-- **Decisions that remain open:** Before extraction, diagram which sections are pure view/derivation and which coordinate interaction. Document the strongest reason to **keep** a cohesive section un-split.
+## Expected bounded implementation
 
-## Code scope, exclusions and safety
+1. Record existing section/state/dependency map; keep the largest cohesive panel intact if splitting adds indirection.
+2. Extract shared pure pace definition and maybe targeted selectors/meaningful panels with verified caller ownership.
+3. Make typed commands/derived view props explicit; add interaction tests for offer-path navigation, pending choice, holds, activity speed and receipt rendering.
 
-The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
+## Falsifiable acceptance and proof
 
-**Preserve/exclude:** No new gameplay mechanics, no new visual theme, no rewriting the command API, no splitting by line-count quotas, no new global store. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
+- **Normal case:** Existing character/activity/action screen and available controls render as before, with a smaller set of independently understandable owners.
+- **Discriminating negative case:** Staged successor path, held clock, paused action, settings lock, disabled choice and pending receipt produce exactly their existing allowed action states, with no client-simulated mechanics. Changed offer does not destroy an uncertain intent.
+- **Check and evidence:** Web component and pure-projection tests plus focused visual comparison of representative existing view. Never claim visual redesign.
+- **Completion receipt:** Before/after reason-to-change map and two or three concrete tests that became easier, not a boast about fewer lines.
 
-## Acceptance and negative proof
+## Boundaries, alternatives and stop conditions
 
-- **Normal acceptance:** An engineer can trace a choice, an accepted activity and a paused action through a small number of clearly owned modules; all currently available controls and public semantics remain intact.
-- **Discriminating rejection/failure case:** A staged successor choice, disabled action, held campaign clock, paused/resumed activity and receipt/history still render and behave identically under provider-free fixtures; no new game outcome is inferred from the UI.
-- **Verification ladder:** first a pure provider-free unit/component test where applicable, then only the narrow existing real browser/API integration needed to prove the cross-boundary claim; inspect database-reset side effects in [integration README](../../../tools/api-integration/README.md) before any run. Record exact commands/results, not imaginary green checks.
+- **Keep / do not touch:** No new gameplay, shadcn/Tailwind switch, new art/layout, fantasy global state store or forced one-component-per-100-lines fragmentation.
+- **Principal risk:** The current large component may be cohesive; extraction is justified only where coupling/testability demonstrably improves. Avoid moving business calculation from server to browser.
+- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
+- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
 
-## Handoff and next action
+## Executor handoff once approved
 
-**Next permitted step:** source revalidation and architecture/acceptance decision review only. Upgrade to Ready **only after** the owner has reviewed the [target](../../engineering/targets/react-next.md), this scope and its negative proof, and separately authorized implementation. Then use [Cursor handoff](../../../.agents/skills/cursor-handoff/SKILL.md) for a focused execution packet. Do not infer permission from queue order.
-
-**Closing condition:** actual bounded diff + truthful focused verification + target F-criterion evidence + permanent documentation reconciliation. Return queue selection to `none` and retain history in Git.
+Read the [target](../../engineering/targets/react-next.md) criteria **F7 F14**, audit **G21 (and G17 key lifecycle adjacency)**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.

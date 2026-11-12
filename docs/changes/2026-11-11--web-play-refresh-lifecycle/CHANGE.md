@@ -1,41 +1,40 @@
-# Change W05: One identity-aware Play refresh lifecycle
+# Change W05 | One bounded, visibility-aware Play snapshot refresh lifecycle
 
-**State:** Proposed. **Owner:** human repository owner (design approval required); **executor:** Cursor or another explicitly selected coding agent after approval. **Permission:** documentation planning only now; no application edits/tests/service/provider/deployment authorized by this packet.
-**Type:** bounded code/test/config improvement, **not a gameplay feature**.
-**Scheduling:** After W03; may follow W04 for shared reconciliation owner.
-**Source baseline:** GitHub `a92695e8dbf4403aa7e52e8ff9a66dbe760ea06d` (source inspected; no tests run); revalidate the branch, working tree, and actual source before Ready.
+**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
+**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
+**Dependency:** W01 + W03; after W04 is desirable if command and refresh share an owner.
 
-## Target alignment
+## Why this is a Change
 
-- **Desired architectural end state:** [F6](../../engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).
-- **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G06.
-- **Why this slice belongs:** After W03; may follow W04 for shared reconciliation owner. This contributes a checkable part of the target, not a free-standing cleanup campaign.
+**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F4 F6 F9**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G18**.  
+**Desired single code/test/config outcome:** Play refresh is a read-only, cancellable, bounded lifecycle with explicit hidden/visible/reconnect/error behavior and a single W03 reconciliation path.
 
-## Outcome and motivation
+**Observed source owners:** `apps/web/src/features/play/view.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/developer-tools/chamber/use-chamber-play.ts` (read/comparison), `apps/web/src/features/stories/opening-preview.tsx` (read/comparison).
 
-Centralize Play's read-only refresh scheduling and cancellation around one story identity/version owner. Preserve the existing immediate server-supplied snapshot, pause/hold semantics and 2-second diagnostic baseline unless evidence favors another interval. Specify background/foreground behavior and visible recovery from persistent read failure.
+## Proposed design contract (not an invitation to redesign)
 
-## Authority and source
+Schedule at most one read per active Play resource, only when snapshot indicates unresolved work. Use cleanup on unmount, story/viewer change and dependency transition, plus abort/ignore for late completion. When document hidden, suspend repeated polling and immediately schedule a fresh authorized read on visibility/focus return; on recurrent GET failures show actionable stale-status/refresh affordance and bounded retry/backoff. Avoid wall-clock claims of authoritative completion. Timer only reads GET; neither timer nor effect may dispatch generation, resolution, controls, or provider calls. No generic event-bus/polling framework.
 
-- **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
-- **Actual source starting points:** `apps/web/src/features/play/view.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/developer-tools/chamber/use-chamber-play.ts` (comparison only), `apps/web/src/features/stories/opening-preview.tsx` (comparison only). Paths are inspected anchors, **not** permission to expand scope silently.
-- **Required professional review routes:** [Effects and lifetimes](../../../.agents/knowledge/frontend-state-and-async.md#2-effects-are-lifetimes-not-generic-event-handlers); [React sync with Effects](https://react.dev/learn/synchronizing-with-effects). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
-- **Decisions that remain open:** Choose an explicit pause/resume policy for hidden tabs and re-entry, verifying whether an unresolved operation requires background polling; rely on a fresh authoritative read when visible.
+## Expected bounded implementation
 
-## Code scope, exclusions and safety
+1. Extract only the resource-scoped refresh lifetime policy, controlled by current snapshot and browser visibility.
+2. Route manual/command/timer reads to the same W03 accept path, prevent overlap and timer reset loops.
+3. Test hidden-tab, offline/reconnect, settling while hidden, rapid A→B and Strict Mode mount/cleanup.
 
-The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
+## Falsifiable acceptance and proof
 
-**Preserve/exclude:** No SSE/WebSockets introduction, new backend events, service workers or unrelated Chamber/preview refactor. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
+- **Normal case:** Pending/held Play becomes current after backend update or returning to visible tab without duplicate mount fetch and without unnecessary settled-state polling.
+- **Discriminating negative case:** Two concurrent timers or late A GET cannot overwrite B; 503 does not cause unbounded 2s failures or claim success; hidden tab never dispatches a mutation.
+- **Check and evidence:** Fake clock/visibility events in web component tests; controlled browser test with no provider calls when permitted. Record request-count/time strategy and source-only limits.
+- **Completion receipt:** Document exact conditions to start/stop/resume reads, what errors look like, real request-count observation if measured.
 
-## Acceptance and negative proof
+## Boundaries, alternatives and stop conditions
 
-- **Normal acceptance:** Pending/held Play status refreshes without resubmitting commands, terminates on unmount/resource switch and reconciles once through the resource-safe snapshot policy; errors lead to truthful refresh controls.
-- **Discriminating rejection/failure case:** Navigate A→B during A poll, hide/restore the tab or inject repeated offline reads; no A rendering under B, no timer duplication, no expensive mutation and no unbounded retry storm.
-- **Verification ladder:** first a pure provider-free unit/component test where applicable, then only the narrow existing real browser/API integration needed to prove the cross-boundary claim; inspect database-reset side effects in [integration README](../../../tools/api-integration/README.md) before any run. Record exact commands/results, not imaginary green checks.
+- **Keep / do not touch:** No SSE, WebSocket, React Query adoption, Chamber/Preview wholesale rewrite, application worker changes or UX redesign.
+- **Principal risk:** Do not accidentally stop required reconciliation forever when a tab hides; resync explicitly on show. Do not create an Effect loop from unstable callbacks.
+- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
+- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
 
-## Handoff and next action
+## Executor handoff once approved
 
-**Next permitted step:** source revalidation and architecture/acceptance decision review only. Upgrade to Ready **only after** the owner has reviewed the [target](../../engineering/targets/react-next.md), this scope and its negative proof, and separately authorized implementation. Then use [Cursor handoff](../../../.agents/skills/cursor-handoff/SKILL.md) for a focused execution packet. Do not infer permission from queue order.
-
-**Closing condition:** actual bounded diff + truthful focused verification + target F-criterion evidence + permanent documentation reconciliation. Return queue selection to `none` and retain history in Git.
+Read the [target](../../engineering/targets/react-next.md) criteria **F3 F4 F6 F9**, audit **G18**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.

@@ -1,41 +1,41 @@
-# Change W02: Typed, session-scoped Next server read boundary
+# Change W02 | Private authenticated Next server reader and same-origin routing contract
 
-**State:** Proposed. **Owner:** human repository owner (design approval required); **executor:** Cursor or another explicitly selected coding agent after approval. **Permission:** documentation planning only now; no application edits/tests/service/provider/deployment authorized by this packet.
-**Type:** bounded code/test/config improvement, **not a gameplay feature**.
-**Scheduling:** After W01; independent of client controllers.
-**Source baseline:** GitHub `a92695e8dbf4403aa7e52e8ff9a66dbe760ea06d` (source inspected; no tests run); revalidate the branch, working tree, and actual source before Ready.
+**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
+**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
+**Dependency:** W01 recommended, but does not depend on new Play controller.
 
-## Target alignment
+## Why this is a Change
 
-- **Desired architectural end state:** [F1](../../engineering/targets/react-next.md#f1-serverclient-rendering-boundary) and [F2](../../engineering/targets/react-next.md#f2-authentication-privacy-and-api-ownership).
-- **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G05.
-- **Why this slice belongs:** After W01; independent of client controllers. This contributes a checkable part of the target, not a free-standing cleanup campaign.
+**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F1 F2 F11**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G14 G16; existing sequential server reads**.  
+**Desired single code/test/config outcome:** One small *server-only* Nest reader handles request-bound cookie forwarding, consistent typed response parsing, safe status/error mapping and private cache/timeout policy. Browser `/api` and SSR internal origin have a documented, testable same-origin deployment arrangement.
 
-## Outcome and motivation
+**Observed source owners:** `apps/web/src/lib/viewer.ts`, `apps/web/app/{stories,play,chamber}/**/page.tsx`, `apps/web/next.config.ts`, `apps/api/src/modules/stories/controller.ts` (read), `apps/api/src/modules/drafts/controller.ts` (read).
 
-Extract one small server-only authenticated Nest read/error/timeout helper, used first by the Play and story-list server routes; remove redundant request-handling boilerplate without migrating game authority. Consider parallelizing independent story-list/draft-list reads after validating error policy; do not claim a measured speedup without a trace.
+## Proposed design contract (not an invitation to redesign)
 
-## Authority and source
+Use a server-only module with explicit `requireViewer`/session-bound read calls and endpoint-specific Zod schemas; **never** import it in Client code. Only the inbound session cookie (and other explicitly required headers) crosses to Nest. Use `cache: 'no-store'` for private reads and explicit bounded timeouts. Model 401 as reauthentication, scoped 404 as not-found, 5xx/timeout as recoverable failure, invalid schema as protocol failure; keep Next `redirect`/`notFound` decisions at route boundary, outside catches that could swallow special exceptions. Keep the public-facing Nest API unchanged and never install Server Actions for existing commands. Make rewrite destination configurable consistently with deployment configuration; validate whether Next rewrites resolve at build or runtime **before** choosing the env wiring.
 
-- **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
-- **Actual source starting points:** `apps/web/src/lib/viewer.ts`, `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/page.tsx`, `apps/web/app/stories/[id]/page.tsx`, `apps/web/next.config.ts` (inspection only unless needed). Paths are inspected anchors, **not** permission to expand scope silently.
-- **Required professional review routes:** [frontend-engineering](../../../.agents/skills/frontend-engineering/SKILL.md); [API status and retry semantics](../../../.agents/knowledge/api-and-network-contracts.md#3-method-status-identity-and-retry-semantics); [browser session security](../../../.agents/knowledge/security-and-trust.md#3-browser-sessions-and-cross-origin-threats). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
-- **Decisions that remain open:** Determine response-status treatment for forbidden resources using current Nest contract; prove server-only boundary and auth/no-store header behavior without modifying underlying owner checks.
+## Expected bounded implementation
 
-## Code scope, exclusions and safety
+1. Extract pure status/typed parsing and server-only request reader without changing observable page content.
+2. Convert Play, stories, draft/preview and Chamber route reads incrementally, preserving their schema and authorized error semantics.
+3. Remove the verified drafts→stories sequential waterfall with safe parallel independent reads, if no session/dependency assumption requires serialization.
+4. Align or document server origin and browser rewrite and add a non-loopback configuration/contract test.
 
-The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
+## Falsifiable acceptance and proof
 
-**Preserve/exclude:** No new Next API write handlers, DB access from Next, auth library replacement, speculative caching layer, deployment/proxy overhaul or broad page redesign. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
+- **Normal case:** Permitted viewer obtains server-rendered typed story and list; both independent reads begin without an avoidable serial wait; auth/session paths remain correct.
+- **Discriminating negative case:** Anonymous and other-owner HTML/route/API data do not expose private story; malformed Nest body and upstream 503 show safe protocol/retry outcomes rather than fabricated 404. A non-loopback API origin must not silently send browser calls to 127.0.0.1.
+- **Check and evidence:** Web local adapter tests plus selected provider-free authenticated Next+Nest/browser trace when authorized. Examine response headers/Router Cache separately; this single Change cannot certify a whole production proxy.
+- **Completion receipt:** List every converted private route, mapped statuses and verified staging-like host configuration; W14 owns broader browser/cache proof.
 
-## Acceptance and negative proof
+## Boundaries, alternatives and stop conditions
 
-- **Normal acceptance:** Permitted viewer sees server-rendered typed story/list content; 401 routes to sign-in, missing/inaccessible owner-scoped story does not reveal private details, upstream 5xx shows an appropriate failure rather than misleading 404; each private fetch is uncached.
-- **Discriminating rejection/failure case:** An anonymous or different-owner user must never receive another person's story HTML or data from a shared cache; changing internal API origin must never be interpreted as client authority or a public response cache.
-- **Verification ladder:** first a pure provider-free unit/component test where applicable, then only the narrow existing real browser/API integration needed to prove the cross-boundary claim; inspect database-reset side effects in [integration README](../../../tools/api-integration/README.md) before any run. Record exact commands/results, not imaginary green checks.
+- **Keep / do not touch:** No new auth provider, Nest authorization changes, public cache, API controller rewrite, global BFF framework, generalized HTTP SDK or gameplay behavior.
+- **Principal risk:** Next 16 request caching/Router Cache and rewrite build-time behavior are distinct. Source `no-store` is useful but insufficient as an end-to-end privacy proof. Keep forwarding narrow and never log cookies.
+- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
+- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
 
-## Handoff and next action
+## Executor handoff once approved
 
-**Next permitted step:** source revalidation and architecture/acceptance decision review only. Upgrade to Ready **only after** the owner has reviewed the [target](../../engineering/targets/react-next.md), this scope and its negative proof, and separately authorized implementation. Then use [Cursor handoff](../../../.agents/skills/cursor-handoff/SKILL.md) for a focused execution packet. Do not infer permission from queue order.
-
-**Closing condition:** actual bounded diff + truthful focused verification + target F-criterion evidence + permanent documentation reconciliation. Return queue selection to `none` and retain history in Git.
+Read the [target](../../engineering/targets/react-next.md) criteria **F1 F2 F11**, audit **G14 G16; existing sequential server reads**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.

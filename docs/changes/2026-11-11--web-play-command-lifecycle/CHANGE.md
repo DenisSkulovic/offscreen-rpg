@@ -1,41 +1,41 @@
-# Change W04: Recoverable Play intent and command lifecycle
+# Change W04 | Typed immutable Play intent and uncertain HTTP lifecycle
 
-**State:** Proposed. **Owner:** human repository owner (design approval required); **executor:** Cursor or another explicitly selected coding agent after approval. **Permission:** documentation planning only now; no application edits/tests/service/provider/deployment authorized by this packet.
-**Type:** bounded code/test/config improvement, **not a gameplay feature**.
-**Scheduling:** After W01+W03; focus ordinary Play and campaign commands.
-**Source baseline:** GitHub `a92695e8dbf4403aa7e52e8ff9a66dbe760ea06d` (source inspected; no tests run); revalidate the branch, working tree, and actual source before Ready.
+**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
+**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
+**Dependency:** W01 + W03; coordinate W05/W06/W11 source ownership, do not parallel edit command owners.
 
-## Target alignment
+## Why this is a Change
 
-- **Desired architectural end state:** [F5](../../engineering/targets/react-next.md#f5-one-recoverable-mutation-model).
-- **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G03.
-- **Why this slice belongs:** After W01+W03; focus ordinary Play and campaign commands. This contributes a checkable part of the target, not a free-standing cleanup campaign.
+**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F5 F11**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G12 G16 G17**.  
+**Desired single code/test/config outcome:** Play choices, controls, accepted campaign actions and recovery operations capture exact intent and payload once, expose correct state in React, and reconcile responses through W03, without confusing server admission (202) and publication.
 
-## Outcome and motivation
+**Observed source owners:** `apps/web/src/features/play/view.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/resolution-recovery.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/api/src/modules/stories/controller.ts` (read), shared schemas (read).
 
-Define a small typed command state transition and stable operation/payload identity for Play choice/control and campaign command flows, reusing the authoritative snapshot controller. Consolidate identical retry/conflict handling while preserving endpoint-specific legality. Don't fold preview/presets/Chamber into a huge generic sender.
+## Proposed design contract (not an invitation to redesign)
 
-## Authority and source
+Model `IntentEnvelope` keyed by viewer/story/command kind with stable operation ID, target URL, typed immutable expected revision/body, and explicit submitted/unknown/conflict/accepted states. Keep endpoint-specific builders and permitted reactions: `resolutions` 202 is admitted; controls/settings/action variants can acknowledge a current snapshot; `409` requires authorized refresh; `400` needs actionable validation; `401` reauth; network timeout means **unknown completion**. If already uncertain, retry only the **same** full envelope when endpoint idempotency is verified. Disable incompatible intents and show a recoverable control from state, not a render-invisible ref. A page reload cannot reconstruct ordinary operation refs; refresh the authoritative story and, if outcome remains unknowable, display a safe blocked state rather than issuing a new UUID.
 
-- **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
-- **Actual source starting points:** `apps/web/src/features/play/view.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/resolution-recovery.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/api/src/modules/stories/controller.ts`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Required professional review routes:** [state, mutations and optimism](../../../.agents/knowledge/frontend-state-and-async.md#5-mutations-and-optimism-are-temporary-claims); [idempotency and retries](../../../.agents/knowledge/api-and-network-contracts.md#3-method-status-identity-and-retry-semantics). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
-- **Decisions that remain open:** Decide the minimal common state interface after tracing the actual 200/202/409/400/401 and recovery semantics; a single universal helper is not an objective.
+## Expected bounded implementation
 
-## Code scope, exclusions and safety
+1. Add narrow typed command envelope/status classification and unit tests; document per-endpoint semantic differences.
+2. Migrate ordinary Play response/control while preserving server-pending resolution messaging and old error copy as far as compatible.
+3. Migrate campaign hook/recovery path without collapsing distinct commands into `send(anything)`; ensure view state owns visible retry.
+4. Verify response identity and W03 snapshot dispatcher, including mounted lifetime, unmount and no automatic reload submit.
 
-The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
+## Falsifiable acceptance and proof
 
-**Preserve/exclude:** No Storyteller/provider retry without authorization, API schema redesign, charging inference, new app framework, replacement of backend idempotency or silent command re-dispatch. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
+- **Normal case:** One user choice issues one frozen UUID/body, renders submitting then server-admitted pending status and eventually reconciles saved published snapshot.
+- **Discriminating negative case:** Lost ACK after commit, double click, delayed old 409 and midflight navigation never generate a second business intent or reset newer snapshot. A mock proves same wire retry; an existing real Nest integration proves actual dedup separately.
+- **Check and evidence:** Web component FSM tests with deferred promises, tagged HTTP-fault fake; narrow real integration test using existing disposable DB only with explicit test permission. No paid provider or invented 'exactly once' claim from a client test.
+- **Completion receipt:** For every migrated command list ID/payload/response/allowed recovery; show exact test and whether backend duplicate-effect result was actually exercised.
 
-## Acceptance and negative proof
+## Boundaries, alternatives and stop conditions
 
-- **Normal acceptance:** UI distinguishes submitting, accepted/pending, conflict, uncertain completion and reconciled saved state; one intent preserves one stable UUID/payload across allowed retries and routes the final snapshot through the same version owner.
-- **Discriminating rejection/failure case:** Inject timeout after backend commits and retry the *same* operation key; ensure one effect and no false settled outcome. Simulate 409 after a competing update; current server state wins without reusing a stale intent.
-- **Verification ladder:** first a pure provider-free unit/component test where applicable, then only the narrow existing real browser/API integration needed to prove the cross-boundary claim; inspect database-reset side effects in [integration README](../../../tools/api-integration/README.md) before any run. Record exact commands/results, not imaginary green checks.
+- **Keep / do not touch:** No backend idempotency migration, automatic provider replay, new state library, all-screen universal dispatcher, new game behaviors or persistent localStorage mutation queue.
+- **Principal risk:** A 202 receipt is not a settled narrative. Abort is not server rollback. A full reload may lose original operation identity; document safe refusal rather than pretend durable recovery.
+- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
+- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
 
-## Handoff and next action
+## Executor handoff once approved
 
-**Next permitted step:** source revalidation and architecture/acceptance decision review only. Upgrade to Ready **only after** the owner has reviewed the [target](../../engineering/targets/react-next.md), this scope and its negative proof, and separately authorized implementation. Then use [Cursor handoff](../../../.agents/skills/cursor-handoff/SKILL.md) for a focused execution packet. Do not infer permission from queue order.
-
-**Closing condition:** actual bounded diff + truthful focused verification + target F-criterion evidence + permanent documentation reconciliation. Return queue selection to `none` and retain history in Git.
+Read the [target](../../engineering/targets/react-next.md) criteria **F3 F5 F11**, audit **G12 G16 G17**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.

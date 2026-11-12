@@ -1,41 +1,40 @@
-# Change W07: Accessible Play loading, errors and recovery states
+# Change W07 | Accessible Play loading, error and recovery engineering
 
-**State:** Proposed. **Owner:** human repository owner (design approval required); **executor:** Cursor or another explicitly selected coding agent after approval. **Permission:** documentation planning only now; no application edits/tests/service/provider/deployment authorized by this packet.
-**Type:** bounded code/test/config improvement, **not a gameplay feature**.
-**Scheduling:** After stable snapshot/command state; can first prepare read-only UX scenarios.
-**Source baseline:** GitHub `a92695e8dbf4403aa7e52e8ff9a66dbe760ea06d` (source inspected; no tests run); revalidate the branch, working tree, and actual source before Ready.
+**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
+**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
+**Dependency:** W02 + W03; W04 when covering uncertain commands; W01 for component checks.
 
-## Target alignment
+## Why this is a Change
 
-- **Desired architectural end state:** [F9](../../engineering/targets/react-next.md#f9-accessible-resilient-ux-engineering-distinct-from-art-direction).
-- **Audited gap:** [November 11 source audit](../../engineering/audits/react-next-gap-2026-11-11.md#diagnostic-findings-ranked-by-portfolio-engineering-importance): G08.
-- **Why this slice belongs:** After stable snapshot/command state; can first prepare read-only UX scenarios. This contributes a checkable part of the target, not a free-standing cleanup campaign.
+**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F1 F2 F9**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G24**.  
+**Desired single code/test/config outcome:** A keyboard user can tell loading/unauthorized/missing/transient failure and a current saved pending outcome apart and can recover without losing resource identity. This is reliability/accessibility, not an aesthetic redesign.
 
-## Outcome and motivation
+**Observed source owners:** `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/error.tsx`, `apps/web/src/features/play/view.tsx`, `apps/web/app/style.css` (inspect), `docs/technical/client-and-identity.md` (read).
 
-Add appropriately scoped Play route loading/error/not-found treatment, semantic and focus-safe recovery for existing pending/conflict/failed/blocked/uncertain states; ensure 401 goes through approved sign-in flow. Use existing visual language until a separate owner-approved art-direction target exists.
+## Proposed design contract (not an invitation to redesign)
 
-## Authority and source
+Use Next route `error.tsx`/`loading.tsx`/`not-found.tsx` only where an explicit boundary serves this screen; avoid catching `redirect` or `notFound` as generic errors. Expected validation/conflict stays in feature interaction, not framework throw. Give useful role/status, keyboard focus and retry affordance without announcing every poll. Retain page structure, classes and visual design unless one minimal accessibility fix needs them. Revalidate session on error recovery, never auto-resubmit paid/uncertain commands, and never reveal forbidden resource existence.
 
-- **Existing behavioral authority:** [client and identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), and [code quality](../../engineering/code-quality.md), selected according to the affected operation.
-- **Actual source starting points:** `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/error.tsx`, `apps/web/src/features/play/view.tsx`, `apps/web/app/style.css`, `docs/technical/client-and-identity.md`. Paths are inspected anchors, **not** permission to expand scope silently.
-- **Required professional review routes:** [player-experience-design](../../../.agents/skills/player-experience-design/SKILL.md); [interaction and accessibility](../../../.agents/knowledge/interface-design-craft.md#5-behavior-feedback-and-accessibility); [Next.js error boundaries](https://nextjs.org/docs/app/api-reference/file-conventions/error). Consult these specific sections to choose the mechanism, not merely to check off a skill name.
-- **Decisions that remain open:** Agree expected/uncaught error classification with Next 16 route boundaries and test representative mobile/keyboard cases in a real browser. A source-only audit cannot prove WCAG.
+## Expected bounded implementation
 
-## Code scope, exclusions and safety
+1. Specify existing route states (auth 401, owner-scoped 404, upstream 503/timeout, malformed schema, loading, pending, uncertain) and which component owns each.
+2. Introduce only the justified App Router fallback(s) and interaction-level status/focus corrections.
+3. Add representative keyboard/focus/status component or browser checks, including delayed server response, unreachable upstream and expired session.
 
-The **Outcome** above is the complete intended source/test delta; do not expand it based on unrelated findings. Validate the exact current owners before coding.
+## Falsifiable acceptance and proof
 
-**Preserve/exclude:** No sweeping visual redesign, new design system, provider calls, disabling meaningful status, or automatic retry of story commands. Retain present Nest authority, server session/owner checks, stable story revisions, timed effects and billing holds. No private data or provider packets in tests/artifacts. No destructive DB action without separate authorization.
+- **Normal case:** A permitted player sees meaningful server HTML and can navigate/focus through a recoverable read failure using existing appearance.
+- **Discriminating negative case:** 503 never claims 404/deleted; owner-mismatched story not disclosed; reauth does not auto-post an earlier choice; uncertain generation not silently restarted; focus not trapped in unmounted button.
+- **Check and evidence:** Focused test plus real browser keyboard/focus check when authorized; note that a JSX role audit does not certify WCAG compliance.
+- **Completion receipt:** Capture state matrix, representative browser evidence, remaining human accessibility review gaps.
 
-## Acceptance and negative proof
+## Boundaries, alternatives and stop conditions
 
-- **Normal acceptance:** Keyboard-only users can distinguish authenticated loading, genuinely missing content, recoverable upstream errors and current stored story outcome; focus is visible/restored and status is conveyed without requiring technical IDs.
-- **Discriminating rejection/failure case:** Upstream failure must not claim an inaccessible story is deleted, an uncertain paid generation must not offer an automatic new paid attempt, and a stale response must not replace the current scene after recovery.
-- **Verification ladder:** first a pure provider-free unit/component test where applicable, then only the narrow existing real browser/API integration needed to prove the cross-boundary claim; inspect database-reset side effects in [integration README](../../../tools/api-integration/README.md) before any run. Record exact commands/results, not imaginary green checks.
+- **Keep / do not touch:** No brand, layout, typography, visual system, animation, game UX policy or frontend framework replacement.
+- **Principal risk:** Server and client error boundaries behave differently; catching Next navigation exceptions breaks routing. Avoid major visual changes.
+- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
+- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
 
-## Handoff and next action
+## Executor handoff once approved
 
-**Next permitted step:** source revalidation and architecture/acceptance decision review only. Upgrade to Ready **only after** the owner has reviewed the [target](../../engineering/targets/react-next.md), this scope and its negative proof, and separately authorized implementation. Then use [Cursor handoff](../../../.agents/skills/cursor-handoff/SKILL.md) for a focused execution packet. Do not infer permission from queue order.
-
-**Closing condition:** actual bounded diff + truthful focused verification + target F-criterion evidence + permanent documentation reconciliation. Return queue selection to `none` and retain history in Git.
+Read the [target](../../engineering/targets/react-next.md) criteria **F1 F2 F9**, audit **G24**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
