@@ -5,6 +5,15 @@
 **Kind:** behavior / defect / refactor / test code / tool or executable configuration / migration.
 **Parent initiative (optional):** [link only, not a copied plan].
 
+## Cursor first-screen brief (write this before deep details)
+
+> **Current-source map:** [one nearest README with source-inspected date, not the entire repository].  
+> **Primary governing heading:** [one exact product/technical or F-criterion `#anchor`].  
+> **Known trap / contrary case:** [one source-grounded race, version, permission, retry or toolchain behavior].  
+> **Scope/permission:** [explicitly permitted code delta, normal/negative proof, and whether tests with side effects are authorized].
+
+This brief lets a cheap coding model decide whether it has the correct owner in its **first screen**; it is **not a substitute for reading the remainder of this selected Change before implementation**. The Change is the next code outcome, the nearby README owns current navigation, and permanent specs own normative behavior. Do **not** paste whole historical audits or repeat 10 pages of architecture here.
+
 ## Target alignment (required for portfolio-modernization Changes)
 
 - End-state specification and exact target criterion: [link to proposed/approved area target heading; write target before auditing source].

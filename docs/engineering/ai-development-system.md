@@ -36,9 +36,9 @@ A coding agent is a *general execution surface*, not a complete engineering team
 | Role | Best-fit tool | Deliverable | Boundary |
 | --- | --- | --- | --- |
 | Creative product architect | ChatGPT conversation | Product decisions, alternatives, player acceptance, important authored Markdown | Doesn't certify unfamiliar implementation from imagination |
-| Source-connected investigator | Claude Code or existing low-cost source access | Small evidence packet, source anchors, architecture risks | Read-only by default; no massive context dump |
+| Source-grounded investigator | **ChatGPT with the connected GitHub repository** (current default) | Small evidence packet, source-adjacent maps, key architecture/race risks | Read-only source review before Cursor; preserve implementation evidence limits |
 | Implementation executor | Cursor fast coding model | One bounded diff and factual check receipt | May choose local implementation details, not rewrite user goals |
-| Independent reviewer | ChatGPT/Claude/Cursor as warranted | Concrete contract violations and discriminating tests | Usually no edits; use for higher-risk seams, not every typo |
+| Independent review | **ChatGPT** by default; independent alternative only when it adds evidence | Contract violations and discriminating tests | Usually no edits; do not duplicate every Cursor read |
 | Deterministic harness | Tests, scripts, typechecker, CI and manual play | Reproducible evidence and limits | No paid inference or unapproved destructive side effects |
 
 A model handoff should include **new information**, not a repeated wall of the same README. Start a fresh tool context when the role changes, carry forward the approved Change contract, exact file anchors, evidence and next slice. No automatic subagent multiplication. A separate reviewer is valuable when it has an independent perspective, not when it reads the same 50 files a second time.
@@ -59,6 +59,8 @@ RETURN: changed files, checks/result, contract mismatches, next action, provider
 ```
 
 If a PLAN checkpoint already contains those facts, reference it. Do **not** create a second giant prompt file for every slice. Don't paste entire code files, full repo trees, or unchanged documentation into a prompt when the agent can read one named section.
+
+**Current tool allocation (Nov 12 owner decision): ChatGPT handles deep reasoning, source navigation and review; cheap/fast Cursor models implement bounded code. Claude Code is optional and not required or subscribed for this workflow.** The [layered navigation standard](../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent web maps](../../apps/web/README.md) replace repeated broad archaeology. Do not create another agent role merely because it appears in a historical architecture diagram.
 
 ## Context economics
 

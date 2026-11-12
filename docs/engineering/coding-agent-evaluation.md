@@ -1,6 +1,6 @@
 # Coding-agent workflow evaluation
 
-**Status:** Evaluation protocol; no measured efficiency improvement established as of 2026-11-11. This assesses **ChatGPT, Claude Code and Cursor used to develop this repository**, not the game's inference runtime or narrative token bill.
+**Status:** Evaluation protocol; **no measured Cursor token/time improvement has yet been established**. The owner's selected 2026-11-12 default is **ChatGPT source investigation/design/review + inexpensive Cursor implementation**. Claude Code/subagents remain optional, not a required third subscription. This evaluates coding agents, not the game's inference runtime or narrative token bill.
 
 ## Measure outcomes, not agent enthusiasm
 
@@ -112,4 +112,21 @@ Test with comparable independent contexts, with/without relevant manual, holding
 - Existing small entrypoint, conditional skills, feature workflow and checkpoint-size audit: **implemented as repository documents**.
 - Multi-tool workflow efficiency: **not benchmarked**; no Claude Code/Cursor side-by-side experiment in this record.
 - Subject-specific engineering knowledge: **first curated version only**; requires trial on real coding tasks.
-- Next measurement: one source-grounded Claude investigation and one narrow Cursor implementation, with the owner recording actual cost and manual friction before extending the skills library.
+- Next measurement: one source-grounded **ChatGPT-prepared Change brief/source map** and one narrow **Cursor implementation**, with actual loaded files, token usage if exposed, wall time, acceptance and rework; compare against an otherwise similar unfocused search before claiming savings.
+
+
+## 2026-11-12 retrieval-economics smoke tests (not yet performed)
+
+**Why these exist:** 240 Markdown/rule files and ~2.1 MB of docs are useful only if small-context Cursor retrieves a few relevant paragraphs/symbols without reading everything. The [L0–L4 standard](../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent maps](../../apps/web/README.md) are **documents**, not proof of reduced token usage. Compare the same question/revision in fresh Cursor Ask/read-only contexts with and without an exact map route.
+
+| Probe | Correct minimal route | Must conclude without broad search |
+| --- | --- | --- |
+| **P1, Start retry:** “Can the same Start story UUID be retried safely if pace changes after timeout?” | W09 first screen → `apps/web/src/features/stories/README.md` → `opening-preview.tsx:startStory` | UUID preserved; body currently rebuilt; freeze full payload and GET story before replay. W19 is for resolutions, not Start |
+| **P2, charged resolution:** “Where would read-only GET receipt fit and what must it never do?” | W19 → `packages/application/src/stories/README.md` → `resolution.ts:admit` and `reads.ts` | Owner-scoped persisted read, same ID/payload comparison; GET never enqueues/generates; 202 admission ≠ publication |
+| **P3, SSE after commit:** “If we emit version hints only from Nest controller, what breaks?” | W16 → `packages/application/src/stories/README.md` → viewVersion writers | Worker/other campaign transitions can commit without HTTP handler; use a transactionally committed hint and audit writer sites |
+| **P4, Chamber security:** “Do we need a new hosted developer-role system?” | W12 → `apps/web/src/features/developer-tools/chamber/README.md` → `apps/api/src/app.ts:createApp` | **No:** ordinary API omits dev controllers unless `developerTools:true`; test boot modes and per-owner scope |
+| **P5, tooling:** “Why is a simple Vitest test so slow?” | W20 → `turbo.json` + `apps/web/package.json` | Current Turbo `test` depends on same-package `build`; separate `test:fast` lane, measure warm/cold, do not blindly rewrite legacy dist suites |
+
+**Pass criteria for a truly useful route:** correct named owner and invariant, one plausible negative case, no invented source/feature, no unnecessary whole-file dump of 30-KB manuals, and no more than the immediately relevant map + 2–5 source/contract files in the straightforward case. This is a **review trigger**, not a hard read ceiling; expanding for a real mismatch is allowed.
+
+**Record:** fresh context/model, prompt variant, files/sections/tool reads, actual tokens or usage **if Cursor reports them**, wall time, correct/wrong claims, owner corrections, rework. Static Markdown bytes can illustrate exposure but **cannot** establish model token cost or 20% savings. The unconnected local Cursor UI cannot be inspected from this GitHub documentation session.

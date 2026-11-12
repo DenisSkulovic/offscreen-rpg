@@ -47,7 +47,7 @@ Only two initially: **design-challenger** and **test-strategist**. Their canonic
 
 1. **Harness setup:** compare an independent reference against `AGENTS.md`, skills, client-specific discovery and tool costs. Output harness Markdown/settings edits. **No gameplay/code changes.**
 2. **Product/design:** ChatGPT and owner determine intent and important choices. Use the relevant product owner and alternatives; ask for source evidence only where feasibility is uncertain. Approve the technical owner before sending code to Cursor.
-3. **Source investigation:** Claude Code, or any inexpensive connected source reader, follows one actual route read-only. Return a **compact packet**: question, intended contract, 3–8 source/symbol anchors, current behavior, surprising edge case, strongest rival explanation and next useful experiment.
+3. **Source investigation (current default):** ChatGPT using connected GitHub/source access follows one actual route read-only; paid Claude Code is **not** a required stage. A separate investigator is an optional escalation only if it provides distinct evidence. Return a **compact packet**: question, intended contract, 3–8 source/symbol anchors, current behavior, surprising edge case, strongest rival explanation and next useful experiment.
 4. **Implementation:** Cursor gets an approved, bounded handoff from `cursor-handoff`: goal, exact product/technical headings, 2–5 source starting points, invariant, excluded work, cheap verification and factual receipt. It may choose local implementation details, never redefine the product.
 5. **Review/convergence:** independent design review when architecture merits it; diff review after implementation when risky. Correct the owning doc if the spec changed, update the short active PLAN checkpoint, retire stale dossiers.
 
@@ -62,7 +62,7 @@ Only two initially: **design-challenger** and **test-strategist**. Their canonic
 
 Stop widening when you can state the authority, current route, meaningful negative case and next action. A missing detail is not a reason to ingest an entire library. Exact reading/token counts are evaluation data, not arbitrary hard caps.
 
-At a role change, pass **decisions and evidence identifiers**, not the transcript. Clear old unrelated Claude context; compact only while continuing the same task. Do not let Cursor rediscover product requirements from raw implementation. Do not require three separate models to review the same 50 files.
+At a role change, pass **decisions and evidence identifiers**, not the transcript. The owner's current two-tool default is **ChatGPT design/source investigation/review → Cursor inexpensive implementation**. Optional Claude/subagents are not a step by default. Start a fresh Cursor context for unrelated work and follow the nearest [source-adjacent README](../apps/web/README.md) before deep source. Do not let Cursor rediscover product requirements from raw implementation. Do not require three separate models to review the same 50 files.
 
 ## Guardrails and review economics
 

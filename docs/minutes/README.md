@@ -4,11 +4,13 @@
 
 **Maintaining this log:** [Daily minutes rule](../../.agents/rules/session-minutes.md). Use one file per active **Europe/Vilnius calendar day**, `YYYY-MM-DD.md`. Append meaningful updates throughout a working day and before any chat/agent switch. Capture the substance of long user prompts, including `do not` and `not yet` constraints, contrasting options and motivations.
 
+**Current handoff, 2026-11-12:** The frontend target and W01–W22 architecture are settled; **no implementation Change is active**. ChatGPT does architectural investigation/review, cheap Cursor implements a selected Change using its **first-screen brief → nearest source README → exact symbols**. [Source map entry](../../apps/web/README.md), [verification stages](../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke). Read the **latest numbered minute near the end** only if the owner’s rationale is needed; do not load the entire day's historical stream into Cursor.
+
 ## Days
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
-| [2026-11-12](2026-11-12.md) | Selected React stack plus Cursor economy, pre-investigation, W01–W21 and staged verification | **Architecture decided**, 21 specified packets, no active coding Change |
+| [2026-11-12](2026-11-12.md) | Selected architecture, Cursor cost controls, L0–L4 source maps and W01–W22 | **22 packets specified**, none active; source maps not yet benchmarked |
 | [2026-11-11](2026-11-11.md) | Harness/knowledge, Feature→Change redesign, portfolio direction, target-first React/Next planning | Historical reconstruction from discussions and commits; no active coding Change |
 
 ## Fresh-chat handoff (read selectively)
