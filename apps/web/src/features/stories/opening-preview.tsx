@@ -6,7 +6,7 @@ import type { Draft } from '@offscreen/contracts/drafts';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
-import { paceOptions } from '@/src/features/play/campaign-play';
+import { paceOptions } from '@/src/features/play/model/pace-options';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
 import { useOpeningGenerate } from './use-opening-generate';
 import { useStartStory } from './use-start-story';
