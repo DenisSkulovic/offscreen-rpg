@@ -1,30 +1,30 @@
-# Change W12: TanStack Query Chamber/QA isolation and enforced developer-only backend gate
+# Change W12: TanStack Query Chamber/QA state isolation and existing developer-mode gate proof
 
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-**Depends on:** W01 W15 W03 W05; security gate implemented in this explicit cross-layer Change.  
+**Depends on:** W01 W15 W03 W05; the existing developer-mode registration boundary is preserved and verified (not reinvented).  
 **Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F2 F3 F4 F6 F13**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G23 G33 G27**.
 
 ## Code outcome and owners
 
-**Measurable code/test/config change:** TanStack Query Chamber/QA isolation and enforced developer-only backend gate.  
+**Measurable code/test/config change:** TanStack Query Chamber/QA isolation and developer-mode boot-path tests.  
 **Start at:** `apps/web/src/features/developer-tools/chamber/{use-chamber-play.ts,transport.ts,qa-workspace.tsx,view.tsx}`; `apps/web/app/chamber/page.tsx`; `apps/api/src/modules/stories/{chamber-tools-controller.ts,qa-journeys-controller.ts}`; auth config (narrow).
 
 ## Binding technical design
 
-Move Chamber snapshot/inspector/QA server-state to viewer+story/run keyed **TanStack Query** and reuse W03 monotonic domain selector/W05 refresh policy, while keeping scenario and lab-only local control independent from Play. QA localStorage run ID is an **untrusted viewer-scoped hint**; clear it on identity change. **Security decision resolved:** the lab is developer-only, **disabled in hosted configs by default**, and enabled only for an authenticated **Better Auth user-ID allowlist** supplied by explicit backend config (e.g. `DEVELOPER_USER_IDS`); do not add an RBAC schema or accept a browser-supplied 'developer' claim; Nest guards every `chamber-tools`/QA/Chamber command endpoint and returns nonleaking 404 or 403 consistently, not merely hiding Next route. Same-origin dev mode can explicitly opt in; no unauthenticated bypass. Keep actual owner checks for individual story/run objects in addition to role gate. Never include inspector-private DTO in ordinary player Query/cache bundles.
+Move Chamber snapshot/inspector/QA server-state to viewer+story/run keyed **TanStack Query** and reuse W03 monotonic domain selector/W05 refresh policy, while keeping scenario and lab-only local control independent from Play. QA localStorage run ID is an **untrusted viewer-scoped hint**; clear it on identity change. **Source-corrected security decision:** `apps/api/src/app.ts:createApp` registers developer/QA controllers only under `options.developerTools === true`, and the ordinary API `main.ts` leaves it unset. `tools/chamber/src/main.ts` enables this only in its loopback/local fixture harness. **Retain this gate**; do not implement a new `DEVELOPER_USER_IDS` allowlist or RBAC. Add tests proving ordinary startup has no developer endpoints while the explicit local launcher still works. Keep existing owner-scoping and viewer-isolation checks. Never include inspector-private DTO in ordinary player Query/cache bundles.
 
 ## Bounded implementation steps
 
-1. Add narrow backend developer-policy guard and config with opt-in local mode; validate all lab route families.
+1. Add regression tests for the existing `developerTools` conditional controller registration (ordinary API missing endpoints, local harness enabled) and confirm owner-scope. Only add minimal config hardening if a test reveals an actual exposure path.
 2. Migrate Chamber story/inspector/QA reads to Query and mutation transport while retaining lab-specific command semantics.
-3. Partition and clear persisted run hint across login/logout, cancel stale inspector/query writes, and add owner vs other owner vs ordinary user vs developer tests.
+3. Partition and clear persisted run hint across login/logout, cancel stale inspector/query writes, and add boot-mode/owner/session tests without new hosted RBAC.
 
 ## Acceptance and verification
 
-- **Normal outcome:** Explicitly configured developer can load authorized Chamber scenario/inspector/own QA run and refresh state; normal player experience unchanged.
-- **Discriminating negative case:** Ordinary authenticated viewer cannot reach developer endpoints even with URL; different owner run rejected; old user run hint and late inspector GET never expose data after switch.
-- **Safe proof and evidence:** RTL/MSW race tests and real Nest auth/owner/role integration with disposable DB when authorized; no provider calls.
+- **Normal outcome:** Explicit local Chamber fixture can load its authorized scenario/inspector/QA run; ordinary API registration has no Chamber endpoints and normal player experience is unchanged.
+- **Discriminating negative case:** Ordinary API has no developer routes even when called by URL; local harness retains intended authenticated/local behavior; different owner run rejected and old viewer hint not shown after switch.
+- **Safe proof and evidence:** RTL/MSW race tests and real Nest normal-vs-Chamber bootstrap/owner integration with disposable DB when authorized; no provider calls.
 - **Must preserve / exclude:** No new game logic, public QA tool, multi-admin console, storage of private story content in browser persistent cache, unrelated auth rewrite.
 
 ## Handoff and stop rule

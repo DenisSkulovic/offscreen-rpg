@@ -57,7 +57,7 @@ Nest API -> application/DB/Temporal authority
   ├─ 200 immediate / 202 admitted / 409 conflicted semantics
   └─ SSE update hints after committed state, without private narrative
 
-Developer Chamber: separate authenticated *developer-gated* API and UI,
+Developer Chamber: separate **locally gated by conditional controller registration** API and UI,
 no shared privileged browser state, reused only safe Query/transport policies.
 ```
 
@@ -161,8 +161,8 @@ Use `useInfiniteQuery` for stories, drafts and chronology, with typed per-resour
 ### Authentication/developer policy
 
 - Nest + Better Auth session is authority. Next route groups authenticate at server boundary, but every endpoint reauthorizes access. Cookie sessions `HttpOnly/SameSite` under one origin, CSRF protections at Nest, explicit proxy trust and no session token in localStorage/query key/logs. Private Next reads use `cache: 'no-store'`, no shared RSC/HTTP/proxy caching and authenticated `Cache-Control: private, no-store` where appropriate. Verify all layers in a production-like build, not only source.
-- **Chamber is developer-only**: disable developer/QA endpoints by default in hosted deployments; enable only through explicit backend config and an authenticated **Better Auth user-ID allowlist** (e.g. `DEVELOPER_USER_IDS`), with no unauthenticated local-development bypass. An ordinary authenticated account must not reach inspection/dispatch controls. The UI route is also gated, but **backend denies first**. This is a chosen security policy, not an optional question for Cursor.
-- QueryClient is scoped to the authenticated browser session and clears on logout/account switch. Use full navigation to flush Next Router Cache; send cross-tab logout signal via `BroadcastChannel` and force revalidation on visibility/return. Private Query cache is memory-only; QA run ID is an untrusted viewer-scoped hint, never a credential. Tests include anonymous, owner, another owner and developer role.
+- **Chamber is developer-only by deployment mode, not necessarily by a new hosted role system.** Source inspection of `apps/api/src/app.ts:createApp` shows `ChamberStoriesController`, `ChamberToolsController` and `QaJourneysController` are registered only when `options.developerTools === true`; ordinary `apps/api/src/main.ts` does **not** enable it. The loopback-only `tools/chamber/src/main.ts` intentionally enables developer tools for local authored fixtures, using its local identity. **Selected policy:** keep controller registration **off in normal/hosted API**, preserve the loopback harness and its explicit local identity, and add tests rejecting hosted attempts to call developer endpoints. Do not add redundant `DEVELOPER_USER_IDS`/RBAC just for these local endpoints. If exposing the laboratory in a hosted setting is later approved, that is a separate auth/allowlist Change, not part of this frontend renewal.
+- QueryClient is scoped to the authenticated browser session and clears on logout/account switch. Use full navigation to flush Next Router Cache; send cross-tab logout signal via `BroadcastChannel` and force revalidation on visibility/return. Private Query cache is memory-only; QA run ID is an untrusted viewer-scoped hint, never a credential. Tests cover anonymous/owner/other owner in ordinary APIs and separate local-Chamber enabled vs ordinary-API disabled boot paths.
 
 ### Quality proof
 
@@ -212,7 +212,7 @@ Explicit Zod inputs/outputs and domain error union; no `Response` or `body: unkn
 `useInfiniteQuery` with typed viewer-scoped key/cursor/nextPage, append/dedupe/order, race isolation, correct back/forward and manual refresh; no stale/duplicate/cross-user pages.
 
 ### F13. Developer-only Chamber/QA isolation
-Chamber is restricted at Nest and Next by developer policy, not CSS; Query/QA run references viewer-partitioned, shared safe snapshot policy but no privileged player-state leak. Owner/other/developer tests.
+Chamber/QA controllers are absent from normal Nest API startup by default and only present in the explicit loopback Chamber harness; Query/QA run references remain viewer-partitioned. Test both boot modes, owner scope and no privileged player-state leak. Do not implement a redundant hosted role system.
 
 ### F14. Type, module and dependency hygiene
 Strict TS, React/Next/TanStack hooks lint, server-only and import direction checks, compatibility-locked dependencies and no accidental server/backend code in client chunks. Deliberately bad import fails.

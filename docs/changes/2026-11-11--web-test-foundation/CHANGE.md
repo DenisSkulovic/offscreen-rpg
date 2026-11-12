@@ -16,7 +16,7 @@
 
 ## Bounded implementation sequence
 
-1. Configure test runner/environment and local `pnpm --filter @offscreen/web test`.
+1. Configure test runner/environment and direct local `pnpm --filter @offscreen/web test`/`test:watch`/`test:fast` scripts. Do not rely on the legacy Turbo `test.dependsOn:['build']` as the fast path; W20 establishes a separate cached `test:fast` task graph after this Change.
 2. Write representative *currently correct* deterministic tests for existing view/typed schema behavior. Add controlled deferred-response, Strict Mode cleanup and 202 pending visual tests as groundwork; later Changes own fixing currently failing identities.
 3. Document fake-vs-real evidence and integrate cheap tests into existing CI without DB reset.
 
