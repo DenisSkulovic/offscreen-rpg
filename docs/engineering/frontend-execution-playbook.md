@@ -43,10 +43,11 @@ Do **not** impose an arbitrary token/read cutoff that blocks a safety-relevant i
 | --- | --- | --- |
 | `package.json`, `.node-version`, `.npmrc` | Node `24.19.0`, pnpm `11.19.0`, `save-exact`/`engine-strict` | Use pinned pnpm/Node. Never mix npm/yarn lockfiles or globally upgrade tool versions during a Change |
 | `pnpm-workspace.yaml` | Workspaces `apps/*` `packages/*` `tools/*`; build postinstall allowlist already exists | Use `pnpm --filter`; preserve approved native build scripts |
-| `turbo.json` `build` | `dependsOn:["^build"]`, outputs `dist/**` and `.next/**` excluding `.next/cache/**` | Correct dependency build order; local Turbo caching exists, but verify hit rates; avoid caching `.next/dev/**` as a production output |
-| `turbo.json` `test` | `dependsOn:["build"]` (same-package production build) | **W01/W20:** new fast React tests must have an independent path. Never require full `next build` to execute one Vitest state test |
+| `turbo.json` `build` | `dependsOn:["^build"]`, outputs `dist/**` and `.next/**` excluding `.next/cache/**` and `.next/dev/**` | Correct dependency build order; local Turbo caching exists; `.next/dev/**` is not treated as a production build output |
+| `turbo.json` `test` | `dependsOn:["build"]` (same-package production build) | Legacy path preserved. Never use this for React inner-loop Vitest |
+| `turbo.json` `test:fast` | `dependsOn:["^build"]`, `outputs:[]` (**W20**) | Root `pnpm test:fast` → `@offscreen/web` Vitest without `@offscreen/web#build` / Next production build |
 | `packages/{game,application,documents}/package.json` | `test` *also calls `pnpm run build`* | Merely changing Turbo `test` to `^build` doesn't remove all duplicate builds. Preserve existing dist-based suite semantics until a measured, safe optimization |
-| `apps/web/package.json` | `dev: next dev`, `build: next build`, `typecheck: next typegen && tsc --noEmit`; no web test yet | Next 16 uses Turbopack by default; add Vitest `test` and `test:watch` under W01; `next typegen` does **not** require production build |
+| `apps/web/package.json` | Vitest `test` / `test:watch` / `test:fast` (W01); Next `dev`/`build`/`typecheck` | Prefer `pnpm test:fast` for iteration; `next typegen` does **not** require production build |
 | `apps/web/tsconfig.json` | `incremental:true`, Next plugin and path alias; strict shared base | Keep `*.tsbuildinfo` and warm editor TS service. No full build to verify every typed component change |
 | `.github/workflows/code.yml` | On **every push/PR**; code, infra, DB, identity jobs including Chromium + Temporal | Docs-only pushes can trigger costly checks, and every code push can run broad DB/browser. **W21** will use path-/event-aware gates |
 | `.github/workflows/docs.yml` | Also on every push/PR | Keep doc checking, but avoid redundant runs for unrelated code-only commits once workflow filters are correct |

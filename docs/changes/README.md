@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01 is Done.** Next cost-first packet when authorized: [W20 Turbo test:fast/cache lane](2026-11-12--web-fast-feedback-toolchain/CHANGE.md). There are **22 W-series frontend/tooling packets** (W12 is **superseded**, not executable; W01 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed), each with a bounded expected source/test/config diff. W20 and W21 address workstation and CI economics. The [Chamber program](../engineering/chamber-program.md) is a separate dependency route, not a new game feature backlog. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy. Independent Change boundaries keep diffs reviewable even though the owner placed no artificial cap on total engineering effort.
+**Architecture is decided; W01 and W20 are Done.** Next cost-first packet when authorized: [W21 conditional GitHub Actions gates](2026-11-12--web-ci-budget/CHANGE.md) (or W02 if no CI pushes planned). There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01/W20 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
