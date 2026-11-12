@@ -9,14 +9,14 @@
 | When changing… | Current source owner | Follow only if needed |
 | --- | --- | --- |
 | Play route, authenticated initial HTML | [server PlayPage](../../../app/play/[id]/page.tsx) | [requireViewer](../../lib/viewer.ts) checks session; Zod `storySnapshotSchema` parses response |
-| Scene selection and status | [PlayScene](../../../../../view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
+| Scene selection and status | [PlayScene](view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
 | Current snapshot refresh/merge | `view.tsx`: `acceptSnapshot`, polling `useEffect` | [preferNewerSnapshot](../../lib/story-transport.ts); **no viewer/story identity check in comparator** today |
 | Single choice and timed-wait control | `view.tsx`: `respond` / `control` with UUID refs | Nest `PUT /stories/:id/resolutions/:operationId` **202**, `PUT /:id/controls/:operationId` **200** |
-| Campaign commands | [useCampaignCommand](../../../../../use-campaign-command.ts): `send` | [CampaignPlay](../../../../../campaign-play.tsx) uses it for activity/time/action controls; statuses vary |
-| Resolution refresh/retry | [ResolutionRecovery](../../../../../resolution-recovery.tsx) | Storyteller state not always settled; no automatic charged retry |
-| Character, offers, holds, receipts | [CampaignPlay](../../../../../campaign-play.tsx) | [CampaignView](../../../../../packages/contracts/src/campaign.ts) and `@offscreen/game/calendar` pure formatting |
-| Storyteller settings, presets, history | [CampaignSettingsEditor](../../../../../campaign-settings.tsx) | Current parent `key={settings.revision}` risks remounting dirty editor; later RHF/Query |
-| Read-only chronology | [StoryHistoryView](../../../../../history.tsx) | GET `/:id/history?before=number`, separate page state and race handling |
+| Campaign commands | [useCampaignCommand](use-campaign-command.ts): `send` | [CampaignPlay](campaign-play.tsx) uses it for activity/time/action controls; statuses vary |
+| Resolution refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Storyteller state not always settled; no automatic charged retry |
+| Character, offers, holds, receipts | [CampaignPlay](campaign-play.tsx) | [CampaignView](../../../../../packages/contracts/src/campaign.ts) and `@offscreen/game/calendar` pure formatting |
+| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | Current parent `key={settings.revision}` risks remounting dirty editor; later RHF/Query |
+| Read-only chronology | [StoryHistoryView](history.tsx) | GET `/:id/history?before=number`, separate page state and race handling |
 
 ## One useful command path
 

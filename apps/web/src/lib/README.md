@@ -1,7 +1,7 @@
 # Web transport and session | source map
 
 **First look:** Current `viewer.ts` is **server-only in usage**, calls Nest `/api/me` with incoming cookie, and provides internal API origin. `story-transport.ts` is a **browser-side helper** for story snapshot GET, parsing and PUT commands. They are not interchangeable runtimes. **Target (not yet implemented):** explicit `server-only` boundary, typed server/browser adapters and TanStack Query as browser server-state owner.
-**Read only:** [viewer.ts](../../../../viewer.ts) for authenticated SSR; [story-transport.ts](../../../../story-transport.ts) for current browser story traffic. No need to open the whole app.
+**Read only:** [viewer.ts](viewer.ts) for authenticated SSR; [story-transport.ts](story-transport.ts) for current browser story traffic. No need to open the whole app.
 **Source basis:** `470a5df`, 2026-11-12 static inspection. This map does not assert runtime caching, deployment proxy correctness or successful authentication tests.
 
 ## Current ownership and precise observed behavior

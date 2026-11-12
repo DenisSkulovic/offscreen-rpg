@@ -1,7 +1,7 @@
 # Nest draft and opening endpoints | source map
 
 **First look:** Draft save is a synchronous revision-fenced edit; opening generation is an **asynchronous accepted operation**; Start belongs to the *stories* API. These are three different lifecycles. The future Query/RHF/typed-mutation implementation must not force them into one generic hook.
-**Start:** [DraftsController](../../../../../controller.ts) or [OpeningsController](../../../../../openings-controller.ts) → [draft application](../../../../../packages/application/src/drafts/index.ts) / [opening application](../../../../../packages/application/src/generations/openings.ts). For Start follow [StoriesController](../stories/controller.ts).
+**Start:** [DraftsController](controller.ts) or [OpeningsController](openings-controller.ts) → [draft application](../../../../../packages/application/src/drafts/index.ts) / [opening application](../../../../../packages/application/src/generations/openings.ts). For Start follow [StoriesController](../stories/controller.ts).
 **Source basis:** `470a5df`, static inspection only; no new endpoint or extra provider retry authorized by this README.
 
 ## Existing HTTP semantics

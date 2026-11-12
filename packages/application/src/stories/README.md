@@ -1,7 +1,7 @@
 # Application story operations | source/transaction map
 
 **First look:** The Nest `StoriesController` delegates to `createStoryApplication`, which composes persisted use cases and an **owner-scoped public snapshot**. The controller is not the correct place to duplicate DB command logic. This is the high-value map for W19 receipt and W16 SSE work.
-**Start:** [createStoryApplication](../../../../index.ts) → [createStoryResolution.admit](../../../../resolution.ts) or [createStoryReads/readSnapshot](../../../../reads.ts) → [story persistence helpers](../../../../persistence.ts). Open only the path corresponding to your Change.
+**Start:** [createStoryApplication](index.ts) → [createStoryResolution.admit](resolution.ts) or [createStoryReads/readSnapshot](reads.ts) → [story persistence helpers](persistence.ts). Open only the path corresponding to your Change.
 **Source basis:** `470a5df`, 2026-11-12 static inspection, no local DB, runtime or test proof. **Target:** immutable public command receipts and committed-version hints **not yet implemented**.
 
 ## Source responsibilities

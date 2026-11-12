@@ -1,22 +1,22 @@
 # Next App Router | source map
 
 **First look:** Existing Next 16 pages are Server Components unless explicitly marked `'use client'`; they use `requireViewer` and direct Nest `fetch` for initial private DTOs, then render Client interactive islands. The *selected future* architecture migrates private pages to request-scoped Query prefetch and hydration. **There is no current TanStack Query provider yet.**
-**Start:** [root layout](../../../layout.tsx) / [requireViewer](../src/lib/viewer.ts) → private route below → feature README. **Do not read every page.**
+**Start:** [root layout](layout.tsx) / [requireViewer](../src/lib/viewer.ts) → private route below → feature README. **Do not read every page.**
 **Source basis:** source `470a5df`, inspected 2026-11-12. W02/W15 own route-group/hydration changes; W07 owns error/loading mechanics.
 
 ## One route → one owner
 
 | URL | Server page | Client feature | Next boundary |
 | --- | --- | --- | --- |
-| `/` | [home page](../../../page.tsx) | none | public |
-| `/sign-in` | [sign-in page](../../../sign-in/page.tsx) | `src/features/session/sign-in-button.tsx` | public entry, Better Auth |
-| `/stories` | [story list page](../../../stories/page.tsx) | `src/features/stories/{live-story-list,draft-list}.tsx` | `requireViewer` and two independent Nest reads, **currently sequential** |
-| `/stories/new?id=UUID` | [new draft page](../../../stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
-| `/stories/:id` | [saved draft page](../../../stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
-| `/stories/:id/preview` | [preview page](../../../stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
-| `/play/:id` | [Play page](../../../play/[id]/page.tsx) | `src/features/play/view.tsx` | typed SSR story snapshot |
-| `/chamber` | [developer route](../../../chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
-| `/demo` | [scripted demo](../../../demo/page.tsx) | browser-only prototype | does not persist gameplay |
+| `/` | [home page](page.tsx) | none | public |
+| `/sign-in` | [sign-in page](sign-in/page.tsx) | `src/features/session/sign-in-button.tsx` | public entry, Better Auth |
+| `/stories` | [story list page](stories/page.tsx) | `src/features/stories/{live-story-list,draft-list}.tsx` | `requireViewer` and two independent Nest reads, **currently sequential** |
+| `/stories/new?id=UUID` | [new draft page](stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
+| `/stories/:id` | [saved draft page](stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
+| `/stories/:id/preview` | [preview page](stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
+| `/play/:id` | [Play page](play/[id]/page.tsx) | `src/features/play/view.tsx` | typed SSR story snapshot |
+| `/chamber` | [developer route](chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
+| `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |
 
 **Current Next config:** [next.config.ts](../next.config.ts) rewrites same-origin `/api/*` to loopback Nest `127.0.0.1:3001`, while server-side `apiOrigin` can be configured. W02 corrects topology; W15 adds authenticated route group with server-side per-request QueryClient and `HydrationBoundary`; keep user-facing URL paths exactly.
 

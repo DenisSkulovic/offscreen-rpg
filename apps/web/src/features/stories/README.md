@@ -1,7 +1,7 @@
 # Stories: draft → opening → Start | source map
 
 **First look:** Current creation uses server-loaded draft/catalogue, a local `DraftEditor` edit buffer, a `202` opening-generation request, then a separate `200` Start. The selected React target uses viewer/draft-scoped Query and RHF, **not yet implemented**. **Start is a separate durable intent, not a draft save or a Storyteller retry.**
-**Start:** [new draft route](../../../app/stories/new/page.tsx) / [saved draft route](../../../app/stories/[id]/page.tsx) → [DraftEditor](../../../../../draft-editor.tsx) → [preview route](../../../app/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](../../../../../opening-preview.tsx).
+**Start:** [new draft route](../../../app/stories/new/page.tsx) / [saved draft route](../../../app/stories/[id]/page.tsx) → [DraftEditor](draft-editor.tsx) → [preview route](../../../app/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](opening-preview.tsx).
 **Source basis:** baseline `470a5df` read 2026-11-12, no tests executed. **Do not mistake proposed TanStack/RHF code for current source.** W08/W09/W10 packets own the actual migration.
 
 ## Where a question belongs
@@ -10,13 +10,13 @@
 | --- | --- | --- |
 | Draft UUID / new route redirect | `app/stories/new/page.tsx` | Invalid/missing search `id` redirects with server-created UUID; existing saved draft redirects to edit route |
 | Existing draft load | `app/stories/[id]/page.tsx` | GET `/api/drafts/:id`, 401 sign-in, 404 notFound, Zod `draftSchema` |
-| Unsaved values, multi-step form, dirty guard | [DraftEditor](../../../../../draft-editor.tsx): `content`, `dirty`, `beforeunload` | [draft schemas](../../../../../packages/contracts/src/drafts.ts), `saveDraftSchema` |
+| Unsaved values, multi-step form, dirty guard | [DraftEditor](draft-editor.tsx): `content`, `dirty`, `beforeunload` | [draft schemas](../../../../../packages/contracts/src/drafts.ts), `saveDraftSchema` |
 | Draft save and conflict | `DraftEditor.save` / `loadSaved` | `PUT /api/drafts/:id` expects `expectedRevision`; 409 preserves local edits; server has owner-scoped version fence |
-| Storyteller catalogue | [StorytellerSelect](../../../../../storyteller-select.tsx) | GET `/api/storytellers` via client effect |
-| Draft list, more pages | [DraftList](../../../../../draft-list.tsx) | GET `/api/drafts?cursor=opaque`; client append/dedupes |
-| Live story list | [LiveStoryList](../../../../../live-story-list.tsx) | GET `/api/stories?before=UUID`; currently replaces page rather than appends |
+| Storyteller catalogue | [StorytellerSelect](storyteller-select.tsx) | GET `/api/storytellers` via client effect |
+| Draft list, more pages | [DraftList](draft-list.tsx) | GET `/api/drafts?cursor=opaque`; client append/dedupes |
+| Live story list | [LiveStoryList](live-story-list.tsx) | GET `/api/stories?before=UUID`; currently replaces page rather than appends |
 | Opening candidate load | `app/stories/[id]/preview/page.tsx` | Parallel draft/latest/catalogue GET; parsed `latestOpeningSchema` |
-| Generation admission and refresh | [OpeningPreviewPanel.generate/poll](../../../../../opening-preview.tsx) | `PUT /api/drafts/:id/openings/:attemptId` **202**, GET `/latest`; backend may still be pending or uncertain |
+| Generation admission and refresh | [OpeningPreviewPanel.generate/poll](opening-preview.tsx) | `PUT /api/drafts/:id/openings/:attemptId` **202**, GET `/latest`; backend may still be pending or uncertain |
 | Start a reviewed candidate | `OpeningPreviewPanel.startStory` | `PUT /api/stories/:storyId/start` **200**; see below |
 
 ## Command identity matters more than component shape

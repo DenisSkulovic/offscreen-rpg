@@ -1,7 +1,7 @@
 # Nest stories / Chamber routes | API ownership map
 
 **First look:** `StoriesController` is a thin authenticated Nest API facade. It calls application operations using `ownerId` and maps `StoryError` to HTTP; it does **not** decide game rules, effects or private narrative. **Current:** no read-only resolution-receipt GET and no story SSE endpoint. **Selected:** W19/W16 will add them; neither exists yet.
-**Start:** [StoriesController](../../../../../controller.ts) → [createStoryApplication](../../../../../packages/application/src/stories/index.ts) → [story application map](../../../../../packages/application/src/stories/README.md). For private browser reads see [web transport map](../../../../web/src/lib/README.md).
+**Start:** [StoriesController](controller.ts) → [createStoryApplication](../../../../../packages/application/src/stories/index.ts) → [story application map](../../../../../packages/application/src/stories/README.md). For private browser reads see [web transport map](../../../../web/src/lib/README.md).
 **Source inspected:** `470a5df`, 2026-11-12, no runtime tests. **Never call provider from a GET, retry after ambiguous charged work automatically, or expose internal workflow rows as public DTOs.**
 
 ## Route contract map (selected relevant endpoints)

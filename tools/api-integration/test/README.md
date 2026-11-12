@@ -8,14 +8,14 @@
 
 | Need to prove | Existing test source | What a narrow check can establish |
 | --- | --- | --- |
-| Better Auth cookie/owner/CSRF | [auth.integration.ts](../../../auth.integration.ts) | Real session composition; not full external GitHub OAuth exchange |
-| Story HTTP owner/errors | [stories-http.integration.ts](../../../stories-http.integration.ts) | API route/status semantics |
-| Stored resolution/retry | [story-resolution.integration.ts](../../../story-resolution.integration.ts) | Durable admission, duplicate/conflict, publication against real DB |
-| Start from reviewed candidate | [story-start.integration.ts](../../../story-start.integration.ts) | Persisted Start, current published opening, same ID retry |
-| Real navigation/Play/Chamber | [stories-browser.integration.ts](../../../stories-browser.integration.ts) | Browser UI, reload and persisted story scenario with local fixture |
-| Draft two-tab/version | [drafts.browser.ts](../../../drafts.browser.ts) | React edit/draft conflict, browser session interaction |
-| Storyteller uncertain/accounting | [storyteller.integration.ts](../../../storyteller.integration.ts) | Fake provider and durable attempt lifecycle, **no paid model** |
-| Shared launch/DB setup | [app-integration helper](../../../helpers/app-integration.ts), [story-suite helper](../../../helpers/story-suite.ts) | Test server composition, disposable URL and local dependencies |
+| Better Auth cookie/owner/CSRF | [auth.integration.ts](auth.integration.ts) | Real session composition; not full external GitHub OAuth exchange |
+| Story HTTP owner/errors | [stories-http.integration.ts](stories-http.integration.ts) | API route/status semantics |
+| Stored resolution/retry | [story-resolution.integration.ts](story-resolution.integration.ts) | Durable admission, duplicate/conflict, publication against real DB |
+| Start from reviewed candidate | [story-start.integration.ts](story-start.integration.ts) | Persisted Start, current published opening, same ID retry |
+| Real navigation/Play/Chamber | [stories-browser.integration.ts](stories-browser.integration.ts) | Browser UI, reload and persisted story scenario with local fixture |
+| Draft two-tab/version | [drafts.browser.ts](drafts.browser.ts) | React edit/draft conflict, browser session interaction |
+| Storyteller uncertain/accounting | [storyteller.integration.ts](storyteller.integration.ts) | Fake provider and durable attempt lifecycle, **no paid model** |
+| Shared launch/DB setup | [app-integration helper](helpers/app-integration.ts), [story-suite helper](helpers/story-suite.ts) | Test server composition, disposable URL and local dependencies |
 
 ## Side effects are part of the command
 
