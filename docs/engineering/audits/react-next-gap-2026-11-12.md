@@ -1,6 +1,6 @@
 # React / Next.js engineering gap audit | November 12, 2026
 
-**Status:** Source-grounded, read-only audit against the [revised destination F1–F15](../targets/react-next.md). **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (last code-equivalent `main` revision before the target update). **Target provenance:** target revised in the *earlier* documentation commit `6d81df4a673f706281cd1e989e49e71f5f1bd8ab`. **Method:** authenticated GitHub repository file/tree inspection; **no source change, local checkout, CLI run, typecheck, browser, CI, proxy, DB, live provider or performance measurement**. Statements about runtime behavior below are distinguished from static source facts.
+**Status:** Source-grounded, read-only audit of the unchanged pre-migration code against the **[decided F1–F15 architecture](../targets/react-next.md)**. The owner later selected TanStack Query v5, RHF/Zod, SSE, Storybook and other stack decisions; they are design deltas, **not observed runtime defects**. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (last code-equivalent `main` revision before the target update). **Target provenance:** target revised in the *earlier* documentation commit `6d81df4a673f706281cd1e989e49e71f5f1bd8ab`. **Method:** authenticated GitHub repository file/tree inspection; **no source change, local checkout, CLI run, typecheck, browser, CI, proxy, DB, live provider or performance measurement**. Statements about runtime behavior below are distinguished from static source facts.
 
 **Mission filter:** the system is an engineering portfolio, not a gameplay MVP or UI-design sprint. Code changes are warranted only where a meaningful target invariant is missing, fragile, expensive to explain or unproved by appropriate tests. Attractive JSX, line count and library fashion are not evidence of architectural quality.
 
@@ -84,7 +84,7 @@
 
 **G26. Static quality tools exist but do not enforce every architecture boundary.** Strict TS and CI already strong; optional quality lint is more stringent but `server-only` import and feature direction cannot be inferred from them. Avoid separate package boilerplate if one focused import rule proves actual boundary. **S evidence.** **Negative:** intentionally attempted server-reader import into Client graph rejected at check/build; no wholesale lint churn. **W13.**
 
-## 5. Architectural alternatives challenged
+## 5. Earlier architectural alternatives (historical; owner chose the stack afterward)
 
 | Architecture | Fit to this repository | Counterexample / warning |
 | --- | --- | --- |
@@ -95,36 +95,58 @@
 | All Next Server Actions | Could hide browser API complexity in a BFF | Duplicates authority and adds network hop unless a concrete security need justifies it |
 | Mandatory SSE / new broker | Low-latency hints once backend guarantees exist | Does not fix identity, lost ACK or authorization; currently out of scope |
 
-**Reversal evidence:** if component/navigation tests prove no persistent scope across story changes, narrow W03 to a pure gate and test; if preset/settings forms already correctly retain edits under updates, omit the proposed reset fix; if independent reads demonstrably benefit from query caching, revisit TanStack Query with viewer partitioning as a separate architectural decision. No fashionable package is preapproved.
+**Decision superseded:** After reviewing these alternatives, the owner explicitly selected **TanStack Query v5** regardless of migration size. The decided target now requires a single authorized Query cache, Next SSR hydration, RHF for major forms and end-to-end transport/test standards. A focused test may still prevent needless local rewriting, but the stack choice is **not delegated to Cursor**.
 
-## 6. Proposed implementation map
+## 6. Revised code-bearing implementation map (owner-selected destination)
 
-Changes are *planned code deltas*; today's docs changes are not themselves Changes. All remain **Proposed** pending owner approval and source revalidation. The canonical queue is [docs/changes/README.md](../../changes/README.md), `Current change: none`.
+**Important distinction:** G11–G26 are primarily source/contract observations. G27–G33 below describe newly mandated *architecture features not yet implemented*, not automatically detected user bugs. The owner's selection of TanStack/RHF/SSE does not retroactively prove the old code broken.
 
-| Candidate | Material gap / target | Prerequisite | Narrow outcome |
+| Change | Destination/target | Depends on | Result |
 | --- | --- | --- | --- |
-| W01 isolated React tests | G15 / F10 | None | Provider-free fast state/component harness |
-| W02 private typed server reader | G14 G16 / F1 F2 F11 | W01 preferable | Consistent Nest session/read/error/host rules |
-| W03 snapshot identity owner | G13 G17 / F3 F4 | W01 | One resource-scoped monotonic decision + integration |
-| W04 Play command intents | G12 G16 / F5 F11 | W01 W03 | Typed frozen command/uncertain recovery in Play |
-| W05 Play refresh | G18 / F6 | W03 | One bounded visibility-aware Play read owner |
-| W06 campaign composition | G21 / F7 F14 | W04 | Separate command orchestration from coherent views, maintain outputs |
-| W07 route recovery/a11y | G24 / F9 | W02 W03; W04 when needed | Expected error/loading/focus/keyboard handling |
-| W08 draft editing lifecycle | G19 / F8 | W01 W02 | Revision, dirty state and navigation correctness |
-| W09 opening/Start recovery | G11 G19 / F5 F8 | W01 W02 | Frozen request envelope, lost-ACK/URL reconciling |
-| W10 lists/history pagination | G20 G17 / F12 | W01 W02 W03 | Identity-scoped cursor/ordering and clear paging semantics |
-| W11 settings/preset editor | G22 G16 / F8 F11 | W01 W04 | Form state/preset identity/history lifetimes separated |
-| W12 Chamber/QA lifecycle | G18 G23 / F13 | W03 W05; W01 | Reuse safe policies, isolate QA and viewer-switch hints |
-| W13 import/type guardrail | G26 G21 / F14 | W02 W06 | Enforce high-value server/client/cross-feature boundaries |
-| W14 private-route proof + perf diagnostics | G14 G25 / F1 F2 F15 | W02 W03 W07 | Provider-free browser cache/proxy/render trace with safe receipts |
+| W01 | F10 | none | Vitest + RTL + MSW + deterministic adversarial React tests |
+| W02 | F1 F2 F11 | W01 recommended | server-only typed Nest reader and private App Router route group |
+| **W15** | F1 F3 F10 F14 | W01 W02 | TanStack Query v5 provider, per-request SSR prefetch/dehydrate/hydration, viewer-key factories |
+| W03 | F3 F4 | W15 | query-owned identity/monotonic snapshot reconciliation |
+| **W19** | F5 F11 | W02 | owner-scoped read-only operation receipt for admitted resolution recovery |
+| W04 | F5 F11 | W03 W19 | useMutation transport + frozen typed Play intent and receipt-aware recovery |
+| W05 | F6 | W03 W04 | Query refetch/polling fallback with visibility and error policy |
+| W08 | F8 | W15 | React Hook Form + Zod draft editor and revision/dirty guard |
+| W09 | F5 F8 | W15 W19 | generation/Start useMutation + immutable Start envelope |
+| W10 | F12 | W15 W03 | useInfiniteQuery story/draft/history page identity/cursors |
+| W11 | F8 | W15 W04 | RHF settings/preset editor, no dirty reset on refresh |
+| W12 | F13 | W15 W03 W05 | Query Chamber/QA isolation and Nest developer-only gate |
+| W06 | F7 | W04 W15 | feature model/api/ui separation and precise component extraction |
+| **W16** | F2 F6 | W02 | authenticated Nest SSE + committed PostgreSQL invalidation hint |
+| **W17** | F4 F6 | W03 W05 W16 | SSE client invalidates Query, 30s safety/fallback GET |
+| W07 | F9 | W02 W03 W04 | Next/Query error recovery and accessible state |
+| W13 | F14 | W02 W15 W06 | ESLint React/Next/TanStack rules and server/client dependency guard |
+| **W18** | F7 F9 F10 | W01 W06 W08 W11 | Storybook with deterministic MSW state/workflow stories |
+| W14 | F1 F2 F10 F15 | W02 W03 W07 W17 | provider-free private SSR/cache/route browser, performance evidence |
 
-**Scheduling is a dependency DAG**, not a demand for 14 sequential weeks. Some changes may be independently executed after W01, and a proof may demonstrate no code correction is needed, in which case cancel that packet. No implementation selected and no game or aesthetics work.
+This is a dependency graph rather than a linearly scheduled 19-sprint program. Cursor executes one active approved packet at a time, coordinating overlapping modules. Any packet can close with *no rewrite* if the exact target proof is already met; the mandated stack itself remains selected.
 
 ## 7. Acceptance gate and unverified facts
 
 - **Static source observation:** precise paths and branches described above. **Test source present:** integration scenarios exist, but no current run results. **Runtime unknown:** exact App Router remounts, stale private RSC behavior, proxy deployment, accessibility, duplicate effects after lost acknowledgement, timing/performance.
 - **No invented defects:** long files alone do not fail F7; login-required Chamber is not synonymous with a proven data leak; local storage of a nonsecret QA run ID does not alone violate security; `cache: 'no-store'` already exists and is valuable; existing auth/CI/browser tests count as real engineering investments.
-- **Implementation readiness:** owner must accept/revise the target, resolve true authority conflicts (especially Chamber exposure and reload recovery claims), then select and authorize one Change. Cursor must revalidate source/tests and return a diff plus actual checks. A proposed packet is not code permission.
-- **Proof needed for convergence:** every F1–F15 maps to a completed demonstrable or accepted-deferred receipt at a named revision. Closing 14 packet folders alone does not prove this target was reached.
+- **Design authority:** owner explicitly delegated technology and architecture decisions on November 12; the [selected target](../targets/react-next.md) resolves TanStack/RHF/SSE/testing/developer access/reload protocol. **Execution still awaits** separately selecting and authorizing one code-bearing Change. Cursor must revalidate source/tests and return a diff plus actual checks.
+- **Proof needed for convergence:** every F1–F15 maps to a completed demonstrable or accepted-deferred receipt at a named revision. Closing 19 packet folders alone does not prove this target was reached.
 
 **Historical comparison:** the [Nov 11 initial audit](react-next-gap-2026-11-11.md) identified G01–G10 and W01–W07. This update preserves its valid observations but supersedes its completeness and execution ordering; no historical claims about tests run are silently upgraded.
+
+
+## 8. Selected-stack gap register (design chosen after source inspection)
+
+These additional items distinguish an **adopted architectural destination** from observed bugs. The underlying application source remains the same audited revision.
+
+| Finding | Directly inspected baseline | Selected end state and target | Evidence to collect |
+| --- | --- | --- | --- |
+| **G27. No TanStack Query owner/hydration** | `apps/web/package.json` has no `@tanstack/react-query`; web screens use ad hoc `fetch`/`useState` and RSC pass raw initial props | F1 F3 F4 F10: query cache, authenticated key factories, SSR prefetch/dehydrate and browser hydration, scoped provider | W15 query/hydration tests, production HTML, no client re-fetch-on-mount |
+| **G28. No RHF editors** | `draft-editor.tsx` and `campaign-settings.tsx` own fields/dirty/edit flow manually; no `react-hook-form` in web manifest | F8: RHF + zodResolver, useFieldArray, frozen save/revision and explicit reset | W08/W11 dirty/409/revision and form focus tests |
+| **G29. No Storybook state-workbench** | No Storybook dependencies/`.storybook` directory in inspected web tree; existing UI needs deterministic state evidence | F7 F9 F10: provider-free state stories, functional regression/evidence, no visual redesign | W18 workbench loads without app/DB/provider, main state fixtures |
+| **G30. No end-to-end story SSE path** | Play and Chamber poll GET; `apps/api/src/modules/stories/controller.ts` has no SSE story updates endpoint in inspected source | F6: authenticated committed hint SSE, Query invalidation and GET fallback | W16/W17 missing/delayed event tests with proxy/auth |
+| **G31. No read-only resolution operation receipt** | Story controller accepts `PUT /:id/resolutions/:operationId` but no corresponding owner-scoped `GET` identity/status receipt; server stores operation ID in resolution flow | F5 F11: identify original admitted intent after reload without reissuing unknown effect | W19 real DB owner/other, missing/duplicate, stopped/settled receipt tests |
+| **G32. Missing selected library/static rules** | Strict TS/CI exist; current web config lacks TanStack and RHF checks; root ESLint lacks plugins selected by the target | F10 F14: React Hooks/Next/TanStack rules, dependency restrictions and CI local-test enforcement | W13 negative forbidden import and invalid query dependency test |
+| **G33. No distinct developer-only Nest gate** | `ChamberToolsController` and `QaJourneysController` validate auth/owner, not a separate developer allowlist; local-only intended mode is not enforced in controller | F2 F13: developer endpoints disabled by default for hosted ordinary users, backend allowlist/role enforced | W12 ordinary authenticated denial vs authorized developer, QA hints scoped to viewer |
+
+**Priority by risk, not checkbox value:** W01/W02/W15 lay the platform; W03/W19/W04 protect privacy/idempotency; RHF and infinite lists improve state consistency; SSE and Storybook prove architectural maturity when implementation is real. The source has existing valuable safeguards and integrated tests, so these additions should **converge**, not overwrite them with stylish wrappers.
