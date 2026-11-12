@@ -1,6 +1,6 @@
 # Change CH02 | Instant Bench lane using real pure rules
 
-> **Cursor first look:** [developer tool source map](../../../packages/application/src/developer-tools/README.md) and actual `@offscreen/game` pure policy exports. **Target:** [C03/C04/C12/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol `2](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** never write a Chamber-only imitation of the game resolver.
+> **Cursor first look:** [developer tool source map](../../../packages/application/src/developer-tools/README.md) and actual `@offscreen/game` pure policy exports. **Target:** [C03/C04/C12/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** never write a Chamber-only imitation of the game resolver.
 
 **State:** Specified/Proposed, not executable without owner selection. **Depends on:** CH01. **Source baseline:** `470a5df`; source must be rechecked, tests have not run.
 

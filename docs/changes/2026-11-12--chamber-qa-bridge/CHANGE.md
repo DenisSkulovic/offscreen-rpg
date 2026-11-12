@@ -1,6 +1,6 @@
 # Change CH10 | QA journeys reconciled with executable mechanical scenarios
 
-> **Cursor first look:** [application developer map](../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts:open/recordStage/finalize` and `qa-catalog/*`, [current UI](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C01/C10/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol `9](../../technical/chamber-lab-protocol.md#9-catalogue-evolution-and-handoff); [audit H02/H09/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
+> **Cursor first look:** [application developer map](../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts:open/recordStage/finalize` and `qa-catalog/*`, [current UI](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C01/C10/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 9](../../technical/chamber-lab-protocol.md#9-catalogue-evolution-and-handoff); [audit H02/H09/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
 **State:** Specified/Proposed; **no code work now**. **Depends on:** CH01, CH06, CH09. **Baseline:** `470a5df`.
 

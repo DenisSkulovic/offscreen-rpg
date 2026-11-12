@@ -12,7 +12,7 @@
 | Server vs browser transport, version merge | [Web transport map](src/lib/README.md) (W02/W03/W15) | `viewer.ts` or `story-transport.ts`, not both by habit |
 | Play command, polling, campaign, history/settings | [Play owner map](src/features/play/README.md) (W03/W04/W05/W06/W07/W11/W17) | `view.tsx`/target symbol, then Nest route if needed |
 | Draft creation, opening, Start, list pagination | [Stories owner map](src/features/stories/README.md) (W08/W09/W10) | `draft-editor.tsx` / `opening-preview.tsx` |
-| Chamber inspector and QA | [Chamber owner map](src/features/developer-tools/chamber/README.md) (W12) | `use-chamber-play.ts` and conditional Nest bootstrap |
+| Chamber inspector and QA | [Chamber owner map](src/features/developer-tools/chamber/README.md) (CH01–CH16; CH11 UI after W15; W12 superseded) | `use-chamber-play.ts` and conditional Nest bootstrap |
 | Connected real browser/DB evidence | [Test source map](../../tools/api-integration/test/README.md) (W14/W19) | One test file; integration runner **resets** disposable test DB |
 | Local scripts, Turbo, CI, Storybook | [Execution playbook](../../docs/engineering/frontend-execution-playbook.md) (W01/W18/W20/W21) | Exact script/manifest; no full app start for pure React tests |
 
@@ -24,4 +24,4 @@ The server Play route validates `storySnapshotSchema` before rendering `PlayScen
 
 For development-agent expertise, load [frontend-engineering](../../.agents/skills/frontend-engineering/SKILL.md) or [player-experience-design](../../.agents/skills/player-experience-design/SKILL.md) when the task warrants it; do not preload both for every CSS change.
 
-The package manifest has `dev`, `build`, `start` and `typecheck`, **no local `test` script**. Browser/integration evidence lives under [tools/api-integration](../../tools/api-integration/). TypeScript compilation alone does not certify visual hierarchy or keyboard usability.
+The package manifest has `dev`, `build`, `start`, `typecheck`, plus Vitest `test` / `test:watch` / `test:fast` (happy-dom + MSW). **Fast local path:** `pnpm --filter @offscreen/web test:fast` (or `exec vitest run <file>`) — do **not** use `turbo run test --filter=@offscreen/web` for iteration; that graph still depends on same-package `build` until W20. Provider-free Vitest/RTL/MSW tests prove UI/state races only; they do **not** certify Nest ownership, SSR privacy or exactly-once. Browser/integration evidence remains under [tools/api-integration](../../tools/api-integration/).

@@ -1,6 +1,6 @@
 # Change CH15 | Mechanics coverage catalogue and truthful availability
 
-> **Cursor first look:** [developer-tooling source map](../../../packages/application/src/developer-tools/README.md), [QA catalogue](../../../packages/application/src/developer-tools/qa-catalog.ts) and [target `8](../../engineering/targets/chamber-laboratory.md#8-mechanics-catalogue-and-evolution). **Source gap:** [H12/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a listed or manually assessed case is not automatically an executable, successful scenario.
+> **Cursor first look:** [developer-tooling source map](../../../packages/application/src/developer-tools/README.md), [QA catalogue](../../../packages/application/src/developer-tools/qa-catalog.ts) and [target 8](../../engineering/targets/chamber-laboratory.md#8-mechanics-catalogue-and-evolution). **Source gap:** [H12/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a listed or manually assessed case is not automatically an executable, successful scenario.
 
 **State:** Specified/Proposed, no code authorization. **Dependencies:** CH01, CH02, CH03, CH06, CH09, CH10; CH13 for Connected coverage where applicable. **Inspected baseline:** `470a5df`.
 

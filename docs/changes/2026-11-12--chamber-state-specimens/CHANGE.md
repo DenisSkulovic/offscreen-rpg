@@ -1,6 +1,6 @@
 # Change CH03 | Minimal valid state specimens and semantic overlays
 
-> **Cursor start:** [fixture/source map](../../../packages/application/src/developer-tools/README.md) → `chamber-fixtures.ts`, `campaign/fixtures/mechanical-content.ts` and actual story/campaign contracts. **Target:** [C02/C03/C04/C09](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol `3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation); [audit H01/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
+> **Cursor start:** [fixture/source map](../../../packages/application/src/developer-tools/README.md) → `chamber-fixtures.ts`, `campaign/fixtures/mechanical-content.ts` and actual story/campaign contracts. **Target:** [C02/C03/C04/C09](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation); [audit H01/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
 **State:** Specified/Proposed, no code authorization. **Depends on:** CH01 (CH02 examples can be reused). **Baseline:** `470a5df`, static source only.
 

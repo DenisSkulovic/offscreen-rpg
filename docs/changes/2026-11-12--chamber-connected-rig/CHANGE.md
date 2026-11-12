@@ -1,6 +1,6 @@
 # Change CH13 | Isolated connected rig for real Nest/worker/Temporal recovery
 
-> **Cursor first look:** [integration test source](../../../tools/api-integration/test/README.md) + [app story authority](../../../packages/application/src/stories/README.md) + [launcher modes](../../../tools/chamber/src/README.md). **Target:** [C04/C05/C07/C08/C12/C13](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol `2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H05/H13](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a pure mocked run cannot certify DB idempotency or an actual worker restart.
+> **Cursor first look:** [integration test source](../../../tools/api-integration/test/README.md) + [app story authority](../../../packages/application/src/stories/README.md) + [launcher modes](../../../tools/chamber/src/README.md). **Target:** [C04/C05/C07/C08/C12/C13](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H05/H13](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a pure mocked run cannot certify DB idempotency or an actual worker restart.
 
 **State:** Specified/Proposed; no source or service-run authorization. **Depends on:** CH04, CH06, CH08, CH09, CH12. **Baseline:** `470a5df`.
 

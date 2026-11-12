@@ -5,7 +5,7 @@
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
+**State: Done (2026-11-12).** Vitest/RTL/MSW foundation landed; see receipt in minutes §26. Architecture choices remain governed by the [React/Next target](../../engineering/targets/react-next.md). **Source baseline at start:** `470a5df`; execution used the then-current `main` worktree.
 
 **Dependencies:** None. **First implementation packet**.  
 **Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F4 F5 F8 F10**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G15 G32**.
@@ -21,7 +21,7 @@
 
 ## Bounded implementation sequence
 
-1. Configure test runner/environment and direct local `pnpm --filter @offscreen/web test`/`test:watch`/`test:fast` scripts. Do not rely on the legacy Turbo `test.dependsOn:['build']` as the fast path; W20 establishes a separate cached `test:fast` task graph after this Change.
+1. Configure test runner/environment and direct local `pnpm --filter @offscreen/web test`/`test:watch`/`test:fast` scripts. Do not rely on the legacy Turbo `test.dependsOn:['build']` as the fast path; W20 establishes a separate cached `test:fast` task graph after this Change. **Execution note:** Vitest uses **happy-dom** (not jsdom) because jsdom's `fetch` bypasses `msw/node` interception on this stack; packet intent (provider-free DOM + MSW) is preserved.
 2. Write representative *currently correct* deterministic tests for existing view/typed schema behavior. Add controlled deferred-response, Strict Mode cleanup and 202 pending visual tests as groundwork; later Changes own fixing currently failing identities.
 3. Document fake-vs-real evidence and integrate cheap tests into existing CI without DB reset.
 

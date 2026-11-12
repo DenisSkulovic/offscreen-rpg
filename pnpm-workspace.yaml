@@ -9,3 +9,4 @@ allowBuilds:
   unrs-resolver: true
   '@swc/core': true
   protobufjs: true
+  msw: true

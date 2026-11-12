@@ -1,6 +1,6 @@
 # Change CH04 | Isolated persisted Sandbox with safe checkpoint reset
 
-> **Cursor start:** [application developer map](../../../packages/application/src/developer-tools/README.md) + [local launch/DB guard](../../../tools/chamber/src/README.md). **Target:** [C02/C08/C09/C12/C13](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol `3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation), [audit H01/H03/H13](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** an ordinary story fork cannot rewind Temporal or provider effects.
+> **Cursor start:** [application developer map](../../../packages/application/src/developer-tools/README.md) + [local launch/DB guard](../../../tools/chamber/src/README.md). **Target:** [C02/C08/C09/C12/C13](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation), [audit H01/H03/H13](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** an ordinary story fork cannot rewind Temporal or provider effects.
 
 **State:** Specified/Proposed; **not** permission to reset any DB. **Depends on:** CH03. **Inspected baseline:** `470a5df`.
 

@@ -1,6 +1,6 @@
 # Change CH09 | Immutable reproducible run evidence and safe export
 
-> **Cursor start:** [current QA persistence](../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts`, `packages/contracts/src/qa.ts`; [current inspector](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C06/C09/C10/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol `6](../../technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [audit H08/H09](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** an operator-selected QA “passed” is evidence of a recorded judgment, not a machine-verified invariant.
+> **Cursor start:** [current QA persistence](../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts`, `packages/contracts/src/qa.ts`; [current inspector](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C06/C09/C10/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 6](../../technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [audit H08/H09](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** an operator-selected QA “passed” is evidence of a recorded judgment, not a machine-verified invariant.
 
 **State:** Specified/Proposed; no code execution. **Depends on:** CH06 and CH07 (CH08 fault trace can be added later). **Inspected source:** `470a5df`.
 

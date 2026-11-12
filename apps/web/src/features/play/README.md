@@ -33,7 +33,7 @@ URL /play/:id
 
 ## Tests and exit gates
 
-- **Fast proof after W01:** deferred A→B response race, v14→v13, wrong story high-version, 202 accepted-but-not-published and timeout-with-frozen UUID. Use provider-free RTL/MSW.
+- **Fast proof (W01 landed):** provider-free Vitest/RTL/MSW under `view.test.tsx`, `resolution-recovery.test.tsx`, and `src/lib/story-transport.test.ts` (run `pnpm --filter @offscreen/web test:fast`). Covers scene render + choice, deferred refresh, stale poll rejection, unmount poll cleanup, and pure `preferNewerSnapshot` ordering. Does **not** prove Nest ownership, SSR privacy, wrong-story identity (still W03), or reload-frozen UUID (W04).
 - **Real integration when explicitly authorized:** [browser story scenarios](../../../../../tools/api-integration/test/stories-browser.integration.ts), [resolution integration](../../../../../tools/api-integration/test/story-resolution.integration.ts) and [destructive-test warning](../../../../../tools/api-integration/README.md). The focused integration runner resets disposable `offscreen_auth_test`; not an inner-loop check.
 - **Extend context only for:** authorization/HTTP error semantics → [client and identity](../../../../../docs/technical/client-and-identity.md); persistent exactly-once effects → [application story owner map](../../../../../packages/application/src/stories/README.md); performance/CI work → [tooling playbook](../../../../../docs/engineering/frontend-execution-playbook.md) at its relevant heading.
 

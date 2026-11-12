@@ -34,4 +34,4 @@
 - **Connected boot-mode test:** ordinary Nest startup denies/misses Chamber endpoints, explicit local developer-mode startup mounts them and still owner-scopes data. Use disposable auth integration only with permission; [integration setup warning](../../../../../../tools/api-integration/README.md).
 - **Architectural target:** [F13 developer isolation](../../../../../../../docs/engineering/targets/react-next.md); **API route map:** [Nest story and Chamber endpoints](../../../../../api/src/modules/stories/README.md).
 
-**Maintenance:** update only on change of controller mount mode, inspector/QA query state owner, auth guarantee or significant module move. W12 currently **must not** introduce the previously suggested `DEVELOPER_USER_IDS` hosted allowlist without a separate explicit product/deployment decision.
+**Maintenance:** update only on change of controller mount mode, inspector/QA query state owner, auth guarantee or significant module move. Do **not** introduce a `DEVELOPER_USER_IDS` hosted allowlist without a separate explicit product/deployment decision; preserve the existing `developerTools` Nest registration gate (W12 superseded by CH10–CH11).

@@ -1,6 +1,6 @@
 # Change CH12 | Fast CLI lane entry and modular safe local launcher
 
-> **Cursor first look:** [launcher mode/source map](../../../tools/chamber/src/README.md) → `tools/chamber/src/main.ts` **bounded sections**, `stop.ts`, root `package.json` scripts. **Target:** [C11/C12/C13/C14/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol `2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H11/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** 1,518-line launcher is long because it orchestrates many different lifecycles; preserve real safety checks, not just split by line count.
+> **Cursor first look:** [launcher mode/source map](../../../tools/chamber/src/README.md) → `tools/chamber/src/main.ts` **bounded sections**, `stop.ts`, root `package.json` scripts. **Target:** [C11/C12/C13/C14/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H11/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** 1,518-line launcher is long because it orchestrates many different lifecycles; preserve real safety checks, not just split by line count.
 
 **State:** Specified/Proposed, no source permission. **Depends on:** CH02 and CH04. **Source baseline:** `470a5df`.
 

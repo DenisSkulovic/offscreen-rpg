@@ -1,6 +1,6 @@
 # Change CH01 | Typed, versioned mechanics-scenario catalogue
 
-> **Cursor first look:** [current developer-tooling owners](../../../packages/application/src/developer-tools/README.md) → `contracts/src/{chamber,qa}.ts` and `developer-tools/qa-catalog.ts`. **Target:** [Chamber C01/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol `1](../../technical/chamber-lab-protocol.md#1-contract-and-command-semantics); [audit H02/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Critical trap:** an existing QA driver label is not a runnable scenario.
+> **Cursor first look:** [current developer-tooling owners](../../../packages/application/src/developer-tools/README.md) → `contracts/src/{chamber,qa}.ts` and `developer-tools/qa-catalog.ts`. **Target:** [Chamber C01/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 1](../../technical/chamber-lab-protocol.md#1-contract-and-command-semantics); [audit H02/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Critical trap:** an existing QA driver label is not a runnable scenario.
 
 **State:** Specified/Proposed, not code-authorized. **Dependencies:** none. **Baseline:** source inspected at `470a5df`; Cursor rechecks live working tree.
 
@@ -22,4 +22,4 @@ Add a strict, versioned, browser-safe *scenario catalogue* with `id@version`, me
 
 ## Cursor handoff
 
-Read this packet, the small [owner map](../../../packages/application/src/developer-tools/README.md), and protocol `1 only. Add contracts/registry and focused tests, report exact files/checks and any missing source. No provider spend, database reset, deployment, gameplay or visual UI change.
+Read this packet, the small [owner map](../../../packages/application/src/developer-tools/README.md), and protocol 1 only. Add contracts/registry and focused tests, report exact files/checks and any missing source. No provider spend, database reset, deployment, gameplay or visual UI change.

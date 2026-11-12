@@ -1,6 +1,6 @@
 # Change CH08 | Deterministic failure cut points and interleaving injection
 
-> **Cursor start:** [application developer tools](../../../packages/application/src/developer-tools/README.md) `createChamber.controlStoryteller` (already arm-hold/arm-failure/release) → [story transaction owners](../../../packages/application/src/stories/README.md) and outbox. **Target:** [C05/C07/C08/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol `5](../../technical/chamber-lab-protocol.md#5-fault-cut-points), [audit H05](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** fake callback counts do not establish a persisted exactly-once effect.
+> **Cursor start:** [application developer tools](../../../packages/application/src/developer-tools/README.md) `createChamber.controlStoryteller` (already arm-hold/arm-failure/release) → [story transaction owners](../../../packages/application/src/stories/README.md) and outbox. **Target:** [C05/C07/C08/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 5](../../technical/chamber-lab-protocol.md#5-fault-cut-points), [audit H05](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** fake callback counts do not establish a persisted exactly-once effect.
 
 **State:** Specified/Proposed, no code authorization. **Depends on:** CH05, CH06, CH07. **Source baseline:** `470a5df`.
 

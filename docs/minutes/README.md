@@ -4,13 +4,13 @@
 
 **Maintaining this log:** [Daily minutes rule](../../.agents/rules/session-minutes.md). Use one file per active **Europe/Vilnius calendar day**, `YYYY-MM-DD.md`. Append meaningful updates throughout a working day and before any chat/agent switch. Capture the substance of long user prompts, including `do not` and `not yet` constraints, contrasting options and motivations.
 
-**Current handoff, 2026-11-12:** [Chamber developer-lab program](../engineering/chamber-program.md) and [technical scenario protocol](../technical/chamber-lab-protocol.md) now join the frontend initiative; start with CH01/CH02 if owner later authorizes Chamber implementation.  The React/Next W01–W22 and newly selected **Chamber laboratory CH01–CH16** designs are specified; **no implementation Change is active**. ChatGPT does architectural investigation/review, cheap Cursor implements a selected Change using its **first-screen brief → nearest source README → exact symbols**. [Source map entry](../../apps/web/README.md), [verification stages](../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke). Read the **latest numbered minute near the end** only if the owner’s rationale is needed; do not load the entire day's historical stream into Cursor.
+**Current handoff, 2026-11-12:** **W01 Done** (Vitest/RTL/MSW on `@offscreen/web`); `Current change: none`. Next cost-first authorization: **W20** fast Turbo lane, then W21/W02/W15 as queued. Chamber CH01–CH16 remain Proposed. ChatGPT designs/reviews; Cursor implements one authorized Change via **first-screen → nearest source README → exact symbols**. [Change queue](../changes/README.md), [web map](../../apps/web/README.md). Read only the **latest numbered minute** when rationale matters.
 
 ## Days
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
-| [2026-11-12](2026-11-12.md) | React W01–W22, selected Chamber C01–C16/CH01–CH16, Cursor source maps and safe tooling | **38 dossiers** (W12 superseded; 16 CH proposed), none active; no running Chamber proof yet |
+| [2026-11-12](2026-11-12.md) | React W01–W22, Chamber CH01–CH16, harness maps; Cursor W01 implementation | W01 **Done**; queue clear; W20 next; CH still Proposed; no provider spend |
 | [2026-11-11](2026-11-11.md) | Harness/knowledge, Feature→Change redesign, portfolio direction, target-first React/Next planning | Historical reconstruction from discussions and commits; no active coding Change |
 
 ## Fresh-chat handoff (read selectively)
