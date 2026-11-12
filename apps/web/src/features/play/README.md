@@ -8,7 +8,8 @@
 
 | When changing… | Current source owner | Follow only if needed |
 | --- | --- | --- |
-| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | per-request QueryClient prefetch + `HydrationBoundary`; [PlayScene](view.tsx) reads `useQuery` |
+| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | prefetch + `HydrationBoundary` + [PlayQueryBoundary](play-query-boundary.tsx); route `loading`/`error`/`not-found` |
+| Initial / thrown read recovery | [PlayScene](view.tsx) + [RouteRecoveryPanel](../recovery/route-recovery.tsx) | 401 sign-in, 404 unavailable, 503 retry; never auto-PUT |
 | Scene selection and status | [PlayScene](view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
 | Current snapshot refresh/merge | [playStorySnapshotQueryOptions](../../shared/api/story-snapshot-query.ts) + [storyNeedsPendingRefresh](../../shared/api/story-pending-refresh.ts) → `writeStorySnapshot` | [useStoryLiveUpdates](use-story-live-updates.ts) + [openStoryUpdateStream](../../shared/api/story-update-stream.ts): hint → invalidate → GET; 30s safety / 2s fallback |
 | Live SSE invalidation | [useStoryLiveUpdates](use-story-live-updates.ts) | Same-origin `/api/stories/:id/updates`; never writes hint fields as Query state |

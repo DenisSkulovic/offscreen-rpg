@@ -11,6 +11,10 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
+import {
+  classifyReadRecovery,
+} from '@/src/features/recovery/read-error';
+import { RouteRecoveryPanel } from '@/src/features/recovery/route-recovery';
 import { playStorySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
 import {
   allocateStorySnapshotEpoch,
@@ -112,9 +116,11 @@ export function PlayScene({
   const liveUpdates = useStoryLiveUpdates({ viewerId, storyId });
   const {
     data: story,
+    error: snapshotError,
     isError: snapshotReadFailed,
     isFetching: snapshotFetching,
     isPaused: snapshotPaused,
+    isPending: snapshotPending,
     refetch: refetchSnapshot,
   } = useQuery(
     playStorySnapshotQueryOptions(viewerId, storyId, {
@@ -158,9 +164,25 @@ export function PlayScene({
   }, [story, resolution.intentStatus, resolution.clearAfterSettlement]);
 
   if (!story) {
+    if (snapshotReadFailed) {
+      const { kind } = classifyReadRecovery(snapshotError);
+      return (
+        <RouteRecoveryPanel
+          kind={kind}
+          resource="story"
+          onRetry={() => {
+            void refetchSnapshot();
+          }}
+        />
+      );
+    }
     return (
       <main className="story-demo play-screen">
-        <p role="status">Loading the saved scene…</p>
+        <p role="status">
+          {snapshotPending || snapshotFetching
+            ? 'Loading the saved scene…'
+            : 'The saved scene is not available yet.'}
+        </p>
       </main>
     );
   }

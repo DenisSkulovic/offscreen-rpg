@@ -1,8 +1,8 @@
 # Next App Router | source map
 
-**First look:** Existing Next 16 pages are Server Components unless explicitly marked `'use client'`. Private URLs live under [`(authenticated)/`]((authenticated)/) with a layout session gate + browser Query provider; Nest reads use [`src/server`](../src/server/README.md). **Play** is the first route with SSR `prefetchQuery` + `HydrationBoundary`. Public routes stay outside that group.
+**First look:** Existing Next 16 pages are Server Components unless explicitly marked `'use client'`. Private URLs live under [`(authenticated)/`]((authenticated)/) with a layout session gate + browser Query provider; Nest reads use [`src/server`](../src/server/README.md). **Play** uses SSR `prefetchQuery` + `HydrationBoundary` plus route `loading`/`error`/`not-found` and a Query error boundary. Public routes stay outside that group.
 **Start:** [root layout](layout.tsx) / [`requireViewer`](../src/server/viewer.ts) → [(authenticated)/layout.tsx]((authenticated)/layout.tsx) → private route → feature README. **Do not read every page.**
-**Source basis:** W15, 2026-11-12.
+**Source basis:** post-W07 `main`.
 
 ## One route → one owner
 
@@ -14,8 +14,8 @@
 | `/stories/new?id=UUID` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
 | `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
-| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `src/features/play/view.tsx` | SSR prefetch + `HydrationBoundary` + `useQuery` snapshot |
-| `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate first pages |
+| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | SSR prefetch + hydrate; `loading`/`error`/`not-found`; typed Query recovery |
+| `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate; `loading`/`error` |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
 | `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |
 | `/rules` | [rules page](rules/page.tsx) | none | public |
@@ -24,7 +24,7 @@
 
 ## Scope and failure model
 
-- 401 from viewer/Nest => sign-in; 404 from owner-scoped read => notFound; upstream 5xx/timeout => recoverable route error (`NestTransientError`). Malformed Nest JSON => `NestProtocolError`. Next `redirect`/`notFound` are special outcomes; don't swallow them in a generic catch.
+- 401 from viewer/Nest => sign-in; 404 from owner-scoped read => notFound; upstream 5xx/timeout => recoverable route error (`NestTransientError`). Malformed Nest JSON => `NestProtocolError`. Next `redirect`/`notFound` are special outcomes; don't swallow them in a generic catch. Client recovery UI lives in [`src/features/recovery`](../src/features/recovery/route-recovery.tsx) and must keep 503 ≠ deleted.
 - Route-group layout checks session only; it is **not** Nest endpoint authorization.
 - Private data must not leak through shared RSC/proxy/browser caches. A server `no-store` fetch is a useful defense, not full connected proof; W14 tests real HTML/soft nav/back after logout.
 - Initial HTML should contain authorized story text, not a client waterfall. Hydration must not duplicate initial GET or overwrite later query-cache versions.

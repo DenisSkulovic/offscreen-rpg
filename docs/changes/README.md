@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W06, W08–W10, W15–W17, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W07](2026-11-11--web-play-route-recovery/CHANGE.md) route recovery or [W11](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) settings. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W06/W08–W10/W15–W17/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W10, W15–W17, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W11](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) settings or [W13](2026-11-12--web-import-type-guardrails/CHANGE.md) lint guardrails. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W10/W15–W17/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -28,7 +28,7 @@ Current change: none
 | **C: components** | [W06 cohesive feature composition](2026-11-11--web-campaign-composition/CHANGE.md) | **Done:** Feature model/API/UI boundaries and shared pure pace | W15 W04 |
 | **D: SSE server** | [W16 Nest SSE invalidation](2026-11-12--web-sse-backend-invalidation/CHANGE.md) | **Done:** Authenticated PG-backed committed-version hints | W02 |
 | **D: SSE client** | [W17 EventSource Query bridge](2026-11-12--web-sse-query-client/CHANGE.md) | **Done:** Invalidate/refetch, reconnect, 30s safety + 2s fallback | W03 W05 W16 |
-| **E: recovery** | [W07 route/a11y engineering](2026-11-11--web-play-route-recovery/CHANGE.md) | Next/Query error boundaries and keyboard recovery | W02 W03 W04 |
+| **E: recovery** | [W07 route/a11y engineering](2026-11-11--web-play-route-recovery/CHANGE.md) | **Done:** Next/Query error boundaries and keyboard recovery | W02 W03 W04 |
 | **E: enforcement** | [W13 import/lint guardrails](2026-11-12--web-import-type-guardrails/CHANGE.md) | Strict React/Next/TanStack lint and server/client boundaries | W02 W15 W06 |
 | **E: workbench** | [W18 Storybook states](2026-11-12--web-storybook-state-workbench/CHANGE.md) | Provider-free deterministic normal/error/recovery stories | W01 W06 W08 W11 |
 | **E: evidence** | [W14 private SSR/route/perf proof](2026-11-12--web-private-route-evidence/CHANGE.md) | Production-like real browser/cache/SSE/bundle evidence | W02 W15 W03 W07 W17 |

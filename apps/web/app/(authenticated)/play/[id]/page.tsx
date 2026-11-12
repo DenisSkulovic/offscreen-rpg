@@ -6,6 +6,7 @@ import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
+import { PlayQueryBoundary } from '@/src/features/play/play-query-boundary';
 import { PlayScene } from '@/src/features/play/view';
 
 export default async function PlayPage({
@@ -27,7 +28,9 @@ export default async function PlayPage({
   });
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PlayScene viewerId={viewer.user.id} storyId={storyId} />
+      <PlayQueryBoundary>
+        <PlayScene viewerId={viewer.user.id} storyId={storyId} />
+      </PlayQueryBoundary>
     </HydrationBoundary>
   );
 }

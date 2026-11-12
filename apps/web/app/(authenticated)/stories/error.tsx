@@ -1,11 +1,15 @@
 'use client';
 
-export default function AccountError({ reset }: { reset: () => void }) {
+import { RouteErrorRecovery } from '@/src/features/recovery/route-recovery';
+
+export default function StoriesError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string; status?: number; kind?: string };
+  reset: () => void;
+}) {
   return (
-    <main>
-      <h1>We couldn’t load your account.</h1>
-      <p>Please try again in a moment.</p>
-      <button onClick={reset}>Try again</button>
-    </main>
+    <RouteErrorRecovery error={error} reset={reset} resource="account" />
   );
 }
