@@ -9,6 +9,8 @@
 
 **Destination:** [information-retrieval standard](../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) + [documentation rule](../../../.agents/rules/documentation.md). **Observed gap:** `scripts/check_docs.py` currently scans top-level package/app/tool README files but not nested source-adjacent `README.md`, and checks target files but not `#heading` fragments. A moved heading/source map can silently break a precise cheap-model retrieval route even with a green old checker.
 
+**Observed regression motivating the checker:** The first nine generated nested source maps contained **49 incorrect same-directory links** that traversed too many `../` segments. The old documentation checker would not inspect them because their source directory was nested. The links were repaired after an independent GitHub-tree scan, but a permanent cheap check is needed. **Mandatory negative fixture:** a nested `README.md` link written as `../../../../../view.tsx` when `view.tsx` is actually in the same directory must fail rather than be counted as valid.
+
 ## Binding design and bounded diff
 
 - Extend the **existing** zero-third-party-dependency `scripts/check_docs.py`, not introduce a search server, heavy Markdown renderer, language-model verifier or new documentation framework.
