@@ -1,16 +1,18 @@
 # Code-bearing Changes | React/Next engineering execution program
 
-**Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
+**Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Execution efficiency:** [Cursor source atlas, verification ladder and toolchain plan](../engineering/frontend-execution-playbook.md). **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
 
 Current change: none
 
-**Architecture is decided; no Change is active.** There are **19 fully specified, code-bearing candidate packets (W01–W19)**. `Proposed` in a packet now means execution is **not selected/authorized**, *not* that Cursor may reopen its technology decisions. The owner will explicitly tell Cursor when to implement. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy. Independent Change boundaries keep diffs reviewable even though the owner placed no artificial cap on total engineering effort.
+**Architecture is decided; no Change is active.** There are **21 fully specified, code-bearing candidate packets (W01–W21)**. W20 and W21 address local workstation and CI economics as genuine code/config Changes, not new gameplay work. `Proposed` in a packet now means execution is **not selected/authorized**, *not* that Cursor may reopen its technology decisions. The owner will explicitly tell Cursor when to implement. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy. Independent Change boundaries keep diffs reviewable even though the owner placed no artificial cap on total engineering effort.
 
 ## Execution dependency DAG (source and test changes)
 
 | Phase | Packet | Exact selected result | Dependencies |
 | --- | --- | --- | --- |
 | **A: proof** | [W01 test foundation](2026-11-11--web-test-foundation/CHANGE.md) | Vitest + RTL + user-event + MSW | None |
+| **A: faster iteration** | [W20 Turbo test:fast/cache lane](2026-11-12--web-fast-feedback-toolchain/CHANGE.md) | Fast local Vitest/test graph without forcing a Next production build | W01 |
+| **A: CI economy** | [W21 conditional GitHub Actions gates](2026-11-12--web-ci-budget/CHANGE.md) | Documentation-only skips broad infrastructure; real CI integration still available | W01 W20 |
 | **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | Server-only authenticated reader, route group, same-origin config | W01 preferred |
 | **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | Query v5 provider, per-request prefetch/dehydrate/HydrationBoundary, viewer keys | W01 W02 |
 | **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | Only one viewer/story authoritative Query projection and version gate | W15 |
@@ -21,7 +23,7 @@ Current change: none
 | **C: creation** | [W09 generation/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | Query preview, separate useMutation and frozen Start | W15 |
 | **C: paging** | [W10 infinite lists/history](2026-11-12--web-pagination-navigation/CHANGE.md) | useInfiniteQuery with typed cursor/identity | W15 W03 |
 | **C: settings** | [W11 RHF settings/presets](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) | RHF/Zod, Query presets/history, revision-safe dirty editing | W15 W04 |
-| **C: lab** | [W12 Chamber/QA developer isolation](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | Query lab state + Nest developer-only policy | W15 W03 W05 |
+| **C: lab** | [W12 Chamber/QA state and boot-mode tests](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | Query lab viewer isolation; preserve **existing** Nest `developerTools` conditional registration | W15 W03 W05 |
 | **C: components** | [W06 cohesive feature composition](2026-11-11--web-campaign-composition/CHANGE.md) | Feature model/API/UI boundaries and shared pure pace | W15 W04 |
 | **D: SSE server** | [W16 Nest SSE invalidation](2026-11-12--web-sse-backend-invalidation/CHANGE.md) | Authenticated PG-backed committed-version hints | W02 |
 | **D: SSE client** | [W17 EventSource Query bridge](2026-11-12--web-sse-query-client/CHANGE.md) | Invalidate/refetch, reconnect, 30s safety + 2s fallback | W03 W05 W16 |
@@ -30,7 +32,7 @@ Current change: none
 | **E: workbench** | [W18 Storybook states](2026-11-12--web-storybook-state-workbench/CHANGE.md) | Provider-free deterministic normal/error/recovery stories | W01 W06 W08 W11 |
 | **E: evidence** | [W14 private SSR/route/perf proof](2026-11-12--web-private-route-evidence/CHANGE.md) | Production-like real browser/cache/SSE/bundle evidence | W02 W15 W03 W07 W17 |
 
-**Parallelism:** W19 and W15 may follow W02 independently; W08/W09 may run after W15 without waiting on Play; W16 backend may run after W02. **One active Change at a time by default**, especially for overlapping Play source owners. This is not a requirement to implement the queue in numeric order, and the owner may authorize a bounded group only with explicit source conflict control.
+**Recommended cost-first opening:** **W01 → W20 → W21 → W02 → W15**. W21 may be delayed if no GitHub pushes are planned, but W20 should precede high-volume Cursor implementation. **Parallelism:** W19 and W15 may follow W02 independently; W08/W09 may run after W15 without waiting on Play; W16 backend may run after W02. **One active Change at a time by default**, especially for overlapping Play source owners. This is not a requirement to implement the queue in numeric order, and the owner may authorize a bounded group only with explicit source conflict control.
 
 ## What these words mean
 
@@ -41,9 +43,9 @@ Current change: none
 
 ## Selecting and converging
 
-1. Read [target](../engineering/targets/react-next.md), [audit](../engineering/audits/react-next-gap-2026-11-12.md) and the one candidate packet. Reinspect current code/branch/worktree and the latest [minutes](../minutes/2026-11-12.md).
-2. Owner selects W01 (recommended start) or another dependency-ready outcome and authorizes bounded code and safe verification. Change the single `Current change: none` declaration to the selected packet link and mark it Ready only under actual permission.
-3. Cursor implements exactly the packet, with no provider spend, automatic database reset or deployment. Return normal/negative evidence, diff and honest unproved claims, not a new architecture.
+1. Read **one** candidate packet, its specific [target](../engineering/targets/react-next.md) heading and [source atlas](../engineering/frontend-execution-playbook.md#6-source-atlas-for-w01w21) entry. Reinspect current code/branch/worktree narrowly. Read the latest [minutes](../minutes/2026-11-12.md) only for a genuine design-history question; do not preload all 21 packets or old audits.
+2. Owner selects W01 (recommended start), then W20/W21 for efficiency, or another dependency-ready outcome and authorizes bounded code and safe verification. Change the single `Current change: none` declaration to the selected packet link and mark it Ready only under actual permission.
+3. Cursor implements exactly the packet with **cheap V0/V1 feedback during edits, focused V2 verification at Change closure, V3 real integration at architectural seams, V4 broad checks at milestones**, per [playbook](../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke). No provider spend, automatic database reset or deployment. Return normal/negative evidence, diff and honest unproved claims, not a new architecture.
 4. Review actual source/behavior against the fixed target; mark Done/cancelled/superseded as warranted and clear current selection. Replan future packet dependencies if evidence genuinely demands it, not for technology shopping.
 
 **Out of scope:** [parked S3a continuity work](2026-11-11--s3a-continuity-report/CHANGE.md), [legacy game initiatives](../features/README.md), UI art direction, gameplay and features. The original [Nov 11 seven-packet audit](../engineering/audits/react-next-gap-2026-11-11.md) remains historical provenance.

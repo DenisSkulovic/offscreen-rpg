@@ -8,7 +8,7 @@
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
-| [2026-11-12](2026-11-12.md) | Owner selected TanStack/RHF/SSE/SSR/test architecture, audit and W01–W19 | **Architecture decided**, 19 specified packets, no active coding Change |
+| [2026-11-12](2026-11-12.md) | Selected React stack plus Cursor economy, pre-investigation, W01–W21 and staged verification | **Architecture decided**, 21 specified packets, no active coding Change |
 | [2026-11-11](2026-11-11.md) | Harness/knowledge, Feature→Change redesign, portfolio direction, target-first React/Next planning | Historical reconstruction from discussions and commits; no active coding Change |
 
 ## Fresh-chat handoff (read selectively)
