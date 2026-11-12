@@ -418,15 +418,13 @@ export async function checkStoryStart({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/stories/new`);
-        await page.getByLabel('Title').fill('Started from candidate');
-        await page
-          .getByLabel('Who are you')
-          .fill('A traveller at a locked gate.');
-        await page.getByRole('button', { name: 'Save draft' }).click();
-        await page.getByText('Saved.', { exact: true }).waitFor();
-        await page
-          .getByRole('link', { name: 'Review opening candidate' })
-          .click();
+        const { createCustomDraftSetup } =
+          await import('./helpers/draft-wizard.js');
+        await createCustomDraftSetup(page, {
+          title: 'Started from candidate',
+          premise: 'A traveller at a locked gate.',
+        });
+        await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
           .getByRole('button', {
             name: 'Generate opening candidate',

@@ -474,7 +474,7 @@ export async function checkGeneratedResolution({
         'Expected generated opening offer',
       );
       await database.db.$client.query(
-        'UPDATE story_passage SET source_generation_id = NULL WHERE story_id = $1 AND sequence = 1',
+        'UPDATE story_passage SET source_generation_id = NULL, source_generation_part = NULL WHERE story_id = $1 AND sequence = 1',
         [storyId],
       );
       assert.equal(
@@ -755,15 +755,13 @@ export async function checkGeneratedResolution({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/stories/new`);
-        await page.getByLabel('Title').fill('Generated resolution');
-        await page
-          .getByLabel('Who are you')
-          .fill('A traveller at a locked gate.');
-        await page.getByRole('button', { name: 'Save draft' }).click();
-        await page.getByText('Saved.', { exact: true }).waitFor();
-        await page
-          .getByRole('link', { name: 'Review opening candidate' })
-          .click();
+        const { createCustomDraftSetup } =
+          await import('./helpers/draft-wizard.js');
+        await createCustomDraftSetup(page, {
+          title: 'Generated resolution',
+          premise: 'A traveller at a locked gate.',
+        });
+        await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
           .getByRole('button', {
             name: 'Generate opening candidate',
