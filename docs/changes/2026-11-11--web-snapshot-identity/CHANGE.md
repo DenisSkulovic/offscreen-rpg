@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
+**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. Implemented after W15 on **2026-11-12**. Verified with pure reconcile negatives + `pnpm test:fast` + typecheck.
 
 **Dependencies:** W01 + W15; prerequisite of W04 W05 W10 W12 W17.  
 **Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F4 F10**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G13 G17 G27**.

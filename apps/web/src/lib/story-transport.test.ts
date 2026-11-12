@@ -25,6 +25,21 @@ describe('preferNewerSnapshot', () => {
     );
   });
 
+  it('rejects a different story id even with a higher viewVersion (negative)', () => {
+    const prior = makeStorySnapshot({
+      viewVersion: 2,
+      title: 'Story A',
+    });
+    const other = makeStorySnapshot({
+      id: '99999999-9999-4999-8999-999999999999',
+      viewVersion: 99,
+      title: 'Story B',
+    });
+    expect(preferNewerSnapshot(prior, other).current.content.title).toBe(
+      'Story A',
+    );
+  });
+
   it('keeps the prior when viewVersions match but next resolution is older', () => {
     const prior = makeStorySnapshot({
       viewVersion: 8,

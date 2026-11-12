@@ -1,23 +1,29 @@
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
+import { reconcileStorySnapshot } from '@/src/shared/api/story-snapshot-reconcile';
 
 const requestTimeoutMs = 10000;
 
+/**
+ * Legacy local-state helper (Chamber). Prefer `writeStorySnapshot` for Query.
+ * Still rejects cross-story swaps; does not encode viewer identity.
+ */
 export function preferNewerSnapshot(
   prior: StorySnapshot | null | undefined,
   next: StorySnapshot,
 ) {
-  if (
-    prior &&
-    next.viewVersion === prior.viewVersion &&
-    (next.resolution?.version ?? 0) < (prior.resolution?.version ?? 0)
-  ) {
+  const result = reconcileStorySnapshot({
+    viewerId: 'local',
+    storyId: next.id,
+    prior: prior && prior.id === next.id ? prior : undefined,
+    priorEpoch: 0,
+    next,
+    nextEpoch: 1,
+  });
+  if (prior && prior.id !== next.id) {
     return prior;
   }
-  if (!prior || next.viewVersion >= prior.viewVersion) {
-    return next;
-  }
-  return prior;
+  return result.snapshot ?? prior ?? next;
 }
 
 export async function readStorySnapshot(storyId: string, signal?: AbortSignal) {

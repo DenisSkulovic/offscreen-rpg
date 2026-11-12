@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
+import { clearStorySnapshotEpochs } from '@/src/shared/api/story-snapshot-write';
 
 const LOGOUT_CHANNEL = 'offscreen-auth';
 
@@ -10,6 +11,7 @@ export function clearAuthenticatedQueryCaches(queryClient: {
   clear: () => void;
 }) {
   queryClient.clear();
+  clearStorySnapshotEpochs();
   if (typeof BroadcastChannel !== 'undefined') {
     new BroadcastChannel(LOGOUT_CHANNEL).postMessage({ type: 'logout' });
   }

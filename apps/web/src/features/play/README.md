@@ -24,6 +24,7 @@
 URL /play/:id
   -> (authenticated) PlayPage -> createServerQueryClient + prefetchQuery(readNestJson)
   -> HydrationBoundary -> PlayScene useQuery(storySnapshotQueryOptions)
+  -> poll/command completions -> writeStorySnapshot (reconcileStorySnapshot gate)
   -> PlayScene -> user chooses -> PUT /resolutions/:operationId (same UUID/body on retry)
   -> Nest admits (202), returns current public snapshot
   -> browser reads/polls until authoritative version/settlement

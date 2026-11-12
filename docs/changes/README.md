@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01, W02, W15, W20 and W21 are Done.** Next dependency-ready packets when authorized include [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md), [W19 operation receipts](2026-11-12--web-resolution-operation-receipts/CHANGE.md), or form packets after W15. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01/W02/W15/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W03, W15, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W19 operation receipts](2026-11-12--web-resolution-operation-receipts/CHANGE.md) (before W04), or [W05]/[W08](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) form/list work after W15. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W03/W15/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -16,7 +16,7 @@ Current change: none
 | **A: navigation guard** | [W22 nested docs / anchor checker](2026-11-12--web-context-navigation-check/CHANGE.md) | Extend cheap `check_docs.py` to new source maps and exact heading anchors | No runtime dependency |
 | **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | **Done:** server-only reader, `(authenticated)` group, `API_PROXY_ORIGIN` | W01 preferred |
 | **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | **Done:** Query v5 provider, Play prefetch/hydrate, viewer keys | W01 W02 |
-| **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | Only one viewer/story authoritative Query projection and version gate | W15 |
+| **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | **Done:** viewer/story/`viewVersion`/epoch Query write gate | W15 |
 | **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | Read-only Nest resolution status/identity endpoint | W02 |
 | **B: commands** | [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md) | Intent FSM, immutable payload, verified lost-ACK/reload recovery | W03 W19 |
 | **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | Visibility-aware, bounded conditional GET | W03 W04 |

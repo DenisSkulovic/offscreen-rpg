@@ -10,5 +10,7 @@
 | `query-defaults.ts` | stale/gc/retry/mutation policies from React/Next target |
 | `query-client.ts` | `createBrowserQueryClient` / `createServerQueryClient` (server never global) |
 | `story-snapshot-query.ts` | Play snapshot `queryOptions` shared by SSR prefetch override + browser |
+| `story-snapshot-reconcile.ts` | Pure viewer/story/`viewVersion`/epoch gate |
+| `story-snapshot-write.ts` | Sole Play Query write for snapshots |
 
-**Maintenance:** update when key shapes or cache policies change.
+**Maintenance:** update when key shapes, cache policies or snapshot write gates change.

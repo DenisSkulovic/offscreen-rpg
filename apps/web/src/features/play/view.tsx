@@ -9,13 +9,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import {
-  preferNewerSnapshot,
   readSnapshotFromResponse,
   readStorySnapshot,
   submitStoryJson,
 } from '@/src/lib/story-transport';
 import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
-import { queryKeys } from '@/src/shared/api/query-keys';
+import {
+  allocateStorySnapshotEpoch,
+  writeStorySnapshot,
+} from '@/src/shared/api/story-snapshot-write';
 
 function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
   if (waiting.remainingMs === null) {
@@ -94,9 +96,14 @@ export function PlayScene({
   const controlOperation = useRef<{ id: string; body: unknown } | null>(null);
 
   function acceptSnapshot(next: StorySnapshot) {
-    queryClient.setQueryData(
-      queryKeys.storySnapshot(viewerId, storyId),
-      (prior: StorySnapshot | undefined) => preferNewerSnapshot(prior, next),
+    writeStorySnapshot(
+      queryClient,
+      {
+        viewerId,
+        storyId,
+        requestEpoch: allocateStorySnapshotEpoch(),
+      },
+      next,
     );
   }
 
@@ -125,12 +132,13 @@ export function PlayScene({
     let timer: ReturnType<typeof setTimeout>;
     async function refresh() {
       try {
+        const epoch = allocateStorySnapshotEpoch();
         const latest = await readStorySnapshot(storyId, controller.signal);
         if (!controller.signal.aborted) {
-          queryClient.setQueryData(
-            queryKeys.storySnapshot(viewerId, storyId),
-            (prior: StorySnapshot | undefined) =>
-              preferNewerSnapshot(prior, latest),
+          writeStorySnapshot(
+            queryClient,
+            { viewerId, storyId, requestEpoch: epoch },
+            latest,
           );
         }
       } catch {
