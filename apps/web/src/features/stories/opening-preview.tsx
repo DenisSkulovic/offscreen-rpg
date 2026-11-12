@@ -1,231 +1,94 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { z } from 'zod';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { Draft } from '@offscreen/contracts/drafts';
-import {
-  openingPreviewSchema,
-  latestOpeningSchema,
-} from '@offscreen/contracts/openings';
 import type { OpeningPreview } from '@offscreen/contracts/openings';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { paceOptions } from '@/src/features/play/campaign-play';
+import { openingQueryOptions } from '@/src/shared/api/opening-query';
+import { useOpeningGenerate } from './use-opening-generate';
+import { useStartStory } from './use-start-story';
 
 export function OpeningPreviewPanel({
+  viewerId,
   draft,
   initial,
   mechanicalContent,
 }: {
+  viewerId: string;
   draft: Draft;
   initial: OpeningPreview | null;
   mechanicalContent: MechanicalContentSummary[];
 }) {
-  const [preview, setPreview] = useState(initial);
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState('');
-  const attempt = useRef<{
-    id: string;
-    revision: number;
-    contentId: string | undefined;
-  } | null>(null);
-  const storyId = useRef<string | null>(null);
-  const [starting, setStarting] = useState(false);
+  const openingQuery = useQuery({
+    ...openingQueryOptions(viewerId, draft.id),
+    initialData: initial,
+  });
+  const generate = useOpeningGenerate(viewerId, draft.id);
+  const start = useStartStory({ viewerId, draftId: draft.id });
   const [locked, setLocked] = useState(false);
   const [pace, setPace] = useState('steady');
-  useEffect(() => {
-    const parsed = z
-      .uuid()
-      .safeParse(new URLSearchParams(window.location.search).get('story'));
-    if (parsed.success) {
-      storyId.current = parsed.data;
-    }
-  }, []);
-  useEffect(() => {
-    if (!preview || !['pending', 'running'].includes(preview.state)) {
-      return;
-    }
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout>;
-    let reads = 0;
-    async function poll() {
-      if (controller.signal.aborted) {
-        return;
-      }
-      if (!document.hidden) {
-        try {
-          const response = await fetch(
-            `/api/drafts/${draft.id}/openings/latest`,
-            {
-              cache: 'no-store',
-              signal: AbortSignal.any([
-                controller.signal,
-                AbortSignal.timeout(10000),
-              ]),
-            },
-          );
-          if (!response.ok) {
-            throw new Error('Status unavailable');
-          }
-          const result = latestOpeningSchema.parse(await response.json());
-          if (controller.signal.aborted) {
-            return;
-          }
-          setPreview(result.preview);
-          if (
-            !result.preview ||
-            !['pending', 'running'].includes(result.preview.state)
-          ) {
-            return;
-          }
-        } catch {
-          if (controller.signal.aborted) {
-            return;
-          }
-          setMessage(
-            'Unable to refresh the saved request. It can continue in the background; reload to check.',
-          );
-          return;
-        }
-        if (++reads >= 30) {
-          setMessage(
-            'Still awaiting completion. You can leave this page and return later, or reload to check.',
-          );
-          return;
-        }
-      }
-      timer = setTimeout(() => void poll(), 2000);
-    }
-    timer = setTimeout(() => void poll(), 2000);
-    return () => {
-      controller.abort();
-      clearTimeout(timer);
-    };
-  }, [draft.id, preview?.id, preview?.state]);
-  async function generate() {
-    if (pending || starting) {
-      return;
-    }
-    const request =
-      attempt.current ??
-      (preview?.state === 'pending'
-        ? {
-            id: preview.id,
-            revision: preview.sourceRevision,
-            contentId: preview.contentId,
-          }
-        : {
-            id: crypto.randomUUID(),
-            revision: draft.revision,
-            contentId: draft.openingContentId ?? undefined,
-          });
-    attempt.current = request;
-    setPending(true);
-    setMessage('');
-    try {
-      const response = await fetch(
-        `/api/drafts/${draft.id}/openings/${request.id}`,
-        {
-          method: 'PUT',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            expectedRevision: request.revision,
-            contentId: request.contentId,
-          }),
-          signal: AbortSignal.timeout(15000),
-        },
-      );
-      if (response.status === 401) {
-        setMessage('Sign in again, then retry.');
-        return;
-      }
-      if (response.status === 409) {
-        setMessage(
-          'The draft or its request changed. Reload this page to review the current state.',
-        );
-        return;
-      }
-      if (!response.ok) {
-        throw new Error('Unavailable');
-      }
-      setPreview(openingPreviewSchema.parse(await response.json()));
-      attempt.current = null;
-    } catch {
-      setMessage(
-        'The result could not be confirmed. Retry to recover the same request, or reload to check its saved result.',
-      );
-    } finally {
-      setPending(false);
-    }
-  }
+
+  const preview = start.conflictPreview ?? openingQuery.data ?? null;
   const unresolved =
     preview && ['pending', 'running', 'uncertain'].includes(preview.state);
   const canStart = Boolean(
     preview &&
-    preview.state === 'succeeded' &&
-    preview.isCurrent &&
-    preview.sourceRevision === draft.revision &&
-    preview.candidate,
+      preview.state === 'succeeded' &&
+      preview.isCurrent &&
+      preview.sourceRevision === draft.revision &&
+      preview.candidate,
   );
-  async function startStory() {
-    if (pending || starting || !preview || !canStart) {
+
+  function onGenerate() {
+    if (generate.pending || start.pending || unresolved) {
       return;
     }
-    storyId.current ??= crypto.randomUUID();
-    window.history.replaceState(
-      null,
-      '',
-      `/stories/${draft.id}/preview?story=${storyId.current}`,
-    );
-    setStarting(true);
-    setMessage('');
-    try {
-      const response = await fetch(`/api/stories/${storyId.current}/start`, {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          candidateId: preview.id,
-          expectedDraftRevision: draft.revision,
-          campaign: {
-            mechanics: Boolean(preview.contentId),
-            locked,
-            pace: paceOptions.find((option) => option.value === pace)?.pace,
-            ...(preview.startPackage
-              ? { startPackage: preview.startPackage }
-              : {}),
-          },
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (response.status === 401) {
-        setMessage('Sign in again, then retry.');
-        return;
-      }
-      if (response.status === 409) {
-        const latest = await fetch(`/api/drafts/${draft.id}/openings/latest`, {
-          cache: 'no-store',
-          signal: AbortSignal.timeout(10000),
-        });
-        if (latest.ok) {
-          setPreview(latestOpeningSchema.parse(await latest.json()).preview);
-        }
-        setMessage(
-          'The draft or candidate changed. The current preview is shown; it was not started.',
-        );
-        return;
-      }
-      if (!response.ok) {
-        throw new Error('Unavailable');
-      }
-      window.location.assign(`/play/${storyId.current}`);
-    } catch {
-      setMessage(
-        'The story could not be confirmed. Retry Start to recover the same story, or reload.',
-      );
-    } finally {
-      setStarting(false);
+    if (generate.canRetrySame) {
+      generate.retryFrozen();
+      return;
     }
+    const reuseAttemptId =
+      preview?.state === 'pending' ? preview.id : undefined;
+    generate.submit({
+      expectedRevision:
+        preview?.state === 'pending'
+          ? preview.sourceRevision
+          : draft.revision,
+      ...(draft.openingContentId
+        ? { contentId: draft.openingContentId }
+        : preview?.contentId
+          ? { contentId: preview.contentId }
+          : {}),
+      ...(reuseAttemptId ? { reuseAttemptId } : {}),
+    });
   }
+
+  function onStart() {
+    if (generate.pending || start.pending || !preview || !canStart) {
+      return;
+    }
+    if (start.canRetrySame) {
+      start.retryFrozen();
+      return;
+    }
+    const paceValue = paceOptions.find((option) => option.value === pace)?.pace;
+    start.captureAndSubmit({
+      candidateId: preview.id,
+      expectedDraftRevision: draft.revision,
+      campaign: {
+        mechanics: Boolean(preview.contentId),
+        locked,
+        ...(paceValue ? { pace: paceValue } : {}),
+        ...(preview.startPackage
+          ? { startPackage: preview.startPackage }
+          : {}),
+      },
+    });
+  }
+
   let generateLabel = 'Create opening';
   if (preview?.state === 'succeeded')
     generateLabel = 'Create a different opening';
@@ -234,12 +97,25 @@ export function OpeningPreviewPanel({
   if (preview?.state === 'pending') generateLabel = 'Opening request queued…';
   if (preview?.state === 'running') generateLabel = 'Storyteller is writing…';
   if (preview?.state === 'uncertain') generateLabel = 'Generation stopped';
-  if (pending) {
+  if (generate.pending) {
     generateLabel = 'Sending to Storyteller…';
   }
+  if (generate.canRetrySame) {
+    generateLabel = 'Retry the same opening request';
+  }
+
   const preparedStart = mechanicalContent.find(
     (entry) => entry.id === draft.openingContentId,
   );
+  const statusMessage =
+    start.message ||
+    generate.message ||
+    (start.recovery.status === 'blocked' ? start.recovery.message : '') ||
+    (openingQuery.isError
+      ? 'Unable to refresh the saved request. It can continue in the background; reload to check.'
+      : '');
+  const startLocked = Boolean(start.frozen) || start.canRetrySame;
+
   return (
     <main className="editor opening-editor">
       <SessionRefresh />
@@ -343,12 +219,16 @@ export function OpeningPreviewPanel({
         </section>
       )}
       {canStart && preview?.storyteller ? (
-        <fieldset disabled={starting || pending}>
+        <fieldset disabled={start.pending || generate.pending || startLocked}>
           <legend>Before you begin</legend>
           <label>
             <input
               type="checkbox"
-              checked={locked}
+              checked={
+                startLocked && start.frozen
+                  ? start.frozen.campaign.locked
+                  : locked
+              }
               onChange={(event) => setLocked(event.target.checked)}
             />{' '}
             Keep Storyteller and speed settings fixed for this story
@@ -356,7 +236,15 @@ export function OpeningPreviewPanel({
           <label>
             Game speed{' '}
             <select
-              value={pace}
+              value={
+                startLocked && start.frozen?.campaign.pace
+                  ? paceOptions.find(
+                      (option) =>
+                        JSON.stringify(option.pace) ===
+                        JSON.stringify(start.frozen?.campaign.pace),
+                    )?.value ?? pace
+                  : pace
+              }
               onChange={(event) => setPace(event.target.value)}
             >
               {paceOptions.map((option) => (
@@ -372,30 +260,37 @@ export function OpeningPreviewPanel({
           </p>
         </fieldset>
       ) : null}
-      {canStart ? (
+      {canStart || start.canRetrySame ? (
         <p>
           <button
             type="button"
-            disabled={pending || starting}
-            onClick={() => void startStory()}
+            disabled={generate.pending || start.pending}
+            onClick={() => void (start.canRetrySame ? start.retryFrozen() : onStart())}
           >
-            {starting ? 'Starting story…' : 'Start story'}
+            {start.pending
+              ? 'Starting story…'
+              : start.canRetrySame
+                ? 'Retry the same Start'
+                : 'Start story'}
           </button>
         </p>
       ) : null}
       <button
         disabled={
-          pending || starting || !draft.premise.trim() || Boolean(unresolved)
+          generate.pending ||
+          start.pending ||
+          !draft.premise.trim() ||
+          Boolean(unresolved)
         }
-        onClick={() => void generate()}
+        onClick={() => void onGenerate()}
       >
         {generateLabel}
       </button>
       {!draft.premise.trim() && (
         <p>Add and save a premise before generating.</p>
       )}
-      <p role="status">{message}</p>
-      {message && (
+      <p role="status">{statusMessage}</p>
+      {statusMessage && (
         <p>
           <a href={`/stories/${draft.id}/preview`}>Reload this opening</a>
         </p>

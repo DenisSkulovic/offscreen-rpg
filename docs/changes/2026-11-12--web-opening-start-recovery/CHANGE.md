@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
+**State: Done.** Owner authorized via continue after W08. Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. **Source baseline:** post-W08 `main` (`370bf3f`).
 
 **Dependencies:** W01 W02 W15. W19 is not needed for Start's GET-by-story recovery.  
 **Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F5 F8 F11**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G11 G19 G28**.

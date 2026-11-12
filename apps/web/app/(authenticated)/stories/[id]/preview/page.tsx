@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
 import {
   latestOpeningSchema,
@@ -9,6 +10,8 @@ import { nestFetch, parseNestJson } from '@/src/server/nest-reader';
 import { NestTransientError } from '@/src/server/nest-errors';
 import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
 import { classifyNestStatus } from '@/src/server/classify-nest-status';
+import { createServerQueryClient } from '@/src/shared/api/query-client';
+import { openingQueryOptions } from '@/src/shared/api/opening-query';
 
 export default async function Preview({
   params,
@@ -44,16 +47,25 @@ export default async function Preview({
       'Preview could not be loaded',
     );
   }
+  const draft = await parseNestJson(draftResponse, draftSchema);
+  const preview = (await parseNestJson(previewResponse, latestOpeningSchema))
+    .preview;
+  const mechanicalContent = (
+    await parseNestJson(catalogueResponse, mechanicalContentCatalogueSchema)
+  ).entries;
+  const queryClient = createServerQueryClient();
+  await queryClient.prefetchQuery({
+    ...openingQueryOptions(viewer.user.id, parsed.data),
+    queryFn: async () => preview,
+  });
   return (
-    <OpeningPreviewPanel
-      draft={await parseNestJson(draftResponse, draftSchema)}
-      initial={
-        (await parseNestJson(previewResponse, latestOpeningSchema)).preview
-      }
-      mechanicalContent={
-        (await parseNestJson(catalogueResponse, mechanicalContentCatalogueSchema))
-          .entries
-      }
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <OpeningPreviewPanel
+        viewerId={viewer.user.id}
+        draft={draft}
+        initial={preview}
+        mechanicalContent={mechanicalContent}
+      />
+    </HydrationBoundary>
   );
 }

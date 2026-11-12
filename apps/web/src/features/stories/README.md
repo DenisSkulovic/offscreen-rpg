@@ -1,8 +1,8 @@
 # Stories: draft → opening → Start | source map
 
-**First look:** Draft edit uses viewer-keyed Query + React Hook Form (`mode: onTouched`, Zod form schema). Save freezes `{draftId, expectedRevision, content}` in `useMutation` (retry 0). RHF owns unsaved values; Query owns acknowledged `Draft`. **Start remains a separate durable intent (W09), not a draft save.**
+**First look:** Draft edit uses viewer-keyed Query + React Hook Form (`mode: onTouched`, Zod form schema). Save freezes `{draftId, expectedRevision, content}` in `useMutation` (retry 0). RHF owns unsaved values; Query owns acknowledged `Draft`. **Start is a separate durable intent:** freeze full body/story UUID once, GET-by-story before replay.
 **Start:** [new draft route](../../../app/(authenticated)/stories/new/page.tsx) / [saved draft route](../../../app/(authenticated)/stories/[id]/page.tsx) → [DraftEditor](draft-editor.tsx) → [preview route](../../../app/(authenticated)/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](opening-preview.tsx).
-**Source basis:** post-W08 `main`; recheck symbols before editing. W09/W10 own opening Start and list paging.
+**Source basis:** post-W09 `main`; recheck symbols before editing. W10 owns list paging.
 
 ## Where a question belongs
 
@@ -15,9 +15,9 @@
 | Storyteller catalogue | [StorytellerSelect](storyteller-select.tsx) | GET `/api/storytellers` via client effect |
 | Draft list, more pages | [DraftList](draft-list.tsx) | GET `/api/drafts?cursor=opaque`; client append/dedupes |
 | Live story list | [LiveStoryList](live-story-list.tsx) | GET `/api/stories?before=UUID`; currently replaces page rather than appends |
-| Opening candidate load | `app/stories/[id]/preview/page.tsx` | Parallel draft/latest/catalogue GET; parsed `latestOpeningSchema` |
-| Generation admission and refresh | [OpeningPreviewPanel.generate/poll](opening-preview.tsx) | `PUT /api/drafts/:id/openings/:attemptId` **202**, GET `/latest`; backend may still be pending or uncertain |
-| Start a reviewed candidate | `OpeningPreviewPanel.startStory` | `PUT /api/stories/:storyId/start` **200**; see below |
+| Opening candidate load | preview page + [openingQueryOptions](../../shared/api/opening-query.ts) | SSR hydrate `queryKeys.draftOpening`; GET `/latest` polls while pending/running |
+| Generation admission | [useOpeningGenerate](use-opening-generate.ts) | Frozen `PUT .../openings/:attemptId` **202**; no automatic paid retry |
+| Start a reviewed candidate | [useStartStory](use-start-story.ts) + [start-intent-store](../../shared/api/start-intent-store.ts) | Freeze body once; sessionStorage 24h TTL; GET story before replay |
 
 ## Command identity matters more than component shape
 
@@ -26,19 +26,20 @@ Draft: editor local text -> PUT /drafts/:id { expectedRevision, ...content }
        409 => preserve unsaved text, explicit current-server reconciliation
 
 Opening: candidate preview -> PUT /drafts/:id/openings/:generationId
-         202 => persisted generation admission; refresh via GET latest
+         202 => persisted generation admission; refresh via GET latest (Query)
          uncertain paid provider => do NOT automatically generate again
 
 Start: preview succeeded/current -> PUT /stories/:storyId/start
-       { candidateId, expectedDraftRevision, campaign options }
+       frozen {viewerId,draftId,storyId,candidateId,expectedDraftRevision,campaign}
+       reload => GET /stories/:storyId first; never auto-PUT; explicit same-body retry only
        200 => existing saved story; link to /play/:storyId
 ```
 
-**Actual risk identified:** `opening-preview.tsx` stores `storyId.current` and writes `?story=UUID`, but a later Start attempt builds the body from **current** `preview`/`locked`/`pace`. After unknown transport completion, the same story ID can be retried with a different request. W09 requires *capturing immutable body/ID together*, GET-first recovery and user-triggered exact replay. Do not confuse this with the W19 *resolution receipt* endpoint; Start already has GET-by-story as recovery anchor.
+**W09 closed the Start trap:** `storyId` and campaign body are captured together. Changed locked/pace after an uncertain Start cannot alter the frozen envelope. Missing/corrupt/foreign sessionStorage blocks unsafe retry.
 
 ## Tests, chosen standards and stop rule
 
-- Selected architecture: [F5/F8/F12 target](../../../../../docs/engineering/targets/react-next.md) and [story lifecycle contract](../../../../../docs/technical/story-lifecycle.md). Read relevant **section**, not full file.
-- Fast cases (`pnpm test:fast`): dirty survives 409; delayed save does not clobber newer keystrokes; background Query set does not reset RHF; Start/opening recovery remains W09.
+- Selected architecture: [F5/F8/F11 target](../../../../../docs/engineering/targets/react-next.md) and [story lifecycle contract](../../../../../docs/technical/story-lifecycle.md). Read relevant **section**, not full file.
+- Fast cases (`pnpm test:fast`): dirty survives 409; Start GET-first remount without auto-PUT; frozen pace survives retry; missing capture blocks; pending opening polls without generation PUT.
 - Integrated proof if authorized: [draft browser](../../../../../tools/api-integration/test/drafts.browser.ts) and [Start integration](../../../../../tools/api-integration/test/story-start.integration.ts). [Integration warning](../../../../../tools/api-integration/README.md) explains disposable DB reset.
 - Update this map only when a route, edit/command owner, wire shape or recovery lifecycle changes. Don't duplicate the normative technical contract or annotate every JSX file. No gameplay, visual redesign or live model work is authorized here.

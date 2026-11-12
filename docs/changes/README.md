@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W05, W08, W15, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W09](2026-11-12--web-opening-start-recovery/CHANGE.md) Start recovery, [W06](2026-11-11--web-campaign-composition/CHANGE.md) composition, or [W16](2026-11-12--web-sse-backend-invalidation/CHANGE.md) SSE backend. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W05/W08/W15/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W05, W08, W09, W15, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W06](2026-11-11--web-campaign-composition/CHANGE.md) composition, [W16](2026-11-12--web-sse-backend-invalidation/CHANGE.md) SSE backend, or [W10](2026-11-12--web-pagination-navigation/CHANGE.md) paging. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W05/W08/W09/W15/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -21,7 +21,7 @@ Current change: none
 | **B: commands** | [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md) | **Done:** intent FSM, immutable payload, verified lost-ACK/reload recovery | W03 W19 |
 | **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | **Done:** visibility-aware, bounded conditional GET | W03 W04 |
 | **C: forms** | [W08 RHF draft editor](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) | **Done:** RHF/Zod, dirty revision/save conflict | W15 |
-| **C: creation** | [W09 generation/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | Query preview, separate useMutation and frozen Start | W15 |
+| **C: creation** | [W09 generation/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | **Done:** Query preview, separate useMutation and frozen Start | W15 |
 | **C: paging** | [W10 infinite lists/history](2026-11-12--web-pagination-navigation/CHANGE.md) | useInfiniteQuery with typed cursor/identity | W15 W03 |
 | **C: settings** | [W11 RHF settings/presets](2026-11-12--web-settings-presets-lifecycle/CHANGE.md) | RHF/Zod, Query presets/history, revision-safe dirty editing | W15 W04 |
 | **C: lab, superseded** | [W12 historical Chamber/QA](2026-11-12--web-chamber-qa-isolation/CHANGE.md) | **DO NOT IMPLEMENT:** requirements transferred to [CH10–CH11 Chamber redesign](../engineering/chamber-program.md) | Superseded |
