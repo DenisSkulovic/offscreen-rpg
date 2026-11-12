@@ -1,5 +1,10 @@
 # Change W10: Viewer-scoped useInfiniteQuery for stories, drafts and chronology
 
+> **Cursor first look (current source ≠ selected target):** [List owner map](../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F12](../../engineering/targets/react-next.md#f12-list-history-and-navigation-consistency).  
+> **Pre-investigated trap:** Story list uses UUID `before`, drafts opaque `cursor`, history numeric `before`; do not normalize them into one cursor type.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
 **Depends on:** W01 W02 W15; W03 for history viewer/resource identity.  

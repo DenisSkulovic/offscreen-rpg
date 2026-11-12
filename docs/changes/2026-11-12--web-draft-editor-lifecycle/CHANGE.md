@@ -1,5 +1,10 @@
 # Change W08: React Hook Form and Zod draft editing with revision-safe dirty state
 
+> **Cursor first look (current source ≠ selected target):** [Draft editing map](../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F8](../../engineering/targets/react-next.md#f8-creationforms-and-editing-consistency).  
+> **Pre-investigated trap:** RHF future edit state must survive 409/background Query refresh; current draft code already preserves conflict text.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W01 W02 W15. Can proceed independently of Play work.  

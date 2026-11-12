@@ -1,5 +1,10 @@
 # Change W01: Vitest + React Testing Library + MSW frontend verification
 
+> **Cursor first look (current source ≠ selected target):** [Web test seam](../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../engineering/targets/react-next.md#f10-evidence-and-maintainability).  
+> **Pre-investigated trap:** Current Turbo `test` builds the same package; run direct Vitest first, not Next production build.  
+> **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** None. **First implementation packet**.  

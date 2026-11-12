@@ -1,5 +1,10 @@
 # Change W13: Next/React/TanStack ESLint and enforceable client/server boundaries
 
+> **Cursor first look (current source ≠ selected target):** [Server/client boundary map](../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F14](../../engineering/targets/react-next.md#f14-type-module-and-dependency-hygiene).  
+> **Pre-investigated trap:** Existing strict TS/root ESLint already ban backend imports; add only missing React/Next/TanStack guards.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
 **Depends on:** W02 W15 W06. W01 establishes test command.  

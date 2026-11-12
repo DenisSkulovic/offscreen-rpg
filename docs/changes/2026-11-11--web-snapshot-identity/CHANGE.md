@@ -1,5 +1,10 @@
 # Change W03: Monotonic, viewer-scoped story snapshots in TanStack Query
 
+> **Cursor first look (current source ≠ selected target):** [Play state map](../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F4](../../engineering/targets/react-next.md#f4-versioned-snapshot-reconciliation).  
+> **Pre-investigated trap:** Existing `preferNewerSnapshot` compares version, not user/story identity; no second canonical Query store.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W01 + W15; prerequisite of W04 W05 W10 W12 W17.  

@@ -1,5 +1,10 @@
 # Change W15: TanStack Query v5 foundation, authenticated SSR hydration and query keys
 
+> **Cursor first look (current source ≠ selected target):** [Server/browser transport map](../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
+> **Pre-investigated trap:** Future Query provider not installed; per-request SSR QueryClient must never be global.  
+> **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W01 + W02. **Required before W03–W12 feature migrations**.  

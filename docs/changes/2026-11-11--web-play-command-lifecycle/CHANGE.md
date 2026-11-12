@@ -1,5 +1,10 @@
 # Change W04: TanStack useMutation with frozen Play intent and durable recovery
 
+> **Cursor first look (current source ≠ selected target):** [Play command map](../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
+> **Pre-investigated trap:** `useRef` preserves UUID only while mounted; 202 is admitted, not published. Keep frozen payload for retries.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W15 + W03 + W19; do not parallel-edit the same Play controller as W05/W06.  

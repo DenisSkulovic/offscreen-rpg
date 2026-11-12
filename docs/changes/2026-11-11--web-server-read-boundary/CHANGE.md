@@ -1,5 +1,10 @@
 # Change W02: Authenticated Next route group and typed server-side Nest reader
 
+> **Cursor first look (current source ≠ selected target):** [App Router map](../../../apps/web/app/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
+> **Pre-investigated trap:** `requireViewer` is server-side; current browser rewrite loopback differs from configurable SSR origin.  
+> **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W01 recommended. Must precede W15 and W19.  

@@ -1,5 +1,10 @@
 # Change W17: EventSource Query invalidation with reconnect and polling safety fallback
 
+> **Cursor first look (current source ≠ selected target):** [Play Query/SSE map](../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
+> **Pre-investigated trap:** SSE carries hints only; always validate a scoped GET snapshot and retain polling fallback for lost events.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
 **Depends on:** W03 W05 W16. Uses existing W15 Query provider and typed read adapters.  

@@ -1,5 +1,10 @@
 # Change W22: Source-map discovery and Markdown heading-link verification
 
+> **Cursor first look (current source ≠ selected target):** [Nested source-map example](../../../apps/web/src/features/play/README.md) as the local example. **Primary contract:** [retrieval L0–L4](../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents).  
+> **Pre-investigated trap:** Current `scripts/check_docs.py` does **not** scan nested source READMEs or heading anchors; don't claim they are guarded.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State:** Specified/Proposed, **not selected for coding**. **Purpose:** keep the new layered coding-agent retrieval system navigable and honest as Cursor restructures frontend code. **Dependencies:** none for static docs checking; preferably execute after initial source-adjacent README integration. This is a **code-bearing test/tool change**, not a fake documentation-only Change.
 
 **Destination:** [information-retrieval standard](../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) + [documentation rule](../../../.agents/rules/documentation.md). **Observed gap:** `scripts/check_docs.py` currently scans top-level package/app/tool README files but not nested source-adjacent `README.md`, and checks target files but not `#heading` fragments. A moved heading/source map can silently break a precise cheap-model retrieval route even with a green old checker.

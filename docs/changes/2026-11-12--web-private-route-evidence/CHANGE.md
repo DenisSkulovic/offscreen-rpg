@@ -1,5 +1,10 @@
 # Change W14: Production-like private SSR, route/cache/SSE and performance verification
 
+> **Cursor first look (current source ≠ selected target):** [Real browser/DB proof map](../../../tools/api-integration/test/README.md) as the local example. **Primary contract:** [F15](../../engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
+> **Pre-investigated trap:** `test:focus` rebuilds and drops only disposable `offscreen_auth_test`; never an inner-loop web test.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
 **Depends on:** W02 W15 W03 W04 W07 W17; W18 state workbench optional evidence input.  

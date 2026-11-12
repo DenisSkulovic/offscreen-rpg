@@ -1,5 +1,10 @@
 # Change W09: Query-driven preview generation and immutable Start story intent
 
+> **Cursor first look (current source ≠ selected target):** [Opening/Start map](../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
+> **Pre-investigated trap:** `storyId.current` survives retry but Start body is reconstructed; freeze full body/ID, GET-by-story before replay.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
 **Dependencies:** W01 W02 W15. W19 is not needed for Start's GET-by-story recovery.  

@@ -1,5 +1,10 @@
 # Change W21: Cost-aware GitHub Actions gates and efficient CI cache
 
+> **Cursor first look (current source ≠ selected target):** [Integration cost map](../../../tools/api-integration/test/README.md) → the **one** owning symbol. **Primary contract:** [F15](../../engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
+> **Pre-investigated trap:** Docs-only should skip heavy CI; required status checks must not become permanently pending.  
+> **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
+
+
 **Status:** Specified/Proposed, not selected. **Goal:** avoid broad GitHub Actions jobs after every tiny frontend or Markdown push while retaining real, reproducible integration proof. **Dependencies:** W01 and W20. **Authority:** [frontend execution playbook](../../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke); target F10/F15; [verification rule](../../../.agents/rules/verification.md). Audited source: `.github/workflows/code.yml`, `docs.yml`, root scripts, `turbo.json`. No Actions billing/timing observed.
 
 ## Observed problem

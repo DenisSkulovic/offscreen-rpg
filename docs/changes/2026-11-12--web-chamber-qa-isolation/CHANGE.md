@@ -1,5 +1,10 @@
 # Change W12: TanStack Query Chamber/QA state isolation and existing developer-mode gate proof
 
+> **Cursor first look (current source ≠ selected target):** [Chamber/QA mode map](../../../apps/web/src/features/developer-tools/chamber/README.md) → the **one** owning symbol. **Primary contract:** [F13](../../engineering/targets/react-next.md#f13-developer-only-chamberqa-isolation).  
+> **Pre-investigated trap:** Normal Nest startup already omits developer controllers; **preserve and test** that gate, don't invent hosted RBAC.  
+> **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
+
+
 **State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
 **Depends on:** W01 W15 W03 W05; the existing developer-mode registration boundary is preserved and verified (not reinvented).  

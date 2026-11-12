@@ -1,5 +1,10 @@
 # Change W20: Fast local frontend feedback and correct Turbo task caching
 
+> **Cursor first look (current source ≠ selected target):** [Package/testing route](../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../engineering/targets/react-next.md#f10-evidence-and-maintainability).  
+> **Pre-investigated trap:** Create separate `test:fast` graph; preserve old dist-dependent `test` semantics.  
+> **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
+
+
 **Status:** Specified/Proposed, not activated. **Purpose:** reduce real workstation and Cursor iteration cost without weakening important proof. **Dependency:** W01 provides Vitest scripts; implement W20 immediately afterward, before W02/W15. Source baseline is the GitHub inspected November 12 tree; no executable changes or timings have been recorded by ChatGPT.
 
 **Target:** F10, F14, F15 in [React/Next target](../../engineering/targets/react-next.md); [execution economics playbook](../../engineering/frontend-execution-playbook.md#3-local-toolchain-facts-already-investigated-source-inspected-only). **Observed sources:** `turbo.json`, root and `apps/web/package.json`, `packages/{game,application,documents}/package.json`, `apps/web/tsconfig.json`.
