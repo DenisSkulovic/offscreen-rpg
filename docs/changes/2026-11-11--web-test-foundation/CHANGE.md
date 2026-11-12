@@ -1,40 +1,32 @@
-# Change W01 | Fast, truthful web-local unit and component verification
+# Change W01: Vitest + React Testing Library + MSW frontend verification
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** None; first recommended execution packet.
+**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
-## Why this is a Change
+**Dependencies:** None. **First implementation packet**.  
+**Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F4 F5 F8 F10**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G15 G32**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F4 F5 F8 F10**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G15 (and evidence prerequisites for G11–G26)**.  
-**Desired single code/test/config outcome:** A deterministic, provider-free, *web-local* test command proves pure and rendered React invariants in seconds without launching Nest, Temporal or a disposable database. It complements rather than imitates the real Playwright integration system.
+## Code-bearing outcome and ownership
 
-**Observed source owners:** `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/src/lib/story-transport.ts`, representative Play/draft components, `tools/api-integration/test/stories-browser.integration.ts` as a preserved external proof.
+**Outcome:** Vitest + React Testing Library + MSW frontend verification.  
+**Source starting points:** `apps/web/package.json`; `apps/web/tsconfig.json`; representative `src/features/play/view.tsx`, `src/features/stories/draft-editor.tsx`; `tools/api-integration/test/*` (preserve).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding implementation design
 
-Prefer **Vitest + React Testing Library + user-event + jsdom** (or an equivalently small React-19/Node-24-compatible runner if installation proves incompatible). Configure the existing `@/` alias and browser setup without compiling unrelated packages or mocking React itself. Test selection algorithms as pure functions; use controlled deferred promises for component event/race cases, accessible roles for visible assertions, and mounted/unmounted/Strict Mode coverage. New tests must describe *current valid behavior*; do not write a knowingly failing final test for a later Change simply to make W01 impressive.
+**Install Vitest, @testing-library/react, @testing-library/user-event, @testing-library/jest-dom and MSW** with React 19/Node 24/Next 16 compatible pinned releases. Use jsdom, alias resolution and strict cleanup; tests run provider-free and without Nest, PostgreSQL or Temporal. Separate pure model tests from component/HTTP-boundary tests. Mock only the network edge, not the business invariant under test. Maintain existing real API+Playwright tests as a separate stronger proof tier. Add web `test` to existing Turborepo flow without another paid CI job.
 
-## Expected bounded implementation
+## Bounded implementation sequence
 
-1. Add one locally runnable `pnpm --filter @offscreen/web test` script, runner configuration and only the minimal devDependencies.
-2. Add representative green baseline tests for current rendering and request/snapshot behavior, including a same-resource version regression if already correct. Capture new target failures for W03/W04 as explicit follow-up notes, not assertions loosened to pass.
-3. Wire the local test into existing root turbo `test` path with no new paid CI runner or database fixture.
+1. Configure test runner/environment and local `pnpm --filter @offscreen/web test`.
+2. Write representative *currently correct* deterministic tests for existing view/typed schema behavior. Add controlled deferred-response, Strict Mode cleanup and 202 pending visual tests as groundwork; later Changes own fixing currently failing identities.
+3. Document fake-vs-real evidence and integrate cheap tests into existing CI without DB reset.
 
-## Falsifiable acceptance and proof
+## Falsifiable acceptance
 
-- **Normal case:** A fresh checkout can run the focused web tests offline/provider-free; a representative view correctly renders an authoritative pending state and a known monotonic same-story version rule.
-- **Discriminating negative case:** An intentionally wrong snapshot ordering/mutation-state transition is detected by a focused test; no mocked fetch suite is misreported as real object authorization or exactly-once backend proof.
-- **Check and evidence:** `pnpm --filter @offscreen/web test`; targeted `pnpm --filter @offscreen/web typecheck`/lint/format as available; real browser integration only when separately authorized after inspecting destructive test DB setup.
-- **Completion receipt:** Tests list the claim each proves and limitations; record exact installed versions and runtime results, or mark unrun. No ownership rearchitecture in this packet.
+- **Normal scenario:** Fast web-local test renders an existing scene, demonstrates real user interaction and tests pure version ordering without local services.
+- **Adversarial negative scenario:** A deliberately misordered older same-story snapshot or incorrect pending/published label is detected; tests do not falsely certify Nest ownership, SSR privacy or exactly-once from MSW.
+- **Verification/evidence:** Run focused test, web typecheck, root lint/format as relevant and record commands, environment and outcomes; no live provider or destructive test invocation.
+- **Explicit exclusions:** No app behavior cleanup, global store, Storybook workbench (W18), full browser suite or visual design.
 
-## Boundaries, alternatives and stop conditions
+## Cursor rules and return receipt
 
-- **Keep / do not touch:** No application behavior refactor, global state library, browser screenshot-only “test”, Storyteller call, CI provider spend, DB reset or gameplay change.
-- **Principal risk:** Avoid jsdom test pollution, global fetch mocks leaking between tests, and a runner that requires all app services. Preserve existing CI and full-stack Playwright.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F3 F4 F5 F8 F10**, audit **G15 (and evidence prerequisites for G11–G26)**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Implement exactly this outcome after owner selection, using the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), target criteria and exact source owners. Do not redesign the stack, change gameplay or run paid provider calls; inspect verification scripts before any destructive database/test service. If the current source invalidates an expected contract, return the evidence to the owner rather than invent an alternative library. Report affected paths, actual diff, commands executed/results, at least one discriminating negative test, known limits and next dependency. A successful mock is not proof of Nest authority or production behavior.

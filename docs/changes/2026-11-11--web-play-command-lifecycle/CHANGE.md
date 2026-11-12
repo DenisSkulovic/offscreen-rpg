@@ -1,41 +1,33 @@
-# Change W04 | Typed immutable Play intent and uncertain HTTP lifecycle
+# Change W04: TanStack useMutation with frozen Play intent and durable recovery
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W01 + W03; coordinate W05/W06/W11 source ownership, do not parallel edit command owners.
+**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
-## Why this is a Change
+**Dependencies:** W15 + W03 + W19; do not parallel-edit the same Play controller as W05/W06.  
+**Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F5 F11**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G12 G16 G31**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F5 F11**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G12 G16 G17**.  
-**Desired single code/test/config outcome:** Play choices, controls, accepted campaign actions and recovery operations capture exact intent and payload once, expose correct state in React, and reconcile responses through W03, without confusing server admission (202) and publication.
+## Code-bearing outcome and ownership
 
-**Observed source owners:** `apps/web/src/features/play/view.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/play/resolution-recovery.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/api/src/modules/stories/controller.ts` (read), shared schemas (read).
+**Outcome:** TanStack useMutation with frozen Play intent and durable recovery.  
+**Source starting points:** `apps/web/src/features/play/view.tsx`; `use-campaign-command.ts`; `resolution-recovery.tsx`; `src/lib/story-transport.ts`; Nest stories controller (read).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding implementation design
 
-Model `IntentEnvelope` keyed by viewer/story/command kind with stable operation ID, target URL, typed immutable expected revision/body, and explicit submitted/unknown/conflict/accepted states. Keep endpoint-specific builders and permitted reactions: `resolutions` 202 is admitted; controls/settings/action variants can acknowledge a current snapshot; `409` requires authorized refresh; `400` needs actionable validation; `401` reauth; network timeout means **unknown completion**. If already uncertain, retry only the **same** full envelope when endpoint idempotency is verified. Disable incompatible intents and show a recoverable control from state, not a render-invisible ref. A page reload cannot reconstruct ordinary operation refs; refresh the authoritative story and, if outcome remains unknowable, display a safe blocked state rather than issuing a new UUID.
+Use **`useMutation`** for HTTP transport with `retry: 0` and `networkMode: 'always'`. Outside the mutation's ephemeral status, maintain explicit typed **intent reducer**: idle -> submitting -> admitted/pending or confirmed immediate -> conflict, uncertain or terminal. Capture viewer/story/kind, UUID, endpoint, expected revision and immutable typed body once per user intent. Repeating a request uses the **exact same envelope**, no generic `send(anything)` action with unknown body. After 202, Query snapshot/receipt drives visible pending, never 'published'; 200 interpreted per endpoint. Store minimal safe resolution envelope + reference with viewer-scoped short-lived sessionStorage; on reload **GET W19 receipt and story first**, then allow *user-triggered* safe same-payload retry only. Invalid input/401/404/409/429/timeout have separate correct transitions. After confirmed status, guarded `setQueryData`/`invalidateQueries` update story/list/history, never optimistic rolls or narration.
 
-## Expected bounded implementation
+## Bounded implementation sequence
 
-1. Add narrow typed command envelope/status classification and unit tests; document per-endpoint semantic differences.
-2. Migrate ordinary Play response/control while preserving server-pending resolution messaging and old error copy as far as compatible.
-3. Migrate campaign hook/recovery path without collapsing distinct commands into `send(anything)`; ensure view state owns visible retry.
-4. Verify response identity and W03 snapshot dispatcher, including mounted lifetime, unmount and no automatic reload submit.
+1. Define endpoint-specific typed builders, discriminated reducer, error taxonomy and minimal recovery store.
+2. Migrate ordinary Play choice/resolution/control/allowed recovery; connect Query story selectors and receipt endpoint.
+3. Migrate campaign actions/settings dispatch where identical invariants exist; keep domain-specific 200/202/409 statuses.
+4. Test rapid duplicate clicks, timeout after backend commit, changed UI values before retry, reload/receipt, session expiry, wrong resource and no background mutation replay.
 
-## Falsifiable acceptance and proof
+## Falsifiable acceptance
 
-- **Normal case:** One user choice issues one frozen UUID/body, renders submitting then server-admitted pending status and eventually reconciles saved published snapshot.
-- **Discriminating negative case:** Lost ACK after commit, double click, delayed old 409 and midflight navigation never generate a second business intent or reset newer snapshot. A mock proves same wire retry; an existing real Nest integration proves actual dedup separately.
-- **Check and evidence:** Web component FSM tests with deferred promises, tagged HTTP-fault fake; narrow real integration test using existing disposable DB only with explicit test permission. No paid provider or invented 'exactly once' claim from a client test.
-- **Completion receipt:** For every migrated command list ID/payload/response/allowed recovery; show exact test and whether backend duplicate-effect result was actually exercised.
+- **Normal scenario:** One deliberate choice becomes one frozen operation ID/payload; 202 is accepted and later Query refresh publishes authoritative result once.
+- **Adversarial negative scenario:** Loss of HTTP ACK and reload never create a second effect or new UUID; changed body under same UUID is rejected; GET/visibility/SSE cannot dispatch a paid operation; 409 does not overwrite a newer view.
+- **Verification/evidence:** RTL/MSW deterministic command/race tests and focused real backend idempotency with disposable test DB if explicitly permitted.
+- **Explicit exclusions:** No optimistic mechanics, no automatic Query offline mutation resume, no generic command bus, no extra gameplay.
 
-## Boundaries, alternatives and stop conditions
+## Cursor rules and return receipt
 
-- **Keep / do not touch:** No backend idempotency migration, automatic provider replay, new state library, all-screen universal dispatcher, new game behaviors or persistent localStorage mutation queue.
-- **Principal risk:** A 202 receipt is not a settled narrative. Abort is not server rollback. A full reload may lose original operation identity; document safe refusal rather than pretend durable recovery.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F3 F5 F11**, audit **G12 G16 G17**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Implement exactly this outcome after owner selection, using the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), target criteria and exact source owners. Do not redesign the stack, change gameplay or run paid provider calls; inspect verification scripts before any destructive database/test service. If the current source invalidates an expected contract, return the evidence to the owner rather than invent an alternative library. Report affected paths, actual diff, commands executed/results, at least one discriminating negative test, known limits and next dependency. A successful mock is not proof of Nest authority or production behavior.

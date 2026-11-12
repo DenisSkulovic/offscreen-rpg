@@ -1,40 +1,32 @@
-# Change W05 | One bounded, visibility-aware Play snapshot refresh lifecycle
+# Change W05: TanStack Query pending-state refetch, visibility and fallback
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W01 + W03; after W04 is desirable if command and refresh share an owner.
+**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
-## Why this is a Change
+**Dependencies:** W15 W03 W04; groundwork for SSE client W17.  
+**Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F4 F6 F9**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G18 G27 G30**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F4 F6 F9**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G18**.  
-**Desired single code/test/config outcome:** Play refresh is a read-only, cancellable, bounded lifecycle with explicit hidden/visible/reconnect/error behavior and a single W03 reconciliation path.
+## Code-bearing outcome and ownership
 
-**Observed source owners:** `apps/web/src/features/play/view.tsx`, `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/developer-tools/chamber/use-chamber-play.ts` (read/comparison), `apps/web/src/features/stories/opening-preview.tsx` (read/comparison).
+**Outcome:** TanStack Query pending-state refetch, visibility and fallback.  
+**Source starting points:** `apps/web/src/features/play/view.tsx`; `src/lib/story-transport.ts`; selected Query options; Chamber/preview polling (comparison only).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding implementation design
 
-Schedule at most one read per active Play resource, only when snapshot indicates unresolved work. Use cleanup on unmount, story/viewer change and dependency transition, plus abort/ignore for late completion. When document hidden, suspend repeated polling and immediately schedule a fresh authorized read on visibility/focus return; on recurrent GET failures show actionable stale-status/refresh affordance and bounded retry/backoff. Avoid wall-clock claims of authoritative completion. Timer only reads GET; neither timer nor effect may dispatch generation, resolution, controls, or provider calls. No generic event-bus/polling framework.
+Replace manual Play `useEffect` timer loops with **TanStack Query `refetchInterval`/`enabled` and abortable `queryFn`**. Pending/unresolved story uses **2-second foreground GET** before SSE rollout; settled story stops background polling. Hidden tab suspends periodic reads; focus/reconnect triggers one authoritative Query invalidation/read. Use 5s snapshot `staleTime`, one bounded transient GET retry, explicit offline/stale-state status and backoff; do not create a timer per child. Feed all reads through W03 domain gate and dedupe Query key. When W17 activates SSE, change primary pending refresh to event-driven + 30s safety poll with 2s fallback only on broken stream.
 
-## Expected bounded implementation
+## Bounded implementation sequence
 
-1. Extract only the resource-scoped refresh lifetime policy, controlled by current snapshot and browser visibility.
-2. Route manual/command/timer reads to the same W03 accept path, prevent overlap and timer reset loops.
-3. Test hidden-tab, offline/reconnect, settling while hidden, rapid A→B and Strict Mode mount/cleanup.
+1. Remove ad hoc Play polling effect after Query migration; encode pending predicate and client visibility/reconnect behavior in Query options/feature subscription.
+2. Explicitly distinguish background read failures from command failure; provide accessible 'last update failed, refresh' control.
+3. Test hidden/visible, Strict Mode, repeated 503, overlapping GET, A→B and settlement; hand W17 clear integration seam.
 
-## Falsifiable acceptance and proof
+## Falsifiable acceptance
 
-- **Normal case:** Pending/held Play becomes current after backend update or returning to visible tab without duplicate mount fetch and without unnecessary settled-state polling.
-- **Discriminating negative case:** Two concurrent timers or late A GET cannot overwrite B; 503 does not cause unbounded 2s failures or claim success; hidden tab never dispatches a mutation.
-- **Check and evidence:** Fake clock/visibility events in web component tests; controlled browser test with no provider calls when permitted. Record request-count/time strategy and source-only limits.
-- **Completion receipt:** Document exact conditions to start/stop/resume reads, what errors look like, real request-count observation if measured.
+- **Normal scenario:** Unresolved Play updates via one foreground GET loop; settled status halts polls; focus resumes current data without second command.
+- **Adversarial negative scenario:** No duplicate timers, stale story overwrite, silent 503 infinite loop, mutation dispatch from GET or permanent 'fresh' label while offline.
+- **Verification/evidence:** Fake clock/visibility React+MSW tests, instrumented request counts and selected browser recovery observation.
+- **Explicit exclusions:** No custom cache/store, SSE backend (W16), global event system, visual redesign.
 
-## Boundaries, alternatives and stop conditions
+## Cursor rules and return receipt
 
-- **Keep / do not touch:** No SSE, WebSocket, React Query adoption, Chamber/Preview wholesale rewrite, application worker changes or UX redesign.
-- **Principal risk:** Do not accidentally stop required reconciliation forever when a tab hides; resync explicitly on show. Do not create an Effect loop from unstable callbacks.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F3 F4 F6 F9**, audit **G18**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Implement exactly this outcome after owner selection, using the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), target criteria and exact source owners. Do not redesign the stack, change gameplay or run paid provider calls; inspect verification scripts before any destructive database/test service. If the current source invalidates an expected contract, return the evidence to the owner rather than invent an alternative library. Report affected paths, actual diff, commands executed/results, at least one discriminating negative test, known limits and next dependency. A successful mock is not proof of Nest authority or production behavior.

@@ -1,40 +1,33 @@
-# Change W03 | Resource-scoped and monotonic story snapshot authority
+# Change W03: Monotonic, viewer-scoped story snapshots in TanStack Query
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W01; precedes W04, W05, W10 and W12 when using story identity.
+**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
-## Why this is a Change
+**Dependencies:** W01 + W15; prerequisite of W04 W05 W10 W12 W17.  
+**Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F4 F10**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G13 G17 G27**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F3 F4 F10**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G13 G17**.  
-**Desired single code/test/config outcome:** One explicit owner of *which authenticated story* is displayed accepts only matching resource snapshots and non-regressive same-resource versions, including initial render, refresh and command responses.
+## Code-bearing outcome and ownership
 
-**Observed source owners:** `apps/web/src/lib/story-transport.ts`, `apps/web/src/features/play/view.tsx`, `apps/web/app/play/[id]/page.tsx`, `apps/web/src/features/play/history.tsx` (boundary only), `packages/contracts/src/stories.ts` (read).
+**Outcome:** Monotonic, viewer-scoped story snapshots in TanStack Query.  
+**Source starting points:** `apps/web/src/lib/story-transport.ts`; `apps/web/src/features/play/view.tsx`; server `app/play/[id]/page.tsx`; `packages/contracts/src/stories.ts` (read).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding implementation design
 
-Use a **resource key** (viewer/session scope plus story ID at the owning boundary), separate deliberate resource selection/reset from incoming snapshot reconciliation, and ensure no A content renders while B is loading. A pure function compares server `viewVersion` for the *same story* and applies an explicit `resolution.version` tie policy only when contract evidence supports it. Never use an unrelated story's higher version to justify replacement. Key appropriate outer route/controller identity deliberately; complement it with request-key/abort/ignore guards because keys alone do not make resolved callbacks safe. Do not introduce Redux, a global canonical story cache, or a new concurrent-fetch scheduler.
+**Remove the competing `useState(initialStory)` canonical story store.** The Query entry keyed `['viewer', viewerId, 'story', storyId, 'snapshot']` is the only remote story projection. Make a **pure domain reconciliation function** that checks viewer/story identity and `viewVersion`, uses `resolution.version` when needed, and treats equal-version dynamic projections by latest eligible request epoch, not response arrival timestamp. Wire via query `structuralSharing`/guarded `setQueryData` so poll, command response, SSE, SSR hydration and manual GET cannot regress. App Router entity transition must show loading/previous story *clearly labeled* rather than A as B; no prior viewer content may be shown as the next viewer.
 
-## Expected bounded implementation
+## Bounded implementation sequence
 
-1. Introduce resource-aware pure reconciliation with explicit outcome for wrong-resource, older-version and equal-version payload; document how null resolution and optional version are treated (verify the server invariant first).
-2. Refactor `PlayScene` to expose a single snapshot dispatcher and a deliberate identity boundary for initial props/route navigation; command and refresh feed it.
-3. Guard stale A in-flight callbacks and child history state on resource/viewer change; update current imports/call sites without duplicating policy.
+1. Implement/verify pure resource-version policy and request-epoch tie semantics including null resolution and optional version.
+2. Refactor Play to use `useQuery` and derived selectors, preserve presentational props and command callbacks; guard initial hydration/soft navigation transitions.
+3. Make one narrow update function the only allowed Query write for story snapshots; adapt command/poll later via defined API.
+4. Remove old local story setState path and add A→B, v14→v13, wrong story high-version, same-version projection and auth switch tests.
 
-## Falsifiable acceptance and proof
+## Falsifiable acceptance
 
-- **Normal case:** Authorized story mounts with its SSR snapshot; higher `viewVersion` and legitimate equal-version resolution update become visible once.
-- **Discriminating negative case:** A→B before B loads never shows A as B; B then delayed A cannot win even with enormous A version; v14 then v13 cannot regress; stale user/session data is not accepted.
-- **Check and evidence:** Pure tests for comparator cases, component tests with deferred A/B responses and a controlled browser soft-nav experiment. Tests must inspect the transition *before* B resolves, not only final DOM.
-- **Completion receipt:** The owner can explain resource key, reset policy, every update path, tie-break and a negative A/B browser test. Keep source API stable for later Change packets.
+- **Normal scenario:** Story SSR, browser Query and subsequent GET show the highest valid authoritative view version with current permitted resolution details.
+- **Adversarial negative scenario:** Late old A/old viewer/wrong story with higher version cannot enter current cache or appear under B before B loads; Query dataUpdatedAt is not accepted as gameplay freshness.
+- **Verification/evidence:** Pure selection tests, React controlled async/soft navigation tests and selected browser identity test when safe.
+- **Explicit exclusions:** No global state/store, game version semantics invention, realtime backend implementation, visual UI redesign.
 
-## Boundaries, alternatives and stop conditions
+## Cursor rules and return receipt
 
-- **Keep / do not touch:** No new backend version numbers, no speculative gameplay state, no global query cache, no automatic SSE, no route/visual redesign.
-- **Principal risk:** Do not infer full session isolation from story UUID alone; avoid resetting valid pending UI on same-resource revalidation. If equal-version semantics are genuinely undefined by backend, stop that subcase and report contract dependency.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F3 F4 F10**, audit **G13 G17**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Implement exactly this outcome after owner selection, using the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), target criteria and exact source owners. Do not redesign the stack, change gameplay or run paid provider calls; inspect verification scripts before any destructive database/test service. If the current source invalidates an expected contract, return the evidence to the owner rather than invent an alternative library. Report affected paths, actual diff, commands executed/results, at least one discriminating negative test, known limits and next dependency. A successful mock is not proof of Nest authority or production behavior.

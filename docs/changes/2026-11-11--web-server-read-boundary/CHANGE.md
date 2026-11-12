@@ -1,41 +1,33 @@
-# Change W02 | Private authenticated Next server reader and same-origin routing contract
+# Change W02: Authenticated Next route group and typed server-side Nest reader
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W01 recommended, but does not depend on new Play controller.
+**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
 
-## Why this is a Change
+**Dependencies:** W01 recommended. Must precede W15 and W19.  
+**Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F1 F2 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G14 G16 G25**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F1 F2 F11**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G14 G16; existing sequential server reads**.  
-**Desired single code/test/config outcome:** One small *server-only* Nest reader handles request-bound cookie forwarding, consistent typed response parsing, safe status/error mapping and private cache/timeout policy. Browser `/api` and SSR internal origin have a documented, testable same-origin deployment arrangement.
+## Code-bearing outcome and ownership
 
-**Observed source owners:** `apps/web/src/lib/viewer.ts`, `apps/web/app/{stories,play,chamber}/**/page.tsx`, `apps/web/next.config.ts`, `apps/api/src/modules/stories/controller.ts` (read), `apps/api/src/modules/drafts/controller.ts` (read).
+**Outcome:** Authenticated Next route group and typed server-side Nest reader.  
+**Source starting points:** `apps/web/src/lib/viewer.ts`; `apps/web/app/{stories,play,chamber}/**/page.tsx`; `apps/web/next.config.ts`; `apps/api/src/modules/auth/identity.ts` and stories/drafts controllers (read).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding implementation design
 
-Use a server-only module with explicit `requireViewer`/session-bound read calls and endpoint-specific Zod schemas; **never** import it in Client code. Only the inbound session cookie (and other explicitly required headers) crosses to Nest. Use `cache: 'no-store'` for private reads and explicit bounded timeouts. Model 401 as reauthentication, scoped 404 as not-found, 5xx/timeout as recoverable failure, invalid schema as protocol failure; keep Next `redirect`/`notFound` decisions at route boundary, outside catches that could swallow special exceptions. Keep the public-facing Nest API unchanged and never install Server Actions for existing commands. Make rewrite destination configurable consistently with deployment configuration; validate whether Next rewrites resolve at build or runtime **before** choosing the env wiring.
+Use **server-only Nest fetch adapters** with Zod parsing, explicit typed status/error taxonomy and bounded request timeouts. Create the authenticated Next route group `app/(authenticated)/`, preserving public URL paths, but do not count a layout check as endpoint authorization. Per-page Nest reads must be owner-scoped and private/no-store. Preserve notFound/redirect framework exceptions outside generic catches. Configure browser `/api` same-origin rewrite and SSR `API_INTERNAL_ORIGIN` coherently for local/prod-like deployment; do not accidentally expose the internal origin to browser. Make independent stories+drafts SSR reads parallel. Group layout remains a Server Component and provides viewer identity to later W15 provider.
 
-## Expected bounded implementation
+## Bounded implementation sequence
 
-1. Extract pure status/typed parsing and server-only request reader without changing observable page content.
-2. Convert Play, stories, draft/preview and Chamber route reads incrementally, preserving their schema and authorized error semantics.
-3. Remove the verified drafts→stories sequential waterfall with safe parallel independent reads, if no session/dependency assumption requires serialization.
-4. Align or document server origin and browser rewrite and add a non-loopback configuration/contract test.
+1. Define server request context, endpoint-specific typed `readNest` and status-to-route policy (401 sign-in, 404 hidden resource, 5xx transient).
+2. Move private routes into route group, preserve exact URLs and page HTML, change only fetch/validation ownership.
+3. Fix configurability of browser proxy vs internal server API origin and prove request-header forwarding/caching policy.
+4. Parallelize independent initial reads without leaking viewer info.
 
-## Falsifiable acceptance and proof
+## Falsifiable acceptance
 
-- **Normal case:** Permitted viewer obtains server-rendered typed story and list; both independent reads begin without an avoidable serial wait; auth/session paths remain correct.
-- **Discriminating negative case:** Anonymous and other-owner HTML/route/API data do not expose private story; malformed Nest body and upstream 503 show safe protocol/retry outcomes rather than fabricated 404. A non-loopback API origin must not silently send browser calls to 127.0.0.1.
-- **Check and evidence:** Web local adapter tests plus selected provider-free authenticated Next+Nest/browser trace when authorized. Examine response headers/Router Cache separately; this single Change cannot certify a whole production proxy.
-- **Completion receipt:** List every converted private route, mapped statuses and verified staging-like host configuration; W14 owns broader browser/cache proof.
+- **Normal scenario:** Authenticated owner receives useful server-rendered data; independent list reads happen concurrently; public pages do not require auth provider.
+- **Adversarial negative scenario:** Anonymous/other-owner page and browser API cannot obtain another viewer's private data; server 503 not mistaken for 404; non-loopback deployment configuration works; malformed Nest body gives protocol error.
+- **Verification/evidence:** Unit test reader/status logic, production build/routing smoke and owner/other-owner HTTP/HTML checks when authorized. W14 provides full proxy/cache evidence.
+- **Explicit exclusions:** No new auth provider, game commands in Next, Server Action migration or live-provider interaction.
 
-## Boundaries, alternatives and stop conditions
+## Cursor rules and return receipt
 
-- **Keep / do not touch:** No new auth provider, Nest authorization changes, public cache, API controller rewrite, global BFF framework, generalized HTTP SDK or gameplay behavior.
-- **Principal risk:** Next 16 request caching/Router Cache and rewrite build-time behavior are distinct. Source `no-store` is useful but insufficient as an end-to-end privacy proof. Keep forwarding narrow and never log cookies.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F1 F2 F11**, audit **G14 G16; existing sequential server reads**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Implement exactly this outcome after owner selection, using the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), target criteria and exact source owners. Do not redesign the stack, change gameplay or run paid provider calls; inspect verification scripts before any destructive database/test service. If the current source invalidates an expected contract, return the evidence to the owner rather than invent an alternative library. Report affected paths, actual diff, commands executed/results, at least one discriminating negative test, known limits and next dependency. A successful mock is not proof of Nest authority or production behavior.
