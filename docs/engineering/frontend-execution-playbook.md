@@ -5,7 +5,7 @@
 ## Quick route for an executor (do not load this entire document by habit)
 
 - **Am I supposed to code?** [Change index](../changes/README.md) must show a selected, authorized Change, or the owner has explicitly supplied a scoped task. A prepared folder alone means nothing.
-- **What do I implement?** Read *only* that Change's `CHANGE.md` and the linked target section; [source atlas](#source-atlas-for-w01w21) below gives the first file/symbol path. Do not reread all 19 packets or the original audit.
+- **What do I implement?** Read *only* that Change's `CHANGE.md` and the linked target section; [source atlas](#6-source-atlas-for-w01w21) below gives the first file/symbol path. Do not reread all 19 packets or the original audit.
 - **What command now?** [Verification ladder](#verification-ladder-stop-checking-every-keystroke), then [commands](#command-and-cache-cookbook).
 - **What if the spec clashes with source?** Return a terse evidence packet to ChatGPT/owner; don't bill Cursor tokens designing a replacement.
 - **What should I report?** [Receipt](#receipt-and-measurement); one clear result, not a transcript.

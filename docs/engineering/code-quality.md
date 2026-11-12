@@ -114,11 +114,11 @@ Before calling an implementation slice complete, answer:
 4. Are error/retry/cancellation paths understandable, and are the important behavior changes actually tested?
 5. Are public contracts, docs and the reported implementation boundary accurate?
 
-Tests, builds, type checking, lint and formatting checks are optional during the current POC lifecycle. `pnpm lint:quality` is an optional audit, not a completion gate for touched files or the repository. Do not spend time resolving minor lint issues or bulk-autofixing existing debt to claim green results. Keep design clear and report known limitations honestly; no tool certifies maintainability.
+Checks are **staged and risk-proportionate** during the pre-POC portfolio renewal. We do **not** rerun typecheck/lint/build after each edit, nor postpone meaningful negative proof until after all 21 Changes. Check a risky architectural seam when ready, and run broader checks at actual integration/portfolio milestones. `pnpm lint:quality` remains an optional broad audit, not a reason to bulk-autofix unrelated code. No tool certifies maintainability.
 
 Existing code may still violate these standards. Review each touched boundary; do not interpret extraction into files as proof of separation. Substantial redesign follows the feature workflow, with explicit intentional behavior changes.
 
-Choose verification using [the laptop-aware verification rule](../../.agents/rules/verification.md). Default to no routine check commands. If checks are requested or directly useful for a concrete problem, batch the smallest useful selection after the code. This POC policy remains until the owner explicitly changes it.
+Use [staged verification](../../.agents/rules/verification.md) and the [frontend execution economics playbook](frontend-execution-playbook.md). The owner now works on a stronger PC; **human time, Cursor allowance and avoiding rework** govern checking. Prefer warmed pnpm-filtered local tests after a coherent unit, a real auth/idempotency negative case before dependent work, and broad build/browser at milestones. Neither automatic check-every-save nor no-checks-by-default is the current policy.
 
 ## Sources and adaptation
 

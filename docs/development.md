@@ -1,6 +1,6 @@
 # Local development
 
-**Explore by question:** [local requirements and startup](#requirements-and-startup) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
+**Explore by question:** [local requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
 
 The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [progress](progress.md) for demonstrated coverage and [the engine model](engineering/engine-model.md) for current mechanics, time and memory limits; general inventory/combat and shared play remain unfinished.
 
@@ -38,6 +38,22 @@ The focused test command accepts the suites listed by `pnpm test:focus -- --help
 API, worker and migration commands read the root `.env`; existing process variables take precedence. The API validates database and auth configuration and checks PostgreSQL before listening. `APP_ORIGIN` must be an exact HTTPS origin or HTTP localhost origin. `API_HOST` and `API_PORT` default to `127.0.0.1` and `3001`. Keep these defaults locally; the web proxy targets that address. `API_INTERNAL_ORIGIN` is an optional server-only Next setting for authenticated page reads and must point to a trusted API. `OFFSCREEN_DOCUMENT_ROOT` enables the local immutable campaign-document store and should identify the same ignored private `data/` directory for every API instance that can serve a campaign. When enabled, `OFFSCREEN_DEFAULT_RULE_SOURCE` selects the checked-in/default rule-package source directory; startup validates and seeds its immutable objects before accepting stories. Without document storage, document operations return unavailable while existing SQL-owned stories continue to work. Deployment ingress/proxy configuration remains separate work.
 
 The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPACE` (`default`) and `TEMPORAL_TASK_QUEUE` (`offscreen-local`). Run it separately with `pnpm --filter @offscreen/worker start` after building if not using `pnpm dev`. Requests remain saved while it is stopped. The preview page checks status briefly, then offers reloading; closing it does not cancel work. These plaintext local connection settings are not a hosted deployment configuration.
+
+## Fast frontend workflow
+
+For React/Next portfolio work with inexpensive Cursor models, use the [chosen frontend execution playbook](engineering/frontend-execution-playbook.md) **by heading** and the **one** selected Change. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
+
+Existing direct commands after dependency setup (use only when relevant):
+
+```bash
+pnpm --filter @offscreen/web dev          # One Next dev server if browser rendering is needed
+pnpm --filter @offscreen/web typecheck    # Next typegen + incremental tsc, no Next production build
+pnpm exec eslint apps/web/src/features/play/view.tsx  # A single touched file
+```
+
+**Planned, not yet implemented:** W01 adds Vitest `test:watch`/single-file test scripts; W20 adds a Turbo `test:fast` task that does not build Next first; W21 makes CI code-vs-docs/integration gates selective. Do not invoke these commands before their Change is implemented.
+
+Keep pnpm's store and warm `.turbo`, `.next/dev`, `dist` and TypeScript incremental output. Use host-side Next/Node; Docker is required only for the actual PostgreSQL/Temporal integration step. Do not run `pnpm install` absent a changed lockfile/new checkout, or restart a successful dev/test watcher after each edit. Check one normal/negative behavior when its code boundary is complete, then batch expensive checks at architecture integration milestones. `pnpm test:focus` destroys/recreates only disposable `offscreen_auth_test`; it is never the quick React test.
 
 ## Local dependencies
 

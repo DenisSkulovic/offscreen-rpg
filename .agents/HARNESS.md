@@ -72,6 +72,10 @@ At a role change, pass **decisions and evidence identifiers**, not the transcrip
 - More skills are not automatically better. Add one only for distinct triggers, expert facts/procedures and an evaluable benefit. Consolidate overlapping advice rather than generate a 40-skill menu.
 - Documentation drift belongs to its permanent owner. An oversized plan checkpoint is a symptom; move durable findings to evidence owners and shorten the checkpoint. Git preserves history.
 
+## Frontend Cursor efficiency route
+
+The [preinvestigated frontend execution playbook](../docs/engineering/frontend-execution-playbook.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../docs/changes/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../docs/changes/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
+
 ## First real-client proof, before buying more tools
 
 Static Markdown consistency is not proof of tool behavior. On a future fresh Claude Code session inspect `/context all`, `/skills`, `/usage` and `/doctor prompt-audit` (where supported); verify `AGENTS.md` loads, the skill adapter resolves, and an investigation stays read-only. In Cursor, check that canonical skills appear, look for duplicates from the compatible `.claude/skills/` path, and test a one-question routing response in Ask/read-only mode.
