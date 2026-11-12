@@ -17,4 +17,4 @@
 
 Use the corresponding root `pnpm chamber:packet`, `chamber:memory-packet`, `chamber:evaluation-packet` or `chamber:review` workflow only after reading its documented side effects. **Do not run `chamber:evaluation-run` or other live modes without task-specific authorization.** The package `start`/ `review` scripts do not by themselves establish whether a command is provider-free; mode selection matters.
 
-The package has `build`, `typecheck`, `start`, `review`, `test`; [tests](test/) are local checks, not a sustained player acceptance run. For actual game logic use [application ownership](../../packages/application/README.md), not launcher internals.
+The package has `build`, `typecheck`, `start`, `review`, `test`; [launcher cleanup tests](test/stop.test.ts) are local checks, not a sustained player acceptance run. For actual game logic use [application ownership](../../packages/application/README.md), not launcher internals.
