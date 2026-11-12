@@ -1,5 +1,32 @@
 name: Documentation checks
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - '.agents/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'TODO.md'
+      - 'README.md'
+      - '**/README.md'
+      - 'scripts/check_docs.py'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.agents/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'TODO.md'
+      - 'README.md'
+      - '**/README.md'
+      - 'scripts/check_docs.py'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

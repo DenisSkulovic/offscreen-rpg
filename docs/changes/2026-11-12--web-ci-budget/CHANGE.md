@@ -5,7 +5,7 @@
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**Status:** Specified/Proposed, not selected. **Goal:** avoid broad GitHub Actions jobs after every tiny frontend or Markdown push while retaining real, reproducible integration proof. **Dependencies:** W01 and W20. **Authority:** [frontend execution playbook](../../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke); target F10/F15; [verification rule](../../../.agents/rules/verification.md). Audited source: `.github/workflows/code.yml`, `docs.yml`, root scripts, `turbo.json`. No Actions billing/timing observed.
+**Status:** Done (2026-11-12). **Goal:** avoid broad GitHub Actions jobs after every tiny frontend or Markdown push while retaining real, reproducible integration proof. **Dependencies:** W01 and W20 (Done). **Authority:** [frontend execution playbook](../../engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke); target F10/F15; [verification rule](../../../.agents/rules/verification.md). Implemented via always-on `scope` + `ci_gate` sentinel and conditional heavy jobs; classifier fixtures in `scripts/repo-tools/ci-change-scope.test.mjs`.
 
 ## Observed problem
 

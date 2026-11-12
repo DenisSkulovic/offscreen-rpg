@@ -4,13 +4,13 @@
 
 **Maintaining this log:** [Daily minutes rule](../../.agents/rules/session-minutes.md). Use one file per active **Europe/Vilnius calendar day**, `YYYY-MM-DD.md`. Append meaningful updates throughout a working day and before any chat/agent switch. Capture the substance of long user prompts, including `do not` and `not yet` constraints, contrasting options and motivations.
 
-**Current handoff, 2026-11-12:** **W01 + W20 Done**; `Current change: none`. Next cost-first authorization: **W21** CI gates or **W02** private SSR reads. Chamber CH01–CH16 remain Proposed. ChatGPT designs/reviews; Cursor implements one authorized Change via **first-screen → nearest source README → exact symbols**. [Change queue](../changes/README.md), [web map](../../apps/web/README.md).
+**Current handoff, 2026-11-12:** **W01 + W20 + W21 Done**; `Current change: none`. Next cost-first authorization: **W02** private SSR/API reads (then W15). Chamber CH01–CH16 remain Proposed. [Change queue](../changes/README.md), [web map](../../apps/web/README.md).
 
 ## Days
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
-| [2026-11-12](2026-11-12.md) | React W01–W22, Chamber CH01–CH16, harness maps; Cursor W01/W20 | W01+W20 **Done**; queue clear; W21 or W02 next; no provider spend |
+| [2026-11-12](2026-11-12.md) | React W01–W22, Chamber CH01–CH16, harness maps; Cursor W01–W21 | W01–W21 **Done**; queue clear; W02 next; no provider spend |
 | [2026-11-11](2026-11-11.md) | Harness/knowledge, Feature→Change redesign, portfolio direction, target-first React/Next planning | Historical reconstruction from discussions and commits; no active coding Change |
 
 ## Fresh-chat handoff (read selectively)

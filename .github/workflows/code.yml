@@ -2,8 +2,48 @@ name: Code checks
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
+concurrency:
+  group: code-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+      run_code: ${{ steps.classify.outputs.run_code }}
+      run_integration: ${{ steps.classify.outputs.run_integration }}
+      path_count: ${{ steps.classify.outputs.path_count }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Classify changed paths
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          EVENT="${{ github.event_name }}"
+          if [ "$EVENT" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            # Manual full gate: classifier forces integration/code regardless of paths.
+            BASE="${{ github.sha }}"
+            HEAD="${{ github.sha }}"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+            HEAD="${{ github.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+            HEAD="${{ github.sha }}"
+          fi
+          node scripts/repo-tools/ci-change-scope.mjs --event "$EVENT" --base "$BASE" --head "$HEAD" | tee -a "$GITHUB_OUTPUT"
+      - name: Classifier unit fixtures
+        run: node --test scripts/repo-tools/ci-change-scope.test.mjs
   code:
+    needs: scope
+    if: needs.scope.outputs.run_code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,9 +68,12 @@ jobs:
       - name: Typecheck
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm typecheck
-      - name: Unit tests
+      - name: Web fast unit tests
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: pnpm test
+        run: pnpm test:fast
+      - name: Non-web unit tests
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm exec turbo run test --filter=!@offscreen/web
       - name: Build
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm build
@@ -38,6 +81,8 @@ jobs:
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: docker compose config --quiet
   infrastructure:
+    needs: scope
+    if: needs.scope.outputs.run_integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,6 +95,8 @@ jobs:
       - if: always()
         run: docker compose down
   database:
+    needs: scope
+    if: needs.scope.outputs.run_integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     services:
@@ -78,6 +125,8 @@ jobs:
         env:
           DATABASE_TEST_URL: postgresql://offscreen:local-test-only@127.0.0.1:5432/offscreen_db_test
   identity:
+    needs: scope
+    if: needs.scope.outputs.run_integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     services:
@@ -111,3 +160,42 @@ jobs:
         run: docker compose logs temporal
       - if: always()
         run: docker compose down
+  # Always reports so a future required check is not left Pending when heavy jobs skip.
+  ci_gate:
+    needs: [scope, code, infrastructure, database, identity]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require selected jobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "docs_only=${{ needs.scope.outputs.docs_only }}"
+          echo "run_code=${{ needs.scope.outputs.run_code }}"
+          echo "run_integration=${{ needs.scope.outputs.run_integration }}"
+          echo "scope=${{ needs.scope.result }}"
+          echo "code=${{ needs.code.result }}"
+          echo "infrastructure=${{ needs.infrastructure.result }}"
+          echo "database=${{ needs.database.result }}"
+          echo "identity=${{ needs.identity.result }}"
+
+          if [ "${{ needs.scope.result }}" != "success" ]; then
+            echo "Scope classification failed."
+            exit 1
+          fi
+
+          if [ "${{ needs.scope.outputs.run_code }}" = "true" ] && [ "${{ needs.code.result }}" != "success" ]; then
+            echo "Code lane was required but did not succeed."
+            exit 1
+          fi
+
+          if [ "${{ needs.scope.outputs.run_integration }}" = "true" ]; then
+            if [ "${{ needs.infrastructure.result }}" != "success" ] || \
+               [ "${{ needs.database.result }}" != "success" ] || \
+               [ "${{ needs.identity.result }}" != "success" ]; then
+              echo "Integration lane was required but a job did not succeed."
+              exit 1
+            fi
+          fi
+
+          echo "CI gate satisfied for this event/path scope."
