@@ -11,7 +11,7 @@ description: Translate a settled Offscreen RPG product/technical decision and bo
 
 Use the approved product contract, owning technical section, selected CHANGE.md/PLAN checkpoint (if any) and the small relevant source map. If these conflict, **stop and identify the contradiction**. Do not make Cursor choose product policy by improvising.
 
-Read the current source path(s) sufficiently to avoid fictitious file names; list paths as starting anchors, not as a giant exhaustive file list. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
+Have ChatGPT do the expensive design and wide source investigation before paying a cheap Cursor model. For frontend use the [source atlas](../../../docs/engineering/frontend-execution-playbook.md#6-source-atlas-for-w01w21) to provide 2–5 real paths, named symbols, known API contract and discriminating negative case. Cursor rechecks those anchors locally, widening only for a concrete contradiction. Reuse the selected Change packet. A legacy initiative's FEATURE/PLAN is context, **not** an executable spec by itself. Do not generate a second plan for every small slice.
 
 ## Deliver this bounded packet
 
@@ -24,6 +24,7 @@ START HERE: [2-5 source files or symbols; inspect nearest callers/tests only as 
 IMPLEMENT: [essential invariants, contract fields, happy path and critical failure/retry]
 KEEP: [existing behaviors/exports that must remain unchanged]
 DO NOT: [specific excluded work, no extra modules or wholesale formatting, no paid providers / destructive actions]
+VERIFY STAGE: [V0 local editing; V1 sub-slice; V2 Change closure; V3 integration; no global build per save]
 PROVE: [one cheap precise check plus one negative case; explicit side effects if any]
 RETURN: [diff/files; actual checks and failures; contract mismatches; remaining risks; exact next step]
 ```

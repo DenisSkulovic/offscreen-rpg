@@ -24,6 +24,7 @@ This is a persistent-story RPG with **deterministic mechanical authority** and a
 - **Complex work needing several perspectives:** select a responsible role and optional review roles from `.agents/roles/README.md`. Roles define responsibility; skills provide method; agents/chats isolate context. Suggest another chat/subagent only when it adds independent evidence or judgment. No automatic extra agents or permissions.
 - **Investigate, implement, review or reconcile:** use the appropriately scoped skill in `.agents/skills/` when it improves the task. Skills are optional procedures, not required reading on every turn.
 - **Before code changes:** consult the relevant sections of `docs/engineering/code-quality.md`. **Before checks:** consult `.agents/rules/verification.md`. **Before docs/navigation changes:** consult `.agents/rules/documentation.md`.
+- **Cursor budget and local efficiency:** frontend implementation should use [the pre-investigated execution atlas](docs/engineering/frontend-execution-playbook.md) **by relevant section**, not as a giant startup read. Implement one authorized Change, use pnpm-filtered/warm tools and staged verification; don't pay Cursor to remake approved architecture or run broad builds after each edit.
 
 ## End-of-slice report
 

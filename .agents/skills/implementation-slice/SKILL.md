@@ -24,7 +24,7 @@ If information is already present in a selected PLAN checkpoint, use that rather
 1. Inspect Git status and the narrow source route. Verify that referenced contracts match reality; do not read all 100+ docs.
 2. Update product then technical specification **only if authorized behavior actually changes**. If contract already specifies the correct behavior, fix code and regression evidence without restating specs. For a structural change, adjust the owning technical doc if responsibilities move.
 3. Make the smallest coherent implementation. Prefer existing boundaries. No token-saving unreadable code, pointless wrappers, sweeping formatting, speculative abstraction, legacy compatibility in a disposable pre-POC, or unrelated file edits.
-4. Inspect diff, trace happy path + one failure/retry path. Run risk-proportionate provider-free checks under `.agents/rules/verification.md` and inspect test scripts before invoking them. Never run paid model calls, external deployments or destructive database operations just to verify.
+4. Inspect diff and trace one normal and one failure/retry path. **During editing** prefer TS diagnostics, warm tools and `git diff --check`; don't rerun broad checks after each save. At a coherent Change/integration boundary use [staged verification](../../rules/verification.md) and [frontend economics](../../../docs/engineering/frontend-execution-playbook.md) when relevant. Never run paid model calls, external deployments or destructive database operations merely to verify.
 5. Reconcile a changed contract with the owning permanent docs; update the selected Change checkpoint when applicable. Do not claim tests or gameplay happened if they did not.
 
 ## Output contract

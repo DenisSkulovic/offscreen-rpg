@@ -30,4 +30,10 @@ For Cursor, do not require it to redo costly product design. Provide the `cursor
 
 Record actual loaded files/skills (not merely linked ones), selected model/tool calls, tokens *if the client reports them*, time, expensive wrong turns, owner intervention and defects caught. Do not convert changed Markdown byte counts into supposed token savings. Benchmark the same accepted scope in a fresh context before claiming improvement.
 
+## Total-cost optimization: Cursor tokens, local time, human attention
+
+The owner runs cheaper/faster Cursor models under a limited subscription and delegates expensive architecture, alternatives and broad source investigations to ChatGPT. **Don't make Cursor rediscover resolved design or load all manuals.** A selected Change plus 2–5 source anchors, one failure case and a verified narrow command is the default handoff; unresolved architectural contradictions return to ChatGPT with concise evidence.
+
+The workstation is now more powerful than the earlier laptop, but wall-clock remains scarce. Prefer pinned pnpm, workspace filters, warm Turbo/Next/Vitest/TypeScript caches and staged check cadence. No automatic entire repo build, install or E2E on each small edit; no default 'never check' either. See [frontend execution playbook](../../docs/engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). Measure *actual* elapsed time, cache hits and Cursor usage rather than claiming imaginary savings.
+
 **Stop rule:** once you know scope, owner, actual implementation, negative case and next action, stop searching. Escalate only for a concrete unresolved uncertainty. The [evaluation protocol](../../docs/engineering/coding-agent-evaluation.md) captures the evidence.
