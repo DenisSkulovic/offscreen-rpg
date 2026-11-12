@@ -15,6 +15,19 @@ Implement a **cross-mechanic, per-lane coverage registry** mapping current game 
 - Test representative equivalence classes and limited seeded properties, not a gigantic Cartesian matrix. A pure policy is not automatically proof of persisted time/reward accounting.
 - New mechanics later extend this registry and relevant domain fixture, not the giant launcher or every React inspector component.
 
+## Golden scenario design candidates (not all implemented by CH15)
+
+These **six target experiments** represent different evidence boundaries. CH15 connects at least the first two available mechanics; other candidates remain **planned/blocked with exact reasons** until their real game owner supports them:
+
+1. An accepted partial shift at 80% progress, early/late due boundary and wage earned **exactly once**.
+2. Item handoff with a second identical submission and no duplicate transfer.
+3. Pause/interrupt/block/resume a finite activity at a prerequisite change, **only if current mechanics support it**.
+4. Same-tick player choice/default deadline collision, fenced against stale publication.
+5. Duplicate finite action or worker completion with one persisted effect/receipt.
+6. Nonhuman or alternate-calendar world with absent humanoid defaults and a consequential time boundary.
+
+Do not treat the six as executable simply because they appear in the catalogue; each has a provenance, lane, valid minimal specimen and negative invariant.
+
 ## Acceptance
 
 **Normal:** query “finite activity, duplicate settlement” or “item transfer, stale version” to obtain an actual runnable scenario at its truthful lane with owner/source and evidence reference.  
