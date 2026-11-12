@@ -2,6 +2,17 @@
 
 Read when changing documentation, navigation, rules or a cross-file responsibility. The [independent documentation-navigation standard](../references/documentation-navigation-standard.md) defines the ideal information architecture before auditing existing files. The [documentation map](../../docs/README.md) routes readers; this rule defines maintenance. Existing product, spending and verification authority is unchanged.
 
+## Source-adjacent retrieval maps: required when ownership is complex
+
+A cheap implementation agent should not have to read a 30-KB target, a 28-KB audit and half the source tree just to discover a known entrypoint. The [layered retrieval contract](../references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) supplies L0–L4 levels and first-screen/maintenance rules. **Read only the relevant owner map**, not all maps as new required documentation.
+
+- For complex/high-traffic source areas, maintain a short §README.md§ **beside** that area: a few lines of **current source / selected future target / start here / source-inspected date**, then a question→file/symbol/contract/test table and meaningful risk/counterexample. A new agent should know which 2–5 source files matter **before** doing a repo-wide search.
+- For long technical docs, put a very short “owns / which heading / do not read more unless” preamble in the first ~20 lines. Don't turn every README into a second technical specification or repeat full code descriptions in Change packets.
+- **No automatic source-file banners.** A 3–6-line top comment earns its place only for a surprising local invariant that cannot be discovered from the nearest map; otherwise source comments belong directly beside the relevant decision. No mandatory generated headers/TOCs.
+- Preserve one canonical home: product intent → product doc; technical invariant → technical contract; exact current code ownership → source-adjacent README; next executable task → selected Change; actual proof → tests/receipt. Small summaries and links are allowed to avoid expensive re-derivation; wholesale duplication is not.
+- **Maintenance trigger:** update the nearest map when a Change moves a symbol/file owner, changes route/status/schema/public export, async/retry semantics or source-of-truth boundary. Do not rewrite a map for a harmless JSX/local rename. Mark old source-inspection status as such; don't claim a new build/test occurred.
+- The current §scripts/check_docs.py§ **does not scan nested source-adjacent READMEs or validate heading anchors**. Until [W22](../../docs/changes/2026-11-12--web-context-navigation-check/CHANGE.md) implements this code-bearing tool improvement, check newly added nested map links explicitly. A path check does not certify the described symbol is still its source owner.
+
 ## One explanation, several useful levels
 
 Find the existing owner before adding a document. Put the full explanation there and link from higher levels. A summary is useful when it answers a different, broader question; copying a detailed contract into a plan or package README creates drift.

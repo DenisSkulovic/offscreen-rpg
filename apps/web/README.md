@@ -2,18 +2,21 @@
 
 `@offscreen/web` owns presentation, forms and interaction with **published server projections**. It is not a second gameplay engine, clock, dice roller or provider-billing authority. Before changing the player experience, read [product UI intent](../../docs/player-experience.md); [client and identity](../../docs/technical/client-and-identity.md) owns intended browser/session boundaries.
 
-## Find the screen or interaction
+## Find the owning surface in one hop
 
-| Player task | Start here | Follow only if needed |
+**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These describe the **current code**, not TanStack/RHF/SSE as already implemented. The [selected architecture](../../docs/engineering/targets/react-next.md) is a different, future-state owner.
+
+| Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |
-| Public introduction and login | [app/page.tsx](app/page.tsx), [app/sign-in/page.tsx](app/sign-in/page.tsx) | Session utilities under [src/lib/](src/lib/) |
-| List stories, create/edit drafts | [app/stories/page.tsx](app/stories/page.tsx), [app/stories/new/page.tsx](app/stories/new/page.tsx), [draft-editor.tsx](src/features/stories/draft-editor.tsx) | [API drafts](../api/src/modules/drafts/controller.ts) |
-| Review an opening before Start | [app/stories/[id]/page.tsx](app/stories/[id]/page.tsx), [opening-preview.tsx](src/features/stories/opening-preview.tsx) | Draft/opening public contract |
-| Play: scene, choices, status, recovery | [app/play/[id]/page.tsx](app/play/[id]/page.tsx), [play/view.tsx](src/features/play/view.tsx) | [campaign-play.tsx](src/features/play/campaign-play.tsx), [resolution-recovery.tsx](src/features/play/resolution-recovery.tsx) |
-| History and settings | [history.tsx](src/features/play/history.tsx), [campaign-settings.tsx](src/features/play/campaign-settings.tsx) | Story snapshot and campaign settings contracts |
-| Server session and request/snapshot handling | [viewer.ts](src/lib/viewer.ts), [story-transport.ts](src/lib/story-transport.ts) | `preferNewerSnapshot` avoids older view versions replacing newer ones |
-| Local developer inspector | [app/chamber/page.tsx](app/chamber/page.tsx), [Chamber features](src/features/developer-tools/chamber/) | Debug UI is **not** the ordinary player experience |
-| Authored visual prototype | [app/demo/page.tsx](app/demo/page.tsx) | Browser-only script, resets on refresh, **not** persistent gameplay |
+| Next page, authenticated initial data, 401/404 | [App Router map](app/README.md) (W02/W07/W15) | One `app/**/page.tsx` and server session reader |
+| Server vs browser transport, version merge | [Web transport map](src/lib/README.md) (W02/W03/W15) | `viewer.ts` or `story-transport.ts`, not both by habit |
+| Play command, polling, campaign, history/settings | [Play owner map](src/features/play/README.md) (W03/W04/W05/W06/W07/W11/W17) | `view.tsx`/target symbol, then Nest route if needed |
+| Draft creation, opening, Start, list pagination | [Stories owner map](src/features/stories/README.md) (W08/W09/W10) | `draft-editor.tsx` / `opening-preview.tsx` |
+| Chamber inspector and QA | [Chamber owner map](src/features/developer-tools/chamber/README.md) (W12) | `use-chamber-play.ts` and conditional Nest bootstrap |
+| Connected real browser/DB evidence | [Test source map](../../tools/api-integration/test/README.md) (W14/W19) | One test file; integration runner **resets** disposable test DB |
+| Local scripts, Turbo, CI, Storybook | [Execution playbook](../../docs/engineering/frontend-execution-playbook.md) (W01/W18/W20/W21) | Exact script/manifest; no full app start for pure React tests |
+
+**Fast context test:** If the chosen map plus Change cannot name the input, state owner, output and relevant failure path, **report the missing fact to ChatGPT** rather than starting an unbounded Cursor search.
 
 ## Authority and design traps
 

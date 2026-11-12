@@ -1,5 +1,7 @@
 # Frontend, identity and shared play
 
+**Quick section route:** [Next SSR boundary](#react-and-nextjs) · [selected Query/RHF state ownership](#ui-tools-and-ownership-of-state) · [Better Auth/session](#authentication-and-sessions) · [HTTP idempotency and SSE](#http-commands-and-sse-updates) · [returning/history](#returning-and-reading-the-story). This describes **behavioral/technical intent**, not today's installed client code; see [source owner map](../../apps/web/README.md) to find what is currently implemented. Cursor reads only the heading required by its Change.
+
 ## React and Next.js
 
 Use Next.js App Router for the public site, account entry and authenticated application shell. Its server/client component model supports rendering initial content on the server while keeping interactive regions in the browser. Public explanatory pages can be prerendered; live story data is private and dynamic. [Next.js server and client components](https://nextjs.org/docs/app/getting-started/server-and-client-components).

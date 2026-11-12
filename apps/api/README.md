@@ -2,6 +2,8 @@
 
 `@offscreen/api` composes HTTP routes using NestJS, Better Auth and application operations. Controllers handle request/identity/response mapping; they do **not** become another source of game rules, campaign scheduling or Storyteller admission. [Client/identity](../../docs/technical/client-and-identity.md) and [story lifecycle](../../docs/technical/story-lifecycle.md) own the intended API behavior.
 
+**One-hop context:** [stories/controller and developer-mode map](src/modules/stories/README.md) for W04/W16/W19, [draft/openings map](src/modules/drafts/README.md) for W08/W09. These are **current source guides**; read only the owner relevant to the Change. The [frontend target](../../docs/engineering/targets/react-next.md) is future design, not installed API code.
+
 ## Find the request route
 
 | Concern | Actual entry | Responsible next layer |

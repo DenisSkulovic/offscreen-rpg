@@ -1,31 +1,20 @@
-# Offscreen RPG | Coding-agent entry
+# Offscreen RPG | coding-agent entry
 
-**Audience:** AI agents helping developers research, specify, write, test and review this repository. These are NOT operating instructions for the game's in-world Storyteller. Optimize development decisions and context consumption, not runtime inference, unless specifically asked.
+**If you have one authorized Change:** read its `docs/changes/<folder>/CHANGE.md` first, then **one nearby owner README** and 2–5 named source files. Do **not** preload all repo maps, past minutes, the architecture target, or specialist manuals. [Change queue](docs/changes/README.md) owns selection; `Current change: none` is valid and is not permission to code.
 
-This is a persistent-story RPG with **deterministic mechanical authority** and an LLM Storyteller. The repository is a pre-POC, not a proven product. Be honest about what is designed, implemented, exercised with fixtures, observed live, and accepted by a human.
+**Project:** pre-POC persistent-story RPG, currently an **engineering portfolio**. React/Next architecture is [selected](docs/engineering/targets/react-next.md); gameplay/visual redesign are deferred. The game engine/application/DB, **not** a browser or LLM, own rules, time, permissions, publication and provider costs.
 
-**Current owner priority (November 2026):** [engineering portfolio renewal](TODO.md). Before any significant portfolio-modernization audit or Change, follow [target-first engineering](.agents/rules/target-driven-renewal.md): define an end-state contract **before** auditing current shortcomings; map each planned diff to the target. Gameplay expansion and the older continuity proposal remain deferred.
+## Authority and retrieval
 
-## Non-negotiable boundaries
+- **What/why:** product owner; **technical guarantee:** relevant [contract](docs/technical/README.md) / [engineering target](docs/engineering/targets/README.md); **where/how now:** source and tests. Current code is *not* the target, and documentation is *not* runtime evidence.
+- **Navigate cheaply:** [docs map](docs/README.md) for unknown questions; [web package map](apps/web/README.md) → feature/route README for frontend; [API map](apps/api/README.md) → controller map for backend. Start at a file's **first screen/headings**, then read only relevant sections/symbols. [Information retrieval standard](.agents/references/documentation-navigation-standard.md) is for documentation design, **not** an every-task read.
+- **Frontend cheap Cursor work:** read the selected packet, then its linked source map and narrow code/test boundary. [Execution playbook](docs/engineering/frontend-execution-playbook.md) is a *reference*, not required full context. Implementation details belong to Cursor; expensive architecture, research and cross-system investigation belong upstream. Use pnpm/filter/warm caches and [risk-staged checks](.agents/rules/verification.md).
 
-- **Intended truth:** product docs say *what/why*; technical docs say *authority, invariants and failure semantics*; code and tests show *what is currently implemented*. Never quietly alter a requirement to make code look correct. Reconcile discrepancies at the owning layer.
-- **Game authority:** the model proposes narrative, options and bounded document changes. Application/game logic owns rules, dice, time, persistence, permission, publication and billing. Preserve state, idempotency and retry fences.
-- **No surprising side effects:** never invoke live AI providers, spend credit, turn on auto-retries, deploy, migrate non-disposable data, reset a database, read/expose secrets, or launch broad/destructive operations without explicit task-specific authority. A local API key is not authorization. See `.agents/rules/spending.md` for provider-facing work.
-- **One bounded slice:** respect the requested scope and working tree; do not start extra agents or unrelated cleanup. Report unknowns rather than inventing evidence. Don't claim a check or game run occurred unless it did.
+## Boundaries
 
-**Session continuity (all development agents):** For each substantial repository working day, follow [daily session-minutes rule](.agents/rules/session-minutes.md). Append the owner's significant technical thoughts, constraints, alternatives, decisions, evidence and handoff to the local-date file under [docs/minutes/](docs/minutes/README.md) **during** the session and before switching chats. At a fresh substantial session, read the latest relevant minutes; do not preload the entire archive or mistake minutes for coding authorization. When Git writes are unavailable, supply an explicitly unpersisted entry.
+- Do **not** call paid model providers, deploy, expose secrets, reset non-disposable data, migrate a live database or launch destructive integration tests without explicit task-specific permission. `pnpm test:focus` rebuilds and resets disposable `offscreen_auth_test`; it is not a quick React check.
+- Implement **only** the authorized code scope. Preserve unrelated work; inspect `git status --short` before editing. No speculative libraries, broad formatting, automatic subagents or self-appointed follow-up Changes.
+- If a source fact contradicts an approved design, report **file/symbol, conflict and a negative case**; don't quietly change product/technical authority. Do not treat a mocked test as real authorization/idempotency evidence.
+- For consequential daily work record owner decisions and handoffs in [dated minutes](docs/minutes/README.md); minutes are history, **not** execution authority. Update a source-adjacent README when an owning path, wire contract or important invariant actually changes, not after every JSX edit.
 
-## Choose context by task, not by ritual
-
-- **Coding-agent harness, skills, token cost or development process:** start with `.agents/HARNESS.md` and the relevant `.agents/references/` section. This is a *developer-tooling* task; it does **not** authorize edits to game implementation, Storyteller prompts or provider billing.
-- **Where are we?** `docs/progress.md` and `pnpm repo:brief` when resuming or disoriented; `docs/README.md` routes product and technical topics. Don't run the brief for a trivial known edit.
-- **What does the implementation do?** `docs/engineering/code-navigation.md` and the relevant package README, then trace the relevant source/callers. Don't load the full repository map for a local edit.
-- **New code-bearing work:** agree affected product intent (if changed), then the technical contract, before implementation. A bounded **Change** must have a real intended source/test/executable-config delta and falsifiable acceptance; a design review, docs-only cleanup or test run is not a Change. See [work-unit standard](.agents/references/change-work-unit-standard.md) and [current Change index](docs/changes/README.md) and `.agents/skills/change-workflow/SKILL.md` for significant changes.
-- **Complex work needing several perspectives:** select a responsible role and optional review roles from `.agents/roles/README.md`. Roles define responsibility; skills provide method; agents/chats isolate context. Suggest another chat/subagent only when it adds independent evidence or judgment. No automatic extra agents or permissions.
-- **Investigate, implement, review or reconcile:** use the appropriately scoped skill in `.agents/skills/` when it improves the task. Skills are optional procedures, not required reading on every turn.
-- **Before code changes:** consult the relevant sections of `docs/engineering/code-quality.md`. **Before checks:** consult `.agents/rules/verification.md`. **Before docs/navigation changes:** consult `.agents/rules/documentation.md`.
-- **Cursor budget and local efficiency:** frontend implementation should use [the pre-investigated execution atlas](docs/engineering/frontend-execution-playbook.md) **by relevant section**, not as a giant startup read. Implement one authorized Change, use pnpm-filtered/warm tools and staged verification; don't pay Cursor to remake approved architecture or run broad builds after each edit.
-
-## End-of-slice report
-
-State: changed files/outcome; checks actually run and their results; important gaps; next concrete action; whether paid model calls occurred. Keep it brief. The [independent coding-agent target](docs/engineering/coding-agent-target-standard.md), [current workflow](docs/engineering/ai-development-system.md), and [expert knowledge index](docs/engineering/coding-agent-knowledge.md) define how development agents collaborate. Do not load them all for a small task.
+**Return briefly:** changed files/diff; normal + meaningful negative proof; commands *actually* run/skipped; risk/blocker; next dependency; provider-spend status.

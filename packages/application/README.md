@@ -2,6 +2,8 @@
 
 This package owns use cases, transactions and coordination. API controllers and Temporal Activities call its public [exports](package.json). Pure mechanics belong in `@offscreen/game`; task/schema/provider work in `@offscreen/storyteller`; immutable files in `@offscreen/documents`. Read the relevant route below, then its source, rather than the entire package.
 
+**For frontend-supported backend work (W16/W19):** first read the [story operation/transaction map](src/stories/README.md). It names `createStoryApplication`, `createStoryResolution.admit`, public snapshot `viewVersion` writers and retry/commit seams without loading the whole package.
+
 ## Directory index
 
 | Need | First source | Follow only as needed |

@@ -4,6 +4,8 @@
 
 **Scope:** React 19, Next.js 16 App Router, `apps/web`, its browser/SSR consumer boundary, necessary Nest-facing API contracts and end-to-end verification. **Purpose:** a senior-engineering portfolio. **Excluded:** gameplay expansion, UI/UX and visual redesign, new narrative behavior, live model spending, unrelated infrastructure modernization. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution semantics](../../technical/execution.md), [gameplay boundaries](../../player-experience.md); this document owns *frontend engineering decisions*, not new game rules.
 
+**Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../apps/web/README.md). A selected Change should link only its relevant heading.
+
 ## 0. Final stack decisions (these are instructions, not a library wishlist)
 
 | Concern | Selected technology/architecture | Binding reason and constraint |

@@ -2,6 +2,8 @@
 
 `@offscreen/api-integration` runs tests across real application/database/API/web/worker boundaries. It is a **verification harness**, not a feature owner or the default method to explore game architecture. Use [QA journeys](../../docs/engineering/qa-journeys.md) for scenarios and [technical execution](../../docs/technical/execution.md) for the intended failure/ordering semantics.
 
+**Start small:** [test-source map](test/README.md) routes one scenario to one test and explains real Nest/DB/worker side effects. For a pure React component, use web-local Vitest after W01; do not read or run this integration harness.
+
 ## Find the relevant verification
 
 | Concern | Test entry | Coverage type |

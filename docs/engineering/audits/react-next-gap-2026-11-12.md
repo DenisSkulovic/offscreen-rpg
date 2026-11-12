@@ -4,6 +4,8 @@
 
 **Mission filter:** the system is an engineering portfolio, not a gameplay MVP or UI-design sprint. Code changes are warranted only where a meaningful target invariant is missing, fragile, expensive to explain or unproved by appropriate tests. Attractive JSX, line count and library fashion are not evidence of architectural quality.
 
+**Read by need:** [confirmed source gaps and severity](#4-ranked-findings-with-discriminating-evidence), [Change-to-gap map](#6-revised-code-bearing-implementation-map-owner-selected-destination), [selected-library adoption gaps](#8-selected-stack-gap-register-design-chosen-after-source-inspection), [tooling bottlenecks](#9-source-audited-execution-economics-gaps-2026-11-12). This long audit is **planner/reviewer evidence**, not a mandatory Cursor read; the selected Change and [source-adjacent README](../../../apps/web/README.md) should already identify the pertinent fact.
+
 ## 1. Evidence and expertise actually consulted
 
 - Governance: [root agent entry](../../../AGENTS.md), [target-first rule](../../../.agents/rules/target-driven-renewal.md), [Change standard](../../../.agents/references/change-work-unit-standard.md), [Change workflow](../../../.agents/skills/change-workflow/SKILL.md), [November 11/12 minutes](../../minutes/README.md), [roadmap](../../../TODO.md).

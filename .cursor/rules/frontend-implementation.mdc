@@ -1,12 +1,13 @@
 ---
-description: Apply for implementing an owner-selected Offscreen RPG React/Next.js Change with cheap Cursor models; project-scoped code and verification economics
+description: Cheap Cursor execution of one authorized Offscreen RPG React/Next code-bearing Change
+globs: apps/web/**, docs/changes/*--web-*/CHANGE.md
 alwaysApply: false
 ---
 
-# Fast Cursor executor | frontend
+**One Change, one source map, only relevant code.** Read selected `CHANGE.md` first screen/required acceptance, then its linked source-adjacent `README.md`. Open exact source symbols and tests, not entire targets/manuals/old minutes. Current source ≠ future target.
 
-- **Implement, do not redesign.** Read the *one* selected `docs/changes/<name>/CHANGE.md`, its exact F-criterion if needed, and the 2–5 source anchors. Architecture (TanStack Query, RHF/Zod, Next SSR, typed mutation/receipts, SSE) is decided. Never autonomously select the next Change.
-- Use the [pre-investigated source atlas](../../docs/engineering/frontend-execution-playbook.md#6-source-atlas-for-w01w21) **only for the current packet**. Avoid whole-repo searches, rereading old minutes, long plan transcripts, parallel research agents, new architecture or unnecessary web browsing. Escalate *specific* contradictions to ChatGPT/owner with evidence.
-- **Fast feedback:** `pnpm` and filtered/direct workspace commands; keep warm Next/Vitest/TypeScript caches. Inspect `git diff --check` and editor diagnostics during edits. Use one targeted test at a logical boundary, targeted typecheck/lint after the Change, broad builds/E2E only at specified integration checkpoints. See [verification ladder](../../docs/engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke).
-- Never wipe `node_modules`/`.next`/`.turbo` or rerun install/build/CI without a concrete reason. `pnpm test:focus` drops disposable `offscreen_auth_test` and needs explicit safety permission. Never call game providers or run deployment automatically.
-- Report **diff/paths, checks actually run, one normal + one negative case, material unresolved issue and next dependency** in a compact receipt. Do not claim cached output or a mocked test proves a live backend outcome.
+**No redesign or recursive research.** ChatGPT already selected architecture, source owners and failure semantics. Stop with a concise file/symbol contradiction if actual code materially differs; do not spend cheap-model tokens building a second plan or spawning review agents.
+
+**Fast checks at boundaries.** Warm pnpm/Next/Vitest/TypeScript caches; diff/IDE feedback during edits, targeted negative test at coherent seam, larger build/DB/browser only at agreed integration gate. `test:focus` resets the named disposable DB; never run paid providers or deployment automatically.
+
+**Return:** diff/paths, checks run or skipped, one discriminating negative case, blocker and next dependency. Full instructions: selected Change; deeper [owner maps](../../apps/web/README.md) only as needed.
