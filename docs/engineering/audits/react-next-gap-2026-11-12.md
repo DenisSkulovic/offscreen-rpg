@@ -111,7 +111,7 @@
 | W04 | F5 F11 | W03 W19 | useMutation transport + frozen typed Play intent and receipt-aware recovery |
 | W05 | F6 | W03 W04 | Query refetch/polling fallback with visibility and error policy |
 | W08 | F8 | W15 | React Hook Form + Zod draft editor and revision/dirty guard |
-| W09 | F5 F8 | W15 W19 | generation/Start useMutation + immutable Start envelope |
+| W09 | F5 F8 | W15 | generation/Start useMutation + immutable Start envelope (GET story ID, not W19 resolution receipt) |
 | W10 | F12 | W15 W03 | useInfiniteQuery story/draft/history page identity/cursors |
 | W11 | F8 | W15 W04 | RHF settings/preset editor, no dirty reset on refresh |
 | W12 | F13 | W15 W03 W05 | Query Chamber/QA isolation and Nest developer-only gate |
