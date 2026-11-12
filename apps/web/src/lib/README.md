@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | `../server/viewer.ts` | `requireViewer()` forwards request cookie to Nest GET `/api/me` with `cache:'no-store'` and 5s timeout | 401 redirects `/sign-in`; other non-OK → `NestTransientError`; result `{user,cookie}`. Layout gate ≠ resource auth |
 | `../server/nest-reader.ts` | Typed `nestFetch` / `readNestJson` / status policy | 404 → notFound; 503 → transient; malformed body → protocol error |
-| `story-transport.ts` | `readStorySnapshot(storyId,signal?)` GET `/api/stories/:id`, 10s timeout, Zod `storySnapshotSchema` | Throws generic `Unavailable` on non-OK, bypassing typed status recovery |
+| `story-transport.ts` | `readStorySnapshot(storyId,signal?)` GET `/api/stories/:id`, 10s timeout, Zod `storySnapshotSchema` | Throws `StorySnapshotReadError` with HTTP/`0` status for Query retry; aborts rethrow |
 | `story-transport.ts` | `readSnapshotFromResponse(response)` parses supplied response JSON | Caller must distinguish 200/202 and not infer settled status |
 | `story-transport.ts` | `submitStoryJson({url,body,signal?})` sends `PUT` JSON and returns raw `Response` | `body:unknown`/status handling is pushed to many feature owners; target uses typed endpoint-specific adapter |
 | `story-transport.ts` | `preferNewerSnapshot(prior,next)` accepts equal/higher viewVersion with resolution tie rule | Does **not** check viewer/story ID; W03 replaces all writes with resource-aware Query acceptance |

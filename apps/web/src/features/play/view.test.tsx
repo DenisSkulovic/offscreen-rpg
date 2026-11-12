@@ -11,6 +11,7 @@ import {
 } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { focusManager } from '@tanstack/react-query';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
 import { renderWithStoryQuery } from '@/src/test/query-harness';
 
@@ -246,6 +247,146 @@ describe('PlayScene', () => {
         await vi.advanceTimersByTimeAsync(2500);
       });
       expect(polls).toBe(pollsAtUnmount);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stops pending refetch after the story settles', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const pending = makeStorySnapshot({
+      viewVersion: 3,
+      canRespond: false,
+      title: 'Still resolving',
+      resolution: {
+        state: 'pending',
+        evidence: 'committed',
+        version: 1,
+      },
+      interaction: null,
+    });
+    const settled = makeStorySnapshot({
+      viewVersion: 4,
+      canRespond: true,
+      title: 'Settled scene',
+      resolution: null,
+    });
+    let polls = 0;
+    server.use(
+      http.get(`/api/stories/${fixtureIds.storyId}`, () => {
+        polls += 1;
+        return HttpResponse.json(polls === 1 ? settled : settled);
+      }),
+    );
+
+    try {
+      renderPlay(pending);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2100);
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: 'Settled scene' }),
+        ).toBeInTheDocument();
+      });
+      const pollsAfterSettle = polls;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(polls).toBe(pollsAfterSettle);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('suspends pending refetch while the document is hidden (negative)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const initial = makeStorySnapshot({
+      canRespond: false,
+      title: 'Hidden pending',
+      resolution: {
+        state: 'pending',
+        evidence: 'committed',
+        version: 1,
+      },
+      interaction: null,
+    });
+    let polls = 0;
+    server.use(
+      http.get(`/api/stories/${fixtureIds.storyId}`, () => {
+        polls += 1;
+        return HttpResponse.json(initial);
+      }),
+    );
+
+    try {
+      renderPlay(initial);
+      focusManager.setFocused(false);
+      const pollsWhileHidden = polls;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4500);
+      });
+      expect(polls).toBe(pollsWhileHidden);
+    } finally {
+      focusManager.setFocused(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it('surfaces a refresh control after repeated 503 without dispatching a mutation (negative)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const initial = makeStorySnapshot({
+      canRespond: false,
+      title: 'Pending through outage',
+      resolution: {
+        state: 'pending',
+        evidence: 'committed',
+        version: 1,
+      },
+      interaction: null,
+    });
+    let puts = 0;
+    let gets = 0;
+    server.use(
+      http.get(`/api/stories/${fixtureIds.storyId}`, () => {
+        gets += 1;
+        return HttpResponse.json({ error: 'Unavailable' }, { status: 503 });
+      }),
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/resolutions/:operationId`,
+        () => {
+          puts += 1;
+          return HttpResponse.json(initial);
+        },
+      ),
+    );
+
+    try {
+      renderPlay(initial);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2100);
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Refresh scene' }),
+        ).toBeInTheDocument();
+      });
+      expect(
+        screen.getByText(/Last update failed\. Refresh does not send a command/i),
+      ).toBeInTheDocument();
+      expect(gets).toBeGreaterThanOrEqual(1);
+      expect(gets).toBeLessThanOrEqual(3);
+
+      const getsBeforeRefresh = gets;
+      await user.click(screen.getByRole('button', { name: 'Refresh scene' }));
+      await waitFor(() => {
+        expect(gets).toBeGreaterThan(getsBeforeRefresh);
+      });
+      expect(puts).toBe(0);
+      expect(
+        screen.getByRole('heading', { name: 'Pending through outage' }),
+      ).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }

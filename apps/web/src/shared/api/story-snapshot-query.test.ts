@@ -3,7 +3,15 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { createBrowserQueryClient } from './query-client';
-import { storySnapshotQueryOptions } from './story-snapshot-query';
+import {
+  playStorySnapshotQueryOptions,
+  storySnapshotQueryOptions,
+} from './story-snapshot-query';
+import {
+  allocateStorySnapshotEpoch,
+  resetStorySnapshotEpochCounterForTests,
+  writeStorySnapshot,
+} from './story-snapshot-write';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
 
 const server = setupServer();
@@ -14,6 +22,7 @@ beforeAll(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  resetStorySnapshotEpochCounterForTests();
 });
 
 afterAll(() => {
@@ -37,5 +46,56 @@ describe('storySnapshotQueryOptions hydration freshness', () => {
 
     await client.fetchQuery(options);
     expect(gets).toBe(0);
+  });
+});
+
+describe('playStorySnapshotQueryOptions write gate', () => {
+  it('keeps the newer cached scene when a stale GET returns (negative)', async () => {
+    const newer = makeStorySnapshot({
+      viewVersion: 5,
+      title: 'Authoritative',
+      canRespond: false,
+      interaction: null,
+      resolution: {
+        state: 'pending',
+        evidence: 'committed',
+        version: 2,
+      },
+    });
+    const stale = makeStorySnapshot({
+      viewVersion: 4,
+      title: 'Stale GET',
+      canRespond: false,
+      interaction: null,
+      resolution: {
+        state: 'pending',
+        evidence: 'committed',
+        version: 1,
+      },
+    });
+    server.use(
+      http.get(`/api/stories/${fixtureIds.storyId}`, () =>
+        HttpResponse.json(stale),
+      ),
+    );
+
+    const client = createBrowserQueryClient();
+    writeStorySnapshot(
+      client,
+      {
+        viewerId: 'viewer-1',
+        storyId: newer.id,
+        requestEpoch: allocateStorySnapshotEpoch(),
+      },
+      newer,
+    );
+
+    const options = playStorySnapshotQueryOptions('viewer-1', newer.id);
+    const result = await client.fetchQuery({
+      ...options,
+      staleTime: 0,
+    });
+    expect(result.current.content.title).toBe('Authoritative');
+    expect(result.viewVersion).toBe(5);
   });
 });

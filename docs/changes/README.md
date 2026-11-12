@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W04, W15, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W05 Query polling](2026-11-11--web-play-refresh-lifecycle/CHANGE.md), or [W08](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) form/list work. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W04/W15/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W05, W15, W19, W20 and W21 are Done.** Next dependency-ready packets when authorized: [W08](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) form/list work, [W06](2026-11-11--web-campaign-composition/CHANGE.md) composition, or [W16](2026-11-12--web-sse-backend-invalidation/CHANGE.md) SSE backend. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W05/W15/W19/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -19,7 +19,7 @@ Current change: none
 | **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | **Done:** viewer/story/`viewVersion`/epoch Query write gate | W15 |
 | **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | **Done:** read-only Nest resolution status/identity endpoint | W02 |
 | **B: commands** | [W04 frozen Play useMutation](2026-11-11--web-play-command-lifecycle/CHANGE.md) | **Done:** intent FSM, immutable payload, verified lost-ACK/reload recovery | W03 W19 |
-| **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | Visibility-aware, bounded conditional GET | W03 W04 |
+| **B: refresh** | [W05 Query polling/fallback](2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | **Done:** visibility-aware, bounded conditional GET | W03 W04 |
 | **C: forms** | [W08 RHF draft editor](2026-11-12--web-draft-editor-lifecycle/CHANGE.md) | RHF/Zod, dirty revision/save conflict | W15 |
 | **C: creation** | [W09 generation/Start recovery](2026-11-12--web-opening-start-recovery/CHANGE.md) | Query preview, separate useMutation and frozen Start | W15 |
 | **C: paging** | [W10 infinite lists/history](2026-11-12--web-pagination-navigation/CHANGE.md) | useInfiniteQuery with typed cursor/identity | W15 W03 |

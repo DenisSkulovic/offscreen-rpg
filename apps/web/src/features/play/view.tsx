@@ -6,16 +6,32 @@ import { ResolutionRecovery } from './resolution-recovery';
 import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
 
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
-import { readStorySnapshot } from '@/src/lib/story-transport';
-import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
+import { playStorySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
 import {
   allocateStorySnapshotEpoch,
   writeStorySnapshot,
 } from '@/src/shared/api/story-snapshot-write';
+
+function subscribeOnline(onStoreChange: () => void) {
+  window.addEventListener('online', onStoreChange);
+  window.addEventListener('offline', onStoreChange);
+  return () => {
+    window.removeEventListener('online', onStoreChange);
+    window.removeEventListener('offline', onStoreChange);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getOnlineServerSnapshot() {
+  return true;
+}
 
 function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
   if (waiting.remainingMs === null) {
@@ -87,9 +103,18 @@ export function PlayScene({
   storyId: string;
 }) {
   const queryClient = useQueryClient();
-  const { data: story } = useQuery(
-    storySnapshotQueryOptions(viewerId, storyId),
+  const online = useSyncExternalStore(
+    subscribeOnline,
+    getOnlineSnapshot,
+    getOnlineServerSnapshot,
   );
+  const {
+    data: story,
+    isError: snapshotReadFailed,
+    isFetching: snapshotFetching,
+    isPaused: snapshotPaused,
+    refetch: refetchSnapshot,
+  } = useQuery(playStorySnapshotQueryOptions(viewerId, storyId));
   const resolution = useResolutionCommand({ viewerId, storyId });
   const control = useControlCommand({ viewerId, storyId });
 
@@ -113,48 +138,8 @@ export function PlayScene({
     offer !== null &&
     !isResolving &&
     !resolution.envelope;
-  const shouldPoll =
-    story != null &&
-    (story.resolution?.state === 'pending' ||
-      story.resolution?.state === 'running' ||
-      waiting != null ||
-      story.campaign?.activity?.state === 'running' ||
-      story.campaign?.actionExecution?.state === 'running' ||
-      story.campaign?.holds.some(
-        (hold) =>
-          hold.kind === 'storyteller' || hold.kind === 'storyteller-intent',
-      ) === true);
-
-  useEffect(() => {
-    if (!shouldPoll) {
-      return;
-    }
-    const controller = new AbortController();
-    let timer: ReturnType<typeof setTimeout>;
-    async function refresh() {
-      try {
-        const epoch = allocateStorySnapshotEpoch();
-        const latest = await readStorySnapshot(storyId, controller.signal);
-        if (!controller.signal.aborted) {
-          writeStorySnapshot(
-            queryClient,
-            { viewerId, storyId, requestEpoch: epoch },
-            latest,
-          );
-        }
-      } catch {
-        /* Failed reads never advance the story; reopening also recovers it. */
-      }
-      if (!controller.signal.aborted) {
-        timer = setTimeout(() => void refresh(), 2000);
-      }
-    }
-    timer = setTimeout(() => void refresh(), 2000);
-    return () => {
-      controller.abort();
-      clearTimeout(timer);
-    };
-  }, [shouldPoll, storyId, viewerId, queryClient]);
+  const showRefreshRecovery =
+    story != null && (snapshotReadFailed || !online || snapshotPaused);
 
   useEffect(() => {
     if (
@@ -286,6 +271,24 @@ export function PlayScene({
             <p className="scene-status" role="status">
               {status}
             </p>
+          ) : null}
+          {showRefreshRecovery ? (
+            <section className="play-notice" aria-label="Snapshot refresh">
+              <p role="status">
+                {!online || snapshotPaused
+                  ? 'Offline — last update may be stale. Refresh does not send a command.'
+                  : 'Last update failed. Refresh does not send a command.'}
+              </p>
+              <button
+                type="button"
+                disabled={snapshotFetching || !online}
+                onClick={() => {
+                  void refetchSnapshot();
+                }}
+              >
+                Refresh scene
+              </button>
+            </section>
           ) : null}
           <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
           {scene.campaign?.character ? (

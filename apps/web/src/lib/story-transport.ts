@@ -26,16 +26,35 @@ export function preferNewerSnapshot(
   return result.snapshot ?? prior ?? next;
 }
 
+/** Browser story GET failure with HTTP/network status for Query retry policy. */
+export class StorySnapshotReadError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super('Unavailable');
+    this.name = 'StorySnapshotReadError';
+    this.status = status;
+  }
+}
+
 export async function readStorySnapshot(storyId: string, signal?: AbortSignal) {
-  const response = await fetch(`/api/stories/${storyId}`, {
-    cache: 'no-store',
-    signal:
-      signal === undefined
-        ? AbortSignal.timeout(requestTimeoutMs)
-        : AbortSignal.any([signal, AbortSignal.timeout(requestTimeoutMs)]),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`/api/stories/${storyId}`, {
+      cache: 'no-store',
+      signal:
+        signal === undefined
+          ? AbortSignal.timeout(requestTimeoutMs)
+          : AbortSignal.any([signal, AbortSignal.timeout(requestTimeoutMs)]),
+    });
+  } catch (error) {
+    if (signal?.aborted) {
+      throw error;
+    }
+    throw new StorySnapshotReadError(0);
+  }
   if (!response.ok) {
-    throw new Error('Unavailable');
+    throw new StorySnapshotReadError(response.status);
   }
   return storySnapshotSchema.parse(await response.json());
 }
