@@ -21,6 +21,8 @@ coverage/
 .next/
 .turbo/
 .pnpm-store/
+storybook-static/
+apps/web/storybook-static/
 *.tsbuildinfo
 next-env.d.ts
 # Private runtime data and scratch work

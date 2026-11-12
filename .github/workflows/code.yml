@@ -80,6 +80,9 @@ jobs:
       - name: Build
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm build
+      - name: Storybook static build (provider-free)
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm --filter @offscreen/web storybook:build
       - name: Validate Docker Compose
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: docker compose config --quiet

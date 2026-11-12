@@ -9,7 +9,9 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:fast": "vitest run"
+    "test:fast": "vitest run",
+    "storybook": "storybook dev -p 6006 --host 127.0.0.1 --disable-telemetry",
+    "storybook:build": "storybook build -o storybook-static --disable-telemetry"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
@@ -26,6 +28,8 @@
   },
   "devDependencies": {
     "@offscreen/config": "workspace:*",
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/nextjs-vite": "10.6.7",
     "@tanstack/eslint-plugin-query": "5.91.2",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
@@ -38,8 +42,16 @@
     "axe-core": "^4.14.0",
     "happy-dom": "18.0.1",
     "msw": "2.11.3",
+    "msw-storybook-addon": "3.0.3",
+    "storybook": "10.6.7",
     "typescript": "5.9.3",
+    "vite": "7.3.8",
     "vitest": "3.2.7",
     "vitest-axe": "^0.1.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

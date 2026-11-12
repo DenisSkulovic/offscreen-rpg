@@ -158,6 +158,7 @@ export default ts.config(
       'apps/web/src/shared/**/*.{ts,tsx}',
       'apps/web/src/lib/**/*.{ts,tsx}',
       'apps/web/src/test/**/*.{ts,tsx}',
+      'apps/web/src/stories/**/*.{ts,tsx}',
     ],
     ignores: ['apps/web/src/test/lint-fixtures/**'],
     rules: {

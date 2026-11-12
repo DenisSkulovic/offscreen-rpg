@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
+**State: Done.** Owner authorized via continue after W13. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**. **Audited source:** post-W13 `main` (`ed13c9f`). Storybook 10.6.7 + `@storybook/nextjs-vite` + MSW addon + a11y; static build is provider-free.
 
 **Depends on:** W01 W15 W06 W08 W11; W07 accessibility semantics useful before final story review.  
 **Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F7 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G29 G24**.
