@@ -1,40 +1,32 @@
-# Change W11 | Settings edit session, preset and history lifetimes
+# Change W11: RHF/Zod campaign settings, presets and versioned edit sessions
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no app source edits, CLI/DB reset, browser test service, provider spend, deployment or migration authorized by this packet.  
-**Audited source baseline:** `470a5df069470bf758eb1a560c515846ce781637`; inspect live branch/worktree first. **Dependencies:** W01 + W04 command typing; can review W02 browser contract helpers.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Outcome and authority
+**Depends on:** W01 W15 W04; W08 RHF conventions can be reused, no independent form framework.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F3 F5 F8 F11**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G22 G28 G16**.
 
-**Code-bearing outcome:** A change of server settings revision does not silently destroy a user's unsaved editing; presets/history are separately scoped reads and frozen intent saves with deterministic conflict and unknown-result feedback.
+## Code outcome and owners
 
-**Destination:** [React/Next F1–F15](../../engineering/targets/react-next.md) criteria **F3 F8 F11 F7**; **evidence:** [November 12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md) findings **G22 G16 G17**.
+**Measurable code/test/config change:** RHF/Zod campaign settings, presets and versioned edit sessions.  
+**Start at:** `apps/web/src/features/play/campaign-settings.tsx`; `apps/web/src/features/play/view.tsx`; `use-campaign-command.ts`; `packages/contracts/src/campaign.ts`; Nest settings/preset routes (read).
 
-**Relevant source owners:** `apps/web/src/features/play/campaign-settings.tsx`, `apps/web/src/features/play/view.tsx` (parent key), `apps/web/src/features/play/use-campaign-command.ts`, `packages/contracts/src/campaign.ts`, `apps/api/src/modules/stories/controller.ts` (read).
+## Binding technical design
 
-## Proposed engineering contract
+**React Hook Form v7 + Zod resolver** owns creative settings and private-preset edit forms, with `useFieldArray` for dynamic tags/guidance. TanStack Query owns saved current settings, preset catalogue/owned presets and settings history; no duplicate catalogue arrays in useState. Key RHF form by viewer+story/edit session, **not by settings revision**. When a new server revision arrives while dirty, show a stale/conflict banner and require deliberate reload/adopt/rebase: never silently reset fields or save with new revision. Immutable typed `useMutation` envelopes for settings and private preset, preserve exact UUID/body on uncertain retry. Separate history query and preset mutation statuses; leave form visuals unchanged. Field-level accessible errors and first-invalid focus required.
 
-Key the whole editor by **story/viewer identity**, not `campaign.settings.revision`. Hold last confirmed settings revision and editable `creative` separately; on a newer revision, update read-only effective values and mark dirty local edits stale/conflicting until the user intentionally adopts or resubmits against the new revision. Preserve locked-state restrictions. W04 typed command envelopes own setting PUT ID/payload; preset saves use their own frozen ID/name/creative snapshot and distinguish retrying old capture from starting a new save. Catalogue and history requests use abort/request epoch guards; avoid treating 401 as a generic missing preset. Keep current form controls/appearance; extract preset/history reader only if lifetimes or tests materially improve.
+## Bounded implementation steps
 
-## Intended bounded code/test delta
+1. RHF migration with strict creative schema, safe dynamic array keys and explicit saved revision vs draft values.
+2. Query reads/invalidations for preset/catalogue/history; typed frozen settings/preset mutations with distinct API status taxonomy.
+3. Test external revision while dirty, 409, locked settings, changed preset body before retry, late history after story switch, focus/error and session expiry.
 
-1. Replace revision-based remount with an explicit same-story draft/revision reconciliation contract.
-2. Separate setting command status from preset save status; preserve frozen payload on uncertainty and accurate visible “retry captured preset” affordance.
-3. Guard concurrent catalogue/history reads on story/viewer changes and add tests for dirty revision update, 409, lock state, changed preset input after timeout, session switch.
+## Acceptance and verification
 
-## Acceptance and meaningful rejection
+- **Normal outcome:** Edit tags/guidance, save versioned creative settings, load preset and inspect history without losing edits on background refresh.
+- **Discriminating negative case:** External revision cannot erase dirty form; retry under prior UUID cannot submit newly typed preset; another story's settings/history cannot enter current query.
+- **Safe proof and evidence:** RHF+MSW component tests and existing provider-free settings API integration when safe.
+- **Must preserve / exclude:** No new game mechanics or creative options, no autosave, no design-system/theme swap.
 
-- **Normal:** Edit creative tags and save against an admitted revision, or save a private preset, without losing local work during normal snapshot refresh.
-- **Adversarial negative:** Another tab updates settings while form is dirty; UI must not silently reset user's fields. A preset retry after name/tags changed cannot send new contents under prior ID; late history from story A cannot appear under B.
-- **Cheapest truthful verification:** React component tests with controlled revision update and promise ordering plus narrow provider-free API test if justified.
-- **Result evidence:** Record dirty/prior/current revision semantics, exact old/new retry body comparison and real tests run.
+## Handoff and stop rule
 
-## Constraints, alternatives and abort gate
-
-- **Explicit exclusions:** No new creative/game rules, new form toolkit, general config state machine for every feature, visual editor redesign, backend settings schema change.
-- **Main risk:** Never make React draft state authoritative for applied settings; after 409 user must see rebase/adopt decision rather than blind overwrite.
-- **Option zero:** retain the working boundary and add one targeted check if source/test evidence proves the presumed implementation gap does not exist. A library or abstraction is not an outcome.
-- **Stop condition:** any new backend/public policy, payment, data schema or UI/UX redesign decision is referred to the owner and permanent spec; do not improvise one inside Cursor. Permission remains Proposed until revalidated, reviewed and owner-selected.
-
-## Cursor handoff (after approval only)
-
-Use the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), the named F criteria and G findings, and the 2–5 owning paths above. Implement only the specified delta, preserve behavior, verify a normal **and** discriminating negative case, and return: diff/paths, commands actually run, pass/fail, limits and next recommended packet. Do not automatically execute or expand into unrelated cleanups.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.

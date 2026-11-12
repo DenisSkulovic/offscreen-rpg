@@ -1,40 +1,32 @@
-# Change W06 | Campaign Play responsibility partition without visual redesign
+# Change W06: Cohesive feature model/API/UI composition after Query and mutation migration
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W01 + W04; W03 identity settled; avoid simultaneous edits to Play/campaign command owners.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Why this is a Change
+**Depends on:** W15 W03 W04; avoid concurrently editing Play with W05/W11.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F3 F7 F14**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G21 G17**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F7 F14**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G21 (and G17 key lifecycle adjacency)**.  
-**Desired single code/test/config outcome:** Campaign presentation becomes navigable and independently testable at genuine responsibility boundaries; story intent dispatch and derived world views have traceable single owners. Existing rendered controls/behavior remain unchanged.
+## Code outcome and owners
 
-**Observed source owners:** `apps/web/src/features/play/campaign-play.tsx`, `apps/web/src/features/play/use-campaign-command.ts`, `apps/web/src/features/stories/opening-preview.tsx` (pace import), `packages/contracts/src/campaign.ts` (read).
+**Measurable code/test/config change:** Cohesive feature model/API/UI composition after Query and mutation migration.  
+**Start at:** `apps/web/src/features/play/campaign-play.tsx`; `view.tsx`; `use-campaign-command.ts` (post migration); `apps/web/src/features/stories/opening-preview.tsx`; pure `@offscreen/game/calendar` imports.
 
-## Proposed design contract (not an invitation to redesign)
+## Binding technical design
 
-First map actual reasons-to-change: (a) pure campaign projection/formatting, (b) offer path and successor editing, (c) time/activity/action controls, (d) passive receipts/world/character panels. Extract a small number of coherent siblings only when they can be tested or reviewed independently; do **not** turn a 649-line file into 14 tightly coupled props layers. Keep action status and command identity in W04 controller; keep view-only pace/path/selection state scoped to the offer identity without remounting an uncertain command merely because an offer changed. Move `paceOptions` to a small client-safe neutral module so preview does not import a whole Play Client feature for a constant. Preserve exact server-derived terminology and action gating.
+Use feature-local **`api/` for typed Query/mutation options**, **`model/` for pure derived selectors/offer-path rules**, and **`ui/` for coherent scene, activity, time, receipt and action presentation**. This folder pattern is required for genuinely substantial migrated modules, not one-file trivial helpers. Keep Query as remote owner and RHF as edit owner; no new local canonical story state. Separate offer path local state from command intent, so new offer identity doesn't remount/cancel an uncertain operation. Extract neutral `paceOptions` and formatting utilities from large Client screen; preview must not import a whole Play Client component merely for a constant. Split a large view only by meaningful reason-to-change/test seams, not per-100-line policy. Preserve existing text, controls, fields and CSS class output barring accessible semantics.
 
-## Expected bounded implementation
+## Bounded implementation steps
 
-1. Record existing section/state/dependency map; keep the largest cohesive panel intact if splitting adds indirection.
-2. Extract shared pure pace definition and maybe targeted selectors/meaningful panels with verified caller ownership.
-3. Make typed commands/derived view props explicit; add interaction tests for offer-path navigation, pending choice, holds, activity speed and receipt rendering.
+1. Draw current import/state responsibilities and define 3-5 coherent ownership groups, with a keep-as-is option for cohesive sections.
+2. Extract pure projections/pace and focused child views; refactor props around explicit Query snapshot + command callbacks without prop-cascade abstractions.
+3. Test offer navigation, successor path staging, held clock, ability/receipt rendering, pending generation and shared pace reference.
 
-## Falsifiable acceptance and proof
+## Acceptance and verification
 
-- **Normal case:** Existing character/activity/action screen and available controls render as before, with a smaller set of independently understandable owners.
-- **Discriminating negative case:** Staged successor path, held clock, paused action, settings lock, disabled choice and pending receipt produce exactly their existing allowed action states, with no client-simulated mechanics. Changed offer does not destroy an uncertain intent.
-- **Check and evidence:** Web component and pure-projection tests plus focused visual comparison of representative existing view. Never claim visual redesign.
-- **Completion receipt:** Before/after reason-to-change map and two or three concrete tests that became easier, not a boast about fewer lines.
+- **Normal outcome:** Same scene and campaign controls render from one Query snapshot while independent projections/offer path tests become straightforward.
+- **Discriminating negative case:** Changing offer or story while an intent is uncertain does not lose retry identity; no frontend-only mechanical authority or accidental Play client chunk imported into preview.
+- **Safe proof and evidence:** Pure selectors and RTL interaction regression, build/client bundle size comparison when measured.
+- **Must preserve / exclude:** No new gameplay behavior, theme/CSS overhaul, speculative virtualization, generic reusable component framework.
 
-## Boundaries, alternatives and stop conditions
+## Handoff and stop rule
 
-- **Keep / do not touch:** No new gameplay, shadcn/Tailwind switch, new art/layout, fantasy global state store or forced one-component-per-100-lines fragmentation.
-- **Principal risk:** The current large component may be cohesive; extraction is justified only where coupling/testability demonstrably improves. Avoid moving business calculation from server to browser.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F7 F14**, audit **G21 (and G17 key lifecycle adjacency)**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.

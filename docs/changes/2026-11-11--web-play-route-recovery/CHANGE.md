@@ -1,40 +1,32 @@
-# Change W07 | Accessible Play loading, error and recovery engineering
+# Change W07: Next route, Query boundary, keyboard and accessible failure recovery
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no source edits, CLI/DB reset, browser service run, provider call, deploy or migration authorized by this packet.  
-**Code baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source-inspected, no runtime tests). Executor must revalidate the current branch and preserve unrelated work.  
-**Dependency:** W02 + W03; W04 when covering uncertain commands; W01 for component checks.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Why this is a Change
+**Depends on:** W01 W02 W15 W03 W04; W17 is optional only for final streaming-specific states.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F1 F2 F9 F10**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G24 G32**.
 
-**Target:** [React/Next end-state](../../engineering/targets/react-next.md), criteria **F1 F2 F9**. **Gap:** [2026-11-12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G24**.  
-**Desired single code/test/config outcome:** A keyboard user can tell loading/unauthorized/missing/transient failure and a current saved pending outcome apart and can recover without losing resource identity. This is reliability/accessibility, not an aesthetic redesign.
+## Code outcome and owners
 
-**Observed source owners:** `apps/web/app/play/[id]/page.tsx`, `apps/web/app/stories/error.tsx`, `apps/web/src/features/play/view.tsx`, `apps/web/app/style.css` (inspect), `docs/technical/client-and-identity.md` (read).
+**Measurable code/test/config change:** Next route, Query boundary, keyboard and accessible failure recovery.  
+**Start at:** `apps/web/app/play/[id]/page.tsx` and route `loading/error/not-found`, `apps/web/app/stories/error.tsx`, Play/query error components, `apps/web/app/style.css` (minimal semantic fixes).
 
-## Proposed design contract (not an invitation to redesign)
+## Binding technical design
 
-Use Next route `error.tsx`/`loading.tsx`/`not-found.tsx` only where an explicit boundary serves this screen; avoid catching `redirect` or `notFound` as generic errors. Expected validation/conflict stays in feature interaction, not framework throw. Give useful role/status, keyboard focus and retry affordance without announcing every poll. Retain page structure, classes and visual design unless one minimal accessibility fix needs them. Revalidate session on error recovery, never auto-resubmit paid/uncertain commands, and never reveal forbidden resource existence.
+Use explicit Next App Router `loading.tsx`/`error.tsx`/`not-found.tsx`, Query `QueryErrorResetBoundary` and carefully placed React Suspense for independent reads. Runtime protocol error statuses remain typed: 401 sign-in, owner-hidden 404, 5xx transient retry, 409 conflict, timeout uncertain and domain pending distinct. Client controls expose busy/disabled/alert/status truthfully; a Query refetch error cannot fabricate a failed business effect. Keyboard/focus restoration after error, route change and form validation; reduced motion and no live-region spam on refresh. Retain existing markup/layout/branding except necessary accessible mechanics. Add **@axe-core/playwright** checks and human keyboard walkthrough for meaningful flows.
 
-## Expected bounded implementation
+## Bounded implementation steps
 
-1. Specify existing route states (auth 401, owner-scoped 404, upstream 503/timeout, malformed schema, loading, pending, uncertain) and which component owns each.
-2. Introduce only the justified App Router fallback(s) and interaction-level status/focus corrections.
-3. Add representative keyboard/focus/status component or browser checks, including delayed server response, unreachable upstream and expired session.
+1. Specify route error classification and initial vs background Query loading states, implement only useful route/query boundaries.
+2. Integrate 401/404/503, pending/uncertain and keyboard focus/recovery with typed Query error reset.
+3. Add Playwright/axe and RTL accessible state tests including auth expiry, long content, narrow viewport, delayed status and popup-less recovery.
 
-## Falsifiable acceptance and proof
+## Acceptance and verification
 
-- **Normal case:** A permitted player sees meaningful server HTML and can navigate/focus through a recoverable read failure using existing appearance.
-- **Discriminating negative case:** 503 never claims 404/deleted; owner-mismatched story not disclosed; reauth does not auto-post an earlier choice; uncertain generation not silently restarted; focus not trapped in unmounted button.
-- **Check and evidence:** Focused test plus real browser keyboard/focus check when authorized; note that a JSX role audit does not certify WCAG compliance.
-- **Completion receipt:** Capture state matrix, representative browser evidence, remaining human accessibility review gaps.
+- **Normal outcome:** Initial server HTML, error boundary and keyboard controls remain comprehensible and retryable with valid focus sequence.
+- **Discriminating negative case:** 503 never appears as deleted story; 401 never auto-replays a paid command; retry after uncertain remains explicit, no stale private content on back navigation.
+- **Safe proof and evidence:** RTL/axe/Playwright+human keyboard evidence, not just TypeScript or static JSX.
+- **Must preserve / exclude:** No redesign of layout, typography, branding, gameplay UX or unrelated global CSS.
 
-## Boundaries, alternatives and stop conditions
+## Handoff and stop rule
 
-- **Keep / do not touch:** No brand, layout, typography, visual system, animation, game UX policy or frontend framework replacement.
-- **Principal risk:** Server and client error boundaries behave differently; catching Next navigation exceptions breaks routing. Avoid major visual changes.
-- **Alternative tested conceptually:** keep the existing owner with focused tests/repair instead of extracting modules; any larger framework/library must show that it meets these exact invariants with lower total maintenance and session complexity.
-- **Stop/refer back:** if actual API semantics, resource lifetime, policy or source changed so this contract no longer holds, report the contradiction and revise the owning target/packet with the human. Cursor may choose local code techniques, **not** change product policy, authorization or paid-call behavior on its own.
-
-## Executor handoff once approved
-
-Read the [target](../../engineering/targets/react-next.md) criteria **F1 F2 F9**, audit **G24**, [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md) and the source owners above. Implement **only this outcome** in reviewable diff(s); preserve existing behavior. Run the cheapest truthful check including the negative case; return changed paths, exact commands/results, unknowns and next proposed Change. Do not infer implementation authority from this packet's presence.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.

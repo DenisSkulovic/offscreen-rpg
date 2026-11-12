@@ -1,40 +1,32 @@
-# Change W12 | Chamber snapshot policy reuse and QA state isolation
+# Change W12: TanStack Query Chamber/QA isolation and enforced developer-only backend gate
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no app source edits, CLI/DB reset, browser test service, provider spend, deployment or migration authorized by this packet.  
-**Audited source baseline:** `470a5df069470bf758eb1a560c515846ce781637`; inspect live branch/worktree first. **Dependencies:** W01 + W03 + W05; inspector access-policy decision is separately owned by backend/product.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Outcome and authority
+**Depends on:** W01 W15 W03 W05; security gate implemented in this explicit cross-layer Change.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F2 F3 F4 F6 F13**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G23 G33 G27**.
 
-**Code-bearing outcome:** Chamber uses the same proven resource-safe snapshot and read-refresh policy as Play where genuinely equivalent, while inspector/QA runs remain separate, viewer-partitioned, authorized presentation state.
+## Code outcome and owners
 
-**Destination:** [React/Next F1–F15](../../engineering/targets/react-next.md) criteria **F3 F4 F6 F13**; **evidence:** [November 12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md) findings **G18 G23**.
+**Measurable code/test/config change:** TanStack Query Chamber/QA isolation and enforced developer-only backend gate.  
+**Start at:** `apps/web/src/features/developer-tools/chamber/{use-chamber-play.ts,transport.ts,qa-workspace.tsx,view.tsx}`; `apps/web/app/chamber/page.tsx`; `apps/api/src/modules/stories/{chamber-tools-controller.ts,qa-journeys-controller.ts}`; auth config (narrow).
 
-**Relevant source owners:** `apps/web/src/features/developer-tools/chamber/use-chamber-play.ts`, `transport.ts`, `view.tsx`, `qa-workspace.tsx`, `apps/web/app/chamber/page.tsx`, `apps/api/src/modules/stories/chamber-tools-controller.ts` (read).
+## Binding technical design
 
-## Proposed engineering contract
+Move Chamber snapshot/inspector/QA server-state to viewer+story/run keyed **TanStack Query** and reuse W03 monotonic domain selector/W05 refresh policy, while keeping scenario and lab-only local control independent from Play. QA localStorage run ID is an **untrusted viewer-scoped hint**; clear it on identity change. **Security decision resolved:** the lab is developer-only, **disabled in hosted configs by default**, and enabled only for authenticated developer principal allowlist/role; Nest guards every `chamber-tools`/QA/Chamber command endpoint and returns nonleaking 404 or 403 consistently, not merely hiding Next route. Same-origin dev mode can explicitly opt in; no unauthenticated bypass. Keep actual owner checks for individual story/run objects in addition to role gate. Never include inspector-private DTO in ordinary player Query/cache bundles.
 
-Share the **pure** story version/identity gate and bounded read lifecycle established by W03/W05, not Play's game controls or general interface. Chamber scenario/inspector state remains lab-specific; request identity/abort is explicit on story changes. Scope the local QA-run hint to an authenticated viewer plus run ID, clear/ignore it on logout/account switch, and always reauthorize the run via Nest; browser storage cannot be a permission shortcut. The inspected Nest `ChamberToolsController` owner-checks requests but has no distinct developer-role check. This packet may verify and document that policy but **must not claim frontend navigation hides an endpoint** or silently implement a new API role/restriction. Product owner must separately decide self-service laboratory vs restricted deployment before any public exposure of debug internals.
+## Bounded implementation steps
 
-## Intended bounded code/test delta
+1. Add narrow backend developer-policy guard and config with opt-in local mode; validate all lab route families.
+2. Migrate Chamber story/inspector/QA reads to Query and mutation transport while retaining lab-specific command semantics.
+3. Partition and clear persisted run hint across login/logout, cancel stale inspector/query writes, and add owner vs other owner vs ordinary user vs developer tests.
 
-1. Replace duplicated Chamber snapshot ordering/polling with identical small W03/W05 pure/refresh primitive where verified; retain chamber-specific start/response endpoint semantics.
-2. Guard inspector requests and QA run local storage/read lifetimes by viewer and selected story/run; preserve current QA UI actions and server authorization.
-3. Add controlled A→B, inspector-late, Strict Mode, user-switch and no-privileged-data tests; record API access classification separately.
+## Acceptance and verification
 
-## Acceptance and meaningful rejection
+- **Normal outcome:** Explicitly configured developer can load authorized Chamber scenario/inspector/own QA run and refresh state; normal player experience unchanged.
+- **Discriminating negative case:** Ordinary authenticated viewer cannot reach developer endpoints even with URL; different owner run rejected; old user run hint and late inspector GET never expose data after switch.
+- **Safe proof and evidence:** RTL/MSW race tests and real Nest auth/owner/role integration with disposable DB when authorized; no provider calls.
+- **Must preserve / exclude:** No new game logic, public QA tool, multi-admin console, storage of private story content in browser persistent cache, unrelated auth rewrite.
 
-- **Normal:** Authorized developer/self-service owner can launch Chamber, read own inspector, resume own QA run and refresh saved story without stale requests.
-- **Adversarial negative:** A prior viewer's stored QA-run ID and old inspector GET cannot display previous data after session change; wrong-story high version is rejected. Hiding Chamber link is not accepted as API access control.
-- **Cheapest truthful verification:** Web controlled API/component test; narrow Nest owner/other-owner integration only when existing disposable test setup is authorized. Any separate role-policy change needs owner-approved backend Change.
-- **Result evidence:** Document shared vs separate responsibilities, viewer partitioning, API checks and policy decision status.
+## Handoff and stop rule
 
-## Constraints, alternatives and abort gate
-
-- **Explicit exclusions:** No new gameplay, in-game AI dispatch, unapproved RBAC/backend controller change, public debug exposure, universal Play/Chamber component merge or screen redesign.
-- **Main risk:** Role/access policy is a real unresolved backend/public deployment decision; if host security requirements demand new authorization, this Change remains a frontend-only slice and reports blocker explicitly.
-- **Option zero:** retain the working boundary and add one targeted check if source/test evidence proves the presumed implementation gap does not exist. A library or abstraction is not an outcome.
-- **Stop condition:** any new backend/public policy, payment, data schema or UI/UX redesign decision is referred to the owner and permanent spec; do not improvise one inside Cursor. Permission remains Proposed until revalidated, reviewed and owner-selected.
-
-## Cursor handoff (after approval only)
-
-Use the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), the named F criteria and G findings, and the 2–5 owning paths above. Implement only the specified delta, preserve behavior, verify a normal **and** discriminating negative case, and return: diff/paths, commands actually run, pass/fail, limits and next recommended packet. Do not automatically execute or expand into unrelated cleanups.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.

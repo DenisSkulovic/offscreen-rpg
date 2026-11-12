@@ -1,40 +1,32 @@
-# Change W10 | Identity-safe story, draft and chronology paging
+# Change W10: Viewer-scoped useInfiniteQuery for stories, drafts and chronology
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no app source edits, CLI/DB reset, browser test service, provider spend, deployment or migration authorized by this packet.  
-**Audited source baseline:** `470a5df069470bf758eb1a560c515846ce781637`; inspect live branch/worktree first. **Dependencies:** W01 + W02; W03 for shared story identity boundary.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Outcome and authority
+**Depends on:** W01 W02 W15; W03 for history viewer/resource identity.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F3 F11 F12**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G20 G27**.
 
-**Code-bearing outcome:** All paged readers make resource/query/cursor identity explicit, reject late responses and handle duplicate/end pages consistently while preserving the existing visible controls.
+## Code outcome and owners
 
-**Destination:** [React/Next F1–F15](../../engineering/targets/react-next.md) criteria **F3 F12 F11**; **evidence:** [November 12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md) findings **G20 G17**.
+**Measurable code/test/config change:** Viewer-scoped useInfiniteQuery for stories, drafts and chronology.  
+**Start at:** `apps/web/src/features/stories/live-story-list.tsx`; `draft-list.tsx`; `apps/web/src/features/play/history.tsx`; `apps/web/app/stories/page.tsx`; `packages/contracts/src/stories.ts` and drafts contracts.
 
-**Relevant source owners:** `apps/web/src/features/stories/live-story-list.tsx`, `apps/web/src/features/stories/draft-list.tsx`, `apps/web/src/features/play/history.tsx`, `apps/web/src/features/developer-tools/chamber/history.tsx` (read), `packages/contracts/src/stories.ts`, `apps/web/app/stories/page.tsx`.
+## Binding technical design
 
-## Proposed engineering contract
+Replace hand-written `page/items/cursor/pending` stores with **`useInfiniteQuery`** keyed viewer+resource+filter. Implement correct per-endpoint `initialPageParam`, `getNextPageParam` and runtime Zod parse. Story list `before` is UUID; draft list opaque string `cursor`; chronology `before` is numeric. Render flattened pages with stable deterministic de-dupe/order and a clear exhausted state. Keep existing 'Load older' buttons, not infinite-scroll UX. On mutation invalidate appropriate lists; no page from prior viewer/story/route may enter the current query. On query key change cancel/ignore in-flight old request and show scoped placeholder until B resolves.
 
-Keep the different server cursor contracts: story list `nextBefore` UUID, drafts `nextCursor` string, chronology `nextBefore` number. Encode URL cursor, schema-validate response, use one in-flight request per reader and abort/ignore on identity change or unmount. A page is valid only for the viewer/resource/query epoch that launched it. Decide the existing user-visible accumulation contract explicitly: story/draft lists should retain previously visible items when requesting older entries; chronology should retain already inspected passages if pagination is implemented as older-in-sequence load. Deduplicate by stable ID with stable ordering; if actual existing UI intentionally uses replace-only pages, preserve that behavior instead and write a negative accessibility/navigation test demonstrating that every page remains reachable. Do not turn this into a generic paginated resource framework; a small shared pure cursor/merge function is enough if actually identical.
+## Bounded implementation steps
 
-## Intended bounded code/test delta
+1. Define typed key/`infiniteQueryOptions` for story list, draft list and history; prove cursor encoding and next-page semantics.
+2. Migrate each reader to `useInfiniteQuery` and QueryClient cache rather than a separate useState mirror; preserve current visible list controls.
+3. Add reversed page response, duplicate item, expired session, empty cursor and A→B history navigation tests.
 
-1. Add focused tests that expose current replace/append asymmetry, late A→B page and duplicate cursor entries; record observed intended list behavior.
-2. Implement entity/viewer scoped reader state and deferred-request guards in story list, draft list and read-only chronology with their specific wire types.
-3. Preserve page labels/controls and absence/empty/end states; ensure story history is never interactive past choices and routes/soft refresh reset correctly.
+## Acceptance and verification
 
-## Acceptance and meaningful rejection
+- **Normal outcome:** Next page appends older entries exactly once and shows a usable end-of-list state; fresh Server Component prefetch hydrates first page with no redundant GET.
+- **Discriminating negative case:** Wrong viewer/old story data cannot display on new route; duplicate cursor/items and rapid `fetchNextPage` cannot loop or erase previous pages.
+- **Safe proof and evidence:** Pure cursor/query tests + RTL/MSW controlled page races, provider-free existing real Nest pagination tests when authorized.
+- **Must preserve / exclude:** No GraphQL, new product filtering requirements, infinite-scroll layout or virtualized renderer without measured need.
 
-- **Normal:** Loading older stories/drafts/history retains a coherent accessible sequence and correct next cursor; current entries don't disappear unexpectedly.
-- **Adversarial negative:** Late older page after viewer/story/route switch, duplicated ID, empty or invalid cursor and rapid double click cannot insert wrong records or create an infinite paging loop.
-- **Cheapest truthful verification:** Web pure/page component tests and targeted provider-free existing browser chronology/list flow when permitted; no DB reset without explicit acknowledgement.
-- **Result evidence:** Document selected per-reader page semantics and two negative identity/pagination cases plus actual test results.
+## Handoff and stop rule
 
-## Constraints, alternatives and abort gate
-
-- **Explicit exclusions:** No infinite-scroll UI redesign, generic query framework, server pagination change or new product feature.
-- **Main risk:** Do not assume the three server cursors are interchangeable; if changing replace→append affects product intent, elevate that specific policy decision rather than improvising new UX.
-- **Option zero:** retain the working boundary and add one targeted check if source/test evidence proves the presumed implementation gap does not exist. A library or abstraction is not an outcome.
-- **Stop condition:** any new backend/public policy, payment, data schema or UI/UX redesign decision is referred to the owner and permanent spec; do not improvise one inside Cursor. Permission remains Proposed until revalidated, reviewed and owner-selected.
-
-## Cursor handoff (after approval only)
-
-Use the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), the named F criteria and G findings, and the 2–5 owning paths above. Implement only the specified delta, preserve behavior, verify a normal **and** discriminating negative case, and return: diff/paths, commands actually run, pass/fail, limits and next recommended packet. Do not automatically execute or expand into unrelated cleanups.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.

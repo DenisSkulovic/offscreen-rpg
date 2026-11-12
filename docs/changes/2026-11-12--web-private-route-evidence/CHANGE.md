@@ -1,40 +1,32 @@
-# Change W14 | Provider-free authenticated Next routing, cache and performance evidence
+# Change W14: Production-like private SSR, route/cache/SSE and performance verification
 
-**State:** Proposed, not Ready. **Owner:** repository owner for target/scope approval. **Future executor:** Cursor after selection. **Permission now:** Markdown planning only; no app source edits, CLI/DB reset, browser test service, provider spend, deployment or migration authorized by this packet.  
-**Audited source baseline:** `470a5df069470bf758eb1a560c515846ce781637`; inspect live branch/worktree first. **Dependencies:** W01 + W02; after W03/W07 for final cross-route state/focus proof.
+**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
 
-## Outcome and authority
+**Depends on:** W02 W15 W03 W04 W07 W17; W18 state workbench optional evidence input.  
+**Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F1 F2 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G14 G25 G27 G30**.
 
-**Code-bearing outcome:** A repeatable provider-free browser/proxy check and safe measurements establish what a private SSR/soft-navigation deployment actually renders/caches, how it behaves across sessions, and baseline cost before performance optimizations.
+## Code outcome and owners
 
-**Destination:** [React/Next F1–F15](../../engineering/targets/react-next.md) criteria **F1 F2 F9 F10 F15**; **evidence:** [November 12 source audit](../../engineering/audits/react-next-gap-2026-11-12.md) findings **G14 G24 G25**.
+**Measurable code/test/config change:** Production-like private SSR, route/cache/SSE and performance verification.  
+**Start at:** `tools/api-integration/test/stories-browser.integration.ts`, auth/stories test files and browser helpers, `apps/web/next.config.ts`/route group/provider, existing `.github/workflows/code.yml`, optional tiny safe metric script.
 
-**Relevant source owners:** `tools/api-integration/test/stories-browser.integration.ts`, `tools/api-integration/test/drafts.browser.ts`, `tools/api-integration/test/helpers/browser-session.ts`, `apps/web/next.config.ts`, `apps/web/app/play/[id]/page.tsx`; optional new tiny local metrics/verification script.
+## Binding technical design
 
-## Proposed engineering contract
+Extend **real provider-free Next 16 production-build + Nest + disposable DB + browser** checks; tests should prove authenticated initial HTML and correct client hydration, Router Cache/soft navigation/prefetch, 401/404/503 classification, owner/other-owner, logout/back/cross-tab, Query cache partition, no accidental private HTTP/proxy cache, SSE missed event resync, command POST count under lost ACK, keyboard recovery and measured network waterfalls. Capture bundle/route JS, first meaningful HTML, hydration warnings, request counts and SSE/poll fallback timing in a reproducible environment. No invented SLO or 'X% faster' claim without before/after control. Log only redacted route class, operation/status, timing and error taxonomies; never private story text/cookies/provider prompts. Existing CI is asset; do not create extra billed workflows.
 
-Extend existing *real* Next + Nest browser integration, not duplicate it with mocks, with explicitly authorized disposable test DB and no provider. At minimum instrument anonymous/owner/other-owner HTML and RSC/soft-nav read, logout/back/refresh, 401/404/503 route failure, initial HTML value before hydration, and response caching headers. Record request counts and route waterfall plus build JS chunk sizes in controlled environment; compare same trace before/after only when comparable. Use safe redacted timings and URL patterns; never log cookies, raw story prose or provider secrets. A script/code test plus a short Markdown evidence receipt is a legitimate Change. No universal numeric 'performance budget' invented without baseline. Existing CI already includes code, DB and identity jobs; don't add a separate expensive provider/deployment workflow.
+## Bounded implementation steps
 
-## Intended bounded code/test delta
+1. Implement precise browser/HTTP/proxy production-like test harness with known disposable DB and provider-free conditions.
+2. Verify private SSR + Query hydration vs soft-navigation/Router Cache, other-owner and logout/back, SSE loss/fallback; capture actual traces and baseline metrics.
+3. Add scoped safe structured diagnostics/metrics where lacking and publish concise evidence receipt with revision/environment/sample, not marketing adjectives.
 
-1. Add browser test helpers/scenarios that validate request/session isolation and history behavior, with clear environment prerequisites and cleanup.
-2. Add minimal reproducible timings/request tracing and production-build/bundle notes, capturing actual environment and initial baseline.
-3. Record false positives (Next HMR cache vs production Router Cache), compare measured costs and leave optimization only where data warrants it.
+## Acceptance and verification
 
-## Acceptance and meaningful rejection
+- **Normal outcome:** Authorized owner receives meaningful SSR data without redundant hydration GET; current state survives a browser navigation and after SSE invalidation; measurable request/bundle trace available.
+- **Discriminating negative case:** Anonymous/other-owner, cached Router back after logout, stale SSR hydration, delayed command/SSE and upstream failure never disclose private data or duplicate business effect; no paid provider traffic.
+- **Safe proof and evidence:** Real Playwright/Nest/DB integration only with explicit permission for disposable DB reset and service start, production build plus measured report, CI smoke as selected.
+- **Must preserve / exclude:** No live deploy, production user data, provider budget, new visual UX, gratuitous observability platform.
 
-- **Normal:** Owner sees private SSR story before hydration and correct later navigation; test report shows page/network/JS baseline and correct no-store paths.
-- **Adversarial negative:** Other-owner/anonymous direct URL, prefetch, browser back after logout or stale client route cannot surface owner content; timeout/503 is not an authoritative 404; no private payload in traces.
-- **Cheapest truthful verification:** Provider-free real browser and HTTP/proxy tests only with explicit test DB reset and local service authorization. Track actual `pnpm` commands and stats; if unrun, report 'test added, not executed'.
-- **Result evidence:** Version/environment, scenario outcomes, cache headers, request metrics and precise unproved limits. No “optimized” adjective without comparison.
+## Handoff and stop rule
 
-## Constraints, alternatives and abort gate
-
-- **Explicit exclusions:** No live deployments, remote telemetry platform, arbitrary SLO claims, screenshot/branding optimization, paid Storyteller calls or new GitHub Actions bills.
-- **Main risk:** The existing integration runner rebuilds services and destroys only the named disposable `offscreen_auth_test` DB, so inspect safety gate before execution. React/Next dev HMR caching is not representative of production.
-- **Option zero:** retain the working boundary and add one targeted check if source/test evidence proves the presumed implementation gap does not exist. A library or abstraction is not an outcome.
-- **Stop condition:** any new backend/public policy, payment, data schema or UI/UX redesign decision is referred to the owner and permanent spec; do not improvise one inside Cursor. Permission remains Proposed until revalidated, reviewed and owner-selected.
-
-## Cursor handoff (after approval only)
-
-Use the [frontend skill](../../../.agents/skills/frontend-engineering/SKILL.md), the named F criteria and G findings, and the 2–5 owning paths above. Implement only the specified delta, preserve behavior, verify a normal **and** discriminating negative case, and return: diff/paths, commands actually run, pass/fail, limits and next recommended packet. Do not automatically execute or expand into unrelated cleanups.
+Cursor must apply this design and [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md) without choosing replacement libraries, new gameplay behavior, a different UI design or another state authority. Typecheck/build and the smallest truthful normal+negative tests should run when explicitly authorized and safe. Inspect destructive integration scripts before any disposable DB reset. If source contradicts an approved invariant, report evidence rather than silently reinterpret the target. Return files/diff, tests actually run, failures, performance/side effects when relevant and next dependency. No automatic provider spend or deployment.
