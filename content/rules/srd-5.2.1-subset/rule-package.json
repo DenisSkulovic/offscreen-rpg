@@ -14,11 +14,29 @@
   },
   "pages": [
     { "path": "RULES.md", "topics": ["rules-index"] },
-    { "path": "checks/ability-checks.md", "topics": ["ability-check", "difficulty-class", "proficiency"] },
-    { "path": "checks/advantage-and-disadvantage.md", "topics": ["ability-check", "advantage", "disadvantage"] },
-    { "path": "checks/event-occurrence.md", "topics": ["event-occurrence", "hidden-events"] },
-    { "path": "activities/contribution.md", "topics": ["activity", "contribution", "progress"] },
-    { "path": "time/committed-time.md", "topics": ["time", "ticks", "calendar"] },
-    { "path": "authority/storyteller-and-engine.md", "topics": ["authority", "adjudication", "effects"] }
+    {
+      "path": "checks/ability-checks.md",
+      "topics": ["ability-check", "difficulty-class", "proficiency"]
+    },
+    {
+      "path": "checks/advantage-and-disadvantage.md",
+      "topics": ["ability-check", "advantage", "disadvantage"]
+    },
+    {
+      "path": "checks/event-occurrence.md",
+      "topics": ["event-occurrence", "hidden-events"]
+    },
+    {
+      "path": "activities/contribution.md",
+      "topics": ["activity", "contribution", "progress"]
+    },
+    {
+      "path": "time/committed-time.md",
+      "topics": ["time", "ticks", "calendar"]
+    },
+    {
+      "path": "authority/storyteller-and-engine.md",
+      "topics": ["authority", "adjudication", "effects"]
+    }
   ]
 }

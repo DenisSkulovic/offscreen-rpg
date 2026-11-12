@@ -14,19 +14,19 @@ A migration is not merely a sequence of SQL statements. In a deployed system, ol
 
 First identify the facts and their lifecycle. A persistent entity needs more than an ID:
 
-| Dimension | Decision to make | Why it changes the design |
-| --- | --- | --- |
-| Entity identity | Surrogate ID, business key, composite scoped key, versioned document ID | Whether duplicate inputs and cross-tenant references are possible |
-| Business uniqueness | What is actually unique, over what interval and owner scope? | Two equal titles may be distinct objects; a room can be booked on different nights |
-| Cardinality | One-to-one, one-to-many, many-to-many, optional relationship | Join table vs embedded array, and delete/retention semantics |
-| Mutation | Mutable in place, append-only, event log, immutable revision | Audit, dedup, history reconstruction and write contention |
-| Temporal meaning | Instant, local date, effective interval, recorded-at, observed-at | Backdated corrections and future rules cannot share one timestamp blindly |
-| Visibility | Owner, tenant, member, public projection, private proposal | RLS/app authz and document placement must match exposure |
-| Retention | Deleted, archived, anonymized, preserved as evidence | Hard delete vs tombstone vs historical snapshot |
-| Access paths | Lookup by owner/id, filter, range, search, chronology, aggregation | Indexes and query plan drive schema and derived views |
-| Evolution | How old persisted versions are interpreted | Schema versioning, migration/backfill, compatibility or adapters |
+| Dimension           | Decision to make                                                        | Why it changes the design                                                          |
+| ------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Entity identity     | Surrogate ID, business key, composite scoped key, versioned document ID | Whether duplicate inputs and cross-tenant references are possible                  |
+| Business uniqueness | What is actually unique, over what interval and owner scope?            | Two equal titles may be distinct objects; a room can be booked on different nights |
+| Cardinality         | One-to-one, one-to-many, many-to-many, optional relationship            | Join table vs embedded array, and delete/retention semantics                       |
+| Mutation            | Mutable in place, append-only, event log, immutable revision            | Audit, dedup, history reconstruction and write contention                          |
+| Temporal meaning    | Instant, local date, effective interval, recorded-at, observed-at       | Backdated corrections and future rules cannot share one timestamp blindly          |
+| Visibility          | Owner, tenant, member, public projection, private proposal              | RLS/app authz and document placement must match exposure                           |
+| Retention           | Deleted, archived, anonymized, preserved as evidence                    | Hard delete vs tombstone vs historical snapshot                                    |
+| Access paths        | Lookup by owner/id, filter, range, search, chronology, aggregation      | Indexes and query plan drive schema and derived views                              |
+| Evolution           | How old persisted versions are interpreted                              | Schema versioning, migration/backfill, compatibility or adapters                   |
 
-**Separate an entity from its present value.** Story identity, a published passage, its current selected descriptive document, and an internal model *proposal* have different authority and historical semantics. Treating them all as one mutable row may erase evidence; treating them all as independent databases may create needless distributed consistency.
+**Separate an entity from its present value.** Story identity, a published passage, its current selected descriptive document, and an internal model _proposal_ have different authority and historical semantics. Treating them all as one mutable row may erase evidence; treating them all as independent databases may create needless distributed consistency.
 
 ### Natural versus surrogate identity
 
@@ -38,15 +38,15 @@ A price at booking time should survive later catalog price changes. A snapshot i
 
 ## 2. Choose how facts are represented and owned
 
-| Representation | Useful for | Principal cost / selection boundary |
-| --- | --- | --- |
-| Normalized relational tables | Frequent joins, integrity constraints, multi-record transactional commands | Query complexity, migration effort, transaction contention if modeled poorly |
-| PostgreSQL JSONB | Flexible bounded substructure attached to an owner, changing schema, infrequent targeted queries | Validation, indexes, partial updates, version interpretation and opaque query costs |
-| Immutable versioned documents | Canonical narrative/source content, audit/provenance, reproducible reads | Manifest/root selection, current-version resolution, atomic publication and garbage collection |
-| Event/append-only ledger | Durable business transitions, replay/audit and idempotent receipt evidence | Projection rebuilding, event compatibility, large history and schema evolution |
-| Materialized view/read projection | Expensive read shape with acceptable lag, independent access patterns | Rebuild/invalidation, divergence and tenant visibility |
-| Dedicated search index | Ranking/fuzzy retrieval over lots of content | Freshness, version/canonical-source references, eventual convergence |
-| Cache | Derived fast read when DB remains authority | TTL, eviction, stampede, privacy, invalidation and stale publication |
+| Representation                    | Useful for                                                                                       | Principal cost / selection boundary                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Normalized relational tables      | Frequent joins, integrity constraints, multi-record transactional commands                       | Query complexity, migration effort, transaction contention if modeled poorly                   |
+| PostgreSQL JSONB                  | Flexible bounded substructure attached to an owner, changing schema, infrequent targeted queries | Validation, indexes, partial updates, version interpretation and opaque query costs            |
+| Immutable versioned documents     | Canonical narrative/source content, audit/provenance, reproducible reads                         | Manifest/root selection, current-version resolution, atomic publication and garbage collection |
+| Event/append-only ledger          | Durable business transitions, replay/audit and idempotent receipt evidence                       | Projection rebuilding, event compatibility, large history and schema evolution                 |
+| Materialized view/read projection | Expensive read shape with acceptable lag, independent access patterns                            | Rebuild/invalidation, divergence and tenant visibility                                         |
+| Dedicated search index            | Ranking/fuzzy retrieval over lots of content                                                     | Freshness, version/canonical-source references, eventual convergence                           |
+| Cache                             | Derived fast read when DB remains authority                                                      | TTL, eviction, stampede, privacy, invalidation and stale publication                           |
 
 **A common false dilemma:** “relational database versus documents.” The same product can use SQL as transaction/identity owner and immutable documents as long-form source content, with a **single atomic selected root**. That doesn't authorize a second mechanical-state writer. See [canonical files](../../docs/technical/canonical-files.md) and [data contract](../../docs/technical/data.md).
 
@@ -60,15 +60,15 @@ Don't introduce event sourcing because “auditability matters.” A simple immu
 
 A database constraint can be the strongest and cheapest guard for an invariant, but first express that invariant precisely.
 
-| Guarantee | Common DB mechanism | Limit |
-| --- | --- | --- |
-| Stable business identity | Unique index/constraint on correct scope | Case-folding, soft-delete, race or natural-key reuse need explicit policy |
-| Valid relation | Foreign key, often composite by tenant | Cross-tenant safety still depends on every write/query respecting scope |
-| Valid local value | CHECK/NOT NULL, enum or typed JSON validation | Cannot guarantee arbitrary cross-row/time invariants |
-| Nonoverlapping intervals | Appropriate PostgreSQL exclusion/range constraint | Workload, lock/index strategy and period semantics matter |
-| Single claim of capacity | Conditional atomic update or locked coordinator row | Must represent the shared resource and recheck affected rows |
-| No stale overwrite | Expected version with compare-and-swap | Doesn't protect a separate predicate if not covered |
-| Historical audit | Append-only receipt/versioned event with FK | Data provenance and correction policy still need design |
+| Guarantee                | Common DB mechanism                                 | Limit                                                                     |
+| ------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------- |
+| Stable business identity | Unique index/constraint on correct scope            | Case-folding, soft-delete, race or natural-key reuse need explicit policy |
+| Valid relation           | Foreign key, often composite by tenant              | Cross-tenant safety still depends on every write/query respecting scope   |
+| Valid local value        | CHECK/NOT NULL, enum or typed JSON validation       | Cannot guarantee arbitrary cross-row/time invariants                      |
+| Nonoverlapping intervals | Appropriate PostgreSQL exclusion/range constraint   | Workload, lock/index strategy and period semantics matter                 |
+| Single claim of capacity | Conditional atomic update or locked coordinator row | Must represent the shared resource and recheck affected rows              |
+| No stale overwrite       | Expected version with compare-and-swap              | Doesn't protect a separate predicate if not covered                       |
+| Historical audit         | Append-only receipt/versioned event with FK         | Data provenance and correction policy still need design                   |
 
 **Ownership and time interact:** Was a relationship true at story time, known by the player at that time, or entered into the database later? “createdAt,” “effectiveAt,” “observedAt,” and “publishedAt” are different coordinates. The right model depends on gameplay and product semantics; don't invent bitemporal storage unless required.
 
@@ -99,20 +99,20 @@ A paginated UI may request records sorted by publish time, while SQL uses a nonu
 
 For durable deployments, use an **expand → transition/backfill → validate → contract** mindset:
 
-| Phase | Typical action | Safety condition |
-| --- | --- | --- |
-| Expand | Add nullable/new field or table, compatible read/write path | Old app version continues working |
-| New writers | Deploy app that writes new representation (possibly dual write) | Cross-version semantics and idempotency defined |
-| Backfill | Populate historical rows in bounded, resumable batches | No clobber of concurrent new writes; progress and checks |
-| New readers | Prefer new representation once coverage is complete | Can compare or fall back during rollout |
-| Validate | Check consistency, enforce constraints, verify read/error behavior | Data errors and rejected rows handled |
-| Contract | Stop old writes/reads; drop old schema only when safe | Old clients/workers/rollback artifacts no longer depend on it |
+| Phase       | Typical action                                                     | Safety condition                                              |
+| ----------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Expand      | Add nullable/new field or table, compatible read/write path        | Old app version continues working                             |
+| New writers | Deploy app that writes new representation (possibly dual write)    | Cross-version semantics and idempotency defined               |
+| Backfill    | Populate historical rows in bounded, resumable batches             | No clobber of concurrent new writes; progress and checks      |
+| New readers | Prefer new representation once coverage is complete                | Can compare or fall back during rollout                       |
+| Validate    | Check consistency, enforce constraints, verify read/error behavior | Data errors and rejected rows handled                         |
+| Contract    | Stop old writes/reads; drop old schema only when safe              | Old clients/workers/rollback artifacts no longer depend on it |
 
 **This is not always six deployments.** For an empty pre-POC database, a single migration may be enough. For large active tables with old app versions in flight, a one-shot destructive rename is unacceptable. The contract is what matters, not ritual phases.
 
 ### Why rollback is not time travel
 
-Rolling back the application binary does **not** reverse migrated data. A database restore can lose legitimate new writes. Plan forward correction, backward-compatible schema and rollback of *behavior* separately. A rollback target must understand already-persisted values. Feature flags can decouple activation from deployment, but flags and dual paths are also maintenance costs.
+Rolling back the application binary does **not** reverse migrated data. A database restore can lose legitimate new writes. Plan forward correction, backward-compatible schema and rollback of _behavior_ separately. A rollback target must understand already-persisted values. Feature flags can decouple activation from deployment, but flags and dual paths are also maintenance costs.
 
 ### Backfills are production workloads
 

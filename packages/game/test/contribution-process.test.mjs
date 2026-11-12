@@ -84,7 +84,10 @@ const plan = resolvedActivityPlanSchema.parse({
 test('ability checks determine contribution while time only schedules attempts', () => {
   let progress = { kind: 'contribution.v1', earned: 0 };
   assert.equal(nextBoundaryGameSecond(plan, 0), 5);
-  assert.equal(estimatedCompletionBoundaryGameSecond(plan, progress, character), 30);
+  assert.equal(
+    estimatedCompletionBoundaryGameSecond(plan, progress, character),
+    30,
+  );
 
   const first = contributeAtBoundary(plan, progress, character, () => 20);
   progress = first.progress;
@@ -246,7 +249,10 @@ test('clock wait completes at its eligible game-second target without a roll or 
   });
   const progress = { kind: 'clock-wait.v1', elapsedFictionalSeconds: 0 };
   assert.equal(nextBoundaryGameSecond(wait, 0), 10);
-  assert.equal(estimatedCompletionBoundaryGameSecond(wait, progress, character), 10);
+  assert.equal(
+    estimatedCompletionBoundaryGameSecond(wait, progress, character),
+    10,
+  );
   assert.equal(processBoundaryDue(wait, 9), false);
   assert.equal(processBoundaryDue(wait, 10), true);
   assert.deepEqual(processProgressAtEffortGameSecond(wait, progress, 6), {

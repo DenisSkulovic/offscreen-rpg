@@ -44,8 +44,9 @@ export async function checkStoryCore({
         await mkdtemp(join(tmpdir(), 'offscreen-campaign-documents-')),
       );
       const chamber = createChamber(database, { documentStore: storage });
-      const documents = createStories(database, { documentStore: storage })
-        .documents;
+      const documents = createStories(database, {
+        documentStore: storage,
+      }).documents;
       assert.ok(documents);
       const storyId = randomUUID();
       const opening = await chamber.start({
@@ -154,17 +155,22 @@ export async function checkStoryCore({
         },
       });
       assert.equal(second.rootRevision, 3);
-      const historicalPlace = (await documents.readDocument({
+      const historicalPlace = (
+        await documents.readDocument({
           ownerId: owner,
           storyId,
           documentId: placeId,
           revision: 1,
-        })).document;
+        })
+      ).document;
       assert.equal(historicalPlace.format, 'offscreen.document.v1');
       if (historicalPlace.format !== 'offscreen.document.v1') {
         throw new Error('Place was not stored as a descriptive document');
       }
-      assert.equal(historicalPlace.body, 'The iron gate opens toward the courtyard.');
+      assert.equal(
+        historicalPlace.body,
+        'The iron gate opens toward the courtyard.',
+      );
       await assert.rejects(
         documents.admit({
           ownerId: owner,

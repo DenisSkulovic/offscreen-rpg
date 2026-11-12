@@ -15,7 +15,7 @@ description: Plan and carry out one bounded code-bearing implementation Change f
 
 First establish the real product/developer objective. Distinguish what is **already implemented**, what needs human design/acceptance, and what still requires code. One Change should be small enough to implement, verify, review and close without reopening an entire initiative.
 
-- **Code delta required:** name the actual executable/test/configuration boundary expected to change. A design review or test *run* without code modification is not a Change.
+- **Code delta required:** name the actual executable/test/configuration boundary expected to change. A design review or test _run_ without code modification is not a Change.
 - **Scope:** one cohesive outcome and the dependencies genuinely needed to prove it. Split unrelated deliverables, risky permission domains or design-dependent outcomes.
 - **No arbitrary size cap:** cost depends on conceptual scope, source fanout, dependencies, evidence and potential harm, not lines or prompts alone.
 
@@ -25,7 +25,7 @@ Do not make a new folder for a trivial correction already clear from its contrac
 
 Consult the relevant product/technical specification headings; these are authoritative, not the temporary Change packet. Trace actual source and tests narrowly, and compare with the proposed scope. **Stale file paths or old implementation approvals are not evidence.**
 
-For a significant architecture/design decision, use [role orchestration](../../roles/README.md), appropriate professional knowledge and an independent critical lens when warranted. The purpose is to settle *alternatives and constraints* before Cursor implements, not to spawn a meeting factory.
+For a significant architecture/design decision, use [role orchestration](../../roles/README.md), appropriate professional knowledge and an independent critical lens when warranted. The purpose is to settle _alternatives and constraints_ before Cursor implements, not to spawn a meeting factory.
 
 A proposal remains Proposed until scope, current owner, relevant safeguards, proof and user permission are clear. Provider calls, DB migrations, hosted actions and broad checks require their separate permissions.
 
@@ -33,13 +33,13 @@ A proposal remains Proposed until scope, current owner, relevant safeguards, pro
 
 `CHANGE.md` records the one outcome, authorities, current source/unknowns, intended code/test delta, exclusions, success and discriminating negative acceptance. For portfolio changes it must also link a **pre-existing area target criterion** and a **source-grounded audit finding**, not merely say "this file could be cleaner." Its purpose is a cheap transfer between ChatGPT design, source-connected Claude investigation and Cursor implementation.
 
-Use `PLAN.md` **only** for meaningful multi-step implementation. Describe dependency-ordered *code* outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
+Use `PLAN.md` **only** for meaningful multi-step implementation. Describe dependency-ordered _code_ outcomes and exactly one current checkpoint. Keep later slices coarse and rewrite the checkpoint rather than appending a diary.
 
 Use [cursor-handoff](../cursor-handoff/SKILL.md) for an executable prompt; it must not send entire initiative histories or let Cursor redefine product intent.
 
 ## 4. Implement only when authorized
 
-One owner applies the approved delta, inspects diff, runs safe proportionate checks and evaluates expected *and negative* behavior. No automatic unrelated refactors, new provider spend, staging DB reset, agent swarms or new feature invention.
+One owner applies the approved delta, inspects diff, runs safe proportionate checks and evaluates expected _and negative_ behavior. No automatic unrelated refactors, new provider spend, staging DB reset, agent swarms or new feature invention.
 
 If code reveals that the approved contract is wrong/incomplete, **return that decision to the owning design role**, reconcile permanent specs, then resume implementation under a revised Change. A green fixture is not proof of connected gameplay.
 

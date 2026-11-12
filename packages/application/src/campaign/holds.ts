@@ -141,8 +141,7 @@ export async function transitionWorldObligationHoldToGeneration(
   const holds = campaignHoldsSchema.parse(state.holds);
   const ownsEvent = holds.some(
     (hold) =>
-      hold.kind === 'world-obligation' &&
-      hold.obligationId === obligationId,
+      hold.kind === 'world-obligation' && hold.obligationId === obligationId,
   );
   if (!ownsEvent) {
     throw new Error('World obligation does not own the campaign hold');
@@ -151,8 +150,7 @@ export async function transitionWorldObligationHoldToGeneration(
     ...holds.filter(
       (hold) =>
         !(
-          hold.kind === 'world-obligation' &&
-          hold.obligationId === obligationId
+          hold.kind === 'world-obligation' && hold.obligationId === obligationId
         ),
     ),
     { kind: 'storyteller', generationId, reason: 'required-turn' },

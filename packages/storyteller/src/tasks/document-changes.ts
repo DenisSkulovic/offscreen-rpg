@@ -43,7 +43,10 @@ export const proposedDocumentChangeSchema = z
       place: 'lore',
       thread: 'narrative-thread',
     } as const;
-    if (change.recallAs && change.kind !== expectedRecallKind[change.recallAs]) {
+    if (
+      change.recallAs &&
+      change.kind !== expectedRecallKind[change.recallAs]
+    ) {
       context.addIssue({
         code: 'custom',
         message: 'Recall cue role must match the descriptive document kind',

@@ -160,17 +160,17 @@ export async function admitStorytellerResolution(
   }
   const sourceCampaignCatalogue =
     sourceTask.context.canonicalKnowledge?.catalogue ?? [];
-  const selectedCampaignDocumentIds = (
-    selected.campaignDocuments ?? []
-  ).map((handle) => {
-    const entry = sourceCampaignCatalogue.find(
-      (candidate) => candidate.handle === handle,
-    );
-    if (!entry) {
-      throw new StoryError('invalid');
-    }
-    return entry.documentId;
-  });
+  const selectedCampaignDocumentIds = (selected.campaignDocuments ?? []).map(
+    (handle) => {
+      const entry = sourceCampaignCatalogue.find(
+        (candidate) => candidate.handle === handle,
+      );
+      if (!entry) {
+        throw new StoryError('invalid');
+      }
+      return entry.documentId;
+    },
+  );
   const sourceResult = storytellerResultSchema.parse(source.output);
   const sourcePublicationOperationId = active.transitionId;
   if (
@@ -193,10 +193,7 @@ export async function admitStorytellerResolution(
     },
   );
   const selectedDocumentIds = [
-    ...new Set([
-      ...selectedCampaignDocumentIds,
-      ...selectedCreatedDocumentIds,
-    ]),
+    ...new Set([...selectedCampaignDocumentIds, ...selectedCreatedDocumentIds]),
   ];
   const context = await loadStorytellerContext(tx, {
     storyId: current.id,

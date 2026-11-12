@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';
-import {
-  PlayStatePanel,
-  playStatusForResolution,
-} from './play-state-panel';
+import { PlayStatePanel, playStatusForResolution } from './play-state-panel';
 import { ChamberDeniedPanel } from './chamber-denied-panel';
 import { RouteRecoveryPanel } from '@/src/features/recovery/route-recovery';
 
@@ -42,7 +39,11 @@ describe('Storybook presenters a11y / semantics', () => {
 
   it('503 recovery is distinct from 404 (negative)', async () => {
     const { container, rerender } = render(
-      <RouteRecoveryPanel kind="transient" resource="story" onRetry={() => {}} />,
+      <RouteRecoveryPanel
+        kind="transient"
+        resource="story"
+        onRetry={() => {}}
+      />,
     );
     expect(screen.getByRole('heading')).toHaveTextContent(/Temporary/i);
     expect(await axe(container)).toHaveNoViolations();

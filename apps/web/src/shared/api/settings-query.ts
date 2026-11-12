@@ -58,10 +58,7 @@ export function ownedPresetsQueryOptions(viewerId: string) {
   });
 }
 
-export function settingsHistoryQueryOptions(
-  viewerId: string,
-  storyId: string,
-) {
+export function settingsHistoryQueryOptions(viewerId: string, storyId: string) {
   return queryOptions({
     queryKey: queryKeys.storySettings(viewerId, storyId, 'history'),
     queryFn: ({ signal }) =>

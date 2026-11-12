@@ -14,10 +14,7 @@ describe('createServerQueryClient', () => {
     expect(first).not.toBe(second);
 
     const story = makeStorySnapshot({ title: 'Owner A scene' });
-    first.setQueryData(
-      queryKeys.storySnapshot('viewer-a', story.id),
-      story,
-    );
+    first.setQueryData(queryKeys.storySnapshot('viewer-a', story.id), story);
     expect(
       second.getQueryData(queryKeys.storySnapshot('viewer-a', story.id)),
     ).toBeUndefined();
@@ -28,13 +25,7 @@ describe('queryKeys', () => {
   it('prefixes private keys with viewer id and never embeds session secrets', () => {
     const key = queryKeys.storySnapshot('viewer-1', 'story-1');
     expect(key[0]).toBe('viewer');
-    expect(key).toEqual([
-      'viewer',
-      'viewer-1',
-      'story',
-      'story-1',
-      'snapshot',
-    ]);
+    expect(key).toEqual(['viewer', 'viewer-1', 'story', 'story-1', 'snapshot']);
     const serialized = JSON.stringify(key);
     expect(serialized).not.toMatch(/cookie|token|session|Bearer/i);
   });
@@ -44,10 +35,7 @@ describe('clearAuthenticatedQueryCaches', () => {
   it('flushes browser Query data on logout', () => {
     const client = createBrowserQueryClient();
     const story = makeStorySnapshot();
-    client.setQueryData(
-      queryKeys.storySnapshot('viewer-1', story.id),
-      story,
-    );
+    client.setQueryData(queryKeys.storySnapshot('viewer-1', story.id), story);
     clearAuthenticatedQueryCaches(client);
     expect(
       client.getQueryData(queryKeys.storySnapshot('viewer-1', story.id)),

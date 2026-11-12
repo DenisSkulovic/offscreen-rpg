@@ -4,7 +4,10 @@ import { abilitySchema, characterSchema, type Character } from './state';
 export const checkPlanSchema = z.strictObject({
   rule: z.literal('srd-5.2.1-subset.v1'),
   purpose: z.string().max(200),
-  skill: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).nullable(),
+  skill: z
+    .string()
+    .regex(/^[a-z][a-z0-9-]{0,79}$/)
+    .nullable(),
   ability: abilitySchema,
   dc: z.number().int().min(5).max(30),
   advantage: z.boolean(),
@@ -91,7 +94,10 @@ export function resolveCheck(
   if (!character.applicableAbilities.includes(plan.ability)) {
     throw new Error('Check ability is not applicable to the current form');
   }
-  if (plan.skill && !character.skills.some((skill) => skill.id === plan.skill)) {
+  if (
+    plan.skill &&
+    !character.skills.some((skill) => skill.id === plan.skill)
+  ) {
     throw new Error('Check skill is not declared on the current form');
   }
   const dice = [draw()];

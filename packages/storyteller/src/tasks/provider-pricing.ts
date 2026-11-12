@@ -18,9 +18,7 @@ function roundCharge(amount: bigint): bigint {
 }
 
 /** Cache-write can cost more than uncached input. Reserve against the maximum. */
-export function maximumInputMicrousdPerMillion(
-  policy: ProviderPolicy,
-): bigint {
+export function maximumInputMicrousdPerMillion(policy: ProviderPolicy): bigint {
   return [
     policy.inputMicrousdPerMillion,
     policy.cacheReadMicrousdPerMillion ?? policy.inputMicrousdPerMillion,
@@ -36,8 +34,7 @@ export function maximumProviderCharge(execution: ProviderExecution): string {
   const policy = execution.policy;
   const amount =
     BigInt(policy.maxInputTokens) * maximumInputMicrousdPerMillion(policy) +
-    BigInt(policy.maxOutputTokens) *
-      BigInt(policy.outputMicrousdPerMillion);
+    BigInt(policy.maxOutputTokens) * BigInt(policy.outputMicrousdPerMillion);
   return roundCharge(amount).toString();
 }
 

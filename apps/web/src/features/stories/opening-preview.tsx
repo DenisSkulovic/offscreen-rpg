@@ -36,10 +36,10 @@ export function OpeningPreviewPanel({
     preview && ['pending', 'running', 'uncertain'].includes(preview.state);
   const canStart = Boolean(
     preview &&
-      preview.state === 'succeeded' &&
-      preview.isCurrent &&
-      preview.sourceRevision === draft.revision &&
-      preview.candidate,
+    preview.state === 'succeeded' &&
+    preview.isCurrent &&
+    preview.sourceRevision === draft.revision &&
+    preview.candidate,
   );
 
   function onGenerate() {
@@ -54,9 +54,7 @@ export function OpeningPreviewPanel({
       preview?.state === 'pending' ? preview.id : undefined;
     generate.submit({
       expectedRevision:
-        preview?.state === 'pending'
-          ? preview.sourceRevision
-          : draft.revision,
+        preview?.state === 'pending' ? preview.sourceRevision : draft.revision,
       ...(draft.openingContentId
         ? { contentId: draft.openingContentId }
         : preview?.contentId
@@ -82,9 +80,7 @@ export function OpeningPreviewPanel({
         mechanics: Boolean(preview.contentId),
         locked,
         ...(paceValue ? { pace: paceValue } : {}),
-        ...(preview.startPackage
-          ? { startPackage: preview.startPackage }
-          : {}),
+        ...(preview.startPackage ? { startPackage: preview.startPackage } : {}),
       },
     });
   }
@@ -238,11 +234,11 @@ export function OpeningPreviewPanel({
             <select
               value={
                 startLocked && start.frozen?.campaign.pace
-                  ? paceOptions.find(
+                  ? (paceOptions.find(
                       (option) =>
                         JSON.stringify(option.pace) ===
                         JSON.stringify(start.frozen?.campaign.pace),
-                    )?.value ?? pace
+                    )?.value ?? pace)
                   : pace
               }
               onChange={(event) => setPace(event.target.value)}
@@ -265,7 +261,9 @@ export function OpeningPreviewPanel({
           <button
             type="button"
             disabled={generate.pending || start.pending}
-            onClick={() => void (start.canRetrySame ? start.retryFrozen() : onStart())}
+            onClick={() =>
+              void (start.canRetrySame ? start.retryFrozen() : onStart())
+            }
           >
             {start.pending
               ? 'Starting story…'

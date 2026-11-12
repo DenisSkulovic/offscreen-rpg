@@ -24,9 +24,10 @@ describe('nestFetch', () => {
       }),
     );
     const { nestFetch } = await import('./nest-reader');
-    const error = await nestFetch({ cookie: 'session=1' }, '/api/stories').catch(
-      (caught: unknown) => caught,
-    );
+    const error = await nestFetch(
+      { cookie: 'session=1' },
+      '/api/stories',
+    ).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(NestTransientError);
     expect(error).toMatchObject({ status: 0, kind: 'transient' });
   });

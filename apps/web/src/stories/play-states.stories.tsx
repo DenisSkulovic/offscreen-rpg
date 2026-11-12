@@ -41,8 +41,8 @@ export const ChoicePending: Story = {
 };
 
 export const ResolutionUncertain: Story = {
-  render: () => {
-    const story = makeStorySnapshot({
+  args: {
+    story: makeStorySnapshot({
       canRespond: false,
       resolution: {
         state: 'uncertain',
@@ -52,19 +52,19 @@ export const ResolutionUncertain: Story = {
         blocker: { kind: 'usage-uncertain', recovery: 'operator' },
       },
       interaction: null,
-    });
-    return (
-      <PlayStatePanel
-        story={story}
-        statusMessage={playStatusForResolution(story)}
-      />
-    );
+    }),
   },
+  render: (args) => (
+    <PlayStatePanel
+      {...args}
+      statusMessage={playStatusForResolution(args.story)}
+    />
+  ),
 };
 
 export const ResolutionBlocked: Story = {
-  render: () => {
-    const story = makeStorySnapshot({
+  args: {
+    story: makeStorySnapshot({
       canRespond: false,
       resolution: {
         state: 'blocked',
@@ -74,20 +74,20 @@ export const ResolutionBlocked: Story = {
         blocker: { kind: 'publication', recovery: 'retry' },
       },
       interaction: null,
-    });
-    return (
-      <PlayStatePanel
-        story={story}
-        intentStatus="blocked"
-        statusMessage={playStatusForResolution(story)}
-      />
-    );
+    }),
+    intentStatus: 'blocked',
   },
+  render: (args) => (
+    <PlayStatePanel
+      {...args}
+      statusMessage={playStatusForResolution(args.story)}
+    />
+  ),
 };
 
 export const ResolutionFailed: Story = {
-  render: () => {
-    const story = makeStorySnapshot({
+  args: {
+    story: makeStorySnapshot({
       canRespond: false,
       resolution: {
         state: 'failed',
@@ -97,13 +97,13 @@ export const ResolutionFailed: Story = {
         blocker: { kind: 'generation', recovery: 'retry' },
       },
       interaction: null,
-    });
-    return (
-      <PlayStatePanel
-        story={story}
-        intentStatus="failed"
-        statusMessage={playStatusForResolution(story)}
-      />
-    );
+    }),
+    intentStatus: 'failed',
   },
+  render: (args) => (
+    <PlayStatePanel
+      {...args}
+      statusMessage={playStatusForResolution(args.story)}
+    />
+  ),
 };

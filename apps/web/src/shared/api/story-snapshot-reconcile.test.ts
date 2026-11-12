@@ -23,7 +23,10 @@ describe('reconcileStorySnapshot', () => {
   });
 
   it('rejects an older viewVersion (v14 then v13)', () => {
-    const prior = makeStorySnapshot({ viewVersion: 14, title: 'Authoritative' });
+    const prior = makeStorySnapshot({
+      viewVersion: 14,
+      title: 'Authoritative',
+    });
     const next = makeStorySnapshot({ viewVersion: 13, title: 'Stale' });
     const result = reconcileStorySnapshot({
       viewerId,

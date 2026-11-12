@@ -19,15 +19,15 @@ The intended UI is a place to **inhabit a character's situation**. A current sce
 
 Choose the smallest relevant subset from this experience matrix:
 
-| State or journey | Player must understand | False impression to prevent |
-| --- | --- | --- |
-| First visit / no stories | What this game promises; how to create a premise | An enormous rules dashboard before seeing the experience |
-| Opening review / Start | Which beginning, choices and profile are being accepted | A preview that has already altered live canon |
-| Current scene / menu | What's happening, what is known and what can be chosen | Identical options or hidden outcomes leaked as public fact |
-| Accepted timed work | The commitment, progress and when its result becomes real | Progress or rewards already earned at selection |
-| Generation pending / failed / uncertain | Whether the choice was accepted, what is saved, what can be retried | Refresh triggers a paid retry; failed narration undoes settled mechanics |
-| Return after absence | A concise recap, meaningful changes, present situation and required next decision | Hundreds of equal-weight activity ticks or invented autonomous decisions |
-| Pause / quiet interval | Whether the world is held, advancing or waiting for permission | An idle menu quietly spending game time or money |
+| State or journey                        | Player must understand                                                            | False impression to prevent                                              |
+| --------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| First visit / no stories                | What this game promises; how to create a premise                                  | An enormous rules dashboard before seeing the experience                 |
+| Opening review / Start                  | Which beginning, choices and profile are being accepted                           | A preview that has already altered live canon                            |
+| Current scene / menu                    | What's happening, what is known and what can be chosen                            | Identical options or hidden outcomes leaked as public fact               |
+| Accepted timed work                     | The commitment, progress and when its result becomes real                         | Progress or rewards already earned at selection                          |
+| Generation pending / failed / uncertain | Whether the choice was accepted, what is saved, what can be retried               | Refresh triggers a paid retry; failed narration undoes settled mechanics |
+| Return after absence                    | A concise recap, meaningful changes, present situation and required next decision | Hundreds of equal-weight activity ticks or invented autonomous decisions |
+| Pause / quiet interval                  | Whether the world is held, advancing or waiting for permission                    | An idle menu quietly spending game time or money                         |
 
 For the chosen screen, specify visual/reading order, primary action, secondary disclosures, empty/loading/blocked states, keyboard/focus/a11y expectations and one narrow/mobile contrast. A map/image is optional and must not delay play or expose unseen world knowledge. Different profiles can be quiet, comic or eerie; don't impose one artistic mood at engine level.
 

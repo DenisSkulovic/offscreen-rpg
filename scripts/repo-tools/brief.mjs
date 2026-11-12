@@ -28,9 +28,7 @@ function section(document, heading, source) {
 // An intentionally empty implementation queue is valid. Never select a parked
 // gameplay Change merely to make the brief happy.
 function currentChange(route) {
-  const declarations = [
-    ...route.matchAll(/^Current change: (.+?)\s*$/gm),
-  ];
+  const declarations = [...route.matchAll(/^Current change: (.+?)\s*$/gm)];
   if (declarations.length !== 1) {
     throw new Error(
       'docs/changes/README.md: expected exactly one Current change declaration.',
@@ -40,7 +38,9 @@ function currentChange(route) {
   if (selected === 'none') return null;
   const match = /^\[[^\]]+\]\(([^)]+)\)$/.exec(selected);
   if (!match || match[1].includes('#')) {
-    throw new Error('Current change must be none or a relative CHANGE.md link.');
+    throw new Error(
+      'Current change must be none or a relative CHANGE.md link.',
+    );
   }
   const changeRoot = path.join(root, 'docs', 'changes');
   const absolute = path.resolve(changeRoot, match[1]);
@@ -50,7 +50,9 @@ function currentChange(route) {
     path.isAbsolute(relative) ||
     path.basename(absolute) !== 'CHANGE.md'
   ) {
-    throw new Error('Current change must point to CHANGE.md inside docs/changes.');
+    throw new Error(
+      'Current change must point to CHANGE.md inside docs/changes.',
+    );
   }
   return path.relative(root, absolute).split(path.sep).join('/');
 }

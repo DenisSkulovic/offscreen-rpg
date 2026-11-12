@@ -27,7 +27,7 @@ async function putPresetFrozen(
   const response = await submitStoryJson({
     url: `/api/stories/presets/${frozen.id}`,
     body: frozen.body,
-    signal,
+    ...(signal ? { signal } : {}),
   });
   if (response.status === 401) {
     return { kind: 'unauthorized' };

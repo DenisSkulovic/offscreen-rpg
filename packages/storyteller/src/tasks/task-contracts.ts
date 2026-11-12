@@ -14,7 +14,10 @@ import { executionPolicySchema } from './policy';
 import { storytellerTaskResourcesSchema } from './resources';
 import { contextInputSchema } from '../context';
 import { continuityPatchSchema } from '../context/continuity';
-import { continuationResultSchema, playableProposalSchema } from './playable-proposal';
+import {
+  continuationResultSchema,
+  playableProposalSchema,
+} from './playable-proposal';
 import {
   activityAccessSchema,
   immediateActionPlanSchema,

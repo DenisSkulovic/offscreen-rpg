@@ -14,15 +14,15 @@ Agent-generated tests often pass because they share the implementation's assumpt
 
 Start with an approved product outcome and the technical invariant that protects it.
 
-| Claim | Likely relevant evidence | Misleading weaker test |
-| --- | --- | --- |
-| D20 result is deterministic under a supplied draw | Pure rule unit, boundary inputs | A browser screenshot showing success text |
-| Two concurrent action submissions settle once | Real DB/operation integration with overlapping attempts | Unit test calling resolve once |
-| Browser never displays story A under story B | Component/browser controlled response ordering | Only render B with a fixture |
-| Accepted action does not imply published narration | State-transition test and public projection | HTTP route responds 200 |
-| A worker survives crash-before-ack | Fault-injected durable integration | Fake queue callback returns success |
-| An accessible form supports keyboard recovery | Browser keyboard/focus/semantic check | TypeScript compiles |
-| A model recalled an old memory correctly | Captured source → selected evidence → packed packet → accepted output → later observed continuation | Retrieval returned a relevant document |
+| Claim                                              | Likely relevant evidence                                                                            | Misleading weaker test                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| D20 result is deterministic under a supplied draw  | Pure rule unit, boundary inputs                                                                     | A browser screenshot showing success text |
+| Two concurrent action submissions settle once      | Real DB/operation integration with overlapping attempts                                             | Unit test calling resolve once            |
+| Browser never displays story A under story B       | Component/browser controlled response ordering                                                      | Only render B with a fixture              |
+| Accepted action does not imply published narration | State-transition test and public projection                                                         | HTTP route responds 200                   |
+| A worker survives crash-before-ack                 | Fault-injected durable integration                                                                  | Fake queue callback returns success       |
+| An accessible form supports keyboard recovery      | Browser keyboard/focus/semantic check                                                               | TypeScript compiles                       |
+| A model recalled an old memory correctly           | Captured source → selected evidence → packed packet → accepted output → later observed continuation | Retrieval returned a relevant document    |
 
 **Distinguish:** specification, source inspection, unit fixture, real dependency exercise, browser scenario, live provider run and human acceptance. A local pass can be a meaningful result without proving every tier.
 
@@ -30,18 +30,18 @@ Start with an approved product outcome and the technical invariant that protects
 
 There is no universal ideal ratio of unit/integration/E2E tests. Different behavior lives at different boundaries.
 
-| Approach | Strength | Cost and what it misses |
-| --- | --- | --- |
-| Static/type/lint checking | Cheap structural guarantees and common error detection | Runtime sequencing, business correctness and visual behavior |
-| Pure unit tests | Fast exhaustive decisions, edge inputs, deterministic models | Real DB isolation, browser, network, lifecycle |
-| Component interaction tests | UI states, accessible controls, conditional rendering | Full session/auth/backend contract unless integrated |
-| Narrow DB integration | Constraints, SQL semantics, transaction/lock behavior | External provider finality and complete user flow |
-| Consumer/provider contract tests | Wire/schema/consumer expectations during evolution | Permission and business semantics not captured in contract |
-| Browser E2E | User-observable flow, navigation, rendering, interaction | Exhaustive interleavings, failure injection, unseen provider behavior |
-| Fault-injected workflow | Crash, retry, duplicate delivery, unknown external result under controlled assumptions | Every possible provider/deployment failure |
-| Property-based/model-based tests | State invariants over many inputs/sequences | Coverage of properties that weren't specified |
-| Mutation testing | Whether tests notice selected wrong-code transformations | Entirely missing feature guarantees |
-| Live/human acceptance | Real integration or aesthetic/experiential judgment | Exhaustive deterministic correctness |
+| Approach                         | Strength                                                                               | Cost and what it misses                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Static/type/lint checking        | Cheap structural guarantees and common error detection                                 | Runtime sequencing, business correctness and visual behavior          |
+| Pure unit tests                  | Fast exhaustive decisions, edge inputs, deterministic models                           | Real DB isolation, browser, network, lifecycle                        |
+| Component interaction tests      | UI states, accessible controls, conditional rendering                                  | Full session/auth/backend contract unless integrated                  |
+| Narrow DB integration            | Constraints, SQL semantics, transaction/lock behavior                                  | External provider finality and complete user flow                     |
+| Consumer/provider contract tests | Wire/schema/consumer expectations during evolution                                     | Permission and business semantics not captured in contract            |
+| Browser E2E                      | User-observable flow, navigation, rendering, interaction                               | Exhaustive interleavings, failure injection, unseen provider behavior |
+| Fault-injected workflow          | Crash, retry, duplicate delivery, unknown external result under controlled assumptions | Every possible provider/deployment failure                            |
+| Property-based/model-based tests | State invariants over many inputs/sequences                                            | Coverage of properties that weren't specified                         |
+| Mutation testing                 | Whether tests notice selected wrong-code transformations                               | Entirely missing feature guarantees                                   |
+| Live/human acceptance            | Real integration or aesthetic/experiential judgment                                    | Exhaustive deterministic correctness                                  |
 
 **Heuristic:** prove pure rules low in the stack; prove SQL claims with SQL; prove visible states in a browser; prove durable recovery under controlled restarts; do a bounded live check only when the domain needs real external evidence. The cost-optimal suite is a portfolio, not a pyramid quota.
 
@@ -49,7 +49,7 @@ A fragile E2E that exercises five services may be less useful than a determinist
 
 ## 3. Design cases before reading the implementation
 
-The test strategist should not simply turn an existing branch structure into its own assertions. Start from the *contract*, then use source inspection to choose the seam.
+The test strategist should not simply turn an existing branch structure into its own assertions. Start from the _contract_, then use source inspection to choose the seam.
 
 Five helpful case families:
 
@@ -59,13 +59,13 @@ Five helpful case families:
 4. **Interleaving/transition:** reordered replies, duplicate submission, concurrent actors, crash at a named step, late webhook.
 5. **Evolution/compatibility:** old client, changed payload, migration backfill, locale/timezone, new enum value.
 
-Don't generate every Cartesian combination. Choose the combinations that threaten the *same invariant* and can expose different wrong mechanisms.
+Don't generate every Cartesian combination. Choose the combinations that threaten the _same invariant_ and can expose different wrong mechanisms.
 
 ### Example: assertion derived from a real invariant
 
 Claim: **two concurrent responses to one saved story cannot regress the authoritative displayed version.**
 
-A weak test sets the current version once and checks that the title rendered. A stronger test resolves **v13 before delayed v12** and checks v13 remains visible. An even stronger test changes story ID while a previous response is in flight and checks no A data appears under B, *including the transition before B resolves*. These tests target different failure mechanisms.
+A weak test sets the current version once and checks that the title rendered. A stronger test resolves **v13 before delayed v12** and checks v13 remains visible. An even stronger test changes story ID while a previous response is in flight and checks no A data appears under B, _including the transition before B resolves_. These tests target different failure mechanisms.
 
 ### Property-based and model-based approaches
 
@@ -77,15 +77,15 @@ Use property-based generation when an invariant should hold for many inputs (mon
 
 A test double is valuable when it replaces an **external system** while preserving the relevant observed contract. It is dangerous when it fakes the exact behavior that must be proved.
 
-| Substitute | Suitable use | Trap |
-| --- | --- | --- |
-| Pure injected clock/ID/random draw | Deterministic time, IDs and outcomes | Accidentally bypasses real commit/order logic |
-| Fake provider transport | Billing/timeout/admission logic without paying | Fake always responds synchronously or with perfect metadata |
-| Mock API response in component | Rendering controlled loading/error/race cases | Doesn't prove API authorization or migration correctness |
-| In-memory repository | Pure application branching and simple commands | Cannot prove SQL locking, constraints or transaction isolation |
-| Real disposable DB | Transaction and query behavior | Must be isolated, reset safely, and never point to user data |
-| Recorded browser fixture | Regression in stable visible behavior | Can become a test of stale expected HTML rather than UX |
-| Consumer contract double | Verify interactions and shape across independent clients | Shared wrong assumptions in contract producer and consumer |
+| Substitute                         | Suitable use                                             | Trap                                                           |
+| ---------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Pure injected clock/ID/random draw | Deterministic time, IDs and outcomes                     | Accidentally bypasses real commit/order logic                  |
+| Fake provider transport            | Billing/timeout/admission logic without paying           | Fake always responds synchronously or with perfect metadata    |
+| Mock API response in component     | Rendering controlled loading/error/race cases            | Doesn't prove API authorization or migration correctness       |
+| In-memory repository               | Pure application branching and simple commands           | Cannot prove SQL locking, constraints or transaction isolation |
+| Real disposable DB                 | Transaction and query behavior                           | Must be isolated, reset safely, and never point to user data   |
+| Recorded browser fixture           | Regression in stable visible behavior                    | Can become a test of stale expected HTML rather than UX        |
+| Consumer contract double           | Verify interactions and shape across independent clients | Shared wrong assumptions in contract producer and consumer     |
 
 **Mocking paradox:** suppose API and client tests both use a mock claiming a reservation is confirmed immediately, while the real API only enqueues it. Both suites pass and the product lies. At least one test must cross the real producer boundary or explicitly assert the pending semantics from the technical contract.
 
@@ -106,16 +106,16 @@ Test the **persisted receipt and public projection**, not merely the number of c
 
 ### Durability timeline for external effects
 
-| Cut point | What can be true? | Discriminating check |
-| --- | --- | --- |
-| Before durable intent | No accepted operation exists | Must not call provider |
-| Intent committed, before dispatch | Retry may safely resume under same identity | No duplicated intent/reservation |
-| After dispatch, before response | External effect might have happened | Preserve uncertain state; don't blindly resend |
-| Response persisted, before publication | Provider work needn't repeat | Reuse saved result under new authority check |
-| Publication committed, before ack | Delivery/worker can repeat | No duplicate passage/time/reward |
-| Cancellation while work is in flight | Old worker may complete late | Revision/fence prevents stale publication |
+| Cut point                              | What can be true?                           | Discriminating check                           |
+| -------------------------------------- | ------------------------------------------- | ---------------------------------------------- |
+| Before durable intent                  | No accepted operation exists                | Must not call provider                         |
+| Intent committed, before dispatch      | Retry may safely resume under same identity | No duplicated intent/reservation               |
+| After dispatch, before response        | External effect might have happened         | Preserve uncertain state; don't blindly resend |
+| Response persisted, before publication | Provider work needn't repeat                | Reuse saved result under new authority check   |
+| Publication committed, before ack      | Delivery/worker can repeat                  | No duplicate passage/time/reward               |
+| Cancellation while work is in flight   | Old worker may complete late                | Revision/fence prevents stale publication      |
 
-**Important distinction:** deterministic fault injection is a design skill, not a request for global chaos testing. Inject failure at the *actual point of no return*. Use temporary/dedicated DB and fake provider; no live spend by default.
+**Important distinction:** deterministic fault injection is a design skill, not a request for global chaos testing. Inject failure at the _actual point of no return_. Use temporary/dedicated DB and fake provider; no live spend by default.
 
 ### Test execution economics
 
@@ -137,13 +137,13 @@ Run focused tests for the changed seam first. Broader integration may be justifi
 
 ### What causes flakiness?
 
-| Symptom | Candidate mechanism | Evidence to collect |
-| --- | --- | --- |
-| Element sometimes absent | App not ready, conditional state, wrong URL/session, stale selector | Trace, screenshot, network and route context |
-| Passes locally, fails in CI | Timing, resource contention, timezone, browser install, DB state | Environment and deterministic repro |
-| Only fails after other tests | Shared cookies/storage/DB, order dependence | Run isolated/reversed order |
-| Repeated retries make it pass | Real race, missing wait on observable condition | Controlled response ordering, trace |
-| Fixed sleep “solves” it | Wait masking missing condition | Wait for expected UI/network state, not seconds |
+| Symptom                       | Candidate mechanism                                                 | Evidence to collect                             |
+| ----------------------------- | ------------------------------------------------------------------- | ----------------------------------------------- |
+| Element sometimes absent      | App not ready, conditional state, wrong URL/session, stale selector | Trace, screenshot, network and route context    |
+| Passes locally, fails in CI   | Timing, resource contention, timezone, browser install, DB state    | Environment and deterministic repro             |
+| Only fails after other tests  | Shared cookies/storage/DB, order dependence                         | Run isolated/reversed order                     |
+| Repeated retries make it pass | Real race, missing wait on observable condition                     | Controlled response ordering, trace             |
+| Fixed sleep “solves” it       | Wait masking missing condition                                      | Wait for expected UI/network state, not seconds |
 
 Do not rewrite a real bug as a flaky test. Rerunning may gather evidence but doesn't prove correct behavior. Distinguish a **test infrastructure defect** from a **product defect** and route to the right owner.
 
@@ -154,6 +154,7 @@ Do not rewrite a real bug as a flaky test. Rerunning may gather evidence but doe
 **Coverage % measures exercised code, not meaningful assertions.** High line coverage can coexist with missing permissions, concurrency, invalid states and incorrect domain semantics.
 
 Useful techniques:
+
 - **Branch/condition coverage** to locate untested decisions.
 - **Mutation testing** to ask whether tests reject a deliberately wrong implementation.
 - **Pairwise/risk-based selection** to reduce combination explosion.
@@ -174,14 +175,14 @@ Deep: [study: evaluating nondeterministic software](https://github.com/DenisSkul
 
 The test strategist should return a small matrix:
 
-| Claim | Failure mechanism | Minimum useful test | Required owner/dependency | Side effect / cost |
-| --- | --- | --- | --- | --- |
-| One action effect per intent | Duplicate worker delivery | Same operation twice, assert one durable receipt | Application/DB | Disposable DB |
-| UI never regresses | Stale response ordering | Resolve v13 then v12 | Frontend transport/state | Provider-free |
-| No private plan leak | Public projection mismatch | Authenticated public API response excludes private fields | Contracts/API | Local composition |
-| Long-term recall actually happens | Packed evidence omitted | Capture final model-visible source and accepted later reference | Memory admission | Provider-free probe first, separately authorized live proof |
+| Claim                             | Failure mechanism          | Minimum useful test                                             | Required owner/dependency | Side effect / cost                                          |
+| --------------------------------- | -------------------------- | --------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
+| One action effect per intent      | Duplicate worker delivery  | Same operation twice, assert one durable receipt                | Application/DB            | Disposable DB                                               |
+| UI never regresses                | Stale response ordering    | Resolve v13 then v12                                            | Frontend transport/state  | Provider-free                                               |
+| No private plan leak              | Public projection mismatch | Authenticated public API response excludes private fields       | Contracts/API             | Local composition                                           |
+| Long-term recall actually happens | Packed evidence omitted    | Capture final model-visible source and accepted later reference | Memory admission          | Provider-free probe first, separately authorized live proof |
 
-**Reviewer's job:** ask *which plausible wrong implementation still passes this plan?* If there's an obvious answer, strengthen one or two tests instead of adding 40 redundant cases.
+**Reviewer's job:** ask _which plausible wrong implementation still passes this plan?_ If there's an obvious answer, strengthen one or two tests instead of adding 40 redundant cases.
 
 **Local evidence routes:** [engineering QA](../../docs/engineering/qa-journeys.md), [code-navigation](../../docs/engineering/code-navigation.md), [integration workspace](../../tools/api-integration/README.md), [verification rule](../rules/verification.md), [connected proof](../../docs/engineering/connected-poc-proof.md).
 

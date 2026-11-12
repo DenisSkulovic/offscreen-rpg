@@ -29,10 +29,13 @@ function listWorkbenchSources(): string[] {
 
 describe('Storybook isolation (W18)', () => {
   it('allocates distinct QueryClients per story (negative: no shared cache)', () => {
-    const [a, b, c] = allocateIsolatedQueryClients(3);
-    expect(a).not.toBe(b);
-    expect(b).not.toBe(c);
-    expect(a.getDefaultOptions()).toEqual(b.getDefaultOptions());
+    const clients = allocateIsolatedQueryClients(3);
+    expect(clients).toHaveLength(3);
+    expect(clients[0]).not.toBe(clients[1]);
+    expect(clients[1]).not.toBe(clients[2]);
+    expect(clients[0]?.getDefaultOptions()).toEqual(
+      clients[1]?.getDefaultOptions(),
+    );
   });
 
   it('keeps story modules free of live Nest/proxy hosts and provider spend seams', () => {
@@ -56,7 +59,9 @@ describe('Storybook isolation (W18)', () => {
           `${path.relative(storiesRoot, file)} contained ${needle}`,
         ).toBe(false);
       }
-      expect(text, path.relative(storiesRoot, file)).not.toMatch(/sk-[a-zA-Z0-9]{8,}/);
+      expect(text, path.relative(storiesRoot, file)).not.toMatch(
+        /sk-[a-zA-Z0-9]{8,}/,
+      );
     }
   });
 });

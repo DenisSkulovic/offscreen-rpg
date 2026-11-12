@@ -32,7 +32,10 @@ const webBackendPatterns = banGroups([
     ['@offscreen/worker', '@offscreen/worker/*'],
     'Web must not import workers.',
   ],
-  [['**/apps/**', '**/packages/**'], 'Use package names, not deep relative monorepo paths.'],
+  [
+    ['**/apps/**', '**/packages/**'],
+    'Use package names, not deep relative monorepo paths.',
+  ],
 ]);
 
 const webClientServerPatterns = [

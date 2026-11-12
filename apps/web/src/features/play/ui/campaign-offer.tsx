@@ -23,7 +23,7 @@ export function CampaignOfferPanel({
   const children = offerChildren(nodes, offer.path);
   const active = Boolean(
     campaign.activity &&
-      ['running', 'paused'].includes(campaign.activity.state),
+    ['running', 'paused'].includes(campaign.activity.state),
   );
 
   return (
@@ -96,9 +96,7 @@ export function CampaignOfferPanel({
                 {node.action ? (
                   <button
                     disabled={
-                      command.busy ||
-                      offer.successorPaths.length >= 5 ||
-                      staged
+                      command.busy || offer.successorPaths.length >= 5 || staged
                     }
                     onClick={() =>
                       offer.setSuccessorPaths((prior) => [...prior, nextPath])

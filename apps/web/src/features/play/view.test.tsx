@@ -373,7 +373,9 @@ describe('PlayScene', () => {
         ).toBeInTheDocument();
       });
       expect(
-        screen.getByText(/Last update failed\. Refresh does not send a command/i),
+        screen.getByText(
+          /Last update failed\. Refresh does not send a command/i,
+        ),
       ).toBeInTheDocument();
       expect(gets).toBeGreaterThanOrEqual(1);
       expect(gets).toBeLessThanOrEqual(3);

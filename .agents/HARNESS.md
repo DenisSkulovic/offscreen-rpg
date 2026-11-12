@@ -6,20 +6,20 @@ This harness governs **how** coding agents navigate the three authority layers: 
 
 ## What loads, and when?
 
-| Surface | Load trigger | Purpose |
-| --- | --- | --- |
-| `AGENTS.md` | Universal coding-agent entry | Short, essential project boundaries and how to find an owner |
-| `CLAUDE.md` | Claude Code startup | Real `@AGENTS.md` import and minimal tool-specific routing, not duplicate policy |
-| `.cursor/rules/*.mdc` | Always-on *only if essential*, otherwise matched description/path | Cursor-specific workflows; the root `AGENTS.md` is already supported |
-| `.agents/skills/<name>/SKILL.md` | Description advertised; body selected when useful | Portable domain knowledge and repeatable task procedures |
-| `.claude/skills/<name>/SKILL.md` | Claude's discovery/invocation | Small adapter to the canonical `.agents/skills/` procedure |
-| `.agents/rules/` | Read only for the affected operation | Documentation, security, spending, domain, verification rules |
-| `.agents/references/` | Selected primary-source or economic question | Curated expertise, industry evidence and investigation strategy |
-| `docs/`, packages and tests | After scope and authority selection | Product intent, technical contract, current implementation and verification |
+| Surface                          | Load trigger                                                      | Purpose                                                                          |
+| -------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `AGENTS.md`                      | Universal coding-agent entry                                      | Short, essential project boundaries and how to find an owner                     |
+| `CLAUDE.md`                      | Claude Code startup                                               | Real `@AGENTS.md` import and minimal tool-specific routing, not duplicate policy |
+| `.cursor/rules/*.mdc`            | Always-on _only if essential_, otherwise matched description/path | Cursor-specific workflows; the root `AGENTS.md` is already supported             |
+| `.agents/skills/<name>/SKILL.md` | Description advertised; body selected when useful                 | Portable domain knowledge and repeatable task procedures                         |
+| `.claude/skills/<name>/SKILL.md` | Claude's discovery/invocation                                     | Small adapter to the canonical `.agents/skills/` procedure                       |
+| `.agents/rules/`                 | Read only for the affected operation                              | Documentation, security, spending, domain, verification rules                    |
+| `.agents/references/`            | Selected primary-source or economic question                      | Curated expertise, industry evidence and investigation strategy                  |
+| `docs/`, packages and tests      | After scope and authority selection                               | Product intent, technical contract, current implementation and verification      |
 
 **Documentation retrieval standard:** [layer-zero document architecture](references/documentation-navigation-standard.md) governs how coding agents find and maintain product/technical knowledge. [Technical owner index](../docs/technical/README.md) and [engineering index](../docs/engineering/README.md) are on-demand routers, not mandatory startup context.
 
-**Cold start:** root instructions + user task. Find the correct authority **by topic**, then open one relevant section, a source symbol/caller when needed and the smallest useful proof. This file is a *map*, not mandatory startup reading. Do not preload all rules, skills, docs or code to exploit a large context window.
+**Cold start:** root instructions + user task. Find the correct authority **by topic**, then open one relevant section, a source symbol/caller when needed and the smallest useful proof. This file is a _map_, not mandatory startup reading. Do not preload all rules, skills, docs or code to exploit a large context window.
 
 ## Durable session context across chats
 

@@ -27,11 +27,7 @@ export function CampaignPlay({
       <CampaignStatus campaign={campaign} />
       <CampaignActivityPanel campaign={campaign} command={command} />
       <CampaignHistory campaign={campaign} />
-      <CampaignOfferPanel
-        story={story}
-        campaign={campaign}
-        command={command}
-      />
+      <CampaignOfferPanel story={story} campaign={campaign} command={command} />
       {command.message ? <p role="status">{command.message}</p> : null}
       {command.retry ? (
         <button disabled={command.busy} onClick={() => void command.send()}>

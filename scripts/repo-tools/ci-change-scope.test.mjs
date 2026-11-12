@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyChangeScope, isDocsPath, isIntegrationPath } from './ci-change-scope.mjs';
+import {
+  classifyChangeScope,
+  isDocsPath,
+  isIntegrationPath,
+} from './ci-change-scope.mjs';
 
 test('docs-only markdown and agent maps skip code and integration on push', () => {
   const scope = classifyChangeScope(

@@ -5,10 +5,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserQueryClient } from '@/src/shared/api/query-client';
-import {
-  fixtureOfferIds,
-  makeCampaign,
-} from '@/src/test/campaign-fixtures';
+import { fixtureOfferIds, makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';
 import { CampaignPlay } from './campaign-play';
 

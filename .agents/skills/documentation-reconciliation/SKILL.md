@@ -9,7 +9,7 @@ Use when a source inspection or completed feature reveals documentation drift, w
 
 1. State **which claim or route is wrong**, where its authority should live, and whether the mismatch is spec-vs-code or docs-vs-docs. Do not assume code wins over intended product behavior.
 2. Find the owning product/technical document. Preserve consequential decisions, invariants, examples and unresolved questions. Remove duplicate explanations, dated implementation diaries and repeated speculation; keep links/short summaries where they serve different readers.
-3. Keep *desired*, *implemented*, *fixture-exercised*, *live-observed* and *human-accepted* distinctions explicit. Do not turn an unverified claim into a fact while compacting.
+3. Keep _desired_, _implemented_, _fixture-exercised_, _live-observed_ and _human-accepted_ distinctions explicit. Do not turn an unverified claim into a fact while compacting.
 4. Update incoming links and the relevant navigation map, including [technical owners](../../../docs/technical/README.md) or [engineering knowledge](../../../docs/engineering/README.md) when affected. For a long technical page, prefer a small in-page question-to-heading route rather than duplicating its content. For changed headings/paths, use a focused link check where useful. Don't rewrite unrelated documentation merely to make prose uniform.
 5. Return a small ledger: authoritative owner, redirects/links repaired, contradictions removed, claims still needing verification and next evidence step.
 

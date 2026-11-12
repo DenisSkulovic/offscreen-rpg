@@ -1,10 +1,7 @@
 import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 
 export type ReadRecoveryKind =
-  | 'unauthorized'
-  | 'not_found'
-  | 'transient'
-  | 'unknown';
+  'unauthorized' | 'not_found' | 'transient' | 'unknown';
 
 /** Map a thrown/read failure to distinct recovery copy — never treat 503 as deleted. */
 export function classifyReadRecovery(error: unknown): {

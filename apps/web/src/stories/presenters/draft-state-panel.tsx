@@ -43,10 +43,7 @@ export function DraftStatePanel({
       >
         <label>
           Title{' '}
-          <input
-            aria-invalid={Boolean(errors.title)}
-            {...register('title')}
-          />
+          <input aria-invalid={Boolean(errors.title)} {...register('title')} />
         </label>
         <label>
           Premise{' '}

@@ -6,24 +6,24 @@
 
 ## Engineering premise
 
-Caching trades **memory, duplicated state, complexity and potential staleness** for fewer or faster computations and reads. Performance engineering optimizes *the path and workload that matters*, not a method because it sounds slow or a subsystem because it's currently fashionable.
+Caching trades **memory, duplicated state, complexity and potential staleness** for fewer or faster computations and reads. Performance engineering optimizes _the path and workload that matters_, not a method because it sounds slow or a subsystem because it's currently fashionable.
 
 A high cache hit ratio can hide a severe hot-key stampede. A 100-ms endpoint can be terrible if the UI issues twenty sequential requests. One missing SQL index can make a Redis deployment look attractive. The right optimization depends on bottleneck, consistency, concurrency, growth and operational tolerance.
 
 ## 1. Define performance in terms of workload and user outcome
 
-| Dimension | Questions to answer | Consequence |
-| --- | --- | --- |
-| Target outcome | Fast first scene? Timely action completion? Low provider spend? | Different critical path and metrics |
-| Workload | Requests/sec, concurrent users, bytes, key distributions, reads/writes? | Hot spots and cache working set differ |
-| Latency | p50/p95/p99, client total, server processing, background delay? | Averages hide rare but painful stalls |
-| Capacity | CPU, heap, DB pool, locks, queue, provider rate/concurrency? | Scale the constrained resource, not every service |
-| Data staleness | May a public read lag? What about a command? | Some data can be cached; some must be revalidated |
-| Reliability | What happens if cache/storage/proxy fails? | Graceful slow fallback versus fail-closed behavior |
-| Cost | Cache instances, network calls, bytes, extra queries, invalidation complexity | A faster read may cost more infrastructure/human work |
-| Evolution | Dataset size, cardinality, hot keys and version churn? | Prefetch/write-through can become wasteful |
+| Dimension      | Questions to answer                                                           | Consequence                                           |
+| -------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Target outcome | Fast first scene? Timely action completion? Low provider spend?               | Different critical path and metrics                   |
+| Workload       | Requests/sec, concurrent users, bytes, key distributions, reads/writes?       | Hot spots and cache working set differ                |
+| Latency        | p50/p95/p99, client total, server processing, background delay?               | Averages hide rare but painful stalls                 |
+| Capacity       | CPU, heap, DB pool, locks, queue, provider rate/concurrency?                  | Scale the constrained resource, not every service     |
+| Data staleness | May a public read lag? What about a command?                                  | Some data can be cached; some must be revalidated     |
+| Reliability    | What happens if cache/storage/proxy fails?                                    | Graceful slow fallback versus fail-closed behavior    |
+| Cost           | Cache instances, network calls, bytes, extra queries, invalidation complexity | A faster read may cost more infrastructure/human work |
+| Evolution      | Dataset size, cardinality, hot keys and version churn?                        | Prefetch/write-through can become wasteful            |
 
-Set *representative scenarios* before numeric targets. A local pre-POC may need comfortable interactive latency rather than a production SLO invented by the agent. If the requirement is unspecified, measure first and propose a conditional budget.
+Set _representative scenarios_ before numeric targets. A local pre-POC may need comfortable interactive latency rather than a production SLO invented by the agent. If the requirement is unspecified, measure first and propose a conditional budget.
 
 **Useful distinction:** latency per request vs throughput vs saturation vs user-perceived response. A system can have low CPU and awful latency due to I/O, DB locks or downstream queueing. The bottleneck may move after the first optimization.
 
@@ -54,17 +54,17 @@ Work backward from an actual slow end-to-end path:
 
 ## 3. Choose a cache location and consistency contract
 
-| Approach | Fit | Trade-offs |
-| --- | --- | --- |
-| No cache, indexed SQL/query improvement | Small/medium data or correctness-sensitive reads | DB work stays visible; may already meet target |
-| Per-process memory | Repeated local immutable/static metadata, single instance | Restart/scale-out incoherence, unbounded heap unless limited |
-| Redis shared cache-aside | Repeated expensive reads across instances, rebuildable values | Extra service/network, invalidation, stampede, staleness, tenant-key safety |
-| HTTP browser/proxy/CDN | Public or immutable representations, repeat consumers | Cache keys, Vary, private data leaks, invalidation and client age |
-| Server-side Next fetch/request memoization | Repeated reads within rendering/request lifetime | Version/framework semantics, scope and authenticated cache safety |
-| Client query cache | Navigational server state with known identity and freshness | Stale UI, cache key identity, invalidations, logout isolation |
-| Materialized DB/read projection | Expensive joins, statistics or derived views, predictable refresh | Lag/rebuild, storage and write amplification |
-| Precomputation/read-through | Expensive stable computation often reused | Cold-start and wasted computation for unused keys |
-| Write-through/write-behind | Specific consistency/performance patterns | Two-write failures, deferred durability and replay ordering |
+| Approach                                   | Fit                                                               | Trade-offs                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| No cache, indexed SQL/query improvement    | Small/medium data or correctness-sensitive reads                  | DB work stays visible; may already meet target                              |
+| Per-process memory                         | Repeated local immutable/static metadata, single instance         | Restart/scale-out incoherence, unbounded heap unless limited                |
+| Redis shared cache-aside                   | Repeated expensive reads across instances, rebuildable values     | Extra service/network, invalidation, stampede, staleness, tenant-key safety |
+| HTTP browser/proxy/CDN                     | Public or immutable representations, repeat consumers             | Cache keys, Vary, private data leaks, invalidation and client age           |
+| Server-side Next fetch/request memoization | Repeated reads within rendering/request lifetime                  | Version/framework semantics, scope and authenticated cache safety           |
+| Client query cache                         | Navigational server state with known identity and freshness       | Stale UI, cache key identity, invalidations, logout isolation               |
+| Materialized DB/read projection            | Expensive joins, statistics or derived views, predictable refresh | Lag/rebuild, storage and write amplification                                |
+| Precomputation/read-through                | Expensive stable computation often reused                         | Cold-start and wasted computation for unused keys                           |
+| Write-through/write-behind                 | Specific consistency/performance patterns                         | Two-write failures, deferred durability and replay ordering                 |
 
 There isn't one universal "cached layer" for all data. A published immutable story passage may be cached by revision; a live action eligibility/usage quota needs authority checking at the owning operation. A derived story snapshot can have a short-lived cache but no separate right to commit mechanics.
 
@@ -72,7 +72,7 @@ There isn't one universal "cached layer" for all data. A published immutable sto
 
 A cache key is an equivalence claim: “these reads may return the same value.” Variables such as tenant/user, story, selected revision, locale, query filters and permission scope may distinguish otherwise identical-looking resources. Do not blindly concatenate user-controlled strings; use structured, bounded key construction.
 
-**Not all caches need tenant IDs inside keys** if isolation is guaranteed by physical namespace/cache instance or authorization-aware upstream design. The key invariant is *no accidental cross-authority sharing*. On logout/switch-user, client-private caches require deliberate partition or eviction.
+**Not all caches need tenant IDs inside keys** if isolation is guaranteed by physical namespace/cache instance or authorization-aware upstream design. The key invariant is _no accidental cross-authority sharing_. On logout/switch-user, client-private caches require deliberate partition or eviction.
 
 ## 4. Freshness, invalidation and race design
 
@@ -118,15 +118,15 @@ Don't conflate these. A stale search result may be acceptable; a stale financial
 
 [Redis cache-aside documentation](https://redis.io/docs/latest/develop/use-cases/cache-aside/) describes standard cache-aside access and misses. [Redis eviction documentation](https://redis.io/docs/latest/reference/eviction/) distinguishes maxmemory policies. Design should consider **what data is disposable**.
 
-| Redis choice | Relevant conditions | Failure/operational cost |
-| --- | --- | --- |
-| allkeys-lru | Recency-correlated hot working set | Approximation may evict frequently used but briefly cold keys |
-| allkeys-lfu | Repeated-frequency-heavy access | Warm-up and changing workload patterns |
-| volatile policies | Mix of keys with explicit expiry | Keys without TTL can block eviction eligibility |
-| noeviction | Cache should refuse new keys when full | Writes fail; ensure fallback and alert |
-| TTL and expiration | Bound the lifetime of cached representations | Expiration is not eviction; mass expiry amplifies misses |
+| Redis choice        | Relevant conditions                                           | Failure/operational cost                                                                 |
+| ------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| allkeys-lru         | Recency-correlated hot working set                            | Approximation may evict frequently used but briefly cold keys                            |
+| allkeys-lfu         | Repeated-frequency-heavy access                               | Warm-up and changing workload patterns                                                   |
+| volatile policies   | Mix of keys with explicit expiry                              | Keys without TTL can block eviction eligibility                                          |
+| noeviction          | Cache should refuse new keys when full                        | Writes fail; ensure fallback and alert                                                   |
+| TTL and expiration  | Bound the lifetime of cached representations                  | Expiration is not eviction; mass expiry amplifies misses                                 |
 | Persistence/AOF/RDB | Redis holds recoverable-but-valued data beyond ordinary cache | Durability/restore/perf configuration; don't accidentally turn cache into sole authority |
-| Shared instance | Fewer services for small project | Resource interference between cache, sessions, rate limits or queue state |
+| Shared instance     | Fewer services for small project                              | Resource interference between cache, sessions, rate limits or queue state                |
 
 **Key distinction:** maxmemory is not a physical guarantee that process RSS, replication buffers or allocator overhead stay below the host limit. A “free memory” dashboard may be misleading. Check key counts, sizes, hot keys, fragmentation, evictions/expiration, latency and fallback cost.
 
@@ -160,16 +160,16 @@ Performance gains have opportunity cost. A cache that saves 5 ms on occasional r
 
 Before proposing a cache or optimization, the role should provide:
 
-| Item | Expected evidence |
-| --- | --- |
-| User-relevant symptom | Which operation, scenario and percentile/size/throughput |
-| Hypotheses | 2–3 realistic bottlenecks and discriminating measurements |
-| Candidate approaches | No-new-cache optimization and at least one other credible choice |
-| Consistency / ownership | What data is authoritative, identity/version and acceptable staleness |
-| Concurrency / failure | Stampede, stale reader, cross-tenant key and Redis outage policy if relevant |
-| Resource costs | Memory, network, DB work, operational complexity, billing |
-| Verification | Correctness under reorder/failure plus representative measured improvement |
-| Reversal condition | Which benchmark or changed workload would make another approach win |
+| Item                    | Expected evidence                                                            |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| User-relevant symptom   | Which operation, scenario and percentile/size/throughput                     |
+| Hypotheses              | 2–3 realistic bottlenecks and discriminating measurements                    |
+| Candidate approaches    | No-new-cache optimization and at least one other credible choice             |
+| Consistency / ownership | What data is authoritative, identity/version and acceptable staleness        |
+| Concurrency / failure   | Stampede, stale reader, cross-tenant key and Redis outage policy if relevant |
+| Resource costs          | Memory, network, DB work, operational complexity, billing                    |
+| Verification            | Correctness under reorder/failure plus representative measured improvement   |
+| Reversal condition      | Which benchmark or changed workload would make another approach win          |
 
 **Three realistic exercises:**
 

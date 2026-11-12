@@ -42,11 +42,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   sessionStorage.clear();
-  window.history.replaceState(
-    null,
-    '',
-    `/stories/${fixtureDraftId}/preview`,
-  );
+  window.history.replaceState(null, '', `/stories/${fixtureDraftId}/preview`);
 });
 
 afterEach(() => {
@@ -59,15 +55,9 @@ afterAll(() => {
   server.close();
 });
 
-function renderPreview(
-  preview = makeOpeningPreview(),
-  draft = makeDraft(),
-) {
+function renderPreview(preview = makeOpeningPreview(), draft = makeDraft()) {
   const queryClient = createBrowserQueryClient();
-  queryClient.setQueryData(
-    queryKeys.draftOpening(viewerId, draft.id),
-    preview,
-  );
+  queryClient.setQueryData(queryKeys.draftOpening(viewerId, draft.id), preview);
   return {
     queryClient,
     ...render(
@@ -154,11 +144,15 @@ describe('OpeningPreviewPanel Start recovery', () => {
     server.use(
       http.get(`/api/stories/${fixtureStartStoryId}`, () => {
         gets += 1;
-        return HttpResponse.json(makeStorySnapshot({ id: fixtureStartStoryId }));
+        return HttpResponse.json(
+          makeStorySnapshot({ id: fixtureStartStoryId }),
+        );
       }),
       http.put(`/api/stories/${fixtureStartStoryId}/start`, () => {
         puts += 1;
-        return HttpResponse.json(makeStorySnapshot({ id: fixtureStartStoryId }));
+        return HttpResponse.json(
+          makeStorySnapshot({ id: fixtureStartStoryId }),
+        );
       }),
     );
 
@@ -193,7 +187,9 @@ describe('OpeningPreviewPanel Start recovery', () => {
     });
     expect(putBodies).toHaveLength(1);
 
-    await user.click(screen.getByRole('button', { name: 'Retry the same Start' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Retry the same Start' }),
+    );
     await waitFor(() => {
       expect(putBodies).toHaveLength(2);
     });

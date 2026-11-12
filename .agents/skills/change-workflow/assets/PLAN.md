@@ -9,6 +9,7 @@ Permission: [current human approval; provider/DB/deploy actions separately autho
 ## Phases
 
 For each **bounded code/test/configuration slice**:
+
 - Intended outcome and dependency.
 - Real source owner(s), or a required reinspection gate.
 - What behavior and contract must remain unchanged.

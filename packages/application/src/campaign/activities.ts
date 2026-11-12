@@ -259,7 +259,8 @@ export async function settleActivity(
       : undefined,
   );
   const availableWorldGameSeconds = clock.elapsedGameSeconds - state.gameSecond;
-  let availableEffortGameSeconds = storedProgress.effortGameSeconds + availableWorldGameSeconds;
+  let availableEffortGameSeconds =
+    storedProgress.effortGameSeconds + availableWorldGameSeconds;
   if (pace.kind === 'instant') {
     availableEffortGameSeconds = storedProgress.completionPending
       ? storedProgress.effortGameSeconds
@@ -393,9 +394,12 @@ export async function settleActivity(
     nextState !== 'running';
   const backlogDue =
     nextState === 'running' &&
-    nextBoundaryGameSecond(plan, cursorGameSecond) <= availableEffortGameSeconds;
+    nextBoundaryGameSecond(plan, cursorGameSecond) <=
+      availableEffortGameSeconds;
   const caughtUpRunning = nextState === 'running' && !backlogDue;
-  const nextEffortGameSeconds = caughtUpRunning ? availableEffortGameSeconds : cursorGameSecond;
+  const nextEffortGameSeconds = caughtUpRunning
+    ? availableEffortGameSeconds
+    : cursorGameSecond;
   processProgress = processProgressAtEffortGameSecond(
     plan,
     processProgress,

@@ -6,6 +6,15 @@ import {
   type StoryUpdateEventSource,
 } from './story-update-stream';
 
+function requireSource(): FakeEventSource {
+  const source = FakeEventSource.instances[0];
+  expect(source).toBeDefined();
+  if (!source) {
+    throw new Error('expected FakeEventSource instance');
+  }
+  return source;
+}
+
 class FakeEventSource implements StoryUpdateEventSource {
   static instances: FakeEventSource[] = [];
   listeners = new Map<string, Set<(event: MessageEvent<string>) => void>>();
@@ -57,11 +66,13 @@ class FakeEventSource implements StoryUpdateEventSource {
   }
 }
 
-function hint(overrides: {
-  eventId?: string;
-  storyId?: string;
-  viewVersion?: number;
-} = {}) {
+function hint(
+  overrides: {
+    eventId?: string;
+    storyId?: string;
+    viewVersion?: number;
+  } = {},
+) {
   return {
     eventId: overrides.eventId ?? 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     storyId: overrides.storyId ?? fixtureIds.storyId,
@@ -77,9 +88,7 @@ afterEach(() => {
 
 describe('openStoryUpdateStream', () => {
   it('opens the story updates URL and forwards validated hints', () => {
-    setStoryUpdateEventSourceFactoryForTests(
-      (url) => new FakeEventSource(url),
-    );
+    setStoryUpdateEventSourceFactoryForTests((url) => new FakeEventSource(url));
     const onOpen = vi.fn();
     const onHint = vi.fn();
     const onError = vi.fn();
@@ -91,7 +100,7 @@ describe('openStoryUpdateStream', () => {
       onError,
     });
 
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
     expect(source.url).toBe(`/api/stories/${fixtureIds.storyId}/updates`);
     source.emitOpen();
     expect(onOpen).toHaveBeenCalledTimes(1);
@@ -104,9 +113,7 @@ describe('openStoryUpdateStream', () => {
   });
 
   it('ignores wrong-story and duplicate or older hints (negative)', () => {
-    setStoryUpdateEventSourceFactoryForTests(
-      (url) => new FakeEventSource(url),
-    );
+    setStoryUpdateEventSourceFactoryForTests((url) => new FakeEventSource(url));
     const onHint = vi.fn();
     openStoryUpdateStream({
       storyId: fixtureIds.storyId,
@@ -114,7 +121,7 @@ describe('openStoryUpdateStream', () => {
       onHint,
       onError: () => undefined,
     });
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
 
     source.emitStoryUpdate(
       hint({
@@ -140,9 +147,7 @@ describe('openStoryUpdateStream', () => {
   });
 
   it('closes cleanly and stops delivering hints', () => {
-    setStoryUpdateEventSourceFactoryForTests(
-      (url) => new FakeEventSource(url),
-    );
+    setStoryUpdateEventSourceFactoryForTests((url) => new FakeEventSource(url));
     const onHint = vi.fn();
     const stream = openStoryUpdateStream({
       storyId: fixtureIds.storyId,
@@ -150,7 +155,7 @@ describe('openStoryUpdateStream', () => {
       onHint,
       onError: () => undefined,
     });
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
     stream.close();
     expect(source.closed).toBe(true);
     source.emitStoryUpdate(hint({ viewVersion: 8 }));

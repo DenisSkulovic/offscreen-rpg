@@ -17,11 +17,7 @@ describe('writeStorySnapshot', () => {
     const viewerId = 'viewer-a';
     const storyId = fixtureIds.storyId;
     const current = makeStorySnapshot({ viewVersion: 4, title: 'Current A' });
-    writeStorySnapshot(
-      client,
-      { viewerId, storyId, requestEpoch: 1 },
-      current,
-    );
+    writeStorySnapshot(client, { viewerId, storyId, requestEpoch: 1 }, current);
 
     const intruder = makeStorySnapshot({
       id: '99999999-9999-4999-8999-999999999999',

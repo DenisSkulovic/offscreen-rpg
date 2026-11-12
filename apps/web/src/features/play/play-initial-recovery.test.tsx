@@ -70,7 +70,9 @@ describe('PlayScene initial read recovery', () => {
         if (!allowSuccess) {
           return HttpResponse.json({ error: 'Unavailable' }, { status: 503 });
         }
-        return HttpResponse.json(makeStorySnapshot({ title: 'Recovered scene' }));
+        return HttpResponse.json(
+          makeStorySnapshot({ title: 'Recovered scene' }),
+        );
       }),
       http.put(`/api/stories/${fixtureIds.storyId}/*`, () => {
         puts += 1;

@@ -264,7 +264,8 @@ export async function searchCanonicalKnowledge(
         linkedDocumentIds: document.envelope.sources.map(
           (source) => source.documentId,
         ),
-        effectiveFromGameSecond: document.envelope.coverage?.fromGameSecond ?? null,
+        effectiveFromGameSecond:
+          document.envelope.coverage?.fromGameSecond ?? null,
         effectiveThroughGameSecond:
           document.envelope.coverage?.throughGameSecond ?? null,
         title: document.title,

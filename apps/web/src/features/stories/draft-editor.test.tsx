@@ -52,10 +52,7 @@ afterAll(() => {
   server.close();
 });
 
-function renderEditor(
-  draft = makeDraft(),
-  viewerId = 'viewer-draft',
-) {
+function renderEditor(draft = makeDraft(), viewerId = 'viewer-draft') {
   const queryClient = createBrowserQueryClient();
   queryClient.setQueryData(queryKeys.draft(viewerId, draft.id), draft);
   return {
@@ -152,9 +149,7 @@ describe('DraftEditor RHF lifecycle', () => {
     await user.click(screen.getByRole('button', { name: 'Save setup' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        /changed elsewhere/i,
-      );
+      expect(screen.getByRole('alert')).toHaveTextContent(/changed elsewhere/i);
     });
     expect(
       screen.getByText('Conflict-local unsaved premise.'),

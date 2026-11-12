@@ -44,7 +44,11 @@ export const memoryOracleQuerySchema = z.strictObject({
   budget: z.strictObject({
     maxCandidates: z.number().int().min(1).max(12),
     maxReads: z.number().int().min(0).max(6),
-    maxBytes: z.number().int().min(1024).max(48 * 1024),
+    maxBytes: z
+      .number()
+      .int()
+      .min(1024)
+      .max(48 * 1024),
     maxRounds: z.number().int().min(0).max(3),
   }),
 });
@@ -104,7 +108,10 @@ export const longStoryMemoryCorpusSchema = z
           ]),
           visibility: visibilitySchema,
           title: z.string().min(1).max(240),
-          body: z.string().min(1).max(64 * 1024),
+          body: z
+            .string()
+            .min(1)
+            .max(64 * 1024),
           sourceSequences: z.array(z.number().int().positive()).max(16),
         }),
       )
@@ -112,13 +119,23 @@ export const longStoryMemoryCorpusSchema = z
     queries: z.array(memoryOracleQuerySchema).min(1).max(64),
   })
   .superRefine((corpus, context) => {
-    const unique = (values: readonly string[]) => new Set(values).size === values.length;
+    const unique = (values: readonly string[]) =>
+      new Set(values).size === values.length;
     if (!unique(corpus.scenes.map((scene) => scene.documentId)))
-      context.addIssue({ code: 'custom', message: 'Scene document IDs must be unique' });
+      context.addIssue({
+        code: 'custom',
+        message: 'Scene document IDs must be unique',
+      });
     if (!unique(corpus.scenes.map((scene) => scene.path)))
-      context.addIssue({ code: 'custom', message: 'Scene paths must be unique' });
+      context.addIssue({
+        code: 'custom',
+        message: 'Scene paths must be unique',
+      });
     if (!unique(corpus.evidence.map((entry) => entry.key)))
-      context.addIssue({ code: 'custom', message: 'Evidence keys must be unique' });
+      context.addIssue({
+        code: 'custom',
+        message: 'Evidence keys must be unique',
+      });
     if (!unique(corpus.queries.map((query) => query.id)))
       context.addIssue({ code: 'custom', message: 'Query IDs must be unique' });
     const sequences = new Set(corpus.scenes.map((scene) => scene.sequence));
@@ -134,11 +151,15 @@ export const longStoryMemoryCorpusSchema = z
     );
     const evidenceKeys = new Set(corpus.evidence.map((entry) => entry.key));
     corpus.queries.forEach((query, index) => {
-      for (const key of [...query.expectedEvidence, ...query.acceptableEvidence])
+      for (const key of [
+        ...query.expectedEvidence,
+        ...query.acceptableEvidence,
+      ])
         if (!evidenceKeys.has(key))
           context.addIssue({
             code: 'custom',
-            message: 'Expected and acceptable evidence must exist in the corpus',
+            message:
+              'Expected and acceptable evidence must exist in the corpus',
             path: ['queries', index],
           });
     });
@@ -150,7 +171,10 @@ export type MemoryOracleQuery = z.infer<typeof memoryOracleQuerySchema>;
 const uniqueKeysSchema = z
   .array(keySchema)
   .max(64)
-  .refine((keys) => new Set(keys).size === keys.length, 'Evidence keys must be unique');
+  .refine(
+    (keys) => new Set(keys).size === keys.length,
+    'Evidence keys must be unique',
+  );
 
 export const memoryEvaluationObservationSchema = z.strictObject({
   format: z.literal('offscreen.memory-evaluation-observation.v1'),
@@ -168,7 +192,10 @@ export const memoryEvaluationObservationSchema = z.strictObject({
     duplicateBytes: z.number().int().nonnegative(),
   }),
   generation: z.discriminatedUnion('disposition', [
-    z.strictObject({ disposition: z.literal('not-run'), usedEvidenceKeys: z.tuple([]) }),
+    z.strictObject({
+      disposition: z.literal('not-run'),
+      usedEvidenceKeys: z.tuple([]),
+    }),
     z.strictObject({
       disposition: z.enum(['answered', 'abstained']),
       usedEvidenceKeys: uniqueKeysSchema,
@@ -221,4 +248,6 @@ export const memoryEvaluationSuiteReportSchema = z.strictObject({
 export type MemoryEvaluationObservation = z.infer<
   typeof memoryEvaluationObservationSchema
 >;
-export type MemoryEvaluationReport = z.infer<typeof memoryEvaluationReportSchema>;
+export type MemoryEvaluationReport = z.infer<
+  typeof memoryEvaluationReportSchema
+>;

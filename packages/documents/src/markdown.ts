@@ -22,7 +22,8 @@ export function renderCanonicalMarkdown(document: CanonicalDocument) {
     for (const source of envelope.sources) {
       lines.push(`  - documentId: ${source.documentId}`);
       lines.push(`    revision: ${source.revision}`);
-      if (source.section) lines.push(`    section: ${yamlString(source.section)}`);
+      if (source.section)
+        lines.push(`    section: ${yamlString(source.section)}`);
     }
   } else {
     lines.push('sources: []');
@@ -31,9 +32,7 @@ export function renderCanonicalMarkdown(document: CanonicalDocument) {
   return `${lines.join('\n')}\n`;
 }
 
-export function renderSourcePassageMarkdown(
-  passage: CanonicalSourcePassage,
-) {
+export function renderSourcePassageMarkdown(passage: CanonicalSourcePassage) {
   const { envelope } = passage;
   const frontmatter = [
     '---',
@@ -45,8 +44,9 @@ export function renderSourcePassageMarkdown(
     `visibility: ${envelope.visibility}`,
     '---',
   ].join('\n');
-  const body = [`# ${passage.content.title}`, ...passage.content.paragraphs].join(
-    '\n\n',
-  );
+  const body = [
+    `# ${passage.content.title}`,
+    ...passage.content.paragraphs,
+  ].join('\n\n');
   return `${frontmatter}\n${body}\n`;
 }

@@ -1,13 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { setupServer } from 'msw/node';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -87,16 +80,22 @@ describe('LiveStoryList useInfiniteQuery', () => {
     );
 
     renderList();
-    expect(screen.getByRole('heading', { name: 'Newest live' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Newest live' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Older stories' }));
     await waitFor(() => {
       expect(
         screen.getByRole('heading', { name: 'Older live' }),
       ).toBeInTheDocument();
     });
-    expect(screen.getByRole('heading', { name: 'Newest live' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Newest live' }),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Duplicate ignored')).not.toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('End of live stories.');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'End of live stories.',
+    );
     expect(pages).toBe(1);
   });
 

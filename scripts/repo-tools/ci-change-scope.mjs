@@ -14,13 +14,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const DOCS_PREFIXES = [
-  'docs/',
-  '.agents/',
-  '.claude/',
-  '.cursor/',
-  '.kits/',
-];
+const DOCS_PREFIXES = ['docs/', '.agents/', '.claude/', '.cursor/', '.kits/'];
 const DOCS_ROOT_FILES = new Set([
   'AGENTS.md',
   'CLAUDE.md',
@@ -191,7 +185,8 @@ function main(argv = process.argv.slice(2)) {
 const thisFile = fileURLToPath(import.meta.url);
 const invoked =
   process.argv[1] &&
-  pathToFileURL(path.resolve(process.argv[1])).href === pathToFileURL(thisFile).href;
+  pathToFileURL(path.resolve(process.argv[1])).href ===
+    pathToFileURL(thisFile).href;
 
 if (invoked) {
   try {

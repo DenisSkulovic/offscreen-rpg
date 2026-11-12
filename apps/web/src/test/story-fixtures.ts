@@ -27,7 +27,8 @@ export function makeStorySnapshot(
     decision: null,
     waiting: null,
     lineage: null,
-    resolution: overrides.resolution === undefined ? null : overrides.resolution,
+    resolution:
+      overrides.resolution === undefined ? null : overrides.resolution,
     current: {
       id: passageId,
       content: {

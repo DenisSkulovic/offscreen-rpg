@@ -1,12 +1,12 @@
 # Engineering decision laboratory: expose omitted considerations
 
-**Use:** read-only design/review/testing practice for coding agents. These are **fictional exercises**, not approved Offscreen RPG features, and not automatic benchmark proof. Each scenario deliberately provides a deceptively easy brief. The goal is to recognize *which missing factors can reverse the proposed design* before writing code.
+**Use:** read-only design/review/testing practice for coding agents. These are **fictional exercises**, not approved Offscreen RPG features, and not automatic benchmark proof. Each scenario deliberately provides a deceptively easy brief. The goal is to recognize _which missing factors can reverse the proposed design_ before writing code.
 
 ## How to run one exercise
 
 The coordinator selects one scenario and gives the agent only the **brief** and role. The agent should describe 2–3 plausible approaches, crucial missing facts, a conditional recommendation and a compact verification strategy. An independent reviewer then opens the **challenge** and evaluates whether the initial decision survives. Record actual relevant knowledge loaded, changes in judgment and unnecessary assumptions.
 
-Do not require an agent to guess all hidden requirements; it should identify *which questions are worth asking* and make a reasoned provisional choice, not respond with endless disclaimers.
+Do not require an agent to guess all hidden requirements; it should identify _which questions are worth asking_ and make a reasoned provisional choice, not respond with endless disclaimers.
 
 ### Scenario A: "Make the live story page update immediately"
 
@@ -20,9 +20,9 @@ Do not require an agent to guess all hidden requirements; it should identify *wh
 
 **Brief:** Story pages sometimes load slowly; introduce caching.
 
-**Challenge:** Latency is mostly a poorly indexed join in an application query; cache needs tenant isolation and revision-based invalidation; a slow in-flight old DB read can repopulate a cache *after* the writer invalidated it; Redis may be offline.
+**Challenge:** Latency is mostly a poorly indexed join in an application query; cache needs tenant isolation and revision-based invalidation; a slow in-flight old DB read can repopulate a cache _after_ the writer invalidated it; Redis may be offline.
 
-**Design reversals:** first measure SQL/queries; optional Redis may help only selected read projections; TTL is a staleness *duration*, not a complete invalidation guarantee; account/tenant identity is part of key policy. Consult [durable systems](durable-operations.md).
+**Design reversals:** first measure SQL/queries; optional Redis may help only selected read projections; TTL is a staleness _duration_, not a complete invalidation guarantee; account/tenant identity is part of key policy. Consult [durable systems](durable-operations.md).
 
 ### Scenario C: "Make the action processor reliable"
 
@@ -116,7 +116,7 @@ Do not require an agent to guess all hidden requirements; it should identify *wh
 
 Evaluate **decision quality**, not the number of bullets or risk names:
 
-- Did it identify the *actual decision axis*, not only a fashionable library?
+- Did it identify the _actual decision axis_, not only a fashionable library?
 - Did it compare a credible no-new-infrastructure option?
 - Did it locate authority and identity at the correct layer?
 - Did it state which facts would change its recommendation?

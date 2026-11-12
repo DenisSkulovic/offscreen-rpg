@@ -18,7 +18,10 @@ function isRetryableStatus(error: unknown): boolean {
 }
 
 /** GET: at most one retry on network/502/503/504. Never retry auth/contract errors. */
-export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
+export function shouldRetryQuery(
+  failureCount: number,
+  error: unknown,
+): boolean {
   if (failureCount >= 1) return false;
   return isRetryableStatus(error);
 }

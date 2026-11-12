@@ -9,12 +9,24 @@ import {
 } from '@offscreen/game/immediate-actions';
 import type { StorytellerTask } from '../tasks';
 import { z } from 'zod';
-import { authoredActivityAccess, type MechanicalCharacter } from './mechanical/shared';
-import { seydaNeenOpeningPlans, seydaNeenConsequence } from './mechanical/seyda-neen';
-import { pineappleOpeningPlans, pineappleConsequence } from './mechanical/pineapple';
+import {
+  authoredActivityAccess,
+  type MechanicalCharacter,
+} from './mechanical/shared';
+import {
+  seydaNeenOpeningPlans,
+  seydaNeenConsequence,
+} from './mechanical/seyda-neen';
+import {
+  pineappleOpeningPlans,
+  pineappleConsequence,
+} from './mechanical/pineapple';
 import { microbeOpeningPlans, microbeConsequence } from './mechanical/microbe';
 import { beaconOpeningPlans, beaconConsequence } from './mechanical/beacon';
-import { frostRoadOpeningPlans, frostRoadConsequence } from './mechanical/frost-road';
+import {
+  frostRoadOpeningPlans,
+  frostRoadConsequence,
+} from './mechanical/frost-road';
 
 function withDeclaredFactTransitions(
   plan: ImmediateActionPlan,
@@ -47,7 +59,9 @@ function withDeclaredFactTransitions(
 }
 
 /** Plans the offline fixture would admit for this character. Live openings capture the same objects. */
-export function authorizedMechanicalOpeningPlans(character: MechanicalCharacter) {
+export function authorizedMechanicalOpeningPlans(
+  character: MechanicalCharacter,
+) {
   const plans =
     seydaNeenOpeningPlans(character) ??
     pineappleOpeningPlans(character) ??

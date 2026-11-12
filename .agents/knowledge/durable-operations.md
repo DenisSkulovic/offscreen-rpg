@@ -12,20 +12,20 @@ The central objects are not “database tables” or “queues.” They are **in
 
 ### 1. Design the state and data lifecycle
 
-| Question | Why it matters | Valid possible answers |
-| --- | --- | --- |
-| Where does authoritative truth live? | Two writers need conflict or merge semantics | SQL ledger; immutable document root; external provider for an external fact |
-| What is the entity identity? | Without a stable identity, updates/replays confuse objects | Tenant+resource ID, operation ID, versioned document ID |
-| What is the expected write frequency? | It changes contention, storage, caching and indexing | Rare user edit, hot inventory counter, append-only event |
-| What reads do we need? | A normalized write schema may not serve search/history efficiently | SQL joins/indexes; materialized read view; bounded lexical index |
-| Is there a known schema? | Flexibility and validation need not be all-or-nothing | Relational core; JSONB extension; typed document metadata |
-| How do versions evolve? | Old snapshots and external messages persist | Schema revision, compatibility strategy, backfill, new root |
-| What is temporary? | Derived read/cache indexes should be rebuildable | Redis cache, search index, UI state; not financial receipt |
-| What is the retention/recovery objective? | It determines backups, deletes, audit, migration and restore | Short cache TTL, long-lived history, regulated record |
+| Question                                  | Why it matters                                                     | Valid possible answers                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Where does authoritative truth live?      | Two writers need conflict or merge semantics                       | SQL ledger; immutable document root; external provider for an external fact |
+| What is the entity identity?              | Without a stable identity, updates/replays confuse objects         | Tenant+resource ID, operation ID, versioned document ID                     |
+| What is the expected write frequency?     | It changes contention, storage, caching and indexing               | Rare user edit, hot inventory counter, append-only event                    |
+| What reads do we need?                    | A normalized write schema may not serve search/history efficiently | SQL joins/indexes; materialized read view; bounded lexical index            |
+| Is there a known schema?                  | Flexibility and validation need not be all-or-nothing              | Relational core; JSONB extension; typed document metadata                   |
+| How do versions evolve?                   | Old snapshots and external messages persist                        | Schema revision, compatibility strategy, backfill, new root                 |
+| What is temporary?                        | Derived read/cache indexes should be rebuildable                   | Redis cache, search index, UI state; not financial receipt                  |
+| What is the retention/recovery objective? | It determines backups, deletes, audit, migration and restore       | Short cache TTL, long-lived history, regulated record                       |
 
 **Choice space:** relational DB for interrelated transactions and constraints; document store for evolving cohesive records; immutable content-addressed documents for auditable versions; search engine for specialized retrieval; key/value cache for ephemeral read acceleration; queue for delivery coordination. One product may use several, but each new system adds ownership/invalidation/operational cost.
 
-A “flexible” field without validation makes writes cheap but interpretation uncertain; dozens of normalized tables for rarely read descriptive fields make queries and migrations expensive. Choose the representation from *access patterns, invariant enforcement and evolution*, not a universal favorite database.
+A “flexible” field without validation makes writes cheap but interpretation uncertain; dozens of normalized tables for rarely read descriptive fields make queries and migrations expensive. Choose the representation from _access patterns, invariant enforcement and evolution_, not a universal favorite database.
 
 **Offscreen RPG:** [technical data](../../docs/technical/data.md) owns current SQL semantics; [canonical files](../../docs/technical/canonical-files.md) owns the file-based target. A manual must not pretend all that migration work is complete.
 
@@ -33,21 +33,21 @@ A “flexible” field without validation makes writes cheap but interpretation 
 
 There is no universal “use transactions” recipe.
 
-| Pattern | When appropriate | What it does not guarantee |
-| --- | --- | --- |
-| **Unique/exclusion constraint** | Identity uniqueness, no overlapping ranges | Correct application of side effects before insert |
-| **Atomic conditional UPDATE** | Claim stock/allowance or change field when a predicate holds | Multi-row global invariant unless the predicate/coordination covers it |
-| **Optimistic version check** | Moderate conflict, stale editing, compare-and-swap | Absent-row predicate or independently changed related rows |
-| **SELECT FOR UPDATE** | Existing known resource, ordered transaction-local coordination | Locking *nonexistent* matching rows or remote side effects |
-| **Serializable transaction + retry** | A multi-read/predicate invariant needs transaction-level serial execution | Guaranteed no abort; reusing stale decision outside retry |
-| **Advisory/coordination lock** | No suitable row to lock, shared operation naming with disciplined participants | Correctness if some writer ignores protocol |
-| **Append-only receipt/event** | Evidence and idempotent replay are central | Automatic consistent projections, correct event consumers |
-| **Workflow/lease/fence** | Slow work spanning transactions/timeouts/crashes | SQL or provider exactly-once semantics by itself |
+| Pattern                              | When appropriate                                                               | What it does not guarantee                                             |
+| ------------------------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| **Unique/exclusion constraint**      | Identity uniqueness, no overlapping ranges                                     | Correct application of side effects before insert                      |
+| **Atomic conditional UPDATE**        | Claim stock/allowance or change field when a predicate holds                   | Multi-row global invariant unless the predicate/coordination covers it |
+| **Optimistic version check**         | Moderate conflict, stale editing, compare-and-swap                             | Absent-row predicate or independently changed related rows             |
+| **SELECT FOR UPDATE**                | Existing known resource, ordered transaction-local coordination                | Locking _nonexistent_ matching rows or remote side effects             |
+| **Serializable transaction + retry** | A multi-read/predicate invariant needs transaction-level serial execution      | Guaranteed no abort; reusing stale decision outside retry              |
+| **Advisory/coordination lock**       | No suitable row to lock, shared operation naming with disciplined participants | Correctness if some writer ignores protocol                            |
+| **Append-only receipt/event**        | Evidence and idempotent replay are central                                     | Automatic consistent projections, correct event consumers              |
+| **Workflow/lease/fence**             | Slow work spanning transactions/timeouts/crashes                               | SQL or provider exactly-once semantics by itself                       |
 
 ### Four different anomalies
 
 1. **Lost update:** two writers read capacity 5; both write 4. Two sales but one decrement. Prefer current-row atomic arithmetic and predicate, or a correctly locked/versioned transaction.
-2. **Absent-row race:** both queries return no reservation rows and attempt create. A row lock protects *existing* records; use a uniqueness/exclusion constraint or shared coordination identity.
+2. **Absent-row race:** both queries return no reservation rows and attempt create. A row lock protects _existing_ records; use a uniqueness/exclusion constraint or shared coordination identity.
 3. **Write skew:** two transactions each read “two doctors on call,” then remove different doctors. Both writes can succeed at snapshot isolation while violating “at least one.” Reformulate or coordinate the cross-row invariant.
 4. **Deadlock:** A locks Friday then Saturday, B locks Saturday then Friday. Consistent lock ordering reduces the cycle, but application should still handle SQLSTATE `40P01` without replaying external effects.
 
@@ -61,16 +61,16 @@ Deep: [PostgreSQL transaction isolation](https://www.postgresql.org/docs/current
 
 The first caching question should be **“which read is expensive, how stale may it be, and where will truth live?”**, not “Redis or Memcached?”
 
-| Approach | Fit | Design consequence |
-| --- | --- | --- |
-| Improve SQL/index/query or reduce N+1 | Often the best starting point | No second state copy/invalidation protocol |
-| Per-process memory cache | Small service-local hot repeated reads | No cross-instance coherence; process restart forgets |
-| Shared Redis cache-aside | Frequent reads, acceptable staleness, multiple instances | Invalidation and stale repopulation need deliberate protocol |
-| HTTP/CDN caching | Public/static/read-mostly content | Correct cache-control, auth variation and invalidation |
-| Materialized view/read projection | Heavy aggregate/detail reads over authoritative SQL/events | Lag, rebuild/versioning and privacy/tenant scoping |
-| Write-through cache | Cache needs immediate write reflection under defined contract | Partial write/error ordering must be designed |
-| Write-behind buffer | High write throughput with acceptable deferred durability | Data-loss/replay/order policy and recovery complexity |
-| No cache | Expensive invalidation or correctness-sensitive action | Often correct for transactional command decisions |
+| Approach                              | Fit                                                           | Design consequence                                           |
+| ------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
+| Improve SQL/index/query or reduce N+1 | Often the best starting point                                 | No second state copy/invalidation protocol                   |
+| Per-process memory cache              | Small service-local hot repeated reads                        | No cross-instance coherence; process restart forgets         |
+| Shared Redis cache-aside              | Frequent reads, acceptable staleness, multiple instances      | Invalidation and stale repopulation need deliberate protocol |
+| HTTP/CDN caching                      | Public/static/read-mostly content                             | Correct cache-control, auth variation and invalidation       |
+| Materialized view/read projection     | Heavy aggregate/detail reads over authoritative SQL/events    | Lag, rebuild/versioning and privacy/tenant scoping           |
+| Write-through cache                   | Cache needs immediate write reflection under defined contract | Partial write/error ordering must be designed                |
+| Write-behind buffer                   | High write throughput with acceptable deferred durability     | Data-loss/replay/order policy and recovery complexity        |
+| No cache                              | Expensive invalidation or correctness-sensitive action        | Often correct for transactional command decisions            |
 
 **Key dimensions:** identity (tenant/user/route/version/filter), freshness (TTL or event invalidation), singleflight/thundering herd, eviction/memory growth, cold start, visibility of stale states, privacy, failure fallback, metrics.
 
@@ -83,7 +83,7 @@ T2 R finishes and stores old version 10 in now-empty cache.
 T3 New readers repeatedly see stale version 10.
 ```
 
-A short TTL reduces *duration*, not the mechanism. Possible countermeasures: versioned keys/compare-on-set, read-after-write discipline, generation fencing, delayed invalidation as a last-resort context-dependent tactic. Pick according to available version source and acceptable staleness.
+A short TTL reduces _duration_, not the mechanism. Possible countermeasures: versioned keys/compare-on-set, read-after-write discipline, generation fencing, delayed invalidation as a last-resort context-dependent tactic. Pick according to available version source and acceptable staleness.
 
 ### A high hit rate may still be a bad cache
 
@@ -97,21 +97,21 @@ Deep: [study: Caching, freshness and invalidation](https://github.com/DenisSkulo
 
 Choose the coordination shape by duration, dependencies, deadlines, external ambiguity and recovery, not just “scale.”
 
-| Shape | When it makes sense | New responsibilities |
-| --- | --- | --- |
-| Synchronous request → DB transaction | Bounded local operation whose result the caller needs now | Conflicts, latency, timeout, auth, rollback |
-| API accepts request → job queue | Longer/retryable work with separate status | Job identity, dedupe, progress, cancellation, worker recovery |
-| Transactional outbox → worker | DB commit must not lose the follow-up delivery intention | Relay duplication, consumer idempotency, backlog observability |
-| Temporal durable workflow + Activities | Multi-step waits, deadlines, retries, human decisions, long lifecycle | Replay determinism, activity idempotency, versioning, history and operational service |
-| Orchestrated saga / explicit state machine | Multi-system business process with compensations and partial commits | Compensations can fail; reconciliation and manual intervention |
-| Event fan-out / subscriptions | Multiple independent consumers of committed facts | Ordering, delivery guarantees, schema evolution and lag |
-| Background cron | Independent scheduled occurrence with repeatable bounded work | Occurrence identity, timezone/DST, lease and duplicate run fencing |
+| Shape                                      | When it makes sense                                                   | New responsibilities                                                                  |
+| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Synchronous request → DB transaction       | Bounded local operation whose result the caller needs now             | Conflicts, latency, timeout, auth, rollback                                           |
+| API accepts request → job queue            | Longer/retryable work with separate status                            | Job identity, dedupe, progress, cancellation, worker recovery                         |
+| Transactional outbox → worker              | DB commit must not lose the follow-up delivery intention              | Relay duplication, consumer idempotency, backlog observability                        |
+| Temporal durable workflow + Activities     | Multi-step waits, deadlines, retries, human decisions, long lifecycle | Replay determinism, activity idempotency, versioning, history and operational service |
+| Orchestrated saga / explicit state machine | Multi-system business process with compensations and partial commits  | Compensations can fail; reconciliation and manual intervention                        |
+| Event fan-out / subscriptions              | Multiple independent consumers of committed facts                     | Ordering, delivery guarantees, schema evolution and lag                               |
+| Background cron                            | Independent scheduled occurrence with repeatable bounded work         | Occurrence identity, timezone/DST, lease and duplicate run fencing                    |
 
 **Subtlety:** synchronous vs async is not the same as consistent vs inconsistent. Async can preserve rigorous business guarantees under explicit state transitions; synchronous HTTP cannot guarantee completion if the caller disconnects after dispatch.
 
 ### One intent, many attempts
 
-Idempotency key identifies the business intent (plus stable meaningful request parameters, account/tenant scope and result). An *attempt* is one execution of that intent. Repeated delivery may produce multiple attempts without authorizing multiple effects.
+Idempotency key identifies the business intent (plus stable meaningful request parameters, account/tenant scope and result). An _attempt_ is one execution of that intent. Repeated delivery may produce multiple attempts without authorizing multiple effects.
 
 A naive check-then-insert can race. Claim intent atomically and verify same-key payload matches. If the same key arrives with a different operation, **conflict**, don't silently return the old result or do new work.
 
@@ -172,7 +172,7 @@ Deep: [study: third-party integrations](https://github.com/DenisSkulovic/the-mod
 
 ### Case 1: Two concurrent resource claims
 
-In one SQL transaction, both requests read "available," then write different rows. Which invariant spans those rows? A unique constraint may cover conflict identity; a shared authoritative parent lock or serializable transaction may be required for broader predicates. One normal unit test cannot prove the interleaving. Choose the technique from *the exact shared invariant*.
+In one SQL transaction, both requests read "available," then write different rows. Which invariant spans those rows? A unique constraint may cover conflict identity; a shared authoritative parent lock or serializable transaction may be required for broader predicates. One normal unit test cannot prove the interleaving. Choose the technique from _the exact shared invariant_.
 
 ### Case 2: A cached story snapshot seems fresh but is older than published version
 
@@ -192,16 +192,16 @@ Demand a measured scaling limit, request/tenant routing scheme, cross-shard inva
 
 ## Role deliverables and verification
 
-| Role | Required contribution |
-| --- | --- |
-| Data architect | Truth identity, read/write workload, schema trade-offs, version/migration strategy |
-| Backend architect | Synchronous/durable work choice, operation lifecycle, error/transport contract |
-| Async/Temporal specialist | Delivery, retry, waits, fences, cancellation and recurrence semantics |
-| Cache/performance reviewer | Actual bottleneck, identity, acceptable staleness, invalidation and failure fallback |
-| Security reviewer | Tenant boundaries, authorization, secrets, external trust and abuse limits |
-| Independent critic | One alternative design that wins under different constraints, one falsifying interleaving |
-| Test strategist | Minimal deterministic plus real DB/worker/fault-injection evidence tied to the guarantee |
+| Role                       | Required contribution                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| Data architect             | Truth identity, read/write workload, schema trade-offs, version/migration strategy        |
+| Backend architect          | Synchronous/durable work choice, operation lifecycle, error/transport contract            |
+| Async/Temporal specialist  | Delivery, retry, waits, fences, cancellation and recurrence semantics                     |
+| Cache/performance reviewer | Actual bottleneck, identity, acceptable staleness, invalidation and failure fallback      |
+| Security reviewer          | Tenant boundaries, authorization, secrets, external trust and abuse limits                |
+| Independent critic         | One alternative design that wins under different constraints, one falsifying interleaving |
+| Test strategist            | Minimal deterministic plus real DB/worker/fault-injection evidence tied to the guarantee  |
 
-**Don't mechanically demand every consideration for every task.** Identify which design dimensions might plausibly change the choice. An expert makes the decision *conditional on the right facts*, not indefinitely complicated.
+**Don't mechanically demand every consideration for every task.** Identify which design dimensions might plausibly change the choice. An expert makes the decision _conditional on the right facts_, not indefinitely complicated.
 
 **Deeper study:** [SE330 architecture patterns](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE330-software-architecture/SE330-L02-architecture-patterns-and-their-consequences.md), [CS330 transactions](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/CS/CS330-relational-databases/CS330-L03-transactions-and-isolation.md), [SE320 caching](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE320-backend-services/SE320-L02-caching-trading-freshness-for-speed.md), [CS340 data architecture workshop](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/CS/CS340-data-systems-beyond-relational/CS340-L07-the-data-architecture-workshop.md), [CS430 workflows](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/CS/CS430-distributed-systems/CS430-L05-designing-reliable-business-workflows.md).

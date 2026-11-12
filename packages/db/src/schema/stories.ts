@@ -29,7 +29,9 @@ export const story = pgTable(
     continuityNotes: jsonb('continuity_notes').$type<unknown>(),
     activeSceneScope: jsonb('active_scene_scope').$type<unknown>(),
     documentRootHash: text('document_root_hash'),
-    documentRootRevision: integer('document_root_revision').notNull().default(0),
+    documentRootRevision: integer('document_root_revision')
+      .notNull()
+      .default(0),
     forkedFromStoryId: uuid('forked_from_story_id'),
     forkedFromPassageId: uuid('forked_from_passage_id'),
     forkedFromSequence: integer('forked_from_sequence'),

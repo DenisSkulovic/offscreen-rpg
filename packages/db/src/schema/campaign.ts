@@ -204,7 +204,9 @@ export const campaignReport = pgTable(
       .notNull()
       .references(() => storyPassage.id, { onDelete: 'cascade' }),
     sourceRevision: integer('source_revision').notNull(),
-    sourceGameSecond: bigint('source_game_second', { mode: 'number' }).notNull(),
+    sourceGameSecond: bigint('source_game_second', {
+      mode: 'number',
+    }).notNull(),
     label: text('label').notNull(),
     factualSummary: text('factual_summary').notNull(),
     state: text('state').notNull().default('pending'),
@@ -302,7 +304,9 @@ export const gameActionExecution = pgTable(
       { onDelete: 'restrict' },
     ),
     startGameSecond: bigint('start_game_second', { mode: 'number' }).notNull(),
-    targetGameSecond: bigint('target_game_second', { mode: 'number' }).notNull(),
+    targetGameSecond: bigint('target_game_second', {
+      mode: 'number',
+    }).notNull(),
     state: text('state').notNull().default('running'),
     revision: integer('revision').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })

@@ -6,15 +6,7 @@ import {
 } from '@offscreen/contracts/stories';
 import type { DatabaseConfig } from '@offscreen/db';
 import type { MessageEvent } from '@nestjs/common';
-import {
-  EMPTY,
-  Observable,
-  Subject,
-  from,
-  interval,
-  merge,
-  of,
-} from 'rxjs';
+import { EMPTY, Observable, Subject, from, interval, merge, of } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 
 const HEARTBEAT_MS = 15_000;

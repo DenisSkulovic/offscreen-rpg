@@ -296,7 +296,11 @@ export const processProgressSchema = z.discriminatedUnion('kind', [
   clockWaitProgressSchema,
 ]);
 export const activityProgressSchema = z.strictObject({
-  effortGameSeconds: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  effortGameSeconds: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER),
   process: processProgressSchema,
   completionPending: z.boolean().default(false),
 });
@@ -493,7 +497,8 @@ export function nextBoundaryGameSecond(
   const process = plan.action.process;
   let next =
     process.kind === 'contribution.v1'
-      ? (BigInt(cursorGameSecond) / BigInt(process.everyFictionalSeconds) + 1n) *
+      ? (BigInt(cursorGameSecond) / BigInt(process.everyFictionalSeconds) +
+          1n) *
         BigInt(process.everyFictionalSeconds)
       : BigInt(process.requiredFictionalSeconds);
   for (const schedule of plan.action.checks) {
@@ -513,7 +518,8 @@ export function worldGameSecondForEffortBoundary(input: {
   boundaryEffortGameSecond: number;
 }) {
   const worldGameSecond =
-    input.campaignGameSecond + (input.boundaryEffortGameSecond - input.retainedEffortGameSeconds);
+    input.campaignGameSecond +
+    (input.boundaryEffortGameSecond - input.retainedEffortGameSeconds);
   if (!Number.isSafeInteger(worldGameSecond) || worldGameSecond < 0) {
     throw new Error('Campaign gameSecond is outside the supported range');
   }

@@ -21,9 +21,9 @@ export type StartStoryResult =
 function isStoryUuid(value: string | null): value is string {
   return Boolean(
     value &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        value,
-      ),
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    ),
   );
 }
 
@@ -71,10 +71,7 @@ export type StartRecoveryState =
  * Immutable Start intent. Captures body once; reload GETs story first and
  * never auto-PUTs. Settings changes after capture cannot alter the frozen body.
  */
-export function useStartStory(args: {
-  viewerId: string;
-  draftId: string;
-}) {
+export function useStartStory(args: { viewerId: string; draftId: string }) {
   const { viewerId, draftId } = args;
   const queryClient = useQueryClient();
   const envelopeRef = useRef<FrozenStartEnvelope | null>(null);

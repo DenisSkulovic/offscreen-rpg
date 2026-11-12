@@ -5,16 +5,26 @@
  * Delegates pinned document selection/omission to canonical-knowledge.ts.
  * It does not construct provider requests or publish model output.
  */
-import { campaign, campaignSettings, gameActivity } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  campaignSettings,
+  gameActivity,
+} from '@offscreen/db/campaign-schema';
 import { interactionSubmissionSchema } from '@offscreen/contracts/interactions';
 import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { storyItem, storyPassage } from '@offscreen/db/story-schema';
-import { contextInputSchema, continuityNotesSchema } from '@offscreen/storyteller/context';
+import {
+  contextInputSchema,
+  continuityNotesSchema,
+} from '@offscreen/storyteller/context';
 import { campaignSettingsSchema } from '@offscreen/contracts/campaign';
 import { projectWorldTime } from '@offscreen/game/calendar';
 import { worldConditionsSchema } from '@offscreen/game/world-obligations';
 import type { Transaction } from '../outbox/index';
-import { activityProgressSchema, resolvedActivityPlanSchema } from '@offscreen/game/activities';
+import {
+  activityProgressSchema,
+  resolvedActivityPlanSchema,
+} from '@offscreen/game/activities';
 import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
 import { readAcceptedActivityPlan } from '../campaign/accepted-plans';
 import { z } from 'zod';

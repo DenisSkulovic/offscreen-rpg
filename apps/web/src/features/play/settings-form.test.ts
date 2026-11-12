@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
-import {
-  creativeToFormValues,
-  formValuesToCreative,
-} from './settings-form';
+import { creativeToFormValues, formValuesToCreative } from './settings-form';
 
 describe('settings form mapping', () => {
   it('round-trips creative settings through the editor values', () => {

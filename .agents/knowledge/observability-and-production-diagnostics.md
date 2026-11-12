@@ -16,29 +16,29 @@ Example: a Storyteller request appears to take 12 seconds. That could be an appl
 
 For a feature or component ask:
 
-| Question | Why it changes telemetry |
-| --- | --- |
-| What user/business outcome matters? | Enqueued vs accepted vs settled vs published are different metrics |
-| What should never happen? | Duplicate effect, tenant leak, unbounded charge, lost deadline |
-| What are the major boundaries? | API → application → DB/outbox → Temporal → provider → publication |
-| What is normal volume/latency distribution? | One rare long task may be fine; a hot synchronous endpoint may not |
-| What does a user see on delay/failure? | Need an actionable status resource and reliable correlation |
-| What can the operator actually change? | Alert without an action/runbook becomes noise |
-| Which data is private? | Traces, model prompts and player prose may carry secrets or personal content |
-| What does instrumentation cost? | Storage, cardinality, network, runtime overhead and vendor spend |
+| Question                                    | Why it changes telemetry                                                     |
+| ------------------------------------------- | ---------------------------------------------------------------------------- |
+| What user/business outcome matters?         | Enqueued vs accepted vs settled vs published are different metrics           |
+| What should never happen?                   | Duplicate effect, tenant leak, unbounded charge, lost deadline               |
+| What are the major boundaries?              | API → application → DB/outbox → Temporal → provider → publication            |
+| What is normal volume/latency distribution? | One rare long task may be fine; a hot synchronous endpoint may not           |
+| What does a user see on delay/failure?      | Need an actionable status resource and reliable correlation                  |
+| What can the operator actually change?      | Alert without an action/runbook becomes noise                                |
+| Which data is private?                      | Traces, model prompts and player prose may carry secrets or personal content |
+| What does instrumentation cost?             | Storage, cardinality, network, runtime overhead and vendor spend             |
 
 **Outcome definitions must be stable:** "generation succeeded" might mean provider responded, semantic validation passed, or story publication committed. Choose separate named stages. This reduces incidents where dashboards are green while the game has not advanced.
 
 ## 2. Choose logs, metrics, traces and profiles for different jobs
 
-| Signal | Strongest use | Typical limitation |
-| --- | --- | --- |
-| Structured logs | Explain one event, state transition or categorized error | Expensive at high volume; search/correlation needed |
-| Metrics | Detect patterns, rates, queue depth, saturation and SLO drift | Aggregation hides individual causality |
-| Traces/spans | Follow causal path and latency across modules/dependencies | Missing spans and sampling can obscure rare events |
-| Profiles | CPU, heap, allocations and hot paths | Cannot by itself explain business correctness |
+| Signal               | Strongest use                                                    | Typical limitation                                                |
+| -------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Structured logs      | Explain one event, state transition or categorized error         | Expensive at high volume; search/correlation needed               |
+| Metrics              | Detect patterns, rates, queue depth, saturation and SLO drift    | Aggregation hides individual causality                            |
+| Traces/spans         | Follow causal path and latency across modules/dependencies       | Missing spans and sampling can obscure rare events                |
+| Profiles             | CPU, heap, allocations and hot paths                             | Cannot by itself explain business correctness                     |
 | Domain audit records | Durable evidence that a command/charge/receipt actually happened | Must be transactionally owned; telemetry pipeline isn't authority |
-| User-visible status | What the person can safely do next | May lag operational traces; needs proper public projection |
+| User-visible status  | What the person can safely do next                               | May lag operational traces; needs proper public projection        |
 
 **Metrics aren't logs with fewer fields.** High-cardinality per-operation IDs usually belong in traces/logs, not labels on a metric. A per-tenant metric may be useful only when the bounded tenant set and privacy costs justify it.
 
@@ -55,6 +55,7 @@ For a feature or component ask:
 ## 3. Track one business operation across boundaries
 
 A good correlation model distinguishes:
+
 - HTTP request ID: one transport attempt.
 - Authenticated owner/tenant identity: sensitive scope, not a public log label by default.
 - Stable business operation ID: intent may outlive any one request.
@@ -77,7 +78,7 @@ HTTP submit [request R1]
   → public snapshot [V9 or blocked]
 ```
 
-If an outbox notice repeats, two *delivery events* may share one *business operation*. Treating them as distinct accepted actions in logs causes false conclusions. Correlation helps identify duplicates; application-side durable constraints actually prevent wrong effects.
+If an outbox notice repeats, two _delivery events_ may share one _business operation_. Treating them as distinct accepted actions in logs causes false conclusions. Correlation helps identify duplicates; application-side durable constraints actually prevent wrong effects.
 
 **Trace propagation across async work:** preserve trace links or stable correlation through message metadata without turning trace context into business authority. A trace ID is not an idempotency key. Do not rely on in-memory correlation surviving process restart without persisted operation identity.
 
@@ -96,15 +97,15 @@ T_total = client/network + reverse proxy + app queue
 
 The critical path may contain parallel branches; their durations don't simply add. Inspect a representative trace and resource saturation before recommending a cache, worker pool, timeout increase or service split.
 
-| Symptom | Competing explanations | Discriminating observation |
-| --- | --- | --- |
-| High latency with low CPU | DB pool queue, remote I/O, lock wait, stalled worker | Pool wait + trace spans + DB locks |
-| Queue growing | Input exceeds service capacity, stuck consumer, retry storm | Arrival/completion rates, age of oldest item |
-| Sporadic timeout | Tail latency, DNS/TLS, proxy cutoff, retry amplification | Per-hop timings and transport errors |
-| High CPU with slow event loop | JSON serialization, synchronous algorithms, GC | Event-loop delay, CPU profile, heap |
-| High DB usage | N+1 queries, missing index, hot transaction, too many connections | Query plan, pool usage and lock timing |
-| Redis “helps” until incident | Stampede, stale repopulation, eviction, fallback surge | Miss rate by key family, origin demand, memory/eviction |
-| Provider costs spike | Increased attempts, context size, cache write pricing, incomplete reconciliation | Operation/attempt ledger, token classes, billing state |
+| Symptom                       | Competing explanations                                                           | Discriminating observation                              |
+| ----------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| High latency with low CPU     | DB pool queue, remote I/O, lock wait, stalled worker                             | Pool wait + trace spans + DB locks                      |
+| Queue growing                 | Input exceeds service capacity, stuck consumer, retry storm                      | Arrival/completion rates, age of oldest item            |
+| Sporadic timeout              | Tail latency, DNS/TLS, proxy cutoff, retry amplification                         | Per-hop timings and transport errors                    |
+| High CPU with slow event loop | JSON serialization, synchronous algorithms, GC                                   | Event-loop delay, CPU profile, heap                     |
+| High DB usage                 | N+1 queries, missing index, hot transaction, too many connections                | Query plan, pool usage and lock timing                  |
+| Redis “helps” until incident  | Stampede, stale repopulation, eviction, fallback surge                           | Miss rate by key family, origin demand, memory/eviction |
+| Provider costs spike          | Increased attempts, context size, cache write pricing, incomplete reconciliation | Operation/attempt ledger, token classes, billing state  |
 
 **Concurrency limits differ from rate limits:** a service may accept ten requests per second but stay saturated if each request lives for 60 seconds. Queueing theory matters: as utilization approaches capacity, latency tails often grow sharply. Load-shedding, admission, bulkheads and backlog policy may beat adding more retries.
 
@@ -165,14 +166,14 @@ One account experiences uncertain external billing; the dashboard shows a platfo
 
 ### Role outputs
 
-| Role | Useful deliverable |
-| --- | --- |
-| Product/architect | User-impactful reliability target and which operational complexity is justified |
-| Observability specialist | Trace/correlation boundary, logs/metrics design, cardinality/privacy budget |
-| Performance reviewer | Ranked bottleneck hypotheses and one discriminating measurement |
-| Security reviewer | Sensitive-data fields/retention and trust-boundary implications |
-| Test strategist | Fault injection/latency/incident reproduction matched to exact property |
-| Release reviewer | Deployment, rollback, migration, alert and recovery plan |
+| Role                     | Useful deliverable                                                              |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| Product/architect        | User-impactful reliability target and which operational complexity is justified |
+| Observability specialist | Trace/correlation boundary, logs/metrics design, cardinality/privacy budget     |
+| Performance reviewer     | Ranked bottleneck hypotheses and one discriminating measurement                 |
+| Security reviewer        | Sensitive-data fields/retention and trust-boundary implications                 |
+| Test strategist          | Fault injection/latency/incident reproduction matched to exact property         |
+| Release reviewer         | Deployment, rollback, migration, alert and recovery plan                        |
 
 **Primary references:** [OpenTelemetry conventions](https://opentelemetry.io/docs/concepts/semantic-conventions/), [OpenTelemetry documentation](https://opentelemetry.io/docs/). **Deeper study:** [Observability and production systems](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE440-production-reliability/SE440-L01-observability-understanding-production-systems.md), [Production data repair and audit](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE325-backends-in-the-wild/SE325-L04-production-data-repair-audit-and-lifecycle.md), [Distributed partial failures](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/CS/CS430-distributed-systems/CS430-L01-distributed-systems-and-partial-failure.md).
 

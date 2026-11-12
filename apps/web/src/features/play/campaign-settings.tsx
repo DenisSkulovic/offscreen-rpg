@@ -95,7 +95,9 @@ export function CampaignSettingsEditor({
       return;
     }
     baselineRevision.current = campaign.settings.revision;
-    reset(creativeToFormValues(campaign.settings.creative, getValues('presetName')));
+    reset(
+      creativeToFormValues(campaign.settings.creative, getValues('presetName')),
+    );
   }, [
     campaign.settings.revision,
     campaign.settings.creative,
@@ -106,7 +108,9 @@ export function CampaignSettingsEditor({
 
   function adoptServerSettings() {
     baselineRevision.current = campaign.settings.revision;
-    reset(creativeToFormValues(campaign.settings.creative, getValues('presetName')));
+    reset(
+      creativeToFormValues(campaign.settings.creative, getValues('presetName')),
+    );
     setPresetId(null);
     setLocalMessage('Loaded the latest saved settings.');
   }
@@ -250,7 +254,11 @@ export function CampaignSettingsEditor({
           </label>
           <label>
             Tone{' '}
-            <textarea maxLength={1200} aria-invalid={Boolean(errors.tone)} {...register('tone')} />
+            <textarea
+              maxLength={1200}
+              aria-invalid={Boolean(errors.tone)}
+              {...register('tone')}
+            />
           </label>
           <label>
             Emphasis{' '}

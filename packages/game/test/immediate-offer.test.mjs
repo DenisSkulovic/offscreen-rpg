@@ -529,7 +529,10 @@ test('generated finite plans pair declared fact transitions with exact effects',
     requireFactTransitionDeclarations: true,
   });
   assert.equal(missingResult.kind, 'rejected');
-  assert.match(missingResult.issues[0]?.message ?? '', /matching fact transition/);
+  assert.match(
+    missingResult.issues[0]?.message ?? '',
+    /matching fact transition/,
+  );
 
   const missingEffect = structuredClone(proposal);
   missingEffect.resolution.outcome.effects = [];

@@ -4377,7 +4377,8 @@ test(
             const draftId = randomUUID();
             await drafts.save(ownerId, draftId, {
               title: 'Funding isolation',
-              premise: 'A quiet offline opening for a provider accounting check.',
+              premise:
+                'A quiet offline opening for a provider accounting check.',
               storytellingDirection: '',
               storyteller: { id: 'absurd-action-comedy', revision: 1 },
               expectedRevision: 0,
@@ -4417,7 +4418,10 @@ test(
               'The fake provider must actually exceed its reservation',
             );
             const budget = createStorytellerBudget(database);
-            assert.equal((await budget.inspect(chargedAccountId)).stopped, true);
+            assert.equal(
+              (await budget.inspect(chargedAccountId)).stopped,
+              true,
+            );
             assert.equal(
               (await budget.inspect(unrelatedAccountId)).stopped,
               false,

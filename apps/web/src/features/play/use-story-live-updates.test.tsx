@@ -1,13 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { act, render, waitFor } from '@testing-library/react';
 import { useQuery } from '@tanstack/react-query';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
@@ -19,6 +12,15 @@ import {
   type StoryUpdateEventSource,
 } from '@/src/shared/api/story-update-stream';
 import { useStoryLiveUpdates } from './use-story-live-updates';
+
+function requireSource(): FakeEventSource {
+  const source = FakeEventSource.instances[0];
+  expect(source).toBeDefined();
+  if (!source) {
+    throw new Error('expected FakeEventSource instance');
+  }
+  return source;
+}
 
 class FakeEventSource implements StoryUpdateEventSource {
   static instances: FakeEventSource[] = [];
@@ -113,9 +115,7 @@ function LivePlayProbe({
 }
 
 function mountLive() {
-  setStoryUpdateEventSourceFactoryForTests(
-    (url) => new FakeEventSource(url),
-  );
+  setStoryUpdateEventSourceFactoryForTests((url) => new FakeEventSource(url));
   const pending = makeStorySnapshot({
     canRespond: false,
     title: 'Pending live',
@@ -160,8 +160,7 @@ function mountLive() {
 describe('useStoryLiveUpdates', () => {
   it('invalidates with one GET after a committed-view hint and uses 30s safety cadence', async () => {
     const view = mountLive();
-    const source = FakeEventSource.instances[0];
-    expect(source).toBeDefined();
+    const source = requireSource();
 
     await act(async () => {
       source.emitOpen();
@@ -205,7 +204,7 @@ describe('useStoryLiveUpdates', () => {
 
   it('does not invalidate from a foreign story hint and never POSTs (negative)', async () => {
     const view = mountLive();
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
     await act(async () => {
       source.emitOpen();
     });
@@ -231,7 +230,7 @@ describe('useStoryLiveUpdates', () => {
 
   it('falls back to 2s pending polling after stream error (negative)', async () => {
     const view = mountLive();
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
     await act(async () => {
       source.emitOpen();
     });
@@ -250,7 +249,7 @@ describe('useStoryLiveUpdates', () => {
 
   it('closes the EventSource on unmount', () => {
     const view = mountLive();
-    const source = FakeEventSource.instances[0];
+    const source = requireSource();
     view.unmount();
     expect(source.closed).toBe(true);
   });

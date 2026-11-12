@@ -14,25 +14,25 @@ A polished component can still present the wrong story, accept two incompatible 
 
 Classify every nontrivial value before deciding on Context, `useState`, a query library, an Effect or an API route.
 
-| Ask | Why it is diagnostic | Common wrong shortcut |
-| --- | --- | --- |
-| **Who is authoritative?** | Browser draft, URL, application DB, provider and worker differ | “It is in React state, so React owns it” |
-| **What is its identity?** | User, tenant, story, operation ID, route and version can all matter | A cache key containing only `"story"` |
-| **How long does it live?** | Render vs mount vs navigation vs authenticated session | A single global state store for everything |
-| **Who may update it?** | Local edit, backend mutation, another browser tab or worker | Any fetch callback calls `setState` |
-| **What invalidates it?** | Logout, story change, later revision, failed command, time | “It was just fetched, so it's still true” |
-| **Who consumes it?** | One component vs multiple screens vs server | Duplicate local mirrors with no synchronization contract |
+| Ask                        | Why it is diagnostic                                                | Common wrong shortcut                                    |
+| -------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Who is authoritative?**  | Browser draft, URL, application DB, provider and worker differ      | “It is in React state, so React owns it”                 |
+| **What is its identity?**  | User, tenant, story, operation ID, route and version can all matter | A cache key containing only `"story"`                    |
+| **How long does it live?** | Render vs mount vs navigation vs authenticated session              | A single global state store for everything               |
+| **Who may update it?**     | Local edit, backend mutation, another browser tab or worker         | Any fetch callback calls `setState`                      |
+| **What invalidates it?**   | Logout, story change, later revision, failed command, time          | “It was just fetched, so it's still true”                |
+| **Who consumes it?**       | One component vs multiple screens vs server                         | Duplicate local mirrors with no synchronization contract |
 
 An example inventory for this repo:
 
-| Value | Authority | Identity/lifetime | UI responsibility |
-| --- | --- | --- | --- |
-| Selected screen/tab | Local UI | Component/route | Render selection |
-| Story chosen by route | URL + server authorization | Authenticated story ID | Load the correct projection |
-| Published story snapshot | Application/database | Story ID and view/resolution version | Display truthful current state |
-| Prepared action | Application admission | Exact operation and story revision | Show accepted/pending, not settled |
-| Draft form | User editing | Draft ID, unsaved revision | Preserve local edits, explicitly commit |
-| Notification/worker status | Server state | Operation ID and version | Don't infer success from a spinner |
+| Value                      | Authority                  | Identity/lifetime                    | UI responsibility                       |
+| -------------------------- | -------------------------- | ------------------------------------ | --------------------------------------- |
+| Selected screen/tab        | Local UI                   | Component/route                      | Render selection                        |
+| Story chosen by route      | URL + server authorization | Authenticated story ID               | Load the correct projection             |
+| Published story snapshot   | Application/database       | Story ID and view/resolution version | Display truthful current state          |
+| Prepared action            | Application admission      | Exact operation and story revision   | Show accepted/pending, not settled      |
+| Draft form                 | User editing               | Draft ID, unsaved revision           | Preserve local edits, explicitly commit |
+| Notification/worker status | Server state               | Operation ID and version             | Don't infer success from a spinner      |
 
 **Architecture alternative:** Local state is good for short-lived interaction; query cache/framework loader is good for repeated server-state reads; URL is good for navigable filters; server remains authority for committed results. None of these automatically replaces the others.
 
@@ -44,19 +44,19 @@ An agent says “we'll use global context to share server data” without defini
 
 An Effect manages synchronization with an **external relationship** after render: subscriptions, DOM widgets and sometimes fetching. Its dependencies say which values affect the agreement; cleanup closes the previous agreement.
 
-| Operation | Usually belongs in | What goes wrong otherwise |
-| --- | --- | --- |
-| Derive visible total or filtered list | Render/memoized calculation | Effect creates redundant stale state and extra passes |
-| Submit player-selected command | Explicit event handler and server operation | Effect may rerun on remount and repeat an irreversible action |
-| Subscribe to story/status updates | Effect with cleanup and correct identity | Old event source survives a route or login change |
-| Reset a new entity's form | Deliberate identity/key or state transition | Old entity's values remain in the new form |
-| Fetch reusable server-state | Framework/query lifecycle or scoped Effect | DIY fetch duplicates request races, caching and retry policy |
+| Operation                             | Usually belongs in                          | What goes wrong otherwise                                     |
+| ------------------------------------- | ------------------------------------------- | ------------------------------------------------------------- |
+| Derive visible total or filtered list | Render/memoized calculation                 | Effect creates redundant stale state and extra passes         |
+| Submit player-selected command        | Explicit event handler and server operation | Effect may rerun on remount and repeat an irreversible action |
+| Subscribe to story/status updates     | Effect with cleanup and correct identity    | Old event source survives a route or login change             |
+| Reset a new entity's form             | Deliberate identity/key or state transition | Old entity's values remain in the new form                    |
+| Fetch reusable server-state           | Framework/query lifecycle or scoped Effect  | DIY fetch duplicates request races, caching and retry policy  |
 
 **Stale closure:** A timer callback that captured `count = 0` does not magically see later state. A functional updater is appropriate for increments based on prior state. For callbacks that need changing external values, reconsider the subscription's lifetime or a deliberate current-value mechanism.
 
 **Unstable dependencies:** A new options object on every render can restart a WebSocket Effect repeatedly. The fix is to stabilize/construct inputs at the correct boundary, not silence the dependency linter.
 
-**Strict Mode:** Development `setup → cleanup → setup` often reveals a missing cleanup. A `useRef` “only connect once” guard can hide the leak by skipping the re-setup after cleanup. The required property is a correctly synchronized external relationship after *any* mount sequence, not “console printed connect only once.”
+**Strict Mode:** Development `setup → cleanup → setup` often reveals a missing cleanup. A `useRef` “only connect once” guard can hide the leak by skipping the re-setup after cleanup. The required property is a correctly synchronized external relationship after _any_ mount sequence, not “console printed connect only once.”
 
 **Irreversible operations:** An Effect should not directly charge money or commit a player command merely because the component mounted. Use an intentional event/command and durable server idempotency. Even a perfectly cleaned-up Effect cannot undo an external payment.
 
@@ -83,7 +83,7 @@ The obvious fix is to abort A. That is useful, but **does not solve every proble
 
 **Failure D, cross-user contamination:** User 1 logs out, user 2 logs in, and the first user's response/cache remains visible. Cache ownership, auth-context partitioning and logout invalidation matter in addition to server authorization. **Client filtering is not an authorization control.**
 
-**Review question:** For every async result, *which entity/session/version made it legitimate and at what event does it become stale?* A correct dependency array is not an answer.
+**Review question:** For every async result, _which entity/session/version made it legitimate and at what event does it become stale?_ A correct dependency array is not an answer.
 
 ### A negative test that catches both A and B
 
@@ -106,7 +106,7 @@ Server-owned data can change while the component is doing nothing. A cached resu
 - **Waterfalls:** fetching data inside several nested component Effects can serialize queries unnecessarily. Check framework/server loaders and shared caches before writing manual orchestration.
 - **Privacy:** logout and user changes must invalidate/partition private client caches. The API must independently enforce access at every request.
 
-A locally managed Effect can be sufficient for one isolated read. A shared query cache becomes useful when readers, invalidations and navigation lifetimes grow. Choose by *correctness and observable cost*, not fashion.
+A locally managed Effect can be sufficient for one isolated read. A shared query cache becomes useful when readers, invalidations and navigation lifetimes grow. Choose by _correctness and observable cost_, not fashion.
 
 Deep study: [SE250-L03 State, data fetching and architecture](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE250-react-engineering/SE250-L03-state-data-fetching-and-real-application-architecture.md).
 
@@ -158,23 +158,24 @@ Project sources: [Web workspace map](../../apps/web/README.md), [player experien
 
 ## 7. Adversarial proof matrix
 
-| Scenario | Deliberate order or condition | What must not happen | Evidence level |
-| --- | --- | --- | --- |
-| Different entity, reversed responses | A pending → B selected → B resolves → A resolves | A overwrites B | Deterministic frontend test |
-| Transient identity mismatch | A is shown → switch to B before B loads | A data labeled as B | Render-state assertion |
-| Same entity, older version | v13 then late v12 | v12 replaces v13 | Snapshot merge test |
-| Session switch | user 1 pending → logout/login user 2 → old response | Cross-user data appears | Auth/cache integration |
-| Concurrent optimistic mutations | M1, M2 overlap; M2 succeeds; M1 fails | Failed M1 rollback erases M2 | Controlled mutation-order test |
-| Duplicate click/tabs | Two submissions for same intent | Double business effect | Server idempotency integration |
-| Strict Mode remount | Connect → cleanup → connect | Leaked subscription or permanently disconnected widget | Effect lifecycle test |
-| Accepted but not settled | Enqueue acknowledged, worker still pending | UI announces earned reward/final completion | UI state + server transition test |
-| Long prose and focus | Open error/blocked state on narrow viewport | Invisible recovery, lost keyboard focus | Browser/human acceptance |
+| Scenario                             | Deliberate order or condition                       | What must not happen                                   | Evidence level                    |
+| ------------------------------------ | --------------------------------------------------- | ------------------------------------------------------ | --------------------------------- |
+| Different entity, reversed responses | A pending → B selected → B resolves → A resolves    | A overwrites B                                         | Deterministic frontend test       |
+| Transient identity mismatch          | A is shown → switch to B before B loads             | A data labeled as B                                    | Render-state assertion            |
+| Same entity, older version           | v13 then late v12                                   | v12 replaces v13                                       | Snapshot merge test               |
+| Session switch                       | user 1 pending → logout/login user 2 → old response | Cross-user data appears                                | Auth/cache integration            |
+| Concurrent optimistic mutations      | M1, M2 overlap; M2 succeeds; M1 fails               | Failed M1 rollback erases M2                           | Controlled mutation-order test    |
+| Duplicate click/tabs                 | Two submissions for same intent                     | Double business effect                                 | Server idempotency integration    |
+| Strict Mode remount                  | Connect → cleanup → connect                         | Leaked subscription or permanently disconnected widget | Effect lifecycle test             |
+| Accepted but not settled             | Enqueue acknowledged, worker still pending          | UI announces earned reward/final completion            | UI state + server transition test |
+| Long prose and focus                 | Open error/blocked state on narrow viewport         | Invisible recovery, lost keyboard focus                | Browser/human acceptance          |
 
 **Role proof obligations:**
+
 - Product/UX designer: precisely distinguish accepted, pending, blocked, failed, uncertain and settled in player-visible language.
 - React architect: provide state authority/identity/lifetime inventory and at least one credible concurrency timeline.
 - Implementer: preserve approved semantics, do not invent a second version policy, run narrowly relevant checks.
-- Frontend reviewer: find an *independent* stale/identity/rollback counterexample, not “hooks look good.”
+- Frontend reviewer: find an _independent_ stale/identity/rollback counterexample, not “hooks look good.”
 - Test strategist: select 2–4 scenarios that would fail under a plausible wrong implementation.
 - Visual reviewer: actual browser evidence; do not certify usability from source.
 

@@ -133,7 +133,8 @@ export const calendarAndLiveEvaluationCases: readonly QaJourneyCase[] = [
         importance: 'major',
         preconditions: ['Campaign speed is editable.'],
         action: 'Change pace and read the same settled gameSecond.',
-        observableExpectation: 'The world date at that gameSecond is unchanged.',
+        observableExpectation:
+          'The world date at that gameSecond is unchanged.',
         authoritativeExpectation:
           'The new settings revision preserves the captured definition and epoch exactly.',
       }),

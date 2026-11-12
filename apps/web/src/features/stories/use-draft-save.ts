@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { draftSchema, type Draft, type DraftContent } from '@offscreen/contracts/drafts';
+import {
+  draftSchema,
+  type Draft,
+  type DraftContent,
+} from '@offscreen/contracts/drafts';
 import { queryKeys } from '@/src/shared/api/query-keys';
 
 export type FrozenDraftSave = {

@@ -70,7 +70,9 @@ function emptyManifest(campaignId: string): DocumentManifest {
 function assertUniqueChanges(
   changes: z.infer<typeof admitDocumentChangesSchema>['changes'],
 ) {
-  if (new Set(changes.map((change) => change.documentId)).size !== changes.length)
+  if (
+    new Set(changes.map((change) => change.documentId)).size !== changes.length
+  )
     throw new StoryError('invalid', 'duplicate_document');
   if (new Set(changes.map((change) => change.path)).size !== changes.length)
     throw new StoryError('invalid', 'duplicate_path');
@@ -108,7 +110,11 @@ export function createCampaignDocuments(
       .parse(document.data).worlds;
   }
 
-  async function readPinnedWorld(ownerId: string, storyId: string, mount: string) {
+  async function readPinnedWorld(
+    ownerId: string,
+    storyId: string,
+    mount: string,
+  ) {
     const [owned] = await database.db
       .select({ rootHash: story.documentRootHash })
       .from(story)
@@ -164,7 +170,9 @@ export function createCampaignDocuments(
     let previous = current.previousRootHash;
     while (previous !== null) {
       if (manifests.length >= 256 || seen.has(previous))
-        throw new Error('Document manifest history is invalid or exceeds its bound');
+        throw new Error(
+          'Document manifest history is invalid or exceeds its bound',
+        );
       seen.add(previous);
       const manifest = await storage.readManifest(previous);
       if (
@@ -186,7 +194,12 @@ export function createCampaignDocuments(
       prefix?: string;
       limit?: number;
     }) {
-      const limit = z.number().int().min(1).max(100).parse(args.limit ?? 50);
+      const limit = z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .parse(args.limit ?? 50);
       const { reference, manifest } = await readPinnedWorld(
         args.ownerId,
         args.storyId,
@@ -232,7 +245,8 @@ export function createCampaignDocuments(
         args.mount,
       );
       const entry = manifest.entries.find(
-        (candidate) => candidate.documentId === parseStoryIdentifier(args.documentId),
+        (candidate) =>
+          candidate.documentId === parseStoryIdentifier(args.documentId),
       );
       if (!entry) throw new StoryError('not_found');
       const document = await storage.readDocument(entry.objectHash);
@@ -314,22 +328,25 @@ export function createCampaignDocuments(
       return {
         ownership: 'sql-projection' as const,
         completeThroughSequence: rows.at(-1)?.sequence ?? 0,
-        passages: await Promise.all(rows.map(async (row) => {
-          const content = row.contentDocumentHash
-            ? passageContentSchema.parse(
-                (await storage.readSourcePassage(row.contentDocumentHash)).content,
-              )
-            : passageContentSchema.parse(row.content);
-          return {
-            passageId: row.passageId,
-            sequence: row.sequence,
-            title: content.title,
-            markdown: `# ${content.title}\n\n${content.paragraphs.join('\n\n')}\n`,
-            response: row.response,
-            sourceGenerationId: row.sourceGenerationId,
-            sourceGenerationPart: row.sourceGenerationPart,
-          };
-        })),
+        passages: await Promise.all(
+          rows.map(async (row) => {
+            const content = row.contentDocumentHash
+              ? passageContentSchema.parse(
+                  (await storage.readSourcePassage(row.contentDocumentHash))
+                    .content,
+                )
+              : passageContentSchema.parse(row.content);
+            return {
+              passageId: row.passageId,
+              sequence: row.sequence,
+              title: content.title,
+              markdown: `# ${content.title}\n\n${content.paragraphs.join('\n\n')}\n`,
+              response: row.response,
+              sourceGenerationId: row.sourceGenerationId,
+              sourceGenerationPart: row.sourceGenerationPart,
+            };
+          }),
+        ),
       };
     },
 
@@ -367,7 +384,11 @@ export function createCampaignDocuments(
     }) {
       const documentId = parseStoryIdentifier(args.documentId);
       const { rootHash, manifest } = await this.readRoot(args);
-      const history = await readManifestHistory(args.storyId, rootHash, manifest);
+      const history = await readManifestHistory(
+        args.storyId,
+        rootHash,
+        manifest,
+      );
       const entry = history
         .flatMap((candidate) => candidate.entries)
         .find(
@@ -444,7 +465,8 @@ export function createCampaignDocuments(
         const previous = entriesByDocument.get(change.documentId);
         if (
           (previous === undefined && change.expectedRevision !== null) ||
-          (previous !== undefined && previous.revision !== change.expectedRevision)
+          (previous !== undefined &&
+            previous.revision !== change.expectedRevision)
         ) {
           throw new StoryError('conflict', 'document_revision');
         }
@@ -481,7 +503,10 @@ export function createCampaignDocuments(
       const nextEntries = [...entriesByDocument.values()].sort((left, right) =>
         left.path.localeCompare(right.path),
       );
-      if (new Set(nextEntries.map((entry) => entry.path)).size !== nextEntries.length)
+      if (
+        new Set(nextEntries.map((entry) => entry.path)).size !==
+        nextEntries.length
+      )
         throw new StoryError('conflict', 'document_path');
       const history = await readManifestHistory(
         storyId,
@@ -489,9 +514,10 @@ export function createCampaignDocuments(
         current.manifest,
       );
       const availableSources = new Set(
-        [...history.flatMap((manifest) => manifest.entries), ...nextEntries].map(
-          (entry) => `${entry.documentId}@${entry.revision}`,
-        ),
+        [
+          ...history.flatMap((manifest) => manifest.entries),
+          ...nextEntries,
+        ].map((entry) => `${entry.documentId}@${entry.revision}`),
       );
       const requireSources = assertManifestReferences(availableSources);
       for (const { document } of changedDocuments)

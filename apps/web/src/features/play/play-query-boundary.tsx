@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  Component,
-  type ErrorInfo,
-  type ReactNode,
-} from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import {
   QueryErrorResetBoundary,
   useQueryErrorResetBoundary,
@@ -22,13 +18,13 @@ type BoundaryState = {
 };
 
 class PlayReactErrorBoundary extends Component<BoundaryProps, BoundaryState> {
-  state: BoundaryState = { error: null };
+  override state: BoundaryState = { error: null };
 
   static getDerivedStateFromError(error: unknown): BoundaryState {
     return { error };
   }
 
-  componentDidCatch(error: unknown, info: ErrorInfo) {
+  override componentDidCatch(error: unknown, info: ErrorInfo) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('Play query boundary', error, info.componentStack);
     }
@@ -39,7 +35,7 @@ class PlayReactErrorBoundary extends Component<BoundaryProps, BoundaryState> {
     this.setState({ error: null });
   };
 
-  render() {
+  override render() {
     if (this.state.error) {
       return (
         <PlayQueryErrorFallback

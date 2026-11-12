@@ -78,9 +78,7 @@ export function PlayStatePanel({
   );
 }
 
-export function playStatusForResolution(
-  story: StorySnapshot,
-): string | null {
+export function playStatusForResolution(story: StorySnapshot): string | null {
   if (!story.resolution) {
     return null;
   }
@@ -93,7 +91,10 @@ export function playStatusForResolution(
   if (story.resolution.state === 'blocked') {
     return 'The saved continuation could not be published. Your current scene is unchanged.';
   }
-  if (story.resolution.state === 'pending' || story.resolution.state === 'running') {
+  if (
+    story.resolution.state === 'pending' ||
+    story.resolution.state === 'running'
+  ) {
     return 'The storyteller is resolving this intention.';
   }
   return null;

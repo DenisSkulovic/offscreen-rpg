@@ -33,7 +33,11 @@ const retrievalOracleCaseSchema = z.strictObject({
   budget: z.strictObject({
     maxCandidates: z.number().int().min(1).max(8),
     maxReads: z.number().int().min(0).max(6),
-    maxBytes: z.number().int().min(1024).max(48 * 1024),
+    maxBytes: z
+      .number()
+      .int()
+      .min(1024)
+      .max(48 * 1024),
     maxRounds: z.number().int().min(0).max(3),
   }),
 });
@@ -109,7 +113,9 @@ export const retrievalOracleCases = z
   ]);
 
 export function retrievalOracleCase(id: string): RetrievalOracleCase {
-  const selected = retrievalOracleCases.find((candidate) => candidate.id === id);
+  const selected = retrievalOracleCases.find(
+    (candidate) => candidate.id === id,
+  );
   if (!selected) throw new Error(`Unknown retrieval oracle case: ${id}`);
   return selected;
 }

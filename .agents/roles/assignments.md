@@ -41,7 +41,7 @@ A "PASS" means **this role's acceptance**, not universal system correctness or o
 
 ## Routing change / bounce-back
 
-If implementation uncovers a product contradiction, it returns a *decision request* to the product owner/architect without silently changing the behavior. If a reviewer finds a bug, the smallest correction returns to the **owning implementer** with a concrete testable counterexample. If test execution reveals environmental failure, it returns the evidence to the **test runner/environment owner**, not automatically to the product designer.
+If implementation uncovers a product contradiction, it returns a _decision request_ to the product owner/architect without silently changing the behavior. If a reviewer finds a bug, the smallest correction returns to the **owning implementer** with a concrete testable counterexample. If test execution reveals environmental failure, it returns the evidence to the **test runner/environment owner**, not automatically to the product designer.
 
 One review and one correction are the default economical loop. A recurring dispute is summarized for the human: two competing models of the situation, their discriminating evidence, and one recommended resolution. Do not pay for a fresh agent simply to referee two poorly specified opinions.
 

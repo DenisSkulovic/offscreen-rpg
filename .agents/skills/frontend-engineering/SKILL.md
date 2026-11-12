@@ -5,7 +5,7 @@ description: Review or design React 19 and Next.js App Router implementation dec
 
 # React / Next.js frontend engineering
 
-**Trigger:** A real `apps/web` feature or high-risk React/Next.js diff, especially scene state, saved choice, pending narration, historical data, forms, accessibility or rendering performance. Use `player-experience-design` separately to settle *what the player should experience*. This skill is about building that experience correctly.
+**Trigger:** A real `apps/web` feature or high-risk React/Next.js diff, especially scene state, saved choice, pending narration, historical data, forms, accessibility or rendering performance. Use `player-experience-design` separately to settle _what the player should experience_. This skill is about building that experience correctly.
 
 **For an area-wide React/Next.js renewal:** start from the agreed [target-driven renewal process](../../rules/target-driven-renewal.md), define the intended render/state/data/auth/accessibility/testing architecture before scoring existing components, and audit source against that target. Keep visual art direction as a separate but compatible design track. For a narrow bug, use the current technical contract directly.
 
@@ -22,7 +22,7 @@ For a consequential state/fetch/async design or review, read the relevant sectio
 ## Diagnostic lenses
 
 - **Client vs server:** Keep secrets, owner checks and data access server-side. A `'use client'` module pulls its imports into the client graph. Browser state is presentation, not authoritative campaign state.
-- **State:** Derive display-only values in render rather than synchronizing redundant state with Effects. Respect state snapshots and immutable updates; use stable keys to preserve/reset the *intended* component identity.
+- **State:** Derive display-only values in render rather than synchronizing redundant state with Effects. Respect state snapshots and immutable updates; use stable keys to preserve/reset the _intended_ component identity.
 - **Async correctness:** A late response, duplicate click, route change or stale revision must not overwrite a newer authoritative snapshot. Prefer the existing `story-transport` and server revision fences. Cleanup subscriptions/listeners; use cancellation or result identity checks for concurrent fetches.
 - **UI states:** Model unavailable, loading, pending, blocked, failed, uncertain and completed distinctly. Do not fake success while generation is pending, make refresh re-dispatch a paid call, or enable a choice that server policy has held. Show actionable recovery.
 - **Interaction:** Native labels, controls, keyboard, focus visibility/restoration, scroll, touch target and reduced motion. Test long narrative paragraphs, narrow phone widths, empty/large inventories and rapidly changing statuses.

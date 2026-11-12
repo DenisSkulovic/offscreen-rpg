@@ -18,7 +18,9 @@ describe('RouteRecoveryPanel', () => {
 
     const retry = screen.getByRole('button', { name: 'Try again' });
     expect(retry).toHaveFocus();
-    expect(screen.getByRole('alert').textContent).toMatch(/does not send a paid command/i);
+    expect(screen.getByRole('alert').textContent).toMatch(
+      /does not send a paid command/i,
+    );
     expect(screen.queryByText(/not exist/i)).not.toBeInTheDocument();
 
     await user.click(retry);
@@ -31,6 +33,8 @@ describe('RouteRecoveryPanel', () => {
   it('offers sign-in for expired sessions without a retry mutation control (negative)', async () => {
     render(<RouteRecoveryPanel kind="unauthorized" resource="story" />);
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Try again' }),
+    ).not.toBeInTheDocument();
   });
 });

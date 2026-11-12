@@ -38,12 +38,7 @@ export function playStorySnapshotQueryOptions(
   options: PlayStorySnapshotQueryOptionsArgs = {},
 ) {
   const liveStreamHealthy = options.liveStreamHealthy === true;
-  return queryOptions<
-    StorySnapshot,
-    Error,
-    StorySnapshot,
-    StorySnapshotKey
-  >({
+  return queryOptions<StorySnapshot, Error, StorySnapshot, StorySnapshotKey>({
     queryKey: queryKeys.storySnapshot(viewerId, storyId),
     staleTime: STALE.storySnapshotMs,
     refetchOnWindowFocus: true,

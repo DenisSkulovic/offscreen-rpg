@@ -167,6 +167,8 @@ async function checkStoryUpdates(args: Args) {
   );
 }
 
-registerStoryConcern(import.meta.url, 'story SSE committed-view hints', (args) =>
-  checkStoryUpdates(args),
+registerStoryConcern(
+  import.meta.url,
+  'story SSE committed-view hints',
+  (args) => checkStoryUpdates(args),
 );

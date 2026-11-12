@@ -14,15 +14,15 @@ The optimal delivery model depends on actual user population, uptime expectation
 
 ## 1. Distinguish code, build, deploy and release
 
-| Stage | What happened | What has NOT necessarily happened |
-| --- | --- | --- |
-| Commit | Source was recorded at a revision | It was built, verified or deployed |
-| Build | Artifacts were produced | They match deployment environment or passed acceptance |
-| Test | Specific checks were executed | Real user journey and operational behavior were proven |
-| Publish | An immutable artifact was stored | It was deployed or activated |
-| Deploy | Processes/config now run an artifact | Feature is exposed, DB migration succeeded, user got correct result |
-| Release | Users have access to a capability or changed behavior | It is universally healthy or accepted |
-| Validate | Real status and user/business outcomes checked | Every rare bug is impossible |
+| Stage    | What happened                                         | What has NOT necessarily happened                                   |
+| -------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| Commit   | Source was recorded at a revision                     | It was built, verified or deployed                                  |
+| Build    | Artifacts were produced                               | They match deployment environment or passed acceptance              |
+| Test     | Specific checks were executed                         | Real user journey and operational behavior were proven              |
+| Publish  | An immutable artifact was stored                      | It was deployed or activated                                        |
+| Deploy   | Processes/config now run an artifact                  | Feature is exposed, DB migration succeeded, user got correct result |
+| Release  | Users have access to a capability or changed behavior | It is universally healthy or accepted                               |
+| Validate | Real status and user/business outcomes checked        | Every rare bug is impossible                                        |
 
 A **Git tag, image tag and container digest** are different identifiers. A mutable tag (e.g. `latest`) does not guarantee immutable bytes. A reproducible build is valuable; an artifact digest proves the identity of the output actually promoted. A deployment manifest should capture source SHA, image digest, config version and schema compatibility when relevant.
 
@@ -30,20 +30,20 @@ A **Git tag, image tag and container digest** are different identifiers. A mutab
 
 ## 2. Choose a delivery model that fits the product
 
-| Strategy | Appropriate conditions | Cost/selection boundary |
-| --- | --- | --- |
-| Manual local build/run | One developer, pre-POC, low-stakes experimentation | Manual steps and environment differences; cannot establish production safety |
-| Simple hosted full deploy | Small service, tolerable short downtime, straightforward rollback | Limited partial rollout and mixed-version control |
-| Rolling update | Need availability during app process replacement | Old/new versions overlap; readiness, connection draining and compatibility essential |
-| Blue/green | Two environments can run; quick traffic switch and reversible app release valuable | Double capacity, shared DB/state compatibility, switching complexity |
-| Canary/progressive exposure | Large enough traffic and risk to measure before all users see change | Routing and observation infrastructure; statistical power and rollback policy |
-| Feature flag | Need to separate deployment from exposing functionality | Flag lifecycle, combinatorial states and hidden legacy paths |
-| Trunk-based delivery | Frequent small integration, straightforward code coordination | Requires reliable review/verification and temporary compatibility choices |
-| Release branch/train | Coordinated versions, external consumers or deliberate schedule | Long-lived divergence, cherry-pick/hotfix complexity |
-| GitOps | Desired deployed configuration is reconciled from Git | Drift/incident override rules, permissions, controller complexity |
-| Kubernetes/Helm | Numerous services/replicas or platform needs justify orchestration | Substantial cluster/networking/storage/ops costs |
+| Strategy                    | Appropriate conditions                                                             | Cost/selection boundary                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Manual local build/run      | One developer, pre-POC, low-stakes experimentation                                 | Manual steps and environment differences; cannot establish production safety         |
+| Simple hosted full deploy   | Small service, tolerable short downtime, straightforward rollback                  | Limited partial rollout and mixed-version control                                    |
+| Rolling update              | Need availability during app process replacement                                   | Old/new versions overlap; readiness, connection draining and compatibility essential |
+| Blue/green                  | Two environments can run; quick traffic switch and reversible app release valuable | Double capacity, shared DB/state compatibility, switching complexity                 |
+| Canary/progressive exposure | Large enough traffic and risk to measure before all users see change               | Routing and observation infrastructure; statistical power and rollback policy        |
+| Feature flag                | Need to separate deployment from exposing functionality                            | Flag lifecycle, combinatorial states and hidden legacy paths                         |
+| Trunk-based delivery        | Frequent small integration, straightforward code coordination                      | Requires reliable review/verification and temporary compatibility choices            |
+| Release branch/train        | Coordinated versions, external consumers or deliberate schedule                    | Long-lived divergence, cherry-pick/hotfix complexity                                 |
+| GitOps                      | Desired deployed configuration is reconciled from Git                              | Drift/incident override rules, permissions, controller complexity                    |
+| Kubernetes/Helm             | Numerous services/replicas or platform needs justify orchestration                 | Substantial cluster/networking/storage/ops costs                                     |
 
-**Do not prescribe Kubernetes as proof of seriousness.** A pre-POC monorepo may be better served by Docker Compose and a small hosted environment. An AI coding agent should be able to explain what reliability or scaling need justifies each extra moving part, and the *smaller valid alternative*.
+**Do not prescribe Kubernetes as proof of seriousness.** A pre-POC monorepo may be better served by Docker Compose and a small hosted environment. An AI coding agent should be able to explain what reliability or scaling need justifies each extra moving part, and the _smaller valid alternative_.
 
 For a future hosted Offscreen RPG, [delivery and validation](../../docs/technical/delivery-and-validation.md) defines current intended directions. This manual doesn't authorize changing that architecture.
 
@@ -74,21 +74,21 @@ Some code checks should run independently so a formatting failure doesn't concea
 
 The same binary can behave differently under two feature flags, queue names, database URLs, trust-proxy settings or provider routes. Capture environment **schema and version** while keeping values/private credentials out of Git. Validate required config before accepting traffic; do not log secrets for convenience.
 
-A rollback to old code with *new* config can be incompatible. Treat config updates as their own change with owner, validation and recovery. A workstation's environment working once is not reproducibility.
+A rollback to old code with _new_ config can be incompatible. Treat config updates as their own change with owner, validation and recovery. A workstation's environment working once is not reproducibility.
 
 ## 4. Progressive rollout and mixed-version compatibility
 
 A rolling deployment may temporarily run app versions A and B against the same DB/cache/queue. Therefore the design must specify **what each version may read/write** while both exist.
 
-| Boundary | Mixed-version concern | Typical design direction |
-| --- | --- | --- |
-| HTTP API | New clients send unknown fields, old clients omit fields | Additive-compatible change and explicit capability/version negotiation |
-| Database | New writer populates field old reader doesn't understand | Expand-migrate-contract, compatible reads, delayed destructive cleanup |
-| Event/queue | Old worker sees new event shape or vice versa | Versioned event/command schema, tolerate unknown optional fields, staged consumers |
-| Durable workflow | Existing executions may replay old deterministic code | Workflow-version compatibility and controlled activity behavior |
-| Cache | Serialized value format changed | Key/version namespace or backward decoding, safe invalidation |
-| Browser | Old tab stays open across backend update | Clear error/refresh contract, stable client compatibility window |
-| Feature flag | New behavior enabled before supporting schema/worker available | Explicit dependencies and rollout gate |
+| Boundary         | Mixed-version concern                                          | Typical design direction                                                           |
+| ---------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| HTTP API         | New clients send unknown fields, old clients omit fields       | Additive-compatible change and explicit capability/version negotiation             |
+| Database         | New writer populates field old reader doesn't understand       | Expand-migrate-contract, compatible reads, delayed destructive cleanup             |
+| Event/queue      | Old worker sees new event shape or vice versa                  | Versioned event/command schema, tolerate unknown optional fields, staged consumers |
+| Durable workflow | Existing executions may replay old deterministic code          | Workflow-version compatibility and controlled activity behavior                    |
+| Cache            | Serialized value format changed                                | Key/version namespace or backward decoding, safe invalidation                      |
+| Browser          | Old tab stays open across backend update                       | Clear error/refresh contract, stable client compatibility window                   |
+| Feature flag     | New behavior enabled before supporting schema/worker available | Explicit dependencies and rollout gate                                             |
 
 **Readiness is not acceptance.** A ready process may connect to DB yet return an incorrect business result. A healthy rollout metric is evidence of server/process operation; user-level correctness needs actual journey/semantic signals.
 
@@ -116,18 +116,18 @@ Suppose a release swaps the code after an expensive model request was dispatched
 
 Reverting an application image is often easy. Reverting **state** is much harder and may be destructive.
 
-| Change | Can simply roll back binary? | What else must be considered? |
-| --- | --- | --- |
-| Pure presentation patch | Often yes | Browser cache/bundles, user-visible layout and active sessions |
-| Additive API field | Usually, if old clients still work | New clients depending on it |
-| New DB column | Old app may work with expanded schema | New data writes and backfill semantics |
-| Column renamed/dropped | Often no | Old app compatibility lost; forward repair/migration needed |
-| New event/workflow version | Depends on queued/in-flight events | Old consumer compatibility and replay |
-| Provider operation changed | No guarantee | Already-dispatched external effects, reconciliation, charge |
-| New feature flag | Disable can stop new exposure | Already-created durable state may persist |
-| Secrets/config rotation | Binary rollback may be irrelevant | Old credentials/revocation and config versions |
+| Change                     | Can simply roll back binary?          | What else must be considered?                                  |
+| -------------------------- | ------------------------------------- | -------------------------------------------------------------- |
+| Pure presentation patch    | Often yes                             | Browser cache/bundles, user-visible layout and active sessions |
+| Additive API field         | Usually, if old clients still work    | New clients depending on it                                    |
+| New DB column              | Old app may work with expanded schema | New data writes and backfill semantics                         |
+| Column renamed/dropped     | Often no                              | Old app compatibility lost; forward repair/migration needed    |
+| New event/workflow version | Depends on queued/in-flight events    | Old consumer compatibility and replay                          |
+| Provider operation changed | No guarantee                          | Already-dispatched external effects, reconciliation, charge    |
+| New feature flag           | Disable can stop new exposure         | Already-created durable state may persist                      |
+| Secrets/config rotation    | Binary rollback may be irrelevant     | Old credentials/revocation and config versions                 |
 
-**Rollback is not time travel.** Restoring a DB backup can erase legitimate new commands. A safe response may be *roll forward*, isolate one affected capability, keep expanded schema, disable new writes, or migrate data. The selected remedy must preserve the business invariants and user state.
+**Rollback is not time travel.** Restoring a DB backup can erase legitimate new commands. A safe response may be _roll forward_, isolate one affected capability, keep expanded schema, disable new writes, or migrate data. The selected remedy must preserve the business invariants and user state.
 
 ### Release failure taxonomy
 
@@ -147,19 +147,20 @@ Each category needs a different investigation owner and corrective action. "Roll
 
 For a consequential release, the responsible role should produce:
 
-| Question | Required evidence |
-| --- | --- |
-| What exactly changes? | Source, artifact digest, config/schema/feature exposure |
-| What remains compatible? | Active browser sessions, old app/worker and persisted data |
+| Question                       | Required evidence                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| What exactly changes?          | Source, artifact digest, config/schema/feature exposure                                        |
+| What remains compatible?       | Active browser sessions, old app/worker and persisted data                                     |
 | What checks are proportionate? | Focused build/tests, specific integration/business acceptance, security/privacy where relevant |
-| How is it deployed? | Capacity, readiness/drain, traffic shift and operator permission |
-| How do we detect harm? | Actual user/business metric, tail latency/errors, durable attempt ledger |
-| When do we stop or roll back? | Concrete abort criteria and action owner |
-| What cannot be rolled back? | DB writes/migration, external side effects, queued work |
-| What is recovery? | Artifact rollback vs flag disable vs roll forward vs reconciliation |
-| What is the cost? | Hosted build minutes, parallel capacity, human intervention, operational overhead |
+| How is it deployed?            | Capacity, readiness/drain, traffic shift and operator permission                               |
+| How do we detect harm?         | Actual user/business metric, tail latency/errors, durable attempt ledger                       |
+| When do we stop or roll back?  | Concrete abort criteria and action owner                                                       |
+| What cannot be rolled back?    | DB writes/migration, external side effects, queued work                                        |
+| What is recovery?              | Artifact rollback vs flag disable vs roll forward vs reconciliation                            |
+| What is the cost?              | Hosted build minutes, parallel capacity, human intervention, operational overhead              |
 
 **Three discriminating scenarios:**
+
 1. **New app/old worker:** new API enqueues an event with a new mandatory property before all workers understand it. Would the rollout prevent or safely recover the poison message?
 2. **Rollback after migration:** new writer stored data in an expanded representation; old app is redeployed. Does it still read/operate correctly, or has an earlier destructive contraction removed its assumptions?
 3. **Process shutdown after dispatch:** a provider attempt is uncertain as worker exits. Can new worker reconcile without paying twice or publishing stale output?

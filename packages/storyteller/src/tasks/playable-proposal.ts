@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import { passageContentSchema } from '@offscreen/contracts/stories';
 
-const meaningfulText = (minimum: number, maximum: number, description: string) =>
-  z.string().min(minimum).max(maximum).regex(/\S/).describe(description);
+const meaningfulText = (
+  minimum: number,
+  maximum: number,
+  description: string,
+) => z.string().min(minimum).max(maximum).regex(/\S/).describe(description);
 const choice = z.strictObject({
   id: z
     .string()

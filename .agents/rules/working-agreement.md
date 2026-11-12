@@ -4,7 +4,7 @@ Root `AGENTS.md` owns minimal global boundaries. Read this agreement for a signi
 
 ## Authority and design order
 
-1. **Product specification** defines player/developer outcomes and their observable acceptance. Start with `docs/vision.md`, `docs/concepts.md`, then the *affected* product owner via `docs/README.md`.
+1. **Product specification** defines player/developer outcomes and their observable acceptance. Start with `docs/vision.md`, `docs/concepts.md`, then the _affected_ product owner via `docs/README.md`.
 2. **Technical specification** defines ownership, transitions, failure/retry semantics, data contracts and cost limits. Update the affected authoritative topic rather than cloning its explanation in a plan.
 3. **Code** implements the contracts; tests, traces and play are evidence of behavior. An implemented alternative is not automatically the accepted design.
 
@@ -15,7 +15,7 @@ For new/changed behavior: update product intent, then technical contract, then c
 ## Invariants not to optimize away
 
 - Engine is world-independent and creatively neutral. The selected profile/world determines tone, pace and fiction. Game/application logic owns mechanics, fictional time, rights, persistence, model budget and publication.
-- A *Storyteller turn*, *scene*, *passage*, *model round* and *memory segment* are different concepts. Use `docs/concepts.md`; no chapters.
+- A _Storyteller turn_, _scene_, _passage_, _model round_ and _memory segment_ are different concepts. Use `docs/concepts.md`; no chapters.
 - Narration, offers and model-generated changes are proposals until validated and published against the authoritative state. Do not convert fictional prose into mechanical effects without admission.
 - Idempotency, clock advancement, transaction ordering, durable outbox/Temporal execution, document-root commits, budget reservations and ambiguous provider failure are correctness boundaries. Never weaken them for convenience.
 - A saved fact is not proof that retrieval selected it; selection is not proof it survived request packing; generation is not publication. Trace the complete path when diagnosing continuity.

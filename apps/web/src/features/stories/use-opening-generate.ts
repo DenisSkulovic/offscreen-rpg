@@ -64,7 +64,8 @@ export function useOpeningGenerate(viewerId: string, draftId: string) {
     mutationKey: ['viewer', viewerId, 'draft', draftId, 'opening-generate'],
     networkMode: 'always',
     retry: 0,
-    mutationFn: (frozen: FrozenOpeningGenerate) => generateOpeningFrozen(frozen),
+    mutationFn: (frozen: FrozenOpeningGenerate) =>
+      generateOpeningFrozen(frozen),
     onSuccess: (result, frozen) => {
       if (result.kind === 'accepted') {
         frozenRef.current = null;

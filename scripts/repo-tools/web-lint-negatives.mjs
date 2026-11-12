@@ -2,7 +2,10 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const root = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..',
+);
 const fixtures = [
   'apps/web/src/test/lint-fixtures/forbidden-server-import.ts',
   'apps/web/src/test/lint-fixtures/unstable-query-key.tsx',

@@ -23,7 +23,8 @@ export default async function NewDraft({
   const existingStatus = classifyNestStatus(existing.status);
   if (existingStatus.kind === 'success') redirect(`/stories/${parsed.data}`);
   if (existingStatus.kind === 'unauthorized') redirect('/sign-in');
-  if (existingStatus.kind !== 'not_found') applyNestRoutePolicy(existing.status);
+  if (existingStatus.kind !== 'not_found')
+    applyNestRoutePolicy(existing.status);
   const catalogue = await readNestJson(
     viewer,
     `/api/drafts/${parsed.data}/openings/catalogue`,

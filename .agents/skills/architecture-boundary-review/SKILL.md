@@ -13,19 +13,19 @@ For a nontrivial change, review the needed section in [architecture decision spa
 
 ## Select the contract and follow one vertical route
 
-1. State the player/developer problem and acceptance in two sentences. Read only the affected product page from `docs/README.md`, technical owner from `docs/technical/`, and actual source entry from `docs/engineering/code-navigation.md`. Architecture design describes *intended* components; package manifests/exports and executed code establish *present* wiring.
+1. State the player/developer problem and acceptance in two sentences. Read only the affected product page from `docs/README.md`, technical owner from `docs/technical/`, and actual source entry from `docs/engineering/code-navigation.md`. Architecture design describes _intended_ components; package manifests/exports and executed code establish _present_ wiring.
 2. Trace one real input to authoritative operation, mutation, publication/public projection and the relevant duplicate/stale/failure path. Record source **paths and symbols**, not 2,000 lines of copied code. Search filenames/symbols first. One concrete trace beats multiple general architecture essays.
 3. Check these actual boundaries before inventing new abstractions:
 
-| Owner | Must not become |
-| --- | --- |
-| `apps/api`, `apps/worker` | A second game resolver, transaction policy or state writer |
-| `packages/application` | An opaque catch-all; operations own admission, SQL/root fences and atomic use cases |
-| `packages/game` | A network/persistence adapter, LLM decision maker or world-specific plot engine |
-| `packages/storyteller` | The authority for dice, effects, committed time or published facts |
-| `packages/documents` | A second live command ledger; immutable bodies/root manifests are committed under application fences |
-| `packages/workflows` | Business-state truth independent of application/database rechecks |
-| `apps/web` | A local simulation of authoritative mechanics inferred from presentation |
+| Owner                     | Must not become                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `apps/api`, `apps/worker` | A second game resolver, transaction policy or state writer                                           |
+| `packages/application`    | An opaque catch-all; operations own admission, SQL/root fences and atomic use cases                  |
+| `packages/game`           | A network/persistence adapter, LLM decision maker or world-specific plot engine                      |
+| `packages/storyteller`    | The authority for dice, effects, committed time or published facts                                   |
+| `packages/documents`      | A second live command ledger; immutable bodies/root manifests are committed under application fences |
+| `packages/workflows`      | Business-state truth independent of application/database rechecks                                    |
+| `apps/web`                | A local simulation of authoritative mechanics inferred from presentation                             |
 
 ## Questions that discriminate good designs
 
@@ -41,6 +41,7 @@ For a nontrivial change, review the needed section in [architecture decision spa
 Compare **keep current boundary + focused repair**, **local extraction**, and **responsibility relocation** where each is plausible. Prefer the least costly option meeting acceptance. If no architecture change is justified, say so.
 
 Deliver at most:
+
 - **Verdict:** chosen option with two specific reasons and one serious alternative.
 - **Evidence:** 3–8 path/symbol anchors and the exact broken or risky invariant.
 - **Contract change:** product/technical owner and what remains unchanged.

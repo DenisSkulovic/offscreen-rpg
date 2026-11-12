@@ -134,10 +134,10 @@ export function buildEvidencePackingPressureFixture(): PackableEvidenceItem[] {
 }
 
 export function evaluateEvidencePackingPressure(
-  rawItems: readonly PackableEvidenceItem[] =
-    buildEvidencePackingPressureFixture(),
-  postures: Readonly<Record<string, EvidencePackingPolicy>> =
-    evidencePackingPressurePostures,
+  rawItems: readonly PackableEvidenceItem[] = buildEvidencePackingPressureFixture(),
+  postures: Readonly<
+    Record<string, EvidencePackingPolicy>
+  > = evidencePackingPressurePostures,
 ) {
   const itemsById = new Map(rawItems.map((item) => [item.id, item]));
   const required = rawItems.filter((item) => item.required);
@@ -149,7 +149,8 @@ export function evaluateEvidencePackingPressure(
     format: 'offscreen.evidence-packing-pressure-report.v1' as const,
     fixture: {
       items: rawItems.length,
-      identities: rawItems.filter((item) => item.group.kind === 'identity').length,
+      identities: rawItems.filter((item) => item.group.kind === 'identity')
+        .length,
       places: rawItems.filter((item) => item.group.kind === 'place').length,
       plotNodes: rawItems.filter((item) => item.group.kind === 'event').length,
       required: required.length,
@@ -198,7 +199,10 @@ export function evaluateEvidencePackingPressure(
       );
       const requiredAtMinimum = required.filter((item) => {
         const selectedLevel = selectedById.get(item.id);
-        return selectedLevel !== undefined && rank[selectedLevel] >= rank[item.minimumLevel];
+        return (
+          selectedLevel !== undefined &&
+          rank[selectedLevel] >= rank[item.minimumLevel]
+        );
       });
       const requiredWithSources = required.filter((item) => {
         const selected = selectedEvidence.get(item.id);
@@ -217,16 +221,21 @@ export function evaluateEvidencePackingPressure(
         );
       });
       const usefulUniqueBytes = packed.packet.contents.reduce(
-        (total, content) =>
-          total + Buffer.byteLength(content.text, 'utf8'),
+        (total, content) => total + Buffer.byteLength(content.text, 'utf8'),
         0,
       );
       const fidelity = { lead: 0, card: 0, exact: 0 };
       for (const selection of packed.selected) fidelity[selection.level] += 1;
       const omissions = {
-        itemLimit: packed.omitted.filter((entry) => entry.reason === 'item-limit').length,
-        groupLimit: packed.omitted.filter((entry) => entry.reason === 'group-limit').length,
-        byteLimit: packed.omitted.filter((entry) => entry.reason === 'byte-limit').length,
+        itemLimit: packed.omitted.filter(
+          (entry) => entry.reason === 'item-limit',
+        ).length,
+        groupLimit: packed.omitted.filter(
+          (entry) => entry.reason === 'group-limit',
+        ).length,
+        byteLimit: packed.omitted.filter(
+          (entry) => entry.reason === 'byte-limit',
+        ).length,
         mandatoryOverflow: packed.omitted.filter(
           (entry) => entry.reason === 'mandatory-overflow',
         ).length,
@@ -248,9 +257,7 @@ export function evaluateEvidencePackingPressure(
           : 1,
         groupCoverageByKind,
         usefulUniqueBytes,
-        usefulDensity: packed.bytes
-          ? usefulUniqueBytes / packed.bytes
-          : 0,
+        usefulDensity: packed.bytes ? usefulUniqueBytes / packed.bytes : 0,
         duplicateBytesRemoved: packed.duplicateBytesRemoved,
         fidelity,
         omissions,

@@ -292,9 +292,7 @@ if (
 }
 const storyMaxOutputTokens = storyMaxOutputTokensArgument
   ? Number(
-      storyMaxOutputTokensArgument.slice(
-        '--story-max-output-tokens='.length,
-      ),
+      storyMaxOutputTokensArgument.slice('--story-max-output-tokens='.length),
     )
   : 2_048;
 if (

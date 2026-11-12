@@ -12,7 +12,9 @@ import {
 describe('campaign projections', () => {
   it('projects hold copy and offer children for the current path', () => {
     const campaign = makeCampaign({ holdKind: 'storyteller' });
-    expect(campaignHoldMessage(campaign.holds)).toMatch(/Storyteller prepares/i);
+    expect(campaignHoldMessage(campaign.holds)).toMatch(
+      /Storyteller prepares/i,
+    );
 
     const story = makeStorySnapshot({ resolution: null });
     const nodes = offerNodes(story, campaign);

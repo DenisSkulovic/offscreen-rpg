@@ -14,32 +14,32 @@ A TypeScript type can be correct while the wire response is unusable. An HTTP 20
 
 Identify what the caller intends and what it can legitimately infer after each response:
 
-| Question | Why it changes the contract |
-| --- | --- |
-| What outcome does the caller need? | Read a current projection, create an intent, wait for a result, subscribe to updates |
-| What resource/operation identity survives retries? | Different requests can represent the same business intent; not every retry is a new command |
-| What has committed by the response time? | Enqueued, accepted, persisted, externally confirmed and published are different stages |
-| Who is authorized to view or change which properties? | Authn and JSON shape don't imply object/property permission |
-| How long can work last? | A synchronous response may not fit remote-provider or background work |
-| What consistency/freshness can the client assume? | Published snapshot versus eventual search/analytics projection |
-| What changes across versions? | Client/server deploys and old browser tabs coexist |
-| What breaks under failure? | Caller retry, proxy timeout, partial response, lost event, stale cache |
+| Question                                              | Why it changes the contract                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| What outcome does the caller need?                    | Read a current projection, create an intent, wait for a result, subscribe to updates        |
+| What resource/operation identity survives retries?    | Different requests can represent the same business intent; not every retry is a new command |
+| What has committed by the response time?              | Enqueued, accepted, persisted, externally confirmed and published are different stages      |
+| Who is authorized to view or change which properties? | Authn and JSON shape don't imply object/property permission                                 |
+| How long can work last?                               | A synchronous response may not fit remote-provider or background work                       |
+| What consistency/freshness can the client assume?     | Published snapshot versus eventual search/analytics projection                              |
+| What changes across versions?                         | Client/server deploys and old browser tabs coexist                                          |
+| What breaks under failure?                            | Caller retry, proxy timeout, partial response, lost event, stale cache                      |
 
-**Example:** "Select a Storyteller option" may be a command that accepts an intent and returns an authoritative pending state, followed by later publication. It is *not* naturally described as "update narrative text" if the application must check permissions, action eligibility, time and eventual generation.
+**Example:** "Select a Storyteller option" may be a command that accepts an intent and returns an authoritative pending state, followed by later publication. It is _not_ naturally described as "update narrative text" if the application must check permissions, action eligibility, time and eventual generation.
 
 ## 2. Choose REST, RPC, GraphQL or events by what the client needs
 
 These are **communication interface designs**, not architecture rankings.
 
-| Style | Good reasons to choose it | Conditions against it |
-| --- | --- | --- |
-| Resource-oriented HTTP/REST | Stable resource identities, standard GET/cache semantics, ordinary CRUD/read and shared clients | Complex multi-step commands may become awkward fake CRUD |
-| Action/command HTTP | Business operations have distinct admission/transition semantics | Hidden side effects and unbounded command names make an API hard to understand |
-| Typed RPC/gRPC | Internal high-frequency service calls, strong schema/codegen needs and streaming | Browser compatibility, operational complexity, external consumers and debugging |
-| GraphQL | Many clients need independently shaped read graphs; field-level selection is valuable | Complexity of nested authorization, N+1, query-cost control, schema governance |
-| Event subscription/webhook | Consumers react independently to committed facts; push is important | Duplicate/reordered delivery, subscriber state and debugging |
-| Bulk snapshot/export | Large, repeatable data extraction or sync | Memory, pagination consistency, async export identity and retention |
-| Simple function in same process | No independent consumer/reliability boundary | Cross-process needs may emerge later; don't split early |
+| Style                           | Good reasons to choose it                                                                       | Conditions against it                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Resource-oriented HTTP/REST     | Stable resource identities, standard GET/cache semantics, ordinary CRUD/read and shared clients | Complex multi-step commands may become awkward fake CRUD                        |
+| Action/command HTTP             | Business operations have distinct admission/transition semantics                                | Hidden side effects and unbounded command names make an API hard to understand  |
+| Typed RPC/gRPC                  | Internal high-frequency service calls, strong schema/codegen needs and streaming                | Browser compatibility, operational complexity, external consumers and debugging |
+| GraphQL                         | Many clients need independently shaped read graphs; field-level selection is valuable           | Complexity of nested authorization, N+1, query-cost control, schema governance  |
+| Event subscription/webhook      | Consumers react independently to committed facts; push is important                             | Duplicate/reordered delivery, subscriber state and debugging                    |
+| Bulk snapshot/export            | Large, repeatable data extraction or sync                                                       | Memory, pagination consistency, async export identity and retention             |
+| Simple function in same process | No independent consumer/reliability boundary                                                    | Cross-process needs may emerge later; don't split early                         |
 
 **False choice:** REST does not require mapping every SQL table 1:1 to routes. A resource-oriented model can expose an operation resource, such as `/exports/{id}` or `/stories/{id}/resolutions/{operationId}`. GraphQL doesn't remove backend cost; its graph still requires authorization, batching and bounded query complexity.
 
@@ -51,20 +51,20 @@ These are **communication interface designs**, not architecture rankings.
 
 ### Semantic contract examples
 
-| Observed response | What it can reasonably mean | What it must not silently mean |
-| --- | --- | --- |
-| `200 OK` | Request returned successful representation or result according to endpoint contract | Every later background step completed |
-| `201 Created` | A resource was created; identify it, usually via Location and response | Related external systems all settled |
-| `202 Accepted` | Processing accepted; completion may occur later | Accepted request finished successfully |
-| `204 No Content` | Operation succeeded with no body | An unobserved provider result was generated |
-| `304 Not Modified` | Conditional cache validation says previous representation usable | Business data can never change again |
-| `400/422` | Malformed or semantically invalid request according to policy | Caller should always retry identically |
-| `401 vs 403` | Authentication challenge vs refused authorization in typical API use | Exact object existence can safely be disclosed |
-| `404` | Not found or intentionally hidden resource | Client definitely owns a related resource |
-| `409` | Conflict with existing state/operation | Only generic "try again" UX is possible |
-| `412` | Precondition (e.g. If-Match) failed | No further concurrency strategy is needed |
-| `429` | Too many requests/resource budget exceeded | Blind immediate retry is sensible |
-| `5xx / transport timeout` | Server/intermediary or communication failure | Irreversible business effect definitely did not happen |
+| Observed response         | What it can reasonably mean                                                         | What it must not silently mean                         |
+| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `200 OK`                  | Request returned successful representation or result according to endpoint contract | Every later background step completed                  |
+| `201 Created`             | A resource was created; identify it, usually via Location and response              | Related external systems all settled                   |
+| `202 Accepted`            | Processing accepted; completion may occur later                                     | Accepted request finished successfully                 |
+| `204 No Content`          | Operation succeeded with no body                                                    | An unobserved provider result was generated            |
+| `304 Not Modified`        | Conditional cache validation says previous representation usable                    | Business data can never change again                   |
+| `400/422`                 | Malformed or semantically invalid request according to policy                       | Caller should always retry identically                 |
+| `401 vs 403`              | Authentication challenge vs refused authorization in typical API use                | Exact object existence can safely be disclosed         |
+| `404`                     | Not found or intentionally hidden resource                                          | Client definitely owns a related resource              |
+| `409`                     | Conflict with existing state/operation                                              | Only generic "try again" UX is possible                |
+| `412`                     | Precondition (e.g. If-Match) failed                                                 | No further concurrency strategy is needed              |
+| `429`                     | Too many requests/resource budget exceeded                                          | Blind immediate retry is sensible                      |
+| `5xx / transport timeout` | Server/intermediary or communication failure                                        | Irreversible business effect definitely did not happen |
 
 The status is a **protocol observation**, not a complete business state. The response body should include stable codes and allowed next actions when the domain requires them. Don't return internal stack traces or private owner data.
 
@@ -87,6 +87,7 @@ Don't automatically retry non-idempotent operations absent proof of never-dispat
 ### A TypeScript interface is not wire validation
 
 At boundaries validate data at runtime and distinguish:
+
 - Missing vs null vs optional vs default. These can change update semantics.
 - Integers beyond JS safe range, exact money units/rounding and decimal serialization.
 - Timestamp as UTC instant, local business date, duration or timezone-aware schedule.
@@ -100,12 +101,12 @@ At boundaries validate data at runtime and distinguish:
 
 ### Pagination is a consistency design
 
-| Strategy | Fits | Hidden consequence |
-| --- | --- | --- |
-| Offset/limit | Small stable lists, explicit pages, moderate data | Inserts/deletes reorder pages; deep offset can be expensive |
-| Cursor/keyset | Large ordered datasets and scrolling | Cursor must preserve filter/sort identity; stable total order; deleted anchor |
-| Snapshot-based export | Must visit a consistent dataset | Snapshot lifetime, memory/DB load, expiry and retries |
-| Watermark incremental sync | Repeated updates over time | Late/out-of-order changes, tombstones and reconciliation |
+| Strategy                   | Fits                                              | Hidden consequence                                                            |
+| -------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Offset/limit               | Small stable lists, explicit pages, moderate data | Inserts/deletes reorder pages; deep offset can be expensive                   |
+| Cursor/keyset              | Large ordered datasets and scrolling              | Cursor must preserve filter/sort identity; stable total order; deleted anchor |
+| Snapshot-based export      | Must visit a consistent dataset                   | Snapshot lifetime, memory/DB load, expiry and retries                         |
+| Watermark incremental sync | Repeated updates over time                        | Late/out-of-order changes, tombstones and reconciliation                      |
 
 **A short page isn't necessarily the last.** The API must define continuation semantics, uniqueness/order, filters, limit bounds, resource visibility and whether updates can cause duplicates or gaps. An E2E test should deliberately mutate the dataset between pages if consistency is the guarantee.
 
@@ -138,15 +139,15 @@ A cache key is a declaration of **which responses may be treated as equal**. If 
 
 ## 6. Communication and delivery shapes
 
-| Need | Plausible starting mechanism | Main decision axis |
-| --- | --- | --- |
-| Immediate bounded response | HTTP request/response | Latency, idempotency, user wait |
-| Long-running command | 202 + operation/status resource + durable worker | Deadlines, retries, recovery and cancellation |
-| Server push to browser | SSE | Server-to-client stream, reconnection, last event ID, proxy buffering |
-| Bidirectional low-latency interaction | WebSocket | Session lifecycle, backpressure, ordering, reconnect/resync |
-| Independent service consumers | Queue/event bus | Repeated/late delivery, schema evolution, consumer state |
-| Bulk read/export | Async job + downloadable artifact | Snapshot identity, progress, retention, authorization |
-| Third-party callback | Verified webhook + inbox/reconciliation | Duplicate/replay/out-of-order delivery, ownership |
+| Need                                  | Plausible starting mechanism                     | Main decision axis                                                    |
+| ------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------- |
+| Immediate bounded response            | HTTP request/response                            | Latency, idempotency, user wait                                       |
+| Long-running command                  | 202 + operation/status resource + durable worker | Deadlines, retries, recovery and cancellation                         |
+| Server push to browser                | SSE                                              | Server-to-client stream, reconnection, last event ID, proxy buffering |
+| Bidirectional low-latency interaction | WebSocket                                        | Session lifecycle, backpressure, ordering, reconnect/resync           |
+| Independent service consumers         | Queue/event bus                                  | Repeated/late delivery, schema evolution, consumer state              |
+| Bulk read/export                      | Async job + downloadable artifact                | Snapshot identity, progress, retention, authorization                 |
+| Third-party callback                  | Verified webhook + inbox/reconciliation          | Duplicate/replay/out-of-order delivery, ownership                     |
 
 **SSE isn't a durable command ledger.** A reconnecting browser may miss events; it should be able to resynchronize from authoritative state. **WebSocket isn't automatically required for any "real-time" application.** Compare directionality, message frequency, client support, auth lifecycle and operating overhead.
 

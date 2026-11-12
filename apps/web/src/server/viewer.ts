@@ -28,7 +28,10 @@ export const requireViewer = cache(async (): Promise<ViewerContext> => {
   const response = await nestFetch({ cookie }, '/api/me');
   if (response.status === 401) redirect('/sign-in');
   if (!response.ok) {
-    throw new NestTransientError(response.status, 'Account could not be loaded');
+    throw new NestTransientError(
+      response.status,
+      'Account could not be loaded',
+    );
   }
   const user = await parseNestJson(response, viewerSchema);
   return { user, cookie };

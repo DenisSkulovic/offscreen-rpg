@@ -32,10 +32,7 @@ afterAll(() => {
   server.close();
 });
 
-function renderSettings(
-  campaign = makeCampaign(),
-  onSnapshot = vi.fn(),
-) {
+function renderSettings(campaign = makeCampaign(), onSnapshot = vi.fn()) {
   const story = makeStorySnapshot({
     title: 'Settings scene',
   });
@@ -67,7 +64,9 @@ describe('CampaignSettingsEditor RHF session', () => {
     const user = userEvent.setup();
     const first = makeCampaign();
     const { rerender, onSnapshot, queryClient, story } = renderSettings(first);
-    const details = screen.getByText(/Storyteller settings/i).closest('details');
+    const details = screen
+      .getByText(/Storyteller settings/i)
+      .closest('details');
     expect(details).toBeTruthy();
     if (details && !details.open) {
       details.open = true;
@@ -100,11 +99,17 @@ describe('CampaignSettingsEditor RHF session', () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByDisplayValue('Keep this dirty tone.')).toBeInTheDocument();
     expect(
-      screen.getByText(/newer revision \(2\) arrived while these fields were dirty/i),
+      screen.getByDisplayValue('Keep this dirty tone.'),
     ).toBeInTheDocument();
-    expect(screen.queryByDisplayValue('Server won the race.')).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /newer revision \(2\) arrived while these fields were dirty/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByDisplayValue('Server won the race.'),
+    ).not.toBeInTheDocument();
   });
 
   it('retries the frozen preset UUID/body, not newly typed values (negative)', async () => {
@@ -122,18 +127,25 @@ describe('CampaignSettingsEditor RHF session', () => {
     );
 
     renderSettings();
-    const details = screen.getByText(/Storyteller settings/i).closest('details');
+    const details = screen
+      .getByText(/Storyteller settings/i)
+      .closest('details');
     if (details && !details.open) {
       details.open = true;
     }
 
     await user.clear(screen.getByLabelText(/Private preset name/i));
-    await user.type(screen.getByLabelText(/Private preset name/i), 'First name');
+    await user.type(
+      screen.getByLabelText(/Private preset name/i),
+      'First name',
+    );
     await user.click(
       screen.getByRole('button', { name: 'Save as a private preset' }),
     );
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Retry preset save' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Retry preset save' }),
+      ).toBeInTheDocument();
     });
 
     await user.clear(screen.getByLabelText(/Private preset name/i));
@@ -200,7 +212,9 @@ describe('CampaignSettingsEditor RHF session', () => {
         />
       </QueryClientProvider>,
     );
-    const details = screen.getByText(/Storyteller settings/i).closest('details');
+    const details = screen
+      .getByText(/Storyteller settings/i)
+      .closest('details');
     if (details && !details.open) {
       details.open = true;
     }

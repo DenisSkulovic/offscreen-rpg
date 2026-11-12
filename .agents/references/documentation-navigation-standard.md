@@ -1,6 +1,6 @@
 # Documentation as a coding-agent knowledge interface
 
-**Independent target, 2026-11-11.** This is a layer-zero standard for the **development agents** reading Offscreen RPG's product/technical docs, not an attempt to redesign the game or the in-world Storyteller. It defines the ideal *before* considering today's repository.
+**Independent target, 2026-11-11.** This is a layer-zero standard for the **development agents** reading Offscreen RPG's product/technical docs, not an attempt to redesign the game or the in-world Storyteller. It defines the ideal _before_ considering today's repository.
 
 ## The ideal: specification before archaeology
 
@@ -16,16 +16,16 @@ The goal is lower **total cost of correct engineering**. A clear 60-KB contract 
 
 ## One authoritative home per kind of knowledge
 
-| Material | Owner | What a coding agent should learn | What it must not claim |
-| --- | --- | --- | --- |
-| Player outcome, domain concepts, acceptable behavior | `docs/` product topics | **What/why** and important negative examples | That a designed feature already works |
-| Architecture, state authority, failure/retry invariants | `docs/technical/` | **Correctness contract**, decisions and alternatives | That intended architecture equals the current implementation |
-| Actual software entry points, package interfaces | `docs/engineering/code-navigation.md`, package READMEs | Where code and tests live, what currently calls what | A second product or technical specification |
-| Recorded status, QA, real play | `docs/progress.md`, engineering evidence | Dated evidence, tested boundary and remaining unknowns | A general current pass based on historical fixtures |
-| Significant implementation work | `docs/changes/*/CHANGE.md`, optional `PLAN.md`, and [selection index](../../docs/changes/README.md) | One bounded approved source/test/config outcome, or an explicit empty queue | An archive of initiatives, a design-only task or another permanent technical specification |
-| Legacy initiative/design history | `docs/features/` | Historical decisions and prior phases when relevant | A ready/current Change or fresh approval |
-| Development-agent operation | `.agents/` | How Claude/Cursor/ChatGPT retrieve, design, execute and review | Runtime game-agent policy |
-| Research and expert references | `docs/engineering/`, `.agents/references/` | Techniques, alternatives and measured experiments | Automatic authority over approved product decisions |
+| Material                                                | Owner                                                                                               | What a coding agent should learn                                            | What it must not claim                                                                     |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Player outcome, domain concepts, acceptable behavior    | `docs/` product topics                                                                              | **What/why** and important negative examples                                | That a designed feature already works                                                      |
+| Architecture, state authority, failure/retry invariants | `docs/technical/`                                                                                   | **Correctness contract**, decisions and alternatives                        | That intended architecture equals the current implementation                               |
+| Actual software entry points, package interfaces        | `docs/engineering/code-navigation.md`, package READMEs                                              | Where code and tests live, what currently calls what                        | A second product or technical specification                                                |
+| Recorded status, QA, real play                          | `docs/progress.md`, engineering evidence                                                            | Dated evidence, tested boundary and remaining unknowns                      | A general current pass based on historical fixtures                                        |
+| Significant implementation work                         | `docs/changes/*/CHANGE.md`, optional `PLAN.md`, and [selection index](../../docs/changes/README.md) | One bounded approved source/test/config outcome, or an explicit empty queue | An archive of initiatives, a design-only task or another permanent technical specification |
+| Legacy initiative/design history                        | `docs/features/`                                                                                    | Historical decisions and prior phases when relevant                         | A ready/current Change or fresh approval                                                   |
+| Development-agent operation                             | `.agents/`                                                                                          | How Claude/Cursor/ChatGPT retrieve, design, execute and review              | Runtime game-agent policy                                                                  |
+| Research and expert references                          | `docs/engineering/`, `.agents/references/`                                                          | Techniques, alternatives and measured experiments                           | Automatic authority over approved product decisions                                        |
 
 The **source of intent** is the product/technical spec; the **source of implementation evidence** is code/tests/traces. When they disagree, investigate and reconcile. Never rewrite a requirement solely to make implemented code look correct.
 
@@ -43,7 +43,7 @@ For task-oriented tutorials, explanation, reference and how-to, adapt [Diátaxis
 
 ## Minimal route topology
 
-`README.md` → `docs/README.md` → topic-specific **`docs/technical/README.md`** or **`docs/engineering/README.md`** → *exact authoritative heading* → selected source if needed.
+`README.md` → `docs/README.md` → topic-specific **`docs/technical/README.md`** or **`docs/engineering/README.md`** → _exact authoritative heading_ → selected source if needed.
 
 The root product docs need not move into `docs/product/`: doing so would break useful links and add migration work without demonstrated benefit. Topic indexes are **routers, not a fourth authority layer**. An agent should follow one route, not read every router in sequence.
 
@@ -58,15 +58,15 @@ The root product docs need not move into `docs/product/`: doing so would break u
 
 ## 2026-11-12: explicit layered retrieval contract for cheap coding agents
 
-**The real failure to prevent:** a repo can contain 2 MB of excellent Markdown yet require a 200k-context coding model to locate two relevant paragraphs. “Read narrowly” is insufficient unless the **first screen** tells the agent *which* narrow owner or heading to read. Optimize for smallest sufficient **context footprint**, while preserving deeper explanations for genuinely difficult cases.
+**The real failure to prevent:** a repo can contain 2 MB of excellent Markdown yet require a 200k-context coding model to locate two relevant paragraphs. “Read narrowly” is insufficient unless the **first screen** tells the agent _which_ narrow owner or heading to read. Optimize for smallest sufficient **context footprint**, while preserving deeper explanations for genuinely difficult cases.
 
-| Layer | Answer it must deliver | File type/owner | Load trigger |
-| --- | --- | --- | --- |
-| **L0, automatically applied** | Safety, selected-work authority, *where to start* | Short root §AGENTS.md§ and one matching Cursor rule, not full architecture | Every applicable coding task |
-| **L1, one-task entry** | Outcome, affected owner, one failure proof, where to expand | Only the active §CHANGE.md§ first-screen brief, or scoped user instruction | Selected Change |
-| **L2, source-adjacent orientation** | Actual current file/symbol and input→output→side-effect route | Nearest §apps/*/src/**/README.md§ or §packages/*/src/**/README.md§; 20-line useful top | Agent needs ownership before reading code |
-| **L3, contractual depth** | Why invariant/architecture is correct, failure semantics, decisions | Exact section/heading of §docs/technical/*§ or selected engineering target; read *by range* | Detail missing from L1–L2 |
-| **L4, source and proof** | Current implementation, call sites, tests and actual runtime evidence | Named code symbols, test fixture or controlled command | Required code edit, new discrepancy or verification |
+| Layer                               | Answer it must deliver                                                | File type/owner                                                                             | Load trigger                                        |
+| ----------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **L0, automatically applied**       | Safety, selected-work authority, _where to start_                     | Short root §AGENTS.md§ and one matching Cursor rule, not full architecture                  | Every applicable coding task                        |
+| **L1, one-task entry**              | Outcome, affected owner, one failure proof, where to expand           | Only the active §CHANGE.md§ first-screen brief, or scoped user instruction                  | Selected Change                                     |
+| **L2, source-adjacent orientation** | Actual current file/symbol and input→output→side-effect route         | Nearest §apps/_/src/\**/README.md§ or §packages/_/src/**/README.md§; 20-line useful top     | Agent needs ownership before reading code           |
+| **L3, contractual depth**           | Why invariant/architecture is correct, failure semantics, decisions   | Exact section/heading of §docs/technical/*§ or selected engineering target; read _by range_ | Detail missing from L1–L2                           |
+| **L4, source and proof**            | Current implementation, call sites, tests and actual runtime evidence | Named code symbols, test fixture or controlled command                                      | Required code edit, new discrepancy or verification |
 
 **Rule:** stop at the first layer that answers the question. Do not force every layer into one context. L1 and L2 **summarize and route**, L3 owns the complete explanation, L4 establishes actual implementation. A concise duplicate of a critical hazard at L2 is acceptable; copying the entire L3 contract is not.
 
@@ -91,13 +91,13 @@ Do **not** add repetitive header comments to every TypeScript file. Source-local
 - Start with a **known Change path** (or source-adjacent README) rather than §rg§ of the whole repo.
 - Inspect a document's first ~20 lines, then §rg -n '^#{1,4} ' <exact-doc>§ for headings and read **only the matching range**. In PowerShell: §Get-Content <path> -TotalCount 20§, then §Get-Content <path> | Select-Object -Skip N -First M§. Model input sees only selected output, not the whole document.
 - Use §rg -n -C 5 'SymbolName' <specific-files>§ to inspect nearby code; add immediate callers/tests only if a named behavior crosses that seam.
-- If the needed contract is already resolved by the selected Change, skip professional reference manuals unless an *actual contradiction* requires design review. Do not load historical minutes automatically when the Change's decision is current.
+- If the needed contract is already resolved by the selected Change, skip professional reference manuals unless an _actual contradiction_ requires design review. Do not load historical minutes automatically when the Change's decision is current.
 - Avoid building a custom semantic-search service, generated mega-index, universal file banners or a script that feeds every grep result into the model. The **search target** matters more than a faster search command.
 
 ### Freshness and maintenance: small, triggered updates
 
 - Each source-adjacent map says **source-inspected revision/date** and labels code §Current§ versus future §Target§. Source changes do not retroactively prove all adjacent docs wrong, but the executor rechecks any path/symbol touched by the selected Change.
-- When a Change **moves an owner, changes a public export/wire response/status, identity/retry invariant or module boundary**, update its nearest README and inbound links *in that Change*. A local JSX/class rename does not require a documentation rewrite.
+- When a Change **moves an owner, changes a public export/wire response/status, identity/retry invariant or module boundary**, update its nearest README and inbound links _in that Change_. A local JSX/class rename does not require a documentation rewrite.
 - A technical architecture decision changes the authoritative contract; a source map gets a **short pointer and current-vs-target note** only. A completed Change's test result goes into evidence/receipt, not copied into every map.
 - The existing §scripts/check_docs.py§ checks paths in top-level package READMEs but **does not traverse nested source-adjacent README files** or verify Markdown heading anchors. This is now a known coverage gap; [W22](../../docs/changes/2026-11-12--web-context-navigation-check/CHANGE.md) will add a cheap source-map/anchor validation lane. Until W22 runs, path-level checks must include newly added nested maps explicitly. Do not call this proven until executed.
 - Keep overview docs honest about stale maps; no universal mandated word limit. A ~1–2-page map is useful when it prevents source archaeology, but if a reader must open 5 maps to start, **the routing is defective**.
@@ -114,6 +114,6 @@ At minimum run (in fresh read-only Cursor contexts) one React story-state task, 
 
 **Already good:** short project README, `docs/README.md` question map, a product/technical/evidence distinction, technical playthrough index, package READMEs, concise selected PLAN checkpoints, existing documentation-link checks.
 
-**Navigation problems:** no area-level landing page for technical or engineering docs; long technical contracts without a one-glance within-page route; possible confusion between `docs/engineering/agentic-systems-field-manual.md` (research for the *game's agent*) and `docs/engineering/ai-development-system.md` (the *coding-agent workflow*). These are worth fixing **without rewriting their domain content**.
+**Navigation problems:** no area-level landing page for technical or engineering docs; long technical contracts without a one-glance within-page route; possible confusion between `docs/engineering/agentic-systems-field-manual.md` (research for the _game's agent_) and `docs/engineering/ai-development-system.md` (the _coding-agent workflow_). These are worth fixing **without rewriting their domain content**.
 
-**Separate future audit, not authorized content editing here:** some technical docs mix desired future ownership with claims about implemented SQL/canonical storage. `docs/technical/data.md`, `canonical-files.md` and `storyteller-runtime.md` need a source-grounded *accuracy* comparison when their behavior is next touched. A formatting pass cannot certify their status. Review use cases before reorganizing more folders.
+**Separate future audit, not authorized content editing here:** some technical docs mix desired future ownership with claims about implemented SQL/canonical storage. `docs/technical/data.md`, `canonical-files.md` and `storyteller-runtime.md` need a source-grounded _accuracy_ comparison when their behavior is next touched. A formatting pass cannot certify their status. Review use cases before reorganizing more folders.

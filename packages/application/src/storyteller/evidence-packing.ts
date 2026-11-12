@@ -105,23 +105,35 @@ export function packStoryEvidence(
     throw new Error('Evidence item IDs must be unique');
   }
   const selected: Selected[] = [];
-  const omitted = new Map<string, 'item-limit' | 'group-limit' | 'byte-limit'>();
+  const omitted = new Map<
+    string,
+    'item-limit' | 'group-limit' | 'byte-limit'
+  >();
   const addBase = (item: PackableEvidenceItem) => {
     const representation = orderedRepresentations(item)[0];
-    if (!representation) throw new Error('Evidence item has no usable representation');
+    if (!representation)
+      throw new Error('Evidence item has no usable representation');
     selected.push({ item, representation });
   };
 
-  for (const item of items.filter((entry) => entry.required).sort((a, b) => a.id.localeCompare(b.id))) {
+  for (const item of items
+    .filter((entry) => entry.required)
+    .sort((a, b) => a.id.localeCompare(b.id))) {
     addBase(item);
   }
-  if (selected.length > policy.maxItems || packetBytes(selected) > policy.maxBytes) {
+  if (
+    selected.length > policy.maxItems ||
+    packetBytes(selected) > policy.maxBytes
+  ) {
     return {
       status: 'mandatory-overflow' as const,
       packet: packetFor([]),
       bytes: packetBytes([]),
       selected: [],
-      omitted: items.map((item) => ({ itemId: item.id, reason: 'mandatory-overflow' as const })),
+      omitted: items.map((item) => ({
+        itemId: item.id,
+        reason: 'mandatory-overflow' as const,
+      })),
       duplicateContentBytesRemoved: 0,
       duplicateSourceKeyBytesRemoved: 0,
       duplicateBytesRemoved: 0,
@@ -137,7 +149,11 @@ export function packStoryEvidence(
             entry.item.group.kind === item.group.kind &&
             entry.item.group.key === item.group.key,
         ).length;
-      return count(left) - count(right) || right.relevance - left.relevance || left.id.localeCompare(right.id);
+      return (
+        count(left) - count(right) ||
+        right.relevance - left.relevance ||
+        left.id.localeCompare(right.id)
+      );
     });
     const item = optional.shift()!;
     const groupCount = selected.filter(
@@ -158,28 +174,52 @@ export function packStoryEvidence(
   for (const item of optional) omitted.set(item.id, 'item-limit');
 
   for (;;) {
-    const upgrades = selected.flatMap((entry, index) => {
-      const representations = orderedRepresentations(entry.item);
-      const next = representations[representations.indexOf(entry.representation) + 1];
-      if (!next) return [];
-      const upgraded = selected.map((candidate, candidateIndex) =>
-        candidateIndex === index ? { ...candidate, representation: next } : candidate,
+    const upgrades = selected
+      .flatMap((entry, index) => {
+        const representations = orderedRepresentations(entry.item);
+        const next =
+          representations[representations.indexOf(entry.representation) + 1];
+        if (!next) return [];
+        const upgraded = selected.map((candidate, candidateIndex) =>
+          candidateIndex === index
+            ? { ...candidate, representation: next }
+            : candidate,
+        );
+        const addedBytes = packetBytes(upgraded) - packetBytes(selected);
+        return [
+          {
+            index,
+            next,
+            addedBytes,
+            gain: next.utility - entry.representation.utility,
+          },
+        ];
+      })
+      .filter(
+        (upgrade) =>
+          upgrade.gain > 0 &&
+          packetBytes(selected) + upgrade.addedBytes <= policy.maxBytes,
       );
-      const addedBytes = packetBytes(upgraded) - packetBytes(selected);
-      return [{ index, next, addedBytes, gain: next.utility - entry.representation.utility }];
-    }).filter((upgrade) => upgrade.gain > 0 && packetBytes(selected) + upgrade.addedBytes <= policy.maxBytes);
-    upgrades.sort((left, right) =>
-      right.gain / Math.max(1, right.addedBytes) - left.gain / Math.max(1, left.addedBytes) ||
-      selected[left.index]!.item.id.localeCompare(selected[right.index]!.item.id),
+    upgrades.sort(
+      (left, right) =>
+        right.gain / Math.max(1, right.addedBytes) -
+          left.gain / Math.max(1, left.addedBytes) ||
+        selected[left.index]!.item.id.localeCompare(
+          selected[right.index]!.item.id,
+        ),
     );
     const upgrade = upgrades[0];
     if (!upgrade) break;
-    selected[upgrade.index] = { ...selected[upgrade.index]!, representation: upgrade.next };
+    selected[upgrade.index] = {
+      ...selected[upgrade.index]!,
+      representation: upgrade.next,
+    };
   }
 
   const packet = packetFor(selected);
   const undeduplicatedContentBytes = selected.reduce(
-    (total, entry) => total + Buffer.byteLength(entry.representation.content, 'utf8'),
+    (total, entry) =>
+      total + Buffer.byteLength(entry.representation.content, 'utf8'),
     0,
   );
   const uniqueContentBytes = packet.contents.reduce(
@@ -208,7 +248,10 @@ export function packStoryEvidence(
     status: 'packed' as const,
     packet,
     bytes: packetBytes(selected),
-    selected: selected.map((entry) => ({ itemId: entry.item.id, level: entry.representation.level })),
+    selected: selected.map((entry) => ({
+      itemId: entry.item.id,
+      level: entry.representation.level,
+    })),
     omitted: [...omitted].map(([itemId, reason]) => ({ itemId, reason })),
     duplicateContentBytesRemoved,
     duplicateSourceKeyBytesRemoved,

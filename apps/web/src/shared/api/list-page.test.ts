@@ -9,8 +9,18 @@ describe('flattenUniqueById', () => {
   it('keeps first-seen order and drops duplicate ids', () => {
     expect(
       flattenUniqueById([
-        { items: [{ id: 'a', n: 1 }, { id: 'b', n: 2 }] },
-        { items: [{ id: 'b', n: 99 }, { id: 'c', n: 3 }] },
+        {
+          items: [
+            { id: 'a', n: 1 },
+            { id: 'b', n: 2 },
+          ],
+        },
+        {
+          items: [
+            { id: 'b', n: 99 },
+            { id: 'c', n: 3 },
+          ],
+        },
       ]),
     ).toEqual([
       { id: 'a', n: 1 },

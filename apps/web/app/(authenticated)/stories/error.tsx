@@ -9,7 +9,5 @@ export default function StoriesError({
   error: Error & { digest?: string; status?: number; kind?: string };
   reset: () => void;
 }) {
-  return (
-    <RouteErrorRecovery error={error} reset={reset} resource="account" />
-  );
+  return <RouteErrorRecovery error={error} reset={reset} resource="account" />;
 }

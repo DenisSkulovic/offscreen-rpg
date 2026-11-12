@@ -104,9 +104,9 @@ describe('ResolutionRecovery', () => {
       screen.getByRole('button', { name: 'Refresh saved state' }),
     );
 
-    expect(
-      await screen.findByRole('status'),
-    ).toHaveTextContent(/Could not confirm the request/i);
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      /Could not confirm the request/i,
+    );
     expect(onSnapshot).not.toHaveBeenCalled();
   });
 });

@@ -28,10 +28,7 @@ export async function readStoryHistoryPage(
 }
 
 /** Viewer+story chronology: numeric `before` continuation. */
-export function storyHistoryInfiniteOptions(
-  viewerId: string,
-  storyId: string,
-) {
+export function storyHistoryInfiniteOptions(viewerId: string, storyId: string) {
   return infiniteQueryOptions({
     queryKey: queryKeys.storyHistory(viewerId, storyId),
     queryFn: ({ pageParam, signal }) =>

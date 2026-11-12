@@ -1,21 +1,21 @@
 # Implementation change units: independent planning standard
 
-**Purpose:** define the *smallest useful unit of AI coding-agent execution* independently of any particular Offscreen RPG dossier. A work unit is not necessarily a player-facing product feature. **This standard governs the development harness, not game behavior.** Reviewed 2026-11-11.
+**Purpose:** define the _smallest useful unit of AI coding-agent execution_ independently of any particular Offscreen RPG dossier. A work unit is not necessarily a player-facing product feature. **This standard governs the development harness, not game behavior.** Reviewed 2026-11-11.
 
 ## Vocabulary and strict inclusion rule
 
-| Concept | Definition | Code delta needed? | Durable home |
-| --- | --- | --- | --- |
-| **Initiative** | An outcome/program that may span many changes, investigations, tests and human decisions | No | Authoritative product/technical topic plus a short initiative overview *only when needed* |
-| **Design / investigation** | Resolve an unknown, review an approach, define intent or choose a technical contract | No | Relevant permanent spec, evidence page or temporary research artifact; retire after synthesis |
-| **Change** | One bounded, independently verifiable implementation outcome with an explicit intended diff | **Yes, when executed** | One selected execution packet under `docs/changes/`; no active Change is valid |
-| **Execution slice** | A smaller dependency-ordered portion of a change, with its own proof and handoff | Yes, as part of the change | Same change's short PLAN/checkpoint, not another duplicate dossier |
-| **Evaluation / acceptance** | Measure what already exists through inspection, tests, manual play or controlled live experiments | No, unless tooling/test code itself is being changed | QA/evidence owner, not a fake implementation ticket |
-| **Documentation / harness maintenance** | Improve rules, roles, manuals, product/technical navigation or accuracy | No, unless scripts/tests/executable configuration change | Owning document/skill; no compulsory feature dossier |
+| Concept                                 | Definition                                                                                        | Code delta needed?                                       | Durable home                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Initiative**                          | An outcome/program that may span many changes, investigations, tests and human decisions          | No                                                       | Authoritative product/technical topic plus a short initiative overview _only when needed_     |
+| **Design / investigation**              | Resolve an unknown, review an approach, define intent or choose a technical contract              | No                                                       | Relevant permanent spec, evidence page or temporary research artifact; retire after synthesis |
+| **Change**                              | One bounded, independently verifiable implementation outcome with an explicit intended diff       | **Yes, when executed**                                   | One selected execution packet under `docs/changes/`; no active Change is valid                |
+| **Execution slice**                     | A smaller dependency-ordered portion of a change, with its own proof and handoff                  | Yes, as part of the change                               | Same change's short PLAN/checkpoint, not another duplicate dossier                            |
+| **Evaluation / acceptance**             | Measure what already exists through inspection, tests, manual play or controlled live experiments | No, unless tooling/test code itself is being changed     | QA/evidence owner, not a fake implementation ticket                                           |
+| **Documentation / harness maintenance** | Improve rules, roles, manuals, product/technical navigation or accuracy                           | No, unless scripts/tests/executable configuration change | Owning document/skill; no compulsory feature dossier                                          |
 
 **Definition of code for this boundary:** application/library source, runnable tools/scripts, tests, migrations, executable schemas and meaningful runtime/build configuration. A Git commit touching only Markdown/skills, indices, instructions or plans is **not** a Change in this system. A test-only code change can be a valid Change if its acceptance and tested guarantee are concrete.
 
-A planned Change need not **already** have a code diff; it must have a justified, bounded *future* code modification and falsifiable completion criteria. "Improve memory" is an initiative. "Make the report distinguish published document revisions from proposed patches in its JSON output" is a change. "Check whether the previous memory was recalled" is evaluation unless it also implements missing test/reporting code.
+A planned Change need not **already** have a code diff; it must have a justified, bounded _future_ code modification and falsifiable completion criteria. "Improve memory" is an initiative. "Make the report distinguish published document revisions from proposed patches in its JSON output" is a change. "Check whether the previous memory was recalled" is evaluation unless it also implements missing test/reporting code.
 
 ## The ideal planning unit
 
@@ -43,15 +43,15 @@ The selected route is `docs/changes/README.md`. A small selected Change needs on
 
 ## Lifecycle and permissions
 
-| State | Meaning | May an agent edit code? |
-| --- | --- | --- |
-| **Proposed** | Candidate code outcome; missing agreement, feasibility or source revalidation | No |
-| **Ready** | Accepted scope, actual owners checked, acceptance/side effects defined, explicit authorization to start | Only as authorized |
-| **Implementing** | One owner is executing the approved bounded delta | Yes, within scope |
-| **Verifying** | Code exists; proof, review or human acceptance incomplete | Only targeted fixes with permission |
-| **Blocked** | Cannot continue without named decision, dependency, environment or safety approval | Not beyond approved diagnostic scope |
-| **Done** | Desired code change landed and its stated evidence recorded; remaining limitations explicit | No; retire the active packet |
-| **Cancelled / superseded** | No longer worth implementing or replaced by a different accepted plan | No |
+| State                      | Meaning                                                                                                 | May an agent edit code?              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Proposed**               | Candidate code outcome; missing agreement, feasibility or source revalidation                           | No                                   |
+| **Ready**                  | Accepted scope, actual owners checked, acceptance/side effects defined, explicit authorization to start | Only as authorized                   |
+| **Implementing**           | One owner is executing the approved bounded delta                                                       | Yes, within scope                    |
+| **Verifying**              | Code exists; proof, review or human acceptance incomplete                                               | Only targeted fixes with permission  |
+| **Blocked**                | Cannot continue without named decision, dependency, environment or safety approval                      | Not beyond approved diagnostic scope |
+| **Done**                   | Desired code change landed and its stated evidence recorded; remaining limitations explicit             | No; retire the active packet         |
+| **Cancelled / superseded** | No longer worth implementing or replaced by a different accepted plan                                   | No                                   |
 
 **Parked** is a scheduling label, not proof that an unreviewed design became approved. Legacy recorded approval describes historical owner communication, not automatic perpetual permission for any future model, deployment, provider spend or newly selected architecture. A newly resumed workstream must recheck source and any changed product/technical decision. The current user can always choose to pause code work without changing the historical specification.
 
