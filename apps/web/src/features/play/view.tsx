@@ -5,6 +5,7 @@ import { StoryHistoryView } from './history';
 import { ResolutionRecovery } from './resolution-recovery';
 import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
+import { useStoryLiveUpdates } from './use-story-live-updates';
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -108,13 +109,18 @@ export function PlayScene({
     getOnlineSnapshot,
     getOnlineServerSnapshot,
   );
+  const liveUpdates = useStoryLiveUpdates({ viewerId, storyId });
   const {
     data: story,
     isError: snapshotReadFailed,
     isFetching: snapshotFetching,
     isPaused: snapshotPaused,
     refetch: refetchSnapshot,
-  } = useQuery(playStorySnapshotQueryOptions(viewerId, storyId));
+  } = useQuery(
+    playStorySnapshotQueryOptions(viewerId, storyId, {
+      liveStreamHealthy: liveUpdates.healthy,
+    }),
+  );
   const resolution = useResolutionCommand({ viewerId, storyId });
   const control = useControlCommand({ viewerId, storyId });
 

@@ -4,7 +4,7 @@ import { readStorySnapshot } from '@/src/lib/story-transport';
 import { queryKeys } from './query-keys';
 import { STALE } from './query-defaults';
 import {
-  PENDING_STORY_REFETCH_MS,
+  pendingStoryRefetchMs,
   storyNeedsPendingRefresh,
 } from './story-pending-refresh';
 import {
@@ -13,6 +13,11 @@ import {
 } from './story-snapshot-write';
 
 type StorySnapshotKey = ReturnType<typeof queryKeys.storySnapshot>;
+
+export type PlayStorySnapshotQueryOptionsArgs = {
+  /** When true, unresolved status uses 30s safety GET; otherwise 2s fallback. */
+  liveStreamHealthy?: boolean;
+};
 
 /** Shared story snapshot options: same key/schema for SSR hydrate and browser useQuery. */
 export function storySnapshotQueryOptions(viewerId: string, storyId: string) {
@@ -24,13 +29,15 @@ export function storySnapshotQueryOptions(viewerId: string, storyId: string) {
 }
 
 /**
- * Play observer options: pending 2s foreground refetch, hidden-tab pause,
+ * Play observer options: SSE-aware pending refetch, hidden-tab pause,
  * and every GET merge through the W03 write gate (never raw setQueryData).
  */
 export function playStorySnapshotQueryOptions(
   viewerId: string,
   storyId: string,
+  options: PlayStorySnapshotQueryOptionsArgs = {},
 ) {
+  const liveStreamHealthy = options.liveStreamHealthy === true;
   const key = queryKeys.storySnapshot(viewerId, storyId);
   return queryOptions<
     StorySnapshot,
@@ -45,7 +52,7 @@ export function playStorySnapshotQueryOptions(
     refetchIntervalInBackground: false,
     refetchInterval: (query) =>
       storyNeedsPendingRefresh(query.state.data)
-        ? PENDING_STORY_REFETCH_MS
+        ? pendingStoryRefetchMs(liveStreamHealthy)
         : false,
     queryFn: async ({ client, signal }) => {
       const epoch = allocateStorySnapshotEpoch();

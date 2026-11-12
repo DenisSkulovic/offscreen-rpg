@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
+**State: Done.** Owner authorized via continue after W16. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**. **Audited source:** post-W16 `main` (`f92846d`).
 
 **Depends on:** W03 W05 W16. Uses existing W15 Query provider and typed read adapters.  
 **Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F3 F4 F6 F10**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G18 G30**.

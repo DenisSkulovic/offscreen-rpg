@@ -1,6 +1,6 @@
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 
-/** True while Play must keep a foreground pending-status GET loop (pre-SSE). */
+/** True while Play must keep a foreground pending-status GET loop. */
 export function storyNeedsPendingRefresh(
   story: StorySnapshot | undefined,
 ): boolean {
@@ -20,5 +20,13 @@ export function storyNeedsPendingRefresh(
   );
 }
 
-/** Foreground pending poll cadence before W17 SSE ownership. */
+/** Fallback pending poll when the live SSE stream is unavailable. */
 export const PENDING_STORY_REFETCH_MS = 2_000;
+
+/** Safety reconciliation poll while SSE is healthy and status is unresolved. */
+export const SAFETY_STORY_REFETCH_MS = 30_000;
+
+/** Pending GET cadence: 30s with healthy SSE, else bounded 2s fallback. */
+export function pendingStoryRefetchMs(liveStreamHealthy: boolean): number {
+  return liveStreamHealthy ? SAFETY_STORY_REFETCH_MS : PENDING_STORY_REFETCH_MS;
+}
