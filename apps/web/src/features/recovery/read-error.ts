@@ -1,4 +1,4 @@
-import { classifyNestStatus } from '@/src/server/classify-nest-status';
+import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 
 export type ReadRecoveryKind =
   | 'unauthorized'

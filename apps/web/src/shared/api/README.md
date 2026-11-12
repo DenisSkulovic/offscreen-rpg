@@ -20,5 +20,7 @@
 | `story-history-query.ts` | Infinite chronology; numeric `before` page param |
 | `list-page.ts` | Stable flatten/dedupe by item id across infinite pages |
 | `settings-query.ts` | Preset catalogue / owned presets / settings history query options |
+| `classify-nest-status.ts` | Pure 401/404/503 taxonomy shared by SSR readers and browser recovery |
+| `nest-errors.ts` | `NestTransientError` / `NestProtocolError` (safe for tests; readers stay server-only) |
 
 **Maintenance:** update when key shapes, cache policies or snapshot write gates change.

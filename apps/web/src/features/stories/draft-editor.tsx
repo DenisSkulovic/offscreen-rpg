@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -63,7 +64,7 @@ export function DraftEditor({
     reset,
     resetDefaultValues,
     setFocus,
-    formState: { isDirty, errors, dirtyFields: _dirtyFields },
+    formState: { isDirty, errors },
   } = useForm<DraftEditorFormValues>({
     resolver: zodResolver(draftEditorFormSchema),
     mode: 'onTouched',
@@ -474,7 +475,7 @@ export function DraftEditor({
         </p>
       ) : null}
       <p>
-        <a
+        <Link
           href="/stories"
           onClick={(event) => {
             if (isDirty && !window.confirm('Leave without saving this setup?'))
@@ -482,7 +483,7 @@ export function DraftEditor({
           }}
         >
           Back to your stories
-        </a>
+        </Link>
       </p>
     </main>
   );

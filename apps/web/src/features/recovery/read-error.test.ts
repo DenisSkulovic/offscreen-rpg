@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { StorySnapshotReadError } from '@/src/lib/story-transport';
-import { NestTransientError } from '@/src/server/nest-errors';
+import { NestTransientError } from '@/src/shared/api/nest-errors';
 import { classifyReadRecovery, readRecoveryCopy } from './read-error';
 
 describe('classifyReadRecovery', () => {

@@ -109,8 +109,8 @@ describe('CampaignSettingsEditor RHF session', () => {
 
   it('retries the frozen preset UUID/body, not newly typed values (negative)', async () => {
     const user = userEvent.setup();
-    let bodies: unknown[] = [];
-    let ids: string[] = [];
+    const bodies: unknown[] = [];
+    const ids: string[] = [];
     server.use(
       http.get('/api/stories/presets/catalogue', () => HttpResponse.json([])),
       http.get('/api/stories/presets', () => HttpResponse.json([])),

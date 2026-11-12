@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { ChamberScene, ChamberStart } from './scene';
 import { useChamberPlay } from './use-chamber-play';
@@ -49,7 +50,7 @@ export function Chamber({
       <p role="status">{play.error}</p>
       <QaWorkspace />
       <p>
-        <a href="/stories">Back to stories</a>
+        <Link href="/stories">Back to stories</Link>
       </p>
     </main>
   );

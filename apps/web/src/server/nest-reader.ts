@@ -2,8 +2,8 @@ import 'server-only';
 import { notFound, redirect } from 'next/navigation';
 import type { ZodType } from 'zod';
 import { apiInternalOrigin } from './api-origin';
-import { classifyNestStatus } from './classify-nest-status';
-import { NestTransientError } from './nest-errors';
+import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
+import { NestTransientError } from '@/src/shared/api/nest-errors';
 import { parseNestJson } from './parse-nest-json';
 
 export type ServerRequestContext = {

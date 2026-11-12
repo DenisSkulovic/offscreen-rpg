@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
+**State: Done.** Owner authorized via continue after W11. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**. **Audited source:** post-W11 `main` (`676f2e8`). CI web lint gate is `pnpm lint:web` (+ negatives); full-repo `pnpm lint` still carries unrelated script/tool debt.
 
 **Depends on:** W02 W15 W06. W01 establishes test command.  
 **Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F1 F7 F10 F14**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G26 G32 G21**.

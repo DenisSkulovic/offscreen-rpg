@@ -47,17 +47,20 @@ export function useResolutionCommand(args: {
   } satisfies PlayResolutionIntent);
   const recoveryStarted = useRef(false);
 
-  function acceptSnapshot(next: StorySnapshot, epoch?: number) {
-    writeStorySnapshot(
-      queryClient,
-      {
-        viewerId,
-        storyId,
-        requestEpoch: epoch ?? allocateStorySnapshotEpoch(),
-      },
-      next,
-    );
-  }
+  const acceptSnapshot = useCallback(
+    (next: StorySnapshot, epoch?: number) => {
+      writeStorySnapshot(
+        queryClient,
+        {
+          viewerId,
+          storyId,
+          requestEpoch: epoch ?? allocateStorySnapshotEpoch(),
+        },
+        next,
+      );
+    },
+    [queryClient, viewerId, storyId],
+  );
 
   const mutation = useMutation({
     mutationKey: ['viewer', viewerId, 'story', storyId, 'resolution-command'],
@@ -210,7 +213,7 @@ export function useResolutionCommand(args: {
     return () => {
       cancelled = true;
     };
-  }, [viewerId, storyId, queryClient]);
+  }, [viewerId, storyId, queryClient, acceptSnapshot]);
 
   async function submitChoice(input: {
     expectedRevision: number;

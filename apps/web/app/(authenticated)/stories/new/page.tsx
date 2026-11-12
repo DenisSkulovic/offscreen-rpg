@@ -9,7 +9,7 @@ import {
 } from '@/src/server/nest-reader';
 import { DraftEditor } from '@/src/features/stories/draft-editor';
 import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
-import { classifyNestStatus } from '@/src/server/classify-nest-status';
+import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 
 export default async function NewDraft({
   searchParams,

@@ -8,6 +8,7 @@ import { useResolutionCommand } from './use-resolution-command';
 import { useStoryLiveUpdates } from './use-story-live-updates';
 
 import { useEffect, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
@@ -153,15 +154,12 @@ export function PlayScene({
   const showRefreshRecovery =
     story != null && (snapshotReadFailed || !online || snapshotPaused);
 
+  const { intentStatus, clearAfterSettlement } = resolution;
   useEffect(() => {
-    if (
-      story &&
-      story.resolution == null &&
-      resolution.intentStatus === 'admitted'
-    ) {
-      resolution.clearAfterSettlement();
+    if (story && story.resolution == null && intentStatus === 'admitted') {
+      clearAfterSettlement();
     }
-  }, [story, resolution.intentStatus, resolution.clearAfterSettlement]);
+  }, [story, intentStatus, clearAfterSettlement]);
 
   if (!story) {
     if (snapshotReadFailed) {
@@ -194,7 +192,7 @@ export function PlayScene({
     <main className="story-demo play-screen">
       <SessionRefresh />
       <header className="story-header">
-        <a href="/stories">← Stories</a>
+        <Link href="/stories">← Stories</Link>
         <span className="demo-label">
           {scene.storyteller?.name ?? 'Storyteller'} ·{' '}
           {scene.campaign?.worldTime.label ?? `revision ${scene.revision}`}

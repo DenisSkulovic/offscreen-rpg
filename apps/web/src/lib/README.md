@@ -2,7 +2,7 @@
 
 **First look:** Authenticated SSR Nest reads live in [`../server/`](../server/README.md) (`server-only`). Query keys/options live in [`../shared/api/`](../shared/api/README.md). This folder owns **browser-side** helpers: story snapshot GET/PUT and Better Auth client actions.
 **Read only:** [story-transport.ts](story-transport.ts) for current browser story traffic; [auth-client.ts](auth-client.ts) for session actions. Server session gate: [`../server/viewer.ts`](../server/viewer.ts).
-**Source basis:** W15, 2026-11-12.
+**Source basis:** post-W13 `main`. Client/feature code must not import `@/src/server/*` (enforced by `pnpm lint:web`).
 
 ## Current ownership and precise observed behavior
 

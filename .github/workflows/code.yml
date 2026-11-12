@@ -62,9 +62,12 @@ jobs:
       - name: Check formatting
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm format:check
-      - name: Lint
+      - name: Lint web (React/Next/TanStack + import boundaries)
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: pnpm lint
+        run: pnpm lint:web
+      - name: Lint web negatives
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: pnpm lint:web:negatives
       - name: Typecheck
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: pnpm typecheck

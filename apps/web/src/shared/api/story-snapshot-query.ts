@@ -38,14 +38,13 @@ export function playStorySnapshotQueryOptions(
   options: PlayStorySnapshotQueryOptionsArgs = {},
 ) {
   const liveStreamHealthy = options.liveStreamHealthy === true;
-  const key = queryKeys.storySnapshot(viewerId, storyId);
   return queryOptions<
     StorySnapshot,
     Error,
     StorySnapshot,
     StorySnapshotKey
   >({
-    queryKey: key,
+    queryKey: queryKeys.storySnapshot(viewerId, storyId),
     staleTime: STALE.storySnapshotMs,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -54,7 +53,7 @@ export function playStorySnapshotQueryOptions(
       storyNeedsPendingRefresh(query.state.data)
         ? pendingStoryRefetchMs(liveStreamHealthy)
         : false,
-    queryFn: async ({ client, signal }) => {
+    queryFn: async ({ client, queryKey, signal }) => {
       const epoch = allocateStorySnapshotEpoch();
       const latest = await readStorySnapshot(storyId, signal);
       writeStorySnapshot(
@@ -62,7 +61,7 @@ export function playStorySnapshotQueryOptions(
         { viewerId, storyId, requestEpoch: epoch },
         latest,
       );
-      return client.getQueryData<StorySnapshot>(key) ?? latest;
+      return client.getQueryData<StorySnapshot>(queryKey) ?? latest;
     },
   });
 }

@@ -9,7 +9,7 @@ import { requireViewer } from '@/src/server/viewer';
 import { nestFetch, parseNestJson } from '@/src/server/nest-reader';
 import { NestTransientError } from '@/src/server/nest-errors';
 import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
-import { classifyNestStatus } from '@/src/server/classify-nest-status';
+import { classifyNestStatus } from '@/src/shared/api/classify-nest-status';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
 

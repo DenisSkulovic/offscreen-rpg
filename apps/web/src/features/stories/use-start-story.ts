@@ -50,7 +50,7 @@ async function putStartFrozen(
     try {
       preview = await readLatestOpening(envelope.draftId);
     } catch {
-      preview = null;
+      // Keep null when the latest opening cannot be refreshed.
     }
     return { kind: 'conflict', preview };
   }
