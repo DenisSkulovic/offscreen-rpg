@@ -8,8 +8,8 @@
 
 | Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |
-| Next page, authenticated initial data, 401/404 | [App Router map](app/README.md) (W02/W07/W15) | One `app/**/page.tsx` and server session reader |
-| Server vs browser transport, version merge | [Web transport map](src/lib/README.md) (W02/W03/W15) | `viewer.ts` or `story-transport.ts`, not both by habit |
+| Next page, authenticated initial data, 401/404 | [App Router map](app/README.md) (W02/W07/W15) | One `app/(authenticated)/**/page.tsx` and [`src/server`](src/server/README.md) |
+| Server vs browser transport, version merge | [Server reader map](src/server/README.md) / [browser transport](src/lib/README.md) (W02/W03/W15) | `src/server/*` or `story-transport.ts`, not both by habit |
 | Play command, polling, campaign, history/settings | [Play owner map](src/features/play/README.md) (W03/W04/W05/W06/W07/W11/W17) | `view.tsx`/target symbol, then Nest route if needed |
 | Draft creation, opening, Start, list pagination | [Stories owner map](src/features/stories/README.md) (W08/W09/W10) | `draft-editor.tsx` / `opening-preview.tsx` |
 | Chamber inspector and QA | [Chamber owner map](src/features/developer-tools/chamber/README.md) (CH01–CH16; CH11 UI after W15; W12 superseded) | `use-chamber-play.ts` and conditional Nest bootstrap |

@@ -8,7 +8,7 @@
 
 | When changing… | Current source owner | Follow only if needed |
 | --- | --- | --- |
-| Play route, authenticated initial HTML | [server PlayPage](../../../app/play/[id]/page.tsx) | [requireViewer](../../lib/viewer.ts) checks session; Zod `storySnapshotSchema` parses response |
+| Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | [requireViewer](../../server/viewer.ts) + [readNestJson](../../server/nest-reader.ts); Zod `storySnapshotSchema` |
 | Scene selection and status | [PlayScene](view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
 | Current snapshot refresh/merge | `view.tsx`: `acceptSnapshot`, polling `useEffect` | [preferNewerSnapshot](../../lib/story-transport.ts); **no viewer/story identity check in comparator** today |
 | Single choice and timed-wait control | `view.tsx`: `respond` / `control` with UUID refs | Nest `PUT /stories/:id/resolutions/:operationId` **202**, `PUT /:id/controls/:operationId` **200** |
@@ -22,7 +22,7 @@
 
 ```text
 URL /play/:id
-  -> PlayPage -> requireViewer() -> GET Nest /api/stories/:id -> storySnapshotSchema
+  -> (authenticated) PlayPage -> requireViewer() -> readNestJson /api/stories/:id -> storySnapshotSchema
   -> PlayScene -> user chooses -> PUT /resolutions/:operationId (same UUID/body on retry)
   -> Nest admits (202), returns current public snapshot
   -> browser reads/polls until authoritative version/settlement

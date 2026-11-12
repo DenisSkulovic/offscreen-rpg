@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01, W20 and W21 are Done.** Next cost-first packet when authorized: [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) (then W15). There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01, W02, W20 and W21 are Done.** Next cost-first packet when authorized: [W15 TanStack Query SSR/hydration](2026-11-12--web-tanstack-query-hydration/CHANGE.md). There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01/W02/W20/W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -14,7 +14,7 @@ Current change: none
 | **A: faster iteration** | [W20 Turbo test:fast/cache lane](2026-11-12--web-fast-feedback-toolchain/CHANGE.md) | Fast local Vitest/test graph without forcing a Next production build | W01 |
 | **A: CI economy** | [W21 conditional GitHub Actions gates](2026-11-12--web-ci-budget/CHANGE.md) | Documentation-only skips broad infrastructure; real CI integration still available | W01 W20 |
 | **A: navigation guard** | [W22 nested docs / anchor checker](2026-11-12--web-context-navigation-check/CHANGE.md) | Extend cheap `check_docs.py` to new source maps and exact heading anchors | No runtime dependency |
-| **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | Server-only authenticated reader, route group, same-origin config | W01 preferred |
+| **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | **Done:** server-only reader, `(authenticated)` group, `API_PROXY_ORIGIN` | W01 preferred |
 | **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | Query v5 provider, per-request prefetch/dehydrate/HydrationBoundary, viewer keys | W01 W02 |
 | **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | Only one viewer/story authoritative Query projection and version gate | W15 |
 | **B: receipts** | [W19 durable operation receipt GET](2026-11-12--web-resolution-operation-receipts/CHANGE.md) | Read-only Nest resolution status/identity endpoint | W02 |

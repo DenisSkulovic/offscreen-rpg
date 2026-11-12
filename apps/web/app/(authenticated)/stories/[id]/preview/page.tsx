@@ -4,45 +4,54 @@ import {
   latestOpeningSchema,
   mechanicalContentCatalogueSchema,
 } from '@offscreen/contracts/openings';
-import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { requireViewer } from '@/src/server/viewer';
+import { nestFetch, parseNestJson } from '@/src/server/nest-reader';
+import { NestTransientError } from '@/src/server/nest-errors';
 import { OpeningPreviewPanel } from '@/src/features/stories/opening-preview';
+import { classifyNestStatus } from '@/src/server/classify-nest-status';
 
 export default async function Preview({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { cookie } = await requireViewer();
+  const viewer = await requireViewer();
   const parsed = draftIdSchema.safeParse((await params).id);
   if (!parsed.success) notFound();
-  const options = {
-    headers: { cookie },
-    cache: 'no-store' as const,
-    signal: AbortSignal.timeout(5000),
-  };
-  const [draftResponse, previewResponse, catalogueResponse] = await Promise.all([
-    fetch(`${apiOrigin()}/api/drafts/${parsed.data}`, options),
-    fetch(`${apiOrigin()}/api/drafts/${parsed.data}/openings/latest`, options),
-    fetch(
-      `${apiOrigin()}/api/drafts/${parsed.data}/openings/catalogue`,
-      options,
-    ),
-  ]);
-  if (
-    draftResponse.status === 401 ||
-    previewResponse.status === 401 ||
-    catalogueResponse.status === 401
-  )
+  const [draftResponse, previewResponse, catalogueResponse] = await Promise.all(
+    [
+      nestFetch(viewer, `/api/drafts/${parsed.data}`),
+      nestFetch(viewer, `/api/drafts/${parsed.data}/openings/latest`),
+      nestFetch(viewer, `/api/drafts/${parsed.data}/openings/catalogue`),
+    ],
+  );
+  const statuses = [
+    draftResponse.status,
+    previewResponse.status,
+    catalogueResponse.status,
+  ].map(classifyNestStatus);
+  if (statuses.some((status) => status.kind === 'unauthorized')) {
     redirect('/sign-in');
-  if (draftResponse.status === 404) notFound();
-  if (!draftResponse.ok || !previewResponse.ok || !catalogueResponse.ok)
-    throw new Error('Preview could not be loaded');
+  }
+  if (classifyNestStatus(draftResponse.status).kind === 'not_found') {
+    notFound();
+  }
+  if (statuses.some((status) => status.kind !== 'success')) {
+    throw new NestTransientError(
+      [draftResponse, previewResponse, catalogueResponse].find(
+        (response) => classifyNestStatus(response.status).kind !== 'success',
+      )?.status ?? 503,
+      'Preview could not be loaded',
+    );
+  }
   return (
     <OpeningPreviewPanel
-      draft={draftSchema.parse(await draftResponse.json())}
-      initial={latestOpeningSchema.parse(await previewResponse.json()).preview}
+      draft={await parseNestJson(draftResponse, draftSchema)}
+      initial={
+        (await parseNestJson(previewResponse, latestOpeningSchema)).preview
+      }
       mechanicalContent={
-        mechanicalContentCatalogueSchema.parse(await catalogueResponse.json())
+        (await parseNestJson(catalogueResponse, mechanicalContentCatalogueSchema))
           .entries
       }
     />

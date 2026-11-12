@@ -1,6 +1,7 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
-import { apiOrigin, requireViewer } from '@/src/lib/viewer';
+import { requireViewer } from '@/src/server/viewer';
+import { readNestJson } from '@/src/server/nest-reader';
 import { DraftEditor } from '@/src/features/stories/draft-editor';
 import { mechanicalContentCatalogueSchema } from '@offscreen/contracts/openings';
 
@@ -9,35 +10,25 @@ export default async function SavedDraft({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { cookie } = await requireViewer();
+  const viewer = await requireViewer();
   const parsed = draftIdSchema.safeParse((await params).id);
   if (!parsed.success) notFound();
-  const response = await fetch(`${apiOrigin()}/api/drafts/${parsed.data}`, {
-    headers: { cookie },
-    cache: 'no-store',
-    signal: AbortSignal.timeout(5000),
-  });
-  if (response.status === 404) notFound();
-  if (response.status === 401) redirect('/sign-in');
-  if (!response.ok) throw new Error('Draft could not be loaded');
-  const catalogueResponse = await fetch(
-    `${apiOrigin()}/api/drafts/${parsed.data}/openings/catalogue`,
-    {
-      headers: { cookie },
-      cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
-    },
+  // Draft ownership/404 before catalogue so a missing draft cannot surface as 5xx.
+  const draft = await readNestJson(
+    viewer,
+    `/api/drafts/${parsed.data}`,
+    draftSchema,
   );
-  if (!catalogueResponse.ok)
-    throw new Error('Story starts could not be loaded');
+  const catalogue = await readNestJson(
+    viewer,
+    `/api/drafts/${parsed.data}/openings/catalogue`,
+    mechanicalContentCatalogueSchema,
+  );
   return (
     <DraftEditor
       id={parsed.data}
-      initial={draftSchema.parse(await response.json())}
-      preparedStarts={
-        mechanicalContentCatalogueSchema.parse(await catalogueResponse.json())
-          .entries
-      }
+      initial={draft}
+      preparedStarts={catalogue.entries}
     />
   );
 }

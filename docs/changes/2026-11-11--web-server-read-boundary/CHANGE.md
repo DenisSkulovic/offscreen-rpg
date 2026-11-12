@@ -5,7 +5,7 @@
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. This packet remains **unselected for code execution** until the owner instructs Cursor to perform it. **Source baseline:** `470a5df069470bf758eb1a560c515846ce781637` (GitHub source inspection only; recheck current branch/worktree at execution).
+**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../engineering/targets/react-next.md)**. Owner authorized Cursor execution on **2026-11-12** after W01/W20/W21. Implemented and verified the same day (unit/status negatives + `pnpm test:fast` + `@offscreen/web` typecheck). Full production-like proxy/HTML privacy remains **W14**.
 
 **Dependencies:** W01 recommended. Must precede W15 and W19.  
 **Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F1 F2 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G14 G16 G25**.
