@@ -12,6 +12,7 @@ import {
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { makeStorySnapshot, fixtureIds } from '@/src/test/story-fixtures';
+import { renderWithStoryQuery } from '@/src/test/query-harness';
 
 vi.mock('@/src/features/session/session-refresh', () => ({
   SessionRefresh: () => null,
@@ -42,6 +43,16 @@ afterAll(() => {
   server.close();
 });
 
+function renderPlay(story: ReturnType<typeof makeStorySnapshot>) {
+  const { element } = renderWithStoryQuery(
+    ({ viewerId, storyId }) => (
+      <PlayScene viewerId={viewerId} storyId={storyId} />
+    ),
+    story,
+  );
+  return render(element);
+}
+
 describe('PlayScene', () => {
   it('renders an existing scene and lets the player choose an option', async () => {
     const user = userEvent.setup();
@@ -69,7 +80,7 @@ describe('PlayScene', () => {
       ),
     );
 
-    render(<PlayScene story={initial} />);
+    renderPlay(initial);
 
     expect(
       screen.getByRole('heading', { name: 'Ashfall Approach' }),
@@ -125,7 +136,7 @@ describe('PlayScene', () => {
     );
 
     try {
-      render(<PlayScene story={initial} />);
+      renderPlay(initial);
       expect(
         screen.getByRole('heading', { name: 'Current authoritative scene' }),
       ).toBeInTheDocument();
@@ -170,7 +181,7 @@ describe('PlayScene', () => {
     );
 
     try {
-      const { unmount } = render(<PlayScene story={initial} />);
+      const { unmount } = renderPlay(initial);
       unmount();
       const pollsAtUnmount = polls;
       await act(async () => {

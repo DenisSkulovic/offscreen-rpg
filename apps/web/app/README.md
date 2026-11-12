@@ -1,8 +1,8 @@
 # Next App Router | source map
 
-**First look:** Existing Next 16 pages are Server Components unless explicitly marked `'use client'`. Private URLs live under [`(authenticated)/`]((authenticated)/) with a layout session gate; each page still does owner-scoped Nest reads via [`src/server`](../src/server/README.md). Public routes stay outside that group. **There is no current TanStack Query provider yet** (W15).
-**Start:** [root layout](layout.tsx) / [`requireViewer`](../src/server/viewer.ts) → private route below → feature README. **Do not read every page.**
-**Source basis:** W02, 2026-11-12.
+**First look:** Existing Next 16 pages are Server Components unless explicitly marked `'use client'`. Private URLs live under [`(authenticated)/`]((authenticated)/) with a layout session gate + browser Query provider; Nest reads use [`src/server`](../src/server/README.md). **Play** is the first route with SSR `prefetchQuery` + `HydrationBoundary`. Public routes stay outside that group.
+**Start:** [root layout](layout.tsx) / [`requireViewer`](../src/server/viewer.ts) → [(authenticated)/layout.tsx]((authenticated)/layout.tsx) → private route → feature README. **Do not read every page.**
+**Source basis:** W15, 2026-11-12.
 
 ## One route → one owner
 
@@ -14,12 +14,12 @@
 | `/stories/new?id=UUID` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |
 | `/stories/:id/preview` | [(authenticated)/stories/[id]/preview/page.tsx]((authenticated)/stories/[id]/preview/page.tsx) | `src/features/stories/opening-preview.tsx` | parallel draft/latest/catalogue SSR reads |
-| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `src/features/play/view.tsx` | typed SSR story snapshot |
+| `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `src/features/play/view.tsx` | SSR prefetch + `HydrationBoundary` + `useQuery` snapshot |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
 | `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |
 | `/rules` | [rules page](rules/page.tsx) | none | public |
 
-**Next config:** [next.config.ts](../next.config.ts) rewrites browser `/api/*` via `API_PROXY_ORIGIN` (default loopback `127.0.0.1:3001`). SSR uses `API_INTERNAL_ORIGIN`. Both are Node-only; do not publish them with `NEXT_PUBLIC_*`. W15 adds QueryClient/`HydrationBoundary` inside the authenticated group; keep user-facing URL paths exactly.
+**Next config:** [next.config.ts](../next.config.ts) rewrites browser `/api/*` via `API_PROXY_ORIGIN` (default loopback `127.0.0.1:3001`). SSR uses `API_INTERNAL_ORIGIN`. Both are Node-only; do not publish them with `NEXT_PUBLIC_*`. Query provider + Play hydration live inside `(authenticated)`; keep user-facing URL paths exactly.
 
 ## Scope and failure model
 

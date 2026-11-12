@@ -1,8 +1,11 @@
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { storySnapshotSchema } from '@offscreen/contracts/stories';
 import { requireViewer } from '@/src/server/viewer';
 import { readNestJson } from '@/src/server/nest-reader';
+import { createServerQueryClient } from '@/src/shared/api/query-client';
+import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
 import { PlayScene } from '@/src/features/play/view';
 
 export default async function PlayPage({
@@ -15,10 +18,16 @@ export default async function PlayPage({
   if (!parsed.success) {
     notFound();
   }
-  const story = await readNestJson(
-    viewer,
-    `/api/stories/${parsed.data}`,
-    storySnapshotSchema,
+  const storyId = parsed.data;
+  const queryClient = createServerQueryClient();
+  await queryClient.prefetchQuery({
+    ...storySnapshotQueryOptions(viewer.user.id, storyId),
+    queryFn: () =>
+      readNestJson(viewer, `/api/stories/${storyId}`, storySnapshotSchema),
+  });
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <PlayScene viewerId={viewer.user.id} storyId={storyId} />
+    </HydrationBoundary>
   );
-  return <PlayScene story={story} />;
 }

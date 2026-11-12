@@ -5,6 +5,7 @@ import { StoryHistoryView } from './history';
 import { ResolutionRecovery } from './resolution-recovery';
 
 import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import {
@@ -13,6 +14,8 @@ import {
   readStorySnapshot,
   submitStoryJson,
 } from '@/src/lib/story-transport';
+import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
+import { queryKeys } from '@/src/shared/api/query-keys';
 
 function journeyAction(waiting: NonNullable<StorySnapshot['waiting']>) {
   if (waiting.remainingMs === null) {
@@ -76,31 +79,43 @@ function resolutionMessage(story: StorySnapshot) {
   return 'The storyteller is resolving this intention.';
 }
 
-export function PlayScene({ story: initial }: { story: StorySnapshot }) {
-  const [story, setStory] = useState(initial);
+export function PlayScene({
+  viewerId,
+  storyId,
+}: {
+  viewerId: string;
+  storyId: string;
+}) {
+  const queryClient = useQueryClient();
+  const { data: story } = useQuery(storySnapshotQueryOptions(viewerId, storyId));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const operation = useRef<{ id: string; body: unknown } | null>(null);
   const controlOperation = useRef<{ id: string; body: unknown } | null>(null);
-  const offer = story.current.interaction;
-  const waiting = story.waiting;
-  const storyId = story.id;
-  const isResolving = story.resolution !== null;
-  const canChoose = story.canRespond && offer !== null && !isResolving;
-  const shouldPoll =
-    story.resolution?.state === 'pending' ||
-    story.resolution?.state === 'running' ||
-    waiting != null ||
-    story.campaign?.activity?.state === 'running' ||
-    story.campaign?.actionExecution?.state === 'running' ||
-    story.campaign?.holds.some(
-      (hold) =>
-        hold.kind === 'storyteller' || hold.kind === 'storyteller-intent',
-    ) === true;
 
   function acceptSnapshot(next: StorySnapshot) {
-    setStory((prior) => preferNewerSnapshot(prior, next));
+    queryClient.setQueryData(
+      queryKeys.storySnapshot(viewerId, storyId),
+      (prior: StorySnapshot | undefined) => preferNewerSnapshot(prior, next),
+    );
   }
+
+  const offer = story?.current.interaction ?? null;
+  const waiting = story?.waiting ?? null;
+  const isResolving = story?.resolution != null;
+  const canChoose =
+    story?.canRespond === true && offer !== null && !isResolving;
+  const shouldPoll =
+    story != null &&
+    (story.resolution?.state === 'pending' ||
+      story.resolution?.state === 'running' ||
+      waiting != null ||
+      story.campaign?.activity?.state === 'running' ||
+      story.campaign?.actionExecution?.state === 'running' ||
+      story.campaign?.holds.some(
+        (hold) =>
+          hold.kind === 'storyteller' || hold.kind === 'storyteller-intent',
+      ) === true);
 
   useEffect(() => {
     if (!shouldPoll) {
@@ -112,7 +127,11 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       try {
         const latest = await readStorySnapshot(storyId, controller.signal);
         if (!controller.signal.aborted) {
-          setStory((prior) => preferNewerSnapshot(prior, latest));
+          queryClient.setQueryData(
+            queryKeys.storySnapshot(viewerId, storyId),
+            (prior: StorySnapshot | undefined) =>
+              preferNewerSnapshot(prior, latest),
+          );
         }
       } catch {
         /* Failed reads never advance the story; reopening also recovers it. */
@@ -126,7 +145,16 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [shouldPoll, storyId]);
+  }, [shouldPoll, storyId, viewerId, queryClient]);
+
+  if (!story) {
+    return (
+      <main className="story-demo play-screen">
+        <p role="status">Loading the saved scene…</p>
+      </main>
+    );
+  }
+  const scene = story;
 
   async function control(action?: 'pause' | 'resume') {
     if (!waiting?.canControl || pending) {
@@ -139,7 +167,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       controlOperation.current = {
         id: crypto.randomUUID(),
         body: {
-          intervalId: story.current.id,
+          intervalId: scene.current.id,
           expectedControlRevision: waiting.controlRevision,
           action,
         },
@@ -151,11 +179,11 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     setError('');
     try {
       const response = await submitStoryJson({
-        url: `/api/stories/${story.id}/controls/${controlOperation.current.id}`,
+        url: `/api/stories/${scene.id}/controls/${controlOperation.current.id}`,
         body: controlOperation.current.body,
       });
       if (response.status === 409) {
-        acceptSnapshot(await readStorySnapshot(story.id));
+        acceptSnapshot(await readStorySnapshot(scene.id));
         setError(
           'The wait changed or is already due. The current saved situation is shown.',
         );
@@ -185,7 +213,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       operation.current = {
         id: crypto.randomUUID(),
         body: {
-          expectedRevision: story.revision,
+          expectedRevision: scene.revision,
           submission: {
             interactionId: offer.id,
             answer: { kind: 'choice.v1', optionId },
@@ -199,11 +227,11 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     setError('');
     try {
       const response = await submitStoryJson({
-        url: `/api/stories/${story.id}/resolutions/${operation.current.id}`,
+        url: `/api/stories/${scene.id}/resolutions/${operation.current.id}`,
         body: operation.current.body,
       });
       if (response.status === 409) {
-        acceptSnapshot(await readStorySnapshot(story.id));
+        acceptSnapshot(await readStorySnapshot(scene.id));
         operation.current = null;
         setError('The situation changed. The latest saved scene is shown.');
       } else if (!response.ok) {
@@ -221,7 +249,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
     }
   }
 
-  const status = error || resolutionMessage(story);
+  const status = error || resolutionMessage(scene);
 
   return (
     <main className="story-demo play-screen">
@@ -229,17 +257,17 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
       <header className="story-header">
         <a href="/stories">← Stories</a>
         <span className="demo-label">
-          {story.storyteller?.name ?? 'Storyteller'} ·{' '}
-          {story.campaign?.worldTime.label ?? `revision ${story.revision}`}
+          {scene.storyteller?.name ?? 'Storyteller'} ·{' '}
+          {scene.campaign?.worldTime.label ?? `revision ${scene.revision}`}
         </span>
       </header>
       <div className="play-layout">
         <section className="play-main" aria-label="Current scene">
           <article className="story-scene">
             <p className="eyebrow">Current scene</p>
-            <h1>{story.current.content.title}</h1>
+            <h1>{scene.current.content.title}</h1>
             <div className="scene-prose">
-              {story.current.content.paragraphs.map((paragraph, index) => (
+              {scene.current.content.paragraphs.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
@@ -281,7 +309,7 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
               Retry control
             </button>
           ) : null}
-          {offer && !story.campaign?.character ? (
+          {offer && !scene.campaign?.character ? (
             <section className="scene-choices" aria-label="Offered interaction">
               <p>{offer.specification.prompt}</p>
               {offer.specification.options.map((option) => (
@@ -323,49 +351,49 @@ export function PlayScene({ story: initial }: { story: StorySnapshot }) {
               {status}
             </p>
           ) : null}
-          <ResolutionRecovery story={story} onSnapshot={acceptSnapshot} />
-          {story.campaign?.character ? (
+          <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
+          {scene.campaign?.character ? (
             <CampaignPlay
-              key={story.campaign.offer?.id ?? story.id}
-              story={story}
-              campaign={story.campaign}
+              key={scene.campaign.offer?.id ?? scene.id}
+              story={scene}
+              campaign={scene.campaign}
               onSnapshot={acceptSnapshot}
             />
           ) : null}
         </section>
         <aside className="play-sidebar" aria-label="Story information">
-          <StoryHistoryView storyId={story.id} />
-          {story.campaign ? (
+          <StoryHistoryView storyId={scene.id} />
+          {scene.campaign ? (
             <CampaignSettingsEditor
-              key={story.campaign.settings.revision}
-              story={story}
-              campaign={story.campaign}
+              key={scene.campaign.settings.revision}
+              story={scene}
+              campaign={scene.campaign}
               onSnapshot={acceptSnapshot}
             />
           ) : null}
           <details>
             <summary>Technical details</summary>
             <dl>
-              {story.usage ? (
+              {scene.usage ? (
                 <>
                   <dt>Settled model usage (USD)</dt>
                   <dd>
-                    {(Number(story.usage.settledMicrousd) / 1000000).toFixed(6)}
+                    {(Number(scene.usage.settledMicrousd) / 1000000).toFixed(6)}
                   </dd>
                   <dt>Reserved pending usage (USD)</dt>
                   <dd>
-                    {(Number(story.usage.reservedMicrousd) / 1000000).toFixed(
+                    {(Number(scene.usage.reservedMicrousd) / 1000000).toFixed(
                       6,
                     )}
                   </dd>
                 </>
               ) : null}
               <dt>Story ID</dt>
-              <dd>{story.id}</dd>
+              <dd>{scene.id}</dd>
               <dt>Revision</dt>
-              <dd>{story.revision}</dd>
+              <dd>{scene.revision}</dd>
               <dt>Passage ID</dt>
-              <dd>{story.current.id}</dd>
+              <dd>{scene.current.id}</dd>
             </dl>
           </details>
         </aside>

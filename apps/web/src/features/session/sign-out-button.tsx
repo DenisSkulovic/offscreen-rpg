@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authClient } from '@/src/lib/auth-client';
+import { clearAuthenticatedQueryCaches } from './authenticated-query-provider';
 
 export function SignOutButton() {
+  const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
   async function signOut() {
@@ -16,6 +19,7 @@ export function SignOutButton() {
         setPending(false);
         return;
       }
+      clearAuthenticatedQueryCaches(queryClient);
       // Full navigation discards the client router's authenticated page cache.
       window.location.replace('/');
     } catch {

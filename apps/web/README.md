@@ -9,6 +9,7 @@
 | Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |
 | Next page, authenticated initial data, 401/404 | [App Router map](app/README.md) (W02/W07/W15) | One `app/(authenticated)/**/page.tsx` and [`src/server`](src/server/README.md) |
+| Query keys, provider, SSR hydration | [Shared Query API](src/shared/api/README.md) (W15/W03) | `query-keys.ts` / Play `HydrationBoundary` |
 | Server vs browser transport, version merge | [Server reader map](src/server/README.md) / [browser transport](src/lib/README.md) (W02/W03/W15) | `src/server/*` or `story-transport.ts`, not both by habit |
 | Play command, polling, campaign, history/settings | [Play owner map](src/features/play/README.md) (W03/W04/W05/W06/W07/W11/W17) | `view.tsx`/target symbol, then Nest route if needed |
 | Draft creation, opening, Start, list pagination | [Stories owner map](src/features/stories/README.md) (W08/W09/W10) | `draft-editor.tsx` / `opening-preview.tsx` |
