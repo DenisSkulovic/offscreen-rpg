@@ -1,212 +1,247 @@
-# React / Next.js engineering target | architecture contract
+# React / Next.js engineering target | DECIDED architecture
 
-**Status:** Revised proposal for owner review, 2026-11-12. **Owner:** repository owner. **Scope:** `apps/web`, its browser/server API consumption, directly supporting shared contracts and frontend-specific quality gates. **Authority:** an engineering end-state proposal, not a source audit, gameplay requirement, aesthetic design, or permission to implement. Existing F1–F10 anchors are preserved; F11–F15 extend the contract.
+**State: ARCHITECTURE SELECTED, 2026-11-12.** The repository owner explicitly directed the architect to **choose the complete professional frontend stack and resolve architecture decisions**, with TanStack Query mandatory and no cap on the eventual scope of a justified refactor. This contract supersedes the earlier “Proposed/minimal client controllers/defer TanStack” recommendation. **Implementation is not authorized in this session:** only Markdown is being edited; Cursor will execute selected Changes later. A selected architecture is not a claim that its code exists or tests pass.
 
-**Mission:** make Offscreen RPG an exceptionally understandable, reliable, maintainable React 19 / Next.js 16 App Router portfolio. The interface's present appearance and player experience are not the design reference. Nest remains the authoritative backend. No gameplay expansion, visual redesign, live-provider spending, message broker, database migration, or wholesale framework adoption is authorized by this proposal.
+**Scope:** React 19, Next.js 16 App Router, `apps/web`, its browser/SSR consumer boundary, necessary Nest-facing API contracts and end-to-end verification. **Purpose:** a senior-engineering portfolio. **Excluded:** gameplay expansion, UI/UX and visual redesign, new narrative behavior, live model spending, unrelated infrastructure modernization. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution semantics](../../technical/execution.md), [gameplay boundaries](../../player-experience.md); this document owns *frontend engineering decisions*, not new game rules.
 
-**Related authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution](../../technical/execution.md), [code quality](../code-quality.md), and [target-first rule](../../../.agents/rules/target-driven-renewal.md). These own gameplay and backend promises; a frontend refactor must preserve them. The older technical document's suggested Tailwind/shadcn/TanStack Query toolkit is a *candidate*, not evidence that installing it improves this project. Any normative conflict must be resolved before implementation.
+## 0. Final stack decisions (these are instructions, not a library wishlist)
 
-## 1. Architecture thesis, defined without reference to current source
+| Concern | Selected technology/architecture | Binding reason and constraint |
+| --- | --- | --- |
+| Framework | **Existing Next.js 16 App Router + React 19 + TypeScript 5 strict** | Keep Server Components and SSR, focused Client islands, RSC navigation/streaming, no migration to SPA |
+| Remote/server state | **TanStack Query v5, required** | One identity-keyed browser server-state cache, hydration, invalidation, pagination, bounded refetch and observability |
+| Server data loading | **Next server-only authenticated Nest readers + request-scoped QueryClient + dehydrate/HydrationBoundary** | Private HTML renders with preloaded cache; no independent Server Component copy of mutable story data |
+| HTTP and validation | **Zod 4 contracts + typed endpoint-specific server and browser adapters** | Parse unknown at wire; exhaustively distinguish protocol/auth/conflict/transient errors; no untyped `send(anything)` |
+| Forms | **React Hook Form v7 + `@hookform/resolvers/zod`**, with `useFieldArray` where appropriate | Creation draft, campaign settings, preset editing; dirty tracking, field errors, immutable save snapshots, controlled resets |
+| Mutations | **TanStack `useMutation` for transport lifecycle + explicit typed intent state machine for business protocol** | Mutation success can mean 202/admission, not final publication; stable UUID/payload, no automatic paid replay |
+| Local UI | **React state/reducers for ephemeral view state; URL for navigable identity** | Query is the only client cache for remote server state; no Redux/Zustand/XState or synchronized duplicate stores |
+| Ongoing updates | **Authenticated SSE invalidation + Query refetch, with bounded polling/resync fallback** | Existing future SSE contract becomes part of selected engineering destination; events are hints, not authority |
+| Tests | **Vitest, React Testing Library, user-event, MSW; existing Playwright/Nest integration; axe-core/Playwright accessibility checks** | Pure -> component -> HTTP -> browser truth, deterministic races and no paid providers |
+| Component workbench | **Storybook with Next-compatible builder + MSW-backed deterministic states** | Independent review of normal, blocked, pending, uncertain, conflict and recovery contracts, *not* a visual redesign |
+| Static enforcement | **ESLint (React Hooks, Next, TanStack Query rules), TypeScript strict + enforceable import directions, Prettier and existing Turborepo/CI** | Errors and architecture boundaries checked mechanically, not a promise in an agent rule |
+| Diagnostics | **Safe structured frontend request/command/error instrumentation + React Profiler and measured build/network traces** | Diagnose wrong view, stale read and failed operation without logging story content, cookies, tokens or prompts |
 
-**Default recommendation: server-first route composition + feature-scoped browser controllers + a minimal typed transport boundary + shared pure policies.** This is a chosen *proposed destination*, not a demand for particular filenames or design patterns.
+**Version policy:** keep existing pinned Next 16/React 19/Zod 4. Add the compatible *stable* major versions above, pin exact lockfile versions after installation and confirm compatibility on Node 24 with a successful build. Do not assert a particular future patch version without verification. Avoid experimental TanStack streaming package, React compiler auto-enablement and new client-state libraries. Native controls remain the default; accessible Radix-like primitives are permissible **only** for a genuinely complex control added under the later UI/UX target, not as a blanket rewrite.
+
+**No discretionary technology decisions left to Cursor:** it may choose local implementation details, but not substitute SWR/Redux, omit TanStack Query/RHF, invent Server Actions, replace SSE with WebSockets, broaden game authority or silently change retry/security semantics.
+
+## 1. Desired data and rendering topology
 
 ```text
-Browser navigation (route ID + authenticated viewer)
-     |
-     v
-Next App Router: server page/layout, request-bound session check
-     |  - private Nest reads, explicit no-store
-     |  - validate serialized public projections
-     |  - choose redirect / not-found / recoverable failure
-     v
-Server-rendered page + narrow Client interactive islands
-     |
-     +-- read-only presentation (immutable snapshot/derived view)
-     +-- feature controller (resource identity, view reconciliation, refresh)
-     +-- typed command lifecycle (captured intent ID + frozen payload)
-     +-- local form/draft state (unsaved data, revision, conflict resolution)
-     +-- paged readers (query/filter/cursor identity)
-     |
-     v
-Same-origin browser HTTP -> Nest API (authentication, authorization,
-                               admission, idempotency, receipts)
-                                -> application/database/worker (authority)
+Browser navigation / Next route (viewer + entity URL identity)
+       |
+       v
+Next Server Component or authenticated route group
+  ├─ server-only requireViewer / Nest owner-aware read
+  ├─ request-scoped QueryClient (NEVER process-global)
+  ├─ parallel critical prefetch using Zod-validated server adapters
+  └─ HydrationBoundary(dehydrate only intended private projection)
+       |
+       v
+React-rendered HTML + interactive Client feature islands
+  └─ authenticated QueryClientProvider (memory-only browser cache)
+      ├─ useQuery / useSuspenseQuery for resource snapshots and read models
+      ├─ useInfiniteQuery for lists and chronology
+      ├─ useMutation with frozen intent envelope and explicit domain lifecycle
+      ├─ React Hook Form local edit sessions
+      ├─ local view control state, derived selectors, pure render components
+      └─ SSE invalidation -> invalidate/refetch Query -> validated snapshot
+       |
+       v
+same-origin typed browser HTTP (cookie session; CSRF enforced)
+       |
+       v
+Nest API -> application/DB/Temporal authority
+  ├─ user/object authorization and public projections
+  ├─ idempotency/operation receipt and visible version
+  ├─ 200 immediate / 202 admitted / 409 conflicted semantics
+  └─ SSE update hints after committed state, without private narrative
 
-Developer Chamber: distinct client surface; reuse only safe pure/transport
-semantics, never inherit a player's hidden state or privilege.
+Developer Chamber: separate authenticated *developer-gated* API and UI,
+no shared privileged browser state, reused only safe Query/transport policies.
 ```
 
-Responsibilities are **logical**. A new module must isolate a different change/failure/identity lifetime and earn its maintenance cost. Do not turn the sketch into a framework or create a provider wrapping every component.
+The existing `app/` URL structure stays unchanged for users. Introduce a route group such as `app/(authenticated)/` for **server-side auth composition and a small client Query provider** while preserving every path (`/stories`, `/play/:id`, `/chamber`). Keep root `app/layout.tsx` a Server Component. The grouped layout may establish auth/provider context, but **every private page/API request still independently enforces access**; shared layouts can survive soft navigation. Public and scripted `/demo` routes do not pay for the authenticated Query provider.
 
-### State ownership inventory (normative design)
+### Data ownership invariants
 
-| State | Authority | Scope and lifetime | Reader/writer/invalidator |
+1. **Nest owns truth.** TanStack Query caches *public/authorized projections*, never mechanics, billing, or invented in-progress results.
+2. **Query owns remote data.** Do not store the same story in `useState`, context, Zustand or a parallel custom snapshot store. A single Query key/entry is the client projection owner; use pure structural-sharing/reconciliation and one update API.
+3. **RHF owns unsaved edits.** Background Query refreshes must not reset dirty user values. The current server revision and form edit session are separate.
+4. **User intent is distinct from request.** Query's mutation status is transport, not a durable operation ledger or substitute for an explicit intent state machine.
+5. **Local UI remains local.** Tabs, expanded panels, offer path breadcrumbs and temporary menu state use `useState`/`useReducer` and reset only at their declared entity/offer boundary.
+6. **URL owns selection.** Query keys include authenticated viewer and resource identity. A->B transition must never show A as B even while B is loading.
+
+## 2. TanStack Query architecture: exact operating contract
+
+### Provider and SSR hydration
+
+- Server prefetch: instantiate a **new QueryClient per server request or independently scoped private route**, run authenticated Nest `prefetchQuery`/`fetchQuery` in parallel for critical reads, and hand only their Zod-validated authorized representations to `HydrationBoundary`. **Never export a module-global server QueryClient.**
+- Server prefetch and browser `queryFn` have the **same key and result schema**, but different transports: the server uses request-bound private Nest calls; the browser uses same-origin `/api`. No cookies, server origins or Node-only code may cross into a Client import graph.
+- Client provider instantiates one browser QueryClient per authenticated browser session (not each render). Use stable Query client construction compatible with Suspense. Prefetch/await the *primary* snapshot required for useful server HTML; noncritical panels may stream independently under a deliberate Suspense boundary.
+- **No duplicated mutable display owners:** do not separately render a long-lived server JSX snapshot next to a client Query view that later diverges. Private Server Components are principally loaders and safe composition; interactive story/list components read the hydrated Query cache. The HTML must contain meaningful scene text before hydration, without a duplicate mount fetch.
+- For an already mounted Query entry, blindly passing fresh server `initialData` is **forbidden** because it need not replace older cache data. Use hydration, explicit invalidation and domain-version-aware acceptance. Test soft navigation, RSC refresh and in-flight response ordering.
+
+### Required query keys and cache policies
+
+Every private key begins with `['viewer', viewerId, ...]` and includes stable resource/filter identity. Never put session cookies, tokens, unredacted text or a mutable object identity into a key.
+
+| Query | Key suffix | Default stale policy | Invalidation |
 | --- | --- | --- | --- |
-| Selected story/draft, route params | URL + server authorization | Navigation identity | Next route; change means isolate/reset former resource |
-| Viewer and session | Nest/Better Auth | Authenticated principal and session epoch | Server check; full navigation/partition on logout, account switch or expiry |
-| Published story | Nest public projection | (viewer scope, story ID, viewVersion, resolution version when valid) | One story controller accepts only eligible snapshots; no client mechanics |
-| Command intent | User action + Nest admission | (viewer, resource, command kind, operation ID, immutable payload); until known outcome/reconciliation | Typed use-case controller; never derive a second intent from rerender |
-| Ongoing background work | Nest snapshot/receipt | Resource/operation identity, server-reported state | Read/refresh; browser timers are not authority |
-| Saved form | Nest revision | Draft/settings/preset identity | Validated read/write with conflict handling |
-| Unsaved form and local navigation | Browser user | Specific entity and edit session | Feature form controller; never overwritten by unrelated refresh |
-| List, history, filters and cursor | Server records, browser view | Viewer + query + page/session watermark | Explicit page reader and reset on key change |
-| QA inspector/workspace | Authorized developer API, local ephemeral controls | Viewer + selected run/scenario | Separate Chamber owner; persisted browser hints cannot authenticate |
+| Current story | `['story',storyId,'snapshot']` | `staleTime: 5_000` ms; active pending status refresh separately | Accepted command, SSE hint, focus/resume, explicit refresh |
+| Story history | `['story',storyId,'history',filters]` (infinite) | 30_000 ms | Publication/invalidation or user explicit refresh |
+| Story list | `['stories','list',filters]` (infinite) | 15_000 ms | Start/fork and relevant publication |
+| Draft list | `['drafts','list',filters]` (infinite) | 15_000 ms | Draft save/create |
+| Draft detail | `['draft',draftId]` | 15_000 ms | Save/conflict reconciliation |
+| Latest opening | `['draft',draftId,'opening']` | 5_000 ms while pending, otherwise 15_000 ms | Generation admission/settlement, Start conflict |
+| Catalogues/presets | `['catalogue',kind]` or `['presets']` | 300_000 ms for immutable catalogue; 60_000 ms for private presets | Explicit save or catalogue change |
+| Settings/history | `['story',storyId,'settings',kind]` | 30_000 ms | Settings mutation |
+| Chamber/QA | `['chamber',...]`, `['qa',runId,...]` | 5_000 ms or explicit refresh by scenario | Own authorized command/run transitions |
 
-**Resource safety is not one comparator.** It requires matching render identity *before B has loaded*, guarding late callbacks, resetting local edits deliberately, partitioning session-private caches, and then comparing authoritative versions for the *same* resource.
+**Default browser cache:** memory-only, `gcTime: 300_000` ms. `refetchOnWindowFocus: true` and `refetchOnReconnect: true` *for stale GETs*; no service worker/private cache persister, IndexedDB, `persistQueryClient` or `broadcastQueryClient` for private payloads. GET retry: at most **one** bounded retry with backoff on genuine network/502/503/504, never retry 400/401/403/404/409/429 or malformed contract. **Mutation retry: zero**, `networkMode: 'always'` for irreversible commands so they fail/enter uncertain handling instead of being silently queued for network reconnection. No automatic paused-mutation resume.
 
-## 2. Required engineering qualities and falsifiable acceptance
+### Snapshot and update policy
+
+- One validated story snapshot Query entry is canonical for all Play consumers. Use `queryClient.setQueryData` *only* through a resource-aware, monotonic reconciliation function with viewer/story key and server version. All mutation responses, explicit reads, SSE invalidation reads, SSR hydration conflicts and polling results obey this gate.
+- For same story order by `viewVersion`, then validated `resolution.version` when applicable. **Equal logical-version dynamic projections** (e.g. countdown display) may be accepted only from the latest eligible request epoch; older completions cannot roll back a newer request result. If server protocol violates “material state increments visible version”, strengthen the **backend projection contract**, not a client guess.
+- Query's `dataUpdatedAt` controls cache freshness **not** domain authority. It is forbidden to treat later arrival time as a newer story revision or to let Query's default replacement semantics defeat domain monotonicity.
+- Query `select` derives read-only view information, not another store. No optimistic committed outcomes. Direct command response may seed a snapshot only after runtime validation and matching resource/operation eligibility; otherwise invalidate and fetch.
+- Queries use AbortSignal from TanStack queryFn and an entity/viewer guard for callbacks that can outlive cancellation. Every query/command response must be parsed by Zod.
+
+### Pagination
+
+Use `useInfiniteQuery` for stories, drafts and chronology, with typed per-resource cursor and `getNextPageParam`, a finite `maxPages` when justified by UI memory size, stable ordering/dedupe and explicit query-key reset. Story list uses UUID continuation, drafts opaque cursor, history numeric `before`. Preserve current visible buttons and navigation, changing only engineering consistency. One in-flight `fetchNextPage` per resource; wrong-viewer/route responses cannot enter another key.
+
+## 3. Command, error and recovery contract
+
+**Command transport uses `useMutation` but domain state uses a typed, endpoint-specific intent machine** (discriminated union/reducer, not XState). Freeze each envelope at user interaction: `{viewerId, resourceId, kind, operationId, endpoint, requestVersion, body, createdAt}`. A repeated attempt must carry **the exact ID, endpoint and frozen JSON payload**. Never use an Effect to POST when a component mounts or browser reconnects. For commands where the server returns 202, the result is `accepted/pending`, never `published`. On 409 read authoritative state and preserve local editable input; on 401 reauthenticate without resending; 400/422 actionable; 429 rate-limited; 5xx/timeout ambiguous until GET/receipt reconciliation. Query `invalidateQueries` updates all affected read models *after* a confirmed transition, not as a substitute for resolving an unknown business effect.
+
+### Reload and durable identity: fully decided
+
+- **Resolution/admitted expensive commands:** add a small, owner-scoped read-only Nest **operation receipt endpoint** (see W19); it reports the persisted operation identity/status and only authorized public fields. This is a frontend-supporting API contract, **not** game mechanic redesign.
+- Persist a **minimal nonsecret, versioned, bounded-lifetime operation envelope in sessionStorage**, keyed by authenticated viewer, story and operation ID, for commands needing same-key reload recovery (Play resolutions and Start). **Do not persist session secrets, private narrative, prompt bodies, arbitrary form prose or the Query cache.** If the original payload cannot safely be stored, store an operation reference and require receipt reconciliation; never invent a replacement intent.
+- On reload first GET the authoritative story/operation receipt, never POST automatically. Only an explicit user recovery control can reissue the *identical* frozen envelope after authorization/contract validation. If receipt absent/ambiguous, show a blocked/unknown state, not a new charge.
+- **Start:** keep `?story=UUID` as recovery anchor. Freeze candidate ID, draft revision, locked flag, speed and optional start package when first submitted. On reload GET `/api/stories/:storyId` first; only if not settled and still authorized may the original frozen Start envelope be offered for explicit same-body retry.
+- **Draft saves:** expected revision fence + captured submitted form values; GET latest draft on ambiguous response, preserve dirty edits. They are not equivalent to a charged Storyteller command.
+- **Generation:** explicit new request vs repeat admitted attempt. Existing `202` generation and provider-uncertain policy respected; no automatic second model dispatch.
+- Enforce backend same-operation/different-payload rejection, owner scoping and actual persisted one-effect receipts. Client disablement and TanStack mutation `scope` do not create cross-tab exactly-once guarantees.
+
+## 4. End-to-end update transport (selected, not future conjecture)
+
+**Target:** authenticated SSE for committed story/version **invalidation hints**, plus HTTP GET reconciliation. Backend sends no private narrative in events. Use `EventSource` with same-origin cookie and server-side auth/object authorization, a bounded heartbeat, proper proxy streaming and disconnect cleanup. A server append/update emits a compact `{eventId,storyId,viewVersion,kind}` after commit. Use PostgreSQL transactional `LISTEN/NOTIFY` as the minimal cross-process hint source, per the existing [client technical contract](../../technical/client-and-identity.md); this is not a durable replay or additional business queue.
+
+**Client:** one SSE stream per actively viewed story; on opening/reconnect and newer hint invalidate the matching Query key, then fetch authoritative snapshot. Dedupe event/version hints and ignore wrong story/viewer; close on session/resource change. If stream unavailable, keep bounded, visibility-aware `2s` pending-status polling as a fallback; when SSE is healthy, use a slower **30s** reconciliation safety poll while pending, plus immediate focus/reconnect/visibility refresh. Backoff on repeated error, no query storm, no paid mutation from events. The final end-to-end suite must simulate a missed event and recover from GET. **No WebSockets, Redis Pub/Sub or RabbitMQ.** SSE is a frontend transport with a narrowly necessary Nest/DB notification addition, not gameplay implementation.
+
+## 5. Forms, components and accessibility
+
+### React Hook Form rules
+
+- Use RHF for draft creation/edit, campaign settings and private preset forms. Use `zodResolver` with existing Zod schemas/explicit UI schemas, `mode: 'onTouched'`, field-linked errors and accessible focus on invalid submit. Use `useFieldArray` for tags/guidance; stable UI row keys, preserve the domain tag ID separately.
+- `defaultValues` are per *editing entity*; a newer Query response must **not** blindly become reactive `values` that erases unsaved edits. On explicit user acceptance of a newer saved revision, use controlled `reset`. On successful save advance the saved baseline (e.g. RHF `resetDefaultValues` if installed version supports it) while retaining any edits made after submit; no silent draft overwrite.
+- Keep `expectedRevision`, frozen submit body, local dirty/touched fields, pending/conflict and server revision separate. Type server error shape and represent all validation/conflict outcomes. Navigation warnings cover hard unload and known in-app navigation, never hack router internals.
+- No autosave, local private draft persistence or new form visual design without a separate product decision.
+
+### Module boundaries
+
+- `app/(authenticated)/`: route/resource and server-only auth/data prefetch, loading/error/not-found, route-group provider.
+- `src/features/<feature>/api`: typed browser endpoints/query and mutation options; `model`: state machines, pure selectors and IDs; `ui`: view components and forms. This is the **preferred folder pattern for migrated features**, not a forced layer for every trivial file.
+- `src/shared/api`: small pure HTTP/error parsing and Query key helpers; `src/shared/ui`: only genuinely reusable semantic control primitives; `src/server`: server-only Nest reader and request context. Do not invent a new shared monorepo package for a single importer.
+- Pure components receive props derived from Query/React local form state. One feature container coordinates resource/commands; children never write canonical Query story directly. A large cohesive file can remain large; an extracted module must have a distinct reason-to-change and narrow test.
+- Import direction: feature UI -> feature model/API + shared; server modules never imported by client; domain/backend packages never into web client. No cross-feature import for constants. Prefer `import type` where possible; preserve strict optional and unchecked indexed flags.
+- Keep existing visual markup/classes except necessary semantic/focus/error corrections; no broad Tailwind/shadcn/Radix adoption during this engineering campaign.
+
+### React and user-state mechanics
+
+- Follow React 19 rules of hooks and effects, stable list keys, no derived state in Effects, intentional keyed remounts by *entity* rather than settings revision, correct cleanup/Strict Mode. No heavy `useMemo`/`useCallback`/`memo` unless identity or profiling shows reason.
+- Accessibility is engineering acceptance: usable native labels/fields, keyboard operations, aria-live for genuine state transitions (not every 2s poll), focus restoration after error, valid dialogs/status semantics, adequate target/screen-reader operation, reduced motion when applicable. Use Playwright + axe and human keyboard review; don't claim WCAG from a static linter.
+- Error paths: App Router `loading/error/not-found` for expected scope; Query `QueryErrorResetBoundary` and React Suspense only where controlled and tested. Preserve authentication/forbidden/transient distinction and never render another user's cached content on browser back.
+
+## 6. Security, diagnostics, performance and proof
+
+### Authentication/developer policy
+
+- Nest + Better Auth session is authority. Next route groups authenticate at server boundary, but every endpoint reauthorizes access. Cookie sessions `HttpOnly/SameSite` under one origin, CSRF protections at Nest, explicit proxy trust and no session token in localStorage/query key/logs. Private Next reads use `cache: 'no-store'`, no shared RSC/HTTP/proxy caching and authenticated `Cache-Control: private, no-store` where appropriate. Verify all layers in a production-like build, not only source.
+- **Chamber is developer-only**: disable developer/QA endpoints by default in hosted deployments; enable only through explicit backend config and authenticated allowlist/role check. An ordinary authenticated account must not reach inspection/dispatch controls. The UI route is also gated, but **backend denies first**. This is a chosen security policy, not an optional question for Cursor.
+- QueryClient is scoped to the authenticated browser session and clears on logout/account switch. Use full navigation to flush Next Router Cache; send cross-tab logout signal via `BroadcastChannel` and force revalidation on visibility/return. Private Query cache is memory-only; QA run ID is an untrusted viewer-scoped hint, never a credential. Tests include anonymous, owner, another owner and developer role.
+
+### Quality proof
+
+- Vitest + RTL/user-event + MSW for deterministic pure/React/HTTP failures and controlled race interleavings. Preserve existing real Nest/DB/Playwright suites; tests that reset `offscreen_auth_test` require explicit safe setup. Use Playwright/axe-core for keyboard, focus, route recovery and browser privacy. Storybook state stories are **deterministic and provider-free**, for human review of the new architecture's representative states.
+- ESLint: React Hooks/exhaustive deps, Next recommended rules, TanStack Query's plugin, import boundaries, type hygiene; fix existing debt within scoped Changes, don't globally disable useful checks.
+- Profiler and bundle/request waterfall metrics precede performance claims. Avoid blanket caching/virtualization. Record baseline, improvement/unchanged cost, environment, negative cases and limits. Log only safe route category, operation correlation, state/version and error taxonomy, not user story text/PII or raw secrets.
+- Existing GitHub Actions are retained. Add cheap provider-free web tests/lint/build to current pipeline; no separate paid runner, destructive DB operations or automatic provider-backed end-to-end testing.
+
+## 7. Required F1–F15 acceptance contract
+
+The anchors deliberately preserve historical audit/Change references. Each is a concrete gate, not a qualitative grade.
 
 ### F1. Server/client rendering boundary
+Private routes render real authorized HTML before hydration using server prefetch + `HydrationBoundary`, public routes stay server/static, provider is scoped, and no duplicate fetch occurs on initial mount. Production route bundle/client graph and RSC/soft-navigation pass.
 
-- Public informational routes remain server/static where possible. Private routes authenticate, authorize via Nest and produce meaningful HTML on first navigation. Client Components own actual interaction only; server-only readers never enter client import graphs.
-- Pass only deliberately public, serializable projections to client islands. Interactive UI starts from the supplied initial data; do not reflexively fetch the same initial record on mount.
-- Choose streaming/Suspense boundaries around *independently useful* async regions, not arbitrary spinners. Decide each route's rendering and prefetch policy explicitly, including cached RSC/router payloads.
-- **Proof:** production build/client graph, initial HTML without JS, client navigation, hydration comparison and measured request count on representative private/public routes.
+### F2. Authentication, privacy and API ownership
+Nest reauthorizes every resource; private SSR/RSC/Query caches are viewer-isolated and no-store at required layers; logout/back/other-owner cannot surface prior content; developer endpoints reject ordinary users. Browser+proxy negative tests.
 
-### F2. Authentication, privacy and Next/Nest authority
+### F3. Identity and state ownership
+URL/resource viewer key, TanStack Query remote state, RHF unsaved edits, intent state and local view controls each have one owner and explicit lifetime. A->B before B loads and after late A response never misattributes data.
 
-- Nest/Better Auth own session validation, object/property authorization and every meaningful state transition. Next is a reader/composer, not a second game engine or independently privileged command API.
-- Private SSR requests propagate only the required session credentials from the incoming request through a server-only, bounded, validated reader. No browser-accessible secret, arbitrary forwarded headers, open redirect or cross-user shared cache.
-- Distinguish 401 (reauthentication), intentionally hidden 404 (absent or forbidden object), 400/409 (input/conflict), 429 (limits) and 5xx/timeouts (transient service problem). Never explain another owner's object existence.
-- Document same-origin routing in development and deployment. Treat Next Data Cache, per-request memoization, client Router Cache, browser cache, proxy cache and browser storage as separate layers; `cache: 'no-store'` on one fetch does not certify them all.
-- On session expiry, logout, switch-user, back/forward and cross-tab transitions, private stale content must not become visible or resubmitted automatically. Protect CSRF at the actual authenticated mutation boundary.
-- **Proof:** three-principal (anonymous, owner, other user) HTML/RSC/API/soft-navigation matrix, cache headers and page history; no private content crosses identity.
+### F4. Versioned snapshot reconciliation
+Snapshot Query accepts only same viewer/story and monotonic `viewVersion`/`resolution.version`; equal-version updates respect request-epoch tie rule; all hydration, GET, mutation receipts and SSE paths use it. Reversed-order tests required.
 
-### F3. Resource identity, React state and lifecycle
+### F5. One recoverable mutation model
+Each distinct intent creates one immutable envelope; `useMutation` does not auto retry or auto resume; admitted 202 vs published truth is explicit; typed receipt GET and session-scoped recovery survive reload without duplicate effects. Lost-ACK and changed-body retry tests.
 
-- Every lasting client controller declares its entity/viewer key, initialization, reset and disposal policy. Use a deliberate keyed boundary when all descendant state should reset; use guarded state machines when specific edits must persist.
-- Derive display-only values during render. Effects synchronize with subscriptions/timers/external systems, with correct cleanup and exhaustive dependencies; never fire paid/irreversible user commands from mount effects.
-- Ref-backed in-flight data may retain a transport reference, but anything governing render/disabled/retry visibility must participate in React state or a correct external-store subscription. Do not rely on incidental component remounts for isolation.
-- **Proof:** A displayed -> navigation to B while B pending -> B arrives -> delayed A arrives; A never appears under B at any intermediate point. Strict Mode setup/cleanup/setup leaves one valid subscription.
+### F6. Revalidation and live-update strategy
+SSE invalidates Query and GET establishes truth; visible/hidden/reconnect/fallback/timer lifetimes bounded, no request storm, missed-event resync. Neither SSE nor polling dispatches game mutations.
 
-### F4. Resource-safe monotonic snapshot reconciliation
+### F7. Screen and component responsibility
+Feature/local model/api/ui boundaries are cohesive and testable, pure selectors separated, limited sharing; no hidden second story state, arbitrary file splintering or browser import of server code.
 
-- Parse all remote snapshots; reject identity mismatch before version comparison. For the same authorized resource, order by server `viewVersion`, with an explicit, contract-backed same-version policy (including resolution version and representation equality/invalid tie cases).
-- All accepted updates (SSR initial, command receipt projection, manual refresh, timer, future live hint, router refresh) must enter the same reconciliation owner. No independent child may replace canonical display state.
-- Keep the latest valid resource snapshot when a slower earlier read returns. Unknown/invalid versions or protocol violations are reported as errors, not silently invented recency.
-- **Proof:** same story v14 before v13; equal viewVersion resolution ordering; wrong story with artificially higher version; user A -> B; all obey identity and monotonic rules.
+### F8. Creation/forms and editing consistency
+RHF/Zod form errors and dirty data, expected revision conflict and frozen submit, intentional reset; preview/Start use immutable intent; late replies do not erase newer local edits. Two-tab, reload and 409 tests.
 
-### F5. Explicit, recoverable command lifecycle
+### F9. Accessible, resilient interaction
+Keyboard/focus/status across normal, loading, empty, conflict, 401/404/503, pending, blocked, uncertain and recovered; meaningful route boundaries, Playwright+axe+human check; preserve appearance.
 
-- Separate **distinct user intent** from repeated HTTP attempt. Capture operation ID, exact endpoint, command kind, expected revision, and immutable payload *once* at admission. A retry of uncertain submission must reuse the same identity **and payload**, or only reconcile by reading.
-- Model transport (`idle/submitting/uncertain/conflict/failed`) independently from server business state (`admitted/running/blocked/published`). In particular HTTP 202 does not mean the scene finished; 200 means only what that endpoint promises.
-- Honor each command's real semantics: choice/resolution, campaign actions and controls, settings, generation, Start and draft editing are **not** interchangeable. Share only retry/timeout/status primitives proven common; user-facing recovery and admission differ.
-- Block or reconcile conflicting new intent while completion is unknown. Cancellation/unmount does not undo a server commit. Do not automatically repeat a provider request after 5xx, timeout, reload or session expiry.
-- **Recovery across reload:** state what the server can actually prove. For operations with a durable URL/operation reference, recover from that resource first. If the API does not expose enough identity/receipt information, show a safe blocked/reconciliation path; do **not** promise guaranteed same-key replay after reload without extending an independently approved server contract.
-- **Proof:** commit-before-timeout; rapid duplicate click; failed read after 409; changed form values before same-ID retry; reload; one backend effect and truthful UI, with no new paid operation.
-
-### F6. Invalidation, refresh, and background work
-
-- Each resource has one refresh coordinator: explicit refresh triggers, visibility/focus/reconnect policy, bounded cadence and backoff, timeout and abort/ignore on identity change. Avoid multiple competing timers and stale closures.
-- Refresh is a GET/authorized projection read, never a gameplay mutation. Hidden tabs may suspend active polling; visible return must force an authorized resync. A failed refresh cannot indefinitely display “fresh” or silently spin.
-- Event-driven update transport (SSE) is *not* part of this renewal. If later justified, it emits invalidation hints which call the same authoritative snapshot reader; no duplicate client store or inferred event log.
-- **Proof:** hide/show, offline/reconnect, repeated 503, A->B during timer, Strict Mode; bounded requests, correct cleanup, no model spend.
-
-### F7. Feature architecture, component/hook responsibilities
-
-- `app/` owns route identity, authentication boundary, data composition, boundary-specific errors/loading/not-found. `src/features/{play,stories,session,developer-tools}` own feature behavior and presentation. Very small `src/lib` owns genuinely shared transport/identity helpers; domain authority lives outside web.
-- Put pure transformations/formatting/validators outside interactive rendering where independently useful. Containers/controllers orchestrate async behavior, components display explicit props, forms own local edits. Shared primitives need an identical invariant across **at least two credible consumers**.
-- Prefer semantic cohesion to line-count goals. Do not distribute the same state across five hooks, create a universal hook factory, import a Client component to obtain a constant, or blur developer telemetry with player view.
-- Dependency direction and server/client import boundaries must be enforceable through tests/static checks, not only prose.
-- **Proof:** an engineer traces one action, retry, refresh, form edit and receipt through bounded ownership points; independent tests need not render all 649 lines for a pure decision.
-
-### F8. Forms, draft editing and creation lifecycle
-
-- Local editable values, last saved revision, dirty state, submission snapshot and server conflict are separate. Freeze values/revision for a save attempt; late replies cannot erase newer edits; intentional discard/reload must be user-consented.
-- Draft, Storyteller settings, preset and generation/start each get semantics appropriate to their backend. Editable settings must not remount and lose unsaved data solely because a background revision incremented. Validation uses shared runtime contracts plus accessible field errors; client validation never grants authority.
-- Navigation and refresh policy must cover ordinary links, soft navigation, browser back, session change, cross-tab stale revision and reload. A form library is optional only if it genuinely simplifies this.
-- Generation and Start are operation workflows, not ordinary form submits; protect their immutable request envelope and recoverable identity.
-- **Proof:** save races, two-tab 409, newer typing versus delayed save, route switch and unsaved values, uncertain Start followed by changed pace; no silent overwrite or duplicated effect.
-
-### F9. Accessible, resilient interaction mechanics
-
-- Preserve semantic native controls, labels, status announcements, keyboard and focus behavior through loading, blocked, accepted, error and recovery states. Busy/disabled semantics reflect real ability to act; no endless unacknowledged spinner.
-- Provide route-level errors/loading/not-found where genuinely helpful; expected domain validation/conflict is not an uncaught framework exception. Preserve scene readability with long content and on narrow viewports; this is **engineering acceptance**, not a request to redesign typography, layouts, art or product UX.
-- Honor reduced motion where motion is used; no excessive live-region announcements for periodic polls. Use accessible roles/selectors in browser tests, supported by human review for meaningful flows.
-- **Proof:** keyboard-only create -> preview -> play/recover and representative interruption; focus, status, disabled controls and route recovery with live evidence.
-
-### F10. Testing strategy and truthfulness of evidence
-
-- Layer tests by claim: pure state machines/version selectors; React component visibility/lifetime; HTTP schema and status contracts; Next SSR/auth/private caching; selected provider-free browser journeys with a real Nest/DB boundary. Retain existing integrated Playwright rather than replacing it with mocks.
-- Deliberately control race order and fault position; avoid time-based sleeps for concurrency proofs. Tests must reject plausible wrong implementations and distinguish server admission from publication.
-- Local `typecheck`, lint, formatting, isolated tests, builds and relevant browser tests have documented commands and side effects. No “CI green” inferred from source or a historical run.
-- **Proof:** at least one deterministic adversarial case per high-risk state boundary plus a connected trace for privacy/command authority. No model-provider calls by default.
+### F10. Evidence and maintainability
+Web-local unit/component/API tests, real provider-free integration, CI type/lint/build, Storybook state stories and honest before/after evidence; negative/reversed-order tests, no fabricated pass/production claim.
 
 ### F11. Typed network contract and error discipline
+Explicit Zod inputs/outputs and domain error union; no `Response` or `body: unknown` leaks past transport adapters; 200/202/400/401/404/409/429/5xx and malformed body handled individually; no unsafe auto mutation retry.
 
-- HTTP adapters are narrow, owned by server or client runtime, with precise endpoint request/response schemas, explicit timeout/abort policy and safe handling for non-JSON, malformed JSON, protocol mismatch, 401/404/409/429/5xx.
-- Data `unknown` is permitted at the network edge; feature logic receives validated, use-case-specific values, not unstructured `Response` or `body: unknown` without an admission contract. Preserve machine-readable Nest error codes/reasons where supported.
-- Browser and server adapters share **pure response/error taxonomy** if beneficial, but never accidentally share server cookies/origin/secrets or automatic mutation retry.
-- **Proof:** contract fixtures for malformed body, wrong shape, timeout, 409 and 401; no generic “Unavailable” branch claims an authoritative failure or hides recovery information.
-
-### F12. List, history, and navigation consistency
-
-- List/history readers define query identity, cursor interpretation (replace page vs append list), stable ordering, de-duplication, retry, empty/exhausted states and permission invalidation. No stale page from another viewer/resource or older filter appears under a new key.
-- Navigation through `Link`, hard reload, browser back/forward, RSC prefetch and client router refresh must not corrupt resource state or bypass unsaved-edit policy. Cursor/URL values are validated and encoded.
-- **Proof:** append/replace under documented intended UX, delayed page N after filter/user/story switch, duplicate/empty page, expired session and returning through browser history.
+### F12. List, history and navigation consistency
+`useInfiniteQuery` with typed viewer-scoped key/cursor/nextPage, append/dedupe/order, race isolation, correct back/forward and manual refresh; no stale/duplicate/cross-user pages.
 
 ### F13. Developer-only Chamber/QA isolation
-
-- Chamber exercises authorized scenarios and reads only public or deliberately restricted inspector projections. UI isolation does not grant permission: enforce developer access in Nest or explicitly define trusted-local-only deployment when applicable.
-- Share pure story versioning/transport policies with Play where identical; keep QA-run persistence and inspector-specific state separate. Partition persistent browser hints by viewer and do not mistake localStorage run ID for authorization.
-- **Proof:** regular/unauthorized user cannot obtain privileged inspector data from API or RSC; Chamber remount/identity switch does not reveal prior viewer's data or corrupt Play.
+Chamber is restricted at Nest and Next by developer policy, not CSS; Query/QA run references viewer-partitioned, shared safe snapshot policy but no privileged player-state leak. Owner/other/developer tests.
 
 ### F14. Type, module and dependency hygiene
+Strict TS, React/Next/TanStack hooks lint, server-only and import direction checks, compatibility-locked dependencies and no accidental server/backend code in client chunks. Deliberately bad import fails.
 
-- TypeScript `strict`, exact optionals and unchecked-index guards remain; runtime parsing at boundaries; no unreviewed casts, `any` escape hatches, silent impossible states or source modules imported for unrelated constants.
-- Enforce important import directions (`server-only`, client-safe shared modules, feature cross-import limits) with narrowly useful tooling. Explicitly review build-time dependencies and serialized client module graph; avoid blanket “everything shared” packages.
-- Add libraries only through documented need, alternatives and effect on bundle, behavior and agent navigation. Avoid React compiler/context/global store and premature virtualization absent evidence.
-- **Proof:** negative static test or intentional bad import is rejected; production build and typecheck complete after migration.
+### F15. Performance, diagnostics and delivery fitness
+Measure initial HTML, client JS, hydration, request waterfalls, polling/SSE traffic and rerender hotspots; safe diagnostics and production-like no-store/proxy proof; representative workbench state stories; no unmeasured “fast” claim.
 
-### F15. Performance, diagnostics, and delivery fitness
+## 8. Alternatives rejected, no open architect-level menu
 
-- Establish repeatable baselines before optimization: first authenticated HTML utility, JS/route chunk size, hydration warnings, route/request waterfalls, refresh rate, component render hotspots and main user-perceived latencies. Only then select and justify budgets/optimizations.
-- Capture safe structured diagnostics around route read, snapshot eligibility, command ID/status and refresh failures without session cookies, provider prompts, private story text or raw personal data. Do not build an observability platform for a portfolio checkbox.
-- Verify representative hosting/proxy routing and authenticated response cache semantics rather than assuming local rewrite applies to deployment. CI already existing is an asset; integrate cheap, provider-free checks without multiplying paid infrastructure.
-- **Proof:** measured pre/post workload or explicitly “unmeasured”; reproducible local build/trace and deployment-mode smoke test, no confidential telemetry.
+- **SWR, custom fetch + useEffect, global React context cache, Redux/Zustand:** rejected as the remote-data architecture; **TanStack Query v5 is the approved selection**.
+- **Form-only useState or another form library for major editors:** replaced by RHF + Zod resolver. Simple one-button controls still use plain React state.
+- **Query mutations as full business machine, generic `send(anything)`, optimistic gameplay outcomes:** rejected; explicit protocol and idempotency controls are mandatory.
+- **Client-only Next rewrite, global server QueryClient, public/private shared cache, persisting all Query results:** rejected.
+- **WebSockets/new broker for one-way invalidation:** rejected; SSE + PostgreSQL hints + authoritative GET selected.
+- **Experimental Query SSR integration:** rejected; stable request-scoped `prefetchQuery`/`dehydrate`/`HydrationBoundary` selected.
+- **Native CSS framework/theme swap or gameplay redesign:** not part of this campaign, regardless of their potential future merits.
+- **No tests until after refactor:** rejected; test foundation comes first.
+- **“No change if source proves safe”** remains a legitimate execution outcome for an individual packet. That is not an undecided architecture.
 
-## 3. Representative acceptance scenarios
+## 9. Convergence, status and handoff
 
-| Scenario | Broken implementation that must fail | Owning criteria |
-| --- | --- | --- |
-| A -> B while A is in-flight, B not yet loaded | Old A shown under B or late A wins | F3 F4 F12 |
-| v14 then delayed v13; equal view version but changed resolution | View regresses / tie policy arbitrary | F4 F10 |
-| Server committed an action; HTTP acknowledgement lost | Second charge/roll or false “failed” claim | F5 F11 |
-| Start ID reused while pace/lock settings were edited | Retry sends a different body under the same identity | F5 F8 |
-| Logout/user switch with cached private RSC or browser back | Old viewer's story content becomes visible | F1 F2 |
-| Two editors save same draft revision | Later save silently overwrites data | F8 F11 |
-| Network outage during hidden-tab refresh | Spinner/storm/stale timer or provider request | F6 F9 |
-| Unauthorized Chamber inspector request | Secret internals exposed because UI is “developer-only” | F2 F13 |
-| Incorrect server-only import in Client module | Build silently bundles a privileged dependency | F1 F14 |
-| “Faster after refactor” claim | No recorded comparable measurement | F10 F15 |
+The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
 
-## 4. Consequential alternatives and revisiting criteria
+**Owner direction resolved:** adopt TanStack Query, professional support stack, end-to-end quality and correctness rather than optimizing for smallest source diff or minimal dependency count. **The architect has chosen the remaining decisions above.** This contract is **selected for implementation planning**, but no Change is active and no code execution is authorized by today's Markdown pass. Cursor follows only the selected, authorized Change packet, not the whole area program in one uncontrolled diff.
 
-| Option | Decision for the proposed target | Revisit when |
-| --- | --- | --- |
-| Next Server Components + feature client islands | **Prefer**. Preserves SSR/private loading and limited hydration | Meaningful private SSR proves unsuitable for an actual hosting/security constraint |
-| Feature-local typed read controllers | **Prefer initially**. One or a few data consumers per resource, explicit invalidation | Repeated cross-route cached reads, fan-out and invalidation demonstrate costly duplication |
-| TanStack Query for reads, separate command FSM | **Credible alternative; defer**, not “never”. Avoid a second cache before measured need | A specific multi-consumer read lifecycle becomes simpler and its session cache policy is proven |
-| Redux/Zustand/global mutable entity store | **Reject by default**; creates invalidation/identity obligations | Multiple independent actors truly need coordinated client state that scoped controllers cannot handle |
-| Generic `send(anything)` API/mutation hook | **Reject**; conflates 200/202, command fingerprints and domain recovery | Multiple endpoints demonstrably share identical state/side effects |
-| Route Server Actions for existing Nest commands | **Do not mandate**; Nest remains canonical, same-origin browser HTTP suffices | A verified security/latency problem justifies a narrow BFF action without duplicating authority |
-| Persist all pending mutations in localStorage | **Reject blanket storage**; session/privacy, stale identity and replay problems | A narrow non-secret operation reference is necessary, versioned and safely reconciled with Nest |
-| Immediate SSE/WebSocket rollout | **Defer**. HTTP refresh meets the stated current need | Measured latency/poll cost and a designed auth/reconnect/proxy contract justify it |
-| Split every long component / adopt Tailwind/shadcn | **Reject as default**; visual redesign is separate, decomposition must improve ownership | Coherent use-case/test responsibility proves extracting one module pays |
-| No refactor, add only tests | **Valid option zero**, but insufficient where a safety/ownership invariant is demonstrably missing | Tests show the supposed gap already impossible and design remains simple |
+**Exit rule:** for each F1–F15, attach an actual revision-specific evidence receipt (demonstrated / accepted design-only / deliberately out-of-scope); an installed library, a green mock, a Storybook screenshot or a completed folder is not proof of engineering quality.
 
-The strongest competitor is **TanStack Query for read state combined with explicit command controllers**. It may ultimately be better if list/history/preview/chamber reads multiply and cache invalidation becomes complex. Its key, privacy partitioning, hydration and freshness contract must precede adoption. This is an evidence-driven decision, not a rejection of a good library.
+## 10. Professional references
 
-## 5. Implementation governance and approval
+Repository manuals actually applied: [frontend state and async](../../../.agents/knowledge/frontend-state-and-async.md), [architecture decision space](../../../.agents/knowledge/architecture-decision-space.md), [API/network](../../../.agents/knowledge/api-and-network-contracts.md), [security/trust](../../../.agents/knowledge/security-and-trust.md), [testing evidence](../../../.agents/knowledge/testing-and-quality-evidence.md), [caching/performance](../../../.agents/knowledge/caching-and-performance.md), [observability](../../../.agents/knowledge/observability-and-production-diagnostics.md), [release delivery](../../../.agents/knowledge/release-and-delivery-engineering.md). The [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md), [independent design review](../../../.agents/skills/independent-design-review/SKILL.md) and [target-first rule](../../../.agents/rules/target-driven-renewal.md) govern how Changes are challenged and implemented.
 
-- Target criteria are **Proposed** for owner review. They establish a coherent destination for proposed design/audit documents, **not an already approved implementation**. Resolve any mismatch with the technical contracts and record approval or revision explicitly.
-- [November 12 source audit](../audits/react-next-gap-2026-11-12.md) is a separate, later-stage comparison. Code is a baseline and feasibility constraint, never a reason to lower standards. Historical [November 11 audit](../audits/react-next-gap-2026-11-11.md) remains useful provenance.
-- Each prospective `docs/changes/*/CHANGE.md` is a *future code-bearing outcome* with a direct criterion → source finding → acceptance link. Proposed packets are not an active Cursor queue. `docs/changes/README.md` must retain `Current change: none` until the owner explicitly selects and authorizes one.
-- Convergence requires a revision-specific criterion/evidence table (demonstrated, intentionally deferred, accepted design-only, or unproved), not seven folders being closed or a polished screenshot. Baselines and focused proofs precede performance boasts.
-- No provider calls, persistent database reset, deployment, application source edit, or UX/gameplay redesign is authorized by this Markdown architecture exercise.
-
-## 6. Professional reasoning and references
-
-This target uses the repo's [frontend state manual](../../../.agents/knowledge/frontend-state-and-async.md), [architecture alternatives](../../../.agents/knowledge/architecture-decision-space.md), [API semantics](../../../.agents/knowledge/api-and-network-contracts.md), [security and trust](../../../.agents/knowledge/security-and-trust.md), [testing evidence](../../../.agents/knowledge/testing-and-quality-evidence.md), [caching](../../../.agents/knowledge/caching-and-performance.md), [observability](../../../.agents/knowledge/observability-and-production-diagnostics.md) and [release design](../../../.agents/knowledge/release-and-delivery-engineering.md). Relevant first-party framework authorities: [React Effects / derived state](https://react.dev/learn/you-might-not-need-an-effect), [React state reset by key](https://react.dev/learn/preserving-and-resetting-state), [Next Server/Client boundaries](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Next private caching/route policy](https://nextjs.org/docs/app/guides/caching-without-cache-components), [Next errors](https://nextjs.org/docs/app/api-reference/file-conventions/error), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/), and [Playwright best practices](https://playwright.dev/docs/best-practices).
-
-The manuals inform trade-offs, not permission to add their entire technology menus. A future design challenger should attack the concrete scenarios and strongest alternative rather than merely praise the target.
+Official guidance: [TanStack Query advanced SSR](https://tanstack.com/query/latest/docs/framework/react/guides/advanced-ssr), [Query important defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults), [Query mutations](https://tanstack.com/query/latest/docs/framework/react/guides/mutations), [Query infinite lists](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries), [React Hook Form useForm](https://react-hook-form.com/docs/useform), [RHF reset](https://react-hook-form.com/docs/useform/reset), [Next Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Next data security](https://nextjs.org/docs/app/guides/data-security), [React Effects](https://react.dev/learn/you-might-not-need-an-effect), [Playwright](https://playwright.dev/docs/best-practices), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/). Framework behavior is version-specific: implementation must verify the installed Next 16 configuration and actual build before asserting runtime success.
