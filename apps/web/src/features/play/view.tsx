@@ -3,16 +3,14 @@ import { CampaignPlay } from './campaign-play';
 import { CampaignSettingsEditor } from './campaign-settings';
 import { StoryHistoryView } from './history';
 import { ResolutionRecovery } from './resolution-recovery';
+import { useControlCommand } from './use-control-command';
+import { useResolutionCommand } from './use-resolution-command';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
-import {
-  readSnapshotFromResponse,
-  readStorySnapshot,
-  submitStoryJson,
-} from '@/src/lib/story-transport';
+import { readStorySnapshot } from '@/src/lib/story-transport';
 import { storySnapshotQueryOptions } from '@/src/shared/api/story-snapshot-query';
 import {
   allocateStorySnapshotEpoch,
@@ -89,11 +87,11 @@ export function PlayScene({
   storyId: string;
 }) {
   const queryClient = useQueryClient();
-  const { data: story } = useQuery(storySnapshotQueryOptions(viewerId, storyId));
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState('');
-  const operation = useRef<{ id: string; body: unknown } | null>(null);
-  const controlOperation = useRef<{ id: string; body: unknown } | null>(null);
+  const { data: story } = useQuery(
+    storySnapshotQueryOptions(viewerId, storyId),
+  );
+  const resolution = useResolutionCommand({ viewerId, storyId });
+  const control = useControlCommand({ viewerId, storyId });
 
   function acceptSnapshot(next: StorySnapshot) {
     writeStorySnapshot(
@@ -111,7 +109,10 @@ export function PlayScene({
   const waiting = story?.waiting ?? null;
   const isResolving = story?.resolution != null;
   const canChoose =
-    story?.canRespond === true && offer !== null && !isResolving;
+    story?.canRespond === true &&
+    offer !== null &&
+    !isResolving &&
+    !resolution.envelope;
   const shouldPoll =
     story != null &&
     (story.resolution?.state === 'pending' ||
@@ -155,6 +156,16 @@ export function PlayScene({
     };
   }, [shouldPoll, storyId, viewerId, queryClient]);
 
+  useEffect(() => {
+    if (
+      story &&
+      story.resolution == null &&
+      resolution.intentStatus === 'admitted'
+    ) {
+      resolution.clearAfterSettlement();
+    }
+  }, [story, resolution.intentStatus, resolution.clearAfterSettlement]);
+
   if (!story) {
     return (
       <main className="story-demo play-screen">
@@ -163,101 +174,8 @@ export function PlayScene({
     );
   }
   const scene = story;
-
-  async function control(action?: 'pause' | 'resume') {
-    if (!waiting?.canControl || pending) {
-      return;
-    }
-    if (!controlOperation.current) {
-      if (!action) {
-        return;
-      }
-      controlOperation.current = {
-        id: crypto.randomUUID(),
-        body: {
-          intervalId: scene.current.id,
-          expectedControlRevision: waiting.controlRevision,
-          action,
-        },
-      };
-    } else if (action) {
-      return;
-    }
-    setPending(true);
-    setError('');
-    try {
-      const response = await submitStoryJson({
-        url: `/api/stories/${scene.id}/controls/${controlOperation.current.id}`,
-        body: controlOperation.current.body,
-      });
-      if (response.status === 409) {
-        acceptSnapshot(await readStorySnapshot(scene.id));
-        setError(
-          'The wait changed or is already due. The current saved situation is shown.',
-        );
-      } else if (!response.ok) {
-        throw new Error('Unavailable');
-      } else {
-        acceptSnapshot(await readSnapshotFromResponse(response));
-      }
-      controlOperation.current = null;
-    } catch {
-      setError(
-        'Could not confirm the control. Retry the same request or reload to check saved progress.',
-      );
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function respond(optionId?: string) {
-    if (!offer || pending) {
-      return;
-    }
-    if (!operation.current) {
-      if (!optionId || !canChoose) {
-        return;
-      }
-      operation.current = {
-        id: crypto.randomUUID(),
-        body: {
-          expectedRevision: scene.revision,
-          submission: {
-            interactionId: offer.id,
-            answer: { kind: 'choice.v1', optionId },
-          },
-        },
-      };
-    } else if (optionId) {
-      return;
-    }
-    setPending(true);
-    setError('');
-    try {
-      const response = await submitStoryJson({
-        url: `/api/stories/${scene.id}/resolutions/${operation.current.id}`,
-        body: operation.current.body,
-      });
-      if (response.status === 409) {
-        acceptSnapshot(await readStorySnapshot(scene.id));
-        operation.current = null;
-        setError('The situation changed. The latest saved scene is shown.');
-      } else if (!response.ok) {
-        throw new Error('Unavailable');
-      } else {
-        acceptSnapshot(await readSnapshotFromResponse(response));
-        operation.current = null;
-      }
-    } catch {
-      setError(
-        'Could not confirm this choice. Retry the same request or reload to check saved progress.',
-      );
-    } finally {
-      setPending(false);
-    }
-  }
-
-  const status = error || resolutionMessage(scene);
+  const pending = resolution.pending || control.pending;
+  const status = resolution.error || control.error || resolutionMessage(scene);
 
   return (
     <main className="story-demo play-screen">
@@ -300,19 +218,25 @@ export function PlayScene({
               {waiting.canControl ? (
                 <button
                   type="button"
-                  disabled={pending}
-                  onClick={() => void control(journeyAction(waiting))}
+                  disabled={pending || control.hasFrozen}
+                  onClick={() =>
+                    control.submit({
+                      intervalId: scene.current.id,
+                      expectedControlRevision: waiting.controlRevision,
+                      action: journeyAction(waiting),
+                    })
+                  }
                 >
                   {waiting.remainingMs === null ? 'Pause' : 'Resume'}
                 </button>
               ) : null}
             </section>
           ) : null}
-          {controlOperation.current ? (
+          {control.canRetrySame ? (
             <button
               disabled={pending}
               type="button"
-              onClick={() => void control()}
+              onClick={() => control.retryFrozen()}
             >
               Retry control
             </button>
@@ -324,10 +248,14 @@ export function PlayScene({
                 <article className="campaign-option" key={option.id}>
                   <button
                     type="button"
-                    disabled={
-                      pending || !canChoose || operation.current !== null
+                    disabled={pending || !canChoose}
+                    onClick={() =>
+                      void resolution.submitChoice({
+                        expectedRevision: scene.revision,
+                        interactionId: offer.id,
+                        optionId: option.id,
+                      })
                     }
-                    onClick={() => void respond(option.id)}
                   >
                     {option.label}
                   </button>
@@ -343,11 +271,11 @@ export function PlayScene({
                   ) : null}
                 </article>
               ))}
-              {operation.current ? (
+              {resolution.canRetrySame ? (
                 <button
                   disabled={pending}
                   type="button"
-                  onClick={() => void respond()}
+                  onClick={() => resolution.retryFrozen()}
                 >
                   Retry the same choice
                 </button>

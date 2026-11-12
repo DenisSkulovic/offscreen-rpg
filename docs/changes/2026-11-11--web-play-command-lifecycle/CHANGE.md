@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Ready.** Owner authorized execution on 2026-11-12 after W19 Done. Architecture and library choices remain the owner-authorized [React/Next target](../../engineering/targets/react-next.md). **Source baseline at selection:** `7a654af` (recheck Play/command owners during implementation).
+**State: Done.** Closed 2026-11-12 after RTL/MSW frozen-intent proof. Architecture remains the owner-authorized [React/Next target](../../engineering/targets/react-next.md).
 
 **Dependencies:** W15 + W03 + W19; do not parallel-edit the same Play controller as W05/W06.  
 **Target:** [F1–F15 selected end state](../../engineering/targets/react-next.md) **F3 F5 F11**. **Audit evidence:** [Nov 12 gap register](../../engineering/audits/react-next-gap-2026-11-12.md) **G12 G16 G31**.

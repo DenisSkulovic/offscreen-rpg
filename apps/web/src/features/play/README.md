@@ -1,8 +1,8 @@
 # Play | source ownership and lifecycle map
 
-**First look:** The current `PlayScene` stores a `StorySnapshot` in React state, polls and sends commands; campaign subviews render that snapshot. The **selected target** replaces this with one viewer/story-keyed TanStack Query projection and frozen command intents. **The target is not yet implemented.**
-**Start:** [PlayScene](view.tsx) → [snapshot transport](../../lib/story-transport.ts) → [Nest stories endpoints](../../../../api/src/modules/stories/controller.ts). **Do not infer game mechanics or provider success in React.**
-**Source basis:** GitHub application baseline `470a5df`, inspected 2026-11-12, no local run. **Execution:** selected W03/W04/W05/W06/W07/W11 Change governs future edits; this README is a code-navigation map, not permission or a second technical spec.
+**First look:** `PlayScene` reads one viewer/story-keyed TanStack Query snapshot and submits **frozen** Play intents through `useMutation` (retry 0). Resolution recovery uses sessionStorage + W19 receipt GET; never auto-POSTs on mount.
+**Start:** [PlayScene](view.tsx) → [useResolutionCommand](use-resolution-command.ts) / [useControlCommand](use-control-command.ts) → [writeStorySnapshot](../../shared/api/story-snapshot-write.ts) → Nest stories endpoints. **Do not infer game mechanics or provider success in React.**
+**Source basis:** post-W19 `main`; recheck symbols before editing. **Execution:** selected W04/W05/W06/W07/W11 Change governs future edits; this README is a code-navigation map, not permission.
 
 ## Owner map: question → actual symbol
 
@@ -10,33 +10,31 @@
 | --- | --- | --- |
 | Play route, authenticated initial HTML | [server PlayPage](../../../app/(authenticated)/play/[id]/page.tsx) | per-request QueryClient prefetch + `HydrationBoundary`; [PlayScene](view.tsx) reads `useQuery` |
 | Scene selection and status | [PlayScene](view.tsx): `resolutionMessage` and display JSX | [story snapshot schema](../../../../../packages/contracts/src/stories.ts) distinguishes `revision`, `viewVersion`, `resolution.version` |
-| Current snapshot refresh/merge | `view.tsx`: `acceptSnapshot`, polling `useEffect` | [preferNewerSnapshot](../../lib/story-transport.ts); **no viewer/story identity check in comparator** today |
-| Single choice and timed-wait control | `view.tsx`: `respond` / `control` with UUID refs | Nest `PUT /stories/:id/resolutions/:operationId` **202**, `PUT /:id/controls/:operationId` **200** |
-| Campaign commands | [useCampaignCommand](use-campaign-command.ts): `send` | [CampaignPlay](campaign-play.tsx) uses it for activity/time/action controls; statuses vary |
-| Resolution refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Storyteller state not always settled; no automatic charged retry |
-| Character, offers, holds, receipts | [CampaignPlay](campaign-play.tsx) | [CampaignView](../../../../../packages/contracts/src/campaign.ts) and `@offscreen/game/calendar` pure formatting |
-| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | Current parent `key={settings.revision}` risks remounting dirty editor; later RHF/Query |
-| Read-only chronology | [StoryHistoryView](history.tsx) | GET `/:id/history?before=number`, separate page state and race handling |
+| Current snapshot refresh/merge | `view.tsx` polling + command hooks → `writeStorySnapshot` | [reconcileStorySnapshot](../../shared/api/story-snapshot-reconcile.ts) |
+| Single choice / resolution recovery | [useResolutionCommand](use-resolution-command.ts) + [intent reducer](play-command-intent.ts) + [session envelope](../../shared/api/resolution-intent-store.ts) | Nest `PUT .../resolutions/:operationId` **202**; `GET .../receipt` (W19) before user retry |
+| Timed-wait control | [useControlCommand](use-control-command.ts) | Nest `PUT /:id/controls/:operationId` **200** |
+| Campaign commands | [useCampaignCommand](use-campaign-command.ts): frozen URL/body `useMutation` | [CampaignPlay](campaign-play.tsx); statuses vary |
+| Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
+| Character, offers, holds, receipts | [CampaignPlay](campaign-play.tsx) | [CampaignView](../../../../../packages/contracts/src/campaign.ts) |
+| Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | Later RHF/Query (W11) |
+| Read-only chronology | [StoryHistoryView](history.tsx) | GET `/:id/history?before=number` |
 
 ## One useful command path
 
 ```text
 URL /play/:id
-  -> (authenticated) PlayPage -> createServerQueryClient + prefetchQuery(readNestJson)
-  -> HydrationBoundary -> PlayScene useQuery(storySnapshotQueryOptions)
-  -> poll/command completions -> writeStorySnapshot (reconcileStorySnapshot gate)
-  -> PlayScene -> user chooses -> PUT /resolutions/:operationId (same UUID/body on retry)
-  -> Nest admits (202), returns current public snapshot
-  -> browser reads/polls until authoritative version/settlement
-  -> view renders committed story and server-owned receipt (not an optimistic roll)
+  -> PlayPage prefetch + HydrationBoundary
+  -> PlayScene useQuery + useResolutionCommand
+  -> user chooses -> freeze envelope (UUID/body/digest) in sessionStorage
+  -> useMutation PUT /resolutions/:operationId (retry:0); writeStorySnapshot on 202
+  -> reload: load envelope -> GET receipt + story first; user may retry same frozen body only
+  -> poll/writeStorySnapshot until settlement; clear envelope when resolution leaves snapshot
 ```
-
-**Current limitations to remember:** retry refs survive a component render but not a full reload; source comparator orders versions without story/user identity; Play polling ignores GET errors; `CampaignPlay` is large but its line count is **not** itself a defect. These issues are assessed against [selected F3–F7 target](../../../../../docs/engineering/targets/react-next.md), not excuses to change the UI.
 
 ## Tests and exit gates
 
-- **Fast proof (W01 landed):** provider-free Vitest/RTL/MSW under `view.test.tsx`, `resolution-recovery.test.tsx`, and `src/lib/story-transport.test.ts` (run `pnpm --filter @offscreen/web test:fast`). Covers scene render + choice, deferred refresh, stale poll rejection, unmount poll cleanup, and pure `preferNewerSnapshot` ordering. Does **not** prove Nest ownership, SSR privacy, wrong-story identity (still W03), or reload-frozen UUID (W04).
-- **Real integration when explicitly authorized:** [browser story scenarios](../../../../../tools/api-integration/test/stories-browser.integration.ts), [resolution integration](../../../../../tools/api-integration/test/story-resolution.integration.ts) and [destructive-test warning](../../../../../tools/api-integration/README.md). The focused integration runner resets disposable `offscreen_auth_test`; not an inner-loop check.
-- **Extend context only for:** authorization/HTTP error semantics → [client and identity](../../../../../docs/technical/client-and-identity.md); persistent exactly-once effects → [application story owner map](../../../../../packages/application/src/stories/README.md); performance/CI work → [tooling playbook](../../../../../docs/engineering/frontend-execution-playbook.md) at its relevant heading.
+- **Fast proof:** `pnpm test:fast` — scene choice, stale poll, lost-ACK remount without auto-POST, intent reducer, envelope TTL/viewer isolation.
+- **Real Nest receipt/idempotency:** W19 `pnpm test:focus -- story-resolution` when authorized; not an inner-loop check.
+- **Extend context only for:** client/identity contract; application story owner map for exactly-once; playbook for CI/perf.
 
-**Maintenance trigger:** if Change moves source owners, changes API status, snapshot identity/ordering or command recovery, update this *map* in that Change. Do not paste architecture contracts into it. For plain JSX refactoring with unchanged ownership, no README update is required.
+**Maintenance trigger:** if Change moves source owners, API status, snapshot identity/ordering or command recovery, update this map in that Change.

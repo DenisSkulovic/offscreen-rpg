@@ -37,6 +37,7 @@ beforeAll(() => {
 
 afterEach(() => {
   server.resetHandlers();
+  sessionStorage.clear();
 });
 
 afterAll(() => {
@@ -158,6 +159,63 @@ describe('PlayScene', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('keeps one frozen operation id after a lost ACK and never auto-posts on remount (negative)', async () => {
+    const user = userEvent.setup();
+    const initial = makeStorySnapshot();
+    const operationIds: string[] = [];
+    let puts = 0;
+
+    server.use(
+      http.put(
+        `/api/stories/${fixtureIds.storyId}/resolutions/:operationId`,
+        async ({ params }) => {
+          puts += 1;
+          operationIds.push(String(params.operationId));
+          await delay(30);
+          return HttpResponse.error();
+        },
+      ),
+      http.get(`/api/stories/${fixtureIds.storyId}`, () =>
+        HttpResponse.json(initial),
+      ),
+      http.get(
+        `/api/stories/${fixtureIds.storyId}/resolutions/:operationId/receipt`,
+        () => HttpResponse.json(null, { status: 404 }),
+      ),
+    );
+
+    const first = renderPlay(initial);
+    await user.click(
+      screen.getByRole('button', { name: 'Walk the gate road' }),
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Retry the same choice' }),
+      ).toBeInTheDocument();
+    });
+    expect(puts).toBe(1);
+    const frozenId = operationIds[0];
+    expect(frozenId).toBeTruthy();
+
+    first.unmount();
+    const putsAfterUnmount = puts;
+    renderPlay(initial);
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Retry the same choice' }),
+      ).toBeInTheDocument();
+    });
+    expect(puts).toBe(putsAfterUnmount);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Retry the same choice' }),
+    );
+    await waitFor(() => {
+      expect(puts).toBe(putsAfterUnmount + 1);
+    });
+    expect(operationIds.at(-1)).toBe(frozenId);
   });
 
   it('stops polling after unmount (Strict Mode cleanup groundwork)', async () => {
