@@ -1,5 +1,7 @@
 # QA journeys and evidence
 
+**Current manual QA evidence, not the selected future Chamber architecture:** [C01–C16 laboratory target](targets/chamber-laboratory.md) and [program](chamber-program.md) will add valid state specimens, typed scenario execution, time/fault control and automatic assertions. The existing QA case/stage records and human rubrics remain authoritative *as human observations*, not machine proofs. The code for that future lab has not been implemented.
+
 The local Chamber contains a developer-only, manual-first QA workspace for repeatable POC investigation. A person or coding agent reads each stage, performs the action through the UI or endpoint, observes the result and records evidence. The structured catalogue does not imply an automation fleet; browser driving remains optional. It is a guide for investigation, not a production release gate.
 
 ## Iterative POC convergence

@@ -2,6 +2,8 @@
 
 This is a **routing index**, not another technical specification. For *what the player should experience*, use [the product map](../README.md); for what actually runs, use [code navigation](../engineering/code-navigation.md), package READMEs and [progress](../progress.md). A design target is not proof of implementation.
 
+**Developer-only testing contract:** [Chamber scenario/fixture/run protocol](chamber-lab-protocol.md) governs typed state experiments and safe local drivers. The [Chamber C01–C16 destination](../engineering/targets/chamber-laboratory.md) defines desired outcomes; neither represents already implemented lab behavior.
+
 ## Foundation and persistence
 
 | If the question is… | Read first | Distinction |

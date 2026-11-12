@@ -10,9 +10,14 @@ The bar is **quality of engineering judgment and results**, not lines written ma
 
 **Current order of work (updated November 12):** the coding-agent/Change system has been designed; the owner now selected a **complete React/Next engineering architecture** with TanStack Query, RHF/Zod, SSE, SSR hydration and professional verification. The next execution phase is [W01–W22](docs/changes/README.md) in bounded Cursor Changes after explicit authorization, with [staged verification and fast-toolchain economics](docs/engineering/frontend-execution-playbook.md). Gameplay/product expansion and separate UI art direction remain deferred. No game implementation, live-model experimentation or broad application refactor is authorized by this roadmap.
 
+**Additional selected initiative, November 12:** [Chamber developer laboratory](docs/engineering/targets/chamber-laboratory.md), independently specified for **fast valid state construction, reproducible mechanics, controlled clocks/faults, causal inspection and replay**. It is not a player room/UI/UX feature and not a rewrite of game mechanics. [Actual source audit](docs/engineering/audits/chamber-gap-2026-11-12.md), [typed protocol](docs/technical/chamber-lab-protocol.md) and [CH01–CH16 future code program](docs/engineering/chamber-program.md) are Markdown-only designs. **Old W12 is superseded** by CH10/CH11; no Chamber code execution selected.
+
 **Conversation continuity:** [Daily repository minutes](docs/minutes/README.md) now preserve important owner directions, technical reasoning, decisions and next steps across chats. See [the logging rule](.agents/rules/session-minutes.md). Minutes explain the history; targets, technical contracts and Changes still govern approved work.
 
 ## Stage 0: finish the development work system (current)
+
+- [x] Independently design the **Chamber developer laboratory** as a multi-lane reproducible state/mechanics experimentation tool, audit real legacy fixtures/QA/inspector/launcher, then specify **CH01–CH16** bounded Cursor Changes. **Status: design committed; application source untouched.**
+- [ ] When explicitly authorized, start Chamber implementation with **CH01 typed catalogue → CH02 fast real Bench → CH03 valid semantic specimens → CH04 isolated persisted Sandbox**. CH11 workbench requires W15 TanStack foundation; do not implement superseded W12.
 
 - [x] Define a **Change** as one bounded, verifiable planned source/test/script/executable-config delta, including refactors, bug fixes, tooling and migrations; distinguish it from initiative, design, investigation, documentation and evaluation.
 - [x] Make `docs/changes/` the canonical execution route, with **no active Change** valid and no automatic gameplay selection; adapt the read-only briefing tools.
