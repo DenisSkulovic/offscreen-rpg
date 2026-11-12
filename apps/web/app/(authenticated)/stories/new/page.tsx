@@ -31,6 +31,7 @@ export default async function NewDraft({
   );
   return (
     <DraftEditor
+      viewerId={viewer.user.id}
       id={parsed.data}
       initial={null}
       preparedStarts={catalogue.entries}

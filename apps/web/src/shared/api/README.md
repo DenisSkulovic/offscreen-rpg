@@ -13,5 +13,6 @@
 | `story-pending-refresh.ts` | Pure pending-refresh predicate + 2s cadence constant (pre-SSE) |
 | `story-snapshot-reconcile.ts` | Pure viewer/story/`viewVersion`/epoch gate |
 | `story-snapshot-write.ts` | Sole Play Query write for snapshots |
+| `draft-query.ts` | Viewer-scoped draft `queryOptions` + browser GET; no focus refetch into RHF |
 
 **Maintenance:** update when key shapes, cache policies or snapshot write gates change.

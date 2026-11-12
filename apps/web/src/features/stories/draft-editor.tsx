@@ -1,23 +1,25 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { draftContentSchema, draftSchema } from '@offscreen/contracts/drafts';
-import type { Draft, DraftContent } from '@offscreen/contracts/drafts';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Draft } from '@offscreen/contracts/drafts';
 import type { MechanicalContentSummary } from '@offscreen/contracts/openings';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
+import { draftQueryOptions, readDraft } from '@/src/shared/api/draft-query';
+import { queryKeys } from '@/src/shared/api/query-keys';
+import {
+  contentFromDraft,
+  draftEditorFormSchema,
+  emptyDraftContent,
+  toDraftContent,
+  type DraftEditorFormValues,
+} from './draft-content';
 import { StorytellerSelect } from './storyteller-select';
+import { useDraftSave } from './use-draft-save';
 
 type CreationStep = 'foundation' | 'role' | 'storyteller' | 'review';
-
-const empty: DraftContent = {
-  storyteller: null,
-  openingContentId: null,
-  characterName: '',
-  title: '',
-  premise: '',
-  storytellingDirection: '',
-};
 
 const steps: ReadonlyArray<{ id: CreationStep; label: string }> = [
   { id: 'foundation', label: 'Foundation' },
@@ -26,132 +28,147 @@ const steps: ReadonlyArray<{ id: CreationStep; label: string }> = [
   { id: 'review', label: 'Review' },
 ];
 
-function contentFromDraft(draft: Draft): DraftContent {
-  return draftContentSchema.parse({
-    storyteller: draft.storyteller ?? null,
-    openingContentId: draft.openingContentId,
-    characterName: draft.characterName,
-    title: draft.title,
-    premise: draft.premise,
-    storytellingDirection: draft.storytellingDirection,
-  });
-}
-
 export function DraftEditor({
+  viewerId,
   id,
   initial,
   preparedStarts,
 }: {
+  viewerId: string;
   id: string;
   initial: Draft | null;
   preparedStarts: MechanicalContentSummary[];
 }) {
-  const [saved, setSaved] = useState(initial);
-  const [content, setContent] = useState<DraftContent>(
-    initial ? contentFromDraft(initial) : empty,
-  );
+  const queryClient = useQueryClient();
+  const [draftKnown, setDraftKnown] = useState(initial != null);
+  const { data: saved = initial } = useQuery({
+    ...draftQueryOptions(viewerId, id),
+    enabled: draftKnown,
+    ...(initial ? { initialData: initial } : {}),
+  });
+  const save = useDraftSave(viewerId);
   const [step, setStep] = useState<CreationStep>(
     initial ? 'review' : 'foundation',
   );
-  const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const [conflict, setConflict] = useState(false);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    getValues,
+    setValue,
+    reset,
+    resetDefaultValues,
+    setFocus,
+    formState: { isDirty, errors, dirtyFields: _dirtyFields },
+  } = useForm<DraftEditorFormValues>({
+    resolver: zodResolver(draftEditorFormSchema),
+    mode: 'onTouched',
+    defaultValues: initial ? contentFromDraft(initial) : emptyDraftContent,
+  });
+
+  const content = watch();
   const selectedStart = useMemo(
     () =>
       preparedStarts.find((entry) => entry.id === content.openingContentId) ??
       null,
     [content.openingContentId, preparedStarts],
   );
-  const dirty = (Object.keys(empty) as (keyof DraftContent)[]).some(
-    (field) =>
-      JSON.stringify(content[field] ?? null) !==
-      JSON.stringify(
-        saved?.[field] ??
-          (field === 'storyteller' || field === 'openingContentId' ? null : ''),
-      ),
-  );
 
   useEffect(() => {
-    if (!dirty) return;
+    if (!isDirty) return;
     const warn = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
+  }, [isDirty]);
 
   function choosePrepared(entry: MechanicalContentSummary) {
-    setContent({
-      ...content,
-      openingContentId: entry.id,
-      title: entry.draft?.title ?? '',
-      premise: entry.draft?.premise ?? '',
-      storytellingDirection: entry.draft?.storytellingDirection ?? '',
-    });
+    setValue('openingContentId', entry.id, { shouldDirty: true });
+    setValue('title', entry.draft?.title ?? '', { shouldDirty: true });
+    setValue('premise', entry.draft?.premise ?? '', { shouldDirty: true });
+    setValue(
+      'storytellingDirection',
+      entry.draft?.storytellingDirection ?? '',
+      { shouldDirty: true },
+    );
     setMessage('');
     setStep('role');
   }
 
   function chooseCustom() {
-    setContent({ ...empty, storyteller: content.storyteller });
+    const storyteller = getValues('storyteller');
+    reset({ ...emptyDraftContent, storyteller });
     setMessage('');
     setStep('role');
   }
 
-  async function save(event: FormEvent) {
-    event.preventDefault();
-    setPending(true);
-    setMessage('');
-    setConflict(false);
-    try {
-      const response = await fetch(`/api/drafts/${id}`, {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          ...content,
-          expectedRevision: saved?.revision ?? 0,
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (response.status === 409) {
+  const onSave = handleSubmit(
+    async (values) => {
+      setMessage('');
+      setConflict(false);
+      const frozen = {
+        draftId: id,
+        expectedRevision: saved?.revision ?? 0,
+        content: toDraftContent(values),
+      };
+      const result = await save.mutateAsync(frozen);
+      if (result.kind === 'conflict') {
         setConflict(true);
         setMessage(
           'This setup changed elsewhere. Your choices are still here; load the saved version or keep this one open while you compare.',
         );
         return;
       }
-      if (response.status === 401) {
+      if (result.kind === 'unauthorized') {
         setMessage(
           'Your session expired. Sign in again, then save this setup.',
         );
         return;
       }
-      if (!response.ok) throw new Error('Save unavailable');
-      const result = draftSchema.parse(await response.json());
-      setSaved(result);
-      setContent(contentFromDraft(result));
+      if (result.kind === 'unavailable') {
+        setMessage(
+          'The save could not be confirmed. Your setup is still on this screen; retry when ready.',
+        );
+        return;
+      }
+      setDraftKnown(true);
+      resetDefaultValues(contentFromDraft(result.draft));
       setMessage('Setup saved. It is ready to create an opening.');
       window.history.replaceState(null, '', `/stories/${id}`);
-    } catch {
-      setMessage(
-        'The save could not be confirmed. Your setup is still on this screen; retry when ready.',
-      );
-    } finally {
-      setPending(false);
-    }
-  }
+    },
+    (formErrors) => {
+      setMessage('Check the highlighted fields, then try again.');
+      const order: (keyof DraftEditorFormValues)[] = [
+        'title',
+        'characterName',
+        'premise',
+        'storytellingDirection',
+        'storyteller',
+        'openingContentId',
+      ];
+      for (const field of order) {
+        if (formErrors[field]) {
+          setFocus(field);
+          break;
+        }
+      }
+    },
+  );
 
   async function loadSaved() {
     if (!window.confirm('Discard these choices and load the saved setup?'))
       return;
-    setPending(true);
     try {
-      const response = await fetch(`/api/drafts/${id}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Read unavailable');
-      const latest = draftSchema.parse(await response.json());
-      setSaved(latest);
-      setContent(contentFromDraft(latest));
+      const latest = await readDraft(id);
+      queryClient.setQueryData(queryKeys.draft(viewerId, id), latest);
+      setDraftKnown(true);
+      reset(contentFromDraft(latest));
       setConflict(false);
       setMessage('Saved setup loaded.');
       setStep('review');
@@ -159,13 +176,16 @@ export function DraftEditor({
       setMessage(
         'The saved setup could not be loaded. Your choices are unchanged.',
       );
-    } finally {
-      setPending(false);
     }
   }
 
-  const roleReady = content.premise.trim().length > 0;
+  const pending = save.isPending;
+  const roleReady = (content.premise ?? '').trim().length > 0;
   const storytellerReady = Boolean(content.storyteller);
+  const premiseError = errors.premise?.message;
+  const titleError = errors.title?.message;
+  const directionError = errors.storytellingDirection?.message;
+  const characterError = errors.characterName?.message;
 
   return (
     <main className="editor creation-editor">
@@ -184,8 +204,8 @@ export function DraftEditor({
         ))}
       </ol>
 
-      <form onSubmit={(event) => void save(event)}>
-        <fieldset disabled={pending}>
+      <form onSubmit={(event) => void onSave(event)}>
+        <fieldset>
           {step === 'foundation' ? (
             <section aria-labelledby="foundation-title">
               <h2 id="foundation-title">Where will this story begin?</h2>
@@ -236,22 +256,36 @@ export function DraftEditor({
               <input
                 id="title"
                 maxLength={160}
-                value={content.title}
-                onChange={(event) =>
-                  setContent({ ...content, title: event.target.value })
-                }
+                aria-invalid={titleError ? true : undefined}
+                aria-describedby={titleError ? 'title-error' : undefined}
+                {...register('title')}
               />
+              {titleError ? (
+                <p id="title-error" role="alert" className="field-help">
+                  {titleError}
+                </p>
+              ) : null}
               <label htmlFor="character-name">
                 Character name <small>(optional)</small>
               </label>
               <input
                 id="character-name"
                 maxLength={120}
-                value={content.characterName}
-                onChange={(event) =>
-                  setContent({ ...content, characterName: event.target.value })
+                aria-invalid={characterError ? true : undefined}
+                aria-describedby={
+                  characterError ? 'character-name-error' : undefined
                 }
+                {...register('characterName')}
               />
+              {characterError ? (
+                <p
+                  id="character-name-error"
+                  role="alert"
+                  className="field-help"
+                >
+                  {characterError}
+                </p>
+              ) : null}
               <label htmlFor="premise">
                 {selectedStart
                   ? 'Your prisoner and their circumstances'
@@ -261,11 +295,15 @@ export function DraftEditor({
                 id="premise"
                 rows={8}
                 maxLength={6000}
-                value={content.premise}
-                onChange={(event) =>
-                  setContent({ ...content, premise: event.target.value })
-                }
+                aria-invalid={premiseError ? true : undefined}
+                aria-describedby={premiseError ? 'premise-error' : undefined}
+                {...register('premise')}
               />
+              {premiseError ? (
+                <p id="premise-error" role="alert" className="field-help">
+                  {premiseError}
+                </p>
+              ) : null}
               <div className="creation-actions">
                 <button
                   type="button"
@@ -295,11 +333,15 @@ export function DraftEditor({
                 The Storyteller shapes voice, restraint and dramatic initiative.
                 It does not replace the world or your character.
               </p>
-              <StorytellerSelect
-                value={content.storyteller ?? null}
-                onChange={(storyteller) =>
-                  setContent({ ...content, storyteller })
-                }
+              <Controller
+                control={control}
+                name="storyteller"
+                render={({ field }) => (
+                  <StorytellerSelect
+                    value={field.value ?? null}
+                    onChange={field.onChange}
+                  />
+                )}
               />
               <label htmlFor="direction">
                 Personal direction <small>(optional)</small>
@@ -312,15 +354,19 @@ export function DraftEditor({
                 id="direction"
                 rows={5}
                 maxLength={2000}
-                aria-describedby="direction-help"
-                value={content.storytellingDirection}
-                onChange={(event) =>
-                  setContent({
-                    ...content,
-                    storytellingDirection: event.target.value,
-                  })
+                aria-describedby={
+                  directionError
+                    ? 'direction-help direction-error'
+                    : 'direction-help'
                 }
+                aria-invalid={directionError ? true : undefined}
+                {...register('storytellingDirection')}
               />
+              {directionError ? (
+                <p id="direction-error" role="alert" className="field-help">
+                  {directionError}
+                </p>
+              ) : null}
               <div className="creation-actions">
                 <button
                   type="button"
@@ -354,12 +400,12 @@ export function DraftEditor({
                 </div>
                 <div>
                   <dt>Title</dt>
-                  <dd>{content.title.trim() || 'Untitled story'}</dd>
+                  <dd>{(content.title ?? '').trim() || 'Untitled story'}</dd>
                 </div>
                 <div>
                   <dt>Character</dt>
                   <dd>
-                    {content.characterName.trim() ||
+                    {(content.characterName ?? '').trim() ||
                       'Let the Storyteller establish the name'}
                   </dd>
                 </div>
@@ -374,7 +420,7 @@ export function DraftEditor({
                 <div>
                   <dt>Personal direction</dt>
                   <dd>
-                    {content.storytellingDirection.trim() ||
+                    {(content.storytellingDirection ?? '').trim() ||
                       'Use the profile defaults'}
                   </dd>
                 </div>
@@ -390,14 +436,15 @@ export function DraftEditor({
                 <button
                   type="submit"
                   disabled={
+                    pending ||
                     !roleReady ||
                     !storytellerReady ||
-                    (!dirty && Boolean(saved))
+                    (!isDirty && Boolean(saved))
                   }
                 >
                   {pending
                     ? 'Saving…'
-                    : dirty || !saved
+                    : isDirty || !saved
                       ? 'Save setup'
                       : 'Setup saved'}
                 </button>
@@ -410,12 +457,16 @@ export function DraftEditor({
       <p role={conflict ? 'alert' : 'status'}>{message}</p>
       {conflict ? (
         <p>
-          <button disabled={pending} onClick={() => void loadSaved()}>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => void loadSaved()}
+          >
             Load saved setup
           </button>
         </p>
       ) : null}
-      {saved && !dirty && !pending && step === 'review' ? (
+      {saved && !isDirty && !pending && step === 'review' ? (
         <p className="creation-primary-link">
           <a className="button" href={`/stories/${id}/preview`}>
             Create the opening
@@ -426,7 +477,7 @@ export function DraftEditor({
         <a
           href="/stories"
           onClick={(event) => {
-            if (dirty && !window.confirm('Leave without saving this setup?'))
+            if (isDirty && !window.confirm('Leave without saving this setup?'))
               event.preventDefault();
           }}
         >

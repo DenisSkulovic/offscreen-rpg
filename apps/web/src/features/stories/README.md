@@ -1,8 +1,8 @@
 # Stories: draft → opening → Start | source map
 
-**First look:** Current creation uses server-loaded draft/catalogue, a local `DraftEditor` edit buffer, a `202` opening-generation request, then a separate `200` Start. The selected React target uses viewer/draft-scoped Query and RHF, **not yet implemented**. **Start is a separate durable intent, not a draft save or a Storyteller retry.**
-**Start:** [new draft route](../../../app/stories/new/page.tsx) / [saved draft route](../../../app/stories/[id]/page.tsx) → [DraftEditor](draft-editor.tsx) → [preview route](../../../app/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](opening-preview.tsx).
-**Source basis:** baseline `470a5df` read 2026-11-12, no tests executed. **Do not mistake proposed TanStack/RHF code for current source.** W08/W09/W10 packets own the actual migration.
+**First look:** Draft edit uses viewer-keyed Query + React Hook Form (`mode: onTouched`, Zod form schema). Save freezes `{draftId, expectedRevision, content}` in `useMutation` (retry 0). RHF owns unsaved values; Query owns acknowledged `Draft`. **Start remains a separate durable intent (W09), not a draft save.**
+**Start:** [new draft route](../../../app/(authenticated)/stories/new/page.tsx) / [saved draft route](../../../app/(authenticated)/stories/[id]/page.tsx) → [DraftEditor](draft-editor.tsx) → [preview route](../../../app/(authenticated)/stories/[id]/preview/page.tsx) → [OpeningPreviewPanel](opening-preview.tsx).
+**Source basis:** post-W08 `main`; recheck symbols before editing. W09/W10 own opening Start and list paging.
 
 ## Where a question belongs
 
@@ -10,8 +10,8 @@
 | --- | --- | --- |
 | Draft UUID / new route redirect | `app/stories/new/page.tsx` | Invalid/missing search `id` redirects with server-created UUID; existing saved draft redirects to edit route |
 | Existing draft load | `app/stories/[id]/page.tsx` | GET `/api/drafts/:id`, 401 sign-in, 404 notFound, Zod `draftSchema` |
-| Unsaved values, multi-step form, dirty guard | [DraftEditor](draft-editor.tsx): `content`, `dirty`, `beforeunload` | [draft schemas](../../../../../packages/contracts/src/drafts.ts), `saveDraftSchema` |
-| Draft save and conflict | `DraftEditor.save` / `loadSaved` | `PUT /api/drafts/:id` expects `expectedRevision`; 409 preserves local edits; server has owner-scoped version fence |
+| Unsaved values, multi-step form, dirty guard | [DraftEditor](draft-editor.tsx) RHF + [draftEditorFormSchema](draft-content.ts); `isDirty` / beforeunload | Query must not auto-`reset` dirty values |
+| Draft save and conflict | [useDraftSave](use-draft-save.ts) frozen PUT; 409 → keep edits; `resetDefaultValues` on success | `PUT /api/drafts/:id` + `expectedRevision`; explicit Load saved adopts server |
 | Storyteller catalogue | [StorytellerSelect](storyteller-select.tsx) | GET `/api/storytellers` via client effect |
 | Draft list, more pages | [DraftList](draft-list.tsx) | GET `/api/drafts?cursor=opaque`; client append/dedupes |
 | Live story list | [LiveStoryList](live-story-list.tsx) | GET `/api/stories?before=UUID`; currently replaces page rather than appends |
@@ -39,6 +39,6 @@ Start: preview succeeded/current -> PUT /stories/:storyId/start
 ## Tests, chosen standards and stop rule
 
 - Selected architecture: [F5/F8/F12 target](../../../../../docs/engineering/targets/react-next.md) and [story lifecycle contract](../../../../../docs/technical/story-lifecycle.md). Read relevant **section**, not full file.
-- Fast cases: dirty form survives 409; delayed save does not clobber new edits; Start changed-pace under same UUID reuses exact captured body; generation 202 never means narration is published.
+- Fast cases (`pnpm test:fast`): dirty survives 409; delayed save does not clobber newer keystrokes; background Query set does not reset RHF; Start/opening recovery remains W09.
 - Integrated proof if authorized: [draft browser](../../../../../tools/api-integration/test/drafts.browser.ts) and [Start integration](../../../../../tools/api-integration/test/story-start.integration.ts). [Integration warning](../../../../../tools/api-integration/README.md) explains disposable DB reset.
 - Update this map only when a route, edit/command owner, wire shape or recovery lifecycle changes. Don't duplicate the normative technical contract or annotate every JSX file. No gameplay, visual redesign or live model work is authorized here.
