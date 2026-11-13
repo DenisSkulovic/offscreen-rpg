@@ -26,8 +26,8 @@
 
 - 401 from viewer/Nest => sign-in; 404 from owner-scoped read => notFound; upstream 5xx/timeout => recoverable route error (`NestTransientError`). Malformed Nest JSON => `NestProtocolError`. Next `redirect`/`notFound` are special outcomes; don't swallow them in a generic catch. Client recovery UI lives in [`src/features/recovery`](../src/features/recovery/route-recovery.tsx) and must keep 503 ≠ deleted.
 - Route-group layout checks session only; it is **not** Nest endpoint authorization.
-- Private data must not leak through shared RSC/proxy/browser caches. A server `no-store` fetch is a useful defense, not full connected proof; W14 tests real HTML/soft nav/back after logout.
-- Initial HTML should contain authorized story text, not a client waterfall. Hydration must not duplicate initial GET or overwrite later query-cache versions.
+- Private data must not leak through shared RSC/proxy/browser caches. A server `no-store` fetch is a useful defense; connected proof lives in [private-route-evidence.integration.ts](../../../tools/api-integration/test/private-route-evidence.integration.ts) (owner SSR HTML, anonymous/other-owner denial, logout+history.back).
+- Initial HTML should contain authorized story text, not a client waterfall. Hydration must not require a snapshot GET before the scene heading; SSE open may still invalidate → GET afterward.
 - Session/Query provider (W15) should not force public/demo pages into client-only rendering; keep the provider inside `(authenticated)`.
 
 **Read deeper only for:** [F1/F2 Next target](../../../docs/engineering/targets/react-next.md) architecture, [client/identity contract](../../../docs/technical/client-and-identity.md) semantics, [server reader map](../src/server/README.md), [transport owner map](../src/lib/README.md) or [integration warning](../../../tools/api-integration/README.md). A route file's 20–60 lines are generally cheaper than the whole architecture spec.

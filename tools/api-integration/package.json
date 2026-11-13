@@ -15,6 +15,7 @@
     "test:stories:start": "node --test dist/test/story-start.integration.js",
     "test:stories:resolution": "node --test dist/test/story-resolution.integration.js",
     "test:stories:browser": "node --test dist/test/stories-browser.integration.js",
+    "test:private-route": "node --test dist/test/private-route-evidence.integration.js",
     "test:storyteller": "node --test dist/test/storyteller.integration.js",
     "test:start-package": "node --test dist/test/start-package.integration.js"
   },

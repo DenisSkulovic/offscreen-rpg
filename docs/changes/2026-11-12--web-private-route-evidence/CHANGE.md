@@ -5,7 +5,7 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Specified / Proposed.** All technology, behavior and security decisions are governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**; this packet is **not yet active or authorized for application changes**. **Audited source:** `470a5df069470bf758eb1a560c515846ce781637` (source-read only; revalidate current branch/worktree before execution). **Future executor:** Cursor, one selected packet at a time.
+**State: Done.** Owner authorized via continue after green identity CI on `main`. Landed production-like private Play evidence under `tools/api-integration/test/private-route-evidence.integration.ts` (SSR `no-store` + scene HTML, hydrate without pre-heading snapshot GET, anonymous/other-owner denial, soft-nav retention, logout+history.back isolation, redacted metrics receipt). Verified with `pnpm test:focus -- private-route` (5/5). All technology, behavior and security decisions remain governed by the **[selected React/Next target](../../engineering/targets/react-next.md)**.
 
 **Depends on:** W02 W15 W03 W04 W07 W17; W18 state workbench optional evidence input.  
 **Destination:** [F1–F15 selected architecture](../../engineering/targets/react-next.md), **F1 F2 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../engineering/audits/react-next-gap-2026-11-12.md), **G14 G25 G27 G30**.

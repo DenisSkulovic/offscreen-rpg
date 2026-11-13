@@ -11,6 +11,7 @@
 | Authentication and HTTP session behavior | [auth.integration.ts](test/auth.integration.ts) | Cookie/owner and API composition |
 | Story lifecycle and HTTP operations | [stories.integration.ts](test/stories.integration.ts), [stories-http.integration.ts](test/stories-http.integration.ts) | Composed flow, not a substitute for the product spec |
 | Story creation, admitted resolution and browser | [story-start.integration.ts](test/story-start.integration.ts), [story-resolution.integration.ts](test/story-resolution.integration.ts), [stories-browser.integration.ts](test/stories-browser.integration.ts) | Selected concerns, actual runtime boundaries |
+| Private SSR / Router back / redacted metrics (W14) | [private-route-evidence.integration.ts](test/private-route-evidence.integration.ts) | `next start` HTML + Playwright; no paid provider |
 | Committed-view SSE hints | [story-updates.integration.ts](test/story-updates.integration.ts) | Owner hint after NOTIFY; anonymous/other-owner denied |
 | Storyteller accounting/holds/recovery | [storyteller.integration.ts](test/storyteller.integration.ts) | Fake provider and durable attempt state, no real provider needed |
 | Reusable world/start-package import | [start-package.integration.ts](test/start-package.integration.ts) | Canonical source and Start behavior |

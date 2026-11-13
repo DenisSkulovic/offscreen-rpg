@@ -13,6 +13,7 @@
 | Stored resolution/retry/receipt | [story-resolution.integration.ts](story-resolution.integration.ts) | Durable admission, duplicate/conflict, W19 owner-scoped read-only receipt GET, publication against real DB |
 | Start from reviewed candidate | [story-start.integration.ts](story-start.integration.ts) | Persisted Start, current published opening, same ID retry |
 | Real navigation/Play/Chamber | [stories-browser.integration.ts](stories-browser.integration.ts) | Browser UI, reload and persisted story scenario with local fixture |
+| Private SSR/hydration/cache/logout-back (W14) | [private-route-evidence.integration.ts](private-route-evidence.integration.ts) | Production `next start` HTML no-store, hydrate without pre-heading snapshot GET, other-owner/anonymous denial, logout+history.back isolation, redacted metrics receipt |
 | Draft two-tab/version | [drafts.browser.ts](drafts.browser.ts) | React edit/draft conflict, browser session interaction |
 | Storyteller uncertain/accounting | [storyteller.integration.ts](storyteller.integration.ts) | Fake provider and durable attempt lifecycle, **no paid model** |
 | Shared launch/DB setup | [app-integration helper](helpers/app-integration.ts), [story-suite helper](helpers/story-suite.ts) | Test server composition, disposable URL and local dependencies |
@@ -30,6 +31,6 @@
 - **W02/W15/W03:** authenticated HTML/Query hydration and story identity need targeted real browser proof eventually.
 - **W19/W04:** stable operation receipt and no duplicate effect need **real persisted DB** proof beyond MSW.
 - **W16/W17:** SSE back-pressure/missed-event behavior needs real Nest stream test plus focused client invalidation.
-- **W14:** production-like proxy/cache/bundle/browser acceptance, not a test on every edit.
+- **W14:** [private-route-evidence.integration.ts](private-route-evidence.integration.ts) — production-like private HTML/hydration/logout-back proof inside the stories integration lane (not an every-edit loop).
 
 **When to stop reading:** if the Change is only a pure component, hook or form selector, return to [web map](../../../apps/web/README.md) and its local Vitest seam. Only inspect these test files when crossing the real backend/browser boundary; read narrowly by test name. Maintain this map only when test entrypoints, fixtures or safety behavior change.

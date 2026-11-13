@@ -17,6 +17,7 @@ const suites = {
   'story-start': 'story-start.integration.js',
   'story-resolution': 'story-resolution.integration.js',
   'story-updates': 'story-updates.integration.js',
+  'private-route': 'private-route-evidence.integration.js',
   storyteller: 'storyteller.integration.js',
   'start-package': 'start-package.integration.js',
 };
