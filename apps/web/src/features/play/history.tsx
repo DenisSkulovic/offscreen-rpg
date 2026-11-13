@@ -5,6 +5,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { flattenUniqueById } from '@/src/shared/api/list-page';
 import { queryKeys } from '@/src/shared/api/query-keys';
 import { storyHistoryInfiniteOptions } from '@/src/shared/api/story-history-query';
+import './ui/story-frame.css';
 
 export function StoryHistoryView({
   viewerId,
@@ -33,13 +34,18 @@ export function StoryHistoryView({
 
   return (
     <section
-      className="story-history"
+      className="story-frame__journal"
       aria-label="Saved chronology"
       aria-busy={pending}
     >
-      <h2>Chronology</h2>
+      <h2 className="story-frame__threshold-heading">Chronology</h2>
+      <p className="story-frame__intention-support">
+        Published passages only. Browsing here does not advance fictional time
+        or reopen past choices.
+      </p>
       <button
         type="button"
+        className="story-frame__intention story-frame__intention--explore"
         disabled={pending}
         onClick={() => {
           if (!opened) {
@@ -55,26 +61,36 @@ export function StoryHistoryView({
       </button>
       {opened ? (
         <>
-          <p>
+          <p className="story-frame__intention-support">
             Newest first. Earlier choices are history, not buttons to play
             again.
           </p>
           {!pending && items.length === 0 ? (
-            <p>No passages in this range.</p>
+            <p className="story-frame__intention-support">
+              No passages in this range. A quiet stretch with no published
+              events is legitimate — nothing is invented here.
+            </p>
           ) : null}
-          {items.map((entry) => (
-            <article key={entry.id}>
-              <h3>
-                {entry.sequence}. {entry.content.title}
-              </h3>
-              {entry.content.paragraphs.map((text, index) => (
-                <p key={index}>{text}</p>
-              ))}
-            </article>
-          ))}
+          <ol className="story-frame__journal-list">
+            {items.map((entry) => (
+              <li key={entry.id}>
+                <article className="story-frame__journal-entry">
+                  <h3 className="story-frame__passage-title">
+                    {entry.sequence}. {entry.content.title}
+                  </h3>
+                  <div className="story-frame__passage">
+                    {entry.content.paragraphs.map((text, index) => (
+                      <p key={index}>{text}</p>
+                    ))}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
           {hasNextPage ? (
             <button
               type="button"
+              className="story-frame__intention story-frame__intention--explore"
               disabled={pending}
               onClick={() => {
                 if (isFetchingNextPage) {
@@ -86,12 +102,14 @@ export function StoryHistoryView({
               Read older passages
             </button>
           ) : items.length > 0 ? (
-            <p role="status">End of saved passages.</p>
+            <p className="story-frame__intention-support" role="status">
+              End of saved passages.
+            </p>
           ) : null}
         </>
       ) : null}
       {error ? (
-        <p role="status">
+        <p className="story-frame__stage-status" role="status">
           History could not be loaded. Try again; if your session expired, sign
           in again.
         </p>

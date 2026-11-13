@@ -103,7 +103,7 @@ export function StoryFrame({
         </div>
       ) : null}
 
-      <main className="story-frame__stage">
+      <main id="story-frame-now" className="story-frame__stage">
         {passageTitle ? (
           <h1 className="story-frame__passage-title">{passageTitle}</h1>
         ) : null}

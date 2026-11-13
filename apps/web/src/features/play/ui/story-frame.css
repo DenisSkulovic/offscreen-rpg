@@ -250,10 +250,28 @@
 }
 
 .story-frame__commitment,
-.story-frame__status-band {
+.story-frame__status-band,
+.story-frame__journal {
   margin: 1.25rem 0 0;
   display: grid;
   gap: 0.85rem;
+}
+
+.story-frame__journal-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.story-frame__journal-entry {
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--sf-separator);
+}
+
+.story-frame__journal-entry .story-frame__passage-title {
+  font-size: 1.15rem;
 }
 
 .story-frame__notice {

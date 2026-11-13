@@ -346,6 +346,13 @@ export function PlayScene({
           <>
             <section id="story-journal" aria-label="Journal">
               <h2 className="story-frame__threshold-heading">Journal</h2>
+              <p className="story-frame__intention-support">
+                Return to Now for the current situation. This journal is
+                read-only chronology of published passages.
+              </p>
+              <a className="story-frame__back" href="#story-frame-now">
+                ← Back to Now
+              </a>
               <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
             </section>
             {scene.campaign ? (

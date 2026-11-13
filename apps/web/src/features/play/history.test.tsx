@@ -38,6 +38,14 @@ function renderHistory(storyId: string) {
 }
 
 describe('StoryHistoryView useInfiniteQuery', () => {
+  it('refuses “since you left” copy without a seen cursor (negative)', () => {
+    renderHistory(storyA);
+    expect(screen.queryByText(/since you left/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/does not advance fictional time/i),
+    ).toBeInTheDocument();
+  });
+
   it('loads and appends older passages with numeric before', async () => {
     const user = userEvent.setup();
     let calls = 0;

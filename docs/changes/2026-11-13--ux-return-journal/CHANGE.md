@@ -1,13 +1,13 @@
 # UX07 | Returning to a life and reading its actual history
 
-**State:** Proposed. **Approval:** no code authorized. **Kind:** frontend return/chronology behavior + tests. **Parent:** [experience program](../../experience/implementation-program.md) M2. **Dependencies:** UX02 and UX04; verified public history data.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX07 (narrow truthful Journal; no “since you left”). **Kind:** frontend return/chronology behavior + tests. **Parent:** [experience program](../../experience/implementation-program.md) M2. **Dependencies:** UX02 and UX04 (Done); verified public history data.
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play owner](../../../apps/web/src/features/play/README.md); inspect history.tsx, ui/campaign-history.tsx, ui/campaign-records.tsx and shared/api/story-history-query.ts.
 > **Primary target:** [return journey](../../experience/flows/return-and-memory.md#return-is-a-distinct-flow-not-a-permanent-modal) and [Journal architecture](../../experience/flows/return-and-memory.md#journal-information-architecture).
 > **Known trap:** paged published passages are not necessarily a full event ledger or a reliable “last seen” record. A friendly LLM recap must not claim uncommitted facts.
-> **Scope:** proposed only. Start with sourced Journal and honest “Recent developments.” “Since you left” needs a viewer-seen projection contract if not already supported.
+> **Scope:** **Authorized for UX07.** Start with sourced Journal and honest “Recent developments.” “Since you left” needs a viewer-seen projection contract if not already supported — do not invent it.
 
 ## Target and alternative
 
