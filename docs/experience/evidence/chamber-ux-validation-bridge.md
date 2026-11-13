@@ -1,6 +1,6 @@
 # Chamber ↔ player UX | how to manufacture evidence without fooling ourselves
 
-**Status:** source-inspected design/test plan, **not** a Chamber implementation instruction. **Source baseline:** GitHub main \`3464f0d8dcd5c024ddf6cdc32290dbb0dd258b5a\` on 2026-11-13. The CH01–CH16 implementation packets are recorded Done; this does **not** imply every individual scenario/lane is available. Source mapping: [Chamber program](../../engineering/chamber-program.md), [lab scenario catalogue](../../../packages/application/src/developer-tools/chamber-lab-catalog.ts), [Chamber UI](../../../apps/web/src/features/developer-tools/chamber/README.md). Reinspect actual code when execution begins.
+**Status:** source-inspected design/test plan, **not** a Chamber implementation instruction. **Source baseline:** GitHub main `3464f0d8dcd5c024ddf6cdc32290dbb0dd258b5a` on 2026-11-13. The CH01–CH16 implementation packets are recorded Done; this does **not** imply every individual scenario/lane is available. Source mapping: [Chamber program](../../engineering/chamber-program.md), [lab scenario catalogue](../../../packages/application/src/developer-tools/chamber-lab-catalog.ts), [Chamber UI](../../../apps/web/src/features/developer-tools/chamber/README.md). Reinspect actual code when execution begins.
 
 ## Why this matters
 
@@ -8,7 +8,7 @@ The user wants an extraordinary **player interface**, and the existing Chamber w
 
 The correct validation pipeline separates **mechanic truth**, **authoritative projection**, **browser behavior** and **human comprehension**.
 
-\`\`\`text
+```text
 Versioned scenario / exact seed / valid specimen
              |
              +--> Bench: real pure rule decisions (no DB/browser)
@@ -26,21 +26,21 @@ Rendered wide/narrow scene + keyboard/a11y review
              |
              v
 Human task observation and independent critique
-\`\`\`
+```
 
 **No hop can stand in for the next hop.** A pure rule pass is not an authorized public DTO, and an MSW story isn't evidence a real worker advanced for ten hours.
 
 ## Exactly what current lab catalogue advertises
 
-The live \`chamberLabScenarioCatalog\` inspected at the baseline includes five named cases. They have **per-lane** status, not a universal executable/green flag:
+The live `chamberLabScenarioCatalog` inspected at the baseline includes five named cases. They have **per-lane** status, not a universal executable/green flag:
 
 | Scenario id@version | Bench | Sandbox | Connected | Useful UX question |
 | --- | --- | --- | --- | --- |
-| \`calendar-named-year-projection@1\` | **Available** | Planned | Planned | Correct fictional date/calendar labels |
-| \`finite-action-overlap-eligibility@1\` | **Available** | Planned | Planned | Mechanics reject overlap; finite action doesn't cheat time |
-| \`chamber-immediate-conversation@1\` | Blocked | Planned | **Available** (legacy scripted case) | A current scene and one contextual choice can be routed through a real fixture |
-| \`activity-clock-wait-eighty@1\` | **Available** | Planned | Planned | An 80%-complete accepted wait specimen can be structurally valid |
-| \`activity-interrupt-same-tick@1\` | **Blocked** | **Blocked** | **Blocked** | The strongest interruption case is not available from this exact catalogue |
+| `calendar-named-year-projection@1` | **Available** | Planned | Planned | Correct fictional date/calendar labels |
+| `finite-action-overlap-eligibility@1` | **Available** | Planned | Planned | Mechanics reject overlap; finite action doesn't cheat time |
+| `chamber-immediate-conversation@1` | Blocked | Planned | **Available** (legacy scripted case) | A current scene and one contextual choice can be routed through a real fixture |
+| `activity-clock-wait-eighty@1` | **Available** | Planned | Planned | An 80%-complete accepted wait specimen can be structurally valid |
+| `activity-interrupt-same-tick@1` | **Blocked** | **Blocked** | **Blocked** | The strongest interruption case is not available from this exact catalogue |
 
 These statuses are **catalogue metadata**, not an assertion that we ran any lane during this design pass. “Connected available” for the legacy scripted scenario does not certify a full provider narrative or a real Sandbox integration. The source's own scenario expressly prevents automated pass for that legacy case.
 
@@ -54,7 +54,7 @@ When a UI concern involves **time math, saved roll/effect or eligibility**, cite
 
 ### Storybook as the design canvas
 
-The existing \`apps/web/src/stories/\` and MSW can render **typed public story projections** without paid model calls. This is the correct home for side-by-side visual design:
+The existing `apps/web/src/stories/` and MSW can render **typed public story projections** without paid model calls. This is the correct home for side-by-side visual design:
 - One current scene, 1/2/8 choices, very long prose.
 - Verified running contribution with actual earned units (distinct from elapsed fictional time).
 - Active literal wait with honest elapsed duration.
@@ -64,9 +64,9 @@ The existing \`apps/web/src/stories/\` and MSW can render **typed public story p
 - Microbe/no-body story with no fantasy currency/map.
 
 **Each story file should label its evidence class:**
-- \`synthetic-public-DTO\`: schema-valid mocked projection only;
-- \`source-derived\`: built from a known fixture with a reproducible ID/seed/content hash;
-- \`connected-authorized\`: real system read performed under explicit test authorization.
+- `synthetic-public-DTO`: schema-valid mocked projection only;
+- `source-derived`: built from a known fixture with a reproducible ID/seed/content hash;
+- `connected-authorized`: real system read performed under explicit test authorization.
 
 This classification is documentation of what a fixture proves, not a demand for a new runtime enum.
 
@@ -78,17 +78,17 @@ A screenshot and an RTL test can prove the user sees a clear "Repair suspended �
 
 | UX specimen | What must be constructed truthfully | Best initial lane | Blocking rule |
 | --- | --- | --- | --- |
-| \`ux-scene-two-offers\` | Published passage with valid current offer + source identity | Existing scripted scenario / Storybook | No provider assumptions |
-| \`ux-choice-lost-ack\` | Frozen action intent with server operation receipt in uncertain state | MSW / existing Play tests first | Must not auto-POST |
-| \`ux-contribution-failed-check\` | 3/9 earned and later failed check with advanced fictional time | Source-derived app fixture | **Not** synthesized as 60%-completed work |
-| \`ux-work-interrupted\` | Actual interrupted activity with durable 3/9 and a controlling published decision | New application/connected specimen when supported | Same-tick lab catalogue currently blocked |
-| \`ux-travel-long-wait\` | Admitted route milestone/position and conditional ETA | Storybook conceptual **only** until travel adapter | Never infer route distance from elapsed time |
-| \`ux-narration-failed-after-settlement\` | Saved mechanical receipt but unavailable passage | Existing fault mechanics / MSW with precise label | No reroll or second reward |
-| \`ux-no-plan-away\` | No accepted execution and same fictional time across return | Source-backed engine projection or MSW | Cannot label "world continuing" |
-| \`ux-offline-stale\` | Last verified snapshot and failed GET | MSW + browser | Must not assert server stopped |
-| \`ux-microbe\` | Applicable sensing/condition, no humanoid economy | Current scripted fixture | No generic human body defaults |
-| \`ux-return-real-events\` | Committed provenance-linked event sequence | Existing limited history initially; GM05 later | No unsourced “Since you left” |
-| \`ux-multiplayer-hold\` | Shared actor ownership/decision policy | Design mock **only** | Real group semantics not implemented |
+| `ux-scene-two-offers` | Published passage with valid current offer + source identity | Existing scripted scenario / Storybook | No provider assumptions |
+| `ux-choice-lost-ack` | Frozen action intent with server operation receipt in uncertain state | MSW / existing Play tests first | Must not auto-POST |
+| `ux-contribution-failed-check` | 3/9 earned and later failed check with advanced fictional time | Source-derived app fixture | **Not** synthesized as 60%-completed work |
+| `ux-work-interrupted` | Actual interrupted activity with durable 3/9 and a controlling published decision | New application/connected specimen when supported | Same-tick lab catalogue currently blocked |
+| `ux-travel-long-wait` | Admitted route milestone/position and conditional ETA | Storybook conceptual **only** until travel adapter | Never infer route distance from elapsed time |
+| `ux-narration-failed-after-settlement` | Saved mechanical receipt but unavailable passage | Existing fault mechanics / MSW with precise label | No reroll or second reward |
+| `ux-no-plan-away` | No accepted execution and same fictional time across return | Source-backed engine projection or MSW | Cannot label "world continuing" |
+| `ux-offline-stale` | Last verified snapshot and failed GET | MSW + browser | Must not assert server stopped |
+| `ux-microbe` | Applicable sensing/condition, no humanoid economy | Current scripted fixture | No generic human body defaults |
+| `ux-return-real-events` | Committed provenance-linked event sequence | Existing limited history initially; GM05 later | No unsourced “Since you left” |
+| `ux-multiplayer-hold` | Shared actor ownership/decision policy | Design mock **only** | Real group semantics not implemented |
 
 For each case specify **actual source input, stable expected projection, permitted claims and negative assertion**. A valid fixture constructor must not insert impossible state into a real user's DB merely because the UI needs a screenshot.
 
