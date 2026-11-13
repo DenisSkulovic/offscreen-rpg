@@ -11,6 +11,7 @@ import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { createServerQueryClient } from '@/src/shared/api/query-client';
 import { storiesListInfiniteOptions } from '@/src/shared/api/stories-list-query';
 import { draftsListInfiniteOptions } from '@/src/shared/api/drafts-list-query';
+import '@/src/features/stories/stories-library.css';
 
 export default async function Stories() {
   const viewer = await requireViewer();
@@ -42,16 +43,24 @@ export default async function Stories() {
   ]);
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <main>
+      <main className="stories-library">
         <SessionRefresh />
-        <p className="eyebrow">Offscreen RPG</p>
-        <h1>Welcome, {viewer.user.name}.</h1>
-        <Link className="button" href="/stories/new">
-          New story
-        </Link>
+        <p className="stories-library__brand">Offscreen RPG</p>
+        <h1 className="stories-library__title">Welcome, {viewer.user.name}.</h1>
+        <p className="stories-library__lede">
+          Return to a life in progress, or continue shaping a draft. Live
+          stories and unfinished creation stay separate.
+        </p>
+        <div className="stories-library__actions">
+          <Link className="stories-library__cta" href="/stories/new">
+            Create a story
+          </Link>
+        </div>
         <LiveStoryList viewerId={viewerId} />
         <DraftList viewerId={viewerId} />
-        <SignOutButton />
+        <div className="stories-library__sign-out">
+          <SignOutButton />
+        </div>
       </main>
     </HydrationBoundary>
   );

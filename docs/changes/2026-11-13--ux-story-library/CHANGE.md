@@ -1,14 +1,14 @@
 # UX05 | Stories library that feels like returning to lives
 
-**State:** Proposed. **Approval:** no code authorization; owner must explicitly select this packet for Cursor.
-**Kind:** frontend composition and behavior plus tests. **Parent:** [experience implementation program](../../experience/implementation-program.md), M2. **Dependency:** UX01 shell.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX05.
+**Kind:** frontend composition and behavior plus tests. **Parent:** [experience implementation program](../../experience/implementation-program.md), M2. **Dependency:** UX01 shell (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Stories owner map](../../../apps/web/src/features/stories/README.md) and [App Router map](../../../apps/web/app/README.md). Inspect the live story list, draft list and authenticated stories page.
 > **Primary target:** [Stories library](../../experience/spaces/stories-library.md#core-question).
 > **Known trap:** the current story list schema exposes id/title/storyteller/status, not necessarily pending decisions, active work, or latest committed situation. Do not infer “Continuing” from elapsed time.
-> **Permission:** proposed only. No provider or gameplay code, no assumption that rich attention projections already exist.
+> **Permission:** **Authorized for UX05.** No provider or gameplay code, no assumption that rich attention projections already exist beyond the current list `status` string.
 
 ## Target alignment and alternative
 

@@ -83,6 +83,10 @@ describe('LiveStoryList useInfiniteQuery', () => {
     expect(
       screen.getByRole('heading', { name: 'Newest live' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Enter story' }),
+    ).toHaveAttribute('href', `/play/${fixtureIds.storyId}`);
+    expect(screen.queryByText(/Continuing/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Older stories' }));
     await waitFor(() => {
       expect(

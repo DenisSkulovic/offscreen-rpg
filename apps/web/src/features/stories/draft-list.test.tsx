@@ -56,6 +56,10 @@ describe('DraftList useInfiniteQuery', () => {
       </QueryClientProvider>,
     );
 
+    expect(
+      screen.getByRole('link', { name: 'Continue creation' }),
+    ).toHaveAttribute('href', `/stories/${fixtureDraftId}`);
+    expect(screen.queryByText(/Enter story/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'More drafts' }));
     await waitFor(() => {
       expect(screen.getByText('Older draft')).toBeInTheDocument();
