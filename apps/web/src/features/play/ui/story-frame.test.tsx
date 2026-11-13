@@ -47,9 +47,7 @@ describe('StoryFrame (UX01)', () => {
       '/stories',
     );
     expect(screen.getByText('Greywake')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent(
-      /Waiting for your choice/i,
-    );
+    expect(screen.getByText(/Waiting for your choice/i)).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: 'Someone at the door' }),
     ).toBeInTheDocument();

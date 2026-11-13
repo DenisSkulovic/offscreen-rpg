@@ -228,6 +228,33 @@
   font: 600 0.92rem / 1.4 var(--sf-font-ui);
 }
 
+.story-frame__secondary > * + * {
+  margin-top: 1rem;
+}
+
+.story-frame__notice {
+  margin: 1.25rem 0 0;
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--sf-action);
+  background: #18232e;
+}
+
+.story-frame__notice p {
+  margin: 0 0 0.55rem;
+  color: var(--sf-ink-muted);
+  font: 0.95rem / 1.45 var(--sf-font-ui);
+}
+
+.story-frame__notice p:last-child {
+  margin-bottom: 0;
+}
+
+.story-frame__stage-status {
+  margin: 1rem 0 0;
+  color: var(--sf-status-attention);
+  font: 600 0.95rem / 1.4 var(--sf-font-ui);
+}
+
 .story-frame a:focus-visible,
 .story-frame button:focus-visible,
 .story-frame summary:focus-visible,

@@ -1,6 +1,6 @@
 # UX01 | a scene-first story shell, not an admin dashboard
 
-**State:** In progress (authorized 2026-11-13). **Approval and owner:** Owner authorized UX01 code after design handoff merge to `main`; Cursor is the implementation executor.  
+**State:** Done (2026-11-13). **Approval and owner:** Owner authorized UX01; foundation landed; visual polish deferred by owner.  
 **Kind:** frontend behavior / layout refactor / focused component tests.  
 **Parent:** [Experience implementation program](../../experience/implementation-program.md), M1. **Dependency:** existing React/Next architecture intact; no UX packet required.
 

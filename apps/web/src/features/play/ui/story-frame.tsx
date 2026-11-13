@@ -35,11 +35,18 @@ export type StoryFrameProps = {
   journalHref?: string | null;
   /** Optional low-attention Details disclosure content. */
   details?: ReactNode;
+  /**
+   * Extra stage content after the passage/memory strip
+   * (holds, recovery, campaign play, custom decision UI).
+   */
+  stageExtras?: ReactNode;
+  /** When true, intention buttons stay visible but do not accept activation. */
+  intentionsDisabled?: boolean;
   onIntentionSelect?: (id: string) => void;
 };
 
 /**
- * UX01 Living Situation Stage frame.
+ * Living Situation Stage frame (UX01/UX02).
  * Presentation only: does not own Query, commands, or story truth.
  */
 export function StoryFrame({
@@ -54,6 +61,8 @@ export function StoryFrame({
   thresholdHeading = 'What will you do?',
   journalHref = null,
   details = null,
+  stageExtras = null,
+  intentionsDisabled = false,
   onIntentionSelect,
 }: StoryFrameProps) {
   const showSituation = Boolean(situationLabel || statusLabel);
@@ -89,9 +98,7 @@ export function StoryFrame({
             <span />
           )}
           {statusLabel ? (
-            <p className="story-frame__status" role="status">
-              {statusLabel}
-            </p>
+            <p className="story-frame__status">{statusLabel}</p>
           ) : null}
         </div>
       ) : null}
@@ -107,6 +114,8 @@ export function StoryFrame({
         </div>
 
         {memory ? <p className="story-frame__memory">{memory}</p> : null}
+
+        {stageExtras}
 
         {intentions.length > 0 ? (
           <section
@@ -125,6 +134,7 @@ export function StoryFrame({
                   <button
                     type="button"
                     className="story-frame__intention"
+                    disabled={intentionsDisabled}
                     onClick={() => onIntentionSelect?.(intention.id)}
                   >
                     {intention.label}

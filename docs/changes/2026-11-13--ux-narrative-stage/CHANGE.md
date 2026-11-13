@@ -1,15 +1,15 @@
 # UX02 | replace form-centric Play with a readable living scene
 
-**State:** Proposed. **Approval and owner:** design only; owner has not authorized Cursor to code.  
+**State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence after UX01; Play recomposed onto StoryFrame.  
 **Kind:** frontend behavior and composition refactor + tests.  
-**Parent:** [Experience program](../../experience/implementation-program.md), M1. **Dependency:** UX01 shell.
+**Parent:** [Experience program](../../experience/implementation-program.md), M1. **Dependency:** UX01 shell (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play ownership map](../../../apps/web/src/features/play/README.md), inspect `view.tsx`, `ui/campaign-play.tsx`, `ui/campaign-status.tsx` and currently used Storybook fixtures.  
 > **Governing target:** [selected Living Stage](../../experience/spaces/living-stage-blueprint.md#target-desktop-layout-current-scene-with-decision), [narrative/action threshold](../../experience/patterns/narrative-presentation.md#the-narrativeaction-boundary), [attention hierarchy](../../experience/patterns/state-and-attention.md#attention-priority-whowhat-deserves-the-stage).  
 > **Known trap:** SSE/Query can publish a newer passage while the user reads: never steal scroll/focus or resurrect stale choices. The current Play sidebar mounts **History, Settings, and Technical IDs**. Moving those out of the main stage must preserve functional access, and opening/closing a settings drawer must not discard dirty React Hook Form edits.  
-> **Scope/permission:** **Proposed only**. When authorized, recompose the present scene and status visually. Keep Play Query/command source ownership and game mechanics intact. UX03 owns the action grammar.
+> **Scope/permission:** **Authorized for UX02.** Recompose the present scene and status visually. Keep Play Query/command source ownership and game mechanics intact. UX03 owns the action grammar.
 
 ## Target alignment and alternatives
 

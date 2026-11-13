@@ -6,9 +6,9 @@ import { ResolutionRecovery } from './resolution-recovery';
 import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
 import { useStoryLiveUpdates } from './use-story-live-updates';
+import { StoryFrame } from './ui/story-frame';
 
 import { useEffect, useSyncExternalStore } from 'react';
-import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
@@ -99,6 +99,20 @@ function resolutionMessage(story: StorySnapshot) {
   return 'The storyteller is resolving this intention.';
 }
 
+function stageStatusLabel(story: StorySnapshot, canChoose: boolean) {
+  if (story.waiting) {
+    return story.waiting.remainingMs === null
+      ? 'Journey underway'
+      : 'Journey paused';
+  }
+  if (story.resolution?.state === 'uncertain') return 'Usage uncertain';
+  if (story.resolution?.state === 'failed') return 'Continuation failed';
+  if (story.resolution?.state === 'blocked') return 'Publication blocked';
+  if (story.resolution) return 'Resolving your action';
+  if (canChoose) return 'Waiting for your choice';
+  return 'Nothing underway';
+}
+
 export function PlayScene({
   viewerId,
   storyId,
@@ -173,8 +187,8 @@ export function PlayScene({
       );
     }
     return (
-      <main className="story-demo play-screen">
-        <p role="status">
+      <main className="story-frame">
+        <p className="story-frame__stage-status" role="status">
           {snapshotPending || snapshotFetching
             ? 'Loading the saved scene…'
             : 'The saved scene is not available yet.'}
@@ -185,183 +199,197 @@ export function PlayScene({
   const scene = story;
   const pending = resolution.pending || control.pending;
   const status = resolution.error || control.error || resolutionMessage(scene);
+  const showLegacyOffer = Boolean(offer && !scene.campaign?.character);
+  const storyLabel =
+    scene.storyteller?.name?.trim() ||
+    scene.current.content.title.trim() ||
+    'Current story';
+  const situationLabel = scene.campaign?.worldTime.label ?? null;
 
   return (
-    <main className="story-demo play-screen">
+    <>
       <SessionRefresh />
-      <header className="story-header">
-        <Link href="/stories">← Stories</Link>
-        <span className="demo-label">
-          {scene.storyteller?.name ?? 'Storyteller'} ·{' '}
-          {scene.campaign?.worldTime.label ?? `revision ${scene.revision}`}
-        </span>
-      </header>
-      <div className="play-layout">
-        <section className="play-main" aria-label="Current scene">
-          <article className="story-scene">
-            <p className="eyebrow">Current scene</p>
-            <h1>{scene.current.content.title}</h1>
-            <div className="scene-prose">
-              {scene.current.content.paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </div>
-          </article>
-          {waiting ? (
-            <section className="play-notice" aria-label="Journey timing">
-              {waiting.remainingMs !== null ? (
+      <StoryFrame
+        storiesHref="/stories"
+        storyLabel={storyLabel}
+        situationLabel={situationLabel}
+        statusLabel={stageStatusLabel(scene, canChoose)}
+        passageTitle={scene.current.content.title}
+        paragraphs={scene.current.content.paragraphs}
+        journalHref="#story-journal"
+        thresholdHeading={offer?.specification.prompt || 'What will you do?'}
+        intentions={
+          showLegacyOffer
+            ? offer!.specification.options.map((option) => ({
+                id: option.id,
+                label: option.label,
+                support: [option.description, option.risk]
+                  .filter(Boolean)
+                  .join(' · '),
+              }))
+            : []
+        }
+        intentionsDisabled={pending || !canChoose}
+        onIntentionSelect={
+          showLegacyOffer
+            ? (optionId) => {
+                if (!canChoose || !offer || pending) return;
+                void resolution.submitChoice({
+                  expectedRevision: scene.revision,
+                  interactionId: offer.id,
+                  optionId,
+                });
+              }
+            : undefined
+        }
+        stageExtras={
+          <>
+            {waiting ? (
+              <section
+                className="story-frame__notice"
+                aria-label="Journey timing"
+              >
+                {waiting.remainingMs !== null ? (
+                  <p>
+                    Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
+                    seconds remain.
+                  </p>
+                ) : (
+                  <p>
+                    Still travelling. Arrival estimated at {waiting.dueAt}.
+                    Reloading never restarts the wait.
+                  </p>
+                )}
                 <p>
-                  Journey paused. {Math.ceil(waiting.remainingMs / 1000)} real
-                  seconds remain.
+                  Fictional duration: {waiting.gameDurationMs / 60000} minutes.
+                  The saved deadline is authoritative.
                 </p>
-              ) : (
-                <p>
-                  Still travelling. Arrival estimated at {waiting.dueAt}.
-                  Reloading never restarts the wait.
-                </p>
-              )}
-              <p>
-                Fictional duration: {waiting.gameDurationMs / 60000} minutes.
-                The saved deadline is authoritative.
-              </p>
-              {waiting.canControl ? (
-                <button
-                  type="button"
-                  disabled={pending || control.hasFrozen}
-                  onClick={() =>
-                    control.submit({
-                      intervalId: scene.current.id,
-                      expectedControlRevision: waiting.controlRevision,
-                      action: journeyAction(waiting),
-                    })
-                  }
-                >
-                  {waiting.remainingMs === null ? 'Pause' : 'Resume'}
-                </button>
-              ) : null}
-            </section>
-          ) : null}
-          {control.canRetrySame ? (
-            <button
-              disabled={pending}
-              type="button"
-              onClick={() => control.retryFrozen()}
-            >
-              Retry control
-            </button>
-          ) : null}
-          {offer && !scene.campaign?.character ? (
-            <section className="scene-choices" aria-label="Offered interaction">
-              <p>{offer.specification.prompt}</p>
-              {offer.specification.options.map((option) => (
-                <article className="campaign-option" key={option.id}>
+                {waiting.canControl ? (
                   <button
                     type="button"
-                    disabled={pending || !canChoose}
+                    className="story-frame__intention"
+                    disabled={pending || control.hasFrozen}
                     onClick={() =>
-                      void resolution.submitChoice({
-                        expectedRevision: scene.revision,
-                        interactionId: offer.id,
-                        optionId: option.id,
+                      control.submit({
+                        intervalId: scene.current.id,
+                        expectedControlRevision: waiting.controlRevision,
+                        action: journeyAction(waiting),
                       })
                     }
                   >
-                    {option.label}
+                    {waiting.remainingMs === null ? 'Pause' : 'Resume'}
                   </button>
-                  {option.description ? (
-                    <p className="campaign-option-intention">
-                      {option.description}
-                    </p>
-                  ) : null}
-                  {option.risk ? (
-                    <p className="campaign-option-risk">
-                      <strong>Apparent risk:</strong> {option.risk}
-                    </p>
-                  ) : null}
-                </article>
-              ))}
-              {resolution.canRetrySame ? (
-                <button
-                  disabled={pending}
-                  type="button"
-                  onClick={() => resolution.retryFrozen()}
-                >
-                  Retry the same choice
-                </button>
-              ) : null}
-            </section>
-          ) : null}
-          {status ? (
-            <p className="scene-status" role="status">
-              {status}
-            </p>
-          ) : null}
-          {showRefreshRecovery ? (
-            <section className="play-notice" aria-label="Snapshot refresh">
-              <p role="status">
-                {!online || snapshotPaused
-                  ? 'Offline — last update may be stale. Refresh does not send a command.'
-                  : 'Last update failed. Refresh does not send a command.'}
-              </p>
+                ) : null}
+              </section>
+            ) : null}
+            {control.canRetrySame ? (
               <button
+                className="story-frame__intention"
+                disabled={pending}
                 type="button"
-                disabled={snapshotFetching || !online}
-                onClick={() => {
-                  void refetchSnapshot();
-                }}
+                onClick={() => control.retryFrozen()}
               >
-                Refresh scene
+                Retry control
               </button>
+            ) : null}
+            {showLegacyOffer && resolution.canRetrySame ? (
+              <button
+                className="story-frame__intention"
+                disabled={pending}
+                type="button"
+                onClick={() => resolution.retryFrozen()}
+              >
+                Retry the same choice
+              </button>
+            ) : null}
+            {status ? (
+              <p className="story-frame__stage-status" role="status">
+                {status}
+              </p>
+            ) : null}
+            {showRefreshRecovery ? (
+              <section
+                className="story-frame__notice"
+                aria-label="Snapshot refresh"
+              >
+                <p role="status">
+                  {!online || snapshotPaused
+                    ? 'Offline — last update may be stale. Refresh does not send a command.'
+                    : 'Last update failed. Refresh does not send a command.'}
+                </p>
+                <button
+                  type="button"
+                  className="story-frame__intention"
+                  disabled={snapshotFetching || !online}
+                  onClick={() => {
+                    void refetchSnapshot();
+                  }}
+                >
+                  Refresh scene
+                </button>
+              </section>
+            ) : null}
+            <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
+            {scene.campaign?.character ? (
+              <div className="story-frame__threshold">
+                <CampaignPlay
+                  key={scene.campaign.offer?.id ?? scene.id}
+                  story={scene}
+                  campaign={scene.campaign}
+                  onSnapshot={acceptSnapshot}
+                />
+              </div>
+            ) : null}
+          </>
+        }
+        details={
+          <>
+            <section id="story-journal" aria-label="Journal">
+              <h2 className="story-frame__threshold-heading">Journal</h2>
+              <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
             </section>
-          ) : null}
-          <ResolutionRecovery story={scene} onSnapshot={acceptSnapshot} />
-          {scene.campaign?.character ? (
-            <CampaignPlay
-              key={scene.campaign.offer?.id ?? scene.id}
-              story={scene}
-              campaign={scene.campaign}
-              onSnapshot={acceptSnapshot}
-            />
-          ) : null}
-        </section>
-        <aside className="play-sidebar" aria-label="Story information">
-          <StoryHistoryView viewerId={viewerId} storyId={scene.id} />
-          {scene.campaign ? (
-            <CampaignSettingsEditor
-              key={scene.id}
-              viewerId={viewerId}
-              story={scene}
-              campaign={scene.campaign}
-              onSnapshot={acceptSnapshot}
-            />
-          ) : null}
-          <details>
-            <summary>Technical details</summary>
-            <dl>
-              {scene.usage ? (
-                <>
-                  <dt>Settled model usage (USD)</dt>
-                  <dd>
-                    {(Number(scene.usage.settledMicrousd) / 1000000).toFixed(6)}
-                  </dd>
-                  <dt>Reserved pending usage (USD)</dt>
-                  <dd>
-                    {(Number(scene.usage.reservedMicrousd) / 1000000).toFixed(
-                      6,
-                    )}
-                  </dd>
-                </>
-              ) : null}
-              <dt>Story ID</dt>
-              <dd>{scene.id}</dd>
-              <dt>Revision</dt>
-              <dd>{scene.revision}</dd>
-              <dt>Passage ID</dt>
-              <dd>{scene.current.id}</dd>
-            </dl>
-          </details>
-        </aside>
-      </div>
-    </main>
+            {scene.campaign ? (
+              <section aria-label="Story settings">
+                <h2 className="story-frame__threshold-heading">Settings</h2>
+                <CampaignSettingsEditor
+                  key={scene.id}
+                  viewerId={viewerId}
+                  story={scene}
+                  campaign={scene.campaign}
+                  onSnapshot={acceptSnapshot}
+                />
+              </section>
+            ) : null}
+            <details>
+              <summary>Technical details</summary>
+              <dl>
+                {scene.usage ? (
+                  <>
+                    <dt>Settled model usage (USD)</dt>
+                    <dd>
+                      {(Number(scene.usage.settledMicrousd) / 1000000).toFixed(
+                        6,
+                      )}
+                    </dd>
+                    <dt>Reserved pending usage (USD)</dt>
+                    <dd>
+                      {(
+                        Number(scene.usage.reservedMicrousd) / 1000000
+                      ).toFixed(6)}
+                    </dd>
+                  </>
+                ) : null}
+                <dt>Story ID</dt>
+                <dd>{scene.id}</dd>
+                <dt>Revision</dt>
+                <dd>{scene.revision}</dd>
+                <dt>Passage ID</dt>
+                <dd>{scene.current.id}</dd>
+              </dl>
+            </details>
+          </>
+        }
+      />
+    </>
   );
 }
