@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation program for Cursor
 
-**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH14 Done** (through held packet lab evidence); CH15–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
+**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH16 Done** (live Sandbox/Connected Nest boots remain gated where noted). The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
 
 **Start for inexpensive Cursor:** one approved `CHxx/CHANGE.md` → its one adjacent source README → the **exact** protocol heading linked from its first screen → named source/test symbols only. Do not load all three documents in full or reverse-engineer the launcher unless the selected CH packet calls for that section.
 
@@ -48,8 +48,8 @@ Authoritative inspection + causal events + semantic diff + assertions
 | **4: launch** | [CH12 Fast CLI/modes](../changes/2026-11-12--chamber-launcher-modes/CHANGE.md): **Done** — shared flag grammar + scenario/inspect CLIs; main lifecycles preserved | CH02 CH04 | `tools/chamber` launcher |
 | **5: connected** | [CH13 Worker/DB rig](../changes/2026-11-12--chamber-connected-rig/CHANGE.md): **Done** — planner/serial lock/fake-offline proof; live Nest boot gated | CH04 CH06 CH08 CH09 CH12 | integration test helpers |
 | **5: provider** | [CH14 Held packet lab](../changes/2026-11-12--chamber-packet-lab-integration/CHANGE.md): **Done** — held snapshot → redacted LabRun evidence; live release gated | CH06 CH09 CH12 | existing packet-review modes |
-| **5: breadth** | [CH15 Mechanics coverage](../changes/2026-11-12--chamber-mechanics-coverage/CHANGE.md): real-policy catalogue by family and lane | CH01 CH02 CH03 CH06 CH09 CH10 | registry and owning game policies |
-| **6: acceptance** | [CH16 Replay/differential](../changes/2026-11-12--chamber-replay-comparison/CHANGE.md): compare revisions and map C01–C16 proof | CH04 CH06 CH07 CH09 CH11 CH12 CH15; CH13 for connected proof | run diff/evidence and workbench |
+| **5: breadth** | [CH15 Mechanics coverage](../changes/2026-11-12--chamber-mechanics-coverage/CHANGE.md): **Done** — truthful per-lane coverage registry | CH01 CH02 CH03 CH06 CH09 CH10 | registry and owning game policies |
+| **6: acceptance** | [CH16 Replay/differential](../changes/2026-11-12--chamber-replay-comparison/CHANGE.md): **Done** — replay manifest/compare + honest C01–C16 map | CH04 CH06 CH07 CH09 CH11 CH12 CH15; CH13 for connected proof | run diff/evidence and workbench |
 
 **Implementing order is not arbitrary numeric ceremony.** CH01/CH02 can yield a useful laboratory result without a browser. CH03/CH04 establish the first real persisted specimen. CH12 can follow their completion without awaiting React. CH11 deliberately waits for W15 because the selected frontend architecture already decided TanStack Query; don't introduce a second state-cache and later redo it.
 

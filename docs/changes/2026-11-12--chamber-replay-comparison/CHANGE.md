@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [scenario-run protocol](../../technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [application owner map](../../../packages/application/src/developer-tools/README.md) and [target C03/C09/C10/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16). **Source gap:** [H04/H08/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** matching raw UUIDs, timestamps or Storyteller prose is not proof of mechanical correctness.
 
-**State:** Specified/Proposed, not authorized for source edits. **Dependencies:** CH04, CH06, CH07, CH09, CH11, CH12, CH15; CH13 where worker/DB evidence is claimed. **Source baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH15. **Dependencies:** CH04/CH06/CH07/CH09/CH11/CH12/CH15 (Done); CH13 blocked for live connected claims. Provider spend none.
+
+**Evidence:** `lab/replay-compare.ts`. Tests: `replay-compare.test.mjs` 2/2. Normal: clock advance compare passes named invariant; extractReplayManifest from capsule. Negatives: fixture hash mismatch; hidden provider attempt blocks replay. `mapChamberCriteriaEvidence()` reports C01–C16 demonstrated/blocked honestly (C04/C13 blocked).
 
 ## Bounded implementation outcome
 
