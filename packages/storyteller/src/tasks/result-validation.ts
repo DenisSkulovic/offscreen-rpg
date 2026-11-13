@@ -143,6 +143,7 @@ export function validateStorytellerResult(
         storyFacts: task.context.mechanicalOpening.storyFacts,
         evidenceHandles: new Set(),
         requireFactTransitionDeclarations: !suppliedPlan,
+        allowWorldEffects: suppliedPlan,
       });
       if (validation.kind === 'rejected') {
         throw new Error(`Invalid opening plan: ${validation.issues[0]?.code}`);
@@ -188,6 +189,7 @@ export function validateStorytellerResult(
         storyFacts: resolution.storyFacts,
         evidenceHandles,
         requireFactTransitionDeclarations: true,
+        allowWorldEffects: false,
       });
       if (validation.kind === 'rejected') {
         const first = validation.issues[0];

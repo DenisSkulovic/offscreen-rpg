@@ -157,6 +157,7 @@ export function mechanicalOpeningProviderSchema(allowReferences: boolean) {
 function expandMechanicalOpeningPlans(
   entries: readonly unknown[],
   authorizedPlans: readonly ImmediateActionPlan[],
+  options: { allowCapturedBodyRehydration: boolean },
 ) {
   const byKey = new Map(authorizedPlans.map((plan) => [plan.key, plan]));
   const processActionIds = new Map(
@@ -188,7 +189,12 @@ function expandMechanicalOpeningPlans(
     }
     const captured = byKey.get(proposed.key);
     if (captured) {
-      if (!isDeepStrictEqual(captured, proposed)) {
+      // Lean provider bodies must use {source:'authorized', key}. Exact body
+      // rehydration remains only for already-compiled/scripted stored results.
+      if (
+        !options.allowCapturedBodyRehydration ||
+        !isDeepStrictEqual(captured, proposed)
+      ) {
         throw new Error('Authorized opening plan was reconstructed');
       }
       return captured;
@@ -227,6 +233,7 @@ export function compileMechanicalOpeningProviderResult(
     const plans = expandMechanicalOpeningPlans(
       scene.next.plans,
       authorizedPlans,
+      { allowCapturedBodyRehydration: true },
     );
     return {
       version: 1 as const,
@@ -241,6 +248,7 @@ export function compileMechanicalOpeningProviderResult(
     const plans = expandMechanicalOpeningPlans(
       legacy.data.scene.next.plans,
       authorizedPlans,
+      { allowCapturedBodyRehydration: true },
     );
     return {
       version: 1 as const,
@@ -253,7 +261,9 @@ export function compileMechanicalOpeningProviderResult(
   const parsed = mechanicalOpeningProviderSchema(
     authorizedPlans.length > 0,
   ).parse(output);
-  const plans = expandMechanicalOpeningPlans(parsed.plans, authorizedPlans);
+  const plans = expandMechanicalOpeningPlans(parsed.plans, authorizedPlans, {
+    allowCapturedBodyRehydration: false,
+  });
   return {
     version: 1 as const,
     scene: {

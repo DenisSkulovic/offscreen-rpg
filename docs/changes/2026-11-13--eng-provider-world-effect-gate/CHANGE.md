@@ -1,6 +1,6 @@
 # ENG08 | Provider-authored mechanical plans cannot transfer unowned items
 
-**State:** Proposed, **design-ready for explicit owner authorization**, not automatically Ready. **Priority:** protective corrective after ENG01. **Kind:** admission/validation and negative tests, **no new gameplay feature**. **Authority:** [post-wave review](../../engine-architecture/evidence/postwave-implementation-review.md), [one-owner domain authority](../../engine-architecture/domain-authority.md).
+**State:** Done (2026-11-13). Provider-authored new `worldEffects` rejected by default; exact `{source:'authorized', key}` and authored fixtures preserved. **Kind:** admission/validation and negative tests, **no new gameplay feature**. **Authority:** [post-wave review](../../engine-architecture/evidence/postwave-implementation-review.md), [one-owner domain authority](../../engine-architecture/domain-authority.md).
 
 ## First-screen Cursor brief
 

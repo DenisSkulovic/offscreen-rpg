@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import type { EvidencePacket } from '@offscreen/contracts/story-retrieval';
+import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   createStorytellerCatalogue,
   storytellerCatalogue,
@@ -1072,6 +1073,141 @@ test('an authorized opening reference substitutes the captured warehouse plan', 
     ),
     captured,
   );
+});
+
+test('provider worldEffects require an authorized reference, not a reconstructed body', () => {
+  const seeded = seydaMechanicalOpening();
+  const opening = seeded.context.mechanicalOpening;
+  if (!opening) {
+    throw new Error('Expected a mechanical opening');
+  }
+  const transferPlan = immediateActionPlanSchema.parse({
+    version: 1,
+    key: 'hand-over-compass',
+    label: 'Hand over the compass',
+    intention: 'Give Mara the brass compass she asked for.',
+    risk: null,
+    evidence: [],
+    requires: [{ id: 'location', value: 'seyda-neen' }],
+    requiresStory: [],
+    requiresQuantities: [],
+    factTransitions: [],
+    resolution: {
+      kind: 'automatic',
+      fictionalDurationSeconds: 5,
+      outcome: {
+        text: 'The compass changes hands.',
+        effects: [],
+        worldEffects: [
+          {
+            kind: 'item.transfer.v1',
+            itemKey: 'brass-compass',
+            fromHolder: 'player',
+            toHolder: 'mara',
+          },
+        ],
+      },
+    },
+  });
+  const authorizedPlans = [
+    ...authorizedMechanicalOpeningPlans(opening.character),
+    transferPlan,
+  ];
+  const task = prepareStorytellerTask({
+    ...seeded,
+    context: {
+      ...seeded.context,
+      mechanicalOpening: {
+        ...opening,
+        authorizedPlans,
+      },
+    },
+  });
+
+  const referenced = validateStorytellerResult(task, {
+    content: opening.opening,
+    plans: [{ source: 'authorized', key: 'hand-over-compass' }],
+  });
+  if (referenced.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.deepEqual(referenced.scene.next.plans, [transferPlan]);
+
+  assert.throws(
+    () =>
+      validateStorytellerResult(task, {
+        content: opening.opening,
+        plans: [
+          {
+            key: 'take-mara-compass',
+            label: 'Take Mara’s compass',
+            intention: 'Lift the compass from Mara’s belt.',
+            risk: null,
+            requires: [{ id: 'location', value: 'seyda-neen' }],
+            requiresStory: [],
+            requiresQuantities: [],
+            factTransitions: [],
+            resolution: {
+              kind: 'automatic',
+              fictionalDurationSeconds: 5,
+              outcome: {
+                text: 'You take the compass.',
+                effects: [],
+                worldEffects: [
+                  {
+                    kind: 'item.transfer.v1',
+                    itemKey: 'brass-compass',
+                    fromHolder: 'mara',
+                    toHolder: 'player',
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      }),
+    /Invalid opening plan: invalid-shape/,
+  );
+
+  const reconstructedBody = structuredClone(transferPlan);
+  const { version: _version, evidence: _evidence, ...leanBody } =
+    reconstructedBody;
+  assert.throws(
+    () =>
+      validateStorytellerResult(task, {
+        content: opening.opening,
+        plans: [leanBody],
+      }),
+    /Authorized opening plan was reconstructed/,
+  );
+
+  const ordinary = validateStorytellerResult(task, {
+    content: opening.opening,
+    plans: [
+      {
+        key: 'look-over-the-docks',
+        label: 'Look over the docks',
+        intention: 'Take in the census office yard and the nearby water.',
+        risk: null,
+        requires: [{ id: 'location', value: 'seyda-neen' }],
+        requiresStory: [],
+        requiresQuantities: [],
+        factTransitions: [],
+        resolution: {
+          kind: 'automatic',
+          fictionalDurationSeconds: 5,
+          outcome: {
+            text: 'You look across the docks.',
+            effects: [],
+          },
+        },
+      },
+    ],
+  });
+  if (ordinary.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected mechanical opening plans');
+  }
+  assert.equal(ordinary.scene.next.plans[0]?.key, 'look-over-the-docks');
 });
 
 test('captured schemas expose only the result for the requested task', () => {

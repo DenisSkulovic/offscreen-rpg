@@ -354,6 +354,12 @@ export function validateImmediateActionProposal(input: {
   evidenceHandles: ReadonlySet<string>;
   storyFacts?: readonly StoryFact[];
   requireFactTransitionDeclarations?: boolean;
+  /**
+   * Generated provider proposals default to false: nonempty worldEffects are
+   * rejected unless the caller already proved a trusted authorized plan.
+   * Authored fixtures and exact captured references pass true.
+   */
+  allowWorldEffects?: boolean;
 }): ImmediateActionValidation {
   const parsed = immediateActionPlanSchema.safeParse(input.proposal);
   if (!parsed.success) {
@@ -368,6 +374,17 @@ export function validateImmediateActionProposal(input: {
   }
   const plan = parsed.data;
   const issues: ActionProposalIssue[] = [];
+  if (input.allowWorldEffects !== true) {
+    for (const [outcomeKey, outcome] of resolutionOutcomes(plan)) {
+      if (outcome.worldEffects.length === 0) continue;
+      issue(
+        issues,
+        'invalid-shape',
+        `resolution.${outcomeKey}.worldEffects`,
+        'Generated plans cannot include mechanical world effects',
+      );
+    }
+  }
   if (new Set(plan.evidence).size !== plan.evidence.length) {
     issue(
       issues,
@@ -781,6 +798,7 @@ export function validateImmediateActionState(
       proposal: plan,
       character,
       evidenceHandles: new Set(plan.evidence),
+      allowWorldEffects: true,
     });
     if (result.kind === 'rejected') {
       throw new Error(result.issues[0]?.message ?? 'Invalid immediate action');

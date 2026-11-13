@@ -758,3 +758,81 @@ test('old plans still parse and a transfer cannot hide inside character effects'
     false,
   );
 });
+
+test('generated proposals reject worldEffects unless explicitly allowed', () => {
+  const maraHeldTransfer = {
+    kind: 'item.transfer.v1',
+    itemKey: 'brass-compass',
+    fromHolder: 'mara',
+    toHolder: 'player',
+  };
+  const proposal = {
+    ...structuredClone(content.plans[0]),
+    key: 'take-compass',
+    label: 'Take the compass',
+    intention: 'Take Mara’s compass without authority.',
+    factTransitions: [],
+    resolution: {
+      kind: 'automatic',
+      fictionalDurationSeconds: 5,
+      outcome: {
+        text: 'The compass changes hands.',
+        effects: [],
+        worldEffects: [maraHeldTransfer],
+      },
+    },
+  };
+  const rejected = validateImmediateActionProposal({
+    proposal,
+    character,
+    evidenceHandles: new Set(),
+  });
+  assert.equal(rejected.kind, 'rejected');
+  assert.deepEqual(
+    rejected.issues.map((issue) => ({
+      code: issue.code,
+      path: issue.path,
+      message: issue.message,
+    })),
+    [
+      {
+        code: 'invalid-shape',
+        path: 'resolution.outcome.worldEffects',
+        message: 'Generated plans cannot include mechanical world effects',
+      },
+    ],
+  );
+  const playerGift = {
+    ...proposal,
+    resolution: {
+      ...proposal.resolution,
+      outcome: {
+        ...proposal.resolution.outcome,
+        worldEffects: [compassTransfer],
+      },
+    },
+  };
+  const stillRejected = validateImmediateActionProposal({
+    proposal: playerGift,
+    character,
+    evidenceHandles: new Set(),
+    allowWorldEffects: false,
+  });
+  assert.equal(stillRejected.kind, 'rejected');
+  const authorized = validateImmediateActionProposal({
+    proposal,
+    character,
+    evidenceHandles: new Set(),
+    allowWorldEffects: true,
+  });
+  assert.equal(authorized.kind, 'accepted');
+  const ordinary = validateImmediateActionProposal({
+    proposal: {
+      ...structuredClone(content.plans[0]),
+      factTransitions: [],
+    },
+    character,
+    evidenceHandles: new Set(content.plans[0].evidence),
+  });
+  assert.equal(ordinary.kind, 'accepted');
+});
