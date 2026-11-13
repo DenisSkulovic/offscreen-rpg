@@ -2,7 +2,7 @@
 
 **Design status:** selected *recommendation for eventual UI work*, not a package-install directive. Compatible baseline: [React/Next target](../../engineering/targets/react-next.md) (React 19, Next 16, TanStack Query, RHF/Zod, Storybook, tests). This document owns design usage, not remote-state architecture.
 
-## Recommended stack posture
+**Selected dynamic presentation companion (2026-11-13):** [presentation runtime](presentation-runtime.md) owns the frontend's future visual-expression seam, [V1 language](presentation-language.md) defines bounded data-driven styling, and [media/motion](presentation-media-and-motion.md) defines art/effect placement. This component strategy continues to own semantic/reusable component boundaries and accessible primitives; it does **not** authorize arbitrary model-generated markup or a visual library migration. [PX01–PX04 program](../presentation-implementation-program.md) describes future code changes; none is active by this link.\n\n## Recommended stack posture
 
 **Use native semantic HTML where possible + Radix unstyled accessible behavior primitives for complex controls + original Offscreen RPG compositions + selective Motion for React.**
 
