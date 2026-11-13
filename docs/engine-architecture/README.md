@@ -1,6 +1,6 @@
 # Offscreen RPG | Engine architecture destination
 
-**Status:** independent architecture exploration, **product-first pass 1 + causal/alternatives pass 2 (2026-11-13)**, not a selected implementation contract or authorization for code. The desired engine comes from the game the owner wants, **not** an inference that every current module is worth keeping. This initiative runs separately from the [UX handoff](../experience/README.md), and the active Change remains **none**. Cursor is implementing player UX elsewhere; do not merge these documents into its working tree or ask Cursor to implement engine changes until the owner selects a future bounded Change.
+**Status:** product-first architecture, causal audit and final handoff design passes completed **2026-11-13**. **ENG01 is design-ready for explicit owner authorization**; no engine Change is selected or code-authorized. The desired engine comes from the game vision, not the current implementation. The desired engine comes from the game the owner wants, **not** an inference that every current module is worth keeping. This initiative runs separately from the [UX handoff](../experience/README.md), and the active Change remains **none**. Cursor is implementing player UX elsewhere; do not merge these documents into its working tree or ask Cursor to implement engine changes until the owner selects a future bounded Change.
 
 ## Read by question, not by file count
 
@@ -12,12 +12,12 @@
 | What is the current engine actually able to prove? | [Source-grounded audit and problem register](evidence/source-audit.md), [full causal transition trace](evidence/causal-transition-review.md) |
 | Why wouldn't we simply rewrite the whole monorepo? | [Module/dependency evolution](module-boundaries.md) |
 | How do time and independent background activity work at scale? | [Time and execution design](time-and-execution.md), [future-result dependency fences](decisions/prediction-dependency-fences.md) |
-| How do arbitrary characters and worlds have meaningful rules? | [World and mechanics evolution](world-and-rules.md), [capability-kernel alternatives](decisions/world-capability-kernel.md) |
+| How do arbitrary characters and worlds have meaningful rules? | [World and mechanics evolution](world-and-rules.md), [capability alternatives](decisions/world-capability-kernel.md), [selected first gameplay proof](decisions/first-gameplay-slice.md), [identity](decisions/actor-identity-and-ownership.md) |
 | How does the Storyteller have creativity without lying about the world? | [Storyteller and authority](storyteller-and-memory.md), [short-lock context capture](decisions/context-capture-and-locks.md) |
-| How can months-long stories survive updates and changes? | [Compatibility, rollout and migrations](evolution-and-release.md) |
+| How can months-long stories survive updates and changes? | [Compatibility, rollout and migrations](evolution-and-release.md), [mechanical vs descriptive canon ownership](decisions/canon-compatibility-and-migration.md) |
 | How do we claim architectural readiness for 1,000+ stories? | [Scale/cost/performance hypotheses](scale-and-load.md), [read-growth/availability audit](evidence/read-growth-and-availability.md) |
-| How do we verify the dream, not only deterministic functions? | [Testing and game-quality evidence](evidence/verification-strategy.md) |
-| What should be redesigned first, and what should NOT be touched? | [Architecture program and decision gates](architecture-program.md) |
+| How do we verify the dream, not only deterministic functions? | [Testing and game-quality evidence](evidence/verification-strategy.md), [final design-readiness review](evidence/final-readiness-review.md) |
+| What should be redesigned first, and what should NOT be touched? | **[Selected engine implementation program](implementation-program.md)** → **[first Cursor handoff](handoff/first-engine-wave.md)**; [original architecture investigation](architecture-program.md) |
 
 **Document relationship:** the original [vision](../vision.md), [gameplay](../gameplay.md), [time/autonomy](../time-and-autonomy.md), [continuity](../continuity-and-consequences.md), [storytelling](../storytelling.md) and [player experience](../player-experience.md) supply product intent. Existing [technical architecture](../technical/architecture.md), [engine map](../engineering/engine-model.md), source maps, code and tests supply evidence of today's design and its implementation. This folder develops a recommended **new end state**; disagreement with maintained rules or source is called out as a decision, **never quietly overridden**.
 
@@ -50,4 +50,4 @@ The first recommendation is **retain a modular monolith and strict authority cor
 5. **Bounded Changes:** only once a slice has a chosen target, technical owner, feasibility and a normal+negative proof. The owner authorizes one; Cursor executes it with minimal context.
 6. **Review actual evidence:** future engine tests, workflow traces, live Storyteller evaluations and load profiles determine whether the target is being achieved.
 
-**Passes 1–2 are design-only.** We have a preferred topology and documented alternatives, with source-grounded lock/reads/speculation risks. The engine is **not yet approved for Cursor**: the final handoff should select one product-valued vertical slice, reconcile old data/rule-version compatibility and produce a focused Change with negative tests. A 20-ticket backlog is not a handoff. The UX work remains independent.
+**Final design handoff is prepared.** The source investigation, adversarial alternatives, first cross-world capability proof, legacy compatibility policy and bounded ENG01–ENG07 dossier queue have converged. [ENG01](../changes/2026-11-13--eng-authoritative-item-transfer/CHANGE.md) alone is **design-ready for owner authorization**. All other packets are Proposed. No implementation or live validation is claimed. See [handoff](handoff/first-engine-wave.md). The UX work remains independent.
