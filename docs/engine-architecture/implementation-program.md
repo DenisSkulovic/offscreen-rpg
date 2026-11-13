@@ -1,6 +1,6 @@
 # The engine evolution program | implement reality, not a framework diagram
 
-**Status:** final design-selected execution order as of 2026-11-13. **ENG01 Done** for pure/application lanes; disposable SQL proof deferred. ENG02–ENG07 are not authorized. Program derived from [dream/requirements](product-derived-requirements.md), [source audit](evidence/source-audit.md), [mechanics first slice](decisions/first-gameplay-slice.md), [causal trace](evidence/causal-transition-review.md), [migration policy](decisions/canon-compatibility-and-migration.md), and [independent challenge](evidence/independent-challenge.md). Only a **bounded, explicitly owner-approved Change** gives Cursor code permission.
+**Status:** final design-selected execution order as of 2026-11-13. **ENG01 Done.** ENG02–ENG07 are not authorized. Program derived from [dream/requirements](product-derived-requirements.md), [source audit](evidence/source-audit.md), [mechanics first slice](decisions/first-gameplay-slice.md), [causal trace](evidence/causal-transition-review.md), [migration policy](decisions/canon-compatibility-and-migration.md), and [independent challenge](evidence/independent-challenge.md). Only a **bounded, explicitly owner-approved Change** gives Cursor code permission.
 
 ## What we selected
 
@@ -16,7 +16,7 @@
 
 | Priority | Change | One outcome | Design/implementation readiness | Why here |
 | --- | --- | --- | --- | --- |
-| **1** | [**ENG01 mechanical unique-object transfer**](../changes/2026-11-13--eng-authoritative-item-transfer/CHANGE.md) | One real timed/check-based action transfers an existing scarce object exactly once and records the source | **Done** for pure/application transition proof. Disposable SQL/worker not run | First demonstrable *new kind of consequential play*, reuses current registry |
+| **1** | [**ENG01 mechanical unique-object transfer**](../changes/2026-11-13--eng-authoritative-item-transfer/CHANGE.md) | One real timed/check-based action transfers an existing scarce object exactly once and records the source | **Done** (pure + application + disposable SQL) | First demonstrable *new kind of consequential play*, reuses current registry |
 | **2 (conditional)** | [ENG07 actual final-request memory evidence](../changes/2026-11-13--eng-memory-final-request/CHANGE.md) | A significant prior promise survives selection **and appears in the final model request**, with observable omission | **Proposed; cancel if existing proof already covers it** | Protects the game's most important emotional distinction |
 | **3 (small independent)** | [ENG04 bounded current campaign read](../changes/2026-11-13--eng-bounded-current-reads/CHANGE.md) | Now reads active/nonterminal work, not every archived activity | **Design-ready after source check and test permission** | Long lives must stay cheap to reopen; safe bounded improvement |
 | **4 (major product)** | [ENG02 optional actor capabilities](../changes/2026-11-13--eng-optional-actor-capabilities/CHANGE.md) | An HP-less nonhuman has lawful checks/actions while old campaigns still run | **Proposed; actor envelope/migration gate** | Real world-neutral game semantics, not prose-only universality |

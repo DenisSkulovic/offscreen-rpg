@@ -86,4 +86,4 @@ Return changed paths, observed test commands/results, one normal/one negative tr
 
 **Fixtures:** `packages/application/src/campaign/fixtures/item-transfer-plans.ts` — Harbor compass and abstract process signal.
 
-**Ran:** `pnpm --filter @offscreen/game test` (40 pass); application `item-transfer-transition`, `world-obligation-transition`, chamber/storyteller control samples (pass). **Not run:** disposable `offscreen_auth_test` SQL/worker integration. **Migration:** none.
+**Ran:** `pnpm --filter @offscreen/game test` (40 pass); application `item-transfer-transition` and related samples; disposable live SQL `packages/application/test/eng01-item-transfer.live.test.mjs` (2 pass: automatic transfer + duplicate command, failed check / admit conflict / mid-flight wrong-holder interrupt). **Migration:** none.

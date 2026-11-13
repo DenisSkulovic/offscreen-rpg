@@ -10,7 +10,7 @@ Current change: none
 
 **Post-PX visual-calibration review (2026-11-13):** [source/screenshot audit](../experience/evidence/presentation-post-px-review-2026-11-13.md) → [PX05–PX07 program](../experience/presentation-calibration-program.md). **PX05–PX07 Done** in `apps/web`: per-surface contrast, viewport bounds, injected asset catalog, bounded figures, and a Storybook lab that edits the input document. Live Play still omits presentation.
 
-**Engine evolution (2026-11-13):** [program](../engine-architecture/implementation-program.md). **ENG01 Done** for pure rule and application transition proof (optional `worldEffects`, due-boundary holder check, Harbor/abstract fixtures). Disposable SQL/worker proof not run. ENG02–ENG07 stay unselected. No schema migration.
+**Engine evolution (2026-11-13):** [program](../engine-architecture/implementation-program.md). **ENG01 Done** (pure rule, application transition, disposable SQL settlement). ENG02–ENG07 stay unselected. No schema migration.
 
 **Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (all Done; live Sandbox/Connected Nest boots remain gated where noted). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
