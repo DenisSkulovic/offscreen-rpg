@@ -16,6 +16,7 @@
 | Isolated Sandbox (CH04) | [`lab/sandbox-guard.ts`](lab/sandbox-guard.ts), [`lab/sandbox-materializer.ts`](lab/sandbox-materializer.ts) | `offscreen_chamber_run_<hex>` localhost-only guard; memory materialize/isolation proof; live DROP/CREATE needs `confirmDisposableProvision` + owner permission |
 | Lab clock/entropy (CH05) | [`lab/lab-clock.ts`](lab/lab-clock.ts) | Labeled domains; seeded draw log; fictional advance without wall wait; refuses Temporal/DB/browser fast-forward; uses real `earnedGameSeconds` |
 | LabRun orchestrator (CH06) | [`lab/lab-run.ts`](lab/lab-run.ts) | Typed lifecycle + whitelisted steps over Bench/Sandbox adapters; pause/breakpoint/reset/replay; no eval/SQL |
+| Lab observations/deltas (CH07) | [`lab/lab-observation.ts`](lab/lab-observation.ts) | Typed facets, semantic before/after, cross-version warning, default redaction; existing SQL inspector unchanged |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
 | Pending future lab | **CH05–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | clock/entropy, run orchestration, inspector, faults, evidence, workbench |

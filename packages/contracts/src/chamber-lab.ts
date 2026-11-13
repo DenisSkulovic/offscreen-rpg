@@ -401,3 +401,91 @@ export type LabStepRequest = z.infer<typeof labStepRequestSchema>;
 export function parseLabStepRequest(input: unknown): LabStepRequest {
   return labStepRequestSchema.parse(input);
 }
+
+/** CH07: typed observations and semantic deltas. */
+export const labObservationDomainSchema = z.enum([
+  'public-story',
+  'mechanics',
+  'persistence',
+  'worker',
+  'documents',
+  'provider',
+  'transport',
+]);
+export type LabObservationDomain = z.infer<typeof labObservationDomainSchema>;
+
+export const labObservationConsistencySchema = z.enum([
+  'atomic',
+  'cross-version',
+]);
+
+export const labFacetObservationSchema = z.strictObject({
+  version: z.number().int().nonnegative(),
+  value: z.unknown(),
+});
+
+export const labObservationSchema = z.strictObject({
+  runId: z.uuid(),
+  stepOrdinal: z.number().int().positive().nullable(),
+  consistency: labObservationConsistencySchema,
+  consistencyNote: shortTextSchema.optional(),
+  domains: z.array(labObservationDomainSchema).min(1).max(8),
+  facets: z.record(z.string(), labFacetObservationSchema),
+  redaction: z.enum(['default', 'private-drilldown']),
+});
+export type LabObservation = z.infer<typeof labObservationSchema>;
+
+export const labSemanticChangeSchema = z.strictObject({
+  path: shortTextSchema,
+  before: z.unknown(),
+  after: z.unknown(),
+});
+
+export const labPreventedEffectSchema = z.strictObject({
+  path: shortTextSchema,
+  reason: z.enum([
+    'rejected',
+    'blocked',
+    'pending',
+    'not-due',
+    'stale',
+    'legitimate-no-change',
+  ]),
+});
+
+export const labSemanticDeltaSchema = z.strictObject({
+  before: labObservationSchema,
+  after: labObservationSchema,
+  changes: z.array(labSemanticChangeSchema).max(200),
+  unchanged: z.array(shortTextSchema).max(200),
+  prevented: z.array(labPreventedEffectSchema).max(50),
+  normalizedForComparison: z.boolean(),
+});
+export type LabSemanticDelta = z.infer<typeof labSemanticDeltaSchema>;
+
+export const labAssertionResultSchema = z.strictObject({
+  invariantId: identifierSchema,
+  predicate: z.enum([
+    'equals',
+    'monotonic',
+    'exists',
+    'absent',
+    'countOnce',
+    'unchanged',
+    'stateTransition',
+    'rejects',
+  ]),
+  passed: z.boolean(),
+  actual: z.unknown(),
+  expected: z.unknown().optional(),
+  proofBoundary: z.enum(['bench-policy', 'sandbox-db', 'observation-delta']),
+});
+export type LabAssertionResult = z.infer<typeof labAssertionResultSchema>;
+
+export function parseLabObservation(input: unknown): LabObservation {
+  return labObservationSchema.parse(input);
+}
+
+export function parseLabSemanticDelta(input: unknown): LabSemanticDelta {
+  return labSemanticDeltaSchema.parse(input);
+}

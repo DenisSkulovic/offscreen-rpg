@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [application developer map](../../../packages/application/src/developer-tools/README.md) → `chamber-inspector.ts:createChamberInspector.inspect` and [inspector panel](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C06/C08/C10](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 6](../../technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [audit H07](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** current inspector fetches public snapshot and SQL facets separately; do not label a mixed revision a single atomic state.
 
-**State:** Specified/Proposed, no source permission. **Depends on:** CH04 and CH06. **Code baseline:** `470a5df`, not a reproduced runtime failure.
+**State: Done** (2026-11-13). Owner authorized via continue after CH06. **Depends on:** CH04 and CH06 (Done). Existing `createChamberInspector` left compatible (no JSX/SQL rewrite).
+
+**Evidence:** observation/delta contracts + `lab/lab-observation.ts` + `LabRun.observe()`. Tests: `lab-observation.test.mjs` 2/2. Normal: clock advance monotonic delta; item holder transfer equals. Negatives: cross-version facet warning; private payload absent from default redaction; UUID/timestamp normalize only for comparison. No live DB/Chrome.
 
 ## One code-bearing result
 

@@ -6,6 +6,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import {
   parseLabStepRequest,
   type ChamberLabLane,
+  type LabObservation,
   type LabRunLifecycle,
   type LabStepCommand,
   type LabStepRequest,
@@ -17,6 +18,7 @@ import {
   type FixtureSpecimenState,
 } from './fixture-specimens.js';
 import { advanceClockWaitToBoundary, createLabEntropy } from './lab-clock.js';
+import { observeSpecimenState } from './lab-observation.js';
 import {
   createMemorySandboxStore,
   materializeSandboxSpecimen,
@@ -188,6 +190,32 @@ export class LabRunHandle {
     this.run.snapshot.lifecycle = 'cancelled';
     this.run.snapshot.revision += 1;
     return this.snapshot();
+  }
+
+  /** CH07: capture typed observation at the current step boundary. */
+  observe(args?: {
+    includePrivate?: boolean;
+    facetVersions?: Parameters<typeof observeSpecimenState>[0]['facetVersions'];
+  }): LabObservation {
+    if (!this.run.state) {
+      throw new LabRunError(
+        'invalid-lifecycle',
+        'observe requires a loaded specimen',
+      );
+    }
+    return observeSpecimenState({
+      runId: this.run.snapshot.runId,
+      stepOrdinal:
+        this.run.snapshot.nextOrdinal > 1
+          ? this.run.snapshot.nextOrdinal - 1
+          : null,
+      state: this.run.state,
+      revision: this.run.snapshot.revision,
+      includePrivate: args?.includePrivate === true,
+      ...(args?.facetVersions !== undefined
+        ? { facetVersions: args.facetVersions }
+        : {}),
+    });
   }
 
   async step(input: unknown): Promise<LabStepResult> {
