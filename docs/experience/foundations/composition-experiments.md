@@ -108,7 +108,7 @@ Score each dimension 1–5 (5 = stronger). These are provisional design judgment
 | Felt “game-ness” without fake assets | 15% | 2 | 4 | 5* | 1 |
 | Accessible responsive behavior | 10% | 5 | 4 | 2 | 2 |
 | Maintainable with small team | 10% | 5 | 4 | 1 | 2 |
-| **Weighted total** | 100% | **4.05** | **4.65** | **2.95** | **2.65** |
+| **Weighted total** | 100% | **4.15** | **4.65** | **3.00** | **2.65** |
 
 `* C` presupposes expensive spatial assets not currently justified. If unavailable, its score falls. The quantitative table is *a forcing function for trade-offs*, not empirical usability evidence. A human study can reverse B.
 

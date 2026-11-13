@@ -24,8 +24,8 @@ Test assets: an offline, deterministic story fixture and a **recorded list of wh
 
 ## Three test variants, genuinely different
 
-1. **A: Literary Reader** from [composition experiments](../foundations/composition-experiments.md#candidate-a-literary-reader). Narrative-first, minimal context.
-2. **B: Living Situation Stage** from [composition experiments](../foundations/composition-experiments.md#candidate-b-living-situation-stage-recommended). Narrative with contextual commitment/time and a clear decision boundary.
+1. **A: Literary Reader** from [composition experiments](../foundations/composition-experiments.md#candidate-a--literary-reader). Narrative-first, minimal context.
+2. **B: Living Situation Stage** from [composition experiments](../foundations/composition-experiments.md#candidate-b--living-situation-stage-recommended). Narrative with contextual commitment/time and a clear decision boundary.
 3. **C: Deliberately operational comparator**, using the existing source structure or a neutral mock. Current UI is *not automatically worse* in every task, so test what it does well, especially tactical stat awareness.
 
 Avoid making the comparator intentionally ugly. Content, underlying choices, state and typography readability should be comparable where possible. The hierarchy/interaction model is the variable.
