@@ -194,16 +194,19 @@ export async function checkStoryCore({
     async () => {
       const chamber = createChamber(database);
       const stories = createStories(database);
+      // Dedicated owner: earlier suite cases may leave document-hashed passages
+      // for the shared owner, and list() without a documentStore cannot resolve them.
+      const forkOwner = randomUUID();
       const sourceStoryId = randomUUID();
       const forkStoryId = randomUUID();
       const source = await chamber.start({
-        ownerId: owner,
+        ownerId: forkOwner,
         storyId: sourceStoryId,
         scenario: 'chamber.v2',
       });
 
       const fork = await stories.fork({
-        ownerId: owner,
+        ownerId: forkOwner,
         sourceStoryId,
         forkStoryId,
         expectedRevision: source.revision,
@@ -227,7 +230,7 @@ export async function checkStoryCore({
         'Expected forked opening choice',
       );
       const sourceContinuation = await chamber.respond({
-        ownerId: owner,
+        ownerId: forkOwner,
         storyId: sourceStoryId,
         operationId: randomUUID(),
         body: {
@@ -239,7 +242,7 @@ export async function checkStoryCore({
         },
       });
       const forkContinuation = await chamber.respond({
-        ownerId: owner,
+        ownerId: forkOwner,
         storyId: forkStoryId,
         operationId: randomUUID(),
         body: {
@@ -259,7 +262,7 @@ export async function checkStoryCore({
       assert.deepEqual(forkContinuation.lineage, fork.lineage);
 
       const retry = await stories.fork({
-        ownerId: owner,
+        ownerId: forkOwner,
         sourceStoryId,
         forkStoryId,
         expectedRevision: source.revision,
@@ -270,7 +273,7 @@ export async function checkStoryCore({
       assert.deepEqual(retry.lineage, fork.lineage);
       assert.equal(retry.current.content.title, 'A quiet departure.');
       assert.equal(
-        (await stories.list({ ownerId: owner })).items.some(
+        (await stories.list({ ownerId: forkOwner })).items.some(
           (item) => item.id === forkStoryId,
         ),
         true,
