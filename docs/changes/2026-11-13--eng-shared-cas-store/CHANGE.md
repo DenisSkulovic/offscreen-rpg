@@ -1,0 +1,34 @@
+# ENG05 | A canonical document root is readable across independent API and worker replicas
+
+**State:** Proposed, **NOT Ready**. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [release/storage design](../../engine-architecture/evolution-and-release.md) and [scale design](../../engine-architecture/scale-and-load.md).
+
+## Cursor first-screen brief
+
+> **Goal:** independently deployed API and worker instances can publish/read the **same verified immutable object hash**, without relying on one container's local filesystem. SQL remains the single authoritative published-root pointer.
+>
+> **Start:** `packages/documents/src/local-store.ts` and `schema.ts`; `packages/application/src/stories/passage-documents.ts`; API/worker bootstrap ``OFFSCREEN_DOCUMENT_ROOT`` configuration; source-backed publication tests.
+>
+> **Known trap:** S3-compatible object storage does not participate in a PostgreSQL transaction. Stage/verify objects first; commit only their reference in SQL; test orphan cleanup, corruption and missing-store recovery. A hash is an identifier, **not permission to read** a private story.
+
+## One bounded result
+
+A storage-neutral `DocumentStore` adapter contract has a second shared-backend implementation (e.g., S3-compatible as selected by deployment). The local adapter remains for tests/Chamber. The same committed story root can be read by three independently started containers/clients, and both adapters preserve exact canonical JSON/hashes/versioned manifests.
+
+No code changes to game rules, dice, Storyteller creative policies or public UI. Use one selected adapter with a fake/local S3 test server first; don't provision paid production storage by default.
+
+## Acceptance and negative proof
+
+- Write verified source passage/manifests from replica A, promote SQL root, read and hash-check from B and C.
+- Duplicate `put` of identical bytes/hash is idempotent; collision/inconsistent bytes are rejected.
+- A staged object whose SQL commit fails remains unreferenced and cannot appear as published canon.
+- A SQL root pointing to missing/corrupt object fails explicitly and does not fabricate story text.
+- Cross-user private file reads are denied at the application/viewer scope regardless of guessable hash.
+- Retry after network timeout does not create a second root or published passage.
+- Backup/restore and GC reachability across committed roots/forks are documented, with an independently testable plan.
+- Local adapter and old stories remain readable without migration when their objects are available.
+
+## Blockers and exclusions
+
+Must first choose backend, retention, credential/tenant model, object size/cost budgets, availability semantics, backup/GC and safe integration test environment. Not a generic BlobService framework, no local folder mounted as fake shared production store, no distributed SQL+object transaction, no multi-region active-active. **No external cloud mutation or spend** without explicit approval.
+
+**Ready gate:** reviewed deployment/availability/storage contract plus one disposable multi-replica test topology. Cursor stops if publication root semantics need widening beyond the agreed adapter contract.
