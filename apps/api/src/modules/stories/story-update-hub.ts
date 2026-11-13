@@ -32,7 +32,10 @@ type ListenNotification = {
 export type StoryUpdateListenClient = {
   connect(): Promise<unknown>;
   query(sql: string): Promise<unknown>;
-  on(event: 'notification', listener: (message: ListenNotification) => void): void;
+  on(
+    event: 'notification',
+    listener: (message: ListenNotification) => void,
+  ): void;
   on(event: 'error' | 'end', listener: (error?: Error) => void): void;
   removeAllListeners?(): void;
   end(): Promise<void>;
@@ -42,7 +45,10 @@ export type StoryUpdateHubOptions = {
   createClient?: (config: DatabaseConfig) => StoryUpdateListenClient;
   reconnectInitialMs?: number;
   reconnectMaxMs?: number;
-  scheduleReconnect?: (fn: () => void, ms: number) => {
+  scheduleReconnect?: (
+    fn: () => void,
+    ms: number,
+  ) => {
     cancel: () => void;
   };
 };

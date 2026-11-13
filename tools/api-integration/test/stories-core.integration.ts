@@ -264,7 +264,11 @@ export async function checkStoryCore({
         forkStoryId,
         expectedRevision: source.revision,
       });
-      assert.equal(retry.current.id, fork.current.id);
+      // Idempotent fork keeps the progressed fork story; it does not rewind to
+      // the opening passage captured before the independent continuations.
+      assert.equal(retry.id, forkStoryId);
+      assert.deepEqual(retry.lineage, fork.lineage);
+      assert.equal(retry.current.content.title, 'A quiet departure.');
       assert.equal(
         (await stories.list({ ownerId: owner })).items.some(
           (item) => item.id === forkStoryId,

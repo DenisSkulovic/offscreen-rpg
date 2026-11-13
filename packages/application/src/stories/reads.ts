@@ -204,6 +204,8 @@ export function createStoryReads(
   const cache = options.cache ?? disabledReadCache;
 
   async function snapshotIdentity({ ownerId, storyId }: OwnedStory) {
+    // Must match builtIdentity fields in readSnapshot or preflight keys miss
+    // every warmed entry and force duplicate DB builds/writes.
     const [row] = await database.db
       .select({
         viewVersion: story.viewVersion,
@@ -213,6 +215,9 @@ export function createStoryReads(
         publicationState: storytellerPublication.state,
         publicationFailure: storytellerPublication.failureCode,
         attemptState: storytellerAttempt.state,
+        operationState: storytellerOperation.state,
+        operationDispatchedRounds: storytellerOperation.dispatchedRounds,
+        operationMaxModelRounds: storytellerOperation.maxModelRounds,
         usage: sql<unknown>`(SELECT jsonb_build_object('settledMicrousd', COALESCE(sum(a.charged_microusd), 0)::text, 'reservedMicrousd', COALESCE(sum(CASE WHEN a.state IN ('reserved','dispatched','uncertain') THEN a.reserved_microusd ELSE 0 END), 0)::text) FROM storyteller_attempt a WHERE a.generation_id IN (SELECT p.source_generation_id FROM story_passage p WHERE p.story_id = ${story.id} UNION SELECT r.generation_id FROM story_resolution r WHERE r.story_id = ${story.id}))`,
       })
       .from(story)
@@ -239,6 +244,10 @@ export function createStoryReads(
       .leftJoin(
         storytellerPublication,
         eq(storytellerPublication.generationId, generation.id),
+      )
+      .leftJoin(
+        storytellerOperation,
+        eq(storytellerOperation.generationId, generation.id),
       )
       .where(
         and(

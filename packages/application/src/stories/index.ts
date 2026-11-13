@@ -28,6 +28,7 @@ import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import { createCampaignDocuments } from './documents';
+import { chamberAllowsResponse } from '../developer-tools/chamber-fixtures';
 
 export type StoryApplicationOptions = ReadCacheOptions & {
   documentStore?: DocumentStore;
@@ -230,7 +231,8 @@ export function createStoryApplication(
     return {
       ...snapshot,
       canRespond:
-        source === playableOpeningStorySource &&
+        (source === playableOpeningStorySource ||
+          chamberAllowsResponse(source)) &&
         !snapshot.campaign?.character &&
         snapshot.current.interaction !== null &&
         snapshot.resolution === null,

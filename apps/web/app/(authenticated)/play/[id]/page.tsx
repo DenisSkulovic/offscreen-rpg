@@ -29,7 +29,7 @@ export default async function PlayPage({
     storySnapshotSchema,
   );
   const queryClient = createServerQueryClient();
-  await seedAuthorizedQuery(
+  seedAuthorizedQuery(
     queryClient,
     { queryKey: storySnapshotQueryOptions(viewer.user.id, storyId).queryKey },
     snapshot,

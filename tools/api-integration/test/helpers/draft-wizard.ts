@@ -7,6 +7,7 @@ export async function createCustomDraftSetup(
     title: string;
     premise: string;
     direction?: string;
+    /** Accessible name fragment matching a catalogue radio, e.g. "Driven Adventure". */
     storytellerName?: string;
   },
 ) {
@@ -16,11 +17,11 @@ export async function createCustomDraftSetup(
     .getByLabel(/World, character and starting circumstances/i)
     .fill(args.premise);
   await page.getByRole('button', { name: 'Continue to Storyteller' }).click();
-  await page
-    .getByRole('radio', {
-      name: new RegExp(args.storytellerName ?? 'Chronicler', 'i'),
-    })
-    .check();
+  const storyteller = page.getByRole('radio', {
+    name: new RegExp(args.storytellerName ?? 'Driven Adventure', 'i'),
+  });
+  await storyteller.waitFor();
+  await storyteller.check();
   if (args.direction) {
     await page.getByLabel(/Personal direction/i).fill(args.direction);
   }
