@@ -43,7 +43,10 @@ export function actionResolutionSourceDigest(input: {
 }
 
 export function actionResolutionProjectedDigest(input: {
-  resolution: ImmediateActionResolution;
+  resolution: {
+    character: ImmediateActionResolution['character'];
+    storyFacts: ImmediateActionResolution['storyFacts'];
+  };
   targetGameSecond: number;
 }) {
   return actionProjectedStateDigest({
@@ -72,10 +75,11 @@ export function freezePendingActionResolution(input: {
   targetGameSecond: number;
   resolution: ImmediateActionResolution;
 }): PendingImmediateActionResolution {
+  const { worldEffects: _worldEffects, ...resolution } = input.resolution;
   return pendingImmediateActionResolutionSchema.parse({
     version: 1,
     sourceStateDigest: actionResolutionSourceDigest(input),
     projectedStateDigest: actionResolutionProjectedDigest(input),
-    resolution: input.resolution,
+    resolution,
   });
 }

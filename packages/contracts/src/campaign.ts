@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { rollSchema } from '@offscreen/game/checks';
-import { outcomeEffectsSchema } from '@offscreen/game/effects';
+import { outcomeEffectsSchema, worldEffectsSchema } from '@offscreen/game/effects';
 import {
   activityAccessSchema,
   storyFactDeclarationsSchema,
@@ -312,6 +312,7 @@ export const campaignViewSchema = z.strictObject({
         outcome: z.enum(['automatic', 'success', 'failure']),
         text: z.string().max(1000),
         effects: outcomeEffectsSchema,
+        worldEffects: worldEffectsSchema.default([]),
         declarations: storyFactDeclarationsSchema,
         roll: rollSchema.nullable(),
         state: z.enum(['pending', 'generating', 'published', 'failed']),

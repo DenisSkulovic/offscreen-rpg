@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { checkPlanSchema, rollSchema } from './checks';
 import { resolveCheck, type DrawD20, type Roll } from './checks';
-import { applyOutcomeEffects, outcomeEffectsSchema } from './effects';
+import { applyOutcomeEffects, outcomeEffectsSchema, worldEffectsSchema } from './effects';
 import {
   factSchema,
   characterSchema,
@@ -42,6 +42,7 @@ const outcomeSchema = z.strictObject({
   text: z.string().min(1).max(1000),
   effects: outcomeEffectsSchema,
   declarations: storyFactDeclarationsSchema,
+  worldEffects: worldEffectsSchema.default([]),
 });
 type ImmediateOutcome = z.infer<typeof outcomeSchema>;
 
@@ -106,7 +107,10 @@ export const immediateActionPlanSchema = z.strictObject({
       difficultyBasis: z.string().min(1).max(300),
       success: outcomeSchema,
       failure: outcomeSchema,
-    }),
+    }).refine(
+      (resolution) => resolution.failure.worldEffects.length === 0,
+      'A failed check cannot transfer an item',
+    ),
     z.strictObject({
       kind: z.literal('process'),
       action: actionDefinitionSchema,
@@ -644,11 +648,38 @@ export type ImmediateActionResolution = Readonly<{
   outcome: 'automatic' | 'success' | 'failure';
   text: string;
   effects: ImmediateOutcome['effects'];
+  worldEffects: ImmediateOutcome['worldEffects'];
   declarations: ImmediateOutcome['declarations'];
   roll: Roll | null;
   character: Character;
   storyFacts: readonly StoryFact[];
 }>;
+
+export function positiveItemTransfers(plan: ImmediateActionPlan) {
+  if (plan.resolution.kind === 'automatic') {
+    return plan.resolution.outcome.worldEffects;
+  }
+  if (plan.resolution.kind === 'check') return plan.resolution.success.worldEffects;
+  return [];
+}
+
+export function appliedItemTransfers(
+  plan: ImmediateActionPlan,
+  outcome: ImmediateActionResolution['outcome'],
+) {
+  if (outcome === 'failure') return [];
+  return positiveItemTransfers(plan);
+}
+
+export function itemTransferBlocked(
+  transfers: ImmediateOutcome['worldEffects'],
+  items: readonly { key: string; holderKey: string }[],
+) {
+  return transfers.some((transfer) => {
+    const item = items.find((entry) => entry.key === transfer.itemKey);
+    return !item || item.holderKey !== transfer.fromHolder;
+  });
+}
 
 /**
  * Fails closed unless every authority that can change a finite result has been
@@ -657,9 +688,13 @@ export type ImmediateActionResolution = Readonly<{
 export function actionOverlapEligibility(input: {
   resolutionKind: ImmediateActionPlan['resolution']['kind'];
   hasInterveningWorldObligation: boolean;
+  hasItemTransfer?: boolean;
 }) {
   if (input.resolutionKind === 'process' || input.resolutionKind === 'resume') {
     return { eligible: false, reason: 'unsupported-resolution' };
+  }
+  if (input.hasItemTransfer) {
+    return { eligible: false, reason: 'item-holder-unfenced' };
   }
   if (input.hasInterveningWorldObligation) {
     return { eligible: false, reason: 'intervening-world-obligation' };
@@ -684,6 +719,7 @@ export function resolveImmediateAction(
       outcome: 'automatic',
       text: plan.resolution.outcome.text,
       effects: plan.resolution.outcome.effects,
+      worldEffects: plan.resolution.outcome.worldEffects,
       declarations: plan.resolution.outcome.declarations,
       roll: null,
       character: applyOutcomeEffects(
@@ -710,6 +746,7 @@ export function resolveImmediateAction(
     outcome: roll.success ? 'success' : 'failure',
     text: outcome.text,
     effects: outcome.effects,
+    worldEffects: outcome.worldEffects,
     declarations: outcome.declarations,
     roll,
     character: applyOutcomeEffects(character, outcome.effects),

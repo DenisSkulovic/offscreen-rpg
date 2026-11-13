@@ -14,6 +14,11 @@ import {
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
 import { story } from '@offscreen/db/story-schema';
+import {
+  appliedItemTransfers,
+  immediateActionPlanSchema,
+  situationAuthorizationSchema,
+} from '@offscreen/game/immediate-actions';
 import { storytellerPublication } from '@offscreen/db/storyteller-schema';
 import {
   campaignViewSchema,
@@ -39,14 +44,23 @@ import {
   gameTimeProgressSchema,
 } from '@offscreen/game/time';
 import { characterSchema } from '@offscreen/game/state';
-import { situationAuthorizationSchema } from '@offscreen/game/immediate-actions';
-import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import {
   projectAcceptedActivityPlan,
   readAcceptedActivityPlan,
 } from './accepted-plans';
 import { campaignHoldsSchema } from './holds';
 import { campaignReportSourceSchema } from './report-source';
+
+function appliedWorldEffects(plan: unknown, outcome: string) {
+  const parsed = immediateActionPlanSchema.safeParse(plan);
+  if (
+    !parsed.success ||
+    (outcome !== 'automatic' && outcome !== 'success' && outcome !== 'failure')
+  ) {
+    return [];
+  }
+  return appliedItemTransfers(parsed.data, outcome);
+}
 
 function actionReceiptState(
   generationId: string | null,
@@ -403,6 +417,7 @@ export async function readCampaign(
       outcome: receipt.outcome,
       text: receipt.outcomeText,
       effects: receipt.effects,
+      worldEffects: appliedWorldEffects(receipt.plan, receipt.outcome),
       declarations: receipt.declarations,
       roll: receipt.roll,
       state: actionReceiptState(receipt.generationId, publicationState),

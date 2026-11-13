@@ -1,5 +1,7 @@
 import {
   immediateActionPlanSchema,
+  itemTransferBlocked,
+  positiveItemTransfers,
   resolveImmediateAction,
 } from '@offscreen/game/immediate-actions';
 import { characterSchema, storyFactsSchema } from '@offscreen/game/state';
@@ -22,6 +24,7 @@ type ActionExecutionTransitionInput = {
   controllingGameSecond?: number;
   pendingResolution?: unknown;
   preparationGenerationId?: string | null;
+  items?: readonly { key: string; holderKey: string }[];
 };
 
 export type ActionExecutionTransition =
@@ -113,6 +116,24 @@ export function decideActionExecutionTransition(args: {
       ),
     };
   }
+  if (itemTransferBlocked(positiveItemTransfers(plan), execution.items ?? [])) {
+    return {
+      state: 'interrupted',
+      campaign: {
+        ...state,
+        gameSecond: execution.targetGameSecond,
+        clock: projected.clock,
+        clockAnchorAt: new Date(now),
+        activeActionOperationId: null,
+      },
+      fact: {
+        kind: 'interrupted',
+        executionRevision: execution.revision + 1,
+        gameSecond: execution.targetGameSecond,
+        label: `${plan.label} — the item is no longer held`,
+      },
+    };
+  }
 
   const pending = execution.pendingResolution
     ? pendingImmediateActionResolutionSchema.parse(execution.pendingResolution)
@@ -139,14 +160,15 @@ export function decideActionExecutionTransition(args: {
     throw new Error('Pending action resolution projection is invalid');
   }
   const receipt =
-    pending?.resolution ??
-    resolveImmediateAction(
-      characterSchema.parse(state.character),
-      storyFactsSchema.parse(state.storyFacts),
-      plan,
-      execution.operationId,
-      args.rollDie,
-    );
+    pending && positiveItemTransfers(plan).length === 0
+      ? { ...pending.resolution, worldEffects: [] }
+      : resolveImmediateAction(
+          characterSchema.parse(state.character),
+          storyFactsSchema.parse(state.storyFacts),
+          plan,
+          execution.operationId,
+          args.rollDie,
+        );
   return {
     state: 'settled',
     campaign: {

@@ -10,11 +10,13 @@ import {
 } from '@offscreen/db/campaign-schema';
 import { actionCommandSchema } from '@offscreen/contracts/campaign';
 import {
+  actionOverlapEligibility,
   consumePreparedActivityPlan,
   immediateActionAvailable,
+  itemTransferBlocked,
+  positiveItemTransfers,
   rebindPreparedResume,
   resolveImmediateAction,
-  actionOverlapEligibility,
 } from '@offscreen/game/immediate-actions';
 import { selectOfferAction } from '@offscreen/game/offers';
 import {
@@ -26,6 +28,7 @@ import {
   incrementStoryViewVersion,
   lockOwnedStory,
   readDatabaseClockMs,
+  readStoryItemHolders,
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import { commandReceipt, saveCommand } from './settings';
@@ -400,9 +403,15 @@ export function createCampaignActions(
         storyId: current.id,
         throughGameSecond: targetGameSecond,
       });
+      const transfers = positiveItemTransfers(definition);
+      if (transfers.length > 0) {
+        const items = await readStoryItemHolders(tx, current.id);
+        if (itemTransferBlocked(transfers, items)) throw new StoryError('conflict');
+      }
       const overlap = actionOverlapEligibility({
         resolutionKind: definition.resolution.kind,
         hasInterveningWorldObligation: interveningObligations.length > 0,
+        hasItemTransfer: transfers.length > 0,
       });
       const pendingResolution = overlap.eligible
         ? freezePendingActionResolution({

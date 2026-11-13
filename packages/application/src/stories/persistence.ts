@@ -167,6 +167,13 @@ export function requiredIntervalDueAtMs(interval: PassageRecord) {
   return interval.dueAt.getTime();
 }
 
+export async function readStoryItemHolders(tx: Transaction, storyId: string) {
+  return tx
+    .select({ key: storyItem.key, holderKey: storyItem.holderKey })
+    .from(storyItem)
+    .where(eq(storyItem.storyId, storyId));
+}
+
 export async function applyStoryItemEffects(
   tx: Transaction,
   args: { storyId: string; effects: StoryContinuation['effects'] },

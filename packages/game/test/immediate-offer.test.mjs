@@ -3,9 +3,12 @@ import test from 'node:test';
 import {
   authorizeSituation,
   actionOverlapEligibility,
+  appliedItemTransfers,
   consumePreparedActivityPlan,
   immediateActionContentSchema,
   immediateActionAvailable,
+  immediateActionPlanSchema,
+  itemTransferBlocked,
   resolveImmediateAction,
   rebindPreparedResume,
   validateActivityAccess,
@@ -13,7 +16,7 @@ import {
 } from '../dist/src/immediate-actions.js';
 import { composeOpportunities } from '../dist/src/opportunities.js';
 import { selectOfferAction } from '../dist/src/offers.js';
-import { quantityEffectSchema } from '../dist/src/effects.js';
+import { outcomeEffectsSchema, quantityEffectSchema } from '../dist/src/effects.js';
 
 const character = {
   name: 'A microbe',
@@ -606,5 +609,152 @@ test('current form constrains abilities and skills without changing the D&D rule
   assert.deepEqual(
     result.issues.map((issue) => issue.code),
     ['unavailable-ability', 'unknown-skill'],
+  );
+});
+
+const compassTransfer = {
+  kind: 'item.transfer.v1',
+  itemKey: 'brass-compass',
+  fromHolder: 'player',
+  toHolder: 'mara',
+};
+
+test('an admitted item transfer stays out of character effects', () => {
+  const plan = immediateActionPlanSchema.parse({
+    ...structuredClone(content.plans[0]),
+    key: 'give-compass',
+    label: 'Give the compass',
+    resolution: {
+      kind: 'automatic',
+      fictionalDurationSeconds: 5,
+      outcome: {
+        text: 'The compass changes hands.',
+        effects: [],
+        worldEffects: [compassTransfer],
+      },
+    },
+  });
+  const before = structuredClone(character);
+  const resolved = resolveImmediateAction(character, [], plan, 'op', () => {
+    throw new Error('Automatic transfer must not draw a die');
+  });
+  assert.equal(resolved.outcome, 'automatic');
+  assert.deepEqual(resolved.worldEffects, [compassTransfer]);
+  assert.deepEqual(resolved.effects, []);
+  assert.deepEqual(resolved.character, before);
+  assert.deepEqual(appliedItemTransfers(plan, 'automatic'), [compassTransfer]);
+  assert.equal(
+    itemTransferBlocked(resolved.worldEffects, [
+      { key: 'brass-compass', holderKey: 'player' },
+    ]),
+    false,
+  );
+  assert.equal(
+    itemTransferBlocked(positiveTransfers(plan), [
+      { key: 'brass-compass', holderKey: 'mara' },
+    ]),
+    true,
+  );
+  const signal = immediateActionPlanSchema.parse({
+    ...plan,
+    key: 'pass-signal',
+    resolution: {
+      kind: 'automatic',
+      fictionalDurationSeconds: 5,
+      outcome: {
+        text: 'The signal token moves.',
+        effects: [],
+        worldEffects: [
+          {
+            kind: 'item.transfer.v1',
+            itemKey: 'signal-token',
+            fromHolder: 'process-source',
+            toHolder: 'process-sink',
+          },
+        ],
+      },
+    },
+  });
+  assert.equal(signal.resolution.kind, 'automatic');
+  assert.equal(signal.resolution.outcome.worldEffects.length, 1);
+});
+
+function positiveTransfers(plan) {
+  return plan.resolution.outcome.worldEffects;
+}
+
+test('a failed check returns no item transfer and a success does', () => {
+  const plan = immediateActionPlanSchema.parse({
+    ...structuredClone(content.plans[0]),
+    resolution: {
+      kind: 'check',
+      fictionalDurationSeconds: 5,
+      check: {
+        rule: 'srd-5.2.1-subset.v1',
+        purpose: 'Hand over a compass',
+        skill: 'environment-sensing',
+        ability: 'wisdom',
+        dc: 12,
+        advantage: false,
+        disadvantage: false,
+        modifiers: [],
+      },
+      difficultyBasis: 'Mara is within reach.',
+      success: {
+        text: 'Mara takes the compass.',
+        effects: [],
+        worldEffects: [compassTransfer],
+      },
+      failure: { text: 'The compass stays put.', effects: [] },
+    },
+  });
+  const success = resolveImmediateAction(character, [], plan, 'op', () => 15);
+  const failure = resolveImmediateAction(character, [], plan, 'op', () => 1);
+  assert.deepEqual(success.worldEffects, [compassTransfer]);
+  assert.deepEqual(failure.worldEffects, []);
+  assert.deepEqual(appliedItemTransfers(plan, 'failure'), []);
+  assert.deepEqual(
+    actionOverlapEligibility({
+      resolutionKind: 'check',
+      hasInterveningWorldObligation: false,
+      hasItemTransfer: true,
+    }),
+    { eligible: false, reason: 'item-holder-unfenced' },
+  );
+});
+
+test('old plans still parse and a transfer cannot hide inside character effects', () => {
+  const parsed = immediateActionPlanSchema.parse(content.plans[0]);
+  assert.deepEqual(parsed.resolution.outcome.worldEffects, []);
+  assert.equal(
+    outcomeEffectsSchema.safeParse([compassTransfer]).success,
+    false,
+  );
+  assert.equal(
+    immediateActionPlanSchema.safeParse({
+      ...structuredClone(content.plans[0]),
+      resolution: {
+        kind: 'check',
+        fictionalDurationSeconds: 5,
+        check: {
+          rule: 'srd-5.2.1-subset.v1',
+          purpose: 'Hand over a compass',
+          skill: 'environment-sensing',
+          ability: 'wisdom',
+          dc: 12,
+          advantage: false,
+          disadvantage: false,
+          modifiers: [],
+        },
+        difficultyBasis: 'Mara is within reach.',
+        success: { text: 'Taken.', effects: [] },
+        failure: {
+          text: 'Dropped.',
+          effects: [],
+          worldEffects: [compassTransfer],
+        },
+      },
+    }).success,
+    false,
   );
 });

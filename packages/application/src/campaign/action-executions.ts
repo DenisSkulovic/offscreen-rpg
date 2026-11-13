@@ -10,11 +10,13 @@ import {
 import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { enqueue, type Transaction } from '../outbox/index';
 import {
+  applyStoryItemEffects,
   incrementStoryViewVersion,
   lockStoryById,
   readDatabaseClockMs,
+  readStoryItemHolders,
+  type StoryRecord,
 } from '../stories/persistence';
-import type { StoryRecord } from '../stories/persistence';
 import { requireCampaign } from './persistence';
 import { campaignActionTopic } from './topics';
 import type { CampaignRecord } from './persistence';
@@ -74,6 +76,7 @@ export async function settleActionExecution(
   documentStore?: DocumentStore,
 ) {
   const plan = immediateActionPlanSchema.parse(execution.plan);
+  const items = await readStoryItemHolders(tx, current.id);
   const controllingObligations = await readNearestPendingWorldObligations(tx, {
     storyId: current.id,
     throughGameSecond: execution.targetGameSecond,
@@ -92,6 +95,7 @@ export async function settleActionExecution(
             ),
           }
         : {}),
+      items,
     },
     clockHeld: campaignClockHeld(state),
     now,
@@ -164,6 +168,15 @@ export async function settleActionExecution(
     roll: transition.receipt.roll,
     generationId: execution.preparationGenerationId,
   });
+  if (
+    transition.receipt.outcome !== 'failure' &&
+    transition.receipt.worldEffects.length > 0
+  ) {
+    await applyStoryItemEffects(tx, {
+      storyId: current.id,
+      effects: transition.receipt.worldEffects,
+    });
+  }
   await tx
     .update(gameActionExecution)
     .set({

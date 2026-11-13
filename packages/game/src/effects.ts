@@ -13,6 +13,21 @@ export const outcomeEffectSchema = z.discriminatedUnion('kind', [
 export const outcomeEffectsSchema = z.array(outcomeEffectSchema).max(16);
 export type OutcomeEffect = z.infer<typeof outcomeEffectSchema>;
 
+const holderKeySchema = z.string().regex(/^[a-zA-Z0-9_-]+$/);
+export const itemTransferEffectSchema = z
+  .strictObject({
+    kind: z.literal('item.transfer.v1'),
+    itemKey: holderKeySchema,
+    fromHolder: holderKeySchema,
+    toHolder: holderKeySchema,
+  })
+  .refine(
+    (effect) => effect.fromHolder !== effect.toHolder,
+    'Transfer must change holder',
+  );
+export const worldEffectsSchema = z.array(itemTransferEffectSchema).max(1);
+export type ItemTransferEffect = z.infer<typeof itemTransferEffectSchema>;
+
 /** Effects modify declared state; resources and facts never appear implicitly. */
 export function applyOutcomeEffects(
   character: Character,
