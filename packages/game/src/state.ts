@@ -63,8 +63,10 @@ export const characterSchema = z
       ),
     proficientSkills: z.array(skillSchema.shape.id).max(30),
     proficiencyBonus: z.number().int().min(0).max(6),
-    hp: z.number().int().nonnegative(),
-    maxHp: z.number().int().positive(),
+    // Absent health is not HP 0. Both fields are present for legacy humans and
+    // both are omitted for actors that have no health capability.
+    hp: z.number().int().nonnegative().optional(),
+    maxHp: z.number().int().positive().optional(),
     facts: z
       .array(factSchema)
       .max(64)
@@ -82,6 +84,13 @@ export const characterSchema = z
       .default([]),
   })
   .superRefine((character, context) => {
+    if ((character.hp === undefined) !== (character.maxHp === undefined)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['hp'],
+        message: 'Health is present as a pair or entirely absent',
+      });
+    }
     const skills = new Set(character.skills.map((skill) => skill.id));
     if (
       new Set(character.proficientSkills).size !==
@@ -96,3 +105,42 @@ export const characterSchema = z
     }
   });
 export type Character = z.infer<typeof characterSchema>;
+
+/** Ability checks never require a health domain. */
+export const checkSubjectSchema = z.strictObject({
+  scores: z.record(abilitySchema, z.number().int().min(1).max(30)),
+  applicableAbilities: z
+    .array(abilitySchema)
+    .max(6)
+    .refine(
+      (abilities) => new Set(abilities).size === abilities.length,
+      'Duplicate applicable ability',
+    ),
+  skills: z
+    .array(skillSchema)
+    .max(64)
+    .refine(
+      (skills) =>
+        new Set(skills.map((skill) => skill.id)).size === skills.length,
+      'Duplicate skill identity',
+    ),
+  proficientSkills: z.array(skillSchema.shape.id).max(30),
+  proficiencyBonus: z.number().int().min(0).max(6),
+});
+export type CheckSubject = z.infer<typeof checkSubjectSchema>;
+
+export function checkSubjectFromCharacter(character: Character): CheckSubject {
+  return checkSubjectSchema.parse({
+    scores: character.scores,
+    applicableAbilities: character.applicableAbilities,
+    skills: character.skills,
+    proficientSkills: character.proficientSkills,
+    proficiencyBonus: character.proficiencyBonus,
+  });
+}
+
+export function characterHasHealth(
+  character: Character,
+): character is Character & { hp: number; maxHp: number } {
+  return character.hp !== undefined && character.maxHp !== undefined;
+}

@@ -42,6 +42,10 @@
     "./immediate-actions": {
       "types": "./dist/src/immediate-actions.d.ts",
       "default": "./dist/src/immediate-actions.js"
+    },
+    "./actor": {
+      "types": "./dist/src/actor.d.ts",
+      "default": "./dist/src/actor.js"
     }
   },
   "scripts": {

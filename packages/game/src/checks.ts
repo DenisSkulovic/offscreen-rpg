@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { abilitySchema, characterSchema, type Character } from './state';
+import { abilitySchema, checkSubjectSchema, type CheckSubject } from './state';
 
 export const checkPlanSchema = z.strictObject({
   rule: z.literal('srd-5.2.1-subset.v1'),
@@ -60,7 +60,7 @@ export type DrawD20 = () => number;
 
 /** Event occurrence and ability success have different comparison semantics. */
 export function resolveCheckResolution(
-  character: Character,
+  character: CheckSubject,
   resolution: CheckResolution,
   draw: DrawD20,
 ): Roll {
@@ -83,13 +83,19 @@ export function resolveCheckResolution(
   });
 }
 
-/** No persistence, model judgments or implicit retries. */
+/** No persistence, model judgments or implicit retries. Health is never required. */
 export function resolveCheck(
-  character: Character,
+  character: CheckSubject,
   plan: CheckPlan,
   draw: DrawD20,
 ): Roll {
-  characterSchema.parse(character);
+  character = checkSubjectSchema.parse({
+    scores: character.scores,
+    applicableAbilities: character.applicableAbilities,
+    skills: character.skills,
+    proficientSkills: character.proficientSkills,
+    proficiencyBonus: character.proficiencyBonus,
+  });
   checkPlanSchema.parse(plan);
   if (!character.applicableAbilities.includes(plan.ability)) {
     throw new Error('Check ability is not applicable to the current form');

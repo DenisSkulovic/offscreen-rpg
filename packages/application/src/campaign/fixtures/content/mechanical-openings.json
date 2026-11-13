@@ -158,8 +158,6 @@
         ],
         "proficientSkills": ["environment-sensing"],
         "proficiencyBonus": 2,
-        "hp": 5,
-        "maxHp": 5,
         "facts": [
           { "id": "exposed", "value": true },
           { "id": "gradient-disrupted", "value": false }
