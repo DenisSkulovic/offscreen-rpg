@@ -6,7 +6,7 @@
 
 > **Source map:** [web owner](../../../apps/web/README.md), existing src/stories/, app demo, Play test files and [test source map](../../../tools/api-integration/test/README.md).
 > **Primary target:** [experience validation plan](../../experience/evidence/validation-plan.md#ux-acceptance-checklist-for-each-change), [accessibility](../../experience/system/accessibility-and-voice.md#accessibility-sign-off-tasks).
-> **Known trap:** mocked Storybook and a green DOM test are not proof of persistent gameplay or of beautiful, comprehensible UX; existing full integration lanes may reset a disposable test database.
+> **Known trap:** mocked Storybook and a green DOM test are not proof of persistent gameplay or of beautiful, comprehensible UX; **Chamber CH01–CH16 are recorded Done, but individual scenario lanes may remain planned or blocked**. Existing full integration lanes may reset a disposable test database.
 > **Scope:** Proposed only. Code-bearing fixtures/tests are allowed *only when authorized*. No paid providers, unapproved DB reset, deployment or GitHub Actions sprawl.
 
 ## Outcome and motivation
@@ -35,7 +35,7 @@ Automated axe checks complement, not replace, manual screen reader and keyboard.
 
 ## Authority and source baseline
 
-[UX acceptance](../../experience/evidence/validation-plan.md), [critical user journeys](../../experience/flows/key-journeys.md), [selected frontend testing](../../engineering/targets/react-next.md#6-security-diagnostics-performance-and-proof), [time/story correctness](../../time-and-autonomy.md).
+[UX acceptance](../../experience/evidence/validation-plan.md), [Chamber scenario capability map](../../experience/evidence/chamber-ux-validation-bridge.md), [public projection capability map](../../experience/evidence/public-projection-capability-map.md), [critical user journeys](../../experience/flows/key-journeys.md), [selected frontend testing](../../engineering/targets/react-next.md#6-security-diagnostics-performance-and-proof), [time/story correctness](../../time-and-autonomy.md).
 
 Current web manifest includes Vitest, RTL, MSW, Storybook, Playwright-related integration tooling; Storybook has deterministic state fixtures. Main baseline 8c91618 inspected 2026-11-13, but **no test run or visual screenshot inspected in this design pass**. Reconfirm actual source before choosing packet.
 

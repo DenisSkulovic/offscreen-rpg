@@ -48,6 +48,12 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 
 Do not let UX01-UX11 mutate these mechanics as an unrequested side effect.
 
+## Updated validation infrastructure (2026-11-13)
+
+Main has since recorded React W01–W22 and Chamber CH01–CH16 as **Done**. This describes their source/change-record status, **not** every Chamber scenario's availability. The [Chamber ↔ UX map](evidence/chamber-ux-validation-bridge.md) lists available, planned and blocked scenario lanes and separates Bench/Sandbox/Connected proof from Storybook/browser/human evidence. For UX01–UX11, prefer existing provider-free Storybook and source-backed game fixtures; do not begin a second Chamber modernization.
+
+The [public projection map](evidence/public-projection-capability-map.md) identifies desired player claims the current DTO cannot prove. If a surface needs one, either narrow its copy or propose a separate read-model/game Change. The [future mechanics program](mechanics-evolution-program.md) contains rule changes that cannot be smuggled into visual refactors.
+
 ## Source ownership at the planning snapshot
 
 Read only the selected Change plus **one** source-adjacent map when starting implementation:
