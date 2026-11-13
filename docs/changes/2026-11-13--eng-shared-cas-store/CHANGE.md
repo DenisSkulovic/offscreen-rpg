@@ -1,5 +1,7 @@
 # ENG05 | A canonical document root is readable across independent API and worker replicas
 
+**Design decision update (post-ENG wave, Nov 13):** This packet is now **design-ready for explicit owner authorization**, while remaining formally Proposed. The open storage backend, credential, retention, test-topology and cutover choices are resolved in [the selected ENG05 contract](../../engine-architecture/decisions/eng05-shared-cas-contract.md). **Mode:** private S3-compatible adapter, disposable local service, existing CAS canonical hash/1 MiB limit, no automatic GC or legacy data copy, local remains default. Current remote adapter must not be enabled for live stories until lock-latency/cutover evidence exists. The earlier “must first choose backend” gate below is superseded by this decision; unperformed *code tests* are still exit gates, not design blockers.
+
 **State:** Proposed, **NOT Ready**. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [release/storage design](../../engine-architecture/evolution-and-release.md) and [scale design](../../engine-architecture/scale-and-load.md).
 
 ## Cursor first-screen brief

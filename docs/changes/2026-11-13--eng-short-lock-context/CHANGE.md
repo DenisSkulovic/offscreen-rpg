@@ -1,5 +1,7 @@
 # ENG03 | Materialize Storyteller context without holding a story write lock across external I/O
 
+**Design decision update (post-ENG wave, Nov 13):** Remains **Proposed, NOT Ready for a full context-admission refactor**. [Measurement-first plan](../../engine-architecture/decisions/eng03-instrument-before-refactor.md) selects exact 0/250/2000ms external-I/O fault traces, SQL lock timing, source-version capture categories and the required speculation/settlement race. It allows a separately approved, narrowly bounded disposable performance investigation, **not** automatic migration to a second async Storyteller coordinator. Revisit after ENG05 local S3 adapter and observed contention.
+
 **State:** Proposed, **NOT Ready**. **Kind:** captured-source preparation and fenced publication lifecycle, with concurrency tests. **Authority:** [context/lock decision](../../engine-architecture/decisions/context-capture-and-locks.md) and [causal trace](../../engine-architecture/evidence/causal-transition-review.md). **No code authorized.**
 
 ## Cursor first-screen brief, after exact lifecycle design
