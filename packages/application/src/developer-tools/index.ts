@@ -14,6 +14,7 @@ export * from './lab/mechanics-coverage';
 export * from './lab/replay-compare';
 export * from './lab/sandbox-guard';
 export * from './lab/sandbox-materializer';
+export * from './lab/sandbox-postgres';
 export * from './qa-journeys';
 export * from './usage-profiles';
 export * from './storyteller-control';

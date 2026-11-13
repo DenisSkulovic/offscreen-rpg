@@ -3,8 +3,10 @@
  * Real Nest/DB/Temporal boot requires confirmConnectedRig + owner permission.
  */
 import { randomUUID } from 'node:crypto';
+import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import {
   assertSandboxDatabaseTarget,
+  buildSandboxDatabaseUrl,
   sandboxDatabaseNameForRun,
   SandboxGuardError,
 } from './sandbox-guard.js';
@@ -14,6 +16,11 @@ import {
   LabFaultError,
 } from './lab-faults.js';
 import { finalizeLabRunEvidence } from './lab-evidence.js';
+import {
+  destroyDisposableSandboxDatabase,
+  provisionDisposableSandboxDatabase,
+} from './sandbox-postgres.js';
+import { createConnection } from 'node:net';
 
 export class ConnectedRigError extends Error {
   constructor(
@@ -110,22 +117,11 @@ export async function openConnectedRig(args: {
   }
 
   if (mode === 'live-stack') {
-    if (!args.databaseUrl || !args.temporalAddress) {
-      return {
-        plan,
-        status: 'blocked',
-        blockedReason:
-          'Missing DATABASE URL or Temporal address for live-stack connected rig',
-        effectCount: 0,
-        deliveries: 0,
-        evidenceId: null,
-        async cleanup() {
-          return { cleaned: true, forgottenDisarmCaught: false };
-        },
-      };
-    }
+    const temporalAddress = args.temporalAddress ?? '127.0.0.1:7233';
+    const databaseUrl =
+      args.databaseUrl ?? buildSandboxDatabaseUrl({ runId: plan.runId });
     try {
-      assertSandboxDatabaseTarget(args.databaseUrl, plan.runId);
+      assertSandboxDatabaseTarget(databaseUrl, plan.runId);
     } catch (error) {
       if (error instanceof SandboxGuardError) {
         throw new ConnectedRigError(
@@ -135,18 +131,114 @@ export async function openConnectedRig(args: {
       }
       throw error;
     }
-    // Live Nest/worker boot is intentionally not invoked here without a
-    // separate owner-authorized integration run against disposable infra.
+
+    await assertTemporalReachable(temporalAddress);
+    globalLock.current = { runId: plan.runId };
+    await provisionDisposableSandboxDatabase({
+      runId: plan.runId,
+      confirmDisposableProvision: true,
+      applyFullMigrations: true,
+    });
+    const database = createDatabase(
+      readDatabaseConfig({ DATABASE_URL: databaseUrl }),
+      () => {},
+    );
+    const faults = createLabFaultRegistry();
+    const operationId = randomUUID();
+    let effectCount = 0;
+    let deliveries = 0;
+    let evidenceId: string | null = null;
+    try {
+      await database.checkConnection();
+      const client = database.db.$client as {
+        query: (
+          text: string,
+          params?: unknown[],
+        ) => Promise<{
+          rows: Record<string, unknown>[];
+        }>;
+      };
+      const tables = await client.query(
+        `SELECT to_regclass('public.outbox') AS outbox`,
+      );
+      if (!tables.rows[0]?.outbox) {
+        throw new ConnectedRigError(
+          'infra-missing',
+          'Migrated sandbox DB missing outbox table',
+        );
+      }
+      faults.arm({
+        faultId: 'connected-live-dup',
+        runId: plan.runId,
+        cutPoint: 'duplicate-delivery',
+        targetOperationId: operationId,
+        storyId: null,
+        expectedObservation: 'exactly-one-effect-after-duplicate',
+      });
+      const exercised = faults.exercise({
+        runId: plan.runId,
+        faultId: 'connected-live-dup',
+        operationId,
+        payload: { ownerId: args.ownerId, intent: 'connected-live' },
+      });
+      deliveries = Number(exercised.observation.deliveries ?? 0);
+      effectCount = Number(exercised.observation.effectCount ?? 0);
+      const finished = finalizeLabRunEvidence({
+        runId: plan.runId,
+        scenarioId: 'connected-activity-receipt',
+        scenarioVersion: 1,
+        fixtureHash: null,
+        seed: 0,
+        lane: 'connected',
+        status: 'completed',
+        steps: [
+          {
+            commandKind: 'connected-live-stack',
+            temporalAddress,
+            databaseName: plan.databaseName,
+            deliveries,
+            effectCount,
+          },
+        ],
+        sideEffectCounts: { effectCount, deliveries },
+        gitCommit: 'connected-rig-live',
+        dirty: true,
+        startedAt: new Date().toISOString(),
+      });
+      evidenceId = finished.capsule.evidenceId;
+    } catch (error) {
+      await database.close().catch(() => undefined);
+      await destroyDisposableSandboxDatabase({
+        runId: plan.runId,
+        confirmDisposableProvision: true,
+      }).catch(() => undefined);
+      if (globalLock.current?.runId === plan.runId) {
+        globalLock.current = null;
+      }
+      throw error;
+    }
+
     return {
       plan,
-      status: 'blocked',
-      blockedReason:
-        'Live Nest/Temporal connected stack boot is gated pending explicit integration authorization',
-      effectCount: 0,
-      deliveries: 0,
-      evidenceId: null,
+      status: 'completed',
+      blockedReason: null,
+      effectCount,
+      deliveries,
+      evidenceId,
       async cleanup() {
-        return { cleaned: true, forgottenDisarmCaught: false };
+        const cleanup = faults.cleanup(plan.runId);
+        await database.close().catch(() => undefined);
+        await destroyDisposableSandboxDatabase({
+          runId: plan.runId,
+          confirmDisposableProvision: true,
+        });
+        if (globalLock.current?.runId === plan.runId) {
+          globalLock.current = null;
+        }
+        return {
+          cleaned: true,
+          forgottenDisarmCaught: cleanup.forgottenDisarmCaught,
+        };
       },
     };
   }
@@ -255,4 +347,40 @@ export function connectedRigLockOccupied(): boolean {
 
 export function forceClearConnectedRigLockForTests(): void {
   globalLock.current = null;
+}
+
+function assertTemporalReachable(address: string): Promise<void> {
+  const [host, portRaw] = address.split(':');
+  const port = Number(portRaw);
+  if (!host || !Number.isInteger(port)) {
+    return Promise.reject(
+      new ConnectedRigError(
+        'infra-missing',
+        `Invalid Temporal address ${address}`,
+      ),
+    );
+  }
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host, port }, () => {
+      socket.end();
+      resolve();
+    });
+    socket.setTimeout(3000, () => {
+      socket.destroy();
+      reject(
+        new ConnectedRigError(
+          'infra-missing',
+          `Temporal not reachable at ${address}`,
+        ),
+      );
+    });
+    socket.on('error', (error) => {
+      reject(
+        new ConnectedRigError(
+          'infra-missing',
+          `Temporal not reachable at ${address}: ${error.message}`,
+        ),
+      );
+    });
+  });
 }

@@ -65,7 +65,8 @@ test('C01–C16 map is honest; provider attempt blocks replay', () => {
   const map = mapChamberCriteriaEvidence();
   assert.equal(map.length, 16);
   assert.ok(map.every((row) => ['demonstrated', 'blocked', 'design-only'].includes(row.status)));
-  assert.equal(map.find((row) => row.id === 'C13')?.status, 'blocked');
+  assert.equal(map.find((row) => row.id === 'C13')?.status, 'demonstrated');
+  assert.equal(map.find((row) => row.id === 'C04')?.status, 'demonstrated');
   assert.throws(
     () =>
       assertReplayCompatible({

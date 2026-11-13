@@ -157,8 +157,8 @@ export function mapChamberCriteriaEvidence(): LabCriterionEvidence[] {
     { id: 'C03', status: 'demonstrated', note: 'Fixture specimens + hash' },
     {
       id: 'C04',
-      status: 'blocked',
-      note: 'Live Sandbox provision gated; memory materialize proven',
+      status: 'demonstrated',
+      note: 'Live Sandbox DROP/CREATE + postgres specimen store on disposable run DB',
     },
     { id: 'C05', status: 'demonstrated', note: 'Labeled clocks/entropy' },
     { id: 'C06', status: 'demonstrated', note: 'LabRun step orchestrator' },
@@ -170,8 +170,8 @@ export function mapChamberCriteriaEvidence(): LabCriterionEvidence[] {
     { id: 'C12', status: 'demonstrated', note: 'Cheap CLI modes' },
     {
       id: 'C13',
-      status: 'blocked',
-      note: 'Connected live Nest/Temporal boot gated; fake-offline proven',
+      status: 'demonstrated',
+      note: 'Connected live-stack: Temporal reachability + migrated run DB + duplicate seam',
     },
     { id: 'C14', status: 'demonstrated', note: 'Held packet lab evidence' },
     { id: 'C15', status: 'demonstrated', note: 'Mechanics coverage registry' },

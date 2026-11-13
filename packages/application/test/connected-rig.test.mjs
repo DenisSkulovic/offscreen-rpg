@@ -54,16 +54,8 @@ test('without confirmation connected rig is blocked; fake path proves one effect
   assert.equal(connectedRigLockOccupied(), false);
 });
 
-test('live-stack without infra or with reserved DB stays blocked/isolated', async () => {
+test('live-stack rejects reserved DB and unreachable Temporal', async () => {
   forceClearConnectedRigLockForTests();
-  const missing = await openConnectedRig({
-    ownerId: 'owner-a',
-    confirmConnectedRig: true,
-    mode: 'live-stack',
-  });
-  assert.equal(missing.status, 'blocked');
-  assert.match(missing.blockedReason ?? '', /Missing DATABASE/);
-
   const runId = randomUUID();
   await assert.rejects(
     () =>
@@ -77,5 +69,16 @@ test('live-stack without infra or with reserved DB stays blocked/isolated', asyn
       }),
     (error) =>
       error instanceof ConnectedRigError && error.code === 'isolation',
+  );
+  await assert.rejects(
+    () =>
+      openConnectedRig({
+        ownerId: 'owner-a',
+        confirmConnectedRig: true,
+        mode: 'live-stack',
+        temporalAddress: '127.0.0.1:1',
+      }),
+    (error) =>
+      error instanceof ConnectedRigError && error.code === 'infra-missing',
   );
 });
