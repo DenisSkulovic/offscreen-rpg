@@ -8,6 +8,29 @@ export const emptyStoriesHandlers = [
   ),
 ];
 
+/** First-page stories failure — must not render verified-empty copy. */
+export const failedStoriesHandlers = [
+  http.get('/api/stories', () =>
+    HttpResponse.json({ message: 'unavailable' }, { status: 503 }),
+  ),
+];
+
+export const oneStoryHandlers = [
+  http.get('/api/stories', () =>
+    HttpResponse.json({
+      items: [
+        {
+          id: fixtureIds.storyId,
+          title: 'Ashfall Approach',
+          status: 'live',
+          storyteller: null,
+        },
+      ],
+      nextBefore: null,
+    }),
+  ),
+];
+
 export const pagedStoriesHandlers = [
   http.get('/api/stories', ({ request }) => {
     const before = new URL(request.url).searchParams.get('before');
