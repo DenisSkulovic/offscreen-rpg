@@ -14,6 +14,8 @@ Current change: none
 
 **Engine evolution (2026-11-13):** [program](../engine-architecture/implementation-program.md). **ENG01 Done.** **ENG02 Done** (actor envelope v1 + optional health; microbe fixture without HP). **ENG04 Done.** **ENG07 Cancelled.** ENG03/ENG05–ENG06 unselected. No schema migration.
 
+**Public entry / player home (proposed frontend program, 2026-11-13):** [platform ecosystem](../experience/platform-ecosystem.md) → [public portal](../experience/spaces/public-portal-blueprint.md) → [preview-to-play](../experience/flows/preview-to-play.md) → [player home](../experience/spaces/player-home-blueprint.md) → [PF01–PF05 program](../experience/platform-entry-implementation-program.md). Proposed code-bearing Changes: [PF01 public portal](2026-11-13--pf-public-portal/CHANGE.md), [PF02 scripted preview](2026-11-13--pf-scripted-preview/CHANGE.md), [PF03 safe auth return](2026-11-13--pf-entry-continuity/CHANGE.md), [PF04 player home](2026-11-13--pf-player-home/CHANGE.md), [PF05 journey proof](2026-11-13--pf-journey-proof/CHANGE.md). **None is selected, implemented, or authorized by these documents.** Existing gameplay, identity, backend funding and operator policy remain separate.
+
 **Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (all Done; live Sandbox/Connected Nest boots remain gated where noted). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)

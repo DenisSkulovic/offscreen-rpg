@@ -12,6 +12,8 @@ This is a **replacement product-experience specification**, not a transcription 
 
 | Question | Read |
 | --- | --- |
+| How does the **whole platform** work before, between and after stories, including visitors, account/usage and the owner? | **[Platform ecosystem](platform-ecosystem.md)** → [visitor/player/operator journeys and states](platform-journeys-and-states.md) (proposed umbrella design, not code authorization) |
+| What should the public landing, the first interactive preview and the authenticated **Your stories** home actually be? | **[Public portal](spaces/public-portal-blueprint.md)** → [preview-to-play journey](flows/preview-to-play.md) → [player home](spaces/player-home-blueprint.md) → [PF01–PF05 program](platform-entry-implementation-program.md) |
 | What is the experience and what must never be compromised? | [Experience thesis](foundations/experience-thesis.md), [living-world contract](foundations/living-world-contract.md), [original vision reconciliation](foundations/vision-reconciliation.md), [mechanics reassessment](foundations/mechanics-reassessment.md), [Storyteller quality](foundations/storyteller-experience-quality.md) |
 | Which interaction model won, what lost, and which mechanics are challenged? | [Decisions](foundations/design-decisions.md), [layout experiments](foundations/composition-experiments.md), [temporal philosophy](foundations/temporal-philosophy.md), [independent critique](evidence/independent-challenge.md) |
 | Which spaces exist, and how does a player move between them? | [Spaces and navigation](spaces/information-architecture.md), [Stories](spaces/stories-library.md), [Journal/World/You](spaces/journal-world-you.md) |

@@ -2,6 +2,8 @@
 
 **Status:** product/portfolio UX target, not a hosted deployment or growth-marketing requirement. The game has two audiences: **the person who wants to play**, and **the engineer or employer who may inspect how it works**. We must serve both without corrupting the game to fit a recruiter's short visit. Related: [experience thesis](../foundations/experience-thesis.md), [public demo script](../prototypes/public-demo-script.md), [evidence standards](../evidence/validation-plan.md).
 
+**Focused implementation-ready design companion (not permission):** [public portal blueprint](../spaces/public-portal-blueprint.md) and [preview-to-play journey](preview-to-play.md), routed through the [PF01–PF05 program](../platform-entry-implementation-program.md). This document continues to own the portfolio promise and evidence truth.
+
 ## A visitor's 90-second question
 
 “I clicked this project from GitHub. What is it, why is it interesting, and can I experience something real without creating an account or entering a credit card?”

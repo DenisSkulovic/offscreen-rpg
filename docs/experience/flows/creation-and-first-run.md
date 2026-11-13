@@ -2,6 +2,8 @@
 
 **Status:** design destination. Existing creation logic and draft persistence are implementation evidence, not reasons to keep the current forms. Product source: [story creation](../../story-creation.md).
 
+**Entry flow companion (proposed):** [preview-to-play](preview-to-play.md) owns the anonymous scripted preview, safe sign-in continuation and transition into this existing creation flow. It cannot authorize backend spending or change the actual Draft/Opening/Start ownership.
+
 ## Visitor path: prove the fantasy before demanding configuration
 
 **Outside:** visitor sees a concise promise (“A character's life carries on between your visits”) and a large **Try a moment** action. The sample is original or appropriately licensed, complete enough to establish place and situation, with one interesting decision and a clear representation of a longer offscreen wait.
