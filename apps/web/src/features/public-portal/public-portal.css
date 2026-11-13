@@ -1,0 +1,395 @@
+/* PF01: scoped public entrance. Do not restyle Play, Chamber, or /demo. */
+
+.public-portal {
+  --public-ink: #0c1418;
+  --public-fog: #d8e2dc;
+  --public-mist: #9eb0a8;
+  --public-ember: #e2b56a;
+  --public-ember-deep: #c4893a;
+  --public-panel: rgba(14, 28, 32, 0.72);
+  --public-line: rgba(216, 226, 220, 0.18);
+  box-sizing: border-box;
+  min-height: 100svh;
+  color: var(--public-fog);
+  font-family: var(--public-sans), 'Source Sans 3', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 90% 55% at 12% -10%, #1d3a3c 0%, transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 20%, #243028 0%, transparent 50%),
+    linear-gradient(165deg, #0a1216 0%, #122028 48%, #0e181c 100%);
+}
+
+.public-portal *,
+.public-portal *::before,
+.public-portal *::after {
+  box-sizing: border-box;
+}
+
+.public-portal__skip {
+  position: absolute;
+  left: 1rem;
+  top: 0.75rem;
+  z-index: 20;
+  padding: 0.4rem 0.75rem;
+  background: var(--public-ink);
+  color: var(--public-fog);
+  transform: translateY(-160%);
+}
+
+.public-portal__skip:focus {
+  transform: translateY(0);
+}
+
+.public-portal__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  padding: 1.1rem clamp(1.1rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--public-line);
+}
+
+.public-portal__brand {
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  color: var(--public-fog);
+  text-decoration: none;
+}
+
+.public-portal__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.public-portal__nav a {
+  color: var(--public-mist);
+  text-decoration: none;
+}
+
+.public-portal__nav a:hover {
+  color: var(--public-fog);
+}
+
+.public-portal__main {
+  /* Defeat global main { padding-top: 20svh } for this route only. */
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.public-portal__hero {
+  display: grid;
+  gap: 1.25rem 2.5rem;
+  padding: clamp(2rem, 6vw, 4.5rem) clamp(1.1rem, 4vw, 3rem)
+    clamp(2.5rem, 7vw, 4.5rem);
+  border-bottom: 1px solid var(--public-line);
+}
+
+@media (min-width: 960px) {
+  .public-portal__hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: start;
+  }
+
+  .public-portal__hero > :not(.public-portal__glimpse) {
+    grid-column: 1;
+  }
+
+  .public-portal__glimpse {
+    grid-column: 2;
+    grid-row: 1 / span 8;
+  }
+}
+
+.public-portal__kicker {
+  margin: 0;
+  max-width: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--public-ember);
+}
+
+.public-portal__title {
+  margin: 0;
+  max-width: 14ch;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: clamp(2.8rem, 8vw, 5.4rem);
+  font-weight: 550;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: #f4f7f3;
+}
+
+.public-portal__promise {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  line-height: 1.25;
+  color: var(--public-fog);
+}
+
+.public-portal__lede {
+  margin: 0;
+  max-width: 36rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--public-mist);
+}
+
+.public-portal__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.public-portal__cta-primary,
+.public-portal__cta-secondary,
+.public-portal__cta-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.7rem 1.15rem;
+  border-radius: 0.2rem;
+  font-family: var(--public-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.public-portal__cta-primary {
+  background: var(--public-ember);
+  color: #1a1208;
+  border-color: var(--public-ember-deep);
+}
+
+.public-portal__cta-primary:hover {
+  background: #ebc57d;
+}
+
+.public-portal__cta-secondary {
+  background: transparent;
+  color: var(--public-fog);
+  border-color: rgba(216, 226, 220, 0.45);
+}
+
+.public-portal__cta-secondary:hover {
+  border-color: var(--public-fog);
+}
+
+.public-portal__cta-quiet {
+  background: transparent;
+  color: var(--public-mist);
+  border-color: transparent;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  min-height: auto;
+  padding-inline: 0.2rem;
+}
+
+.public-portal__cta-note {
+  margin: 0;
+  max-width: none;
+  font-size: 0.92rem;
+  color: var(--public-mist);
+}
+
+.public-portal__glimpse {
+  margin-top: 0.5rem;
+  padding: 1.25rem 1.35rem 1.4rem;
+  background: var(--public-panel);
+  border: 1px solid var(--public-line);
+  backdrop-filter: blur(8px);
+}
+
+.public-portal__glimpse-label {
+  margin: 0 0 0.85rem;
+  max-width: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--public-ember);
+}
+
+.public-portal__glimpse-place {
+  margin: 0 0 0.55rem;
+  max-width: none;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: 1.35rem;
+  color: #f4f7f3;
+}
+
+.public-portal__glimpse-prose {
+  margin: 0 0 1rem;
+  max-width: none;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--public-mist);
+}
+
+.public-portal__glimpse-options {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.public-portal__glimpse-options li {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(216, 226, 220, 0.28);
+  color: var(--public-fog);
+  font-size: 0.98rem;
+}
+
+.public-portal__glimpse-link {
+  color: var(--public-ember);
+  font-size: 0.95rem;
+}
+
+/* On narrow viewports, CTA comes before the glimpse (DOM order already). */
+@media (max-width: 959px) {
+  .public-portal__glimpse {
+    order: 8;
+  }
+}
+
+.public-portal__journey,
+.public-portal__modes,
+.public-portal__proof {
+  padding: clamp(2.4rem, 6vw, 4rem) clamp(1.1rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--public-line);
+}
+
+.public-portal__journey h2,
+.public-portal__modes h2,
+.public-portal__proof h2 {
+  margin: 0 0 0.6rem;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 550;
+  color: #f4f7f3;
+}
+
+.public-portal__journey-lede,
+.public-portal__modes p,
+.public-portal__proof p {
+  margin: 0 0 1.4rem;
+  max-width: 40rem;
+  color: var(--public-mist);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.public-portal__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.4rem;
+}
+
+@media (min-width: 800px) {
+  .public-portal__steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.75rem;
+  }
+}
+
+.public-portal__steps li {
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--public-line);
+}
+
+.public-portal__step-index {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--public-ember);
+}
+
+.public-portal__steps h3 {
+  margin: 0 0 0.45rem;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 550;
+  color: var(--public-fog);
+}
+
+.public-portal__steps p {
+  margin: 0;
+  max-width: none;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--public-mist);
+}
+
+.public-portal__mode-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 720px) {
+  .public-portal__mode-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+.public-portal__mode-grid h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--public-display), Fraunces, Georgia, serif;
+  font-size: 1.3rem;
+  color: #f4f7f3;
+}
+
+.public-portal__mode-grid a,
+.public-portal__proof a {
+  color: var(--public-ember);
+}
+
+.public-portal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1.1rem, 4vw, 3rem) 2rem;
+  font-size: 0.9rem;
+  color: var(--public-mist);
+}
+
+.public-portal__footer p {
+  margin: 0;
+  max-width: none;
+  font-size: inherit;
+}
+
+.public-portal__footer a {
+  color: var(--public-fog);
+}
+
+.public-portal a:focus-visible,
+.public-portal__cta-primary:focus-visible,
+.public-portal__cta-secondary:focus-visible {
+  outline: 2px solid var(--public-ember);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-portal * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

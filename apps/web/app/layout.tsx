@@ -4,7 +4,8 @@ import './style.css';
 
 export const metadata: Metadata = {
   title: 'Offscreen RPG',
-  description: 'A story that carries on while you are away.',
+  description:
+    'A story that remembers what you chose. Try a free scripted preview, or start a persistent life that continues while you are away.',
 };
 
 export default function Layout({ children }: { children: ReactNode }) {

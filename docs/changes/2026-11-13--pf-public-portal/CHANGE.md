@@ -1,6 +1,6 @@
 # PF01 | Public homepage becomes a playable invitation
 
-**State: Proposed (2026-11-13). Code permission: none.** Parent: [entry program](../../experience/platform-entry-implementation-program.md). No backend dependency. PF02 can proceed separately, but coordinate shared public CSS.
+**State: Done (2026-11-13).** Scoped `PublicPortal` on `/` with preview-first CTA hierarchy, editorial glimpse, how-it-works journey, honest mode split and GitHub proof. Parent: [entry program](../../experience/platform-entry-implementation-program.md). PF02 can proceed separately; coordinate shared public CSS.
 
 ## Cursor first-screen brief
 
