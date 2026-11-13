@@ -35,15 +35,13 @@ export async function createCustomDraftSetup(
 
 /** Reopen an existing draft on the role step for editing title/premise. */
 export async function openDraftRoleStep(page: Page) {
-  const edit = page.getByRole('button', { name: 'Edit setup' });
-  if (await edit.count()) {
-    await edit.click();
+  const title = page.getByLabel(/Story title/i);
+  if (await title.isVisible().catch(() => false)) {
+    return;
   }
-  const backFromStoryteller = page.getByRole('button', { name: 'Back' });
-  if (
-    (await page.getByLabel(/Personal direction/i).count()) > 0 &&
-    (await backFromStoryteller.count()) > 0
-  ) {
-    await backFromStoryteller.click();
-  }
+  // Saved drafts hydrate on Review; wait rather than racing edit.count() === 0.
+  await page.getByRole('button', { name: 'Edit setup' }).click();
+  await page.getByLabel(/Personal direction/i).waitFor();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await title.waitFor();
 }

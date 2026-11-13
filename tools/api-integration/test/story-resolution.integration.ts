@@ -764,7 +764,7 @@ export async function checkGeneratedResolution({
         await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
           .getByRole('button', {
-            name: 'Generate opening candidate',
+            name: 'Create opening',
             exact: true,
           })
           .click();

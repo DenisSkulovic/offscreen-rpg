@@ -5061,7 +5061,7 @@ test(
                 .click();
               await page
                 .getByRole('button', {
-                  name: 'Generate opening candidate',
+                  name: 'Create opening',
                   exact: true,
                 })
                 .click();
