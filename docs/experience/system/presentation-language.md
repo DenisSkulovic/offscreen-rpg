@@ -114,6 +114,8 @@ type MediaPlacement = {
 };
 ~~~
 
+**Asset-reference ownership:** `assetRef` is an **opaque content identifier**, not an enum of known scenery and not inherently a `fixture:` URI. The frontend input parser checks syntactic bounds and rejects dangerous raw URL/CSS syntax; asset existence, viewer authorization and rendition metadata are checked against a **trusted catalog supplied by the consuming host**. The pure resolver must not import a fixed map of named story assets, require Storybook-specific prefixes, or know words such as cave/harbor/castle. A Storybook scenario may inject a test catalog with recognizable fixture IDs; that catalog belongs in test/story content, never the general renderer. An unknown, stale or unauthorized reference resolves to absent media without affecting prose/actions. See [asset boundary](presentation-media-and-motion.md#asset-boundary-references-not-generated-urls).
+
 The role is only a display classification; actual alt/caption truth comes from **approved asset metadata/public narration**, not untrusted art-direction prose. Decorative media uses empty alt/aria-hidden. Supplemental illustrations require an accessible approved description. No artist-generated hidden clue may become player-visible merely through alt text. A failed/unresolved reference drops that media placement only.
 
 **Initial limits:** at most one backdrop and two inline illustrations; valid paragraph index is 0 to paragraph count minus one; at most one inserted illustration per anchor for the first implementation. Additional media is ignored with a safe diagnostic. These are **V1 renderer budgets**, not a promise that the final product can never show more art. Expanding limits requires a measured change and updated tests.
