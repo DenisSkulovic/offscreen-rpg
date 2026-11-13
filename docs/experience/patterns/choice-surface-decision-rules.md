@@ -34,7 +34,7 @@ Rendering all six as identical large cards, with the same buttons, creates a mec
 
 **When:** a small number of short, meaningfully distinct responses; the player is primarily participating in the scene.
 
-\`\`\`text
+```text
 WHAT WILL YOU DO?
 
 Ask who sent him
@@ -42,7 +42,7 @@ Ask who sent him
 
 Keep your distance
     Decline further contact
-\`\`\`
+```
 
 **Behavior:** minimal chrome, simple action rows with strong focus/hover state. Direct commit where no special warning is warranted. If an option has a significant known time/resource stake, show it rather than forcing every dialogue through a confirmation sheet.
 
@@ -52,13 +52,13 @@ Keep your distance
 
 **When:** a quiet location provides several *already authored* repeatable opportunities. A small set may be shown directly; many may be grouped by meaningful category or displayed in a compact list.
 
-\`\`\`text
+```text
 SPEND SOME TIME IN THE HARBOR
 
 Repair the signal       (resume same 3/9 earned)
 Observe the water       (bounded wait, no reward)
 Visit the watchhouse    (new situation if admitted)
-\`\`\`
+```
 
 **Behavior:** grouped if useful, compact rows, show eligibility only when relevant. An exploratory category can drill into a submenu without advancing time, with a clear Back path. Avoid an always-visible empty grid to imply the engine has generated "work", "trade", "fight", "eat", "sleep" from character stats.
 
@@ -68,7 +68,7 @@ Visit the watchhouse    (new situation if admitted)
 
 **When:** starting a task that affects current work, resources, substantial real waiting or known serious consequences.
 
-\`\`\`text
+```text
 BEGIN THE MOUNTAIN CROSSING
 You intend to take the northern pass.
 About 10 real hours here under the selected pace (estimate).
@@ -76,7 +76,7 @@ This route can be interrupted; reaching the pass is not guaranteed.
 Your current repair work would remain suspended [if actually true].
 
 [Begin journey]   [Stay at the village]
-\`\`\`
+```
 
 **Behavior:** one compact *review* if stakes warrant it. It explains the known cost, not a binary legal disclaimer and not a game-plan spreadsheet. Acceptance uses one immutable operation. **Don't double-confirm every ordinary action**: use the action itself as the confirmation when consequences are small and visible.
 
@@ -86,7 +86,7 @@ Your current repair work would remain suspended [if actually true].
 
 **When:** an action is already in progress, paused, suspended or planned. The player may have valid rules-aware controls, but the UI cannot make them up.
 
-\`\`\`text
+```text
 REPAIRING THE BEACON
 3/9 earned · still active
 [Pause repair]      (if permitted)
@@ -96,7 +96,7 @@ Or after interruption:
 REPAIR SUSPENDED
 3/9 preserved · cannot advance while the stranger waits
 [Answer the stranger]
-\`\`\`
+```
 
 **Behavior:** controls label their actual semantics. “Pause” means preserve time/progress. “Cancel upcoming steps” doesn't abandon current work. “Change course” may require a new engine-level admission contract. “Abandon” is high stakes and requires explicit known consequence.
 

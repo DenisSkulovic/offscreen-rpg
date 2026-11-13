@@ -47,7 +47,7 @@ No mandatory public matchmaking, global world lobby or voice chat for first grou
 
 ## Shared Now visual grammar
 
-\`\`\`text
+```text
 THE OLD PASS
 Shared story · 3 participants
 
@@ -64,7 +64,7 @@ Group decisions:
 The story moves when the required choices
 are resolved under this group's policy.
 [Review group agreement]
-\`\`\`
+```
 
 This is a conceptual **future state**. It must not expose an “Alice voted to betray you” preview if their intent is intended to be private. Published facts are shared only where the story's character/viewer visibility policy permits them.
 
