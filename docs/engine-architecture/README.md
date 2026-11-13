@@ -2,6 +2,8 @@
 
 **Status:** product-first architecture, causal audit and final handoff design passes completed **2026-11-13**. **ENG01 is design-ready for explicit owner authorization**; no engine Change is selected or code-authorized. The desired engine comes from the game vision, not the current implementation. The desired engine comes from the game the owner wants, **not** an inference that every current module is worth keeping. This initiative runs separately from the [UX handoff](../experience/README.md), and the active Change remains **none**. Cursor is implementing player UX elsewhere; do not merge these documents into its working tree or ask Cursor to implement engine changes until the owner selects a future bounded Change.
 
+**Latest post-implementation review:** [independent ENG01/02/04/07 audit](evidence/postwave-implementation-review.md) → [ENG05 shared-CAS design gate](decisions/eng05-shared-cas-contract.md), [ENG06 replay policy](decisions/eng06-temporal-compatibility-policy.md), [ENG03 measurement-first policy](decisions/eng03-instrument-before-refactor.md) → [next bounded Cursor handoff](handoff/postwave-cursor-handoff.md). **ENG08** protects item authorization; **ENG09** covers possible story dead-end after holder invalidation. These additions are design-only; see current Change router for execution permission.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |

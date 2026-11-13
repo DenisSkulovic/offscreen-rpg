@@ -2,6 +2,16 @@
 
 **Status:** final design-selected execution order as of 2026-11-13. **ENG01 Done. ENG02 Done** (pure actor envelope; no DB migration). **ENG04 Done. ENG07 Cancelled.** ENG03/ENG05–ENG06 remain unauthorized. Program derived from [dream/requirements](product-derived-requirements.md), [source audit](evidence/source-audit.md), [mechanics first slice](decisions/first-gameplay-slice.md), [causal trace](evidence/causal-transition-review.md), [migration policy](decisions/canon-compatibility-and-migration.md), and [independent challenge](evidence/independent-challenge.md). Only a **bounded, explicitly owner-approved Change** gives Cursor code permission.
 
+## Postwave code review and updated sequence (2026-11-13)
+
+A source review of Cursor's ENG01/ENG02/ENG04/ENG07 work identified two items to close before broadening generated world effects: a **new model-authored transfer may pass existence checks without an actor/holder permission grant**, and an interrupted mid-flight holder change may leave **no valid next offer**. These are source-level concerns, not reproduced live-provider exploits. See [review](evidence/postwave-implementation-review.md).
+
+**New corrective packets:** [ENG08 provider world-effect gate](../changes/2026-11-13--eng-provider-world-effect-gate/CHANGE.md) is **design-ready for explicit owner authorization**; [ENG09 item interruption/reentry](../changes/2026-11-13--eng-item-interruption-reentry/CHANGE.md) remains **NOT Ready** until the end-to-end recovery trace and source event contract are settled. ENG01 remains Done for its completed limited mechanics proof, with these tracked follow-ups.
+
+**Infrastructure order chosen:** after correctness, **ENG05** private S3-compatible shared CAS is **design-ready** under [selected storage contract](decisions/eng05-shared-cas-contract.md) with disposable local service/no cloud cutover. **ENG06** is **design-ready for first local history-replay test**, not a complete hosted Worker Deployment system ([policy](decisions/eng06-temporal-compatibility-policy.md)). **ENG03** remains **NOT Ready** for a full refactor until [lock I/O measurement and captured-task contract](decisions/eng03-instrument-before-refactor.md); only its narrow diagnostic can be separately authorized. [Next Cursor handoff](handoff/postwave-cursor-handoff.md) gives the exact first prompt.
+
+**Do not automatically mark any ENG Change Ready or alter code:** the owner selects scope and safe tests, then Cursor rechecks latest source. ENG02's 'Done' is a pure envelope/optional health cut; a full nonhuman campaign/form-change proof remains outstanding. ENG07 cancellation proves final serialized source inclusion, **not** model creative fidelity.
+
 ## What we selected
 
 **Architecture:** modular monolith; PostgreSQL owns transactional mechanics and accepted authority; pure game modules own rule evaluation; immutable versioned documents own source narration/descriptive history; Temporal coordinates sparse eligible boundaries; the Storyteller is an evidence-grounded proposal system with bounded spend. This is a **target for deliberate evolution**, not a declaration the current engine is complete.
