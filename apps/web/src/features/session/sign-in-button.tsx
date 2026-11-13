@@ -2,18 +2,27 @@
 
 import { useState } from 'react';
 import { authClient } from '@/src/lib/auth-client';
+import {
+  DEFAULT_SAFE_ENTRY,
+  resolveSafeEntryDestination,
+} from './safe-entry-destination';
 
-export function SignInButton() {
+export function SignInButton({
+  next = DEFAULT_SAFE_ENTRY,
+}: {
+  next?: string;
+}) {
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
+  const callbackURL = resolveSafeEntryDestination(next);
   async function signIn() {
     setPending(true);
     setFailed(false);
     try {
       const result = await authClient.signIn.social({
         provider: 'github',
-        callbackURL: '/stories',
-        errorCallbackURL: '/sign-in?error=signin',
+        callbackURL,
+        errorCallbackURL: `/sign-in?error=signin&next=${encodeURIComponent(callbackURL)}`,
       });
       if (result.error) {
         setFailed(true);

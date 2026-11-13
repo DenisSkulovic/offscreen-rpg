@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { draftIdSchema, draftSchema } from '@offscreen/contracts/drafts';
@@ -5,6 +6,10 @@ import {
   latestOpeningSchema,
   mechanicalContentCatalogueSchema,
 } from '@offscreen/contracts/openings';
+import {
+  PATHNAME_HEADER,
+  signInHrefFor,
+} from '@/src/features/session/safe-entry-destination';
 import { requireViewer } from '@/src/server/viewer';
 import { nestFetch, parseNestJson } from '@/src/server/nest-reader';
 import { NestTransientError } from '@/src/server/nest-errors';
@@ -34,7 +39,9 @@ export default async function Preview({
     catalogueResponse.status,
   ].map(classifyNestStatus);
   if (statuses.some((status) => status.kind === 'unauthorized')) {
-    redirect('/sign-in');
+    redirect(
+      signInHrefFor((await headers()).get(PATHNAME_HEADER)),
+    );
   }
   if (classifyNestStatus(draftResponse.status).kind === 'not_found') {
     notFound();

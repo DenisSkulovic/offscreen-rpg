@@ -1,6 +1,6 @@
 # Public entry and player home | frontend implementation program PF01–PF05
 
-**Status: owner-authorized frontend program, 2026-11-13. PF01–PF02–PF04 Done; PF03/PF05 Proposed (PF03 auth-ownership gated).** Parent [platform ecosystem](platform-ecosystem.md); precise targets: [public portal](spaces/public-portal-blueprint.md), [preview-to-play](flows/preview-to-play.md), [player home](spaces/player-home-blueprint.md), [journey/state atlas](platform-journeys-and-states.md). Inside-story UX, account/allowance backend semantics and operator portal are separate concerns.
+**Status: owner-authorized frontend program, 2026-11-13. PF01–PF04 Done; PF05 Proposed.** Parent [platform ecosystem](platform-ecosystem.md); precise targets: [public portal](spaces/public-portal-blueprint.md), [preview-to-play](flows/preview-to-play.md), [player home](spaces/player-home-blueprint.md), [journey/state atlas](platform-journeys-and-states.md). Inside-story UX, account/allowance backend semantics and operator portal are separate concerns.
 
 ## One measurable outcome
 

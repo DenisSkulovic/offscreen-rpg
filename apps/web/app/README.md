@@ -9,7 +9,7 @@
 | URL | Server page | Client feature | Next boundary |
 | --- | --- | --- | --- |
 | `/` | [home page](page.tsx) | none | public |
-| `/sign-in` | [sign-in page](sign-in/page.tsx) | `src/features/session/sign-in-button.tsx` | public entry, Better Auth |
+| `/sign-in` | [sign-in page](sign-in/page.tsx) | `sign-in-button` + `safe-entry-destination` | public entry; optional `?next=` allowlisted return; Better Auth `callbackURL` |
 | `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `src/features/stories/{live-story-list,draft-list}.tsx` | parallel drafts+stories Nest reads |
 | `/stories/new?id=UUID` | [(authenticated)/stories/new/page.tsx]((authenticated)/stories/new/page.tsx) | `src/features/stories/draft-editor.tsx` | server UUID/query normalization |
 | `/stories/:id` | [(authenticated)/stories/[id]/page.tsx]((authenticated)/stories/[id]/page.tsx) | same `DraftEditor` | 401 sign-in, 404 not-found |

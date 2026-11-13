@@ -1,6 +1,6 @@
 # PF03 | Preserve a safe entry purpose across authentication
 
-**State: Proposed (2026-11-13). Code permission: none.** **Readiness condition:** existing Next/Better Auth callback and Nest session ownership confirmed; any server identity contract change handed to separate backend owner. Parent: [entry program](../../experience/platform-entry-implementation-program.md). Depends on stable PF01/PF02 CTA destinations, but can be scoped independently.
+**State: Done (2026-11-13).** Safe allowlisted `next` through `/sign-in` and Better Auth `callbackURL`; `requireViewer` + middleware preserve path. No Nest identity change. Parent: [entry program](../../experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
@@ -36,3 +36,9 @@ The existing sign-in button hardcodes GitHub provider and `callbackURL:'/stories
 ## Permissions and handoff
 
 **Security-sensitive.** Owner must explicitly authorize PF03 with auth/Next read of current HEAD, and the parallel backend auth owner must agree on boundary if callback behavior crosses services. A design page alone is not a permit to edit Nest or identity contracts. Return sources changed, threat cases tested, exact redirects, and any unsupported sign-in return path. No Google OAuth migration as part of PF03.
+
+## Landed (2026-11-13)
+
+- `safe-entry-destination.ts`: allowlist `/stories`, `/stories/new(?id=UUID)`, `/stories/:id`, `/stories/:id/preview`, `/play/:id`; reject external/hostile/unknown.
+- Middleware sets `x-offscreen-pathname`; `requireViewer` → `/sign-in?next=…`; SignInButton uses validated Better Auth `callbackURL`; signed-in visitors skip form; SessionRefresh preserves path; error path keeps safe next + Back to preview.
+- Proof: `test:fast` 153 passed (safe-entry + SignInButton hostile next). No Nest identity change; no live OAuth claim; no provider spend.

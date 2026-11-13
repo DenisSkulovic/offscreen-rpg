@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { draftIdSchema } from '@offscreen/contracts/drafts';
+import {
+  PATHNAME_HEADER,
+  signInHrefFor,
+} from '@/src/features/session/safe-entry-destination';
 import { requireViewer } from '@/src/server/viewer';
 import {
   applyNestRoutePolicy,
@@ -22,7 +27,11 @@ export default async function NewDraft({
   const existing = await nestFetch(viewer, `/api/drafts/${parsed.data}`);
   const existingStatus = classifyNestStatus(existing.status);
   if (existingStatus.kind === 'success') redirect(`/stories/${parsed.data}`);
-  if (existingStatus.kind === 'unauthorized') redirect('/sign-in');
+  if (existingStatus.kind === 'unauthorized') {
+    redirect(
+      signInHrefFor((await headers()).get(PATHNAME_HEADER)),
+    );
+  }
   if (existingStatus.kind !== 'not_found')
     applyNestRoutePolicy(existing.status);
   const catalogue = await readNestJson(
