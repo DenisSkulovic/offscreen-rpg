@@ -1,6 +1,6 @@
 # Presentation runtime calibration | PX05–PX07 before engine integration
 
-**Status: designer-selected follow-up proposal, 2026-11-13. Documentation only; no code authorization.** The implemented PX01–PX04 architectural seam remains. The [post-implementation review](evidence/presentation-post-px-review-2026-11-13.md) records evidenced shortcomings in current screenshots/source. The selected permanent frontend target remains [presentation runtime](system/presentation-runtime.md), [language](system/presentation-language.md), and [media/motion](system/presentation-media-and-motion.md).
+**Status: PX05–PX07 landed 2026-11-13.** Owner asked to implement this calibration after the post-PX review. Live Play still passes no presentation document. Engine and image providers remain out of scope.
 
 ## The decision
 

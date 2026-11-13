@@ -8,8 +8,8 @@ import {
   caveScope,
   harborPresentation,
   harborScope,
+  resolveFixture,
 } from '../presentation/fixtures';
-import { resolvePresentation } from '../presentation/resolve';
 
 const paragraphs = ['The landing is wet.', 'A coat drips onto the boards.'];
 
@@ -33,7 +33,7 @@ describe('StoryFrame presentation', () => {
   it('restyles the stage from a fixture without changing the chosen id', async () => {
     const user = userEvent.setup();
     const onIntentionSelect = vi.fn();
-    const harbor = resolvePresentation(harborPresentation, harborScope);
+    const harbor = resolveFixture(harborPresentation, harborScope);
     render(
       <StoryFrame
         storiesHref="/stories"
@@ -60,7 +60,7 @@ describe('StoryFrame presentation', () => {
   });
 
   it('animates a new passage id and not a same-id refresh', async () => {
-    const cave = resolvePresentation(cavePresentation, caveScope);
+    const cave = resolveFixture(cavePresentation, caveScope);
     const { rerender } = render(
       <NarrativePassage
         passageId="passage-a"

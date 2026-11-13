@@ -12,7 +12,10 @@ const config: StorybookConfig = {
     name: '@storybook/nextjs-vite',
     options: {},
   },
-  staticDirs: ['../public'],
+  staticDirs: [
+    '../public',
+    { from: '../src/stories/presentation-fixtures', to: '/presentation-fixtures' },
+  ],
   async viteFinal(viteConfig) {
     viteConfig.resolve ??= {};
     viteConfig.resolve.alias = {
@@ -34,6 +37,7 @@ const config: StorybookConfig = {
       '@offscreen/contracts/campaign',
       '@offscreen/contracts/storytellers',
       '@offscreen/game/offers',
+      '@offscreen/game/calendar',
     ];
     viteConfig.build ??= {};
     viteConfig.build.commonjsOptions = {

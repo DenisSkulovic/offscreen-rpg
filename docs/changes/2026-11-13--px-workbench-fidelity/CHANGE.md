@@ -1,6 +1,6 @@
 # PX07 | Real presentation pipeline and scenario-specific Storybook laboratory
 
-**State: Proposed (2026-11-13). No code permission.** Depends on reviewed PX05 and PX06. Parent: [calibration program](../../experience/presentation-calibration-program.md), evidence: [post-PX review](../../experience/evidence/presentation-post-px-review-2026-11-13.md).
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the calibration review. Cursor landed Storybook controls that edit the input document, plus separate harbor and cave scenes. The cave story no longer appends resolved choices by hand.
 
 ## Cursor first-screen brief
 

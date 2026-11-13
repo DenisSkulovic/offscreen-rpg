@@ -22,6 +22,8 @@ export function IntentionChoice({
     ? ({
         '--sf-choice-accent': treatment.accent,
         '--sf-choice-ink': treatment.ink,
+        '--sf-choice-muted': treatment.muted,
+        '--sf-choice-emphasis': String(treatment.emphasis),
       } as CSSProperties)
     : undefined;
   return (

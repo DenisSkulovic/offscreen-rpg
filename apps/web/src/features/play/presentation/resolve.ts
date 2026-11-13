@@ -1,7 +1,17 @@
-import { lookupFixtureAsset } from './assets';
-import { contrastRatio, isHexColor, readableInk, readableMuted } from './contrast';
+import {
+  brightestColor,
+  chromeSurfaceFor,
+  contrastRatio,
+  isHexColor,
+  optionSurfaceFor,
+  readableInk,
+  readableMuted,
+  readableQuiet,
+  relativeLuminance,
+} from './contrast';
 import { parseScenePresentation } from './parse';
 import type {
+  AssetCatalog,
   BackdropGradient,
   ChoiceTarget,
   PaletteIntent,
@@ -10,6 +20,7 @@ import type {
   ResolvedChoice,
   ResolvedMedia,
   ResolvedPresentation,
+  SurfaceRoles,
 } from './types';
 
 const BASE_BACKDROP = '#12181f';
@@ -65,23 +76,54 @@ function readingSurface(tint: string | undefined) {
   return tint && isHexColor(tint) ? tint : BASE_SURFACE;
 }
 
+function backdropSamples(
+  story: PaletteIntent | undefined,
+  scene: PaletteIntent | undefined,
+) {
+  const chosen = scene?.backdrop ?? story?.backdrop;
+  if (!chosen) return [BASE_BACKDROP];
+  if (typeof chosen === 'string') return [chosen];
+  return chosen.stops.map((stop) => stop.color);
+}
+
+function surfaceRoles(surface: string, preferredInk: string): SurfaceRoles {
+  const ink = readableInk(surface, preferredInk);
+  const muted = readableMuted(surface, ink);
+  return { surface, ink, muted, quiet: readableQuiet(surface, muted) };
+}
+
 export function resolvePresentation(
   input: unknown,
   scope: PresentationScope,
+  catalog: AssetCatalog = {},
 ): ResolvedPresentation {
   const parsed = parseScenePresentation(input);
   const story = parsed.document?.storyStyle;
   const scene = parsed.document?.scene;
-  const surface = readingSurface(
+  const narrativeSurface = readingSurface(
     paletteField(story?.palette, scene?.palette, 'surfaceTint'),
   );
   const accent =
     paletteField(story?.palette, scene?.palette, 'accent') ?? BASE_ACCENT;
-  const ink = readableInk(surface, BASE_INK);
-  const muted = readableMuted(surface, ink);
-  const quiet = readableMuted(surface, muted);
-  const focus = contrastRatio(BASE_FOCUS, surface) >= 3 ? BASE_FOCUS : '#08345c';
-  const status = contrastRatio(BASE_STATUS, surface) >= 3 ? BASE_STATUS : '#6a4b12';
+  const narrative = surfaceRoles(narrativeSurface, BASE_INK);
+  const chrome = surfaceRoles(
+    chromeSurfaceFor(brightestColor(backdropSamples(story?.palette, scene?.palette))),
+    BASE_INK,
+  );
+  const optionSurface = optionSurfaceFor(narrative.surface);
+  const options = {
+    ...surfaceRoles(optionSurface, narrative.ink),
+    edge: relativeLuminance(optionSurface) > 0.4 ? '#c5beb2' : '#4a5d6f',
+  };
+  const focus =
+    contrastRatio(BASE_FOCUS, chrome.surface) >= 3 &&
+    contrastRatio(BASE_FOCUS, options.surface) >= 3
+      ? BASE_FOCUS
+      : relativeLuminance(chrome.surface) > 0.4
+        ? '#08345c'
+        : BASE_FOCUS;
+  const status =
+    contrastRatio(BASE_STATUS, narrative.surface) >= 3 ? BASE_STATUS : '#6a4b12';
   const actionInk = readableInk(accent, '#1a150f');
   const rejected = [...parsed.rejected];
   const choices: ResolvedChoice[] = [];
@@ -99,29 +141,37 @@ export function resolvePresentation(
     }
     seen.add(key);
     const choiceAccent = choice.accent ?? accent;
+    const filled = choice.surface === 'filled';
+    const choiceSurface = filled ? choiceAccent : options.surface;
+    const ink = readableInk(choiceSurface, filled ? '#1a150f' : options.ink);
     choices.push({
       target: choice.target,
       surface: choice.surface ?? 'outline',
       accent: choiceAccent,
-      ink: readableInk(choice.surface === 'filled' ? choiceAccent : surface, ink),
+      ink,
+      muted: readableMuted(choiceSurface, ink),
       emphasis: choice.emphasis ?? 0.5,
       effect: choice.effect ?? 'none',
     });
   }
 
-  const media = resolveMedia(scene?.media ?? [], scope, rejected);
+  const media = resolveMedia(scene?.media ?? [], scope, catalog, rejected);
+  const backdrop = resolveBackdrop(story?.palette, scene?.palette);
 
   return {
     storyId: scope.storyId,
     passageId: scope.passageId,
     applied: parsed.document !== null,
     fallback: parsed.fallback,
-    backdrop: resolveBackdrop(story?.palette, scene?.palette),
+    backdrop,
     accent,
-    surface,
-    ink,
-    muted,
-    quiet,
+    chrome,
+    narrative,
+    options,
+    surface: narrative.surface,
+    ink: narrative.ink,
+    muted: narrative.muted,
+    quiet: narrative.quiet,
     focus,
     status,
     actionInk,
@@ -155,11 +205,13 @@ function resolveMedia(
     id: string;
     assetRef: string;
     slot: ResolvedMedia['slot'];
+    scale?: 'inset' | 'wide';
     crop?: 'cover' | 'contain';
     focalPoint?: { x: number; y: number };
     role?: 'decorative' | 'supplemental';
   }[],
   scope: PresentationScope,
+  catalog: AssetCatalog,
   rejected: ResolvedPresentation['rejected'],
 ) {
   const media: ResolvedMedia[] = [];
@@ -173,7 +225,7 @@ function resolveMedia(
       rejected.push({ path, reason: 'duplicate media id ignored' });
       return;
     }
-    const asset = lookupFixtureAsset(placement.assetRef);
+    const asset = catalog[placement.assetRef];
     if (!asset) {
       rejected.push({ path: `${path}.assetRef`, reason: 'unapproved asset ignored' });
       return;
@@ -221,6 +273,7 @@ function resolveMedia(
       height: asset.height,
       description: role === 'supplemental' ? asset.description : null,
       slot: placement.slot,
+      scale: placement.slot.kind === 'backdrop' ? 'wide' : (placement.scale ?? 'inset'),
       crop: placement.crop ?? 'cover',
       focalPoint: placement.focalPoint ?? { x: 50, y: 40 },
       role,

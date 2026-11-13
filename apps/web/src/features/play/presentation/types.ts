@@ -34,7 +34,18 @@ export type MediaPlacement = {
   crop?: 'cover' | 'contain';
   focalPoint?: { x: number; y: number };
   role?: 'decorative' | 'supplemental';
+  /** Inline figures only. Backdrop ignores this. */
+  scale?: 'inset' | 'wide';
 };
+
+export type TrustedAsset = {
+  src: string;
+  width: number;
+  height: number;
+  description: string | null;
+};
+
+export type AssetCatalog = Readonly<Record<string, TrustedAsset>>;
 
 export type SceneArtDirection = {
   palette?: PaletteIntent;
@@ -90,8 +101,16 @@ export type ResolvedChoice = {
   surface: 'quiet' | 'outline' | 'filled' | 'luminous';
   accent: string;
   ink: string;
+  muted: string;
   emphasis: number;
   effect: 'none' | 'glow-soft' | 'pulse-soft';
+};
+
+export type SurfaceRoles = {
+  surface: string;
+  ink: string;
+  muted: string;
+  quiet: string;
 };
 
 export type ResolvedMedia = {
@@ -102,6 +121,7 @@ export type ResolvedMedia = {
   height: number;
   description: string | null;
   slot: MediaSlot;
+  scale: 'inset' | 'wide';
   crop: 'cover' | 'contain';
   focalPoint: { x: number; y: number };
   role: 'decorative' | 'supplemental';
@@ -118,6 +138,10 @@ export type ResolvedPresentation = {
   fallback: 'none' | 'partial' | 'full';
   backdrop: ResolvedBackdrop;
   accent: string;
+  chrome: SurfaceRoles;
+  narrative: SurfaceRoles;
+  options: SurfaceRoles & { edge: string };
+  /** Narrative plate. Kept so existing stage styles can read one surface. */
   surface: string;
   ink: string;
   muted: string;

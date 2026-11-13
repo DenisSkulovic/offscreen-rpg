@@ -49,3 +49,23 @@ export function readableMuted(surface: string, ink: string) {
   if (contrastRatio(candidate, surface) >= 4.5) return candidate;
   return ink;
 }
+
+export function readableQuiet(surface: string, muted: string) {
+  return contrastRatio(muted, surface) >= 4.5 ? muted : readableInk(surface, muted);
+}
+
+/** Light worlds get a light control plate. Dark worlds keep the field-journal control. */
+export function optionSurfaceFor(narrativeSurface: string) {
+  return relativeLuminance(narrativeSurface) > 0.4 ? '#f7f4ee' : '#1f2936';
+}
+
+/** Header scrim follows the brightest exposed backdrop, not the reading plate. */
+export function chromeSurfaceFor(exposedColor: string) {
+  return relativeLuminance(exposedColor) > 0.4 ? '#f4f7f5' : '#12181f';
+}
+
+export function brightestColor(colors: readonly string[]) {
+  return colors.reduce((current, next) =>
+    relativeLuminance(next) > relativeLuminance(current) ? next : current,
+  );
+}

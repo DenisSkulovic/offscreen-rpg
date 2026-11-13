@@ -1,6 +1,6 @@
 # PX05 | Multi-surface contrast and responsive atmosphere bounds
 
-**State: Proposed (2026-11-13). No code permission.** Dependency: PX01–PX04 implemented; reread HEAD before execution. Parent: [calibration program](../../experience/presentation-calibration-program.md). Evidence: [post-PX review](../../experience/evidence/presentation-post-px-review-2026-11-13.md). Next: PX06.
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the calibration review. Cursor landed per-surface contrast and a viewport that fills the preview without decorative horizontal overflow.
 
 ## Cursor first-screen brief
 

@@ -25,6 +25,8 @@ export function SceneMedia({
     <figure
       className={className}
       data-slot={media.slot.kind}
+      data-scale={media.scale}
+      data-crop={media.crop}
       style={{ aspectRatio: `${media.width} / ${media.height}` }}
       aria-hidden={decorative ? true : undefined}
     >

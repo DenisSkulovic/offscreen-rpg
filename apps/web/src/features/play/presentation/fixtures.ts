@@ -1,4 +1,6 @@
-import type { PresentationScope } from './types';
+import { resolvePresentation } from './resolve';
+import type { AssetCatalog, PresentationScope } from './types';
+import { exampleAssetCatalog } from '@/src/test/presentation-catalog';
 
 export const harborScope: PresentationScope = {
   storyId: 'story-harbor',
@@ -42,6 +44,18 @@ export const harborPresentation = {
     stage: 'quiet-surface',
     motion: { ambient: 'still', passageArrival: 'fade' },
   },
+  choices: [
+    {
+      target: { kind: 'legacy', interactionId: 'interaction-harbor', optionId: 'ask' },
+      surface: 'outline',
+      accent: '#d7a15a',
+    },
+    {
+      target: { kind: 'legacy', interactionId: 'interaction-harbor', optionId: 'withdraw' },
+      surface: 'quiet',
+      accent: '#8eacb8',
+    },
+  ],
 };
 
 export const cavePresentation = {
@@ -66,14 +80,15 @@ export const cavePresentation = {
     media: [
       {
         id: 'cave-backdrop',
-        assetRef: 'fixture:cave-wall',
+        assetRef: 'scene.cave-wall',
         slot: { kind: 'backdrop' },
         role: 'decorative',
       },
       {
         id: 'cave-figure',
-        assetRef: 'fixture:cave-wall',
+        assetRef: 'scene.cave-wall',
         slot: { kind: 'after-paragraph', index: 0 },
+        scale: 'inset',
         role: 'decorative',
       },
     ],
@@ -136,7 +151,7 @@ export const abstractPresentation = {
     media: [
       {
         id: 'field',
-        assetRef: 'fixture:abstract-field',
+        assetRef: 'scene.abstract-field',
         slot: { kind: 'before-passage' },
         role: 'decorative',
       },
@@ -168,3 +183,26 @@ export const unknownVersionPresentation = {
   schemaVersion: 99,
   scene: { palette: { backdrop: '#000000', surfaceTint: '#000000' } },
 };
+
+export const quietRoomPresentation = {
+  schemaVersion: 1,
+  storyStyle: { typography: 'restrained', texture: 'none' },
+  scene: {
+    palette: {
+      backdrop: '#2a2622',
+      accent: '#c4a574',
+      surfaceTint: '#241f1b',
+    },
+    atmosphere: { lighting: 'dim', vignette: 0.25 },
+    stage: 'quiet-surface',
+    motion: { ambient: 'still', passageArrival: 'none' },
+  },
+};
+
+export function resolveFixture(
+  input: unknown,
+  scope: PresentationScope,
+  catalog: AssetCatalog = exampleAssetCatalog,
+) {
+  return resolvePresentation(input, scope, catalog);
+}

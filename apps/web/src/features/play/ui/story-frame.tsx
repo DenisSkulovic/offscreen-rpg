@@ -92,18 +92,23 @@ export function StoryFrame({
     presentation?.media.filter((item) => item.slot.kind !== 'backdrop') ?? [];
   const style = presented
     ? ({
-        '--sf-bg':
-          presentation?.backdrop.kind === 'solid'
-            ? presentation.backdrop.color
-            : '#12181f',
-        '--sf-stage': presentation?.surface,
-        '--sf-ink': presentation?.ink,
-        '--sf-ink-muted': presentation?.muted,
-        '--sf-ink-quiet': presentation?.quiet,
+        '--sf-chrome-bg': presentation?.chrome.surface,
+        '--sf-chrome-ink': presentation?.chrome.ink,
+        '--sf-chrome-muted': presentation?.chrome.muted,
+        '--sf-stage': presentation?.narrative.surface,
+        '--sf-ink': presentation?.narrative.ink,
+        '--sf-ink-muted': presentation?.narrative.muted,
+        '--sf-ink-quiet': presentation?.narrative.quiet,
+        '--sf-option-bg': presentation?.options.surface,
+        '--sf-option-ink': presentation?.options.ink,
+        '--sf-option-muted': presentation?.options.muted,
+        '--sf-option-edge': presentation?.options.edge,
         '--sf-action': presentation?.accent,
         '--sf-action-ink': presentation?.actionInk,
         '--sf-focus': presentation?.focus,
         '--sf-status-attention': presentation?.status,
+        '--sf-vignette': String(presentation?.vignette ?? 0.2),
+        '--sf-texture': String(presentation?.textureIntensity ?? 0.15),
       } as CSSProperties)
     : undefined;
 
@@ -113,8 +118,10 @@ export function StoryFrame({
       data-lighting={presented ? presentation?.lighting : undefined}
       data-stage={presented ? presentation?.stage : undefined}
       data-texture={presented ? presentation?.texture : undefined}
+      data-typography={presented ? presentation?.typography : undefined}
       data-ambient={presented ? presentation?.ambient : undefined}
       data-mocked-presentation={presented ? 'true' : undefined}
+      style={style}
     >
       {presented ? (
         <div className="story-viewport__atmosphere" aria-hidden="true">
@@ -125,7 +132,6 @@ export function StoryFrame({
                 presentation?.backdrop.kind === 'solid'
                   ? presentation.backdrop.color
                   : presentation?.backdrop.css,
-              opacity: presentation?.lighting === 'dim' ? 0.92 : 1,
             }}
           />
           {backdropMedia ? (
@@ -140,7 +146,6 @@ export function StoryFrame({
     <div
       className="story-frame"
       data-presented={presented ? 'true' : undefined}
-      style={style}
     >
       <header className="story-frame__chrome">
         <div className="story-frame__identity">

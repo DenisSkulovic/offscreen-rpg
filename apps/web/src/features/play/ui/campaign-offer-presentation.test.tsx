@@ -3,8 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';
-import { cavePresentation, caveScope } from '../presentation/fixtures';
-import { resolvePresentation } from '../presentation/resolve';
+import { cavePresentation, caveScope, resolveFixture } from '../presentation/fixtures';
 import { CampaignOfferPanel } from './campaign-offer';
 
 describe('CampaignOfferPanel presentation', () => {
@@ -12,7 +11,7 @@ describe('CampaignOfferPanel presentation', () => {
     const user = userEvent.setup();
     const send = vi.fn();
     const campaign = makeCampaign();
-    const presentation = resolvePresentation(cavePresentation, {
+    const presentation = resolveFixture(cavePresentation, {
       ...caveScope,
       campaignOfferId: campaign.offer!.id,
     });
@@ -40,7 +39,7 @@ describe('CampaignOfferPanel presentation', () => {
 
   it('ignores decoration aimed at a previous offer', () => {
     const campaign = makeCampaign();
-    const presentation = resolvePresentation(cavePresentation, caveScope);
+    const presentation = resolveFixture(cavePresentation, caveScope);
     render(
       <CampaignOfferPanel
         story={makeStorySnapshot()}

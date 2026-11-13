@@ -1,6 +1,6 @@
 # PX06 | Rendered capability honesty and bounded media composition
 
-**State: Proposed (2026-11-13). No code permission.** Depends on accepted PX05. Parent: [calibration program](../../experience/presentation-calibration-program.md); evidence: [post-PX review](../../experience/evidence/presentation-post-px-review-2026-11-13.md). Next: PX07.
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the calibration review. Cursor landed an injected asset catalog, bounded figure scale, and visible treatments for the accepted V1 fields.
 
 ## Cursor first-screen brief
 

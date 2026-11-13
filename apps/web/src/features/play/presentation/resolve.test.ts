@@ -6,10 +6,11 @@ import {
   harborPresentation,
   harborScope,
   malformedPresentation,
+  resolveFixture,
   sterilePresentation,
   unknownVersionPresentation,
 } from './fixtures';
-import { resolvePresentation, matchCampaignChoice } from './resolve';
+import { matchCampaignChoice, resolvePresentation } from './resolve';
 
 const scope = harborScope;
 
@@ -26,8 +27,8 @@ describe('presentation resolver', () => {
   });
 
   it('changes harbor and cave atmospheres without accepting raw css', () => {
-    const harbor = resolvePresentation(harborPresentation, harborScope);
-    const cave = resolvePresentation(cavePresentation, caveScope);
+    const harbor = resolveFixture(harborPresentation, harborScope);
+    const cave = resolveFixture(cavePresentation, caveScope);
     expect(harbor.backdrop.kind).toBe('linear');
     expect(cave.backdrop.kind).toBe('linear');
     if (harbor.backdrop.kind !== 'solid' && cave.backdrop.kind !== 'solid') {
@@ -40,11 +41,11 @@ describe('presentation resolver', () => {
       'backdrop',
       'after-paragraph',
     ]);
-    expect(cave.media.every((item) => item.src.startsWith('/presentation-fixtures/'))).toBe(true);
+    expect(cave.media.find((item) => item.slot.kind === 'after-paragraph')?.scale).toBe('inset');
   });
 
   it('drops a bad gradient and raw css without hiding the rest', () => {
-    const resolved = resolvePresentation(malformedPresentation, harborScope);
+    const resolved = resolveFixture(malformedPresentation, harborScope);
     expect(resolved.applied).toBe(true);
     expect(resolved.fallback).toBe('partial');
     expect(resolved.backdrop).toEqual({ kind: 'solid', color: '#12181f' });
@@ -57,7 +58,7 @@ describe('presentation resolver', () => {
   });
 
   it('rejects an unknown version as a whole', () => {
-    const resolved = resolvePresentation(unknownVersionPresentation, scope);
+    const resolved = resolveFixture(unknownVersionPresentation, scope);
     expect(resolved.applied).toBe(false);
     expect(resolved.fallback).toBe('full');
     expect(resolved.surface).toBe('#1a222c');
@@ -97,22 +98,67 @@ describe('presentation resolver', () => {
             },
             {
               id: 'late',
-              assetRef: 'fixture:cave-wall',
+              assetRef: 'scene.cave-wall',
               slot: { kind: 'after-paragraph', index: 9 },
             },
           ],
         },
       },
       caveScope,
+      {
+        'scene.cave-wall': {
+          src: '/presentation-fixtures/cave.svg',
+          width: 80,
+          height: 48,
+          description: null,
+        },
+      },
     );
     expect(matchCampaignChoice(resolved, caveScope.campaignOfferId!, ['look', 'wait'])?.surface).toBe('luminous');
     expect(matchCampaignChoice(resolved, 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', ['look', 'wait'])).toBeUndefined();
     expect(resolved.media).toEqual([]);
   });
 
-  it('keeps light sterile text readable', () => {
-    const resolved = resolvePresentation(sterilePresentation, scope);
-    expect(contrastRatio(resolved.ink, resolved.surface)).toBeGreaterThanOrEqual(4.5);
-    expect(resolved.ink).not.toBe('#e7ece8');
+  it('keeps light sterile text and default controls readable on their own surfaces', () => {
+    const resolved = resolveFixture(sterilePresentation, scope);
+    expect(contrastRatio(resolved.narrative.ink, resolved.narrative.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(resolved.options.ink, resolved.options.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(resolved.options.muted, resolved.options.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(resolved.options.surface).not.toBe('#1f2936');
+  });
+
+  it('keeps harbor chrome readable against the pale backdrop, not the dark plate', () => {
+    const resolved = resolveFixture(harborPresentation, harborScope);
+    expect(contrastRatio(resolved.chrome.ink, resolved.chrome.surface)).toBeGreaterThanOrEqual(4.5);
+    expect(resolved.chrome.surface).not.toBe(resolved.narrative.surface);
+  });
+
+  it('resolves an unrelated catalog id without knowing scenario names', () => {
+    const resolved = resolvePresentation(
+      {
+        schemaVersion: 1,
+        scene: {
+          media: [
+            {
+              id: 'motif',
+              assetRef: 'lab.motif',
+              slot: { kind: 'before-passage' },
+              scale: 'inset',
+            },
+          ],
+        },
+      },
+      { ...scope, paragraphCount: 1 },
+      {
+        'lab.motif': {
+          src: '/lab/motif.svg',
+          width: 64,
+          height: 64,
+          description: null,
+        },
+      },
+    );
+    expect(resolved.media[0]?.src).toBe('/lab/motif.svg');
+    expect(resolved.media[0]?.scale).toBe('inset');
   });
 });

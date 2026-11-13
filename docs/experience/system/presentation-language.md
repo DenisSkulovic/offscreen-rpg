@@ -111,6 +111,7 @@ type MediaPlacement = {
   crop?: 'cover' | 'contain';
   focalPoint?: { x: number; y: number }; // percentages, 0..100
   role?: 'decorative' | 'supplemental';
+  scale?: 'inset' | 'wide'; // inline figures only; backdrop ignores it
 };
 ~~~
 

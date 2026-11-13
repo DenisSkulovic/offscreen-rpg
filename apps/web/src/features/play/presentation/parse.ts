@@ -19,6 +19,18 @@ const AMBIENT = new Set(['still', 'drift-soft', 'shimmer-soft']);
 const ARRIVAL = new Set(['none', 'fade', 'rise-subtle']);
 const SURFACE = new Set(['quiet', 'outline', 'filled', 'luminous']);
 const EFFECT = new Set(['none', 'glow-soft', 'pulse-soft']);
+const ASSET_REF = /^[a-z][a-z0-9._:-]{0,80}$/;
+
+function opaqueAssetRef(value: unknown) {
+  return (
+    typeof value === 'string' &&
+    ASSET_REF.test(value) &&
+    !value.includes('://') &&
+    !value.includes('url(') &&
+    !value.includes('/') &&
+    !value.includes('\\')
+  );
+}
 const CROP = new Set(['cover', 'contain']);
 const ROLE = new Set(['decorative', 'supplemental']);
 
@@ -188,7 +200,7 @@ function parseMedia(
   }
   unusedKeys(
     value,
-    ['id', 'assetRef', 'slot', 'crop', 'focalPoint', 'role', 'url', 'src', 'alt'],
+    ['id', 'assetRef', 'slot', 'crop', 'focalPoint', 'role', 'scale', 'url', 'src', 'alt'],
     path,
     rejected,
   );
@@ -196,12 +208,7 @@ function parseMedia(
     reject(rejected, `${path}.id`, 'media id rejected');
     return undefined;
   }
-  if (
-    typeof value.assetRef !== 'string' ||
-    !value.assetRef.startsWith('fixture:') ||
-    value.assetRef.includes('/') ||
-    value.assetRef.includes('url(')
-  ) {
+  if (!opaqueAssetRef(value.assetRef)) {
     reject(rejected, `${path}.assetRef`, 'asset reference rejected');
     return undefined;
   }
@@ -218,7 +225,15 @@ function parseMedia(
     reject(rejected, `${path}.slot`, 'slot rejected');
     return undefined;
   }
-  const media: MediaPlacement = { id: value.id, assetRef: value.assetRef, slot };
+  const media: MediaPlacement = {
+    id: value.id,
+    assetRef: value.assetRef as string,
+    slot,
+  };
+  if (value.scale !== undefined) {
+    if (value.scale === 'inset' || value.scale === 'wide') media.scale = value.scale;
+    else reject(rejected, `${path}.scale`, 'scale rejected');
+  }
   if (value.crop !== undefined) {
     if (CROP.has(String(value.crop))) media.crop = value.crop as 'cover' | 'contain';
     else reject(rejected, `${path}.crop`, 'crop rejected');
