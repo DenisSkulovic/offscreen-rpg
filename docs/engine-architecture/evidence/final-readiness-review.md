@@ -40,7 +40,7 @@
 | --- | --- | --- | --- |
 | **ENG01 item transfer** | **SELECTED** | **GO after owner explicitly authorizes this one packet and Cursor rechecks current source** | First actual code/tests; disposable DB permission for integration |
 | ENG04 bounded current reads | Selected narrow performance idea | GO after source check/owner authorization, but **not alongside overlapping ENG01 source edits** | Query plans and source coverage |
-| ENG07 final-request memory proof | Conditional | NO-GO if existing tests already prove it; otherwise approve a tiny diagnostic Change | Last-mile source audit |
+| ENG07 final-request memory proof | Conditional | **CANCELLED** — existing Greywake / provider-preview tests prove final serialized inclusion | Last-mile source audit |
 | ENG02 optional actor shape | Selected target | **NO-GO** | Exact schema/legacy migration and in-flight tasks |
 | ENG03 short-lock source capture | Selected target | **NO-GO** | Captured DTO, staleness matrix, old task compatibility |
 | ENG05 shared immutable store | Selected target | **NO-GO** | Storage backend, auth/retention, disposable topology |
