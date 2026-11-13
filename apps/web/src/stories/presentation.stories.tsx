@@ -45,8 +45,42 @@ function Presented({
   preset: keyof typeof presets;
 }) {
   const scope = scopeFor(preset);
-  const presentation =
+  const interactionId = preset === 'cave' ? 'storybook-cave' : scope.interactionId;
+  const resolved =
     preset === 'baseline' ? null : resolvePresentation(presets[preset], scope);
+  const presentation =
+    preset === 'cave' && resolved
+      ? {
+          ...resolved,
+          choices: [
+            ...resolved.choices,
+            {
+              target: {
+                kind: 'legacy' as const,
+                interactionId: 'storybook-cave',
+                optionId: 'ask',
+              },
+              surface: 'luminous' as const,
+              accent: '#9b6dff',
+              ink: resolved.ink,
+              emphasis: 0.6,
+              effect: 'glow-soft' as const,
+            },
+            {
+              target: {
+                kind: 'legacy' as const,
+                interactionId: 'storybook-cave',
+                optionId: 'withdraw',
+              },
+              surface: 'filled' as const,
+              accent: '#b64040',
+              ink: '#f4f7f5',
+              emphasis: 0.8,
+              effect: 'pulse-soft' as const,
+            },
+          ],
+        }
+      : resolved;
   return (
     <StoryFrame
       storiesHref="/stories"
@@ -54,7 +88,7 @@ function Presented({
       situationLabel="Fixture only — not a live storyteller"
       statusLabel="Waiting for your choice"
       passageId={scope.passageId}
-      interactionId={scope.interactionId}
+      interactionId={interactionId}
       passageTitle="Someone at the door"
       paragraphs={paragraphs}
       presentation={presentation}
