@@ -43,6 +43,14 @@ Illustrative direct color-pair checks from source: sterile `#14202b` on `#1f2936
 
 **Target:** explicit bounded media composition variants, e.g. backdrop / wide illustration / compact inset / marginal accent (responsive normal-flow fallback). Insets have proportion/height bounds and placement is not allowed to overwhelm the passage/action threshold. A decorative placeholder used to test safe media plumbing must not be offered as evidence of convincing narrative art. Use source-owned/license-safe local fixtures with story-relevant imagery; no provider integration.
 
+### P1. Authored fixture assets leak into general-purpose runtime ownership
+
+The current `apps/web/src/features/play/presentation/assets.ts` exports `FIXTURE_ASSETS` with specific scenario entries (`fixture:cave-wall`, `fixture:harbor-light`, `fixture:abstract-field`). `parse.ts` hard-requires the `fixture:` prefix, and generic `resolve.ts` calls `lookupFixtureAsset`. Meanwhile Storybook gets those static files through its current `../public` static directory.
+
+**Assessment:** named SVGs are normal and desirable **as tests/examples**, but the dependency from production presentation parser/resolver to specific fixture content is the wrong direction. The current system has no true generic asset boundary yet. This would inhibit a future authenticated asset manifest and risks accidental shipping of example assets with the app. It is a **prototype architectural leak**, not evidence that arbitrary caves/harbors are being hardcoded into the game rules.
+
+**Target:** keep named scenarios under Storybook/test ownership; pass a small trusted asset catalog into a generic resolution API; use bounded opaque IDs without a special `fixture:` prefix; preserve URL/content trust and fallbacks. This is assigned to [PX06](../../changes/2026-11-13--px-media-composition-and-capabilities/CHANGE.md), before any engine/public contract. Do not introduce complex asset infrastructure or image generation as part of the correction.
+
 ### P1. Accepted grammar fields are silently inert
 
 Verified present in parser/resolver but missing or incompletely wired in rendering:
