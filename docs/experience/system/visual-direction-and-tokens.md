@@ -2,7 +2,7 @@
 
 **Status:** proposed visual **direction**, not finished palette, pixel-specification or approved asset collection. User priority is information architecture/flows/mechanics; nonetheless visual personality matters for the public portfolio. This is the bridge between experience and later art design.
 
-## The anti-default brief
+**Implementation connection:** the living field-journal aesthetic remains a default visual direction, not the sole look of every world. The selected [presentation runtime](presentation-runtime.md) and its [versioned language](presentation-language.md) allow future story/scene-specific atmospheres and individual expressive choices while protecting the reading experience. The [frontend-only PX program](../presentation-implementation-program.md) defines the implementation route; no engine styling output is implemented or authorized by this design note.\n\n## The anti-default brief
 
 If a screenshot can be repainted and shipped unchanged as a project management dashboard, our UI failed. If the game requires parchment, swords, illustrated humans or a fantasy map to look good, our world-neutral promise failed. If it is purely a blog post, the UI failed to express **time, agency and consequence**.
 
