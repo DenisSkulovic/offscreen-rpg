@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [launcher/packet source map](../../../tools/chamber/src/README.md) → `packet-review.ts`, `memory-packet-review.ts`, `live-evaluation-run.ts`; [application developer map](../../../packages/application/src/developer-tools/README.md) for hold/fail/release controls. **Target:** [C06/C10/C14/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H05/H08](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a successfully prepared/held provider packet is NOT a dispatched provider response or proof of narrative quality.
 
-**State:** Specified/Proposed. **Depends on:** CH06, CH09, CH12. **No paid operation authorized.** Baseline `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH13. **Depends on:** CH06, CH09, CH12 (Done). **No paid operation.** Existing `chamber:packet` aliases unchanged; new `packet-lab` evidence adapter wraps held snapshots.
+
+**Evidence:** `lab/packet-lab.ts`. Tests: `packet-lab.test.mjs` 2/2. Normal: held snapshot → redacted capsule `providerMode:held`, zero attempts/charge, reproduction ref. Negatives: dispatch tripwire; hash mismatch; authorized-live without route/cap/token refused; raw prompt absent from default export.
 
 ## One code-bearing outcome
 

@@ -160,6 +160,7 @@ export type FinalizeLabEvidenceInput = {
   store?: MemoryArtifactStore;
   /** Opt-in; default export never embeds these. */
   includePrivate?: boolean;
+  providerMode?: 'offline' | 'held' | 'forbidden';
 };
 
 export function finalizeLabRunEvidence(
@@ -260,7 +261,7 @@ export function finalizeLabRunEvidence(
     dirty: input.dirty,
     lane: input.lane,
     clockPolicy: 'labeled-lab-domains',
-    providerMode: 'offline',
+    providerMode: input.providerMode ?? 'offline',
     steps: redactedSteps,
     assertionResults: input.assertionResults ?? [],
     observedVersions: input.observedVersions ?? {},

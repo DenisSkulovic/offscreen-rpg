@@ -9,6 +9,7 @@ export * from './lab/lab-run';
 export * from './lab/qa-lab-bridge';
 export * from './lab/lab-workbench-service';
 export * from './lab/connected-rig';
+export * from './lab/packet-lab';
 export * from './lab/sandbox-guard';
 export * from './lab/sandbox-materializer';
 export * from './qa-journeys';
