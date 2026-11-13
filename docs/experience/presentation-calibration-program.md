@@ -47,6 +47,12 @@ A syntactically valid field cannot be silently ignored while the renderer report
 
 **Do not artificially exaggerate effects** just to make a screenshot different. There is room for subtly supported texture/vignette/typography. A neutral/none value may intentionally be visually invisible, but nonneutral distinct values need an implementation path and a test.
 
+### Content isolation is a hard renderer boundary
+
+The current `presentation/assets.ts` includes hardcoded `fixture:cave-wall`, `fixture:harbor-light` and other sample content, `parse.ts` recognizes only `fixture:` asset references, and `resolve.ts` imports the specific fixture lookup. This is a **production presentation module depending on test content**, even though live Play does not currently use presentation. The examples aren't wrong; their dependency direction is.
+
+**PX06 must decouple this before any engine contract:** use an opaque bounded `assetRef` and a small trusted asset-catalog/resolution interface injected by the caller. Keep Storybook asset maps and named SVG fixtures within test/Storybook ownership, not imported by generic parser/resolver. Parser safety remains: no model-provided URLs, CSS, HTML, unauthorized assets or content. Do not build a complex provider service or touch the backend. Confirm that the normal renderer can show arbitrary approved asset IDs without knowing a cave/harbor-specific registry, and that an unknown/unapproved ID fails open.
+
 ### Laboratory truth
 
 The existing `presentation.stories.tsx` manually mutates `ResolvedPresentation.choices` for Cave to decorate legacy options even though Cave's input document targets a campaign offer. **Remove this bypass** and test actual distinct current scopes.
