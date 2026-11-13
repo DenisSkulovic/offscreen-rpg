@@ -356,6 +356,53 @@ export const gameActionExecutionEvent = pgTable(
     ),
   ],
 );
+
+/** GM05 append-only public event projection; not game authority. */
+export const storyPublicEvent = pgTable(
+  'story_public_event',
+  {
+    id: uuid('id').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    eventSequence: bigint('event_sequence', { mode: 'number' }).notNull(),
+    kind: text('kind').notNull(),
+    gameSecond: bigint('game_second', { mode: 'number' }),
+    title: text('title').notNull(),
+    summary: text('summary'),
+    sourceKind: text('source_kind').notNull(),
+    sourceId: uuid('source_id').notNull(),
+    passageId: uuid('passage_id'),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('story_public_event_sequence').on(t.storyId, t.eventSequence),
+    unique('story_public_event_source').on(
+      t.storyId,
+      t.sourceKind,
+      t.sourceId,
+    ),
+    check(
+      'story_public_event_kind',
+      sql`${t.kind} in ('passage-published', 'action-settled', 'action-interrupted', 'activity-development', 'world-development')`,
+    ),
+    check(
+      'story_public_event_source_kind',
+      sql`${t.sourceKind} in ('passage', 'action-execution', 'activity-event', 'world-obligation')`,
+    ),
+    check(
+      'story_public_event_title',
+      sql`char_length(${t.title}) >= 1 AND char_length(${t.title}) <= 200`,
+    ),
+    check(
+      'story_public_event_summary',
+      sql`${t.summary} IS NULL OR (char_length(${t.summary}) >= 1 AND char_length(${t.summary}) <= 500)`,
+    ),
+    check('story_public_event_sequence_positive', sql`${t.eventSequence} > 0`),
+  ],
+);
 export const storytellerPreset = pgTable('storyteller_preset', {
   id: uuid('id').primaryKey(),
   ownerId: text('owner_id')

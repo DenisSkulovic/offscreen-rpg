@@ -20,6 +20,7 @@ import {
   decisionDeadlineTopic,
   intervalWakeTopic,
 } from './topics';
+import { appendPublicStoryEvent } from './public-events';
 
 export type StoryRecord = typeof story.$inferSelect;
 export type PassageRecord = typeof storyPassage.$inferSelect;
@@ -281,6 +282,16 @@ export async function insertContinuationPassage(
     sourceGenerationId:
       args.sourceGenerationId ?? args.input.sourceGenerationId ?? null,
     sourceGenerationPart: args.input.sourceGenerationPart ?? null,
+  });
+  await appendPublicStoryEvent(tx, {
+    storyId: args.storyId,
+    kind: 'passage-published',
+    gameSecond: null,
+    title: String(args.input.content.title ?? 'Published scene').slice(0, 200),
+    summary: null,
+    sourceKind: 'passage',
+    sourceId: passageId,
+    passageId,
   });
   return passageId;
 }

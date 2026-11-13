@@ -1,6 +1,6 @@
 # ENG09 | Item-holder invalidation must produce one recoverable controlling consequence
 
-**State: Design selected / implementation-ready for explicit owner authorization (2026-11-13).** Not selected as current Change; no code or paid test authorized by this document. **Decision owner:** [interrupted-action contract](../../engine-architecture/decisions/eng09-interrupted-action-consequence.md). **Evidence:** [confirmed dead-end probe](../../engine-architecture/evidence/eng09-interruption-playability-probe-2026-11-13.md). **Parent:** [engine program](../../engine-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Owner-authorized implementation of the selected `action-interrupted` consequence. **Decision owner:** [interrupted-action contract](../../engine-architecture/decisions/eng09-interrupted-action-consequence.md). **Evidence:** [confirmed dead-end probe](../../engine-architecture/evidence/eng09-interruption-playability-probe-2026-11-13.md); disposable SQL mid-flight fixture in `packages/application/test/eng01-item-transfer.live.test.mjs`. **Parent:** [engine program](../../engine-architecture/implementation-program.md).
 
 ## Cursor first-screen handoff
 
@@ -33,4 +33,6 @@
 
 No generic recovery command, no UI Continue, GM05 feed, new actor framework, new NPC theft engine, model-generated item transfers, Storyteller provider change, unlimited retries, ENG03 transaction refactor, ENG06 production worker deployment.
 
-**Next action:** owner explicitly selects/authorizes ENG09; Cursor rechecks current main/worktree and disposable environment, marks one active Change Ready under repository policy, implements this exact outcome, returns measured proof. **No implementation permission merely from this Change being design-complete.**
+**Proof (2026-11-14):** `pnpm --filter @offscreen/application run build`; `pnpm --filter @offscreen/application exec node --test test/item-transfer-transition.test.mjs` (pass); `pnpm --filter @offscreen/application exec node --test test/eng01-item-transfer.live.test.mjs` on disposable sandbox Postgres after `pnpm infra:up` (pass). Mid-flight holder change: no receipt/roll/transfer; one interrupt event; one `action-interrupted` consequence + `storyteller-intent` hold; idempotent `prepareCampaignConsequence`; scripted `createStorytellerRuntime.complete` publishes a new offer + decision hold. Provider spend: none.
+
+**Next action:** none for ENG09. Queue continues with ENG03-M.

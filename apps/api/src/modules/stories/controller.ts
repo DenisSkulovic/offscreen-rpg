@@ -279,6 +279,25 @@ export class StoriesController {
       return this.stories.history(query);
     });
   }
+  @Get(':id/events')
+  events(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Query('before') before: unknown,
+    @Query('limit') limit: unknown,
+  ) {
+    return this.run(request, (ownerId) => {
+      const query: {
+        ownerId: string;
+        storyId: string;
+        before?: unknown;
+        limit?: unknown;
+      } = { ownerId, storyId: id };
+      if (before !== undefined) query.before = before;
+      if (limit !== undefined) query.limit = limit;
+      return this.stories.events(query);
+    });
+  }
   @Get(':id/documents')
   documents(@Req() request: Request, @Param('id') storyId: string) {
     return this.run(request, (ownerId) => {

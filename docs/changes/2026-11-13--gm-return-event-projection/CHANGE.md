@@ -1,6 +1,6 @@
 # GM05 | Commit-ordered, source-backed public event feed for return and Journal
 
-**State: design selected, implementation-ready for explicit owner approval (2026-11-13).** No code permission yet; active Change remains none. **Authority:** [selected event taxonomy, ordering and privacy](../../experience/patterns/committed-event-feed.md). **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). GM06 read cursor follows later.
+**State: Done (2026-11-14).** Additive `story_public_event` projection + owner `GET /api/stories/:id/events`. **Authority:** [selected event taxonomy, ordering and privacy](../../experience/patterns/committed-event-feed.md). **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). GM06 read cursor follows later.
 
 ## Cursor first-screen
 
@@ -32,4 +32,6 @@
 
 **Depends on ENG09 only for the new item-holder interruption source**; other source kinds can be designed independently, but don't double-map the same action event. GM06 seen cursor should consume the stable output after its coverage/sequence is accepted. No GM01/GM03/GM07 behavior, no new game authority.
 
-**Handoff:** owner explicitly selects/authorizes GM05 + additive schema/testing permission; Cursor rechecks event writers and implements bounded projector/read DTO. Report exactly what old stories and public event classes remain unavailable.
+**Proof (2026-11-14):** migration `packages/db/migrations/0001_lumpy_menace.sql`; `pnpm --filter @offscreen/application exec node --test test/gm05-public-events.live.test.mjs` (+ ENG01 live) on disposable sandbox Postgres. Sources projected: terminal action settled/interrupted, meaningful activity events, controlling world-obligation fires, continuation passages. Coverage always `since-enabled` (no legacy backfill). Journal UI consumer deferred to PW01/GM06 surface. Provider spend: none.
+
+**Remaining unavailable:** exhaustive lifetime chronology for pre-index stories; report-only world obligations; GM06 seen cursor; frontend Recent developments binding.

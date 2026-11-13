@@ -1,5 +1,6 @@
 export * from './chamber';
 export * from './chamber-lab-catalog';
+export * from './eng03-delayed-document-store';
 export * from './lab/fixture-specimens';
 export * from './lab/lab-clock';
 export * from './lab/lab-evidence';

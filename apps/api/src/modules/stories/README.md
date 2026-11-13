@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | `/` and `/:id` | GET 200 | owner-scoped list/snapshot; full public snapshot parsed by Zod web client |
 | `/:id/history` | GET 200 | owner-scoped chronology, numeric `before` cursor |
+| `/:id/events` | GET 200 | GM05 owner-scoped public committed-event page (`before`/`limit`); coverage `since-enabled`; no seen-cursor mutation |
 | `/:id/updates` | **SSE** | authenticated committed-view hints via [story-update-hub](story-update-hub.ts); no narrative |
 | `/presets/catalogue`, `/presets` | GET | public catalogue vs private owned preset list |
 | `/presets/:presetId` | PUT | captured preset revision/save; distinguish validation/conflict |

@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
@@ -7,7 +7,11 @@ import {
   gameActionExecutionEvent,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
-import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
+import { storyPassage } from '@offscreen/db/story-schema';
+import {
+  immediateActionPlanSchema,
+  positiveItemTransfers,
+} from '@offscreen/game/immediate-actions';
 import { enqueue, type Transaction } from '../outbox/index';
 import {
   applyStoryItemEffects,
@@ -22,12 +26,14 @@ import { campaignActionTopic } from './topics';
 import type { CampaignRecord } from './persistence';
 import { decideActionExecutionTransition } from './action-execution-transition';
 import { applyCampaignFollowUpIntents } from './follow-up-intents';
-import { campaignClockHeld } from './holds';
+import { campaignClockHeld, holdCampaignForStorytellerIntent } from './holds';
+import { requestConsequenceNarration } from './narration';
 import {
   fireWorldObligations,
   readNearestPendingWorldObligations,
   readPendingWorldObligations,
 } from './world-obligations';
+import { appendPublicStoryEvent } from '../stories/public-events';
 import type { DocumentStore } from '@offscreen/documents';
 
 type ActionExecutionRecord = typeof gameActionExecution.$inferSelect;
@@ -45,10 +51,27 @@ export async function recordActionExecutionEvent(
     label: string;
   },
 ) {
+  const id = randomUUID();
   await tx.insert(gameActionExecutionEvent).values({
-    id: randomUUID(),
+    id,
     ...args,
   });
+  if (args.kind === 'settled' || args.kind === 'interrupted') {
+    await appendPublicStoryEvent(tx, {
+      storyId: args.storyId,
+      kind:
+        args.kind === 'settled' ? 'action-settled' : 'action-interrupted',
+      gameSecond: args.gameSecond,
+      title: args.label.slice(0, 200),
+      summary:
+        args.kind === 'interrupted'
+          ? 'The accepted action could not complete as planned.'
+          : null,
+      sourceKind: 'action-execution',
+      sourceId: id,
+    });
+  }
+  return id;
 }
 
 export async function scheduleActionExecution(
@@ -112,7 +135,7 @@ export async function settleActionExecution(
         settledAt: new Date(now),
       })
       .where(eq(gameActionExecution.operationId, execution.operationId));
-    await recordActionExecutionEvent(tx, {
+    const eventId = await recordActionExecutionEvent(tx, {
       storyId: current.id,
       executionId: execution.operationId,
       executionRevision: transition.fact.executionRevision,
@@ -134,16 +157,77 @@ export async function settleActionExecution(
       throughGameSecond: transition.campaign.gameSecond,
       followUp: 'report',
     });
-    const interruptedCampaign = controllingObligation
-      ? await fireWorldObligations(
-          tx,
-          current,
-          transition.campaign,
-          [...reportObligations, ...controllingObligations],
-          now,
-          documentStore,
-        )
-      : transition.campaign;
+    let interruptedCampaign = transition.campaign;
+    if (transition.cause === 'controlling-world-obligation') {
+      if (!controllingObligation) {
+        throw new Error(
+          'Controlling interrupt missing its world-obligation owner',
+        );
+      }
+      interruptedCampaign = await fireWorldObligations(
+        tx,
+        current,
+        transition.campaign,
+        [...reportObligations, ...controllingObligations],
+        now,
+        documentStore,
+      );
+    } else if (transition.cause === 'required-item-holder-changed') {
+      if (controllingObligation) {
+        throw new Error(
+          'Item-holder interrupt must not share a controlling world obligation',
+        );
+      }
+      if (execution.preparationGenerationId) {
+        throw new Error(
+          'Item-transfer interrupt must not reuse a speculative preparation',
+        );
+      }
+      const [passage] = await tx
+        .select({ id: storyPassage.id })
+        .from(storyPassage)
+        .where(
+          and(
+            eq(storyPassage.storyId, current.id),
+            eq(storyPassage.sequence, current.revision),
+          ),
+        );
+      if (!passage) {
+        throw new Error('Missing current passage for interrupted action');
+      }
+      const itemKeys = positiveItemTransfers(plan).map(
+        (transfer) => transfer.itemKey,
+      );
+      if (!itemKeys.length) {
+        throw new Error('Item-holder interrupt missing required item keys');
+      }
+      const intention =
+        'The accepted transfer could not complete; the required item was no longer available.';
+      await requestConsequenceNarration(tx, current, {
+        kind: 'action-interrupted',
+        passageId: passage.id,
+        operationId: execution.operationId,
+        executionId: execution.operationId,
+        executionRevision: transition.fact.executionRevision,
+        gameSecond: transition.fact.gameSecond,
+        cause: 'required-item-holder-changed',
+        offerId: execution.offerId,
+        actionKey: execution.actionKey,
+        itemKeys,
+        eventId,
+        label: transition.fact.label.slice(0, 200),
+        intention: intention.slice(0, 500),
+      });
+      interruptedCampaign = await holdCampaignForStorytellerIntent(
+        tx,
+        transition.campaign,
+        execution.operationId,
+        now,
+      );
+    } else {
+      transition.cause satisfies never;
+      throw new Error('Unknown action interrupt cause');
+    }
     await incrementStoryViewVersion(tx, {
       storyId: current.id,
       viewVersion: current.viewVersion + 1,

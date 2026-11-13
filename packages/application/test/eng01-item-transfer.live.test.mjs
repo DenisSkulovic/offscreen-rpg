@@ -7,8 +7,10 @@ import { storyItem } from '@offscreen/db/story-schema';
 import {
   campaign,
   campaignConsequence,
+  gameActionExecution,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
+import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
 import { createStories } from '../dist/stories/index.js';
 import { initializeStoryInTransaction } from '../dist/stories/initialization.js';
 import { initializeCampaign } from '../dist/campaign/settings.js';
@@ -20,6 +22,7 @@ import {
   harborCompassTransferPlan,
 } from '../dist/campaign/fixtures/item-transfer-plans.js';
 import { storytellerCatalogue } from '@offscreen/storyteller/profiles';
+import { offlineExecution } from '@offscreen/storyteller/tasks';
 import {
   destroyDisposableSandboxDatabase,
   provisionDisposableSandboxDatabase,
@@ -100,9 +103,9 @@ async function seedStory(database, args) {
       storyId,
       input: {
         source: 'playable.opening.v1',
-        premise: null,
+        premise: args.premise ?? null,
         storyteller: profile,
-        execution: null,
+        execution: args.execution ?? null,
         usagePolicy: null,
         items: args.items,
         content: {
@@ -287,6 +290,12 @@ test('ENG01 live: failed check and wrong holder never transfer', async () => {
       items: harborCompassItems,
       character: quayCharacter(),
       plan: harborCompassTransferPlan,
+      execution: offlineExecution,
+      premise: {
+        title: 'Harbor mid-flight',
+        premise: 'A quay runner tries to hand Mara a brass compass.',
+        storytellingDirection: 'Keep the interruption factual and playable.',
+      },
     });
     const midBefore = await stories.read({
       ownerId: mid.ownerId,
@@ -307,6 +316,11 @@ test('ENG01 live: failed check and wrong holder never transfer', async () => {
       .update(storyItem)
       .set({ holderKey: 'thief' })
       .where(eq(storyItem.storyId, mid.storyId));
+    const [executionBefore] = await database.db
+      .select()
+      .from(gameActionExecution)
+      .where(eq(gameActionExecution.operationId, midOperation));
+    assert.equal(executionBefore?.preparationGenerationId ?? null, null);
     assert.equal(await stories.advanceCampaignAction(midOperation), null);
     const interrupted = await stories.read({
       ownerId: mid.ownerId,
@@ -318,11 +332,10 @@ test('ENG01 live: failed check and wrong holder never transfer', async () => {
       interrupted.items.find((item) => item.key === 'brass-compass')?.holderKey,
       'thief',
     );
-    // ENG09 playability probe: interruption correctly blocks the transfer, but
-    // admission already consumed the offer. Assert the public/recovery surface
-    // instead of inventing a new continuation.
     assert.equal(interrupted.campaign?.offer, null);
-    assert.deepEqual(interrupted.campaign?.holds ?? [], []);
+    assert.equal(interrupted.campaign?.holds?.length, 1);
+    assert.equal(interrupted.campaign?.holds?.[0]?.kind, 'storyteller-intent');
+    assert.equal(interrupted.campaign?.holds?.[0]?.operationId, midOperation);
     assert.equal(interrupted.campaign?.activityAccess.kind, 'none');
     assert.equal(interrupted.campaign?.activity, null);
     assert.equal(interrupted.decision, null);
@@ -341,12 +354,54 @@ test('ENG01 live: failed check and wrong holder never transfer', async () => {
       .where(eq(campaign.storyId, mid.storyId));
     assert.equal(state.offer, null);
     assert.equal(state.activeActionOperationId, null);
-    assert.deepEqual(state.holds, []);
+    assert.equal(state.holds.length, 1);
+    assert.equal(state.holds[0]?.kind, 'storyteller-intent');
+    assert.equal(state.holds[0]?.operationId, midOperation);
     assert.equal(state.situationAuthorization?.offerId ?? null, null);
     const consequences = await database.db
       .select()
       .from(campaignConsequence)
       .where(eq(campaignConsequence.storyId, mid.storyId));
-    assert.equal(consequences.length, 0);
+    assert.equal(consequences.length, 1);
+    assert.equal(consequences[0]?.operationId, midOperation);
+    assert.equal(consequences[0]?.receipt?.kind, 'action-interrupted');
+    assert.equal(
+      consequences[0]?.receipt?.cause,
+      'required-item-holder-changed',
+    );
+    assert.equal(consequences[0]?.generationId ?? null, null);
+
+    await stories.prepareCampaignConsequence(midOperation);
+    const afterPrepare = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, midOperation));
+    assert.ok(afterPrepare[0]?.generationId);
+    await stories.prepareCampaignConsequence(midOperation);
+    const afterReplay = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, midOperation));
+    assert.equal(afterReplay[0]?.generationId, afterPrepare[0]?.generationId);
+
+    const storyteller = createStorytellerRuntime(database);
+    await storyteller.complete(afterPrepare[0].generationId);
+    const resumed = await stories.read({
+      ownerId: mid.ownerId,
+      storyId: mid.storyId,
+    });
+    assert.ok(resumed.campaign?.offer);
+    assert.notEqual(
+      resumed.campaign?.offer?.id,
+      midBefore.campaign.offer.id,
+    );
+    assert.equal(
+      resumed.campaign?.holds?.some((hold) => hold.kind === 'decision'),
+      true,
+    );
+    assert.equal(
+      resumed.items.find((item) => item.key === 'brass-compass')?.holderKey,
+      'thief',
+    );
   });
 });

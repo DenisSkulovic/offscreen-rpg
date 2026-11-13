@@ -23,6 +23,7 @@ import { createResolutionReceiptReader } from './resolution-receipt';
 import { createStoryStart, playableOpeningStorySource } from './start';
 import { createStoryTiming } from './timing';
 import { createStoryForks } from './forks';
+import { readPublicStoryEvents } from './public-events';
 import type { ReadCacheOptions } from '../cache/read-cache';
 import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
@@ -160,6 +161,14 @@ export function createStories(
     },
     history(args: { ownerId: string; storyId: string; before?: unknown }) {
       return reads.readHistory(args);
+    },
+    events(args: {
+      ownerId: string;
+      storyId: string;
+      before?: unknown;
+      limit?: unknown;
+    }) {
+      return readPublicStoryEvents(database, args);
     },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(args: {

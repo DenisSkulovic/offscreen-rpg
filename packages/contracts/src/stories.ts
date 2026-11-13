@@ -133,6 +133,40 @@ export const storyHistorySchema = z.strictObject({
   nextBefore: z.number().int().positive().nullable(),
 });
 export type StoryHistory = z.infer<typeof storyHistorySchema>;
+
+/** GM05 public committed-event page (derived projection). */
+export const publicStoryEventSchema = z.strictObject({
+  id: z.uuid(),
+  sequence: z.number().int().positive(),
+  kind: z.enum([
+    'passage-published',
+    'action-settled',
+    'action-interrupted',
+    'activity-development',
+    'world-development',
+  ]),
+  gameSecond: z.number().int().nonnegative().nullable(),
+  title: z.string().min(1).max(200),
+  summary: z.string().min(1).max(500).nullable(),
+  source: z.strictObject({
+    kind: z.enum([
+      'passage',
+      'action-execution',
+      'activity-event',
+      'world-obligation',
+    ]),
+    id: z.uuid(),
+    passageId: z.uuid().optional(),
+  }),
+});
+export const storyEventPageSchema = z.strictObject({
+  items: z.array(publicStoryEventSchema).max(50),
+  nextBefore: z.number().int().positive().nullable(),
+  coverage: z.enum(['since-enabled', 'complete']),
+});
+export type PublicStoryEvent = z.infer<typeof publicStoryEventSchema>;
+export type StoryEventPage = z.infer<typeof storyEventPageSchema>;
+
 export const startStorySchema = z.strictObject({
   campaign: campaignStartSchema.optional(),
   candidateId: z.uuid(),

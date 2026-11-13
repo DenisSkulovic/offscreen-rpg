@@ -126,6 +126,7 @@ test('a wrong holder interrupts after the wait without rolling', () => {
     },
   });
   assert.equal(transition.state, 'interrupted');
+  assert.equal(transition.cause, 'required-item-holder-changed');
   assert.equal(transition.campaign.gameSecond, 10);
   assert.match(transition.fact.label, /no longer held/);
 });

@@ -18,6 +18,7 @@ import { campaignHoldsSchema } from './holds';
 import type { CampaignRecord } from './persistence';
 import { campaignConsequenceTopic } from './topics';
 import { requestWorldObligationReport } from './reports';
+import { appendPublicStoryEvent } from '../stories/public-events';
 import type { DocumentStore } from '@offscreen/documents';
 
 export type WorldObligationRecord = typeof worldObligation.$inferSelect;
@@ -135,18 +136,35 @@ export async function fireWorldObligations(
         ]
       : []),
   ]);
+  const obligationEvents = fired.map((obligation) => ({
+    id: randomUUID(),
+    storyId: state.storyId,
+    obligationId: obligation.id,
+    obligationRevision: obligation.revision,
+    gameSecond: obligation.dueGameSecond,
+    kind: 'fired' as const,
+    label: obligation.label,
+    details: { consequence: obligation.consequence },
+    followUp: obligation.followUp,
+  }));
   await tx.insert(worldObligationEvent).values(
-    fired.map((obligation) => ({
-      id: randomUUID(),
-      storyId: state.storyId,
-      obligationId: obligation.id,
-      obligationRevision: obligation.revision,
-      gameSecond: obligation.dueGameSecond,
-      kind: 'fired',
-      label: obligation.label,
-      details: { consequence: obligation.consequence },
-    })),
+    obligationEvents.map(({ followUp: _followUp, ...row }) => row),
   );
+  for (const event of obligationEvents) {
+    if (event.followUp !== 'controlling-scene') continue;
+    await appendPublicStoryEvent(tx, {
+      storyId: state.storyId,
+      kind: 'world-development',
+      gameSecond: event.gameSecond,
+      title: event.label.slice(0, 200),
+      summary: `${event.label} became a player-visible world development.`.slice(
+        0,
+        500,
+      ),
+      sourceKind: 'world-obligation',
+      sourceId: event.id,
+    });
+  }
   const [passage] = await tx
     .select({ id: storyPassage.id })
     .from(storyPassage)

@@ -28,6 +28,7 @@ import {
   resolvedActivityPlanSchema,
 } from '@offscreen/game/activities';
 import type { Transaction } from '../outbox/index';
+import { appendPublicStoryEvent } from '../stories/public-events';
 import {
   advanceStoryView,
   insertContinuationPassage,
@@ -106,6 +107,29 @@ export async function recordActivityEvent(
     !isDeepStrictEqual(saved.details, details)
   ) {
     throw new Error('Activity event identity conflict');
+  }
+  const meaningful = new Set([
+    'paused',
+    'resumed',
+    'interrupted',
+    'completed',
+    'blocked',
+    'abandoned',
+    'failed',
+    'expired',
+    'invalidated',
+    'completion-pending',
+  ]);
+  if (meaningful.has(args.kind)) {
+    await appendPublicStoryEvent(tx, {
+      storyId: args.storyId,
+      kind: 'activity-development',
+      gameSecond: args.gameSecond,
+      title: args.label.slice(0, 200),
+      summary: args.summary.slice(0, 500),
+      sourceKind: 'activity-event',
+      sourceId: saved.id,
+    });
   }
 }
 export async function refreshOffer(

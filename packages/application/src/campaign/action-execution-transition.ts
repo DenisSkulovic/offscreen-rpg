@@ -35,6 +35,9 @@ export type ActionExecutionTransition =
     }
   | {
       state: 'interrupted';
+      cause:
+        | 'controlling-world-obligation'
+        | 'required-item-holder-changed';
       campaign: CampaignRecord;
       fact: {
         kind: 'interrupted';
@@ -90,6 +93,7 @@ export function decideActionExecutionTransition(args: {
   ) {
     return {
       state: 'interrupted',
+      cause: 'controlling-world-obligation',
       campaign: {
         ...state,
         gameSecond: execution.controllingGameSecond,
@@ -119,6 +123,7 @@ export function decideActionExecutionTransition(args: {
   if (itemTransferBlocked(positiveItemTransfers(plan), execution.items ?? [])) {
     return {
       state: 'interrupted',
+      cause: 'required-item-holder-changed',
       campaign: {
         ...state,
         gameSecond: execution.targetGameSecond,

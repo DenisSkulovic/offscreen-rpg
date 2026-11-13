@@ -1,6 +1,6 @@
 # ENG03-M | Measure whether immutable DocumentStore I/O holds the story write lock
 
-**State: design-complete, executable once owner authorizes disposable tests (2026-11-13).** Not current/active; **no code/test permission by saving this file**. **Parent:** [ENG03 selected measurement/capture contract](../../engine-architecture/decisions/eng03-measurement-and-capture-contract.md). Existing full [ENG03](../2026-11-13--eng-short-lock-context/CHANGE.md) remains conditional and not Ready.
+**State: Done (2026-11-14).** Measured disposable LocalDocumentStore delay under `preparePendingActionNarration` story lock. **Evidence:** [eng03-lock-measurement-2026-11-14](../../engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md). **Parent:** [ENG03 selected measurement/capture contract](../../engine-architecture/decisions/eng03-measurement-and-capture-contract.md). Full [ENG03](../2026-11-13--eng-short-lock-context/CHANGE.md) remains conditional; go/no-go from this run is `proceed-narrow-eng03-capture` (not auto-authorization of the full rewrite).
 
 ## Cursor first-screen
 
@@ -33,4 +33,6 @@
 
 **Only user-authorized disposable test DB**; no production/staging DB with user data, paid provider, cloud credentials, data migration, deployment or broad CI. If no disposable test database is available, leave the Change unexecuted and report environment blocker; don't invent green measurements.
 
-**Executor next step:** owner selects ENG03-M, confirms test environment consent, sets it Ready/current under repository policy; Cursor implements/records measurements and returns. Full ENG03 remains a separate code Change with a conditional capture DTO and compatibility gate; do not implement it as an “easy follow-on” in the same execution.
+**Proof (2026-11-14):** `pnpm --filter @offscreen/application exec node --test test/eng03-lock-measurement.live.test.mjs` on disposable sandbox Postgres. Medians: 0ms hold ~54ms / wait ~51ms; 2000ms hold ~8072ms / wait ~8072ms; holdΔ≈8018ms, waitΔ≈8021ms → **`proceed-narrow-eng03-capture`**. Unrelated story locks stayed ~3ms. Provider spend: none. ~40-passage matrix not required for this decisive short-source result.
+
+**Next action:** none for ENG03-M. Full ENG03 still needs an explicit Ready packet with capture DTO mapping before code rewrite. Queue continues with GM05 / PW01.
