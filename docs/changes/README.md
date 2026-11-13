@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W11, W13–W21 are Done.** Next dependency-ready packet when authorized: [W22](2026-11-12--web-context-navigation-check/CHANGE.md) docs checker. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W21 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W11, W13–W22 are Done.** There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (CH01–CH16, all Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. `Proposed` packets remain **not selected/authorized** until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
@@ -13,7 +13,7 @@ Current change: none
 | **A: proof** | [W01 test foundation](2026-11-11--web-test-foundation/CHANGE.md) | Vitest + RTL + user-event + MSW | None |
 | **A: faster iteration** | [W20 Turbo test:fast/cache lane](2026-11-12--web-fast-feedback-toolchain/CHANGE.md) | Fast local Vitest/test graph without forcing a Next production build | W01 |
 | **A: CI economy** | [W21 conditional GitHub Actions gates](2026-11-12--web-ci-budget/CHANGE.md) | Documentation-only skips broad infrastructure; real CI integration still available | W01 W20 |
-| **A: navigation guard** | [W22 nested docs / anchor checker](2026-11-12--web-context-navigation-check/CHANGE.md) | Extend cheap `check_docs.py` to new source maps and exact heading anchors | No runtime dependency |
+| **A: navigation guard** | [W22 nested docs / anchor checker](2026-11-12--web-context-navigation-check/CHANGE.md) | **Done:** nested README crawl, GitHub heading anchors, backtick-label fail, stdlib self-test | No runtime dependency |
 | **A: Next** | [W02 private SSR/API boundary](2026-11-11--web-server-read-boundary/CHANGE.md) | **Done:** server-only reader, `(authenticated)` group, `API_PROXY_ORIGIN` | W01 preferred |
 | **A: TanStack** | [W15 Query SSR/hydration foundation](2026-11-12--web-tanstack-query-hydration/CHANGE.md) | **Done:** Query v5 provider, Play prefetch/hydrate, viewer keys | W01 W02 |
 | **B: ownership** | [W03 monotonic story Query](2026-11-11--web-snapshot-identity/CHANGE.md) | **Done:** viewer/story/`viewVersion`/epoch Query write gate | W15 |

@@ -1,6 +1,6 @@
 # Storyteller tuning manual
 
-Turn disappointing play into a bounded investigation and a discriminating experiment. The [working agreement](../../.agents/rules/working-agreement.md#agent-and-prompt-tuning-discipline) owns mandatory layer separation; the [skill](../skills/storyteller-tuning/SKILL.md) applies it. The [agentic systems field manual](agentic-systems-field-manual.md) supplies broader context and evaluation guidance. This is application tuning, not model weight training.
+Turn disappointing play into a bounded investigation and a discriminating experiment. The [Storyteller tuning discipline](../../.agents/rules/storyteller.md) owns mandatory layer separation; the [skill](../skills/storyteller-tuning/SKILL.md) applies it. The [agentic systems field manual](agentic-systems-field-manual.md) supplies broader context and evaluation guidance. This is application tuning, not model weight training.
 
 ## Research and application
 

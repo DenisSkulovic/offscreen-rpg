@@ -6,9 +6,9 @@
 
 - **Am I supposed to code?** [Change index](../changes/README.md) must show a selected, authorized Change, or the owner has explicitly supplied a scoped task. A prepared folder alone means nothing.
 - **What do I implement?** Read only the selected Change's first-screen brief and its [nearest source README](../../apps/web/README.md); read its full acceptance/target heading only if the quick map is insufficient. The [source atlas](#6-source-atlas-for-w01w21) now routes to **short owner maps**, not duplicated code archaeology. Do not load all 21 packets, the audit or this entire playbook.
-- **What command now?** [Verification ladder](#verification-ladder-stop-checking-every-keystroke), then [commands](#command-and-cache-cookbook).
+- **What command now?** [Verification ladder](#4-verification-ladder-stop-checking-every-keystroke), then [commands](#5-command-and-cache-cookbook).
 - **What if the spec clashes with source?** Return a terse evidence packet to ChatGPT/owner; don't bill Cursor tokens designing a replacement.
-- **What should I report?** [Receipt](#receipt-and-measurement); one clear result, not a transcript.
+- **What should I report?** [Receipt](#8-receipt-and-measurement-short-factual); one clear result, not a transcript.
 
 ## 1. The optimization function: three scarce resources
 

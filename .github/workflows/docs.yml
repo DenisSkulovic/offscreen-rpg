@@ -37,4 +37,6 @@ jobs:
         with:
           persist-credentials: false
       - name: Check documentation links
-        run: python3 scripts/check_docs.py
+        run: |
+          python3 scripts/check_docs.py --self-test
+          python3 scripts/check_docs.py

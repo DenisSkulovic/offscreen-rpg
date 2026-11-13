@@ -34,7 +34,7 @@ Keep inspection modest and separate from the story presentation. The Chamber ins
 
 Local access is part of the delivery task. Use configured GitHub sign-in for the normal application, or the `tools/chamber` workspace, which composes the built API, web and worker while seeding a disposable test user/story and authenticated browser session through existing test utilities. Cross-process PostgreSQL, Temporal and browser suites live in `tools/api-integration`, outside deployable package graphs. Never add a public login bypass or weaken owner checks to make the chamber easier to open. The documented launch path must not require LLM credentials.
 
-Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See the [remaining implementation slices](../progress.md#next-milestone-connect-the-actual-story-lifecycle-without-inference) for current status.
+Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See the [remaining implementation slices](../progress.md#where-to-go-next) for current status.
 
 ## First live-story POC: what the run must mean
 

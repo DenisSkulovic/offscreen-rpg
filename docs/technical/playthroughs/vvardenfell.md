@@ -70,7 +70,7 @@ A “successful five-day session” that remembers prose but double-spends the c
 
 The player returns to the captain. Current facts say the distinctive object is no longer theirs; historical evidence says they gave it to him. A later rumor says the road reopened. The Storyteller needs current ownership and the latest grounded road status, plus enough prior context to recognize the favor.
 
-Target request preparation uses exact state automatically, then compact identity/thread leads. Optional scoped discovery retrieves the gift receipt/scene and the rumor's correction. The [memory trace](storyteller.md#target-discovery-before-composition) describes bounded tools. A tool hit is not itself proof; source/effect provenance matters.
+Target request preparation uses exact state automatically, then compact identity/thread leads. Optional scoped discovery retrieves the gift receipt/scene and the rumor's correction. The [memory trace](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) describes bounded tools. A tool hit is not itself proof; source/effect provenance matters.
 
 Good scene:
 

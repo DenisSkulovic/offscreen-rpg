@@ -5,7 +5,7 @@ description: Investigate disappointing Offscreen RPG play and evaluate changes t
 
 # Storyteller tuning
 
-Use the [working agreement](../../../.agents/rules/working-agreement.md#agent-and-prompt-tuning-discipline) for ownership and the [tuning manual](../../engineering/storyteller-tuning.md) for evidence, rubrics and experiments. Spending and verification remain governed by repository rules. Tuning means application/configuration experiments, not model weight training.
+Use the [Storyteller tuning discipline](../../../.agents/rules/storyteller.md) for ownership and the [tuning manual](../../engineering/storyteller-tuning.md) for evidence, rubrics and experiments. Spending and verification remain governed by repository rules. Tuning means application/configuration experiments, not model weight training.
 
 ## Diagnose before changing
 

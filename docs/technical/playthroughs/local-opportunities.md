@@ -22,7 +22,7 @@ compliance and the richer dormant local-opportunity lifecycle below remain
 unproved. This extends the [Vvardenfell trace](vvardenfell.md) with the owner's
 distinction between prepared local opportunities and a preselected queue. Exact
 values are fixtures. The reusable contract lives in [rules and
-activities](../rules-and-activities.md#prepared-local-opportunities-proposed).
+activities](../rules-and-activities.md#prepared-local-opportunities).
 
 The POC seed deliberately does not introduce a warehouse subsystem, a Tamriel
 calendar or a universal job board. `location`, `warehouse-shift-available` and

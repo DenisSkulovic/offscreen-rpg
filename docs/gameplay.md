@@ -28,7 +28,7 @@ Known activities can end quietly, produce bounded mechanical results or prepared
 
 Routine chitchat does not promise fresh bespoke dialogue, and repeated rumor gathering cannot manufacture unlimited novel lore for free. It can reveal prepared evidence or record a supported quiet outcome. When something genuinely new needs judgment/content, the Storyteller returns with current state and relevant history, prepares a scene or revises local opportunities through validated changes, then can become dormant again. Preparing a place does not mean exhaustively simulating its inhabitants or generating every possible future.
 
-See the [Seyda Neen worked trace](technical/playthroughs/local-opportunities.md) and the [proposed technical opportunity contract](technical/rules-and-activities.md#prepared-local-opportunities-proposed). This direction is not implemented by the current scene-local offer system.
+See the [Seyda Neen worked trace](technical/playthroughs/local-opportunities.md) and the [technical opportunity contract](technical/rules-and-activities.md#prepared-local-opportunities). This direction is not implemented by the current scene-local offer system.
 
 ## Storyteller-directed pace
 

@@ -47,14 +47,20 @@ export async function checkPrivateRouteEvidence({
         headers: { cookie },
       });
       assert.equal(htmlResponse.status, 200);
-      assert.match(htmlResponse.headers.get('cache-control') ?? '', /no-store/i);
+      assert.match(
+        htmlResponse.headers.get('cache-control') ?? '',
+        /no-store/i,
+      );
       const html = await htmlResponse.text();
       assert.ok(
         html.includes(privateTitle),
         'SSR HTML must include the authorized scene title',
       );
       const sessionToken = cookie.includes('=')
-        ? cookie.slice(cookie.indexOf('=') + 1).split(';')[0]?.trim()
+        ? cookie
+            .slice(cookie.indexOf('=') + 1)
+            .split(';')[0]
+            ?.trim()
         : '';
       if (sessionToken && sessionToken.length > 8) {
         assert.equal(
@@ -122,7 +128,10 @@ export async function checkPrivateRouteEvidence({
         await page.goto(`${origin}${playPath}`, {
           waitUntil: 'domcontentloaded',
         });
-        assert.equal(await page.getByRole('heading', { name: privateTitle }).count(), 0);
+        assert.equal(
+          await page.getByRole('heading', { name: privateTitle }).count(),
+          0,
+        );
       });
     },
   );
@@ -181,9 +190,18 @@ export async function checkPrivateRouteEvidence({
         await page.getByRole('link', { name: '← Stories' }).click();
         await page.waitForURL(/\/stories$/);
         await page.getByRole('button', { name: 'Sign out' }).click();
-        await page.waitForURL(/\/$/);
+        // Sign-out may land on `/` or `/sign-in` depending on middleware redirect.
+        await page.waitForURL((url) => {
+          const path = url.pathname.replace(/\/$/, '') || '/';
+          return path === '/' || path === '/sign-in';
+        });
         await page.goBack();
         await page.waitForLoadState('domcontentloaded');
+        // History may briefly show a cached Play URL; wait until auth gate settles.
+        await page.waitForURL((url) => {
+          const path = url.pathname.replace(/\/$/, '') || '/';
+          return path === '/' || path === '/sign-in';
+        });
         const body = await page.content();
         assert.equal(
           body.includes(privateTitle),
@@ -201,13 +219,17 @@ export async function checkPrivateRouteEvidence({
   );
 }
 
-registerStoryConcern(import.meta.url, 'private route evidence', async (args) => {
-  // Focused suite entry recreates a login from the shared integration owner cookie.
-  await checkPrivateRouteEvidence({
-    t: args.t,
-    origin: args.origin,
-    cookie: args.cookie,
-    otherCookie: args.otherCookie,
-    login: async () => ({ cookie: args.cookie }),
-  });
-});
+registerStoryConcern(
+  import.meta.url,
+  'private route evidence',
+  async (args) => {
+    // Focused suite entry recreates a login from the shared integration owner cookie.
+    await checkPrivateRouteEvidence({
+      t: args.t,
+      origin: args.origin,
+      cookie: args.cookie,
+      otherCookie: args.otherCookie,
+      login: async () => ({ cookie: args.cookie }),
+    });
+  },
+);

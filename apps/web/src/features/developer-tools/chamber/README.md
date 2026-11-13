@@ -10,7 +10,7 @@
 
 | Question | Source | Note |
 | --- | --- | --- |
-| Chamber page selection | [ChamberPage](../../../../app/chamber/page.tsx) | Optional validated `?id=storyUUID`, authorized SSR story when present |
+| Chamber page selection | [ChamberPage](../../../../app/(authenticated)/chamber/page.tsx) | Optional validated `?id=storyUUID`, authorized SSR story when present |
 | Main client wrapper | [Chamber](view.tsx) | `useChamberPlay` coordinates scenario, story, inspector, status |
 | Scene and local scenario commands | [ChamberScene](scene.tsx) and `use-chamber-play.ts` | Uses real persistence and chamber responses; own ID/body refs |
 | Inspector and status | [ChamberInspectorPanel](inspector.tsx) | Read-only projection from authenticated `GET /api/chamber-tools/stories/:id` |
@@ -32,6 +32,6 @@
 
 - **Unit/RTL:** old inspector GET arriving after story switch, QA-run ID after viewer change, Strict Mode cleanup, version ordering under wrong story. 
 - **Connected boot-mode test:** ordinary Nest startup denies/misses Chamber endpoints, explicit local developer-mode startup mounts them and still owner-scopes data. Use disposable auth integration only with permission; [integration setup warning](../../../../../../tools/api-integration/README.md).
-- **Architectural target:** [F13 developer isolation](../../../../../../../docs/engineering/targets/react-next.md); **API route map:** [Nest story and Chamber endpoints](../../../../../api/src/modules/stories/README.md).
+- **Architectural target:** [F13 developer isolation](../../../../../../docs/engineering/targets/react-next.md); **API route map:** [Nest story and Chamber endpoints](../../../../../api/src/modules/stories/README.md).
 
 **Maintenance:** update only on change of controller mount mode, inspector/QA query state owner, auth guarantee or significant module move. Do **not** introduce a `DEVELOPER_USER_IDS` hosted allowlist without a separate explicit product/deployment decision; preserve the existing `developerTools` Nest registration gate (W12 superseded by CH10–CH11).

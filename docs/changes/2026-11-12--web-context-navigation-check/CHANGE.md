@@ -5,7 +5,9 @@
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State:** Specified/Proposed, **not selected for coding**. **Purpose:** keep the new layered coding-agent retrieval system navigable and honest as Cursor restructures frontend code. **Dependencies:** none for static docs checking; preferably execute after initial source-adjacent README integration. This is a **code-bearing test/tool change**, not a fake documentation-only Change.
+**State: Done** (2026-11-13). Owner authorized via continue after W14. **Purpose:** keep the new layered coding-agent retrieval system navigable and honest as Cursor restructures frontend code. **Dependencies:** none for static docs checking. This is a **code-bearing test/tool change**, not a fake documentation-only Change.
+
+**Evidence:** `python scripts/check_docs.py --self-test` (nested over-traverse, missing heading, unmatched backtick, em-dash/duplicate anchors, route-group path, encoded path) and full `python scripts/check_docs.py` → 259 files, 0 problems, ~5.8s. Nested chamber map path fixes + honest pre-existing fragment repairs so the stricter checker stays green.
 
 **Destination:** [information-retrieval standard](../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) + [documentation rule](../../../.agents/rules/documentation.md). **Observed gap:** `scripts/check_docs.py` currently scans top-level package/app/tool README files but not nested source-adjacent `README.md`, and checks target files but not `#heading` fragments. A moved heading/source map can silently break a precise cheap-model retrieval route even with a green old checker.
 
