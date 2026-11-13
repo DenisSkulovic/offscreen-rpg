@@ -1,6 +1,6 @@
 # Chamber ↔ player UX | how to manufacture evidence without fooling ourselves
 
-**Status:** source-inspected design/test plan, **not** a Chamber implementation instruction. **Source baseline:** GitHub main `3464f0d8dcd5c024ddf6cdc32290dbb0dd258b5a` on 2026-11-13. The CH01–CH16 implementation packets are recorded Done; this does **not** imply every individual scenario/lane is available. Source mapping: [Chamber program](../../engineering/chamber-program.md), [lab scenario catalogue](../../../packages/application/src/developer-tools/chamber-lab-catalog.ts), [Chamber UI](../../../apps/web/src/features/developer-tools/chamber/README.md). Reinspect actual code when execution begins.
+**Status:** source-inspected design/test plan, **not** a Chamber implementation instruction. **Source baseline:** GitHub main `3464f0d8dcd5c024ddf6cdc32290dbb0dd258b5a` on 2026-11-13. The CH01–CH16 implementation packets are recorded Done; this does **not** imply every individual scenario/lane is available. Source mapping: [Chamber program](../../engineering/chamber-program.md), [lab scenario catalogue at inspected main revision](https://github.com/DenisSkulovic/offscreen-rpg/blob/3464f0d8dcd5c024ddf6cdc32290dbb0dd258b5a/packages/application/src/developer-tools/chamber-lab-catalog.ts), [Chamber UI](../../../apps/web/src/features/developer-tools/chamber/README.md). Reinspect actual code when execution begins.
 
 ## Why this matters
 
