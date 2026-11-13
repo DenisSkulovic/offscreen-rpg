@@ -62,7 +62,9 @@ export async function checkDraftBrowser(
           .click();
         await page.getByRole('button', { name: 'Review setup' }).click();
         await page.getByRole('button', { name: 'Save setup' }).click();
-        await page.getByRole('status', { name: /Setup saved/i }).waitFor();
+        await page
+          .getByText('Setup saved. It is ready to create an opening.')
+          .waitFor();
         await second
           .getByRole('button', { name: 'Continue to Storyteller' })
           .click();
@@ -114,7 +116,9 @@ export async function checkDraftBrowser(
           .click();
         await page.getByRole('button', { name: 'Review setup' }).click();
         await page.getByRole('button', { name: 'Save setup' }).click();
-        await page.getByRole('status', { name: /Setup saved/i }).waitFor();
+        await page
+          .getByText('Setup saved. It is ready to create an opening.')
+          .waitFor();
         await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
           .getByRole('alert')

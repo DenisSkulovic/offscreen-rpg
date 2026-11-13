@@ -27,8 +27,10 @@ export async function createCustomDraftSetup(
   }
   await page.getByRole('button', { name: 'Review setup' }).click();
   await page.getByRole('button', { name: 'Save setup' }).click();
-  // Prefer status over getByText: the submit button also reads "Setup saved".
-  await page.getByRole('status', { name: /Setup saved/i }).waitFor();
+  // Exact status copy; /Setup saved/i also matches the disabled submit label.
+  await page
+    .getByText('Setup saved. It is ready to create an opening.')
+    .waitFor();
 }
 
 /** Reopen an existing draft on the role step for editing title/premise. */

@@ -194,19 +194,16 @@ export async function checkStoryCore({
     async () => {
       const chamber = createChamber(database);
       const stories = createStories(database);
-      // Dedicated owner: earlier suite cases may leave document-hashed passages
-      // for the shared owner, and list() without a documentStore cannot resolve them.
-      const forkOwner = randomUUID();
       const sourceStoryId = randomUUID();
       const forkStoryId = randomUUID();
       const source = await chamber.start({
-        ownerId: forkOwner,
+        ownerId: owner,
         storyId: sourceStoryId,
         scenario: 'chamber.v2',
       });
 
       const fork = await stories.fork({
-        ownerId: forkOwner,
+        ownerId: owner,
         sourceStoryId,
         forkStoryId,
         expectedRevision: source.revision,
@@ -230,7 +227,7 @@ export async function checkStoryCore({
         'Expected forked opening choice',
       );
       const sourceContinuation = await chamber.respond({
-        ownerId: forkOwner,
+        ownerId: owner,
         storyId: sourceStoryId,
         operationId: randomUUID(),
         body: {
@@ -242,7 +239,7 @@ export async function checkStoryCore({
         },
       });
       const forkContinuation = await chamber.respond({
-        ownerId: forkOwner,
+        ownerId: owner,
         storyId: forkStoryId,
         operationId: randomUUID(),
         body: {
@@ -262,7 +259,7 @@ export async function checkStoryCore({
       assert.deepEqual(forkContinuation.lineage, fork.lineage);
 
       const retry = await stories.fork({
-        ownerId: forkOwner,
+        ownerId: owner,
         sourceStoryId,
         forkStoryId,
         expectedRevision: source.revision,
@@ -272,12 +269,15 @@ export async function checkStoryCore({
       assert.equal(retry.id, forkStoryId);
       assert.deepEqual(retry.lineage, fork.lineage);
       assert.equal(retry.current.content.title, 'A quiet departure.');
-      assert.equal(
-        (await stories.list({ ownerId: forkOwner })).items.some(
-          (item) => item.id === forkStoryId,
-        ),
-        true,
-      );
+      // Prefer read over list: earlier suite cases may leave document-hashed
+      // passages for this owner that list() cannot resolve without a store.
+      const independent = await stories.read({
+        ownerId: owner,
+        storyId: forkStoryId,
+      });
+      assert.equal(independent.id, forkStoryId);
+      assert.equal(independent.current.content.title, 'A quiet departure.');
+      assert.deepEqual(independent.lineage, fork.lineage);
 
       await assert.rejects(
         stories.fork({
