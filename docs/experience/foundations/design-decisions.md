@@ -2,20 +2,20 @@
 
 **Status:** recommended UX architecture, owner review pending. This is a decision record for *experience*, not an implicit change to gameplay contracts.
 
-## D01. Choose the scene-first stage over the three tempting alternatives
+## D01. Choose the living situation stage over the three tempting alternatives
 
 | Candidate | Strength | Why it loses as the primary paradigm | Where to keep it |
 | --- | --- | --- | --- |
 | **Chat-first** (LLM transcript) | Familiar free text, sequential exchange | World and character flatten into a conversation; timing, ongoing work and return are hidden | Free-intent composer and dialogue passages within a scene |
 | **Management dashboard** (cards, metrics, controls) | Easy to implement and inspect | Centers system state rather than lived experience; feels like a SaaS control panel | Development Chamber and optional advanced inspector |
 | **Journal-first** (book/chapter flow) | Beautiful reading and long history | Weak for concurrent offscreen commitments and present choices; invites fake chapters | The dedicated Journal surface |
-| **Scene-first stage + contextual shelf** | Present situation, narrative, contextual agency; secondary system state on demand | Requires thoughtful transitions between reading, waiting and re-entry | **SELECTED design direction** |
+| **Living situation stage + optional context** | Present situation and meaningful time investments; supporting context on demand | Requires thoughtful reading/commitment/return transitions | **SELECTED design direction**; [comparative study](composition-experiments.md) |
 
 We should reverse D01 only if actual user research shows frequent multi-character supervision as the dominant core task. That would be a *different product*, not a reason to put six dashboards beside the prose.
 
 ## D02. A compact common shell, not a screen for every backend entity
 
-Top-level player spaces: **Stories / Now / Journal / World / You / Settings**. “Now” is home inside a story. World and You are **conditional**: do not render empty inventory/character systems for a microbe or abstract entity. The story title and current situation stay legible at the top. Creation is a flow, not a permanent administration tab.
+**Primary navigation:** outside a story, **Stories**; inside a story, **Now** and **Journal**. World and You are contextual detail destinations, not mandatory permanent tabs; Settings is an out-of-fiction menu. This corrects the initial temptation to show six equally prominent destinations and duplicate a SaaS shell. The story title/current situation remain identifiable. Creation is a focused flow, not a permanent administration tab. See [information architecture](../spaces/information-architecture.md).
 
 Developer Chamber never shares player navigation hierarchy or privileged controls.
 
@@ -33,7 +33,7 @@ Developer Chamber never shares player navigation hierarchy or privileged control
 
 An accepted task shows *what is running*, *what progress is committed*, *conditional real-time expectation*, and *what may interrupt*. The game clock advances only by authorized accepted actions. A static scene cannot display a “world alive” counter merely because it is open.
 
-For public portfolio purposes, provide a **distinct scripted demonstrator** with explicitly simulated time. Do not accelerate a real six-hour work process invisibly to make a recruiter smile. In real stories, preserve chosen game rules/pace and reveal what they mean before commitment.
+**The maintained engine currently uses strict accepted-action time.** The more ambitious original life fantasy may deserve a future **bounded standing routine** rather than globally ticking idle time; compare [three temporal models](temporal-philosophy.md) before changing the engine. For public portfolio purposes, provide a **distinct scripted demonstrator** with explicitly simulated time. Do not accelerate a real six-hour work process invisibly to make a recruiter smile. In real stories, preserve chosen game rules/pace and reveal what they mean before commitment.
 
 ## D05. Treat returning as a first-class story event
 

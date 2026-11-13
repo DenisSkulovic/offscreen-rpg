@@ -13,33 +13,38 @@ Within the first viewport, answer in this order:
 
 Do not fill empty visual space with fictional stats. The reading content is the hero; a scene of absence may be perfectly sparse.
 
-## Desktop composition: active scene
+## Desktop composition: active scene (selected situation-stage direction)
 
-```text
-┌────────────────────────────────────────────────────────────────────────────┐
-│ Story switcher · The Greywake Beacon           ● Decision waiting · Menu   │
-├────────────┬─────────────────────────────────────────┬─────────────────────┤
-│ Now        │  THE GREYWAKE BEACON                    │ In this situation   │
-│ Journal    │  Storm coast · Dusk · Day 4              │                     │
-│ World*     │                                         │ Repair: 3 / 5      │
-│ You*       │  The stranger stops beside the broken   │ Nearby: Stranger    │
-│            │  lens. He appears to know your name.    │                     │
-│            │  [2–3 comfortable paragraphs...]        │ [Inspect details]   │
-│            │                                         │                     │
-│            │  WHAT WILL YOU DO?                      │                     │
-│            │  ┌───────────────────────────────────┐  │                     │
-│            │  │ Ask who sent him                  │  │                     │
-│            │  │ Brief conversation · some time    │  │                     │
-│            │  └───────────────────────────────────┘  │                     │
-│            │  ┌───────────────────────────────────┐  │                     │
-│            │  │ Inspect the mark on his cloak     │  │                     │
-│            │  │ An attempt · result uncertain     │  │                     │
-│            │  └───────────────────────────────────┘  │                     │
-│            │  [Try something else] (future)           │                     │
-└────────────┴─────────────────────────────────────────┴─────────────────────┘
-```
+The initial three-column sketch in this design was deliberately challenged. **A permanent navigation rail plus permanent context sidebar risks recreating the existing dashboard**. Prefer a **single living situation stage**, with story identity, contextual status, narrative and actions in one coherent reading flow. A secondary context shelf may appear **only if decision-critical facts justify it**, not simply because desktop space exists. See [composition alternatives](../foundations/composition-experiments.md).
 
-Schematic only: source prose and known state decide length. **World/You are conditional**. A context shelf may collapse even at wide widths. There is no “chat history pane,” no collection of equal-sized cards and no permanent action toolbar beside irrelevant narration.
+\`\`\`text
+┌──────────────────────────────────────────────────────────────────────┐
+│ ← Stories    Greywake Beacon          Now · Journal    Details · ⋯   │
+├──────────────────────────────────────────────────────────────────────┤
+│ THE BEACON LANDING                        Decision waiting            │
+│ Storm coast · Dusk (only if the world truly knows these)              │
+│                                                                      │
+│                 THE STRANGER'S ARRIVAL                               │
+│                                                                      │
+│    The stranger stops beside the broken lens.                        │
+│    He appears to know your name.                                     │
+│    [Readable original passage, as long as needed]                    │
+│                                                                      │
+│    Repair suspended · 3/9 earned     [Review previous work]          │
+│                                                                      │
+│    ─────────────── WHAT WILL YOU DO? ──────────────────────────       │
+│    [Ask who sent him]                                                │
+│       A brief conversation                                           │
+│    [Inspect the mark on his cloak]                                   │
+│       An uncertain attempt                                           │
+│    [Try something else] (FUTURE, only with supported engine)           │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+\`\`\`
+
+This is an **information-flow wireframe**, not a pixel template or commitment to a specific card treatment. An optional setting-specific atmosphere/illustration can frame the situation, but an absent image never leaves a hole. The action boundary must be explicit through grouping/structure, not only color. It is okay to scroll naturally through long prose. The current scene remains central even when a player opens contextual Details.
+
+**Rejected as default:** equal-width columns for Now, telemetry and history; six persistent status cards; an unending assistant chat transcript; a permanent right-side configuration editor. For genuinely tactically dense situations, prototype a **temporary contextual shelf** and compare task success rather than forbidding richer context altogether.
 
 ## Mobile composition: the same scene, reprioritized
 

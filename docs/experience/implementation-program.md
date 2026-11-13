@@ -43,7 +43,7 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 
 - [Hybrid free-form intentions](patterns/free-intent-future.md): interpretation, preview, authority and cost; **not** “add a textarea.”
 - [Autonomy and absence](patterns/autonomy-and-absence.md): permission, safe defaults, horizon, interruption and shared-world authority; not “autoplay true.”
-- [Mechanics reassessment](foundations/mechanics-reassessment.md): pacing, job repetition, form-dependent abilities, repeated activity UX and ramifications for play.
+- [Mechanics reassessment](foundations/mechanics-reassessment.md) and [temporal alternatives](foundations/temporal-philosophy.md): bounded standing life vs current strict commitment time, social investment, job repetition, form-dependent abilities and meaningful offscreen presence.
 - Maps, multiplayer, imagery, elaborate sound, and stronger generative autonomy require new decision packets before code.
 
 Do not let UX01-UX11 mutate these mechanics as an unrequested side effect.
@@ -57,7 +57,7 @@ Read only the selected Change plus **one** source-adjacent map when starting imp
 - Baseline stack/authority: [selected React/Next contract](../engineering/targets/react-next.md), [current game vocabulary](../concepts.md), [time](../time-and-autonomy.md).
 - Developer Chamber is **not** a player-facing UI template. Its [separate program](../engineering/chamber-program.md) remains independent.
 
-**Baseline evidence:** GitHub `main` at `8c91618aa44ac6a5aa800cf6b986c2bf596a9a0d` and source maps inspected 2026-11-13; existing W-series work was still moving. These are path-level inspection and contract review, **not** a live browser assessment or a guarantee the files will stay unchanged. Cursor must re-read actual source and git status at authorization time. Keep app/SSR identity, TanStack ownership, frozen intents, receipt recovery and backend authority.
+**Baseline evidence:** original UX planning source GitHub `main` at `8c91618aa44ac6a5aa800cf6b986c2bf596a9a0d`; later [source-grounded critique](evidence/current-ui-source-audit.md) inspected main `3be49cc2c571dcd86585c56106905a87c789a19e` on 2026-11-13. The W-series work was still moving. These are path-level inspection and contract review, **not** a live browser assessment or a guarantee the files will stay unchanged. Cursor must re-read actual source and git status at authorization time. Keep app/SSR identity, TanStack ownership, frozen intents, receipt recovery and backend authority.
 
 ## Implementation milestones and exit gates
 

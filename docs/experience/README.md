@@ -8,17 +8,17 @@ This is a **replacement product-experience specification**, not a transcription 
 
 | Question | Read |
 | --- | --- |
-| What is the experience and what must never be compromised? | [Experience thesis](foundations/experience-thesis.md) and [mechanics reassessment](foundations/mechanics-reassessment.md) |
-| Which interaction model won, what lost, and which mechanics are challenged? | [Decisions and trade-offs](foundations/design-decisions.md) and [independent critique](evidence/independent-challenge.md) |
+| What is the experience and what must never be compromised? | [Experience thesis](foundations/experience-thesis.md), [mechanics reassessment](foundations/mechanics-reassessment.md), [Storyteller quality](foundations/storyteller-experience-quality.md) |
+| Which interaction model won, what lost, and which mechanics are challenged? | [Decisions](foundations/design-decisions.md), [layout experiments](foundations/composition-experiments.md), [temporal philosophy](foundations/temporal-philosophy.md), [independent critique](evidence/independent-challenge.md) |
 | Which spaces exist, and how does a player move between them? | [Spaces and navigation](spaces/information-architecture.md), [Stories](spaces/stories-library.md), [Journal/World/You](spaces/journal-world-you.md) |
-| What exactly does choosing or authoring an intention mean? | [Interaction grammar](patterns/interaction-grammar.md) and [future free-intent contract proposal](patterns/free-intent-future.md) |
+| What exactly does choosing or authoring an intention mean? | [Interaction grammar](patterns/interaction-grammar.md), [attention/state contract](patterns/state-and-attention.md), [future custom-intent study](patterns/free-intent-future.md) |
 | What should someone see in scene, wait, interruption and re-entry? | [Now surface and visual wireframes](spaces/now.md) |
-| How do fictional time and real waiting remain honest? | [Time, autonomy and holds](patterns/time-and-truth.md) and [absence policies](patterns/autonomy-and-absence.md) |
-| How should the first visit and story creation work? | [Creation experience](flows/creation-and-first-run.md), [settings](flows/settings-and-controls.md) |
+| How do fictional time and real waiting remain honest? | [Time truth](patterns/time-and-truth.md), [absence policies](patterns/autonomy-and-absence.md), [offscreen handoff](flows/offscreen-handoff.md), [ten-hour journey](flows/ten-hour-journey.md) |
+| How should the first visit and story creation work? | [Creation experience](flows/creation-and-first-run.md), [settings](flows/settings-and-controls.md), [original demo script](prototypes/public-demo-script.md) |
 | How should long lives and return visits work? | [Return, journal and continuity](flows/return-and-memory.md) and [critical end-to-end journeys](flows/key-journeys.md) |
-| What is the UI system made from? | [Component strategy](system/component-strategy.md), [motion](system/motion.md), [accessibility](system/accessibility-and-voice.md) |
-| Why these decisions, which references are worth learning from? | [Research dossier](evidence/reference-review.md) |
-| How do we prove the design actually works for humans? | [Experience acceptance plan](evidence/validation-plan.md) |
+| What is the UI system made from? | [Component strategy](system/component-strategy.md), [motion](system/motion.md), [accessibility](system/accessibility-and-voice.md), [player-language copy](system/interaction-copy.md) |
+| Why these decisions, which references are worth learning from? | [Game case studies](evidence/comparative-game-research.md), [reference index](evidence/reference-review.md), [current UI source critique](evidence/current-ui-source-audit.md) |
+| How do we prove the design actually works for humans? | [Experience acceptance plan](evidence/validation-plan.md), [key journeys](flows/key-journeys.md) |
 | What would Cursor implement, and in what order? | [Implementation program](implementation-program.md), then **one** proposed `docs/changes` packet |
 
 The design map above points to the documents already authored in this branch; proposed code packets are indexed by the [implementation program](implementation-program.md). None is implementation permission. A target is authoritative for *design intent* only after owner review; it never supersedes actual game rule or security authority by implication.

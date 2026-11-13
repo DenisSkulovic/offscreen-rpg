@@ -7,7 +7,7 @@
 There are just three player navigation contexts:
 
 1. **Outside a story:** Welcome / Try demo / Your stories / Create story / Account.
-2. **Inside a story:** **Now** (primary), **Journal** (past), optional **World** (known entities/places) and **You** (actual character capabilities), **Story settings** (out-of-fiction controls).
+2. **Inside a story:** **Now** and **Journal** are the primary labelled navigation. **World** and **You** are contextual detail destinations, accessible through a stable Details entry when meaningful content exists; **Story settings** live in an out-of-fiction menu. These are *spaces*, not six permanent peer tabs.
 3. **During a short task:** one focused layer for selecting intent, inspecting a result, changing course or completing creation. Return to the previous situation without losing the current scene.
 
 A story is never an administrator workspace with separate “Campaign,” “Activities,” “Reports,” “Openings,” “Presets” and “Storyteller tasks” as peer navigation tabs. Those concepts can exist in internals without appearing in player space.
@@ -34,8 +34,8 @@ A story is never an administrator workspace with separate “Campaign,” “Act
 
 - **Global frame:** minimal story switcher, story identity and settings access; never full enterprise navigation.
 - **Main stage:** approximately 640–760 px comfortable narrative line measure; the first viewport favors current location/situation, the latest meaningful passage and available action.
-- **Context shelf:** on wide screens, a restrained 240–320 px expandable space for one or two contextually useful facts; not a permanent wall of stats.
-- **Secondary navigation:** compact labelled navigation for Now/Journal, with World and You only when applicable. An option opened as a panel should not replace the canonical current situation without a clear route back.
+- **Context:** start with an **inline situational fact strip** or one Details disclosure. On wide screens, an optional restrained shelf may be tested for decisions that genuinely require comparisons; it is **not** a default permanent column.
+- **Navigation:** Now and Journal are the two stable primary story destinations. World and You can be independently navigable when rich enough, but are reached contextually via **Details**, not added as changing permanent peer tabs. Opening a detail should preserve current story context and a clear route back.
 - **Overlay policy:** normal inspection uses nonmodal panel/sheet; consequential stop/abandon or operation conflicts may require a dialog with action-specific heading and safe focus.
 
 **Avoid a default two-sidebar trap.** If an 800-pixel window leaves only 400 pixels for storytelling, collapse secondary furniture before squeezing the narrative. Use container-based layout judgment, not viewport alone.
@@ -62,13 +62,13 @@ A story is never an administrator workspace with separate “Campaign,” “Act
 
 ## Navigation labels and tone
 
-Player-friendly nouns: **Now, Journal, World, You, Stories**. Avoid “Campaign Control,” “Job Queue,” “Resolution,” “Activity Process,” “Generations,” “Provider,” “SceneCandidate.” Domain jargon can be used in a developer inspector but not default player labels.
+Primary visible labels: **Now, Journal, Stories**. Contextual destination labels: **World** and **You** (or an applicable equivalent) behind a stable **Details** entry. Settings is a distinct out-of-fiction control. Avoid “Campaign Control,” “Job Queue,” “Resolution,” “Activity Process,” “Generations,” “Provider,” “SceneCandidate.” Domain jargon can be used in a developer inspector but not default player labels.
 
 The view should feel private and situated. A source passage may be whimsical or tragic; system messages remain clear and restrained. Atmospheric copy should not replace precise status text.
 
 ## Adaptivity constraints
 
-World and You appear only with relevant content or supported conceptual equivalents; a bodiless intelligence has no backpack just for navigational symmetry. If no meaningful map exists, World is a relationships/places/threads index, or is omitted until known entities exist. Within a single story, discovered elements may unlock contextual access but must not cause random navigation reshuffling mid-decision.
+A stable **Details** affordance can expose applicable World and You content when available; don't shuffle the top-level navigation every time an entity is discovered. World and You only expose relevant content or supported conceptual equivalents; a bodiless intelligence has no backpack just for navigational symmetry. If no meaningful map exists, World is a relationships/places/threads index, or is omitted until known entities exist. Within a single story, discovered elements may unlock contextual access but must not cause random navigation reshuffling mid-decision.
 
 No required image on any surface. An absent image yields a deliberate literary layout, not a blank skeleton sized for promised artwork.
 
