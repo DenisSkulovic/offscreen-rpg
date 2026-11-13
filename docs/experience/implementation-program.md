@@ -2,6 +2,8 @@
 
 **Status: DESIGN PROGRAM, NOT CODE AUTHORIZATION.** Last designed 2026-11-13. All code-bearing UX packets are **Proposed** until the owner explicitly selects and authorizes one. The active Change declaration in [docs/changes/README.md](../changes/README.md) remains **none**. Cursor must not infer work permission from a Git branch, a program, a green test or the presence of a Change file.
 
+**First narrow handoff is prepared:** [UX01 executor handoff](handoff/first-cursor-wave.md) and [design-readiness review](evidence/design-readiness-review.md) define the source-grounded implementation boundary. The [selected Living Stage blueprint](spaces/living-stage-blueprint.md) is the default composition authority. **Only UX01 is recommended for the first implementation request**, with UX02 held until an actual render is critiqued. A Proposed dossier is **not** formally Ready or code-authorized without the owner's explicit instruction.
+
 ## The target comes first
 
 **Desired end-state:** a scene-first, persistent, arbitrary-world RPG that makes narrative presence, earned offscreen commitment and return to consequential history immediately comprehensible. The player experiences a fictional life, not a backend process interface. The experience can be quiet or dramatic without changing its grammar.

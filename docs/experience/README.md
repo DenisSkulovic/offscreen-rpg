@@ -4,6 +4,8 @@
 
 This is a **replacement product-experience specification**, not a transcription of the existing React screens. The current UI, routes and mechanics are evidence of implementation feasibility and constraints, **not design authority**. The goal is to make Offscreen RPG feel like a place where a character lives, rather than a forms-and-buttons interface administering a simulation.
 
+**First Cursor implementation wave:** [one-page handoff](handoff/first-cursor-wave.md) → [selected stage blueprint](spaces/living-stage-blueprint.md) → [UX01 Change](../changes/2026-11-13--ux-story-shell/CHANGE.md). This is ready **for owner authorization and implementation feedback**, not a claim of rendered/human-validated UX. [Independent readiness audit](evidence/design-readiness-review.md) lists what is in scope and what is deliberately blocked.
+
 ## Start with a question, not the whole folder
 
 | Question | Read |
