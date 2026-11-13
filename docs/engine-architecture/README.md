@@ -4,6 +4,8 @@
 
 **Latest post-implementation review:** [independent ENG01/02/04/07 audit](evidence/postwave-implementation-review.md) → [ENG05 shared-CAS design gate](decisions/eng05-shared-cas-contract.md), [ENG06 replay policy](decisions/eng06-temporal-compatibility-policy.md), [ENG03 measurement-first policy](decisions/eng03-instrument-before-refactor.md) → [next bounded Cursor handoff](handoff/postwave-cursor-handoff.md). **ENG08** protects item authorization; **ENG09** covers possible story dead-end after holder invalidation. These additions are design-only; see current Change router for execution permission.
 
+**Latest decision queue:** [ENG09 → ENG03-M → GM05 / live presentation handoff](handoff/decision-queue-2026-11-13.md) selects a source-grounded item-interruption consequence and an independent 0/250/2000ms lock measurement, with later capture guarded by actual evidence. These are design/packet updates, not code completion or broad engine authorization.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |

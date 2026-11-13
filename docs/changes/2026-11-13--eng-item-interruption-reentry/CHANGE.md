@@ -1,50 +1,36 @@
-# ENG09 | An invalidated item-transfer action must not strand a story
+# ENG09 | Item-holder invalidation must produce one recoverable controlling consequence
 
-**State:** Proposed, **NOT Ready** until interruption lifecycle policy and exact source route are selected. **Priority:** gameplay correctness follow-up to ENG01; may be implemented independently of ENG08. **Authority:** [post-wave code review](../../engine-architecture/evidence/postwave-implementation-review.md), [time/decision model](../../time-and-autonomy.md), [causal trace](../../engine-architecture/evidence/causal-transition-review.md). **Probe evidence (2026-11-13):** [mid-flight playability probe](../../engine-architecture/evidence/eng09-interruption-playability-probe-2026-11-13.md) confirms no offer/hold/consequence/recovery after holder-mismatch interrupt — dead-end is real; Cursor must not invent the reentry contract.
+**State: Design selected / implementation-ready for explicit owner authorization (2026-11-13).** Not selected as current Change; no code or paid test authorized by this document. **Decision owner:** [interrupted-action contract](../../engine-architecture/decisions/eng09-interrupted-action-consequence.md). **Evidence:** [confirmed dead-end probe](../../engine-architecture/evidence/eng09-interruption-playability-probe-2026-11-13.md). **Parent:** [engine program](../../engine-architecture/implementation-program.md).
 
-## Core player failure to investigate and close
+## Cursor first-screen handoff
 
-A valid accepted finite action intended to transfer the compass begins. Before it settles, a legitimate intervening change moves the item elsewhere. When time is due, the engine correctly refuses the transfer and marks the action interrupted **without a roll**. However the prior selectable offer was already consumed, and the inspected `action-executions.ts` interruption branch does not visibly create a new scene/offer for this item-holder mismatch.
+> **GOAL:** An admitted `item.transfer.v1` whose required item holder changes before its due boundary commits one factual interruption and gets one *normal controlling consequence follow-up*, not an abandoned campaign with null offer and empty holds.
+>
+> **AUTHORITY:** [selected exact ENG09 transition](../../engine-architecture/decisions/eng09-interrupted-action-consequence.md#authoritative-transition), [idempotency / cost and hold rules](../../engine-architecture/decisions/eng09-interrupted-action-consequence.md#cost-hold-failure-and-recovery-rules); existing time/hold/game authority.
+>
+> **SOURCE ENTRY:** `packages/application/src/campaign/action-executions.ts::settleActionExecution`; `campaign/narration.ts::consequenceReceiptSchema/createConsequenceNarration`; `campaign/holds.ts::holdCampaignForStorytellerIntent`; `storyteller/publication.ts::publishStorytellerResult`; `test/eng01-item-transfer.live.test.mjs`. Inspect `campaign/follow-up-intents.ts` and public reads only if actual execution scope requires.
+>
+> **BOUNDARY:** One `action-interrupted` consequence keyed by the existing execution ID, same transaction as interrupted terminal event, with story hold and idempotent outbox; task/hold/publication reuse, not a second recovery subsystem. No new player command.
 
-**Suspected result:** no `activeActionOperationId`, no receipt and no current valid offer or controlling generation. A character may be stuck staring at an older scene. The current ENG01 SQL test checks the holder and absence of receipt, **not playability on return**.
+## Exact code-bearing outcome
 
-## First step is a stronger source-backed regression, not code guesswork
+1. **Classification:** distinguish item-holder mismatch at target from controlling world-obligation interruption; only former creates `action-interrupted` controlling consequence when no other controlling owner exists.
+2. **Atomic source:** keep existing terminal execution event, elapsed fictional time and no roll/no successful receipt/no transferred item. Add strict receipt discriminant carrying original `executionId`, terminal revision/event, game-second, `cause='required-item-holder-changed'`, offer/action identity and safe factual text. Persist `campaignConsequence.operationId=execution.operationId`; add `storyteller-intent` hold and enqueue durable preparation in same transaction; viewVersion updated correctly once for that commit.
+3. **Follow-up worker:** `createConsequenceNarration` recognizes one new consequence kind; verifies terminal execution/event, absence of successful receipt, story/source version, one generation per consequence. Build existing `consequence` storyteller task (no new task family) with no-roll/no-effect fact, and transition existing intent → generation hold.
+4. **Publication:** existing consequence path validates current context, saves new passage/offer + new authorized plans, and transitions generation hold → decision. Old offer never reappears. Do not grant or expose hidden current item holder merely because the engine learned it.
+5. **Failure:** provider/funding/preparation/CAS failure retains interrupted source and visible controlling hold. Use existing same-generation retry and operator/usage uncertainty semantics. No unbounded new spend or automatic paid replay. If currently no public reason for pre-admission failure, expose narrow truthful read state, not a fake actionable choice.
+6. **Compatibility:** existing ordinary ENG01 transfer, world obligations, scripted histories and already admitted tasks continue unchanged. **Verify** that item transfers have no speculative `pendingResolution/preparationGenerationId`; if false, reconcile the source before touching `story_resolution_base`.
 
-For the disposable mid-flight holder-change fixture, inspect and assert:
-- canonical `story.revision`, `campaign.offer` and `situationAuthorization` after invalidation;
-- current hold owner(s), pending `storyResolution`/`campaignConsequence` and outbox;
-- `StorySnapshot.current`, `campaign.actionExecution`, `campaign.actionExecutionEvents` and actual available actions;
-- whether a real authorized existing recovery command can restore a playable offer.
+## Must pass
 
-If an existing path truly recovers, add the proof and **cancel** implementation. Do not create a fake UI button.
+**Positive:** disposable mid-flight SQL fixture: holder moves elsewhere; item stays there, action interrupted at correct frontier; no roll/success receipt; exactly one interrupt event, consequence, hold, later one new scene/offer via provider-free scripted generation. UI/authorized public snapshot never left with null offer **and** empty holds once the action is terminal.
 
-## Desired authoritative outcome
+**Negatives:** admission-time mismatch still rejects before time; duplicate worker runs do not create duplicate consequence, generation, funded attempt or fictional time; new offer does not permit the invalidated original transfer; world-obligation interrupt does not create second consequence; failure/uncertain funding retains source + hold, and no automatic paid retry; bad/missing CAS does not invent prose; wrong viewer cannot access; original successful transfer still settles once.
 
-1. At the actual due boundary, commit the explicit **item no longer available** event and elapsed permitted fictional time, with no transfer/roll.
-2. The current situation becomes a **source-grounded new decision** or a literal recoverable hold with a real supported recovery path. Player can choose what to try next.
-3. A consequential new scene may use the normal Storyteller preparation/cost/hold contract. Never assume the model response succeeded or run unlimited speculative calls.
-4. A stale previously offered transfer cannot simply be reauthorized; current item state and actor scope must be rechecked.
-5. Duplicate worker delivery cannot regenerate multiple scenes, charge repeatedly, skip time or produce a new item.
-6. If Storyteller is unavailable, keep an inspectable interrupted state and truthful recovery, **not** an invisible permanent dead end.
+**Verification:** pure transition tests, focused existing `eng01-item-transfer.live.test.mjs` against **disposable SQL only with explicit owner permission**, existing narration/publication tests, contract/public-projection tests if touched. No live Storyteller, deployment, production DB, destructive migration or provider charges. Return SQL/public snapshot row evidence, exact test commands, diff and remaining unproven claims.
 
-## Why this requires an explicit domain decision
+## Not ENG09
 
-The current `campaignConsequence` machinery appears primarily oriented toward settled receipts, activities and world obligations; item-holder invalidation has an interrupted execution but **no action receipt**. We must decide whether to add an admitted `action-interrupted` consequence source or a comparable existing semantic path. One option is a small source-linked interruption event that authorizes one controlling Storyteller follow-up; another is a general typed blocker/reentry operation. Choose based on actual source semantics, not UI ease.
+No generic recovery command, no UI Continue, GM05 feed, new actor framework, new NPC theft engine, model-generated item transfers, Storyteller provider change, unlimited retries, ENG03 transaction refactor, ENG06 production worker deployment.
 
-The first chosen contract must preserve the existing holds/time/rules and old attempts, require no new human player input simply to recover a game-authority failure, and make a new legitimate offer available eventually.
-
-## Acceptance
-
-- The exact SQL mid-flight holder-change fixture returns a **playable** or **explicitly recoverable** result after settlement, not only `actionExecution === null`.
-- Missing holder/permission at *admission* still rejects before spending time.
-- Failure of a legitimate check does not grant item.
-- Later new offer never contains the already invalid/stale transfer unless actively revalidated under a fresh authoring decision.
-- Provider failure while preparing the new situation preserves the interrupted event with a bounded retry, no double model charge.
-- Duplicate scheduling of same interruption is idempotent.
-- A regular planned world-obligation interruption continues to behave as before.
-
-**Not included:** unrestricted NPC theft, generalized free-intent, new frontend navigation, multiple actors, custom item economy or broad event sourcing. No provider cost or live DB mutation without authorization.
-
-## Readiness gate
-
-Run/inspect the current negative integration fixture, settle **one exact authoritatively sourced new-situation/hold transition**, and specify its idempotent identity and Storyteller failure behavior. This remains **NOT Ready** until those details are clear, rather than asking Cursor to invent them during a small feature.
+**Next action:** owner explicitly selects/authorizes ENG09; Cursor rechecks current main/worktree and disposable environment, marks one active Change Ready under repository policy, implements this exact outcome, returns measured proof. **No implementation permission merely from this Change being design-complete.**

@@ -4,6 +4,8 @@
 
 **State:** Proposed, **NOT Ready**. **Kind:** captured-source preparation and fenced publication lifecycle, with concurrency tests. **Authority:** [context/lock decision](../../engine-architecture/decisions/context-capture-and-locks.md) and [causal trace](../../engine-architecture/evidence/causal-transition-review.md). **No code authorized.**
 
+**Selected measurement/capture companion (2026-11-13):** [ENG03-M measurement packet](../2026-11-13--eng03-lock-measurement/CHANGE.md) and [source-capture contract](../../engine-architecture/decisions/eng03-measurement-and-capture-contract.md). This full refactor remains NOT Ready until the measured go/no-go and exact physically typed capture fields are proven; no automatic authorization follows the measurement.
+
 ## Cursor first-screen brief, after exact lifecycle design
 
 > **Goal:** a model/task preparation reading remote immutable objects does not hold the story row `FOR UPDATE` during slow I/O, yet the prepared task is tied to the **exact admitted actor/rules/source/operation versions** and cannot publish stale results.
