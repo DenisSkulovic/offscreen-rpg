@@ -8,20 +8,20 @@ This is a **replacement product-experience specification**, not a transcription 
 
 | Question | Read |
 | --- | --- |
-| What is the experience and what must never be compromised? | [Experience thesis](foundations/experience-thesis.md) |
-| Which interaction model won, what lost, and which mechanics are challenged? | [Decisions and trade-offs](foundations/design-decisions.md) |
-| Which spaces exist, and how does a player move between them? | [Spaces and navigation](spaces/information-architecture.md) |
-| What exactly does choosing or authoring an intention mean? | [Interaction grammar](patterns/interaction-grammar.md) |
+| What is the experience and what must never be compromised? | [Experience thesis](foundations/experience-thesis.md) and [mechanics reassessment](foundations/mechanics-reassessment.md) |
+| Which interaction model won, what lost, and which mechanics are challenged? | [Decisions and trade-offs](foundations/design-decisions.md) and [independent critique](evidence/independent-challenge.md) |
+| Which spaces exist, and how does a player move between them? | [Spaces and navigation](spaces/information-architecture.md), [Stories](spaces/stories-library.md), [Journal/World/You](spaces/journal-world-you.md) |
+| What exactly does choosing or authoring an intention mean? | [Interaction grammar](patterns/interaction-grammar.md) and [future free-intent contract proposal](patterns/free-intent-future.md) |
 | What should someone see in scene, wait, interruption and re-entry? | [Now surface and visual wireframes](spaces/now.md) |
-| How do fictional time and real waiting remain honest? | [Time, autonomy and holds](patterns/time-and-truth.md) |
-| How should the first visit and story creation work? | [Creation experience](flows/creation-and-first-run.md) |
-| How should long lives and return visits work? | [Return, journal and continuity](flows/return-and-memory.md) |
+| How do fictional time and real waiting remain honest? | [Time, autonomy and holds](patterns/time-and-truth.md) and [absence policies](patterns/autonomy-and-absence.md) |
+| How should the first visit and story creation work? | [Creation experience](flows/creation-and-first-run.md), [settings](flows/settings-and-controls.md) |
+| How should long lives and return visits work? | [Return, journal and continuity](flows/return-and-memory.md) and [critical end-to-end journeys](flows/key-journeys.md) |
 | What is the UI system made from? | [Component strategy](system/component-strategy.md), [motion](system/motion.md), [accessibility](system/accessibility-and-voice.md) |
 | Why these decisions, which references are worth learning from? | [Research dossier](evidence/reference-review.md) |
 | How do we prove the design actually works for humans? | [Experience acceptance plan](evidence/validation-plan.md) |
 | What would Cursor implement, and in what order? | [Implementation program](implementation-program.md), then **one** proposed `docs/changes` packet |
 
-Documents not yet present are deliberately listed as **planned sections** of this design program; no missing file represents permission to invent its contents. A target is authoritative for *design intent* only after owner review; it never supersedes actual game rule or security authority by implication.
+The design map above points to the documents already authored in this branch; proposed code packets are indexed by the [implementation program](implementation-program.md). None is implementation permission. A target is authoritative for *design intent* only after owner review; it never supersedes actual game rule or security authority by implication.
 
 ## Non-negotiable project boundaries
 
