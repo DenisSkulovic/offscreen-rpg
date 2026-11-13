@@ -25,6 +25,7 @@ A mechanical redesign is justified only when it improves **the actual player exp
 | [GM04 distinct offers](../changes/2026-11-13--gm-offer-distinctness/CHANGE.md) | One specific fixture prevents unchanged failed-persuasion action spam with authentic state/rule effect | Existing scripted fixture and offer resolution | Not a universal novelty engine or one-size-fits-all reroll ban |
 | [GM05 sourced events](../changes/2026-11-13--gm-return-event-projection/CHANGE.md) | A safe, chronological **public committed-event projection** for Journal/recent developments | Existing receipts/events and owner authorization | No LLM recap, no seen cursor claim |
 | [GM06 seen cursor](../changes/2026-11-13--gm-viewer-read-position/CHANGE.md) | Viewer-specific acknowledged chronology position for **truthful “since last viewed”** | GM05 source sequence, auth/viewer identity semantics | Does not mark content as read merely because delivered to browser |
+| [GM07 delegated safe response](../changes/2026-11-13--gm-delegated-decision/CHANGE.md) | One revision-fenced, consented eligible fallback after a published decision's real deadline | Approved [decision delegation](patterns/decision-delegation.md), clock/actor authority | Not personality-run-anything autoplay or shared actor control |
 
 All are **Proposed**, not Ready; each requires explicit owner approval and source inspection immediately before implementation. These **must not be auto-added to the active Change index** as authorized work.
 
@@ -49,6 +50,10 @@ These priorities are design judgments, not owner decisions or a Gantt chart.
 - Provider spending explicit and bounded; per-tick inference not acceptable routine cost.
 - World neutrality: no mandatory humanoid body, map, currency or professions.
 - Private hidden DM plans, DCs and future encounters never leak to public read models.
+
+## Original first-playable promises that must survive the solo POC
+
+The [original vision reconciliation](foundations/vision-reconciliation.md) confirms that **consented nonresponse autonomy**, a small shared-party storyline, and one notification channel belong to the original product's first playable ambition. They are not automatically delivered by the initial scene/choice/work UI. **GM07** owns one narrow safe delegated response; broader personality-guided selection, shared actor/time authority and notifications require separate decisions. No current frontend Change may pretend those are finished or silently remove them from the long-term target.
 
 ## Design-only questions to settle before code readiness
 
