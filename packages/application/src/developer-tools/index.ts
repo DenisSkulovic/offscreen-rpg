@@ -1,4 +1,5 @@
 export * from './chamber';
+export * from './chamber-lab-catalog';
 export * from './qa-journeys';
 export * from './usage-profiles';
 export * from './storyteller-control';

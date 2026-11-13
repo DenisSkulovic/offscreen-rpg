@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [current developer-tooling owners](../../../packages/application/src/developer-tools/README.md) → `contracts/src/{chamber,qa}.ts` and `developer-tools/qa-catalog.ts`. **Target:** [Chamber C01/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 1](../../technical/chamber-lab-protocol.md#1-contract-and-command-semantics); [audit H02/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Critical trap:** an existing QA driver label is not a runnable scenario.
 
-**State:** Specified/Proposed, not code-authorized. **Dependencies:** none. **Baseline:** source inspected at `470a5df`; Cursor rechecks live working tree.
+**State: Done** (2026-11-13). Owner authorized Chamber work after W-series completion. **Dependencies:** none.
+
+**Evidence:** `@offscreen/contracts/chamber-lab` schema + `chamber-lab-catalog` seeds (calendar bench, chamber.v2 connected, blocked activity-interrupt). Tests: `pnpm --filter @offscreen/contracts exec node --test dist/test/chamber-lab.test.js` (7/7) and `pnpm --filter @offscreen/application exec node --test test/chamber-lab-catalog.test.mjs` (4/4). Negatives: unknown fields, duplicate id@version, non-offline bench, blocked without reason, QA/`automatedPassAllowed: true` rejected, blocked/undeclared lane cannot open.
 
 ## One executable result
 

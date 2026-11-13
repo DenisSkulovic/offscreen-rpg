@@ -23,6 +23,10 @@
       "types": "./dist/src/chamber.d.ts",
       "default": "./dist/src/chamber.js"
     },
+    "./chamber-lab": {
+      "types": "./dist/src/chamber-lab.d.ts",
+      "default": "./dist/src/chamber-lab.js"
+    },
     "./qa": {
       "types": "./dist/src/qa.d.ts",
       "default": "./dist/src/qa.js"

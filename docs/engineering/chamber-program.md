@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation program for Cursor
 
-**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined, **all Proposed**, no Chamber source modifications or runtime tests. The unrelated React/Next modernization has its own W01–W22 queue; existing W12 **is superseded for future Chamber implementation** by this program (see below).
+**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01 Done** (typed catalogue); CH02–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
 
 **Start for inexpensive Cursor:** one approved `CHxx/CHANGE.md` → its one adjacent source README → the **exact** protocol heading linked from its first screen → named source/test symbols only. Do not load all three documents in full or reverse-engineer the launcher unless the selected CH packet calls for that section.
 

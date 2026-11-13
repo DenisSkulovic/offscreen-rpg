@@ -10,9 +10,10 @@
 | Point-in-time inspector | [`chamber-inspector.ts`](chamber-inspector.ts): `createChamberInspector.inspect` | reads snapshot + separate SQL queries for passage/resolution/activity/provider; not one full consistent transaction |
 | Manual evidence journal | [`qa-journeys.ts`](qa-journeys.ts): `createQaJourneys.open/recordStage` | stores versioned immutable case, revision-fenced append-only operator observations; does **not** execute case |
 | QA catalogue | [`qa-catalog.ts`](qa-catalog.ts), [activity lifecycle cases](qa-catalog/activity-lifecycle.ts) | 15 authored cases, some planned; driver names are metadata, not executable drivers |
+| Lab scenario catalogue (CH01) | [`chamber-lab-catalog.ts`](chamber-lab-catalog.ts) + [`@offscreen/contracts/chamber-lab`](../../../../packages/contracts/src/chamber-lab.ts) | Versioned `id@version` scenarios with lane/cost/fixture; does **not** execute. Legacy `chamber.vN` + QA IDs retained with `automatedPassAllowed: false` |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Pending future lab | **CH01–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | typed scenarios, fixture/reset, controlled lane, trace/evidence and workbench |
+| Pending future lab | **CH02–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | Bench runner, fixture/reset, controlled lane, trace/evidence and workbench |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 
