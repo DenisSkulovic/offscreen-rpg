@@ -21,9 +21,10 @@
 | Lab evidence capsule (CH09) | [`lab/lab-evidence.ts`](lab/lab-evidence.ts) + `LabRun.finalizeEvidence` | Immutable machine capsule; default redactor; digest artifacts; QA journal remains a separate authority |
 | QA ↔ LabRun bridge (CH10) | [`lab/qa-lab-bridge.ts`](lab/qa-lab-bridge.ts) | Curated stage bindings; machine pass needs capsule; search splits stage-instructions vs runnable-scenario; QA journal untouched |
 | Lab workbench sessions (CH11) | [`lab/lab-workbench-service.ts`](lab/lab-workbench-service.ts) | Owner-scoped process-local LabRun sessions for developerTools Nest + web console |
+| Connected rig (CH13) | [`lab/connected-rig.ts`](lab/connected-rig.ts) | Isolated run DB/queue planner; serial lock; fake-offline duplicate proof; live Nest/Temporal boot gated |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Pending future lab | **CH12–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | CLI modes, connected/live lanes, coverage, replay |
+| Pending future lab | **CH14–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | held packet lab, mechanics coverage, replay/diff |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 
