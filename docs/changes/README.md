@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH03 Done**; CH04–CH16 remain Proposed. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (CH01–CH03 Done; CH04–CH16 Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Remaining `Proposed` packets stay unauthorized until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH04 Done**; CH05–CH16 remain Proposed. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (CH01–CH04 Done; CH05–CH16 Proposed). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Remaining `Proposed` packets stay unauthorized until the owner instructs Cursor. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 

@@ -2,7 +2,9 @@
 
 > **Cursor start:** [application developer map](../../../packages/application/src/developer-tools/README.md) + [local launch/DB guard](../../../tools/chamber/src/README.md). **Target:** [C02/C08/C09/C12/C13](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation), [audit H01/H03/H13](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** an ordinary story fork cannot rewind Temporal or provider effects.
 
-**State:** Specified/Proposed; **not** permission to reset any DB. **Depends on:** CH03. **Inspected baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized Chamber continue after CH03. **No live DB reset performed** (guard + memory isolation proof only; postgres DROP/CREATE still requires `confirmDisposableProvision` + separate owner permission). **Depends on:** CH03 (Done).
+
+**Evidence:** `sandbox-guard.ts` + `sandbox-materializer.ts`. Tests: `sandbox-materializer.test.mjs` 3/3. Normal: two memory runs share fixture hash, distinct run/story/DB names; cross-run item mutation does not leak. Negatives: remote host, `offscreen_chamber`/`offscreen_auth_test`, query overrides, unconfirmed destructive provision, invalid fixture writes nothing. Skipped: live `offscreen_chamber_run_*` PostgreSQL provision (`test:focus` not run).
 
 ## One code-bearing outcome
 

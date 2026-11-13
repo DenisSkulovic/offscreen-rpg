@@ -1,10 +1,12 @@
 # Chamber local launcher | source and mode map
 
-**Current (inspected 2026-11-12):** [`main.ts`](main.ts) is a ~1,518-line local launcher, not the game engine. It parses ~dozen mutually constrained flags, creates/migrates a **guarded localhost-only** Chamber/Story test DB, provisions a local identity, builds API/worker/Next browser sessions, and routes offline held packets or explicitly authorized live evaluations. **There is not yet a fast generic `bench scenario@version` command.**
-**Selected future:** [Chamber target](../../../docs/engineering/targets/chamber-laboratory.md) and [technical scenario protocol](../../../docs/technical/chamber-lab-protocol.md), implementing distinct cheap/connected/packet lanes without breaking safe existing CLI options.
+**Current:** [`main.ts`](main.ts) is a ~1,518-line local launcher, not the game engine. CH01–CH04 add catalogue, [`lab/bench.ts`](lab/bench.ts), semantic specimens, and Sandbox URL guards (`offscreen_chamber_run_*`). Manual launcher DB remains `offscreen_chamber` / `offscreen_story_local`.
+**Selected future:** [Chamber target](../../../docs/engineering/targets/chamber-laboratory.md) and [technical scenario protocol](../../../docs/technical/chamber-lab-protocol.md) for remaining lanes without breaking safe existing CLI options.
 
 | Entrypoint/use | Start in source | Guard or behavior to preserve |
 | --- | --- | --- |
+| Pure Bench | [`lab/bench.ts`](lab/bench.ts), `pnpm chamber:bench` | Real `@offscreen/game` only; no DB |
+| Sandbox DB name guard | [`@offscreen/application` sandbox-guard](../../../packages/application/src/developer-tools/lab/sandbox-guard.ts) | localhost + `offscreen_chamber_run_<32hex>` only; never `offscreen_chamber` / `offscreen_auth_test` |
 | CLI flags and mutually exclusive modes | `main.ts` around lines 68–166 | `--smoke`, `--review`, `--packet-review`, `--memory-packet-review`, `--evaluation-*`, `--story-mode`, `--reset-database`; don't casually enable live mode |
 | Local DB and service boot | `main.ts` around lines 555–895 | exact database `offscreen_chamber` or `offscreen_story_local`, localhost-only URL, explicit reset, migrations, fixture user, Nest `developerTools: !storyMode` |
 | Worker/browser/QA | `main.ts` around lines 895–1518 | local Temporal queue, live/packet branching, optional Next/Chromium; not a cheap pure rule test |

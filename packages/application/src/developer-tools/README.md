@@ -13,9 +13,10 @@
 | Lab scenario catalogue (CH01) | [`chamber-lab-catalog.ts`](chamber-lab-catalog.ts) + [`@offscreen/contracts/chamber-lab`](../../../../packages/contracts/src/chamber-lab.ts) | Versioned `id@version` scenarios with lane/cost/fixture; does **not** execute. Legacy `chamber.vN` + QA IDs retained with `automatedPassAllowed: false` |
 | Bench pure runner (CH02) | [`tools/chamber/src/lab/bench.ts`](../../../../tools/chamber/src/lab/bench.ts) via `pnpm chamber:bench -- <id> --seed=N` | Calls real `@offscreen/game` calendar/check/eligibility policies; no DB/Nest/browser |
 | Semantic fixture specimens (CH03) | [`lab/fixture-specimens.ts`](lab/fixture-specimens.ts) | Versioned overlays (80% shift, owned item, due decision); content hash; **no DB writes** (CH04) |
+| Isolated Sandbox (CH04) | [`lab/sandbox-guard.ts`](lab/sandbox-guard.ts), [`lab/sandbox-materializer.ts`](lab/sandbox-materializer.ts) | `offscreen_chamber_run_<hex>` localhost-only guard; memory materialize/isolation proof; live DROP/CREATE needs `confirmDisposableProvision` + owner permission |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Pending future lab | **CH02–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | Bench runner, fixture/reset, controlled lane, trace/evidence and workbench |
+| Pending future lab | **CH05–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | clock/entropy, run orchestration, inspector, faults, evidence, workbench |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 
