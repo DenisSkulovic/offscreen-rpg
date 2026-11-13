@@ -105,7 +105,13 @@ export function StoryFrame({
 
       <main id="story-frame-now" className="story-frame__stage">
         {passageTitle ? (
-          <h1 className="story-frame__passage-title">{passageTitle}</h1>
+          <h1
+            key={passageTitle}
+            className="story-frame__passage-title"
+            data-passage-enter="true"
+          >
+            {passageTitle}
+          </h1>
         ) : null}
         <div className="story-frame__passage">
           {paragraphs.map((paragraph, index) => (

@@ -1,13 +1,13 @@
 # UX10 | Game-feel motion tied to true events
 
-**State:** Proposed. **Approval:** no code authorized. **Kind:** UI motion/feedback + accessibility/performance tests. **Parent:** [experience program](../../experience/implementation-program.md), M3. **Dependencies:** UX02, UX03, UX04.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX10 (CSS-first + reduced-motion). **Kind:** UI motion/feedback + accessibility/performance tests. **Parent:** [experience program](../../experience/implementation-program.md), M3. **Dependencies:** UX02, UX03, UX04 (Done).
 
 ## Cursor first-screen brief
 
 > **Source map:** [Play owner](../../../apps/web/src/features/play/README.md), Storybook fixture catalogue and app CSS. Inspect source of passage, choice, work and saved roll receipt.
 > **Primary target:** [motion grammar](../../experience/system/motion.md#motion-grammar-recommended) and [meaningful animation](../../experience/system/motion.md#animation-identity-and-lifecycle).
 > **Known trap:** SSE invalidation/refetch and React remounting can replay entry animations; a frontend-rendered countdown can look complete before backend settlement. Dice must be **already committed** and their public details authorized before any flourish.
-> **Scope:** proposed only. Add no general-purpose animated state machine, paid animation service or fake progress engine.
+> **Scope:** **Authorized for UX10.** Add no general-purpose animated state machine, paid animation service or fake progress engine.
 
 ## Target and trade-off
 

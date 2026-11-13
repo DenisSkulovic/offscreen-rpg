@@ -1,13 +1,13 @@
 # UX12 | Plan a little ahead, without operating a workflow engine
 
-**State:** Proposed, **not Ready**. **Approval:** design only, no application code authority. **Kind:** frontend interaction/composition and focused tests. **Parent:** [Experience implementation program](../../experience/implementation-program.md), M1/M2. **Dependencies:** UX03 contextual choice grammar and UX04 truthful commitments. **Current engine:** bounded accepted successor plans already exist; a general standing routine does **not**.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX12 Plan ahead presentation for existing finite successors. **Kind:** frontend interaction/composition and focused tests. **Parent:** [Experience implementation program](../../experience/implementation-program.md), M1/M2. **Dependencies:** UX03 and UX04 (Done). **Current engine:** bounded accepted successor plans already exist; a general standing routine does **not**.
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play owner map](../../../apps/web/src/features/play/README.md); inspect `ui/campaign-offer.tsx`, `model/use-offer-path.ts`, `ui/campaign-activity.tsx`, `api/use-campaign-command.ts`, `packages/contracts/src/campaign.ts` and accepted-plan controls. Check current source because Cursor was modifying the repo during design.
 > **Primary target:** [Offscreen handoff](../../experience/flows/offscreen-handoff.md#level-2--authorize-a-short-bounded-itinerary-near-term-where-engine-supports-it), [autonomy limits](../../experience/patterns/autonomy-and-absence.md) and [choice semantics](../../experience/patterns/choice-surface-decision-rules.md#p4-change-existing-accepted-commitment).
 > **Known trap:** the current `CampaignOfferPanel` places “Add as a later activity” on each option and asks for “Successor horizon in fictional seconds.” An action with `successorPaths` is **one immutable accepted plan**, not separate guarantees that future steps will complete.
-> **Scope:** proposed only. Recompose **currently supported** finite accepted plans. No new auto-agent, no plan-loop mechanic, no automatic character choices, no hidden permission changes, no model costs.
+> **Scope:** **Authorized for UX12.** Recompose **currently supported** finite accepted plans. No new auto-agent, no plan-loop mechanic, no automatic character choices, no hidden permission changes, no model costs.
 
 ## Desired product behavior
 

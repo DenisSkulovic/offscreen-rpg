@@ -51,8 +51,9 @@ describe('CampaignPlay composition', () => {
     ).toBeInTheDocument();
     expect(command.send).not.toHaveBeenCalled();
     await user.click(
-      screen.getAllByRole('button', { name: /Stage for later/i })[0]!,
+      screen.getAllByRole('button', { name: /Add to plan ahead/i })[0]!,
     );
+    expect(screen.getByText(/Plan a little ahead/i)).toBeInTheDocument();
     expect(screen.getByText(/1 later activity staged/i)).toBeInTheDocument();
     expect(command.send).not.toHaveBeenCalled();
   });

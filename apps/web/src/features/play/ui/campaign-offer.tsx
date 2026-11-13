@@ -127,9 +127,9 @@ export function CampaignOfferPanel({
                         ])
                       }
                     >
-                      Stage for later
+                      Add to plan ahead
                       <span className="story-frame__intention-support">
-                        Does not start the action · planning only
+                        Does not start the action · conditional later attempt
                       </span>
                     </button>
                   ) : null}
@@ -138,30 +138,52 @@ export function CampaignOfferPanel({
             })}
           </ul>
           {offer.successorPaths.length ? (
-            <details className="story-frame__secondary">
+            <details className="story-frame__secondary" open>
               <summary>
-                {offer.successorPaths.length} later{' '}
+                Plan a little ahead · {offer.successorPaths.length} later{' '}
                 {offer.successorPaths.length === 1
                   ? 'activity'
                   : 'activities'}{' '}
                 staged
               </summary>
               <p className="story-frame__intention-support">
-                Choose a different activity to start the plan. Horizon editing
-                stays here until the dedicated planner slice.
+                Successors are conditional later attempts, not guaranteed
+                completions. Choose a different activity as the first step to
+                accept this plan in one frozen command.
               </p>
-              <label>
-                Successor horizon in fictional seconds{' '}
-                <input
-                  type="number"
-                  min={1}
-                  max={10080}
-                  value={offer.planHorizonGameSeconds}
-                  onChange={(event) =>
-                    offer.setPlanHorizonGameSeconds(Number(event.target.value))
-                  }
-                />
-              </label>
+              <fieldset>
+                <legend>Stop planning after about</legend>
+                {(
+                  [
+                    { label: '1 in-world hour', seconds: 3600 },
+                    { label: '4 in-world hours', seconds: 14400 },
+                    { label: '1 in-world day', seconds: 86400 },
+                  ] as const
+                ).map((option) => (
+                  <label key={option.seconds}>
+                    <input
+                      type="radio"
+                      name="plan-horizon"
+                      checked={
+                        offer.planHorizonGameSeconds === option.seconds
+                      }
+                      onChange={() =>
+                        offer.setPlanHorizonGameSeconds(option.seconds)
+                      }
+                    />{' '}
+                    {option.label}
+                  </label>
+                ))}
+              </fieldset>
+              <p className="story-frame__intention-support">
+                Horizon:{' '}
+                {formatWorldDuration(
+                  campaign.settings.time,
+                  offer.planHorizonGameSeconds,
+                )}{' '}
+                of fictional time (exact admitted seconds:{' '}
+                {offer.planHorizonGameSeconds}).
+              </p>
               <button
                 type="button"
                 className="story-frame__intention story-frame__intention--explore"
@@ -169,14 +191,14 @@ export function CampaignOfferPanel({
                   offer.setSuccessorPaths((prior) => prior.slice(0, -1))
                 }
               >
-                Remove last
+                Remove last step
               </button>
               <button
                 type="button"
                 className="story-frame__intention story-frame__intention--explore"
                 onClick={() => offer.setSuccessorPaths([])}
               >
-                Clear staged plan
+                Clear plan
               </button>
             </details>
           ) : null}

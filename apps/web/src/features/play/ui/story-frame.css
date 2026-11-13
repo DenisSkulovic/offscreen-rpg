@@ -309,6 +309,44 @@
   outline-offset: 3px;
 }
 
+/* UX10: restrained feedback only. No fake progress or remount flourishes. */
+.story-frame__intention {
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+
+.story-frame__notice {
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.story-frame__passage-title[data-passage-enter='true'] {
+  animation: sf-passage-enter 220ms ease-out;
+}
+
+@keyframes sf-passage-enter {
+  from {
+    opacity: 0.35;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-frame__intention,
+  .story-frame__notice {
+    transition: none;
+  }
+
+  .story-frame__passage-title[data-passage-enter='true'] {
+    animation: none;
+  }
+}
+
 @media (max-width: 720px) {
   .story-frame {
     max-width: none;
