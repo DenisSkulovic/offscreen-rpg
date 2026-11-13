@@ -70,6 +70,19 @@
 .stories-library__cta--quiet {
   background: transparent;
   color: var(--sl-action);
+  border-color: var(--sl-edge);
+}
+
+button.stories-library__cta,
+button.stories-library__cta--quiet {
+  cursor: pointer;
+}
+
+button.stories-library__cta:disabled,
+button.stories-library__cta--quiet:disabled,
+button.stories-library__more:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .stories-library__section {

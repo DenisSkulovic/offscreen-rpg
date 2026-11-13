@@ -19,6 +19,7 @@ import {
 } from './draft-content';
 import { StorytellerSelect } from './storyteller-select';
 import { useDraftSave } from './use-draft-save';
+import './stories-library.css';
 
 type CreationStep = 'foundation' | 'role' | 'storyteller' | 'review';
 
@@ -195,10 +196,10 @@ export function DraftEditor({
   const characterError = errors.characterName?.message;
 
   return (
-    <main className="editor creation-editor">
+    <main className="editor creation-editor stories-library">
       <SessionRefresh redirectOnExpiry={false} />
-      <p className="eyebrow">Offscreen RPG · New story</p>
-      <h1>Create a story worth entering.</h1>
+      <p className="stories-library__brand">Offscreen RPG · New story</p>
+      <h1 className="stories-library__title">Imagine a life worth entering.</h1>
       <ol className="creation-progress" aria-label="Story creation progress">
         {steps.map((item, index) => (
           <li
@@ -215,10 +216,11 @@ export function DraftEditor({
         <fieldset>
           {step === 'foundation' ? (
             <section aria-labelledby="foundation-title">
-              <h2 id="foundation-title">Where will this story begin?</h2>
+              <h2 id="foundation-title">Choose a beginning</h2>
               <p className="creation-intro">
-                Choose a grounded prepared experience, or invent something new.
-                Nothing is generated yet.
+                Pick a prepared situation, or invent your own premise. Saving and
+                reviewing come later — nothing is generated yet, and the clock
+                does not start.
               </p>
               <div className="creation-paths">
                 {preparedStarts.map((entry) => (
@@ -397,8 +399,9 @@ export function DraftEditor({
             <section aria-labelledby="review-title" className="creation-step">
               <h2 id="review-title">Review your story setup.</h2>
               <p className="creation-intro">
-                Saving still spends nothing. You will explicitly create the
-                opening on the next screen with one bounded Storyteller call.
+                Saving still spends nothing and starts no life. Creating the
+                opening is a separate, explicit Storyteller call on the next
+                screen. Start comes only after you review that opening.
               </p>
               <dl className="creation-summary">
                 <div>

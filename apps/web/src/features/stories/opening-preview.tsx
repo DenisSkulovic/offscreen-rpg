@@ -10,6 +10,8 @@ import { paceOptions } from '@/src/features/play/model/pace-options';
 import { openingQueryOptions } from '@/src/shared/api/opening-query';
 import { useOpeningGenerate } from './use-opening-generate';
 import { useStartStory } from './use-start-story';
+import './stories-library.css';
+import '../play/ui/story-frame.css';
 
 export function OpeningPreviewPanel({
   viewerId,
@@ -113,10 +115,12 @@ export function OpeningPreviewPanel({
   const startLocked = Boolean(start.frozen) || start.canRetrySame;
 
   return (
-    <main className="editor opening-editor">
+    <main className="editor opening-editor stories-library">
       <SessionRefresh />
-      <p className="eyebrow">Offscreen RPG · Your opening</p>
-      <h1>{draft.title || 'Untitled story'}</h1>
+      <p className="stories-library__brand">Offscreen RPG · Your opening</p>
+      <h1 className="stories-library__title">
+        {draft.title || 'Untitled story'}
+      </h1>
       <dl className="opening-setup-summary">
         <div>
           <dt>Foundation</dt>
@@ -154,32 +158,52 @@ export function OpeningPreviewPanel({
             </p>
           )}
           {preview.candidate ? (
-            <>
-              <h2>{preview.candidate.content.title}</h2>
-              {preview.candidate.content.paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-              <section aria-label="Offered interaction">
-                <p>{preview.candidate.interaction.prompt}</p>
-                {preview.candidate.interaction.options.map((option) => (
-                  <article className="campaign-option" key={option.id}>
-                    <button type="button" disabled>
-                      {option.label}
-                    </button>
-                    {option.description ? (
-                      <p className="campaign-option-intention">
-                        {option.description}
-                      </p>
-                    ) : null}
-                    {option.risk ? (
-                      <p className="campaign-option-risk">
-                        <strong>Apparent risk:</strong> {option.risk}
-                      </p>
-                    ) : null}
-                  </article>
+            <div className="story-frame story-frame__stage" aria-label="Opening excerpt">
+              <h2 className="story-frame__passage-title">
+                {preview.candidate.content.title}
+              </h2>
+              <div className="story-frame__passage">
+                {preview.candidate.content.paragraphs.map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
                 ))}
+              </div>
+              <section
+                className="story-frame__threshold"
+                aria-label="Offered interaction"
+              >
+                <p className="story-frame__threshold-heading">
+                  {preview.candidate.interaction.prompt}
+                </p>
+                <ul className="story-frame__intentions">
+                  {preview.candidate.interaction.options.map((option) => (
+                    <li key={option.id}>
+                      <button
+                        type="button"
+                        className="story-frame__intention story-frame__intention--commit"
+                        disabled
+                      >
+                        {option.label}
+                        {option.description || option.risk ? (
+                          <span className="story-frame__intention-support">
+                            {[
+                              option.description,
+                              option.risk
+                                ? `Apparent risk: ${option.risk}`
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        ) : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <p className="story-frame__intention-support">
+                  Preview only — choosing here does not start the story.
+                </p>
               </section>
-            </>
+            </div>
           ) : null}
           {['pending', 'running'].includes(preview.state) && (
             <div className="opening-callout" role="status">
@@ -256,10 +280,24 @@ export function OpeningPreviewPanel({
           </p>
         </fieldset>
       ) : null}
-      {canStart || start.canRetrySame ? (
-        <p>
+      <div className="stories-library__actions">
+        <button
+          type="button"
+          className="stories-library__cta--quiet stories-library__more"
+          disabled={
+            generate.pending ||
+            start.pending ||
+            !draft.premise.trim() ||
+            Boolean(unresolved)
+          }
+          onClick={() => void onGenerate()}
+        >
+          {generateLabel}
+        </button>
+        {canStart || start.canRetrySame ? (
           <button
             type="button"
+            className="stories-library__cta"
             disabled={generate.pending || start.pending}
             onClick={() =>
               void (start.canRetrySame ? start.retryFrozen() : onStart())
@@ -271,19 +309,8 @@ export function OpeningPreviewPanel({
                 ? 'Retry the same Start'
                 : 'Start story'}
           </button>
-        </p>
-      ) : null}
-      <button
-        disabled={
-          generate.pending ||
-          start.pending ||
-          !draft.premise.trim() ||
-          Boolean(unresolved)
-        }
-        onClick={() => void onGenerate()}
-      >
-        {generateLabel}
-      </button>
+        ) : null}
+      </div>
       {!draft.premise.trim() && (
         <p>Add and save a premise before generating.</p>
       )}

@@ -1,13 +1,13 @@
 # UX06 | Guided imagination, not a creation form
 
-**State:** Proposed. **Approval:** no code is authorized; Cursor only after owner explicitly selects. **Kind:** frontend flow/refactor and tests. **Parent:** [experience program](../../experience/implementation-program.md), M2. **Dependency:** UX01.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX06 (presentation + explicit Generate/Start separation on existing guided steps). **Kind:** frontend flow/refactor and tests. **Parent:** [experience program](../../experience/implementation-program.md), M2. **Dependency:** UX01 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Stories owner](../../../apps/web/src/features/stories/README.md); inspect draft-editor.tsx, draft-content.ts, opening-preview.tsx, storyteller-select.tsx and current draft routes.
 > **Primary target:** [guided creation](../../experience/flows/creation-and-first-run.md#the-creation-pattern-guided-imagination-not-a-form).
 > **Known trap:** Draft RHF fields can be dirty while Query has newer server values; a 409 cannot wipe the player's work. Opening generation and Start are separate captured, possibly costly durable commands.
-> **Scope:** Proposed only. No paid model invocation, automatic generation, broad backend mechanics or destructive tests.
+> **Scope:** **Authorized for UX06.** No paid model invocation, automatic generation, broad backend mechanics or destructive tests.
 
 ## Target and alternative
 
