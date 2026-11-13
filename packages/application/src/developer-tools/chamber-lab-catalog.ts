@@ -56,6 +56,41 @@ export const chamberLabScenarioCatalog: readonly ChamberLabScenarioDefinition[] 
       },
     }),
     parseChamberLabScenario({
+      id: 'finite-action-overlap-eligibility',
+      version: 1,
+      family: 'finite-action',
+      name: 'Finite-action overlap eligibility',
+      searchTags: ['finite-action', 'overlap', 'eligibility', 'bench', 'check'],
+      proofIntent:
+        'Prove actionOverlapEligibility and resolveCheck against real @offscreen/game policies with an injected seed draw.',
+      invariants: [
+        'Intervening world obligation fails closed',
+        'Unsupported resolution kinds fail closed',
+        'Ability check uses production resolveCheck, not a Bench copy',
+      ],
+      costClass: 'offline',
+      fixture: {
+        id: 'overlap-and-check-smoke',
+        version: 1,
+        owningSource:
+          'packages/game/src/immediate-actions.ts#actionOverlapEligibility',
+        params: {
+          resolutionKind: 'check',
+        },
+      },
+      availabilityPerLane: {
+        'bench-policy': { state: 'available' },
+        'sandbox-db': {
+          state: 'planned',
+          reason: 'Persisted activity specimen arrives with CH03/CH04',
+        },
+        connected: {
+          state: 'planned',
+          reason: 'Connected activity proof is later CH13 work',
+        },
+      },
+    }),
+    parseChamberLabScenario({
       id: 'chamber-immediate-conversation',
       version: 1,
       family: 'scripted-chamber-scene',

@@ -10,16 +10,20 @@ import {
   searchChamberLabScenarios,
 } from '../dist/developer-tools/chamber-lab-catalog.js';
 
-test('catalogue seeds calendar bench and chamber.v2 connected cases', () => {
+test('catalogue seeds calendar bench, finite-action bench and chamber.v2 connected cases', () => {
   const listed = listChamberLabScenarios();
-  assert.ok(listed.length >= 3);
+  assert.ok(listed.length >= 4);
   const calendar = findChamberLabScenario('calendar-named-year-projection', 1);
+  const finite = findChamberLabScenario('finite-action-overlap-eligibility', 1);
   const scene = findChamberLabScenario('chamber-immediate-conversation', 1);
   const blocked = findChamberLabScenario('activity-interrupt-same-tick', 1);
   assert.ok(calendar);
+  assert.ok(finite);
   assert.ok(scene);
   assert.ok(blocked);
   assert.equal(calendar.family, 'calendar-time');
+  assert.equal(finite.family, 'finite-action');
+  assert.equal(finite.availabilityPerLane['bench-policy']?.state, 'available');
   assert.equal(scene.legacy?.legacyId, 'chamber.v2');
   assert.equal(scene.legacy?.automatedPassAllowed, false);
   assert.equal(

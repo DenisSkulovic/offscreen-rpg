@@ -481,6 +481,9 @@ importers:
       '@offscreen/documents':
         specifier: workspace:*
         version: link:../../packages/documents
+      '@offscreen/game':
+        specifier: workspace:*
+        version: link:../../packages/game
       '@offscreen/storyteller':
         specifier: workspace:*
         version: link:../../packages/storyteller

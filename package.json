@@ -30,6 +30,7 @@
     "infra:down": "node scripts/repo-tools/compose.mjs down",
     "infra:repair": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/repo-tools/repair-docker-desktop.ps1",
     "chamber": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start",
+    "chamber:bench": "pnpm --filter @offscreen/game build && pnpm --filter @offscreen/contracts build && pnpm --filter @offscreen/application build && pnpm --filter @offscreen/chamber build && pnpm --filter @offscreen/chamber bench",
     "story:local": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --story-mode",
     "story:server": "turbo run build --filter=@offscreen/chamber && pnpm --filter @offscreen/chamber start --story-mode --no-browser",
     "story:play": "node scripts/repo-tools/story-play.mjs",

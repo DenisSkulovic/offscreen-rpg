@@ -2,12 +2,13 @@
 
 `@offscreen/chamber` composes an **explicitly local developer harness** around ordinary API/web/worker/application flows. It is not the player's production gameplay API, and its fixture/probe behavior must not be promoted into universal game rules. See [QA journeys](../../docs/engineering/qa-journeys.md), [development](../../docs/development.md) and [provider dispatch review](../../docs/technical/provider-dispatch-review.md).
 
-**Selected future laboratory:** [Chamber C01–C16](../../docs/engineering/targets/chamber-laboratory.md) and [CH01–CH16 code program](../../docs/engineering/chamber-program.md) separate a fast pure Bench, persisted Sandbox, Connected rig, held packet lab and explicit live evaluation. **None is implemented yet.** For source investigations use the small [launcher mode map](src/README.md), not 1,500 lines of main.ts.
+**Selected laboratory:** [Chamber C01–C16](../../docs/engineering/targets/chamber-laboratory.md) and [CH01–CH16 code program](../../docs/engineering/chamber-program.md). **CH01 catalogue + CH02 Bench** are implemented; Sandbox/Connected/packet/live lanes remain future CH packets. For source investigations use the small [launcher mode map](src/README.md), not 1,500 lines of main.ts.
 
 ## Find the inspection mode
 
 | Need | Source | Boundary |
 | --- | --- | --- |
+| Pure Bench (no DB/Nest/browser) | [lab/bench.ts](src/lab/bench.ts), `pnpm chamber:bench -- <scenarioId> --seed=N` | Real `@offscreen/game` policies only |
 | Command-line mode selection, auth/bootstrap, child processes | [main.ts](src/main.ts) | Launcher composition, **not** application use-case ownership |
 | Capture a held opening without provider dispatch | [packet-review.ts](src/packet-review.ts) | Normal admission → exact review hold |
 | Capture a held memory packet / comparison | [memory-packet-review.ts](src/memory-packet-review.ts) | Scripted/held evidence, **not** accepted recall or playability |
