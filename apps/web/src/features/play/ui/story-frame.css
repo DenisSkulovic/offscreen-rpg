@@ -1,0 +1,261 @@
+/* UX01: player-only Living Situation Stage frame.
+   Scoped under .story-frame so /demo, Chamber, and creation CSS stay untouched. */
+
+.story-frame {
+  --sf-bg: #12181f;
+  --sf-stage: #1a222c;
+  --sf-stage-edge: #2a3644;
+  --sf-ink: #e7ece8;
+  --sf-ink-muted: #a7b2ab;
+  --sf-ink-quiet: #7d8a84;
+  --sf-action: #c4a574;
+  --sf-action-ink: #1a150f;
+  --sf-focus: #8ec8ff;
+  --sf-status-attention: #e2c27a;
+  --sf-separator: #3d4b57;
+  --sf-font-narrative: 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    'Book Antiqua', Georgia, serif;
+  --sf-font-ui: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --sf-measure: min(42rem, 100%);
+  --sf-gap: clamp(1rem, 2.5vw, 1.75rem);
+  --sf-pad: clamp(1rem, 3vw, 2rem);
+
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--sf-pad);
+  color: var(--sf-ink);
+  background:
+    radial-gradient(120% 80% at 50% -10%, #243041 0%, transparent 55%),
+    var(--sf-bg);
+  font-family: var(--sf-font-ui);
+}
+
+.story-frame *,
+.story-frame *::before,
+.story-frame *::after {
+  box-sizing: border-box;
+}
+
+.story-frame__chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0 0 var(--sf-gap);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--sf-separator);
+}
+
+.story-frame__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.story-frame__back {
+  color: var(--sf-ink-muted);
+  text-decoration: none;
+  font: 600 0.92rem/1.2 var(--sf-font-ui);
+}
+
+.story-frame__back:hover,
+.story-frame__back:focus-visible {
+  color: var(--sf-ink);
+}
+
+.story-frame__label {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: 600 1rem/1.3 var(--sf-font-ui);
+  color: var(--sf-ink);
+}
+
+.story-frame__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-frame__nav a,
+.story-frame__nav span[aria-current='page'] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.55rem;
+  color: var(--sf-ink-muted);
+  text-decoration: none;
+  font: 600 0.9rem/1.2 var(--sf-font-ui);
+}
+
+.story-frame__nav a:hover,
+.story-frame__nav a:focus-visible {
+  color: var(--sf-ink);
+}
+
+.story-frame__nav span[aria-current='page'] {
+  color: var(--sf-ink);
+  box-shadow: inset 0 -2px 0 var(--sf-action);
+}
+
+.story-frame__situation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.25rem;
+  margin: 0 0 var(--sf-gap);
+}
+
+.story-frame__place {
+  margin: 0;
+  color: var(--sf-ink-muted);
+  font: 0.95rem/1.4 var(--sf-font-ui);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.story-frame__status {
+  margin: 0;
+  color: var(--sf-status-attention);
+  font: 600 0.95rem/1.4 var(--sf-font-ui);
+}
+
+.story-frame__stage {
+  max-width: var(--sf-measure);
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--sf-stage-edge);
+  border-radius: 0.2rem;
+  background: linear-gradient(180deg, #1e2732 0%, var(--sf-stage) 100%);
+}
+
+.story-frame__passage-title {
+  margin: 0 0 1rem;
+  overflow-wrap: anywhere;
+  font: 600 clamp(1.45rem, 2.4vw, 1.9rem) / 1.25 var(--sf-font-narrative);
+  color: var(--sf-ink);
+}
+
+.story-frame__passage {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  color: var(--sf-ink);
+  font: 1.125rem / 1.65 var(--sf-font-narrative);
+}
+
+.story-frame__passage p {
+  margin: 0;
+  max-width: 40rem;
+  overflow-wrap: break-word;
+}
+
+.story-frame__memory {
+  margin: 1.35rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px dashed var(--sf-separator);
+  color: var(--sf-ink-muted);
+  font: 0.98rem / 1.45 var(--sf-font-ui);
+}
+
+.story-frame__threshold {
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--sf-separator);
+}
+
+.story-frame__threshold-heading {
+  margin: 0 0 0.85rem;
+  color: var(--sf-ink-quiet);
+  font: 600 0.82rem / 1.3 var(--sf-font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.story-frame__intentions {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-frame__intention {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 0.2rem;
+  background: transparent;
+  color: var(--sf-ink);
+  text-align: left;
+  cursor: pointer;
+  font: 600 1rem / 1.35 var(--sf-font-ui);
+}
+
+.story-frame__intention:hover,
+.story-frame__intention:focus-visible {
+  border-color: var(--sf-stage-edge);
+  background: #243040;
+}
+
+.story-frame__intention-support {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--sf-ink-muted);
+  font: 0.92rem / 1.4 var(--sf-font-ui);
+  font-weight: 400;
+}
+
+.story-frame__secondary {
+  margin: var(--sf-gap) 0 0;
+}
+
+.story-frame__secondary > summary {
+  cursor: pointer;
+  color: var(--sf-ink-muted);
+  font: 600 0.92rem / 1.4 var(--sf-font-ui);
+}
+
+.story-frame a:focus-visible,
+.story-frame button:focus-visible,
+.story-frame summary:focus-visible,
+.story-frame [tabindex]:focus-visible {
+  outline: 2px solid var(--sf-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .story-frame {
+    padding: 0.9rem 0.85rem 1.5rem;
+  }
+
+  .story-frame__chrome {
+    gap: 0.5rem 0.75rem;
+  }
+
+  .story-frame__nav a,
+  .story-frame__nav span[aria-current='page'] {
+    min-height: 2.5rem;
+  }
+
+  .story-frame__stage {
+    padding: 1rem 0.85rem;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  .story-frame__passage {
+    font-size: 1.05rem;
+  }
+}

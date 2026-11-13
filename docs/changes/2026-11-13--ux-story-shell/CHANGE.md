@@ -1,6 +1,6 @@
 # UX01 | a scene-first story shell, not an admin dashboard
 
-**State:** Proposed. **Approval and owner:** UX destination proposed 2026-11-13; code **not authorized**. Owner chooses if/when; Cursor is the implementation executor.  
+**State:** In progress (authorized 2026-11-13). **Approval and owner:** Owner authorized UX01 code after design handoff merge to `main`; Cursor is the implementation executor.  
 **Kind:** frontend behavior / layout refactor / focused component tests.  
 **Parent:** [Experience implementation program](../../experience/implementation-program.md), M1. **Dependency:** existing React/Next architecture intact; no UX packet required.
 
@@ -9,7 +9,7 @@
 > **Current-source map:** [App Router map](../../../apps/web/app/README.md), [web owner route](../../../apps/web/README.md); inspect `apps/web/app/style.css`, `app/(authenticated)/layout.tsx` and one Play route.  
 > **Governing target:** [selected Living Stage blueprint](../../experience/spaces/living-stage-blueprint.md#stage-anatomy-and-default-order), [mobile composition](../../experience/spaces/living-stage-blueprint.md#small-screen-deliberate-reflow-not-desktop-compression), [component strategy](../../experience/system/component-strategy.md#four-levels-of-implementation).  
 > **Known trap:** The authenticated route-group layout owns the private session/Query provider **and wraps the Chamber and Stories**, so do not put player-only navigation chrome there by default. Existing global CSS also affects the public demo and Chamber. **A full Journal route is not yet guaranteed**; no dead navigation.  
-> **Scope/permission:** **Proposed only. No code now.** When explicitly authorized, implement shared story-facing navigation/layout tokens and focused verification. No engine/provider/database work.
+> **Scope/permission:** **Authorized for UX01 only.** Implement shared story-facing navigation/layout tokens and focused verification. No engine/provider/database work. No UX02 migration of full Play content.
 
 ## Target alignment and contrary designs
 
@@ -60,4 +60,4 @@ Expected owner candidates: `apps/web/app/style.css` (only **safe scoped CSS**), 
 
 ## Handoff and next action
 
-Before marking **Ready**, the owner must **explicitly authorize code** and Cursor must recheck current owners. The [selected Living Stage blueprint](../../experience/spaces/living-stage-blueprint.md) already fixes the layout direction. Render and critique a StoryFrame fixture **during implementation**, not as an impossible prerequisite requiring code before code authorization. Cursor may use CSS grid/flex, native HTML and a restrained primitive only as needed, preserving the chosen React architecture. Return diff, rendered evidence, negative cases, and explicit unresolved aesthetic questions. This is the foundation, **not permission to “improve the entire UI.”**
+Owner authorized code 2026-11-13. Implementation landed a scoped `StoryFrame` fixture (not full Play migration). Evidence: `pnpm --filter @offscreen/web test:fast` **113/113**; Storybook `Experience/StoryFrame`; renders in [evidence/renders](../../experience/evidence/renders/). **Pending:** design critique of screenshots before UX02. UX02 is **not** authorized.

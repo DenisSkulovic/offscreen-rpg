@@ -22,6 +22,7 @@
 | Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
 | Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | RHF edit session keyed by story; Query catalogue/presets/history; frozen preset save |
 | Read-only chronology | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts) | Numeric `before`; viewer+story infinite key; explicit open/reset |
+| Living Situation Stage shell (UX01) | [ui/story-frame](ui/story-frame.tsx) + scoped [ui/story-frame.css](ui/story-frame.css) | Presentation only; no Query/commands; Journal link only when a real destination is supplied. Full Play migration is UX02. |
 
 ## One useful command path
 
