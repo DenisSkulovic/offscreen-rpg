@@ -32,6 +32,14 @@ At the same time, image placement needs a bounded **visual treatment** to expres
 
 Keep default/neutral field behavior quiet; effects must not be exaggerated merely to look different in a screenshot. New expressive effects require tests for content visibility, performance and user motion preferences. Don't install new libs without concrete need.
 
+## Mandatory source boundary: fixture content must not be a runtime dependency
+
+**Observed baseline:** `apps/web/src/features/play/presentation/assets.ts` contains `FIXTURE_ASSETS` keyed to `fixture:cave-wall`, `fixture:harbor-light` and `fixture:abstract-field`; `parse.ts` requires a `fixture:` assetRef; `resolve.ts` imports `lookupFixtureAsset`. This is a prototype leak of authored *example content* into generic presentation code. PX06 owns this correction, not an extra new initiative.
+
+**Implement:** replace runtime import of named fixtures with a **small injected trusted asset catalog or pure resolver callback** (approved rendition URL/path, dimensions, optional public description, identity scope as relevant). Generic parser accepts a bounded opaque `assetRef` token without interpreting place/category names; arbitrary raw URLs/CSS remain forbidden, and unresolved/unapproved refs fail locally. The Storybook/test scenario owns its example catalog and named `cave.svg`/`harbor.svg` files. Prefer test-only static serving rather than production `public/` copies if simple with existing Storybook config; don't introduce a new asset system to accomplish this.
+
+**Negative proof:** generic `presentation/parse.ts` and `resolve.ts` contain no dependency on `fixture:`, `FIXTURE_ASSETS`, named cave/harbor resources or Storybook assets. Inject two arbitrary unrelated catalog IDs to prove the same renderer works. An unknown/unauthorized ID cannot be displayed or break text/actions. Retain no-image behavior; existing fixture stories still work. This is **not** backend/model/image-provider integration.
+
 ## Media size/layout contract
 
 - Keep trusted `assetRef`, at most one decorative backdrop and two optional inline figures, and verified paragraph anchors. No backend generator or direct URLs.
