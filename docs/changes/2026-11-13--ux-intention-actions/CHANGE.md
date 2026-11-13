@@ -36,7 +36,7 @@ A contextual `IntentionList`/`IntentionChoice`-type composition (naming may diff
 
 ## Exclusions
 
-No freeform text composer, no new rules/admission API, no automatic “eat item” inferred from inventory, no arbitrary new offer generation, no chance manipulation, no unapproved rate limits, no paid-model retries, no redefining input ownership between players.
+No freeform text composer, no new rules/admission API, no automatic “eat item” inferred from inventory, no arbitrary new offer generation, no chance manipulation, no unapproved rate limits, no paid-model retries, no redefining input ownership between players. **UX12 separately owns** editing/reviewing bounded accepted multi-step plans; UX03 must not add a per-option “Add as a later activity” job-planning interface while redesigning ordinary choices.
 
 ## Acceptance and negative cases
 

@@ -36,7 +36,7 @@ On the Now stage:
 
 ## Code scope / non-goals
 
-Likely Play `ui/campaign-activity.tsx`, `ui/campaign-status.tsx`, `model/campaign-projections.ts` and new status presentation pieces; relevant tests/Storybook. Keep exact existing API and Query ownership. If public data lack clear pause authority or predicted boundary, **display less** and create a separate data-projection contract/change. No local clock ownership, unsupported change-course commands, automatic queueing, custom plans, admin metrics or layout-wide timers.
+Likely Play `ui/campaign-activity.tsx`, `ui/campaign-status.tsx`, `model/campaign-projections.ts` and new status presentation pieces; relevant tests/Storybook. Keep exact existing API and Query ownership. If public data lack clear pause authority or predicted boundary, **display less** and create a separate data-projection contract/change. No local clock ownership, unsupported change-course commands, automatic queueing, custom plans, admin metrics or layout-wide timers. **UX04 may display a true accepted plan status but does not build its editor**; the finite, consented plan composition belongs to [UX12](../2026-11-13--ux-offscreen-planner/CHANGE.md).
 
 ## Acceptance and contrary evidence
 

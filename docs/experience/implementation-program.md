@@ -29,6 +29,7 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 | [UX02 narrative stage](../changes/2026-11-13--ux-narrative-stage/CHANGE.md) | Beautiful, readable, truthful current scene and meaningful transitions | UX01 | **Presence** |
 | [UX03 intention interactions](../changes/2026-11-13--ux-intention-actions/CHANGE.md) | Contextual offered actions, menu navigation and safe commit/preview semantics | UX02 | **Agency** |
 | [UX04 commitment + holds](../changes/2026-11-13--ux-commitment-truth/CHANGE.md) | Truthful work/time/interruption/unknown-ack/no-activity presentation | UX02, UX03 | **Earned time** |
+| [UX12 finite offscreen planner](../changes/2026-11-13--ux-offscreen-planner/CHANGE.md) | Replace raw successor-path and fictional-second planning controls with an intelligible bounded **Plan ahead** flow | UX03, UX04 | **Offscreen handoff** |
 | [UX05 story library](../changes/2026-11-13--ux-story-library/CHANGE.md) | Human-centered list of stories/drafts with authentic attention state | UX01 | **Re-entry gateway** |
 | [UX06 guided creation](../changes/2026-11-13--ux-guided-creation/CHANGE.md) | Foundation → role → direction → review → Start as an inviting flow | UX01 | **First-run creation** |
 | [UX07 return and journal](../changes/2026-11-13--ux-return-journal/CHANGE.md) | Source-linked history and honest recent changes, meaningful return path | UX02, UX04; public read model verified | **Continuity** |
@@ -46,11 +47,11 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 - [Mechanics reassessment](foundations/mechanics-reassessment.md) and [temporal alternatives](foundations/temporal-philosophy.md): bounded standing life vs current strict commitment time, social investment, job repetition, form-dependent abilities and meaningful offscreen presence.
 - Maps, multiplayer, imagery, elaborate sound, and stronger generative autonomy require new decision packets before code.
 
-Do not let UX01-UX11 mutate these mechanics as an unrequested side effect.
+Do not let UX01–UX12 mutate these mechanics as an unrequested side effect. UX12 replaces the **presentation of existing accepted finite plans**; it does not implement [GM03 bounded standing life](../changes/2026-11-13--gm-standing-life/CHANGE.md).
 
 ## Updated validation infrastructure (2026-11-13)
 
-Main has since recorded React W01–W22 and Chamber CH01–CH16 as **Done**. This describes their source/change-record status, **not** every Chamber scenario's availability. The [Chamber ↔ UX map](evidence/chamber-ux-validation-bridge.md) lists available, planned and blocked scenario lanes and separates Bench/Sandbox/Connected proof from Storybook/browser/human evidence. For UX01–UX11, prefer existing provider-free Storybook and source-backed game fixtures; do not begin a second Chamber modernization.
+Main has since recorded React W01–W22 and Chamber CH01–CH16 as **Done**. This describes their source/change-record status, **not** every Chamber scenario's availability. The [Chamber ↔ UX map](evidence/chamber-ux-validation-bridge.md) lists available, planned and blocked scenario lanes and separates Bench/Sandbox/Connected proof from Storybook/browser/human evidence. For UX01–UX12, prefer existing provider-free Storybook and source-backed game fixtures; do not begin a second Chamber modernization.
 
 The [public projection map](evidence/public-projection-capability-map.md) identifies desired player claims the current DTO cannot prove. If a surface needs one, either narrow its copy or propose a separate read-model/game Change. The [future mechanics program](mechanics-evolution-program.md) contains rule changes that cannot be smuggled into visual refactors.
 
@@ -79,7 +80,7 @@ UX01–UX04 render a scene, contextual choice and long commitment without generi
 
 ### Milestone M2 | A coherent life
 
-UX05–UX08 add guided entry, stories and digestible memory. A full absence scenario is truthful about progress, and a nonhuman story doesn't display fake human economy or inventory.
+UX05–UX08 and UX12 add guided entry, finite offscreen planning, stories and digestible memory. A full absence scenario is truthful about progress, and a nonhuman story doesn't display fake human economy or inventory.
 
 **Exit:** J5–J8 tested in browser and with genuine verified/read-model states; deep linking doesn't resurrect stale choices.
 
