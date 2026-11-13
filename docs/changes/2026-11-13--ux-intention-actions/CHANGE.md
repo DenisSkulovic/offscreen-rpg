@@ -1,15 +1,15 @@
 # UX03 | a coherent grammar for choices and commitments
 
-**State:** Proposed. **Approval and owner:** architecture/design prepared; implementation **not** authorized.  
+**State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence; Cursor landed UX03.  
 **Kind:** player interaction refactor + state/behavior tests.  
-**Parent:** [Program](../../experience/implementation-program.md) M1. **Dependency:** UX01, UX02.
+**Parent:** [Program](../../experience/implementation-program.md) M1. **Dependency:** UX01, UX02 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play source map](../../../apps/web/src/features/play/README.md), particularly `ui/campaign-offer.tsx`, `model/use-offer-path.ts`, `use-resolution-command.ts` and `api/use-campaign-command.ts`.  
 > **Governing target:** [Four control meanings](../../experience/patterns/interaction-grammar.md#four-different-things-a-control-can-do), [scene action area](../../experience/patterns/interaction-grammar.md#scene-action-area) and [confirmations](../../experience/patterns/interaction-grammar.md#confirmations-only-where-stakes-warrant-them).  
 > **Known trap:** a menu choice, accepted action, ongoing work and a paid retry cannot share one “Continue” button. Captured offer identity and frozen submission must not be silently regenerated after an SSE update.  
-> **Scope/permission:** Proposed only. Only **currently admitted pre-generated options** are in scope. **Do not implement free-text gameplay** under this packet.
+> **Scope/permission:** **Authorized for UX03.** Only **currently admitted pre-generated options** are in scope. **Do not implement free-text gameplay** under this packet.
 
 ## Desired behavior independent of old widgets
 

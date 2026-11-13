@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { makeCampaign } from '@/src/test/campaign-fixtures';
 import { makeStorySnapshot } from '@/src/test/story-fixtures';
 import {
+  activityConditionLabel,
   campaignHoldMessage,
   isPathStaged,
   offerChildren,
@@ -45,5 +46,12 @@ describe('campaign projections', () => {
       true,
     );
     expect(isPathStaged([['look', 'approach']], ['look', 'wait'])).toBe(false);
+  });
+
+  it('labels completion-pending ahead of raw running state (negative)', () => {
+    const campaign = makeCampaign({ activity: 'completion-pending' });
+    expect(activityConditionLabel(campaign.activity!)).toMatch(
+      /not finished yet/i,
+    );
   });
 });

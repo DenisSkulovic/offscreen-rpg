@@ -47,6 +47,32 @@ export function isActivityActive(
   return Boolean(activity && ['running', 'paused'].includes(activity.state));
 }
 
+export function activityConditionLabel(
+  activity: NonNullable<CampaignView['activity']>,
+): string {
+  if (activity.completionPending) {
+    return 'Checking the outcome — not finished yet';
+  }
+  switch (activity.state) {
+    case 'running':
+      return 'Underway';
+    case 'paused':
+      return 'Paused — time is not advancing this work';
+    case 'encounter':
+      return 'Interrupted — the scene needs your attention';
+    case 'suspended':
+      return 'Suspended — progress is saved';
+    case 'blocked':
+      return 'Blocked — this work cannot continue yet';
+    case 'complete':
+      return 'Complete';
+    case 'abandoned':
+      return 'Abandoned';
+    default:
+      return activity.state;
+  }
+}
+
 export function retainedCommitments(campaign: CampaignView) {
   return campaign.commitments.filter(
     (commitment) => commitment.id !== campaign.activity?.id,

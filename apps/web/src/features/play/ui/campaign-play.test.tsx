@@ -45,14 +45,25 @@ describe('CampaignPlay composition', () => {
   it('navigates offer path and stages a successor', async () => {
     const user = userEvent.setup();
     renderCampaign();
-    await user.click(screen.getByRole('button', { name: 'Look around' }));
+    await user.click(screen.getByRole('button', { name: /Look around/i }));
     expect(
-      screen.getByRole('button', { name: 'Approach the gate' }),
+      screen.getByRole('button', { name: /Approach the gate/i }),
     ).toBeInTheDocument();
+    expect(command.send).not.toHaveBeenCalled();
     await user.click(
-      screen.getAllByRole('button', { name: 'Add as a later activity' })[0]!,
+      screen.getAllByRole('button', { name: /Stage for later/i })[0]!,
     );
     expect(screen.getByText(/1 later activity staged/i)).toBeInTheDocument();
+    expect(command.send).not.toHaveBeenCalled();
+  });
+
+  it('treats Back as explore navigation without a command (negative)', async () => {
+    const user = userEvent.setup();
+    renderCampaign();
+    await user.click(screen.getByRole('button', { name: /Look around/i }));
+    await user.click(screen.getByRole('button', { name: /^Back/i }));
+    expect(screen.getByRole('button', { name: /Look around/i })).toBeInTheDocument();
+    expect(command.send).not.toHaveBeenCalled();
   });
 
   it('keeps frozen command retry when the offer identity changes (negative)', async () => {
@@ -81,13 +92,43 @@ describe('CampaignPlay composition', () => {
     ).toBeInTheDocument();
     expect(command.send).not.toHaveBeenCalled();
     // Offer tree remounted for the new identity, but command retry stayed.
-    expect(screen.getByRole('button', { name: 'Look around' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Look around/i })).toBeDisabled();
   });
 
   it('shows held-clock status for storyteller holds', () => {
     renderCampaign(makeCampaign({ holdKind: 'storyteller' }));
     expect(
       screen.getByText(/Storyteller prepares a required scene/i),
+    ).toBeInTheDocument();
+  });
+
+  it('shows contribution progress and paused truth without inventing completion', () => {
+    renderCampaign(makeCampaign({ activity: 'paused-contribution' }));
+    expect(screen.getByText(/Repair the beacon/i)).toBeInTheDocument();
+    expect(screen.getByText(/3\/5 earned/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Paused — time is not advancing this work/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Resume work/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('refuses to label completion-pending as finished (negative)', () => {
+    renderCampaign(makeCampaign({ activity: 'completion-pending' }));
+    expect(
+      screen.getByText(/Checking the outcome — not finished yet/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/This is not a completed reward/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/^Complete$/i)).not.toBeInTheDocument();
+  });
+
+  it('states that no active commitment means time is idle', () => {
+    renderCampaign(makeCampaign({ activity: 'none' }));
+    expect(
+      screen.getByText(/No active commitment\. Fictional time is not advancing/i),
     ).toBeInTheDocument();
   });
 

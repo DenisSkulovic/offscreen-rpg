@@ -3,10 +3,27 @@ import type { CampaignView } from '@offscreen/contracts/campaign';
 import { formatWorldDuration } from '@offscreen/game/calendar';
 import type { CampaignCommandApi } from '../api/campaign-command';
 import {
+  activityConditionLabel,
   isActivityActive,
   retainedCommitments,
 } from '../model/campaign-projections';
 import { paceForValue, paceOptions } from '../model/pace-options';
+
+function progressText(
+  campaign: CampaignView,
+  progress: NonNullable<CampaignView['activity']>['progress'],
+) {
+  if (progress.kind === 'contribution') {
+    return `${progress.label}: ${progress.earned}/${progress.required} earned`;
+  }
+  return `${progress.label}: ${formatWorldDuration(
+    campaign.settings.time,
+    progress.elapsedFictionalSeconds,
+  )} of ${formatWorldDuration(
+    campaign.settings.time,
+    progress.requiredFictionalSeconds,
+  )}`;
+}
 
 export function CampaignActivityPanel({
   campaign,
@@ -23,12 +40,16 @@ export function CampaignActivityPanel({
   const commitments = retainedCommitments(campaign);
 
   return (
-    <>
+    <div className="story-frame__commitment">
       {actionExecution ? (
-        <div role="status">
+        <section
+          className="story-frame__notice"
+          aria-label="Accepted action in progress"
+          role="status"
+        >
           <p>
-            <strong>{actionExecution.label}</strong> is {actionExecution.state}{' '}
-            for{' '}
+            <strong>{actionExecution.label}</strong> is{' '}
+            {actionExecution.state === 'paused' ? 'paused' : 'underway'} for{' '}
             {formatWorldDuration(
               campaign.settings.time,
               actionExecution.targetGameSecond -
@@ -38,10 +59,11 @@ export function CampaignActivityPanel({
             {actionExecution.dueAt
               ? ` Expected around ${new Date(actionExecution.dueAt).toLocaleTimeString()}.`
               : ' Campaign time is currently held.'}{' '}
-            The outcome, roll and effects are not committed before that
-            boundary.
+            Outcome, roll, and effects are not committed before that boundary.
           </p>
           <button
+            type="button"
+            className="story-frame__intention story-frame__intention--commit"
             disabled={command.busy || command.retry}
             onClick={() =>
               void command.send('action-execution-controls', {
@@ -69,6 +91,8 @@ export function CampaignActivityPanel({
                 </select>
               </label>
               <button
+                type="button"
+                className="story-frame__intention story-frame__intention--explore"
                 disabled={command.busy || command.retry}
                 onClick={() =>
                   void command.send('action-execution-controls', {
@@ -83,31 +107,53 @@ export function CampaignActivityPanel({
               </button>
             </>
           ) : null}
-        </div>
+        </section>
       ) : null}
+
       {activity ? (
-        <div>
-          <h2>{activity.label}</h2>
-          <p>
-            {activity.progress.label}:{' '}
-            {activity.progress.kind === 'contribution'
-              ? `${activity.progress.earned}/${activity.progress.required}`
-              : `${formatWorldDuration(campaign.settings.time, activity.progress.elapsedFictionalSeconds)} / ${formatWorldDuration(campaign.settings.time, activity.progress.requiredFictionalSeconds)}`}{' '}
-            · {activity.state}. {activity.boundariesSettled} mechanical
-            boundaries settled.
+        <section
+          className={
+            activity.state === 'paused' ||
+            activity.state === 'suspended' ||
+            activity.state === 'blocked' ||
+            activity.completionPending
+              ? 'story-frame__notice story-frame__notice--held'
+              : 'story-frame__notice'
+          }
+          aria-label="Current commitment"
+        >
+          <h2 className="story-frame__threshold-heading">
+            {activity.label}
+          </h2>
+          <p className="story-frame__stage-status">
+            {activityConditionLabel(activity)}
           </p>
-          {activity.dueAt ? (
+          <p>{progressText(campaign, activity.progress)}</p>
+          {activity.boundariesSettled > 0 ? (
+            <p>
+              {activity.boundariesSettled} mechanical{' '}
+              {activity.boundariesSettled === 1 ? 'boundary' : 'boundaries'}{' '}
+              already settled. Settled progress does not rewind.
+            </p>
+          ) : null}
+          {activity.dueAt && !activity.completionPending ? (
             <p>
               Next clock update around{' '}
               {new Date(activity.dueAt).toLocaleTimeString()}. It can finish
               while you are away.
             </p>
           ) : null}
-          {activity.estimatedCompletionAt ? (
+          {activity.completionPending ? (
+            <p>
+              The local clock may already read zero; settlement is still
+              pending. This is not a completed reward.
+            </p>
+          ) : null}
+          {activity.estimatedCompletionAt && !activity.completionPending ? (
             <p>
               Conditional completion estimate:{' '}
               {new Date(activity.estimatedCompletionAt).toLocaleTimeString()}.
-              Future rolls, tools and interruptions can change it.
+              Future rolls, tools, and interruptions can change it.
             </p>
           ) : null}
           {active &&
@@ -120,6 +166,8 @@ export function CampaignActivityPanel({
           {active ? (
             <>
               <button
+                type="button"
+                className="story-frame__intention story-frame__intention--commit"
                 disabled={command.busy || command.retry}
                 onClick={() =>
                   void command.send('activity-controls', {
@@ -129,7 +177,7 @@ export function CampaignActivityPanel({
                   })
                 }
               >
-                {activity.state === 'paused' ? 'Resume' : 'Pause'}
+                {activity.state === 'paused' ? 'Resume work' : 'Pause work'}
               </button>
               {!campaign.settings.locked ? (
                 <div>
@@ -147,6 +195,8 @@ export function CampaignActivityPanel({
                     </select>
                   </label>
                   <button
+                    type="button"
+                    className="story-frame__intention story-frame__intention--explore"
                     disabled={command.busy || command.retry}
                     onClick={() =>
                       void command.send('activity-controls', {
@@ -161,7 +211,7 @@ export function CampaignActivityPanel({
                   </button>
                   <p>
                     Already elapsed time is settled at the old speed. Completed
-                    rolls stay unchanged.
+                    rolls stay unchanged. Pace never invents earned progress.
                   </p>
                 </div>
               ) : (
@@ -172,29 +222,35 @@ export function CampaignActivityPanel({
               )}
             </>
           ) : null}
-        </div>
+        </section>
       ) : null}
+
+      {!activity && !actionExecution ? (
+        <p className="story-frame__intention-support">
+          No active commitment. Fictional time is not advancing on its own.
+        </p>
+      ) : null}
+
       {commitments.length ? (
-        <details open>
+        <details className="story-frame__secondary" open>
           <summary>Work you can return to</summary>
           {commitments.map((commitment) => (
             <article key={commitment.id}>
               <p>
-                <strong>{commitment.label}</strong> · {commitment.state}
+                <strong>{commitment.label}</strong> ·{' '}
+                {activityConditionLabel(commitment)}
               </p>
               <p>
-                {commitment.progress.label}:{' '}
-                {commitment.progress.kind === 'contribution'
-                  ? `${commitment.progress.earned}/${commitment.progress.required}`
-                  : `${formatWorldDuration(campaign.settings.time, commitment.progress.elapsedFictionalSeconds)} / ${formatWorldDuration(campaign.settings.time, commitment.progress.requiredFictionalSeconds)}`}
-                . Time is not advancing this work.
+                {progressText(campaign, commitment.progress)}. Time is not
+                advancing this work.
               </p>
             </article>
           ))}
         </details>
       ) : null}
+
       {acceptedPlan ? (
-        <details open>
+        <details className="story-frame__secondary" open>
           <summary>Accepted activity plan</summary>
           <p>
             {acceptedPlan.state}
@@ -216,6 +272,8 @@ export function CampaignActivityPanel({
           </ol>
           {['active', 'blocked'].includes(acceptedPlan.state) ? (
             <button
+              type="button"
+              className="story-frame__intention story-frame__intention--explore"
               disabled={command.busy || command.retry}
               onClick={() =>
                 void command.send('accepted-plan-controls', {
@@ -230,6 +288,6 @@ export function CampaignActivityPanel({
           ) : null}
         </details>
       ) : null}
-    </>
+    </div>
   );
 }

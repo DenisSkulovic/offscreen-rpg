@@ -7,10 +7,17 @@ import { offerSchema } from '@offscreen/game/offers';
 const offerA = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const offerB = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
 
+const activityId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
 export function makeCampaign(
   overrides: Partial<{
     offerId: string;
     holdKind: 'storyteller' | 'decision' | 'world-obligation' | null;
+    activity:
+      | 'none'
+      | 'running-contribution'
+      | 'paused-contribution'
+      | 'completion-pending';
   }> = {},
 ): CampaignView {
   const offerId = overrides.offerId ?? offerA;
@@ -74,6 +81,38 @@ export function makeCampaign(
             ]
           : [];
 
+  const activityKind = overrides.activity ?? 'none';
+  const activity =
+    activityKind === 'none'
+      ? null
+      : {
+          id: activityId,
+          label: 'Repair the beacon',
+          state:
+            activityKind === 'paused-contribution'
+              ? ('paused' as const)
+              : ('running' as const),
+          boundariesSettled: 1,
+          revision: 1,
+          completionPending: activityKind === 'completion-pending',
+          progress: {
+            kind: 'contribution' as const,
+            label: 'Signal parts secured',
+            earned: 3,
+            required: 5,
+          },
+          dueAt:
+            activityKind === 'completion-pending'
+              ? null
+              : '2026-11-13T12:00:00.000Z',
+          estimatedCompletionAt:
+            activityKind === 'completion-pending'
+              ? null
+              : '2026-11-13T12:30:00.000Z',
+          resolvedGameSeconds: 0,
+          settingsRevision: 1,
+        };
+
   return campaignViewSchema.parse({
     settings: {
       revision: 1,
@@ -107,7 +146,7 @@ export function makeCampaign(
     holds,
     offer,
     activityAccess: { kind: 'none' },
-    activity: null,
+    activity,
     actionExecution: null,
     actionExecutionEvents: [],
     commitments: [],

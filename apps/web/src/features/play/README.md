@@ -22,7 +22,9 @@
 | Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
 | Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | RHF edit session keyed by story; Query catalogue/presets/history; frozen preset save |
 | Read-only chronology | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts) | Numeric `before`; viewer+story infinite key; explicit open/reset |
-| Living Situation Stage shell (UX01/UX02) | [ui/story-frame](ui/story-frame.tsx) + scoped [ui/story-frame.css](ui/story-frame.css); composed by [PlayScene](view.tsx) | Presentation frame; Journal → `#story-journal` history; Settings/Technical behind Details (kept mounted). UX03 owns intention grammar polish. |
+| Living Situation Stage shell (UX01/UX02) | [ui/story-frame](ui/story-frame.tsx) + scoped [ui/story-frame.css](ui/story-frame.css); composed by [PlayScene](view.tsx) | Presentation frame; Journal → `#story-journal` history; Settings/Technical behind Details (kept mounted). |
+| Intention grammar (UX03) | [ui/campaign-offer](ui/campaign-offer.tsx) + `story-frame__intention--explore` / `--commit` | Explore/Back/stage: no command; commit uses frozen `command.send('actions', …)`. Successor planner stays secondary until UX12. |
+| Commitment / hold truth (UX04) | [ui/campaign-activity](ui/campaign-activity.tsx), [ui/campaign-status](ui/campaign-status.tsx), `activityConditionLabel` | Contribution fractions and wait durations only; completion-pending ≠ finished; pause/resume only via admitted controls. |
 
 ## One useful command path
 

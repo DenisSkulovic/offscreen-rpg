@@ -1,15 +1,15 @@
 # UX04 | make earned time visible without lying about progress
 
-**State:** Proposed. **Approval and owner:** design only; Cursor not yet permitted to implement.  
+**State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence; Cursor landed UX04.  
 **Kind:** player-facing status/progress/hold behavior + focused tests; potential **separate** public-projection request if gaps discovered.  
-**Parent:** [Program](../../experience/implementation-program.md) M1. **Dependencies:** UX02, UX03.
+**Parent:** [Program](../../experience/implementation-program.md) M1. **Dependencies:** UX02, UX03 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play source map](../../../apps/web/src/features/play/README.md), `ui/campaign-activity.tsx`, `ui/campaign-status.tsx`, `ui/campaign-records.tsx`, `model/campaign-projections.ts`, `view.tsx`; inspect `packages/contracts/src/campaign.ts` only for public DTO fields.  
 > **Governing target:** [time and truth](../../experience/patterns/time-and-truth.md#keep-four-clocksconditions-conceptually-separate), [Now state compositions](../../experience/spaces/now.md#now-state-compositions).  
 > **Known trap:** elapsed fictional time is NOT productivity; an expired client countdown is NOT a settled reward; paused/suspended work doesn't silently advance.  
-> **Scope/permission:** proposed only. Rendering/refactoring supported states, **no new scheduling logic** and no provider calls.
+> **Scope/permission:** **Authorized for UX04.** Rendering/refactoring supported states, **no new scheduling logic** and no provider calls.
 
 ## Target and skeptical alternative
 

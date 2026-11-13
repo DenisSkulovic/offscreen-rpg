@@ -8,24 +8,27 @@ import { campaignHoldMessage } from '../model/campaign-projections';
 export function CampaignStatus({ campaign }: { campaign: CampaignView }) {
   const holdMessage = campaignHoldMessage(campaign.holds);
   return (
-    <>
+    <div className="story-frame__status-band">
       <div className="campaign-summary">
         <p>
-          {campaign.character?.name} · HP {campaign.character?.hp}/
-          {campaign.character?.maxHp}
+          {campaign.character?.name
+            ? `${campaign.character.name} · HP ${campaign.character.hp}/${campaign.character.maxHp}`
+            : 'Character state arrives with the scene'}
           {campaign.location ? ` · ${campaign.location}` : ''}
         </p>
         <p>World time: {campaign.worldTime.label}</p>
       </div>
       {holdMessage ? (
-        <p role="status">
+        <p className="story-frame__stage-status" role="status">
           {holdMessage} Existing activity progress is preserved and held wall
           time will not become catch-up progress.
         </p>
       ) : null}
       {campaign.worldConditions.length ? (
         <section aria-label="Current world conditions">
-          <h2>Current world conditions</h2>
+          <h2 className="story-frame__threshold-heading">
+            Current world conditions
+          </h2>
           {campaign.worldConditions.map((condition) => (
             <p key={condition.id}>
               <strong>{condition.label}</strong>: {String(condition.value)}
@@ -36,7 +39,7 @@ export function CampaignStatus({ campaign }: { campaign: CampaignView }) {
       {campaign.worldObligations.some(
         (obligation) => obligation.state === 'pending',
       ) ? (
-        <details open>
+        <details className="story-frame__secondary" open>
           <summary>Known future events</summary>
           {campaign.worldObligations
             .filter((obligation) => obligation.state === 'pending')
@@ -51,7 +54,7 @@ export function CampaignStatus({ campaign }: { campaign: CampaignView }) {
         </details>
       ) : null}
       {campaign.worldObligationEvents.length ? (
-        <details>
+        <details className="story-frame__secondary">
           <summary>World event history</summary>
           {campaign.worldObligationEvents.map((event) => (
             <p key={event.id}>
@@ -61,7 +64,7 @@ export function CampaignStatus({ campaign }: { campaign: CampaignView }) {
           ))}
         </details>
       ) : null}
-      <details>
+      <details className="story-frame__secondary">
         <summary>Character state and rules</summary>
         {campaign.character?.quantities.map((quantity) => (
           <p key={quantity.id}>
@@ -84,6 +87,6 @@ export function CampaignStatus({ campaign }: { campaign: CampaignView }) {
           SRD 5.2.1 ability-check subset; server-resolved nonlethal actions.
         </p>
       </details>
-    </>
+    </div>
   );
 }
