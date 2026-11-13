@@ -8,6 +8,8 @@ This is a **replacement product-experience specification**, not a transcription 
 
 **New presentation post-implementation review (2026-11-13):** PX01–PX04 landed but the rendered Harbor, Cave and Sterile fixtures expose real cross-surface contrast, viewport, art scale and proof problems. See [source-grounded review](evidence/presentation-post-px-review-2026-11-13.md) and [PX05–PX07 calibration program](presentation-calibration-program.md) before any engine-side appearance contract. This is design review, not code authorization.
 
+**New contract decisions (2026-11-13):** [GM05 committed event feed](patterns/committed-event-feed.md) is the factual, source-backed return/Journal foundation (not GM06 seen state); [optional published live appearance](system/live-presentation-projection.md) connects the finished frontend presentation renderer to a future backend-owned passage projection, with no automatic model/image spending. See [cross-program handoff](../engine-architecture/handoff/decision-queue-2026-11-13.md). No code authorized.
+
 ## Start with a question, not the whole folder
 
 | Question | Read |
