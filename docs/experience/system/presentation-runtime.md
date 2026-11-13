@@ -2,6 +2,8 @@
 
 **Status: selected frontend design target, 2026-11-13. Documentation only; no implementation authorized by this file.** Parent: [experience destination](../README.md). Executable plan: [presentation implementation program](../presentation-implementation-program.md). Contract detail: [presentation language](presentation-language.md); [media and motion](presentation-media-and-motion.md).
 
+**Implementation quality gate (post-PX01–PX04):** The basic parser/resolver/Storybook seam exists, but screenshot/source review identified critical light-theme choice contrast and pale-gradient chrome contrast failures, viewport overflow, unbounded figures and Storybook proof bypass. Follow the [review](../evidence/presentation-post-px-review-2026-11-13.md) and [PX05–PX07 calibration](../presentation-calibration-program.md). This permanent architecture remains selected; it is **not yet visually/behaviorally accepted for engine integration**.
+
 ## Product promise
 
 Offscreen RPG is a world-neutral, scene-first, text-led game. A quiet apartment, abyssal cave, microscopic organism or distributed consciousness must not inherit fantasy parchment or a generic SaaS dashboard. The *same* accessible player interface can acquire radically different visual atmospheres, while reading, meaningful intentions, honest time and continuity remain recognizable.
