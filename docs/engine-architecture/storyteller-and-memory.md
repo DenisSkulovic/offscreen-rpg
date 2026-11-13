@@ -22,7 +22,7 @@ A single provider API call might participate in several responsibilities. **The 
 
 ## A bounded narrative loop, not an infinite autonomous agent
 
-\`\`\`text
+```text
 Accepted situation / event boundary
            |
     source/identity orientation
@@ -39,7 +39,7 @@ Accepted situation / event boundary
                        |
      current scene, playable offered intentions,
         updated canonical source references
-\`\`\`
+```
 
 The current code already implements several pieces of this: versioned Storyteller profiles, captured immutable task/request artifacts, bounded multi-round memory exploration, differentiated report vs current scene, funding/usage fences and canonical publication. **Do not throw those away** to install a popular multi-agent framework. Instead verify that the pieces actually compose into a coherent *long-lived AI DM*.
 

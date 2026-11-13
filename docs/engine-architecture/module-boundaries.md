@@ -27,7 +27,7 @@ No new top-level package is a badge of progress. An additional package should be
 
 ## Recommended logical ownership after evolution
 
-\`\`\`text
+```text
 packages/game/                           pure, framework-free policies
   core: identities, checks, time rules
   capabilities: optional typed resource/form/position/item/social primitives
@@ -46,7 +46,7 @@ packages/documents/                      immutable artifact formats and storage 
 packages/storyteller/                     bounded creative/proposal/data contracts
 packages/workflows/                       deterministic wake/coordinator workflows
 apps/api/ apps/worker/ apps/web/          transport/deployment adapters
-\`\`\`
+```
 
 This is **conceptual**, not a proposed direct rename of every current path. The existing `campaign`/`stories` groups can be incrementally reorganized as scopes settle. A wholesale move can make Git diffs unreadable and break Cursor's parallel UI work for no player benefit.
 
@@ -71,14 +71,14 @@ For each, count concrete owner files and explain which touches are conceptually 
 
 ## Suggested dependency rule
 
-\`\`\`text
+```text
 apps and composition  ──> application, contracts, adapters
 application           ──> pure game, storyteller contracts, db, documents
 storyteller contract  ──> independent schemas/context DTOs
 pure game             ──> no application, DB, Nest, provider, Temporal
 workflows             ──> activity interfaces + deterministic Temporal SDK only
 browser               ──> public DTOs, never hidden plans, SQL or secrets
-\`\`\`
+```
 
 If the application and Storyteller need to share a captured evidence type, define it in the **smallest neutral contract owner**. Avoid cyclic imports and interface packages with zero independent purpose. Prefer compile-/lint-enforced dependency direction and source-adjacent maps.
 

@@ -80,7 +80,7 @@ Track queue wait vs provider latency vs publication wait separately. Canceling a
 
 ## A deployment shape that could scale without splitting game services
 
-\`\`\`text
+```text
                Browser / SSR / SSE
                       |
        [stateless Next replicas]  [Nest API replicas]
@@ -95,7 +95,7 @@ Track queue wait vs provider latency vs publication wait separately. Canceling a
                   [shared CAS object store]
                          |
                     [derived cache]
-\`\`\`
+```
 
 No prescriptive cloud provider or Kubernetes requirement. API and worker deploy independently, but application logic remains in one modular source product. A managed database, a shared object store and dedicated worker pools can plausibly handle significant independent-story load. A real 100-user shared scene still needs a domain actor/time model.
 

@@ -141,7 +141,7 @@ This is where the architecture either realizes the dream or reveals that we buil
 
 ## Reporting schema for every future Change
 
-\`\`\`text
+```text
 CHANGE: code-bearing outcome and exact product requirement
 SOURCE: git commit, source map, rule version/schema/workflow definition
 NORMAL: tested trace and expected invariant
@@ -151,6 +151,6 @@ RESULT: commands, measured outputs, pass/fail and unresolved issues
 COST: model calls $, DB/reset/deployment side effects if any
 LIMITS: what these results cannot establish
 NEXT: repair target or owner review gate
-\`\`\`
+```
 
 If an assertion cannot distinguish an actual plausible defect, delete or strengthen it. Test-count inflation is not evidence.

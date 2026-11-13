@@ -52,7 +52,7 @@
 
 **Argument:** The game currently advances only accepted time. If the player leaves for a day and no work is active, the world freezes. A fictional life could feel fake, and no number of correct receipts changes that.
 
-**Alternatives:** automatic world clock vs bounded standing routine vs safe delegated choice. The UX program's [temporal philosophy](../experience/foundations/temporal-philosophy.md) recommends bounded standing life over unrestricted ticking. We must preserve current deliberate-time correctness while experimenting with **permissions that create felt autonomy**.
+**Alternatives:** automatic world clock vs bounded standing routine vs safe delegated choice. The UX program's [temporal philosophy](../../experience/foundations/temporal-philosophy.md) recommends bounded standing life over unrestricted ticking. We must preserve current deliberate-time correctness while experimenting with **permissions that create felt autonomy**.
 
 **Judgment:** product risk, not mere technical debt. The engine target must embrace legitimate unattended life, but cannot silently choose fights, money or relationships.
 

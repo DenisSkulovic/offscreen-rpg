@@ -22,7 +22,7 @@ This is close to some current choices, but for **product reasons**, not because 
 
 ## Six logical subsystems, one coherent runtime
 
-\`\`\`text
+```text
          Player intention (typed choice / future reviewed custom intent)
                                  │
                                  v
@@ -49,7 +49,7 @@ This is close to some current choices, but for **product reasons**, not because 
       bounded model/cost                    only viewer-authorized
                │
                └── proposed, validated and published ──> new situation
-\`\`\`
+```
 
 **One owner per fact, distinct owners per purpose.** Storyteller output is not truth until admitted. A generated scene may be published later than mechanical settlement. The read model can lag or be unavailable, never silently recalculate the underlying game.
 
