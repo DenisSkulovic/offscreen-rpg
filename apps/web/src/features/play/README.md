@@ -18,7 +18,7 @@
 | Campaign commands | [api/use-campaign-command](api/use-campaign-command.ts): frozen URL/body `useMutation` | [ui/CampaignPlay](ui/campaign-play.tsx); statuses vary |
 | Shared pace catalogue | [model/pace-options](model/pace-options.ts) | Opening Start imports this pure module, not Play UI |
 | Offer path local navigation | [model/use-offer-path](model/use-offer-path.ts) + [ui/campaign-offer](ui/campaign-offer.tsx) | Resets on offer id change; must not clear command retry |
-| Character, holds, receipts | [ui/campaign-status](ui/campaign-status.tsx) / [activity](ui/campaign-activity.tsx) / [records](ui/campaign-records.tsx) | Pure projections in [model/campaign-projections](model/campaign-projections.ts) |
+| Character, holds, receipts (UX08) | [ui/campaign-status](ui/campaign-status.tsx) / [activity](ui/campaign-activity.tsx) / [records](ui/campaign-records.tsx) | Conditional You/World; ability sheet only when scores exist; projections in [model/campaign-projections](model/campaign-projections.ts) |
 | Storyteller refresh/retry | [ResolutionRecovery](resolution-recovery.tsx) | Distinct from Play choice envelope; no automatic charged retry |
 | Storyteller settings, presets, history | [CampaignSettingsEditor](campaign-settings.tsx) | RHF edit session keyed by story; Query catalogue/presets/history; frozen preset save |
 | Read-only chronology (UX07) | [StoryHistoryView](history.tsx) + [storyHistoryInfiniteOptions](../../shared/api/story-history-query.ts); [CampaignHistory](ui/campaign-history.tsx) | Numeric `before`; viewer+story infinite key; explicit open/reset; no “since you left” without seen cursor |

@@ -132,6 +132,16 @@ describe('CampaignPlay composition', () => {
     ).toBeInTheDocument();
   });
 
+  it('omits fantasy ability sheet when character scores are absent (negative)', () => {
+    renderCampaign(makeCampaign());
+    expect(
+      screen.queryByText(/Character abilities/i),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/^strength$/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Silt Gate/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/^World$/i)).toBeInTheDocument();
+  });
+
   it('keeps opening preview off the Play Client campaign module (negative)', () => {
     const previewSource = readFileSync(
       resolve(__dirname, '../../stories/opening-preview.tsx'),

@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Player experience redesign (2026-11-13):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). Owner authorized continuing the sequence on 2026-11-13 (polish deferred). **UX01–UX07 Done**; UX08–UX12 and GM01–GM07 remain Proposed until selected.
+**Player experience redesign (2026-11-13):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). Owner authorized continuing the sequence on 2026-11-13 (polish deferred). **UX01–UX08 Done**; UX09–UX12 and GM01–GM07 remain Proposed until selected.
 
 **Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (all Done; live Sandbox/Connected Nest boots remain gated where noted). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 

@@ -1,13 +1,13 @@
 # UX08 | World and You, only when the story actually has them
 
-**State:** Proposed. **Approval:** no code authorized; owner must explicitly select for Cursor. **Kind:** conditional player context UI and tests. **Parent:** [experience program](../../experience/implementation-program.md), M2. **Dependencies:** UX02 and UX07, verified public data projection.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX08 (conditional You/World; no empty fantasy sheet). **Kind:** conditional player context UI and tests. **Parent:** [experience program](../../experience/implementation-program.md), M2. **Dependencies:** UX02 and UX07 (Done), verified public data projection.
 
 ## Cursor first-screen brief
 
 > **Source map:** [Play ownership](../../../apps/web/src/features/play/README.md), ui/campaign-status.tsx, ui/campaign-records.tsx; read public packages/contracts/src/campaign.ts and stories.ts types only for displayed state.
 > **Primary target:** [World](../../experience/spaces/journal-world-you.md#world-what-the-character-knows), [You](../../experience/spaces/journal-world-you.md#you-the-current-form-and-its-consequences), [context shelf](../../experience/spaces/journal-world-you.md#context-shelf-selection-rules).
 > **Known trap:** character, location, bodily ability, inventory, currency and map are all optional concepts in this game; private canonical documents cannot be exposed as public world knowledge.
-> **Scope:** Proposed only; present verified public facts, do not write a new world knowledge engine.
+> **Scope:** **Authorized for UX08**; present verified public facts, do not write a new world knowledge engine.
 
 ## Target and design argument
 
