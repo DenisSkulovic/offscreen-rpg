@@ -5,7 +5,7 @@
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play owner map](../../../apps/web/src/features/play/README.md); inspect `ui/campaign-offer.tsx`, `model/use-offer-path.ts`, `ui/campaign-activity.tsx`, `api/use-campaign-command.ts`, `packages/contracts/src/campaign.ts` and accepted-plan controls. Check current source because Cursor was modifying the repo during design.
-> **Primary target:** [Offscreen handoff](../../experience/flows/offscreen-handoff.md#level-2-authorize-a-short-bounded-itinerary-near-term-where-engine-supports-it), [autonomy limits](../../experience/patterns/autonomy-and-absence.md) and [choice semantics](../../experience/patterns/choice-surface-decision-rules.md#p4-change-existing-accepted-commitment).
+> **Primary target:** [Offscreen handoff](../../experience/flows/offscreen-handoff.md#level-2--authorize-a-short-bounded-itinerary-near-term-where-engine-supports-it), [autonomy limits](../../experience/patterns/autonomy-and-absence.md) and [choice semantics](../../experience/patterns/choice-surface-decision-rules.md#p4-change-existing-accepted-commitment).
 > **Known trap:** the current `CampaignOfferPanel` places “Add as a later activity” on each option and asks for “Successor horizon in fictional seconds.” An action with `successorPaths` is **one immutable accepted plan**, not separate guarantees that future steps will complete.
 > **Scope:** proposed only. Recompose **currently supported** finite accepted plans. No new auto-agent, no plan-loop mechanic, no automatic character choices, no hidden permission changes, no model costs.
 

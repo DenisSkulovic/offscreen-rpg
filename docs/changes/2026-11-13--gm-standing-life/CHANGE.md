@@ -1,11 +1,11 @@
 # GM03 | One bounded standing routine, not global autoplay
 
-**State:** Proposed, **not Ready**. **Approval:** none. **Kind:** deterministic game/autonomy contract + persisted execution + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Prerequisite:** owner selects [bounded-standing-life target](../../experience/foundations/temporal-philosophy.md#model-c-bounded-standing-life-recommended-long-term-direction), after comparing strict vs short-plan vs standing-routine player expectations.
+**State:** Proposed, **not Ready**. **Approval:** none. **Kind:** deterministic game/autonomy contract + persisted execution + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Prerequisite:** owner selects [bounded-standing-life target](../../experience/foundations/temporal-philosophy.md#model-c--bounded-standing-life-recommended-long-term-direction), after comparing strict vs short-plan vs standing-routine player expectations.
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [campaign operations](../../../packages/application/README.md#campaign-transition-boundary), inspect §packages/application/src/campaign/accepted-plans.ts§, §activities.ts§, §actions.ts§, §accepted-plan-controls.ts§ and public §packages/contracts/src/campaign.ts§.
-> **Target:** [offscreen standing-life model](../../experience/foundations/temporal-philosophy.md#model-c-bounded-standing-life-recommended-long-term-direction), [absence flow](../../experience/flows/offscreen-handoff.md), [deliberate execution](../../../docs/technical/committed-time.md#permission-to-advance).
+> **Target:** [offscreen standing-life model](../../experience/foundations/temporal-philosophy.md#model-c--bounded-standing-life-recommended-long-term-direction), [absence flow](../../experience/flows/offscreen-handoff.md), [deliberate execution](../../../docs/technical/committed-time.md#permission-to-advance).
 > **Known trap:** a standing routine is **not** a global world tick, unbounded repetition, AI improvisation or permission to choose at new decision points. Revalidation, resource limits, duplicate delivery and provider budget are hard correctness constraints.
 > **Scope:** proposed only; one **already-supported repeatable activity family** in a finite horizon, not universal autonomous life.
 
