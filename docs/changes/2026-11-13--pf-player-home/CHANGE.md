@@ -1,6 +1,6 @@
 # PF04 | Authenticated Stories becomes the player's real home
 
-**State: Proposed (2026-11-13). Code permission: none.** Parent: [entry program](../../experience/platform-entry-implementation-program.md). Backend public data limited to existing verified list snapshots; richer attention/usage projections are explicit deferred contracts. Can be implemented independently from public PF01/PF02 when code CSS owners don't collide.
+**State: Done (2026-11-13).** Authenticated `/stories` is a truthful Your-stories home: modest chrome, inviting verified empty, neutral featured kicker, Continue creating drafts, empty ≠ read failure. Parent: [entry program](../../experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
@@ -40,3 +40,10 @@ No new Nest endpoints, profile service, subscription storefront, admin users sea
 **Proof:** deterministic list fixtures with actual DTO schemas, targeted Vitest/RTL/MSW, existing Storybook, 1440/375/320 browser views, keyboard/axe, privacy/SSR checks appropriate to the affected route. Run `pnpm --filter @offscreen/web test:fast` at Change closure. Do not run destructive integrated DB tests or claim server semantics from mocks.
 
 **Handoff:** after owner authorizes, Cursor implements only bounded /stories UI/derived view state. Return screenshots across zero/one/many/draft/error, exact tests and data limitations. Any requested rich attention score goes to backend owner separately, not guessed.
+
+## Landed (2026-11-13)
+
+- `/stories` chrome: brand, viewer name, Your stories / Create / preview nav, Sign out; title is **Your stories** (no Welcome hero).
+- Featured kicker: “Your story” / “One of your stories” (removed “Return here”); Other lives subsection; verified empty invites Create + `/demo`; story failure is `role=alert` without empty copy.
+- Drafts heading **Continue creating**; empty ≠ failure.
+- Proof: `pnpm --filter @offscreen/web test:fast` — 45 files / 147 tests passed. No provider spend. Authenticated screenshot skipped (no local session in this agent browser).

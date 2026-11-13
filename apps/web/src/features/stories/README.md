@@ -14,8 +14,8 @@
 | Draft save and conflict | [useDraftSave](use-draft-save.ts) frozen PUT; 409 → keep edits; `resetDefaultValues` on success | `PUT /api/drafts/:id` + `expectedRevision`; explicit Load saved adopts server |
 | Storyteller catalogue | [StorytellerSelect](storyteller-select.tsx) | GET `/api/storytellers` via client effect |
 | Draft list, more pages | [DraftList](draft-list.tsx) + [draftsListInfiniteOptions](../../shared/api/drafts-list-query.ts) | Opaque `cursor`; `useInfiniteQuery` append/dedupe; SSR first-page hydrate |
-| Live story list | [LiveStoryList](live-story-list.tsx) + [storiesListInfiniteOptions](../../shared/api/stories-list-query.ts) | UUID `before`; append/dedupe; SSR first-page hydrate; UX05 featured + Enter story; status is server string only |
-| Stories library shell (UX05) | [stories/page.tsx](../../../app/(authenticated)/stories/page.tsx) + [stories-library.css](stories-library.css) | Drafts stay “Continue creation”; never invent Continuing from recency |
+| Live story list | [LiveStoryList](live-story-list.tsx) + [storiesListInfiniteOptions](../../shared/api/stories-list-query.ts) | UUID `before`; append/dedupe; SSR first-page hydrate; neutral featured kicker (not “Return here”); status is server string only; empty ≠ read failure |
+| Stories library shell (UX05/PF04) | [stories/page.tsx](../../../app/(authenticated)/stories/page.tsx) + [stories-library.css](stories-library.css) | “Your stories” home; drafts “Continue creating”; no Welcome hero; never invent Continuing from list order |
 | Guided creation / opening (UX06) | [DraftEditor](draft-editor.tsx) steps + [OpeningPreviewPanel](opening-preview.tsx) excerpt | RHF/409/frozen Start unchanged; preview options disabled; Generate ≠ Start |
 | Opening candidate load | preview page + [openingQueryOptions](../../shared/api/opening-query.ts) | SSR hydrate `queryKeys.draftOpening`; GET `/latest` polls while pending/running |
 | Generation admission | [useOpeningGenerate](use-opening-generate.ts) | Frozen `PUT .../openings/:attemptId` **202**; no automatic paid retry |

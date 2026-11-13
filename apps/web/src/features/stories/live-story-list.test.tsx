@@ -83,6 +83,8 @@ describe('LiveStoryList useInfiniteQuery', () => {
     expect(
       screen.getByRole('heading', { name: 'Newest live' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('Your story')).toBeInTheDocument();
+    expect(screen.queryByText(/Return here/i)).not.toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Enter story' }),
     ).toHaveAttribute('href', `/play/${fixtureIds.storyId}`);
@@ -96,11 +98,37 @@ describe('LiveStoryList useInfiniteQuery', () => {
     expect(
       screen.getByRole('heading', { name: 'Newest live' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('One of your stories')).toBeInTheDocument();
+    expect(screen.getByText('Other lives')).toBeInTheDocument();
     expect(screen.queryByText('Duplicate ignored')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent(
       'End of live stories.',
     );
     expect(pages).toBe(1);
+  });
+
+  it('does not claim empty stories when the list request failed', async () => {
+    const queryClient = createBrowserQueryClient();
+    queryClient.setDefaultOptions({ queries: { retry: false } });
+    server.use(
+      http.get('/api/stories', () =>
+        HttpResponse.json({ message: 'down' }, { status: 503 }),
+      ),
+    );
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LiveStoryList viewerId={viewerId} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /Stories could not be loaded/i,
+      );
+    });
+    expect(
+      screen.queryByText(/Every story begins with a situation/i),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/No live stories/i)).not.toBeInTheDocument();
   });
 
   it('ignores a rapid second fetchNextPage while the first is in flight (negative)', async () => {

@@ -17,16 +17,17 @@ export function DraftList({ viewerId }: { viewerId: string }) {
   } = useInfiniteQuery(draftsListInfiniteOptions(viewerId));
   const items = flattenUniqueById(data?.pages);
   const pending = isPending || isFetchingNextPage;
+  const verifiedEmpty = !isPending && !error && items.length === 0;
 
   return (
     <section className="stories-library__section" aria-label="Story drafts">
-      <h2 className="stories-library__section-heading">Drafts in creation</h2>
-      {items.length === 0 && !isPending ? (
+      <h2 className="stories-library__section-heading">Continue creating</h2>
+      {verifiedEmpty ? (
         <p className="stories-library__empty">
           No drafts yet. Start with a thought, a character, or a place — this is
           setup, not a live world.
         </p>
-      ) : (
+      ) : items.length > 0 ? (
         <ul className="stories-library__list">
           {items.map((draft) => (
             <li className="stories-library__row" key={draft.id}>
@@ -47,7 +48,7 @@ export function DraftList({ viewerId }: { viewerId: string }) {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
       {hasNextPage ? (
         <button
           type="button"
@@ -69,7 +70,7 @@ export function DraftList({ viewerId }: { viewerId: string }) {
       ) : null}
       {error ? (
         <p className="stories-library__status" role="alert">
-          Couldn’t load more drafts. Please try again.
+          Drafts could not be loaded. Try again.
         </p>
       ) : null}
     </section>

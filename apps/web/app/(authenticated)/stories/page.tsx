@@ -45,22 +45,38 @@ export default async function Stories() {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="stories-library">
         <SessionRefresh />
-        <p className="stories-library__brand">Offscreen RPG</p>
-        <h1 className="stories-library__title">Welcome, {viewer.user.name}.</h1>
+        <header className="stories-library__chrome">
+          <div className="stories-library__identity">
+            <p className="stories-library__brand">Offscreen RPG</p>
+            <p className="stories-library__viewer" title={viewer.user.name}>
+              {viewer.user.name}
+            </p>
+          </div>
+          <nav className="stories-library__nav" aria-label="Player home">
+            <span aria-current="page">Your stories</span>
+            <Link href="/stories/new">Create story</Link>
+            <Link href="/demo">Try preview</Link>
+          </nav>
+          <div className="stories-library__account">
+            <SignOutButton />
+          </div>
+        </header>
+        <h1 className="stories-library__title">Your stories</h1>
         <p className="stories-library__lede">
-          Return to a life in progress, or continue shaping a draft. Live
-          stories and unfinished creation stay separate.
+          Return to a saved life, or continue shaping a draft. Live stories and
+          unfinished creation stay separate. List status comes only from the
+          server — nothing here invents progress.
         </p>
         <div className="stories-library__actions">
           <Link className="stories-library__cta" href="/stories/new">
             Create a story
           </Link>
+          <Link className="stories-library__cta stories-library__cta--quiet" href="/demo">
+            Try the public preview
+          </Link>
         </div>
         <LiveStoryList viewerId={viewerId} />
         <DraftList viewerId={viewerId} />
-        <div className="stories-library__sign-out">
-          <SignOutButton />
-        </div>
       </main>
     </HydrationBoundary>
   );
