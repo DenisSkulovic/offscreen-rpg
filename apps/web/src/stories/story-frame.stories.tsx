@@ -73,6 +73,20 @@ export const NarrowLongProse: Story = {
       },
     ],
   },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 375,
+          margin: '0 auto',
+          minHeight: '100vh',
+          background: '#0b0f14',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
