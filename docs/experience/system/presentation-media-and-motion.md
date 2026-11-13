@@ -39,7 +39,7 @@ The same public passage content must render in the exact same reading order with
 
 ### Asset boundary: references, not generated URLs
 
-V1 accepts a **trusted asset reference** resolved by a frontend fixture registry, not unvalidated HTTP(S), data URLs, remote image-host URLs, CSS `url()` strings or inline SVG. The initial implementation uses local, license-safe or internally authored fixtures. Do not invoke an image-generation provider for implementation/tests.
+V1 accepts a **bounded opaque asset reference** resolved through a *trusted catalog supplied by its host*, not unvalidated HTTP(S), data URLs, remote image-host URLs, CSS `url()` strings or inline SVG. In Storybook that catalog contains local, license-safe or internally authored fixtures; production will eventually receive authorized public asset descriptors through its own integration. The generic presentation parser/resolver must not depend on any fixture catalog. Do not invoke an image-generation provider for implementation/tests.
 
 ### Generic renderer versus example content
 
