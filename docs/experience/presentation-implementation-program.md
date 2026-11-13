@@ -4,6 +4,8 @@
 
 **One-sentence destination:** a single verified scene + offer can be rendered in radically different, accessible, expressive visual environments using different *validated data*, with no source edits, without the browser knowing what generated the art direction.
 
+**Post-implementation design acceptance:** landed code != completed visual sign-off. The [Nov 13 review](evidence/presentation-post-px-review-2026-11-13.md) identifies broken Sterile/Harbor contrast, image layout/viewport defects, no-op grammar fields and Storybook resolver bypass. Implement and review [PX05–PX07](presentation-calibration-program.md) before starting a public/engine presentation contract.
+
 ## Authority and retrieval budget
 
 **Product/design owner:** [presentation runtime](system/presentation-runtime.md); **exact data grammar:** [presentation language](system/presentation-language.md); **media and motion:** [media/motion](system/presentation-media-and-motion.md). Preserve [Living Stage](spaces/living-stage-blueprint.md), [choice semantics](patterns/choice-surface-decision-rules.md), [motion](system/motion.md), [accessibility](system/accessibility-and-voice.md) and [React/Next target](../engineering/targets/react-next.md). This program does not redefine any existing game rules.
