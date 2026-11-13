@@ -1,6 +1,6 @@
 # UX11 | Browser/Storybook evidence for an actually good game interface
 
-**State:** Proposed. **Approval:** no code authorized. **Kind:** test code, Storybook fixtures, browser verification tooling/config. **Parent:** [experience program](../../experience/implementation-program.md), M4. **Dependencies:** at least one of UX01–UX10 implemented and ready for human review, then incremental evidence per shipped surface.
+**State: Done (2026-11-13).** Provider-free UX evidence for shipped surfaces: Storybook catalogue, Vitest/axe, portal/demo browser captures, deliberate failure≠empty counterexample. Parent: [experience program](../../experience/implementation-program.md), M4. Evidence: [ux11-visual-evidence-2026-11-13](../../experience/evidence/ux11-visual-evidence-2026-11-13.md).
 
 ## Cursor first-screen brief
 
@@ -21,34 +21,10 @@ Create a focused workbench of **representative experience states** and browser s
 - Creation: dirty draft/409, stale opening, pending generation, uncertain payment, frozen Start after reload.
 - Visual variation: 320/375/768/1440, 200%/400% zoom, keyboard-only, high contrast, reduced motion, missing media.
 
-## What “evidence” means
+## Landed (2026-11-13)
 
-| Kind | Useful claim | Not a valid claim |
-| --- | --- | --- |
-| Storybook/MSW | Component behaves/rendered for mock data | A real model/provider/DB executed |
-| RTL/Vitest | Local focus/semantics/race behavior | Pixel-level taste or connected authority |
-| Playwright browser | Actual routing, responsive composition, accessible common patterns | All cognitive usability or untested provider outcomes |
-| Real authorized integration | Exactly-once, server-confirmed state under specified conditions | Long-term model quality or production scale |
-| Human observation | Player comprehension, reading comfort, real-world confusion | Mathematical proof of idempotence or authorization |
-
-Automated axe checks complement, not replace, manual screen reader and keyboard. Store representative screenshots/critique only when appropriate and reproducible, avoiding private story content. Prefer existing CI/test stack and local runs; do not install costly screenshot SaaS or change unrelated Actions.
-
-## Authority and source baseline
-
-[UX acceptance](../../experience/evidence/validation-plan.md), [Chamber scenario capability map](../../experience/evidence/chamber-ux-validation-bridge.md), [public projection capability map](../../experience/evidence/public-projection-capability-map.md), [critical user journeys](../../experience/flows/key-journeys.md), [selected frontend testing](../../engineering/targets/react-next.md#6-security-diagnostics-performance-and-proof), [time/story correctness](../../time-and-autonomy.md).
-
-Current web manifest includes Vitest, RTL, MSW, Storybook, Playwright-related integration tooling; Storybook has deterministic state fixtures. Main baseline 8c91618 inspected 2026-11-13, but **no test run or visual screenshot inspected in this design pass**. Reconfirm actual source before choosing packet.
-
-Likely apps/web/src/stories/*, existing Play/Stories tests, optional tools/api-integration/test scripts with explicit nondestructive mode and developer-run browser capture. No test of uncontrolled paid provider. Integration calls that reset disposable auth DB require **separate authorization**.
-
-## Acceptance and negative proof
-
-**Normal:** deterministic fixture catalogue covers all distinct current modes, one live-like story/return browser flow can be executed locally without provider charge, reports include actual commands run and exact evidence, accessibility labels and focus order are checked, viewport captures are reviewed against design target.
-
-**Negative:** no claims that “visuals pass” merely because test suite is green; no secret/private data in fixtures/screenshots; browser test cannot call real Storyteller by default; mocked timer cannot assert committed clock; flaky animation snapshots don't mask missing semantics; test coverage must include *one* deliberately false/counterexample state and reject it.
-
-**Evidence exit:** compact matrix of scenarios, actual test outputs, known unproved cases, human visual critique with concrete defects, and next bounded adjustments. If a user study hasn't been done, say “unobserved,” not “intuitive.”
-
-## Handoff
-
-Before Ready, pick the **specific implemented UX surfaces** to test, not a 1,000-fixture speculative catalogue. Cursor adds proof proportional to each. If a component fails human comprehension, return a design problem to the architect; don't tune brittle DOM assertions to manufacture victory.
+- Storybook `Experience/UX evidence` catalogue (portal/demo/stage/home + failure counterexample).
+- `src/features/ux-evidence/ux-evidence.test.tsx` — axe on portal + StoryFrame; preview opening choice; stories-503 ≠ empty counterexample.
+- Browser captures: portal desktop + 375; demo 375 (plus prior PF02 desktop/branch shots).
+- Evidence matrix under `docs/experience/evidence/ux11-visual-evidence-2026-11-13.md`.
+- Proof: `test:fast` 163 passed. Human comprehension study **unobserved**. No provider spend; no DB reset.

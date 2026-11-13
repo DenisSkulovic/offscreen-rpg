@@ -40,7 +40,7 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 | [UX08 adaptive details](../changes/2026-11-13--ux-adaptive-context/CHANGE.md) | Conditional World/You/context shelf without generic fantasy assumptions | UX02, UX07 | **Depth on demand** |
 | [UX09 public demo](../changes/2026-11-13--ux-public-demo/CHANGE.md) | Short polished, *explicitly scripted* sample demonstrating the fantasy | UX02/03 interaction grammar, independent public route | **Portfolio doorway** |
 | [UX10 motion and feedback](../changes/2026-11-13--ux-motion-feedback/CHANGE.md) | Meaningful, reduced-motion-safe state transitions, saved-roll presentation | UX02, UX03, UX04 | **Game feel** |
-| [UX11 UX evidence](../changes/2026-11-13--ux-visual-evidence/CHANGE.md) | Deterministic Storybook states, browser/a11y/visual evidence for shipped surfaces | The relevant UX packets under review | **Proof, not polish** |
+| [UX11 UX evidence](../changes/2026-11-13--ux-visual-evidence/CHANGE.md) | **Done:** Storybook catalogue, axe/Vitest, browser captures, counterexample | UX01–UX10/12 shipped surfaces | **Proof, not polish** |
 
 **No mandatory numerical sequence beyond dependencies.** UX05/UX06 and UX09 may proceed alongside UX03/04 when source owners do not conflict. One active Change at a time by default. Split cross-cutting data-projection requirements into a *separate* contract Change if a frontend packet would otherwise pretend the browser has authoritative fields it does not have.
 
