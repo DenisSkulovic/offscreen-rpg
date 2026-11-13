@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [launcher mode/source map](../../../tools/chamber/src/README.md) → `tools/chamber/src/main.ts` **bounded sections**, `stop.ts`, root `package.json` scripts. **Target:** [C11/C12/C13/C14/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2/8](../../technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H11/H14](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** 1,518-line launcher is long because it orchestrates many different lifecycles; preserve real safety checks, not just split by line count.
 
-**State:** Specified/Proposed, no source permission. **Depends on:** CH02 and CH04. **Source baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH11. **Depends on:** CH02/CH04 (Done). Did not rewrite full `main.ts` lifecycles; extracted flag grammar + cheap scenario/inspect CLIs.
+
+**Evidence:** `modes/cli-flags.ts`, `scenario-cli.ts`, `inspect-cli.ts`, root `chamber:scenario` / `chamber:inspect`. Tests: `cli-flags.test.ts` 2/2; smoke scenario+inspect OK without Docker. Negatives: conflicting modes, `--no-browser` without story-mode, evaluation without config, rejected `authorized-live` lab lane. Existing `chamber:*` aliases preserved.
 
 ## One code-bearing outcome
 

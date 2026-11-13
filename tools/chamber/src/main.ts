@@ -61,116 +61,46 @@ import {
   captureHeldMemoryComparisonPackets,
   captureHeldMemoryPacket,
 } from './memory-packet-review.js';
+import { parseLauncherFlags } from './modes/cli-flags.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // It never loads dotenv files; only the two explicitly authorized run modes
 // construct provider transport from an already-present process credential.
-const smoke = process.argv.includes('--smoke');
-const review = process.argv.includes('--review');
-const packetReview = process.argv.includes('--packet-review');
-const memoryPacketReview = process.argv.includes('--memory-packet-review');
-const memoryComparisonPackets = process.argv.includes(
-  '--memory-comparison-packets',
-);
-const memoryEvaluationPacket = process.argv.includes(
-  '--memory-evaluation-packet',
-);
-const memoryEvaluationRun = process.argv.includes('--memory-evaluation-run');
-const evaluationPacket = process.argv.includes('--evaluation-packet');
-const evaluationRun = process.argv.includes('--evaluation-run');
-const storyMode = process.argv.includes('--story-mode');
-const noBrowser = process.argv.includes('--no-browser');
-const resetDatabase = process.argv.includes('--reset-database');
-const configArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--config='));
-const authorizationArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--authorize='));
-const storyModelArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--story-model='));
-const storyMaxMicrousdArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--story-max-microusd='));
-const storyMaxInputTokensArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--story-max-input-tokens='));
-const storyMaxOutputTokensArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--story-max-output-tokens='));
-const storyAuthorizationArgument = process.argv
-  .slice(2)
-  .find((argument) => argument.startsWith('--authorize-story-model='));
-const runModes = [
-  smoke,
-  review,
-  packetReview,
-  memoryPacketReview,
-  memoryComparisonPackets,
-  memoryEvaluationPacket,
-  memoryEvaluationRun,
-  evaluationPacket,
-  evaluationRun,
-  storyMode,
-].filter(Boolean);
-if (
-  runModes.length > 1 ||
-  process.argv
-    .slice(2)
-    .some(
-      (arg) =>
-        ![
-          '--smoke',
-          '--review',
-          '--packet-review',
-          '--memory-packet-review',
-          '--memory-comparison-packets',
-          '--memory-evaluation-packet',
-          '--memory-evaluation-run',
-          '--evaluation-packet',
-          '--evaluation-run',
-          '--story-mode',
-          '--no-browser',
-          '--reset-database',
-          '--',
-        ].includes(arg) &&
-        !arg.startsWith('--config=') &&
-        !arg.startsWith('--authorize=') &&
-        !arg.startsWith('--story-model=') &&
-        !arg.startsWith('--story-max-microusd=') &&
-        !arg.startsWith('--story-max-input-tokens=') &&
-        !arg.startsWith('--story-max-output-tokens=') &&
-        !arg.startsWith('--authorize-story-model='),
-    )
-) {
-  throw new Error(
-    'Use at most one run mode; evaluation packet modes also require --config=<path>.',
-  );
-}
-if (noBrowser && !storyMode) {
-  throw new Error('--no-browser is supported only with --story-mode.');
-}
-if (
-  !storyMode &&
-  (storyModelArgument ||
-    storyMaxMicrousdArgument ||
-    storyMaxInputTokensArgument ||
-    storyMaxOutputTokensArgument ||
-    storyAuthorizationArgument)
-) {
-  throw new Error(
-    'Story model arguments are supported only with --story-mode.',
-  );
-}
-if (
-  (evaluationPacket ||
-    evaluationRun ||
-    memoryEvaluationPacket ||
-    memoryEvaluationRun) !== Boolean(configArgument)
-) {
-  throw new Error('Evaluation modes require exactly one --config=<path>.');
-}
+
+const launcherFlags = parseLauncherFlags(process.argv.slice(2));
+const smoke = launcherFlags.smoke;
+const review = launcherFlags.review;
+const packetReview = launcherFlags.packetReview;
+const memoryPacketReview = launcherFlags.memoryPacketReview;
+const memoryComparisonPackets = launcherFlags.memoryComparisonPackets;
+const memoryEvaluationPacket = launcherFlags.memoryEvaluationPacket;
+const memoryEvaluationRun = launcherFlags.memoryEvaluationRun;
+const evaluationPacket = launcherFlags.evaluationPacket;
+const evaluationRun = launcherFlags.evaluationRun;
+const storyMode = launcherFlags.storyMode;
+const noBrowser = launcherFlags.noBrowser;
+const resetDatabase = launcherFlags.resetDatabase;
+const configArgument = launcherFlags.configPath
+  ? `--config=${launcherFlags.configPath}`
+  : undefined;
+const authorizationArgument = launcherFlags.authorize
+  ? `--authorize=${launcherFlags.authorize}`
+  : undefined;
+const storyModelArgument = launcherFlags.storyModel
+  ? `--story-model=${launcherFlags.storyModel}`
+  : undefined;
+const storyMaxMicrousdArgument = launcherFlags.storyMaxMicrousd
+  ? `--story-max-microusd=${launcherFlags.storyMaxMicrousd}`
+  : undefined;
+const storyMaxInputTokensArgument = launcherFlags.storyMaxInputTokens
+  ? `--story-max-input-tokens=${launcherFlags.storyMaxInputTokens}`
+  : undefined;
+const storyMaxOutputTokensArgument = launcherFlags.storyMaxOutputTokens
+  ? `--story-max-output-tokens=${launcherFlags.storyMaxOutputTokens}`
+  : undefined;
+const storyAuthorizationArgument = launcherFlags.storyAuthorize
+  ? `--authorize-story-model=${launcherFlags.storyAuthorize}`
+  : undefined;
 const origin = 'http://127.0.0.1:3100';
 const dryRunRoute = 'openrouter:dry-run-unselected';
 const dryRunProfile = {

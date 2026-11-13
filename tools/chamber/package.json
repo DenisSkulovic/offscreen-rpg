@@ -8,6 +8,8 @@
     "typecheck": "tsc --noEmit",
     "start": "node dist/src/main.js",
     "bench": "node dist/src/bench-cli.js",
+    "scenario": "node dist/src/scenario-cli.js",
+    "inspect": "node dist/src/inspect-cli.js",
     "review": "node dist/src/main.js --review",
     "test": "node --test dist/test/*.test.js"
   },
