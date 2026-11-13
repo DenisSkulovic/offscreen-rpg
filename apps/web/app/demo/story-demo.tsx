@@ -14,7 +14,9 @@ export function StoryDemo() {
   const currentId = history[history.length - 1]!.sceneId;
   const scene = scenes[currentId]!;
   useEffect(() => {
-    document.getElementById('scene-title')?.focus();
+    document.querySelector('.story-frame__passage-title')?.scrollIntoView({
+      block: 'nearest',
+    });
   }, [currentId]);
 
   function choose(id: string) {
@@ -30,37 +32,47 @@ export function StoryDemo() {
     );
   }
   return (
-    <main className="story-demo">
-      <header className="story-header">
-        <Link href="/">Offscreen RPG</Link>
-        <span className="demo-label">Scripted experience</span>
-        {scene.phase !== 'ended' && (
-          <button className="quiet-button" onClick={() => setPaused(!paused)}>
-            {paused ? 'Resume' : 'Pause'}
-          </button>
-        )}
-      </header>
+    <div className="story-demo">
       <SceneView scene={scene} paused={paused} onChoose={choose} />
       <aside className="demo-controls" aria-label="Demonstration controls">
         <p>
-          This is an authored browser prototype. No AI calls or account needed.
-          Time advances manually; refreshing restarts the story.
+          Interactive preview. Time is simulated here and this sample resets
+          when refreshed. No AI calls or account needed.
         </p>
-        {scene.phase === 'waiting' && (
-          <button disabled={paused} onClick={() => choose('advance')}>
-            Advance demo time
-          </button>
-        )}
-        {scene.phase === 'ended' && (
-          <button
-            onClick={() => {
-              setHistory(beginning);
-              setPaused(false);
-            }}
-          >
-            Try another path
-          </button>
-        )}
+        <div className="demo-actions">
+          {scene.phase !== 'ended' ? (
+            <button
+              type="button"
+              className="quiet-button"
+              onClick={() => setPaused(!paused)}
+            >
+              {paused ? 'Resume preview' : 'Pause preview'}
+            </button>
+          ) : null}
+          {scene.phase === 'waiting' ? (
+            <button
+              type="button"
+              disabled={paused}
+              onClick={() => choose('advance')}
+            >
+              Advance demo time
+            </button>
+          ) : null}
+          {scene.phase === 'ended' ? (
+            <button
+              type="button"
+              onClick={() => {
+                setHistory(beginning);
+                setPaused(false);
+              }}
+            >
+              Try another path
+            </button>
+          ) : null}
+          <Link className="button" href="/stories/new">
+            Create a story
+          </Link>
+        </div>
       </aside>
       <details className="story-history">
         <summary>
@@ -69,11 +81,11 @@ export function StoryDemo() {
         <ol>
           {history.map((visit, index) => (
             <li key={`${index}-${visit.sceneId}`}>
-              {visit.intention && (
+              {visit.intention ? (
                 <p className="history-intention">
                   You chose: {visit.intention}
                 </p>
-              )}
+              ) : null}
               <h2>{scenes[visit.sceneId]!.title}</h2>
               {scenes[visit.sceneId]!.paragraphs.map((text) => (
                 <p key={text}>{text}</p>
@@ -82,6 +94,6 @@ export function StoryDemo() {
           ))}
         </ol>
       </details>
-    </main>
+    </div>
   );
 }

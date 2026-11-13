@@ -1,3 +1,5 @@
+import { StoryFrame } from '@/src/features/play/ui/story-frame';
+
 export type ScenePresentation = {
   place: string;
   title: string;
@@ -17,31 +19,40 @@ export function SceneView({
   paused: boolean;
   onChoose: (id: string) => void;
 }) {
+  const intentions =
+    scene.phase === 'decision'
+      ? scene.choices.map((choice) => ({
+          id: choice.id,
+          label: choice.label,
+          support: choice.detail,
+        }))
+      : [];
+
   return (
-    <section className="story-scene" aria-labelledby="scene-title">
-      <p className="eyebrow">{scene.place}</p>
-      <h1 id="scene-title" tabIndex={-1}>
-        {scene.title}
-      </h1>
-      <div className="scene-prose">
-        {scene.paragraphs.map((text) => (
-          <p key={text}>{text}</p>
-        ))}
-      </div>
-      <p className="scene-status" role="status">
-        {paused ? 'Paused. This moment can wait.' : scene.status}
-      </p>
-      {scene.phase === 'decision' && (
-        <fieldset disabled={paused} className="scene-choices">
-          <legend>What do you do?</legend>
-          {scene.choices.map((choice) => (
-            <button key={choice.id} onClick={() => onChoose(choice.id)}>
-              <span>{choice.label}</span>
-              <small>{choice.detail}</small>
-            </button>
-          ))}
-        </fieldset>
-      )}
-    </section>
+    <StoryFrame
+      storiesHref="/"
+      storyLabel="Interactive preview"
+      situationLabel={scene.place}
+      statusLabel={paused ? 'Paused. This moment can wait.' : scene.status}
+      passageTitle={scene.title}
+      paragraphs={scene.paragraphs}
+      memory="Interactive preview · time is simulated here and this sample resets when refreshed. No account or AI call."
+      thresholdHeading="What will you do?"
+      intentions={intentions}
+      intentionsDisabled={paused}
+      onIntentionSelect={onChoose}
+      stageExtras={
+        scene.phase === 'waiting' ? (
+          <p className="story-frame__stage-status" role="status">
+            Simulated wait — use the control below to advance demo time. This is
+            not server-authorized progress.
+          </p>
+        ) : scene.phase === 'ended' ? (
+          <p className="story-frame__stage-status" role="status">
+            End of preview. Create a real story to keep a durable life.
+          </p>
+        ) : null
+      }
+    />
   );
 }

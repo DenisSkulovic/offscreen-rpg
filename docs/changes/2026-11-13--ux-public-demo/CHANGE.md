@@ -1,13 +1,13 @@
 # UX09 | Public demo: show the dream quickly, without faking persistence
 
-**State:** Proposed. **Approval:** owner has not authorized code. **Kind:** public presentation and browser-only scripted demo + tests. **Parent:** [experience program](../../experience/implementation-program.md), M3. **Dependencies:** UX02/UX03 interaction grammar, or an independently reviewed equivalent adapted for a public scripted route.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX09 (StoryFrame preview + honest reset label). **Kind:** public presentation and browser-only scripted demo + tests. **Parent:** [experience program](../../experience/implementation-program.md), M3. **Dependencies:** UX02/UX03 interaction grammar (Done).
 
 ## Cursor first-screen brief
 
 > **Source map:** [App Router](../../../apps/web/app/README.md), inspect apps/web/app/demo/story-demo.tsx, scene-view.tsx, script.ts, content/script.json and demo/page.tsx.
 > **Primary target:** [first-run visitor path](../../experience/flows/creation-and-first-run.md#visitor-path-prove-the-fantasy-before-demanding-configuration), [portfolio](../../experience/foundations/experience-thesis.md#portfolio-criterion).
 > **Known trap:** /demo is already a **browser-only authored script that resets on refresh**. It is not authenticated persistent server play, a proof of model quality, or actual time-work execution. Never imply that it is.
-> **Scope:** proposed only. No paid providers, hosted write API, real story persistence or backend scheduling.
+> **Scope:** **Authorized for UX09.** No paid providers, hosted write API, real story persistence or backend scheduling.
 
 ## Independent end-state experience
 
