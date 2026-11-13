@@ -12,6 +12,7 @@
 | QA catalogue | [`qa-catalog.ts`](qa-catalog.ts), [activity lifecycle cases](qa-catalog/activity-lifecycle.ts) | 15 authored cases, some planned; driver names are metadata, not executable drivers |
 | Lab scenario catalogue (CH01) | [`chamber-lab-catalog.ts`](chamber-lab-catalog.ts) + [`@offscreen/contracts/chamber-lab`](../../../../packages/contracts/src/chamber-lab.ts) | Versioned `id@version` scenarios with lane/cost/fixture; does **not** execute. Legacy `chamber.vN` + QA IDs retained with `automatedPassAllowed: false` |
 | Bench pure runner (CH02) | [`tools/chamber/src/lab/bench.ts`](../../../../tools/chamber/src/lab/bench.ts) via `pnpm chamber:bench -- <id> --seed=N` | Calls real `@offscreen/game` calendar/check/eligibility policies; no DB/Nest/browser |
+| Semantic fixture specimens (CH03) | [`lab/fixture-specimens.ts`](lab/fixture-specimens.ts) | Versioned overlays (80% shift, owned item, due decision); content hash; **no DB writes** (CH04) |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
 | Pending future lab | **CH02–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | Bench runner, fixture/reset, controlled lane, trace/evidence and workbench |

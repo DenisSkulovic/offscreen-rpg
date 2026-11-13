@@ -2,7 +2,9 @@
 
 > **Cursor start:** [fixture/source map](../../../packages/application/src/developer-tools/README.md) → `chamber-fixtures.ts`, `campaign/fixtures/mechanical-content.ts` and actual story/campaign contracts. **Target:** [C02/C03/C04/C09](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 3](../../technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation); [audit H01/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
-**State:** Specified/Proposed, no code authorization. **Depends on:** CH01 (CH02 examples can be reused). **Baseline:** `470a5df`, static source only.
+**State: Done** (2026-11-13). Owner authorized via continue after CH02. **Depends on:** CH01 (Done).
+
+**Evidence:** `chamber-lab` fixture overlay schemas + `lab/fixture-specimens.ts` compose/hash. Tests: contracts chamber-lab 8/8; `fixture-specimens.test.mjs` 4/4. Normal: identical 80% shift recipes share hash. Negatives: foreign holder, not-yet-due deadline, duplicate item, progressRatio that settles immediately. No DB writes.
 
 ## One bounded implementation outcome
 

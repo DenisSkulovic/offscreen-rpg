@@ -4,6 +4,7 @@ import {
   assertChamberLabCatalogue,
   canOpenScenarioOnLane,
   chamberLabScenarioDefinitionSchema,
+  parseChamberLabFixtureRecipe,
   parseChamberLabScenario,
   scenarioKey,
 } from '../src/chamber-lab';
@@ -96,6 +97,41 @@ test('canOpenScenarioOnLane fails for undeclared or blocked lanes', () => {
   assert.equal(canOpenScenarioOnLane(parsed, 'bench-policy').ok, false);
   assert.equal(canOpenScenarioOnLane(parsed, 'sandbox-db').ok, false);
   assert.equal(canOpenScenarioOnLane(parsed, 'connected').ok, true);
+});
+
+test('fixture recipe accepts accepted-finite-work overlay and rejects future due', () => {
+  const recipe = parseChamberLabFixtureRecipe({
+    id: 'accepted-shift-80pct',
+    version: 1,
+    seed: 141,
+    overlays: [
+      {
+        kind: 'accepted-finite-work',
+        requiredFictionalSeconds: 1000,
+        progressRatio: 0.8,
+        acceptedAtGameSecond: 100,
+      },
+    ],
+  });
+  assert.equal(recipe.overlays[0]?.kind, 'accepted-finite-work');
+  assert.throws(() =>
+    parseChamberLabFixtureRecipe({
+      id: 'bad-due',
+      version: 1,
+      seed: 1,
+      overlays: [
+        {
+          kind: 'due-decision-boundary',
+          offerId: '00000000-0000-4000-8000-000000000001',
+          interactionId: '00000000-0000-4000-8000-000000000002',
+          gameSecond: 10,
+          dueGameSecond: 20,
+          prompt: 'Too early',
+          options: [{ id: 'go', label: 'Go' }],
+        },
+      ],
+    }),
+  );
 });
 
 test('legacy bridge never permits automated pass', () => {

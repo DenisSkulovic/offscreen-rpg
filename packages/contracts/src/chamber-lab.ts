@@ -202,3 +202,110 @@ export function canOpenScenarioOnLane(
   }
   return { ok: true };
 }
+
+/** CH03: versioned semantic fixture recipe (no persistence). */
+export const chamberLabFixtureOverlayKindSchema = z.enum([
+  'accepted-finite-work',
+  'owned-item',
+  'due-decision-boundary',
+]);
+
+export const acceptedFiniteWorkOverlaySchema = z.strictObject({
+  kind: z.literal('accepted-finite-work'),
+  actionId: identifierSchema.default('paid-shift'),
+  requiredFictionalSeconds: z.number().int().positive().max(1_000_000),
+  /** 0 exclusive..1 inclusive; 0.8 means eighty percent elapsed. */
+  progressRatio: z.number().gt(0).max(1),
+  acceptedAtGameSecond: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER),
+  settingsRevision: z.number().int().positive().default(1),
+});
+
+export const ownedItemOverlaySchema = z.strictObject({
+  kind: z.literal('owned-item'),
+  itemKey: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+  label: shortTextSchema,
+  ownerHolderKey: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+  /** If set, must equal ownerHolderKey — foreign holders are rejected. */
+  holderKey: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+});
+
+export const dueDecisionBoundaryOverlaySchema = z
+  .strictObject({
+    kind: z.literal('due-decision-boundary'),
+    offerId: z.uuid(),
+    interactionId: z.uuid(),
+    gameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    dueGameSecond: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    prompt: z.string().trim().min(1).max(2000),
+    options: z
+      .array(
+        z.strictObject({
+          id: z
+            .string()
+            .min(1)
+            .max(100)
+            .regex(/^[a-zA-Z0-9_-]+$/),
+          label: z.string().trim().min(1).max(500),
+        }),
+      )
+      .min(1)
+      .max(12),
+  })
+  .superRefine((value, ctx) => {
+    if (value.dueGameSecond > value.gameSecond) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['dueGameSecond'],
+        message: 'Decision boundary is not yet due at gameSecond',
+      });
+    }
+    const ids = value.options.map((option) => option.id);
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['options'],
+        message: 'Duplicate decision option identity',
+      });
+    }
+  });
+
+export const chamberLabFixtureOverlaySchema = z.discriminatedUnion('kind', [
+  acceptedFiniteWorkOverlaySchema,
+  ownedItemOverlaySchema,
+  dueDecisionBoundaryOverlaySchema,
+]);
+export type ChamberLabFixtureOverlay = z.infer<
+  typeof chamberLabFixtureOverlaySchema
+>;
+
+export const chamberLabFixtureRecipeSchema = z.strictObject({
+  id: identifierSchema,
+  version: z.number().int().positive(),
+  seed: z.number().int().nonnegative(),
+  overlays: z.array(chamberLabFixtureOverlaySchema).min(1).max(16),
+});
+export type ChamberLabFixtureRecipe = z.infer<
+  typeof chamberLabFixtureRecipeSchema
+>;
+
+export function parseChamberLabFixtureRecipe(
+  input: unknown,
+): ChamberLabFixtureRecipe {
+  return chamberLabFixtureRecipeSchema.parse(input);
+}

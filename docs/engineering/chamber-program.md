@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation program for Cursor
 
-**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH02 Done** (catalogue + pure Bench); CH03–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
+**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH03 Done** (catalogue + Bench + semantic specimens); CH04–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
 
 **Start for inexpensive Cursor:** one approved `CHxx/CHANGE.md` → its one adjacent source README → the **exact** protocol heading linked from its first screen → named source/test symbols only. Do not load all three documents in full or reverse-engineer the launcher unless the selected CH packet calls for that section.
 
@@ -36,7 +36,7 @@ Authoritative inspection + causal events + semantic diff + assertions
 | --- | --- | --- | --- |
 | **1: catalogue** | [CH01 Scenario registry](../changes/2026-11-12--chamber-scenario-catalogue/CHANGE.md): typed versioned scenarios, per-lane availability | none | `packages/contracts/chamber`, application QA catalogue |
 | **1: fast proof** | [CH02 Bench runner](../changes/2026-11-12--chamber-bench-execution/CHANGE.md): **Done** — real pure game rules, `pnpm chamber:bench` | CH01 | `@offscreen/game` policies, tool CLI |
-| **1: specimen** | [CH03 State recipes](../changes/2026-11-12--chamber-state-specimens/CHANGE.md): minimal valid semantic overlays | CH01 | application fixture/contracts |
+| **1: specimen** | [CH03 State recipes](../changes/2026-11-12--chamber-state-specimens/CHANGE.md): **Done** — minimal valid semantic overlays + content hash | CH01 | application fixture/contracts |
 | **2: persistence** | [CH04 Isolated Sandbox](../changes/2026-11-12--chamber-sandbox-materializer/CHANGE.md): real app and guarded disposable DB | CH03 | application use cases + local DB provision |
 | **2: determinism** | [CH05 Clock and entropy](../changes/2026-11-12--chamber-clock-entropy/CHANGE.md): honest time domains, reproducible draws | CH02 CH04 | game/application clock selectors |
 | **2: execution** | [CH06 Step/run protocol](../changes/2026-11-12--chamber-run-orchestrator/CHANGE.md): typed logical-step runner and replay | CH01 CH02 CH04 CH05 | application lab run orchestration |
