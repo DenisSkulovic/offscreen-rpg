@@ -2,7 +2,7 @@
 
 **Design decision update (post-ENG wave, Nov 13):** This packet is now **design-ready for explicit owner authorization**, while remaining formally Proposed. The open storage backend, credential, retention, test-topology and cutover choices are resolved in [the selected ENG05 contract](../../engine-architecture/decisions/eng05-shared-cas-contract.md). **Mode:** private S3-compatible adapter, disposable local service, existing CAS canonical hash/1 MiB limit, no automatic GC or legacy data copy, local remains default. Current remote adapter must not be enabled for live stories until lock-latency/cutover evidence exists. The earlier “must first choose backend” gate below is superseded by this decision; unperformed *code tests* are still exit gates, not design blockers.
 
-**State:** Proposed, **NOT Ready**. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [release/storage design](../../engine-architecture/evolution-and-release.md) and [scale design](../../engine-architecture/scale-and-load.md).
+**State:** Proposed, **design-ready for explicit owner authorization of the bounded local adapter proof**; not yet formally Ready or Implementing. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [release/storage design](../../engine-architecture/evolution-and-release.md) and [scale design](../../engine-architecture/scale-and-load.md).
 
 ## Cursor first-screen brief
 
@@ -31,6 +31,6 @@ No code changes to game rules, dice, Storyteller creative policies or public UI.
 
 ## Blockers and exclusions
 
-Must first choose backend, retention, credential/tenant model, object size/cost budgets, availability semantics, backup/GC and safe integration test environment. Not a generic BlobService framework, no local folder mounted as fake shared production store, no distributed SQL+object transaction, no multi-region active-active. **No external cloud mutation or spend** without explicit approval.
+**Selected now:** private S3-compatible backend, existing 1 MiB canonical object budget, server-only credentials/authorization, indefinite retained objects with **no auto-GC**, typed failure semantics, disposable local S3-compatible testing and no automatic legacy cutover; see [selected contract](../../engine-architecture/decisions/eng05-shared-cas-contract.md). **Still excluded:** generic BlobService framework, production cloud provisioning/spend, local folder posed as shared distributed store, distributed SQL/object transaction, multi-region active-active and production cutover of existing local stories.
 
-**Ready gate:** reviewed deployment/availability/storage contract plus one disposable multi-replica test topology. Cursor stops if publication root semantics need widening beyond the agreed adapter contract.
+**Ready gate:** design contract and local topology are **chosen**. The owner may now explicitly authorize this one code Change and safe disposable local S3/Postgres tests; Cursor rechecks current source and required dependency versions first. **Production enablement/legacy root migration remain a separate gate**, not part of adapter implementation. Cursor stops if publication-root semantics need widening beyond the agreed adapter.
