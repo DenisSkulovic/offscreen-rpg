@@ -132,6 +132,45 @@ export const chamberLabScenarioCatalog: readonly ChamberLabScenarioDefinition[] 
       },
     }),
     parseChamberLabScenario({
+      id: 'activity-clock-wait-eighty',
+      version: 1,
+      family: 'finite-action',
+      name: 'Eighty-percent clock-wait activity specimen',
+      searchTags: [
+        'activity',
+        'clock-wait',
+        'fixture',
+        'bench',
+        'quiet-activity',
+      ],
+      proofIntent:
+        'Prove CH03 acceptedShiftEightyPercent specimen load/assert on bench-policy without provider spend.',
+      invariants: [
+        'Fixture hash is content-addressed',
+        'Progress ratio is structural and seed-reproducible',
+        'No Nest, Temporal or provider required',
+      ],
+      costClass: 'offline',
+      fixture: {
+        id: 'accepted-shift-eighty',
+        version: 1,
+        owningSource:
+          'packages/application/src/developer-tools/lab/fixture-specimens.ts#acceptedShiftEightyPercentRecipe',
+        params: { progressRatio: 0.8 },
+      },
+      availabilityPerLane: {
+        'bench-policy': { state: 'available' },
+        'sandbox-db': {
+          state: 'planned',
+          reason: 'Sandbox specimen load covered by CH04 materializer',
+        },
+        connected: {
+          state: 'planned',
+          reason: 'Connected activity proof is later CH13 work',
+        },
+      },
+    }),
+    parseChamberLabScenario({
       id: 'activity-interrupt-same-tick',
       version: 1,
       family: 'activity-interruption',
@@ -250,6 +289,8 @@ export function listLegacyQaJourneyBridge() {
     availability: entry.availability,
     drivers: entry.drivers,
     automatedPassAllowed: false as const,
+    /** CH10: driver labels are not executors; bindings live in qa-lab-bridge. */
+    hasCuratedLabBinding: false as const,
   }));
 }
 

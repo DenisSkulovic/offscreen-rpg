@@ -19,9 +19,10 @@
 | Lab observations/deltas (CH07) | [`lab/lab-observation.ts`](lab/lab-observation.ts) | Typed facets, semantic before/after, cross-version warning, default redaction; existing SQL inspector unchanged |
 | Lab fault cut points (CH08) | [`lab/lab-faults.ts`](lab/lab-faults.ts) + LabRun `armFault`/`releaseFault` | Run-scoped FaultPlan; after-commit-before-ack, duplicate-delivery, held-storyteller; cleanup on cancel/reset; **not** Nest-registered |
 | Lab evidence capsule (CH09) | [`lab/lab-evidence.ts`](lab/lab-evidence.ts) + `LabRun.finalizeEvidence` | Immutable machine capsule; default redactor; digest artifacts; QA journal remains a separate authority |
+| QA ↔ LabRun bridge (CH10) | [`lab/qa-lab-bridge.ts`](lab/qa-lab-bridge.ts) | Curated stage bindings; machine pass needs capsule; search splits stage-instructions vs runnable-scenario; QA journal untouched |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Pending future lab | **CH10–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | assertions library, workbench, connected/live lanes |
+| Pending future lab | **CH11–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | workbench, CLI modes, connected/live lanes |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 

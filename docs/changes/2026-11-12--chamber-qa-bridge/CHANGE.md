@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [application developer map](../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts:open/recordStage/finalize` and `qa-catalog/*`, [current UI](../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C01/C10/C11/C15](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 9](../../technical/chamber-lab-protocol.md#9-catalogue-evolution-and-handoff); [audit H02/H09/H12](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
-**State:** Specified/Proposed; **no code work now**. **Depends on:** CH01, CH06, CH09. **Baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH09. **Depends on:** CH01, CH06, CH09 (Done). QA journal schema/history untouched; curated stage bindings only.
+
+**Evidence:** `qaLabStageBinding` contracts + `lab/qa-lab-bridge.ts` + `activity-clock-wait-eighty` catalogue entry. Tests: `qa-lab-bridge.test.mjs` 3/3. Normal: quiet-activity stage opens LabRun and claims machine pass from capsule. Negatives: human storyteller cannot machine-pass; operator pass without capsule rejected; live-billable refuses offline launch; search separates stage-instructions vs runnable-scenario. No provider; no DB rewrite.
 
 ## One code-bearing outcome
 

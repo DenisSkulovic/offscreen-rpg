@@ -588,3 +588,53 @@ export function parseLabRunEvidenceCapsule(
 ): LabRunEvidenceCapsule {
   return labRunEvidenceCapsuleSchema.parse(input);
 }
+
+/** CH10: QA stage ↔ LabRun scenario binding (journal stays separate). */
+export const qaLabBindingKindSchema = z.enum([
+  'machine-scenario',
+  'human-manual',
+  'unavailable',
+]);
+export type QaLabBindingKind = z.infer<typeof qaLabBindingKindSchema>;
+
+export const qaLabStageBindingSchema = z.strictObject({
+  qaCaseId: identifierSchema,
+  qaCaseVersion: z.number().int().positive(),
+  stageId: identifierSchema,
+  kind: qaLabBindingKindSchema,
+  assessment: z.enum(['structural', 'human-judgment']),
+  scenarioId: identifierSchema.nullable(),
+  scenarioVersion: z.number().int().positive().nullable(),
+  lane: chamberLabLaneSchema.nullable(),
+  missingPrerequisites: z.array(shortTextSchema).max(12),
+  /** Drivers remain labels; this field is the real executor claim. */
+  executable: z.boolean(),
+});
+export type QaLabStageBinding = z.infer<typeof qaLabStageBindingSchema>;
+
+export function parseQaLabStageBinding(input: unknown): QaLabStageBinding {
+  return qaLabStageBindingSchema.parse(input);
+}
+
+export const qaLabCatalogueEntrySchema = z.discriminatedUnion('entryKind', [
+  z.strictObject({
+    entryKind: z.literal('stage-instructions'),
+    qaCaseId: identifierSchema,
+    qaCaseVersion: z.number().int().positive(),
+    stageId: identifierSchema,
+    name: shortTextSchema,
+    costClass: chamberLabCostClassSchema,
+    assessment: z.enum(['structural', 'human-judgment']),
+    binding: qaLabStageBindingSchema,
+  }),
+  z.strictObject({
+    entryKind: z.literal('runnable-scenario'),
+    scenarioId: identifierSchema,
+    scenarioVersion: z.number().int().positive(),
+    name: shortTextSchema,
+    lane: chamberLabLaneSchema,
+    costClass: chamberLabCostClassSchema,
+    availability: z.enum(['available', 'blocked', 'planned']),
+  }),
+]);
+export type QaLabCatalogueEntry = z.infer<typeof qaLabCatalogueEntrySchema>;

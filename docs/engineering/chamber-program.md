@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation program for Cursor
 
-**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH09 Done** (through evidence capsules); CH10–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
+**Selected end state:** [developer laboratory C01–C16](targets/chamber-laboratory.md). **Normative implementation decisions:** [typed scenario/driver/state protocol](../technical/chamber-lab-protocol.md). **Evidence of current source:** [2026-11-12 Chamber audit H01–H14](audits/chamber-gap-2026-11-12.md). **State:** 16 CH packets defined; **CH01–CH10 Done** (through QA/LabRun bridge); CH11–CH16 Proposed. The React/Next modernization W01–W22 queue is complete (W12 superseded). Existing W12 **is superseded for future Chamber implementation** by this program (see below).
 
 **Start for inexpensive Cursor:** one approved `CHxx/CHANGE.md` → its one adjacent source README → the **exact** protocol heading linked from its first screen → named source/test symbols only. Do not load all three documents in full or reverse-engineer the launcher unless the selected CH packet calls for that section.
 
@@ -43,7 +43,7 @@ Authoritative inspection + causal events + semantic diff + assertions
 | **3: diagnostics** | [CH07 Inspector/delta](../changes/2026-11-12--chamber-inspection-deltas/CHANGE.md): **Done** — authoritative facets and causal before/after | CH04 CH06 | application Chamber inspector |
 | **3: adversity** | [CH08 Fault cut points](../changes/2026-11-12--chamber-controlled-faults/CHANGE.md): **Done** — typed FaultPlan + three fake-adapter seams; live outbox gated | CH05 CH06 CH07 | application test adapters/outbox |
 | **3: memory** | [CH09 Evidence/replay capsule](../changes/2026-11-12--chamber-run-evidence/CHANGE.md): **Done** — immutable redacted capsule + replay command; QA authority separate | CH06 CH07 | application LabRun + artifact owner |
-| **4: QA bridge** | [CH10 Human QA/auto-run bridge](../changes/2026-11-12--chamber-qa-bridge/CHANGE.md): preserve human journal and distinguish automated proof | CH01 CH06 CH09 | `qa-journeys` / registry |
+| **4: QA bridge** | [CH10 Human QA/auto-run bridge](../changes/2026-11-12--chamber-qa-bridge/CHANGE.md): **Done** — curated stage bindings; machine pass requires LabRun capsule | CH01 CH06 CH09 | `qa-journeys` / registry |
 | **4: workbench** | [CH11 Developer workbench](../changes/2026-11-12--chamber-workbench/CHANGE.md): compose, step, inspect, assert, compare | CH01 CH06 CH07 CH09 CH10 and **W15** | web Chamber; TanStack Query |
 | **4: launch** | [CH12 Fast CLI/modes](../changes/2026-11-12--chamber-launcher-modes/CHANGE.md): cheap entry and preserved local safeguards | CH02 CH04 | `tools/chamber` launcher |
 | **5: connected** | [CH13 Worker/DB rig](../changes/2026-11-12--chamber-connected-rig/CHANGE.md): isolated real cross-service proof | CH04 CH06 CH08 CH09 CH12 | integration test helpers |

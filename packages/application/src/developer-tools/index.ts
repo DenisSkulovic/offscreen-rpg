@@ -6,6 +6,7 @@ export * from './lab/lab-evidence';
 export * from './lab/lab-faults';
 export * from './lab/lab-observation';
 export * from './lab/lab-run';
+export * from './lab/qa-lab-bridge';
 export * from './lab/sandbox-guard';
 export * from './lab/sandbox-materializer';
 export * from './qa-journeys';
