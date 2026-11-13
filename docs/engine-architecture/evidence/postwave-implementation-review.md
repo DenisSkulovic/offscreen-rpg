@@ -8,7 +8,7 @@
 
 | Work | Review result | Why | Next action |
 | --- | --- | --- | --- |
-| **ENG01** finite mechanical transfer | **Core accepted conditionally; two correctness gaps found** | Timed settlement/conditional SQL/receipt reuse are real; source still permits provider-origin transfer plans without explicit item/holder authority, and an item-changed interruption may leave no playable continuation | [Corrective proposal ENG08](../../changes/2026-11-13--eng-item-transfer-closeout/CHANGE.md) before new model/world effects |
+| **ENG01** finite mechanical transfer | **Core accepted conditionally; two correctness gaps found** | Timed settlement/conditional SQL/receipt reuse are real; source still permits provider-origin transfer plans without explicit item/holder authority, and an item-changed interruption may leave no playable continuation | [Corrective proposal ENG08](../../changes/2026-11-13--eng-provider-world-effect-gate/CHANGE.md) before new model/world effects |
 | **ENG04** bounded current activity read | **Accept as Done for its bounded-query outcome** | Query filters by story ID plus active identity or nonterminal states; 1k-terminal-row disposable fixture; no destructive migration | Performance speedup not measured, no index justified, Storyteller context still reads all activity rows |
 | **ENG07** final serialized memory evidence | **Accept Cancelled/Superseded** | Current Greywake/`inspectMemoryExplorationProviderRequest` tests cover source selection, packing and actual final request *serialization* | Do not claim actual model recalled or used the fact; add separate provider/human evaluation later |
 | **ENG02** optional health/actor envelope | **Accept as Done for the expressly scoped pure cut**, **not** the complete world-neutral actor milestone | Optional paired health, versioned envelope, pure check adapter, old human round-trip and health-free microbe fixture are present | Future `ENG02b` integrated actor campaign/form-change/old pending-plan proof is still a separate unselected outcome |
@@ -37,7 +37,7 @@
 - `packages/application/src/campaign/actions.ts` validates matching current `itemKey/fromHolder`, but does **not** establish the player is entitled to transfer an item held by another actor.
 - Therefore **from the source contracts** a model-generated offer could include a transfer from a nonplayer holder, and an accepted automatic/check-success branch could commit it if actual `story_item` holder matches. This is not proof a live model has done it. It is a **fail-closed authority gap** relative to the intended game.
 
-**Immediate target:** a generated plan with item/world effects must be **rejected by default** unless it is an exact, pinned, authorized plan reference with its source, eligible actor, item and holder scope validated. Merely telling the model "don't do this" isn't authority. Preserve fixture-only and approved reference plans. See [ENG08](../../changes/2026-11-13--eng-item-transfer-closeout/CHANGE.md).
+**Immediate target:** a generated plan with item/world effects must be **rejected by default** unless it is an exact, pinned, authorized plan reference with its source, eligible actor, item and holder scope validated. Merely telling the model "don't do this" isn't authority. Preserve fixture-only and approved reference plans. See [ENG08](../../changes/2026-11-13--eng-provider-world-effect-gate/CHANGE.md).
 
 ### Finding E01-B: item-holder invalidation may strand the game (high player-experience priority)
 
