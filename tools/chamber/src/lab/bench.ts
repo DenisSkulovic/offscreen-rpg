@@ -2,15 +2,21 @@
  * Chamber Bench lane (CH02): run catalogue scenarios against real pure
  * @offscreen/game policies. No DB, Nest, Temporal, Next, browser or provider.
  */
-import { openChamberLabScenario } from '@offscreen/application/developer-tools';
+import {
+  createLabEntropy,
+  createSeededDraw,
+  openChamberLabScenario,
+} from '@offscreen/application/developer-tools';
 import {
   addCalendarMonths,
   compileWorldDate,
   projectWorldTime,
 } from '@offscreen/game/calendar';
-import { resolveCheck, type DrawD20 } from '@offscreen/game/checks';
+import { resolveCheck } from '@offscreen/game/checks';
 import { actionOverlapEligibility } from '@offscreen/game/immediate-actions';
 import { characterSchema } from '@offscreen/game/state';
+
+export { createSeededDraw, createLabEntropy };
 
 export type BenchAssertion = {
   id: string;
@@ -48,15 +54,6 @@ const emberCalendar = {
     eraLabel: 'the Lantern',
   },
 };
-
-/** Deterministic d20 draw from a Bench seed. Not a second rules authority. */
-export function createSeededDraw(seed: number): DrawD20 {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
-    return (state % 20) + 1;
-  };
-}
 
 function assertion(
   id: string,

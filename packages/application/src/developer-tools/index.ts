@@ -1,6 +1,7 @@
 export * from './chamber';
 export * from './chamber-lab-catalog';
 export * from './lab/fixture-specimens';
+export * from './lab/lab-clock';
 export * from './lab/sandbox-guard';
 export * from './lab/sandbox-materializer';
 export * from './qa-journeys';
