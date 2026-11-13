@@ -7,8 +7,8 @@
 ## Cursor first-screen brief
 
 > **Current-source map:** [App Router map](../../../apps/web/app/README.md), [web owner route](../../../apps/web/README.md); inspect `apps/web/app/style.css`, `app/(authenticated)/layout.tsx` and one Play route.  
-> **Governing target:** [navigation/spatial model](../../experience/spaces/information-architecture.md#spatial-model), [responsive composition](../../experience/spaces/information-architecture.md#reading-first-desktop-composition-target), [component strategy](../../experience/system/component-strategy.md#four-levels-of-implementation).  
-> **Known trap:** current auth/SSR Query provider is inside authenticated route group. A new “beautiful” root client layout can leak private content, duplicate providers or make public demo hydrate unnecessarily.  
+> **Governing target:** [selected Living Stage blueprint](../../experience/spaces/living-stage-blueprint.md#stage-anatomy-and-default-order), [mobile composition](../../experience/spaces/living-stage-blueprint.md#small-screen-deliberate-reflow-not-desktop-compression), [component strategy](../../experience/system/component-strategy.md#four-levels-of-implementation).  
+> **Known trap:** The authenticated route-group layout owns the private session/Query provider **and wraps the Chamber and Stories**, so do not put player-only navigation chrome there by default. Existing global CSS also affects the public demo and Chamber. **A full Journal route is not yet guaranteed**; no dead navigation.  
 > **Scope/permission:** **Proposed only. No code now.** When explicitly authorized, implement shared story-facing navigation/layout tokens and focused verification. No engine/provider/database work.
 
 ## Target alignment and contrary designs
@@ -20,9 +20,9 @@ Build the shell in which a readable **Now** stage has primacy. Top-level spaces 
 ## Outcome and motivation
 
 One source/test delta establishes:
-1. A small **story identity + player navigation** composition, with Now and Journal first; World/You are conditional or safely deferred pending projections.
+1. A small **story identity + player navigation** composition; Now works immediately, and Journal appears only if it opens existing read-only history or UX07 has built its destination. World/You are contextual Details, not mandatory tabs. If a true story name is unavailable, use known current passage context without fabricating identity.
 2. A narrative-first responsive max-width region (readable at 320/375/768/1440 px and browser zoom), no permanent two-sided administrative chrome.
-3. Semantic color, typography, spacing, focus and surface tokens. Atmosphere can follow content; do **not** choose fonts or themes because the old UI has them.
+3. **Feature-scoped** color, typography, spacing, focus and surface tokens. Existing global `body`/`main`, `.play-layout` and `.play-sidebar` styles may affect public/Chamber routes: preserve their behavior unless a localized change is reviewed. Do not choose fonts or themes because the old UI has them.
 4. Accessible control primitives **only where needed** by actual navigation. Do not mass-import a component library.
 
 Do not include reimplementation of Play commands, screens, Storyteller settings or the Chamber workbench.
@@ -36,28 +36,28 @@ Do not include reimplementation of Play commands, screens, Storyteller settings 
 
 ## Code scope and exclusions
 
-Expected owner candidates: `apps/web/app/style.css`, `apps/web/app/(authenticated)/layout.tsx`, selective existing player route composition, new source-local presentational components in `apps/web/src` and focused Storybook/test fixtures. **Preserve** SSR, server-only session verification, one Query provider, route-specific 401/404/5xx handling, normal public routes, existing URL semantics, all command idempotence.
+Expected owner candidates: `apps/web/app/style.css` (only **safe scoped CSS**), focused player-only `StoryFrame`/existing Play composition and Storybook/tests. Avoid modifying `app/(authenticated)/layout.tsx` simply to insert story-specific chrome: that shared provider/layout is also used by the Chamber and other private routes. **Preserve** SSR, server-only session verification, one Query provider, route-specific 401/404/5xx handling, normal public routes, existing URL semantics, all command idempotence.
 
 **Exclusions:** no re-theme of Chamber (separate dev tool), no artificial changing status in layout, no new global state store, no route hierarchy migration, no provider/model calls, no unapproved dependency install, no ubiquitous portal/modal framework.
 
 ## Acceptance and negative proof
 
 **Normal:**
-- At 1440 px, original context reads as a game: current prose and meaningful action area are visually central; tiny amount of navigation.
+- At 1440 px, a **StoryFrame fixture** demonstrates the selected single-stage hierarchy and minimal navigation. UX01 establishes primitives and frame; **UX02** migrates full existing Play content into it.
 - At 375 px and 200%/400% zoom, same key content remains in reading order and keyboard reachable.
 - A scene with no image, title with long non-Latin words, and no inventory still look deliberate.
-- Now → Journal → Now returns to correct story and useful scroll/focus, without starting in-world time.
-- Public `/demo` remains outside private app Query/auth provider where appropriate.
+- A Journal affordance, **if shown**, opens real available read-only history with reliable return/focus and no fictional time. If no functional destination exists in this slice, omit it until UX07. No dead tab.
+- Public `/demo` remains outside private Query/auth provider. Chamber and existing creation forms must not be visually or behaviorally broken by the CSS/layout changes.
 
 **Negative:**
 - Switching Story A→B must not display A's narrative/sidebar in B's shell, even during transition.
 - 401/404/503 must retain separate recovery and not masquerade as empty story.
 - Story shell cannot poll/advance a fictional clock from browser presence.
-- Navigation must not make a Play POST or provider generation.
+- Navigation must not make a Play POST or provider generation; nor may it leak previous viewer/story content, duplicate Query provider, or link to an unimplemented destination.
 - Screen reader and keyboard can enter/leave all exposed menus; focus ring never hidden by art or sticky chrome.
 
 **Verification:** fast web component tests, Storybook fixtures, manual screenshots in mobile/wide and keyboard/focus walk. Use `pnpm --filter @offscreen/web test:fast` as focused check. Any live Nest/DB/provider work is outside this packet and needs separate authorization.
 
 ## Handoff and next action
 
-Before marking **Ready**, owner must review the target layout thesis, source mapping, precise files and at least one representative static/Storybook composition. Cursor may use CSS grid/flex, native HTML and a restrained primitive only as needed, preserving the chosen React architecture. Return diff, rendered evidence, negative cases, and explicit unresolved aesthetic questions. This is the foundation, **not permission to “improve the entire UI.”**
+Before marking **Ready**, the owner must **explicitly authorize code** and Cursor must recheck current owners. The [selected Living Stage blueprint](../../experience/spaces/living-stage-blueprint.md) already fixes the layout direction. Render and critique a StoryFrame fixture **during implementation**, not as an impossible prerequisite requiring code before code authorization. Cursor may use CSS grid/flex, native HTML and a restrained primitive only as needed, preserving the chosen React architecture. Return diff, rendered evidence, negative cases, and explicit unresolved aesthetic questions. This is the foundation, **not permission to “improve the entire UI.”**
