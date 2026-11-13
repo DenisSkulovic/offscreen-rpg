@@ -309,3 +309,95 @@ export function parseChamberLabFixtureRecipe(
 ): ChamberLabFixtureRecipe {
   return chamberLabFixtureRecipeSchema.parse(input);
 }
+
+/** CH06: LabRun lifecycle and whitelisted semantic steps. */
+export const labRunLifecycleSchema = z.enum([
+  'prepared',
+  'running',
+  'paused',
+  'completed',
+  'failed',
+  'blocked',
+  'cancelled',
+]);
+export type LabRunLifecycle = z.infer<typeof labRunLifecycleSchema>;
+
+export const labStepCommandKindSchema = z.enum([
+  'load',
+  'inspect',
+  'advanceClock',
+  'admitChoice',
+  'admitActivity',
+  'controlActivity',
+  'deliverNotice',
+  'armFault',
+  'releaseFault',
+  'assert',
+  'saveCheckpoint',
+  'export',
+  'reset',
+]);
+export type LabStepCommandKind = z.infer<typeof labStepCommandKindSchema>;
+
+export const labStepCommandSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('load') }),
+  z.strictObject({
+    kind: z.literal('inspect'),
+    facets: z
+      .array(z.enum(['activity', 'clock', 'items', 'decision', 'summary']))
+      .min(1)
+      .max(8),
+  }),
+  z.strictObject({
+    kind: z.literal('advanceClock'),
+    targetGameSecond: z
+      .number()
+      .int()
+      .nonnegative()
+      .max(Number.MAX_SAFE_INTEGER),
+  }),
+  z.strictObject({
+    kind: z.literal('admitChoice'),
+    optionId: z
+      .string()
+      .min(1)
+      .max(100)
+      .regex(/^[a-zA-Z0-9_-]+$/),
+  }),
+  z.strictObject({ kind: z.literal('admitActivity') }),
+  z.strictObject({
+    kind: z.literal('controlActivity'),
+    action: z.enum(['pause', 'resume']),
+  }),
+  z.strictObject({ kind: z.literal('deliverNotice') }),
+  z.strictObject({
+    kind: z.literal('armFault'),
+    faultId: identifierSchema,
+  }),
+  z.strictObject({
+    kind: z.literal('releaseFault'),
+    faultId: identifierSchema,
+  }),
+  z.strictObject({
+    kind: z.literal('assert'),
+    invariantId: identifierSchema,
+    expected: z.unknown().optional(),
+  }),
+  z.strictObject({ kind: z.literal('saveCheckpoint') }),
+  z.strictObject({ kind: z.literal('export') }),
+  z.strictObject({ kind: z.literal('reset') }),
+]);
+export type LabStepCommand = z.infer<typeof labStepCommandSchema>;
+
+export const labStepRequestSchema = z.strictObject({
+  stepId: z.uuid(),
+  ordinal: z.number().int().positive(),
+  expectedRunRevision: z.number().int().nonnegative(),
+  command: labStepCommandSchema,
+  breakpoint: identifierSchema.optional(),
+});
+export type LabStepRequest = z.infer<typeof labStepRequestSchema>;
+
+export function parseLabStepRequest(input: unknown): LabStepRequest {
+  return labStepRequestSchema.parse(input);
+}

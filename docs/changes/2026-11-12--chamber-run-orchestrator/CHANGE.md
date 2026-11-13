@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [Chamber protocol 1–2](../../technical/chamber-lab-protocol.md#1-contract-and-command-semantics), [current application tools](../../../packages/application/src/developer-tools/README.md). **Target:** [C01/C03/C06/C09/C11/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [audit H02/H04](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** step means one **application-semantic boundary**, not arbitrary JavaScript instruction stepping.
 
-**State:** Specified/Proposed, no code permission. **Depends on:** CH01, CH02, CH04, CH05. **Source baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH05. **Depends on:** CH01, CH02, CH04, CH05 (Done).
+
+**Evidence:** `chamber-lab` step/lifecycle schemas + `lab/lab-run.ts` FSM over Bench/Sandbox memory adapters. Tests: `lab-run.test.mjs` 2/2. Normal: load→inspect→advanceClock→breakpoint pause→resume→assert→reset; replay new runId same seed. Negatives: stale revision, out-of-order ordinal, duplicate stepId with changed body, unsupported `admitChoice` → blocked. No Chrome/Temporal/eval.
 
 ## Bounded executable result
 
