@@ -805,7 +805,7 @@ export async function checkGeneratedResolution({
           .getByText('The storyteller is resolving this intention.')
           .waitFor();
         await page
-          .getByText('On the road', { exact: true })
+          .getByText('Heading home', { exact: true })
           .waitFor({ timeout: 20000 });
       });
     },
