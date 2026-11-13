@@ -17,7 +17,7 @@
 | `/play/:id` | [(authenticated)/play/[id]/page.tsx]((authenticated)/play/[id]/page.tsx) | `PlayQueryBoundary` + `PlayScene` | Nest read first (401/404/503 propagate), then seed Query + hydrate; `loading`/`error`/`not-found` |
 | `/stories` | [(authenticated)/stories/page.tsx]((authenticated)/stories/page.tsx) | `LiveStoryList` / `DraftList` | SSR `prefetchInfiniteQuery` + hydrate; `loading`/`error` |
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
-| `/demo` | [scripted demo](demo/page.tsx) | browser-only prototype | does not persist gameplay |
+| `/demo` | [scripted demo](demo/page.tsx) | Greywake local preview (`demo-state` + `content/script.json`) | simulated; resets on refresh; no provider |
 | `/rules` | [rules page](rules/page.tsx) | none | public |
 
 **Next config:** [next.config.ts](../next.config.ts) rewrites browser `/api/*` via `API_PROXY_ORIGIN` (default loopback `127.0.0.1:3001`). SSR uses `API_INTERNAL_ORIGIN`. Both are Node-only; do not publish them with `NEXT_PUBLIC_*`. Query provider + Play hydration live inside `(authenticated)`; keep user-facing URL paths exactly.

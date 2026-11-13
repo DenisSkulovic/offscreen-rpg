@@ -1,135 +1,215 @@
 {
-  "road": {
-    "place": "The mountain road · Late afternoon",
-    "title": "Somewhere beyond the trees.",
+  "landing": {
+    "place": "The Greywake lantern · late afternoon · nothing underway",
+    "title": "The lantern has been dark for four nights.",
     "paragraphs": [
-      "You are a wizard travelling to a house that appears on no map. The pines thin as you climb. Somewhere ahead, a bell rings once.",
-      "For now, there is only the road, your footsteps, and the peculiar comfort of having nowhere else to be."
+      "The lantern above Greywake has been dark for four nights. Your hands smell of oil from a failed repair. From the landing you can hear the harbor bell counting boats home.",
+      "A folded notice lies on the workbench, still sealed. The glass housing is open, and the damaged gear can be reached without taking it apart again."
+    ],
+    "phase": "decision",
+    "status": "Waiting for your choice. Nothing is underway yet.",
+    "choices": [
+      {
+        "id": "begin_repair",
+        "label": "Begin repairing the lantern",
+        "detail": "An extended task. Progress depends on successful work."
+      },
+      {
+        "id": "read_notice",
+        "label": "Read the sealed notice",
+        "detail": "A brief inspection. No work progress."
+      }
+    ],
+    "next": {
+      "begin_repair": "repair_accepted",
+      "read_notice": "notice"
+    }
+  },
+  "notice": {
+    "place": "The Greywake lantern · late afternoon · notice in hand",
+    "title": "Under the harbor-watch seal.",
+    "paragraphs": [
+      "The paper gives way at the crease. Under the harbor-watch seal, the message is short: Do not light the lantern until the evening patrol has inspected the passage.",
+      "No signature follows. A pencilled note at the bottom reads: Ask the watch why."
+    ],
+    "phase": "decision",
+    "status": "You know what the notice says. The mechanism still waits.",
+    "choices": [
+      {
+        "id": "begin_repair",
+        "label": "Begin repairing the lantern",
+        "detail": "Commit time to the damaged gear."
+      },
+      {
+        "id": "leave_untouched",
+        "label": "Leave the mechanism untouched",
+        "detail": "Keep the lantern dark for now."
+      }
+    ],
+    "next": {
+      "begin_repair": "repair_accepted",
+      "leave_untouched": "visitor_idle"
+    }
+  },
+  "repair_accepted": {
+    "place": "The Greywake lantern · work underway",
+    "title": "Oil, teeth, and careful pressure.",
+    "paragraphs": [
+      "You set the damaged gear and begin the slow work of seating it true. Oil darkens your cuffs. The harbor bell marks another boat.",
+      "In a persistent story this repair would keep earning time while you were away. This preview only moves when you ask it to."
     ],
     "phase": "waiting",
-    "status": "Crossing the pass. You expect to reach the house by evening.",
+    "status": "Repairing the lantern · 0 of 9 work units earned. This preview advances to meaningful moments, not real time.",
     "choices": [],
-    "next": { "advance": "goblin" }
+    "next": {
+      "advance": "visitor_work"
+    }
   },
-  "goblin": {
-    "place": "A bend in the road · A little later",
-    "title": "An apple. A pear. A smile.",
+  "visitor_work": {
+    "place": "The Greywake lantern · interrupted",
+    "title": "Someone stops at the top of the stair.",
     "paragraphs": [
-      "A goblin stands across the path. In one hand, an apple. In the other, a pear. His scarf is much too long for him.",
-      "“A gift for a traveller,” he says. Neither hand moves. His smile does."
+      "Someone stops at the top of the stair. Water runs from the stranger's coat onto the stone. “Still dark,” they say, looking past you at the open lantern. “That may be for the best.”",
+      "They wear the dark band of the harbor watch. It could be genuine. Their hand stays carefully away from the workbench.",
+      "Your repair is held at three of nine work units. No reward yet — only interrupted progress this preview remembers."
     ],
     "phase": "decision",
-    "status": "The goblin is waiting for an answer.",
+    "status": "Repair held at 3 of 9. The stranger is waiting for an answer.",
     "choices": [
       {
-        "id": "apple",
-        "label": "Accept the apple",
-        "detail": "A small kindness. Probably."
+        "id": "ask_why",
+        "label": "Ask why the lantern should stay dark",
+        "detail": "Press for a reason, not a guarantee."
       },
       {
-        "id": "joke",
-        "label": "Tell him a terrible joke",
-        "detail": "See whether that smile can get any wider."
+        "id": "inspect_mark",
+        "label": "Inspect the stranger's watch mark",
+        "detail": "An uncertain attempt. This preview uses a fixed result."
       },
       {
-        "id": "leave",
-        "label": "Decline and keep walking",
-        "detail": "You have a house to find."
+        "id": "send_back",
+        "label": "Send the stranger back to the stair",
+        "detail": "An attempt, not guaranteed compliance."
+      },
+      {
+        "id": "show_order",
+        "label": "Show the written order",
+        "detail": "Only available because you read the notice.",
+        "requiresNoticeRead": true
       }
     ],
-    "next": { "apple": "seed", "joke": "laughter", "leave": "house" }
+    "next": {
+      "ask_why": "ask_response",
+      "inspect_mark": "inspect_response",
+      "send_back": "send_response",
+      "show_order": "show_response"
+    }
   },
-  "seed": {
-    "place": "Inside the apple · An instant later",
-    "title": "The world smells of sweetness.",
+  "visitor_idle": {
+    "place": "The Greywake lantern · still untouched",
+    "title": "Someone stops at the top of the stair.",
     "paragraphs": [
-      "Your fingers touch the apple. The mountain disappears.",
-      "You stand beside a seed as tall as a door. Pale flesh curves overhead. Somewhere beyond it, the goblin is humming. Your hat, mercifully, still fits."
+      "Someone stops at the top of the stair. Water runs from the stranger's coat onto the stone. “Still dark,” they say, looking past you at the open lantern. “That may be for the best.”",
+      "They wear the dark band of the harbor watch. It could be genuine. Their hand stays carefully away from the workbench.",
+      "You never began the repair. There is no interrupted progress to show."
     ],
     "phase": "decision",
-    "status": "You are very small. Your choices still matter.",
+    "status": "No repair underway. The stranger is waiting for an answer.",
     "choices": [
       {
-        "id": "wait",
-        "label": "Wait and listen",
-        "detail": "Learn where he is taking you."
+        "id": "ask_why",
+        "label": "Ask why the lantern should stay dark",
+        "detail": "Press for a reason, not a guarantee."
       },
       {
-        "id": "knock",
-        "label": "Knock on the skin",
-        "detail": "Ask your host to reconsider his hospitality."
+        "id": "inspect_mark",
+        "label": "Inspect the stranger's watch mark",
+        "detail": "An uncertain attempt. This preview uses a fixed result."
+      },
+      {
+        "id": "send_back",
+        "label": "Send the stranger back to the stair",
+        "detail": "An attempt, not guaranteed compliance."
+      },
+      {
+        "id": "show_order",
+        "label": "Show the written order",
+        "detail": "Only available because you read the notice.",
+        "requiresNoticeRead": true
       }
     ],
-    "next": { "wait": "dark", "knock": "escape" }
+    "next": {
+      "ask_why": "ask_response",
+      "inspect_mark": "inspect_response",
+      "send_back": "send_response",
+      "show_order": "show_response"
+    }
   },
-  "dark": {
-    "place": "Beside the seed · Time passes",
-    "title": "Nothing to do but listen.",
+  "ask_response": {
+    "place": "The Greywake lantern · after the question",
+    "title": "A claim, not a verdict.",
     "paragraphs": [
-      "You sit in the fragrant dark. Footsteps come and go. A chair scrapes. For a long while, nothing changes.",
-      "Then a shadow falls across the skin. The humming stops."
+      "“Because someone has been sailing without a light,” the visitor says. “That part sounds simple until you ask who needed the darkness.”",
+      "They glance at the folded notice. “Did you read that?”"
     ],
     "phase": "waiting",
-    "status": "Waiting inside the apple. The next disturbance will bring you back.",
+    "status": "The visitor spoke. This preview can jump to a simulated return.",
     "choices": [],
-    "next": { "advance": "bite" }
+    "next": {
+      "advance": "return_digest"
+    }
   },
-  "bite": {
-    "place": "Inside the apple · Suddenly",
-    "title": "Daylight. Teeth.",
+  "inspect_response": {
+    "place": "The Greywake lantern · after the inspection",
+    "title": "The band could be genuine.",
     "paragraphs": [
-      "The roof splits. A goblin tooth descends where you were sitting.",
-      "Through the opening you can see a table, a window, and an exceptionally surprised pair of eyes."
+      "You study the dark band at their wrist. The weave matches harbor-watch work you have seen before, but wet cloth can lie.",
+      "They notice your attention and do not flinch. “Look as long as you like,” they say. “The lantern still needs answering.”"
     ],
-    "phase": "decision",
-    "status": "There is a way out. It will not stay open forever.",
-    "choices": [
-      {
-        "id": "escape",
-        "label": "Leap through the opening",
-        "detail": "Aim for the tablecloth."
-      },
-      {
-        "id": "shout",
-        "label": "Shout “I am not a filling!”",
-        "detail": "Make your position absolutely clear."
-      }
-    ],
-    "next": { "escape": "escape", "shout": "escape" }
+    "phase": "waiting",
+    "status": "Inspection recorded for this preview. Jump when you are ready to return.",
+    "choices": [],
+    "next": {
+      "advance": "return_digest"
+    }
   },
-  "laughter": {
-    "place": "The mountain road · After the laughter",
-    "title": "A useful exchange.",
+  "send_response": {
+    "place": "The Greywake lantern · after the dismissal",
+    "title": "They do not leave at once.",
     "paragraphs": [
-      "The goblin laughs so hard he drops both fruits. They roll uphill.",
-      "“You will fit right in,” he says, pointing towards a light between the trees. You decide not to ask what he means."
+      "You tell them to take the stair again. They hold your gaze a moment longer than courtesy requires.",
+      "“I will wait below,” they say at last. “Darkness has friends either way.”"
+    ],
+    "phase": "waiting",
+    "status": "The stranger stepped back. Jump when you are ready to return.",
+    "choices": [],
+    "next": {
+      "advance": "return_digest"
+    }
+  },
+  "show_response": {
+    "place": "The Greywake lantern · after the order",
+    "title": "They read without touching the seal.",
+    "paragraphs": [
+      "You place the note between you. The visitor reads it once without touching the seal.",
+      "“Then you already know this came before I did,” they say. They step aside from the workbench, but they do not leave."
+    ],
+    "phase": "waiting",
+    "status": "Their position changed because you knew the notice. Jump when you are ready to return.",
+    "choices": [],
+    "next": {
+      "advance": "return_digest"
+    }
+  },
+  "return_digest": {
+    "place": "The Greywake lantern · simulated return",
+    "title": "What this preview remembers.",
+    "paragraphs": [
+      "In a real story, a permitted activity can continue while the browser is closed. This preview jumped to the next meaningful saved moment.",
+      "In a persistent story, this is where your saved life would continue."
     ],
     "phase": "ended",
-    "status": "This demonstration ends here. The house is another story.",
-    "choices": [],
-    "next": {}
-  },
-  "house": {
-    "place": "The unmarked house · Evening",
-    "title": "You arrive with your doubts intact.",
-    "paragraphs": [
-      "You leave the goblin and his gifts behind. By evening, the trees give way to a small house with a single lit window.",
-      "Someone has set a place for you. There is no fruit on the table."
-    ],
-    "phase": "ended",
-    "status": "This demonstration ends here. You chose your own way through.",
-    "choices": [],
-    "next": {}
-  },
-  "escape": {
-    "place": "The goblin’s kitchen · A moment later",
-    "title": "An apology, and a cup of tea.",
-    "paragraphs": [
-      "The goblin puts you gently on the table. He mutters something about an unreliable orchard. With a soft pop, the room becomes its usual size around you.",
-      "You accept the tea. You decline the biscuits. Some lessons deserve to last."
-    ],
-    "phase": "ended",
-    "status": "This demonstration ends here. You are yourself again.",
+    "status": "Preview complete. Create a real story to keep a durable life.",
     "choices": [],
     "next": {}
   }

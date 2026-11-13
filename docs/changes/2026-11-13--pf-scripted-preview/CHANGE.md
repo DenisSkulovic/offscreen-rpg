@@ -1,6 +1,6 @@
 # PF02 | The no-cost preview demonstrates intention, earned time and return
 
-**State: Proposed (2026-11-13). Code permission: none.** Parent: [entry program](../../experience/platform-entry-implementation-program.md). Can follow/parallel PF01 if public CSS ownership is controlled; not dependent on backend, paid models or real story generation.
+**State: Done (2026-11-13).** Greywake scripted `/demo` with immediate decision, notice-gated memory option, simulated jump/return digest, and provider-free proofs. Parent: [entry program](../../experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
@@ -38,3 +38,10 @@ No engine/game rule change, backend API, live generation, persistence, anonymous
 **Proof:** scripted state-machine unit tests, RTL/user-event branch walkthroughs, 320/375/1440 browser captures, focus/scroll inspection, no-image and reduced-motion variants. Test destination links and disclaimers. Require a human to explain what fact their choice changed without reading a tutorial.
 
 **Handoff:** only after owner selects this packet, implement/verify authored preview and present actual branch screenshots, not just the final summary. If Greywake content needs editorial correction, resolve within the script rather than inventing new game authority.
+
+## Landed (2026-11-13)
+
+- Replaced wizard/goblin `script.json` with Greywake harbor-lantern graph under `apps/web/app/demo/content/`.
+- Added compact `demo-state.ts` facts (notice/repair/3-of-9/show-order) + filtered `requiresNoticeRead` choices; removed forced `scrollIntoView`.
+- Waiting control copy: “Jump to next moment in this preview” / “Preview returning later”; ended exit: Replay, Create persistent story, How earned time works, View source.
+- Proof: `pnpm --filter @offscreen/web exec vitest run src/features/public-demo` (9 passed). Browser: D0 immediate choice, visitor with memory option, return digest; 375 mobile D0. No provider spend.

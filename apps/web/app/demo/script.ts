@@ -2,19 +2,19 @@ import { z } from 'zod';
 import definitions from './content/script.json';
 
 const identitySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
+const choiceSchema = z.strictObject({
+  id: identitySchema,
+  label: z.string().min(1).max(200),
+  detail: z.string().min(1).max(300),
+  requiresNoticeRead: z.boolean().optional(),
+});
 const sceneSchema = z.strictObject({
   place: z.string().min(1).max(200),
   title: z.string().min(1).max(200),
   paragraphs: z.array(z.string().min(1).max(2000)).min(1).max(8),
   phase: z.enum(['decision', 'waiting', 'ended']),
   status: z.string().min(1).max(300),
-  choices: z.array(
-    z.strictObject({
-      id: identitySchema,
-      label: z.string().min(1).max(200),
-      detail: z.string().min(1).max(300),
-    }),
-  ),
+  choices: z.array(choiceSchema),
   next: z.record(identitySchema, identitySchema),
 });
 const scriptSchema = z
@@ -30,8 +30,20 @@ const scriptSchema = z
           });
         }
       }
+      for (const choice of scene.choices) {
+        if (scene.phase === 'decision' && !scene.next[choice.id]) {
+          context.addIssue({
+            code: 'custom',
+            path: [sceneId, 'choices', choice.id],
+            message: 'Decision choice missing next target',
+          });
+        }
+      }
     }
   });
 
-// Authored presentation content is data; this module only validates its graph.
+/** Authored presentation content is data; this module only validates its graph. */
 export const scenes = scriptSchema.parse(definitions);
+export type SceneId = keyof typeof scenes;
+export type SceneChoice = (typeof scenes)[SceneId]['choices'][number];
+export type ScenePresentation = (typeof scenes)[SceneId];
