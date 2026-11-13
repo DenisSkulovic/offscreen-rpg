@@ -1,6 +1,6 @@
 # ENG04 | Current gameplay reads do not load every historical activity
 
-**State:** Proposed, **design-ready for approval after source reinspection**, not Ready or code-authorized. **Kind:** bounded query/projection behavior and tests. **Authority:** [read-growth investigation](../../engine-architecture/evidence/read-growth-and-availability.md), [causal authority](../../engine-architecture/domain-authority.md).
+**State:** Done. Owner authorized on 2026-11-13. `readCampaign` loads only the active activity (by id) plus nonterminal commitments; terminal history stays out of the current projection. No index added (query correctness proven on disposable SQL with 1,000 completed rows; no speculative index). **Kind:** bounded query/projection behavior and tests. **Authority:** [read-growth investigation](../../engine-architecture/evidence/read-growth-and-availability.md), [causal authority](../../engine-architecture/domain-authority.md).
 
 ## Cursor first-screen brief
 
@@ -34,3 +34,9 @@ Storyteller context long-scene query (independent later cut), Redis rewrite, Sto
 ## Handoff
 
 Cursor returns changed SQL/source owners, exact query behavior, fixture counts, tests/EXPLAIN actually run, and whether an index was required. Reject the Change if it improves speed by forgetting suspended or blocked work.
+
+## Landed evidence (2026-11-13)
+
+**Query:** `game_activity` where `story_id = ?` and (`id = activeActivityId` or `state in running|paused|encounter|suspended|blocked`).
+
+**Ran:** `packages/application/test/eng04-bounded-activity-reads.live.test.mjs` — 1,000 `complete` rows + paused/blocked/suspended/running; public commitments = 4; active progress preserved; null story returns null. EXPLAIN exercised on the disposable fixture. **Index:** none. **Migration:** none.

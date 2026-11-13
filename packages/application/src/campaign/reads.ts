@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
@@ -62,6 +62,14 @@ function appliedWorldEffects(plan: unknown, outcome: string) {
   return appliedItemTransfers(parsed.data, outcome);
 }
 
+const CURRENT_ACTIVITY_STATES = [
+  'running',
+  'paused',
+  'encounter',
+  'suspended',
+  'blocked',
+] as const;
+
 function actionReceiptState(
   generationId: string | null,
   publicationState: string | null,
@@ -96,10 +104,18 @@ export async function readCampaign(
   }
   const state = row.campaign;
   const holds = campaignHoldsSchema.parse(state.holds);
+  // Current Now only needs the active row and nonterminal commitments. Terminal
+  // history stays in game_activity for other readers and must not grow this GET.
+  const activityFilter = state.activeActivityId
+    ? or(
+        eq(gameActivity.id, state.activeActivityId),
+        inArray(gameActivity.state, CURRENT_ACTIVITY_STATES),
+      )
+    : inArray(gameActivity.state, CURRENT_ACTIVITY_STATES);
   const activities = await db
     .select()
     .from(gameActivity)
-    .where(eq(gameActivity.storyId, storyId));
+    .where(and(eq(gameActivity.storyId, storyId), activityFilter));
   const activity = activities.find(
     (candidate) => candidate.id === state.activeActivityId,
   );
@@ -261,9 +277,7 @@ export async function readCampaign(
   const activityView = activity ? projectActivity(activity) : null;
   const commitments = activities
     .filter((candidate) =>
-      ['running', 'paused', 'encounter', 'suspended', 'blocked'].includes(
-        candidate.state,
-      ),
+      (CURRENT_ACTIVITY_STATES as readonly string[]).includes(candidate.state),
     )
     .map(projectActivity);
   const settings = campaignSettingsSchema.parse(row.settings);
