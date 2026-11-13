@@ -1,6 +1,6 @@
 # ENG09 selected decision | interrupted item action produces one controlling consequence
 
-**Decision selected for owner review, 2026-11-13.** Source-grounded architecture contract, not application code and not paid-provider authorization. **Scope:** the confirmed `item.transfer.v1` holder-mismatch *during an already admitted finite action*. Existing [probe](../evidence/eng09-interruption-playability-probe-2026-11-13.md), [ENG09 Change](../../changes/2026-11-13--eng-item-interruption-reentry/CHANGE.md), [time authority](../../time-and-execution.md) and [existing consequence/hold pipeline](../../technical/execution.md) are context. The last link is intentionally not a dependency; implement using the real source owners below.
+**Decision selected for owner review, 2026-11-13.** Source-grounded architecture contract, not application code and not paid-provider authorization. **Scope:** the confirmed `item.transfer.v1` holder-mismatch *during an already admitted finite action*. Existing [probe](../evidence/eng09-interruption-playability-probe-2026-11-13.md), [ENG09 Change](../../changes/2026-11-13--eng-item-interruption-reentry/CHANGE.md), [time authority](../time-and-execution.md) and [existing consequence/hold pipeline](../../technical/execution.md) are context. The last link is intentionally not a dependency; implement using the real source owners below.
 
 ## Product decision and rejected alternative
 
