@@ -41,6 +41,34 @@ The same public passage content must render in the exact same reading order with
 
 V1 accepts a **trusted asset reference** resolved by a frontend fixture registry, not unvalidated HTTP(S), data URLs, remote image-host URLs, CSS `url()` strings or inline SVG. The initial implementation uses local, license-safe or internally authored fixtures. Do not invoke an image-generation provider for implementation/tests.
 
+### Generic renderer versus example content
+
+**A named cave or harbor illustration is valid *fixture data*, not a generic rendering capability.** Current source has `presentation/assets.ts` exporting `FIXTURE_ASSETS` with specific `fixture:cave-wall` / `fixture:harbor-light` IDs, while the generic parser requires the `fixture:` prefix and the generic resolver imports `lookupFixtureAsset`. This is tolerated as a frontend-only prototype seam, but it must be removed **before** introducing any live engine/public presentation contract.
+
+**Selected dependency direction:**
+
+~~~text
+Storybook / test scenario                  Later authenticated Play read-model
+   (fiction + assets + refs)                   (approved asset descriptors)
+             |                                           |
+             v                                           v
+      trusted fixture catalog                 trusted public asset catalog
+             +-------------------+-----------------------+
+                                 |
+                                 v
+                    generic asset resolver API
+                    + validated presentation
+                                 |
+                                 v
+                     SceneMedia / StoryFrame
+~~~
+
+The generic parser only validates bounded, opaque asset-reference syntax; it does **not** whitelist `fixture:` or know the sample categories. The pure presentation resolver receives a trusted catalog or resolver callback as an explicit dependency, rather than importing a module of named examples. The catalog provides approved rendition source, dimensions, accessibility description when applicable and appropriate scope/identity. A missing/unapproved reference returns no media. Trust does **not** come from the model naming an asset; it comes from the authenticated host's provided catalog.
+
+Keep example SVGs, prose, characters, art prompts and world presets in **Storybook/test fixture ownership**, not in runtime `presentation/` code. Conventional `cave.svg` filenames in those fixtures are fine. Prefer Storybook-only static asset serving rather than shipping non-production examples from Next `public/` if feasible without adding needless machinery; document any remaining trade-off. No production imports may reference a particular fixture name or shipping path.
+
+This is not a reason to build a general asset-service framework today. A tiny typed injected catalog or callback is sufficient for the current frontend. The backend generation/storage/permissions design remains separate.
+
 Future backend integration owns provider choice, generation, licensing, safety, storage, authorization, lifecycle, CDN/image renditions, costs, cache-control and public URL mapping. A validated public representation can offer `assetRef` plus stable approved asset metadata (dimensions, renditions, focal point, safe alternate description/caption when supplemental). The client maps this to a trusted image loader with an allowlist and existing Next/browser image policy. **Frontend never calls the image model.**
 
 A model's suggested art prompt or caption is not automatically canonical story truth. Accessible text for an informative illustration must be compatible with player-visible established information and approved as part of the public asset/narrative projection. For purely atmospheric art, use empty alt. If art and passage disagree, the passage wins.
