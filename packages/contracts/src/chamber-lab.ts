@@ -339,6 +339,35 @@ export const labStepCommandKindSchema = z.enum([
 ]);
 export type LabStepCommandKind = z.infer<typeof labStepCommandKindSchema>;
 
+/** CH08: named fault cut points, run-scoped. */
+export const labFaultCutPointSchema = z.enum([
+  'before-admission',
+  'after-commit-before-ack',
+  'outbox-before-delivery',
+  'duplicate-delivery',
+  'after-provider-dispatch-before-result',
+  'before-publication',
+  'projection-cache-unavailable',
+  'before-due-wake',
+  'held-storyteller-consequence',
+]);
+export type LabFaultCutPoint = z.infer<typeof labFaultCutPointSchema>;
+
+export const labFaultPlanSchema = z.strictObject({
+  faultId: identifierSchema,
+  runId: z.uuid(),
+  cutPoint: labFaultCutPointSchema,
+  targetOperationId: z.uuid().nullable(),
+  storyId: z.uuid().nullable(),
+  triggerCount: z.number().int().positive().max(16).default(1),
+  expectedObservation: shortTextSchema,
+});
+export type LabFaultPlan = z.infer<typeof labFaultPlanSchema>;
+
+export function parseLabFaultPlan(input: unknown): LabFaultPlan {
+  return labFaultPlanSchema.parse(input);
+}
+
 export const labStepCommandSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('load') }),
   z.strictObject({
@@ -373,6 +402,11 @@ export const labStepCommandSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('armFault'),
     faultId: identifierSchema,
+    cutPoint: labFaultCutPointSchema,
+    targetOperationId: z.uuid().nullable().optional(),
+    storyId: z.uuid().nullable().optional(),
+    triggerCount: z.number().int().positive().max(16).optional(),
+    expectedObservation: shortTextSchema,
   }),
   z.strictObject({
     kind: z.literal('releaseFault'),

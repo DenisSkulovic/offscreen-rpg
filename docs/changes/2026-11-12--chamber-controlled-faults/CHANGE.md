@@ -2,7 +2,9 @@
 
 > **Cursor start:** [application developer tools](../../../packages/application/src/developer-tools/README.md) `createChamber.controlStoryteller` (already arm-hold/arm-failure/release) → [story transaction owners](../../../packages/application/src/stories/README.md) and outbox. **Target:** [C05/C07/C08/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 5](../../technical/chamber-lab-protocol.md#5-fault-cut-points), [audit H05](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** fake callback counts do not establish a persisted exactly-once effect.
 
-**State:** Specified/Proposed, no code authorization. **Depends on:** CH05, CH06, CH07. **Source baseline:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH07. **Depends on:** CH05, CH06, CH07 (Done). Live PG/outbox seam still gated (authorized later); CH08 ships typed FaultPlan + fake-adapter proof.
+
+**Evidence:** `labFaultPlan` contracts + `lab/lab-faults.ts` + LabRun `armFault`/`releaseFault`/`exerciseFault`. Tests: `lab-faults.test.mjs` 5/5 (+ lab-run + storyteller-control). Normal: lost-ACK then retry keeps one effect; duplicate delivery deliveries=2 effectCount=1; held-storyteller reuses arm-hold with `providerDispatched: false`. Negatives: body conflict, cross-run trip rejected, forgotten disarm caught on cleanup, inspect/export leave zero armed faults. No Nest registration of fault registry. No live DB/provider.
 
 ## One executable outcome
 

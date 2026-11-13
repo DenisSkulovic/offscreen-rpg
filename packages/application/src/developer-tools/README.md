@@ -17,9 +17,10 @@
 | Lab clock/entropy (CH05) | [`lab/lab-clock.ts`](lab/lab-clock.ts) | Labeled domains; seeded draw log; fictional advance without wall wait; refuses Temporal/DB/browser fast-forward; uses real `earnedGameSeconds` |
 | LabRun orchestrator (CH06) | [`lab/lab-run.ts`](lab/lab-run.ts) | Typed lifecycle + whitelisted steps over Bench/Sandbox adapters; pause/breakpoint/reset/replay; no eval/SQL |
 | Lab observations/deltas (CH07) | [`lab/lab-observation.ts`](lab/lab-observation.ts) | Typed facets, semantic before/after, cross-version warning, default redaction; existing SQL inspector unchanged |
+| Lab fault cut points (CH08) | [`lab/lab-faults.ts`](lab/lab-faults.ts) + LabRun `armFault`/`releaseFault` | Run-scoped FaultPlan; after-commit-before-ack, duplicate-delivery, held-storyteller; cleanup on cancel/reset; **not** Nest-registered |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Pending future lab | **CH05–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | clock/entropy, run orchestration, inspector, faults, evidence, workbench |
+| Pending future lab | **CH09–CH16** in [Chamber program](../../../../docs/engineering/chamber-program.md) | evidence capsule, assertions, workbench, connected/live lanes |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 

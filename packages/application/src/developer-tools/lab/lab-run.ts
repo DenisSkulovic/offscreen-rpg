@@ -18,6 +18,11 @@ import {
   type FixtureSpecimenState,
 } from './fixture-specimens.js';
 import { advanceClockWaitToBoundary, createLabEntropy } from './lab-clock.js';
+import {
+  createLabFaultRegistry,
+  LabFaultError,
+  type LabFaultRegistry,
+} from './lab-faults.js';
 import { observeSpecimenState } from './lab-observation.js';
 import {
   createMemorySandboxStore,
@@ -63,6 +68,7 @@ type InternalRun = {
   ordinalResults: Map<number, LabStepResult>;
   assertionResults: Map<string, boolean>;
   entropyDraws: number[];
+  faults: LabFaultRegistry;
 };
 
 const SUPPORTS: Record<ChamberLabLane, ReadonlySet<LabStepCommand['kind']>> = {
@@ -70,6 +76,8 @@ const SUPPORTS: Record<ChamberLabLane, ReadonlySet<LabStepCommand['kind']>> = {
     'load',
     'inspect',
     'advanceClock',
+    'armFault',
+    'releaseFault',
     'assert',
     'saveCheckpoint',
     'export',
@@ -79,6 +87,8 @@ const SUPPORTS: Record<ChamberLabLane, ReadonlySet<LabStepCommand['kind']>> = {
     'load',
     'inspect',
     'advanceClock',
+    'armFault',
+    'releaseFault',
     'assert',
     'saveCheckpoint',
     'export',
@@ -145,6 +155,7 @@ export function createLabRun(args: {
     ordinalResults: new Map(),
     assertionResults: new Map(),
     entropyDraws: [],
+    faults: createLabFaultRegistry(),
   };
   return new LabRunHandle(run);
 }
@@ -187,9 +198,34 @@ export class LabRunHandle {
         `Cannot cancel terminal run ${this.run.snapshot.lifecycle}`,
       );
     }
+    this.run.faults.cleanup(this.run.snapshot.runId);
     this.run.snapshot.lifecycle = 'cancelled';
     this.run.snapshot.revision += 1;
     return this.snapshot();
+  }
+
+  /** Test-only fault registry — never composed into Nest API. */
+  faults(): LabFaultRegistry {
+    return this.run.faults;
+  }
+
+  exerciseFault(args: {
+    faultId: string;
+    operationId?: string;
+    payload?: unknown;
+    generationId?: string;
+  }) {
+    return this.run.faults.exercise({
+      runId: this.run.snapshot.runId,
+      faultId: args.faultId,
+      ...(args.operationId !== undefined
+        ? { operationId: args.operationId }
+        : {}),
+      ...(args.payload !== undefined ? { payload: args.payload } : {}),
+      ...(args.generationId !== undefined
+        ? { generationId: args.generationId }
+        : {}),
+    });
   }
 
   /** CH07: capture typed observation at the current step boundary. */
@@ -416,12 +452,14 @@ export class LabRunHandle {
         };
       case 'reset':
         return this.reset();
+      case 'armFault':
+        return this.armFault(command);
+      case 'releaseFault':
+        return this.releaseFault(command.faultId);
       case 'admitChoice':
       case 'admitActivity':
       case 'controlActivity':
       case 'deliverNotice':
-      case 'armFault':
-      case 'releaseFault':
         return {
           outcome: 'blocked',
           observation: null,
@@ -620,10 +658,78 @@ export class LabRunHandle {
     };
   }
 
+  private armFault(
+    command: Extract<LabStepCommand, { kind: 'armFault' }>,
+  ): {
+    outcome: LabStepOutcome;
+    observation: unknown;
+    errorCode?: string;
+    detail?: string;
+  } {
+    try {
+      const armed = this.run.faults.arm({
+        faultId: command.faultId,
+        runId: this.run.snapshot.runId,
+        cutPoint: command.cutPoint,
+        targetOperationId: command.targetOperationId ?? null,
+        storyId: command.storyId ?? null,
+        ...(command.triggerCount !== undefined
+          ? { triggerCount: command.triggerCount }
+          : {}),
+        expectedObservation: command.expectedObservation,
+      });
+      return {
+        outcome: 'ok',
+        observation: {
+          faultId: armed.faultId,
+          cutPoint: armed.cutPoint,
+          remainingTriggers: armed.remainingTriggers,
+          armed: true,
+        },
+      };
+    } catch (error) {
+      if (error instanceof LabFaultError) {
+        return {
+          outcome: 'failed',
+          observation: null,
+          errorCode: error.code,
+          detail: error.message,
+        };
+      }
+      throw error;
+    }
+  }
+
+  private releaseFault(faultId: string): {
+    outcome: LabStepOutcome;
+    observation: unknown;
+    errorCode?: string;
+    detail?: string;
+  } {
+    try {
+      const released = this.run.faults.disarm({
+        runId: this.run.snapshot.runId,
+        faultId,
+      });
+      return { outcome: 'ok', observation: released };
+    } catch (error) {
+      if (error instanceof LabFaultError) {
+        return {
+          outcome: 'failed',
+          observation: null,
+          errorCode: error.code,
+          detail: error.message,
+        };
+      }
+      throw error;
+    }
+  }
+
   private async reset(): Promise<{
     outcome: LabStepOutcome;
     observation: unknown;
   }> {
+    this.run.faults.cleanup(this.run.snapshot.runId);
     await this.run.sandboxStore?.close().catch(() => undefined);
     this.run.sandboxStore = null;
     this.run.sandboxStoryId = null;
