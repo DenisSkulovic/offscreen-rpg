@@ -87,3 +87,19 @@ export function isPathStaged(successorPaths: string[][], path: string[]) {
   const key = pathKey(path);
   return successorPaths.some((candidate) => pathKey(candidate) === key);
 }
+
+/** Every root-to-node path in the current offer tree (for presentation scope). */
+export function allCampaignOfferPaths(
+  nodes: NonNullable<CampaignView['offer']>['nodes'],
+): string[][] {
+  const paths: string[][] = [];
+  function walk(parent: string | null, prefix: string[]) {
+    for (const node of nodes.filter((entry) => entry.parent === parent)) {
+      const next = [...prefix, node.id];
+      paths.push(next);
+      walk(node.id, next);
+    }
+  }
+  walk(null, []);
+  return paths;
+}

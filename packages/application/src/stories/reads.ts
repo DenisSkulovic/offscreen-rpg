@@ -22,6 +22,7 @@ import { storyListSchema } from '@offscreen/contracts/stories';
 import {
   storyHistorySchema,
   passageContentSchema,
+  readOptionalSceneAppearance,
   storySnapshotSchema,
 } from '@offscreen/contracts/stories';
 import type { Database } from '@offscreen/db';
@@ -374,6 +375,7 @@ export function createStoryReads(
               content: storyPassage.content,
               contentDocumentHash: storyPassage.contentDocumentHash,
               interaction: storyPassage.interaction,
+              appearance: storyPassage.appearance,
               waitPlan: storyPassage.waitPlan,
               decisionPlan: storyPassage.decisionPlan,
               responseDueAt: storyPassage.responseDueAt,
@@ -453,38 +455,46 @@ export function createStoryReads(
             row,
             options.documentStore,
           );
-          return storySnapshotSchema.parse({
-            campaign:
-              (await readCampaign(tx, ownerId, storyId)) ??
-              (row.storyteller
-                ? {
-                    settings: {
-                      revision: 1,
-                      creative: initialCreative(
-                        storytellerProfileSchema.parse(row.storyteller),
-                      ),
-                      pace: {
-                        kind: 'rate',
-                        fictionalSeconds: 1,
-                        realSeconds: 1,
-                      },
-                      locked: false,
-                      rules: 'srd-5.2.1-subset.v1',
-                      risk: 'nonlethal',
+          const campaignView =
+            (await readCampaign(tx, ownerId, storyId)) ??
+            (row.storyteller
+              ? {
+                  settings: {
+                    revision: 1,
+                    creative: initialCreative(
+                      storytellerProfileSchema.parse(row.storyteller),
+                    ),
+                    pace: {
+                      kind: 'rate',
+                      fictionalSeconds: 1,
+                      realSeconds: 1,
                     },
-                    character: null,
-                    storyFacts: [],
-                    location: null,
-                    gameSecond: 0,
-                    offer: null,
-                    activityAccess: { kind: 'none' },
-                    activity: null,
-                    commitments: [],
-                    activityEvents: [],
-                    rolls: [],
-                    actionReceipts: [],
-                  }
-                : null),
+                    locked: false,
+                    rules: 'srd-5.2.1-subset.v1',
+                    risk: 'nonlethal',
+                  },
+                  character: null,
+                  storyFacts: [],
+                  location: null,
+                  gameSecond: 0,
+                  offer: null,
+                  activityAccess: { kind: 'none' },
+                  activity: null,
+                  commitments: [],
+                  activityEvents: [],
+                  rolls: [],
+                  actionReceipts: [],
+                }
+              : null);
+          const storedAppearance = readOptionalSceneAppearance(row.appearance);
+          const appearance =
+            storedAppearance &&
+            storedAppearance.source.storyId === row.id &&
+            storedAppearance.source.passageId === row.passageId
+              ? storedAppearance
+              : undefined;
+          return storySnapshotSchema.parse({
+            campaign: campaignView,
             id: row.id,
             lineage:
               row.forkedFromStoryId === null ||
@@ -536,6 +546,7 @@ export function createStoryReads(
               id: row.passageId,
               content,
               interaction: row.interaction,
+              ...(appearance ? { appearance } : {}),
             },
             resolution:
               row.resolutionState === null

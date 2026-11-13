@@ -15,6 +15,13 @@
       "when": 1794612027609,
       "tag": "0001_lumpy_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794612679392,
+      "tag": "0002_fair_magus",
+      "breakpoints": true
     }
   ]
 }

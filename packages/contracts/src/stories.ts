@@ -46,6 +46,49 @@ export const passageContentSchema = z.strictObject({
   title: z.string().min(1).max(160),
   paragraphs: z.array(z.string().min(1).max(6000)).min(1).max(10),
 });
+
+/** Published optional scene appearance. Directive body is frontend-validated. */
+export const publicSceneAppearanceAssetSchema = z.strictObject({
+  src: z
+    .string()
+    .min(1)
+    .max(500)
+    .refine(
+      (value) =>
+        value.startsWith('/') ||
+        value.startsWith('https://') ||
+        value.startsWith('http://localhost'),
+      'Asset src must be a same-origin path or approved https/localhost URL',
+    ),
+  width: z.number().int().positive().max(8192),
+  height: z.number().int().positive().max(8192),
+  description: z.string().max(500).nullable(),
+});
+export const publicSceneAppearanceV1Schema = z.strictObject({
+  source: z.strictObject({
+    storyId: z.uuid(),
+    passageId: z.uuid(),
+    interactionId: z.string().min(1).max(100).optional(),
+    campaignOfferId: z.uuid().optional(),
+  }),
+  directive: z.unknown(),
+  assets: z
+    .record(z.string().min(1).max(80), publicSceneAppearanceAssetSchema)
+    .optional(),
+});
+export type PublicSceneAppearanceV1 = z.infer<
+  typeof publicSceneAppearanceV1Schema
+>;
+
+/** Drop corrupt decoration without failing the story snapshot. */
+export function readOptionalSceneAppearance(
+  value: unknown,
+): PublicSceneAppearanceV1 | undefined {
+  if (value === undefined || value === null) return undefined;
+  const parsed = publicSceneAppearanceV1Schema.safeParse(value);
+  return parsed.success ? parsed.data : undefined;
+}
+
 export const storySnapshotSchema = z.strictObject({
   campaign: campaignViewSchema.nullable().optional(),
   id: z.uuid(),
@@ -90,6 +133,7 @@ export const storySnapshotSchema = z.strictObject({
     id: z.uuid(),
     content: passageContentSchema,
     interaction: interactionSchema.nullable(),
+    appearance: publicSceneAppearanceV1Schema.optional(),
   }),
   resolution: z
     .strictObject({

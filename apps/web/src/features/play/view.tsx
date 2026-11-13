@@ -2,6 +2,7 @@
 import { CampaignPlay } from './campaign-play';
 import { CampaignSettingsEditor } from './campaign-settings';
 import { StoryHistoryView } from './history';
+import { resolveLivePresentation } from './model/live-presentation';
 import { ResolutionRecovery } from './resolution-recovery';
 import { useControlCommand } from './use-control-command';
 import { useResolutionCommand } from './use-resolution-command';
@@ -205,6 +206,7 @@ export function PlayScene({
     scene.current.content.title.trim() ||
     'Current story';
   const situationLabel = scene.campaign?.worldTime.label ?? null;
+  const presentation = resolveLivePresentation(scene);
 
   return (
     <>
@@ -216,6 +218,8 @@ export function PlayScene({
         statusLabel={stageStatusLabel(scene, canChoose)}
         passageTitle={scene.current.content.title}
         passageId={scene.current.id}
+        interactionId={offer?.id}
+        presentation={presentation}
         paragraphs={scene.current.content.paragraphs}
         journalHref="#story-journal"
         thresholdHeading={offer?.specification.prompt || 'What will you do?'}
@@ -338,6 +342,7 @@ export function PlayScene({
                   story={scene}
                   campaign={scene.campaign}
                   onSnapshot={acceptSnapshot}
+                  presentation={presentation}
                 />
               </div>
             ) : null}

@@ -113,6 +113,8 @@ export const storyPassage = pgTable(
     content: jsonb('content').$type<unknown>(),
     contentDocumentHash: text('content_document_hash'),
     interaction: jsonb('interaction').$type<unknown>(),
+    /** Optional published presentation envelope; never game authority. */
+    appearance: jsonb('appearance').$type<unknown>(),
     sourceGenerationId: uuid('source_generation_id').references(
       () => generation.id,
       { onDelete: 'restrict' },

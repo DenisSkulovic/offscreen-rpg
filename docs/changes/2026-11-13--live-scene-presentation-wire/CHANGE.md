@@ -1,6 +1,6 @@
 # PW01 | Wire published optional appearance into live Play, without generation
 
-**State: design selected, cross-team implementation-ready after owner authorization and backend read-model coordination (2026-11-13).** No code currently authorized; no active Change selection. **Authority:** [live published-scene contract](../../experience/system/live-presentation-projection.md), [V1 presentation grammar](../../experience/system/presentation-language.md), [media/asset isolation](../../experience/system/presentation-media-and-motion.md), existing [React/Next Query](../../engineering/targets/react-next.md).
+**State: Done (2026-11-14).** Optional published `current.appearance` projects into live Play through the existing PX resolver. **Authority:** [live published-scene contract](../../experience/system/live-presentation-projection.md), [V1 presentation grammar](../../experience/system/presentation-language.md), [media/asset isolation](../../experience/system/presentation-media-and-motion.md), existing [React/Next Query](../../engineering/targets/react-next.md).
 
 ## Cursor first-screen
 
@@ -38,4 +38,6 @@ Add an optional `StorySnapshot.current.appearance` equivalent to the selected `P
 
 This is a **small cross-team read/publication contract plus renderer wiring**, not engine Storyteller art-direction generation. Coordinate backend read-model ownership before making `@offscreen/contracts` changes. If backend parallel program won't own the new public field yet, do not implement a fake live client coupling; leave this Change unselected and provider-free PX lab as-is.
 
-**Next:** owner selects one bounded cross-team implementation sequence and explicitly authorizes schema/test scope. Cursor revalidates current source, owns only the specified symbols, returns exact contract/command parity/asset isolation evidence. No automatic readiness-to-spend.
+**Proof (2026-11-14):** migration `0002_fair_magus.sql` (`story_passage.appearance`); forgiving `readOptionalSceneAppearance`; snapshot projection; `PlayScene` → `resolveLivePresentation` → StoryFrame/CampaignOffer. Checks: `pw01-appearance-projection.live.test.mjs`; web Vitest live-presentation + existing presentation RTL. No paid generation; empty assets OK; corrupt decoration dropped. Production authoring/Storyteller art still out of scope.
+
+**Next:** none for PW01. Later producer/authoring of appearance remains a separate program.

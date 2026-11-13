@@ -11,15 +11,18 @@ import { CampaignHistory } from './campaign-history';
 import { CampaignOfferPanel } from './campaign-offer';
 import { CampaignRecords } from './campaign-records';
 import { CampaignStatus } from './campaign-status';
+import type { ResolvedPresentation } from '../presentation/types';
 
 export function CampaignPlay({
   story,
   campaign,
   onSnapshot,
+  presentation = null,
 }: {
   story: StorySnapshot;
   campaign: CampaignView;
   onSnapshot: (story: StorySnapshot) => void;
+  presentation?: ResolvedPresentation | null;
 }) {
   const command = useCampaignCommand(story.id, onSnapshot);
   return (
@@ -27,7 +30,12 @@ export function CampaignPlay({
       <CampaignStatus campaign={campaign} />
       <CampaignActivityPanel campaign={campaign} command={command} />
       <CampaignHistory campaign={campaign} />
-      <CampaignOfferPanel story={story} campaign={campaign} command={command} />
+      <CampaignOfferPanel
+        story={story}
+        campaign={campaign}
+        command={command}
+        presentation={presentation}
+      />
       {command.message ? <p role="status">{command.message}</p> : null}
       {command.retry ? (
         <button disabled={command.busy} onClick={() => void command.send()}>
