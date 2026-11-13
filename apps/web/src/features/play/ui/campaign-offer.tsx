@@ -8,6 +8,9 @@ import {
   offerNodes,
 } from '../model/campaign-projections';
 import { useOfferPath } from '../model/use-offer-path';
+import { matchCampaignChoice } from '../presentation/resolve';
+import type { ResolvedPresentation } from '../presentation/types';
+import { IntentionChoice } from './intention-choice';
 
 function supportLine(parts: Array<string | null | undefined>) {
   const text = parts.filter(Boolean).join(' · ');
@@ -18,10 +21,13 @@ export function CampaignOfferPanel({
   story,
   campaign,
   command,
+  presentation = null,
 }: {
   story: StorySnapshot;
   campaign: CampaignView;
   command: CampaignCommandApi;
+  /** Fixture-resolved treatments. Live Play leaves this unset. */
+  presentation?: ResolvedPresentation | null;
 }) {
   const nodes = offerNodes(story, campaign);
   const offer = useOfferPath(campaign.offer?.id);
@@ -40,17 +46,13 @@ export function CampaignOfferPanel({
         >
           <h2 className="story-frame__threshold-heading">What will you do?</h2>
           {offer.path.length ? (
-            <button
-              type="button"
-              className="story-frame__intention story-frame__intention--explore"
+            <IntentionChoice
+              label="Back"
+              support="Return to the previous options · no time spent"
+              behavior="explore"
               disabled={command.busy}
               onClick={() => offer.setPath((prior) => prior.slice(0, -1))}
-            >
-              Back
-              <span className="story-frame__intention-support">
-                Return to the previous options · no time spent
-              </span>
-            </button>
+            />
           ) : null}
           <ul className="story-frame__intentions">
             {children.map((node) => {
@@ -68,17 +70,27 @@ export function CampaignOfferPanel({
                       );
               return (
                 <li key={node.id}>
-                  <button
-                    type="button"
-                    className={
-                      isCommit
-                        ? 'story-frame__intention story-frame__intention--commit'
-                        : 'story-frame__intention story-frame__intention--explore'
-                    }
+                  <IntentionChoice
+                    label={node.label}
+                    support={supportLine([
+                      isCommit ? null : 'Browse options · no time spent',
+                      node.description,
+                      timing,
+                      node.risk ? `Apparent risk: ${node.risk}` : null,
+                      staged ? 'Already staged for later' : null,
+                    ])}
+                    behavior={isCommit ? 'commit' : 'explore'}
                     disabled={
-                      command.busy ||
-                      command.retry ||
-                      (isCommit && staged)
+                      command.busy || command.retry || (isCommit && staged)
+                    }
+                    treatment={
+                      presentation && campaign.offer
+                        ? matchCampaignChoice(
+                            presentation,
+                            campaign.offer.id,
+                            nextPath,
+                          )
+                        : undefined
                     }
                     onClick={() => {
                       if (!node.action) {
@@ -99,22 +111,12 @@ export function CampaignOfferPanel({
                       offer.setPath([]);
                       offer.setSuccessorPaths([]);
                     }}
-                  >
-                    {node.label}
-                    <span className="story-frame__intention-support">
-                      {supportLine([
-                        isCommit ? null : 'Browse options · no time spent',
-                        node.description,
-                        timing,
-                        node.risk ? `Apparent risk: ${node.risk}` : null,
-                        staged ? 'Already staged for later' : null,
-                      ])}
-                    </span>
-                  </button>
+                  />
                   {isCommit ? (
-                    <button
-                      type="button"
-                      className="story-frame__intention story-frame__intention--explore"
+                    <IntentionChoice
+                      label="Add to plan ahead"
+                      support="Does not start the action · conditional later attempt"
+                      behavior="explore"
                       disabled={
                         command.busy ||
                         offer.successorPaths.length >= 5 ||
@@ -126,12 +128,7 @@ export function CampaignOfferPanel({
                           nextPath,
                         ])
                       }
-                    >
-                      Add to plan ahead
-                      <span className="story-frame__intention-support">
-                        Does not start the action · conditional later attempt
-                      </span>
-                    </button>
+                    />
                   ) : null}
                 </li>
               );
@@ -184,22 +181,18 @@ export function CampaignOfferPanel({
                 of fictional time (exact admitted seconds:{' '}
                 {offer.planHorizonGameSeconds}).
               </p>
-              <button
-                type="button"
-                className="story-frame__intention story-frame__intention--explore"
+              <IntentionChoice
+                label="Remove last step"
+                behavior="explore"
                 onClick={() =>
                   offer.setSuccessorPaths((prior) => prior.slice(0, -1))
                 }
-              >
-                Remove last step
-              </button>
-              <button
-                type="button"
-                className="story-frame__intention story-frame__intention--explore"
+              />
+              <IntentionChoice
+                label="Clear plan"
+                behavior="explore"
                 onClick={() => offer.setSuccessorPaths([])}
-              >
-                Clear plan
-              </button>
+              />
             </details>
           ) : null}
         </section>

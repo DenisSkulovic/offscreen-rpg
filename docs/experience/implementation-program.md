@@ -4,7 +4,7 @@
 
 **First narrow handoff is prepared:** [UX01 executor handoff](handoff/first-cursor-wave.md) and [design-readiness review](evidence/design-readiness-review.md) define the source-grounded implementation boundary. The [selected Living Stage blueprint](spaces/living-stage-blueprint.md) is the default composition authority. **Only UX01 is recommended for the first implementation request**, with UX02 held until an actual render is critiqued. A Proposed dossier is **not** formally Ready or code-authorized without the owner's explicit instruction.
 
-**Later frontend presentation capability:** the separate [PX01–PX04 presentation program](presentation-implementation-program.md) now owns dynamic scene atmosphere, scoped option styling, art slots and visual-runtime fixtures. The existing UX01–UX12 program continues to own player interaction and information architecture; PX work must not reinterpret actions, time or current authenticated data. PX is frontend-only and has no active implementation permission.
+**Later frontend presentation capability:** the separate [PX01–PX04 presentation program](presentation-implementation-program.md) owns dynamic scene atmosphere, scoped option styling, art slots and visual-runtime fixtures. PX01–PX04 landed in `apps/web` on 2026-11-13. Live Play still passes no presentation document. PX work must not reinterpret actions, time or current authenticated data, and it does not authorize engine, contract, or image-provider integration.
 
 ## The target comes first
 

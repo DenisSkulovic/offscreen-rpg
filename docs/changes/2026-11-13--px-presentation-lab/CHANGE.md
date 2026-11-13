@@ -1,6 +1,6 @@
 # PX04 | Scene presentation workbench and integrated regression evidence
 
-**State: Proposed (2026-11-13).** **Implementation permission: none.** Depends on PX01–PX03 review and source reinspection. Parent: [presentation program](../../experience/presentation-implementation-program.md). This is a **code-bearing test/tooling Change**, not a documentation-only evaluation.
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed the `Experience/Presentation` Storybook laboratory on the real resolver and `StoryFrame`. Parent: [presentation program](../../experience/presentation-implementation-program.md). This is a **code-bearing test/tooling Change**, not a documentation-only evaluation.
 
 ## Cursor first-screen brief
 

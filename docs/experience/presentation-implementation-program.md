@@ -1,6 +1,6 @@
 # Presentation runtime | frontend-only implementation program (PX01–PX04)
 
-**Status: SELECTED DESIGN PROGRAM; code NOT authorized.** Written 2026-11-13. The repo's `docs/changes/README.md` continues to declare `Current change: none` until the owner explicitly selects one packet. This program defines the desired frontend end-state, not a claim that any presentation runtime exists in source.
+**Status: frontend packets PX01–PX04 landed 2026-11-13.** Owner asked to merge this design and implement it. Live Play still passes no presentation document; Storybook and tests feed fixtures. Engine, contracts, and image providers remain out of scope.
 
 **One-sentence destination:** a single verified scene + offer can be rendered in radically different, accessible, expressive visual environments using different *validated data*, with no source edits, without the browser knowing what generated the art direction.
 
@@ -99,7 +99,7 @@ Do not pre-create every file or move all existing UI into a new shared package. 
 
 ## Execution / authorization protocol
 
-All four dossiers are **Proposed**. This design-only commit does not set an active Change or grant Cursor permission. When the owner later asks Cursor to begin: confirm current repo branch/worktree, select/authorize PX01 as Ready and update the exact one-active-Change declaration in `docs/changes/README.md` according to the existing work-unit standard. Implement only that bounded change, run cheap targeted V0/V1 tests during iteration and focused V2 check at closure; use browser V3 when a real rendering/identity seam changes. Do not run destructive tests, call paid providers or deploy.
+Owner authorized the whole frontend program on 2026-11-13 and PX01–PX04 landed together in `apps/web`. Current change is none. A later public-contract/engine change is still required before live Play receives a presentation document. Do not run destructive tests, call paid providers or deploy for this seam.
 
 Cursor returns: changed files and diff, exact checks/results, before/after screenshot evidence, default behavior regression, genuine gaps or contract conflicts, and recommendation for next packet. The designer reviews evidence before selecting another Change.
 

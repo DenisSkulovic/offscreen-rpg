@@ -1,6 +1,6 @@
 # PX01 | Pure presentation resolver and stage styling foundation
 
-**State: Proposed (2026-11-13).** **Implementation permission: none.** This packet becomes Ready only when owner selects it and revalidates current code. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX02 expressive choices](../2026-11-13--px-expressive-choices/CHANGE.md).
+**State: Done (2026-11-13).** **Approval:** Owner asked to merge the presentation design and implement it. Cursor landed the pure V1 resolver, scoped stage tokens, and baseline-preserving StoryFrame prop. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX02 expressive choices](../2026-11-13--px-expressive-choices/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 

@@ -215,6 +215,7 @@ export function PlayScene({
         situationLabel={situationLabel}
         statusLabel={stageStatusLabel(scene, canChoose)}
         passageTitle={scene.current.content.title}
+        passageId={scene.current.id}
         paragraphs={scene.current.content.paragraphs}
         journalHref="#story-journal"
         thresholdHeading={offer?.specification.prompt || 'What will you do?'}

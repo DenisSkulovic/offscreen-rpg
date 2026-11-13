@@ -1,7 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { matchLegacyChoice } from '../presentation/resolve';
+import type { ResolvedPresentation } from '../presentation/types';
+import { IntentionChoice } from './intention-choice';
+import { NarrativePassage } from './narrative-passage';
+import { SceneMedia } from './scene-media';
 import './story-frame.css';
 
 export type StoryFrameIntention = {
@@ -43,6 +48,15 @@ export type StoryFrameProps = {
   /** When true, intention buttons stay visible but do not accept activation. */
   intentionsDisabled?: boolean;
   onIntentionSelect?: (id: string) => void;
+  /** Verified published passage. Arrival motion uses this, never the title. */
+  passageId?: string;
+  /** Legacy interaction whose options may receive fixture treatments. */
+  interactionId?: string;
+  /**
+   * Optional resolved presentation. Real Play omits this until a public
+   * projection exists. Absent means the baseline field journal.
+   */
+  presentation?: ResolvedPresentation | null;
 };
 
 /**
@@ -64,11 +78,70 @@ export function StoryFrame({
   stageExtras = null,
   intentionsDisabled = false,
   onIntentionSelect,
+  passageId,
+  interactionId,
+  presentation = null,
 }: StoryFrameProps) {
   const showSituation = Boolean(situationLabel || statusLabel);
+  const presented = Boolean(presentation?.applied);
+  const identity = `${presentation?.storyId ?? 'story'}:${passageId ?? 'passage'}`;
+  const backdropMedia = presentation?.media.find(
+    (item) => item.slot.kind === 'backdrop',
+  );
+  const inlineMedia =
+    presentation?.media.filter((item) => item.slot.kind !== 'backdrop') ?? [];
+  const style = presented
+    ? ({
+        '--sf-bg':
+          presentation?.backdrop.kind === 'solid'
+            ? presentation.backdrop.color
+            : '#12181f',
+        '--sf-stage': presentation?.surface,
+        '--sf-ink': presentation?.ink,
+        '--sf-ink-muted': presentation?.muted,
+        '--sf-ink-quiet': presentation?.quiet,
+        '--sf-action': presentation?.accent,
+        '--sf-action-ink': presentation?.actionInk,
+        '--sf-focus': presentation?.focus,
+        '--sf-status-attention': presentation?.status,
+      } as CSSProperties)
+    : undefined;
 
   return (
-    <div className="story-frame">
+    <div
+      className={presented ? 'story-viewport' : undefined}
+      data-lighting={presented ? presentation?.lighting : undefined}
+      data-stage={presented ? presentation?.stage : undefined}
+      data-texture={presented ? presentation?.texture : undefined}
+      data-ambient={presented ? presentation?.ambient : undefined}
+      data-mocked-presentation={presented ? 'true' : undefined}
+    >
+      {presented ? (
+        <div className="story-viewport__atmosphere" aria-hidden="true">
+          <div
+            className="story-viewport__plane"
+            style={{
+              background:
+                presentation?.backdrop.kind === 'solid'
+                  ? presentation.backdrop.color
+                  : presentation?.backdrop.css,
+              opacity: presentation?.lighting === 'dim' ? 0.92 : 1,
+            }}
+          />
+          {backdropMedia ? (
+            <SceneMedia
+              media={backdropMedia}
+              identity={identity}
+              className="story-viewport__media"
+            />
+          ) : null}
+        </div>
+      ) : null}
+    <div
+      className="story-frame"
+      data-presented={presented ? 'true' : undefined}
+      style={style}
+    >
       <header className="story-frame__chrome">
         <div className="story-frame__identity">
           <Link className="story-frame__back" href={storiesHref}>
@@ -104,20 +177,33 @@ export function StoryFrame({
       ) : null}
 
       <main id="story-frame-now" className="story-frame__stage">
-        {passageTitle ? (
-          <h1
-            key={passageTitle}
-            className="story-frame__passage-title"
-            data-passage-enter="true"
-          >
-            {passageTitle}
-          </h1>
-        ) : null}
-        <div className="story-frame__passage">
-          {paragraphs.map((paragraph, index) => (
-            <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
-          ))}
-        </div>
+        {presented ? (
+          <NarrativePassage
+            passageId={passageId}
+            title={passageTitle}
+            paragraphs={paragraphs}
+            media={inlineMedia}
+            identity={identity}
+            arrival={presentation?.passageArrival ?? 'none'}
+          />
+        ) : (
+          <>
+            {passageTitle ? (
+              <h1
+                key={passageTitle}
+                className="story-frame__passage-title"
+                data-passage-enter="true"
+              >
+                {passageTitle}
+              </h1>
+            ) : null}
+            <div className="story-frame__passage">
+              {paragraphs.map((paragraph, index) => (
+                <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
+              ))}
+            </div>
+          </>
+        )}
 
         {memory ? <p className="story-frame__memory">{memory}</p> : null}
 
@@ -137,19 +223,22 @@ export function StoryFrame({
             <ul className="story-frame__intentions">
               {intentions.map((intention) => (
                 <li key={intention.id}>
-                  <button
-                    type="button"
-                    className="story-frame__intention"
+                  <IntentionChoice
+                    label={intention.label}
+                    support={intention.support}
+                    behavior="commit"
                     disabled={intentionsDisabled}
+                    treatment={
+                      presentation && interactionId
+                        ? matchLegacyChoice(
+                            presentation,
+                            interactionId,
+                            intention.id,
+                          )
+                        : undefined
+                    }
                     onClick={() => onIntentionSelect?.(intention.id)}
-                  >
-                    {intention.label}
-                    {intention.support ? (
-                      <span className="story-frame__intention-support">
-                        {intention.support}
-                      </span>
-                    ) : null}
-                  </button>
+                  />
                 </li>
               ))}
             </ul>
@@ -163,6 +252,7 @@ export function StoryFrame({
           {details}
         </details>
       ) : null}
+    </div>
     </div>
   );
 }

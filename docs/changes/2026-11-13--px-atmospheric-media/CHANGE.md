@@ -1,6 +1,6 @@
 # PX03 | Trusted scene art, narrative slots and truthful presentation motion
 
-**State: Proposed (2026-11-13).** **Implementation permission: none.** Depends on PX01 + PX02 reviewed; recheck actual source before Ready. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX04 workbench](../2026-11-13--px-presentation-lab/CHANGE.md).
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed trusted fixture assets, anchored figures, and passage-id arrival motion. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX04 workbench](../2026-11-13--px-presentation-lab/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 

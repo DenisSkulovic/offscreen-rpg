@@ -1,6 +1,6 @@
 # PX02 | Semantic passage and expressive intention treatments
 
-**State: Proposed (2026-11-13).** **Implementation permission: none.** Depends on PX01 accepted and source reinspection. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX03 media/motion](../2026-11-13--px-atmospheric-media/CHANGE.md).
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed `IntentionChoice` and `NarrativePassage` for legacy and campaign options. Parent: [presentation program](../../experience/presentation-implementation-program.md). Next: [PX03 media/motion](../2026-11-13--px-atmospheric-media/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 
