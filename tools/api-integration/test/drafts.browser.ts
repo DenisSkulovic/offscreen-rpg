@@ -5,6 +5,8 @@ import { checkStoryDemo } from './story-demo.browser.js';
 import {
   createCustomDraftSetup,
   openDraftRoleStep,
+  returnDraftToReview,
+  scriptedBrowserDraft,
 } from './helpers/draft-wizard.js';
 
 export async function checkDraftBrowser(
@@ -35,7 +37,6 @@ export async function checkDraftBrowser(
         await page.goto(`${origin}/stories/new`);
         await createCustomDraftSetup(page, {
           title: 'Browser beginning',
-          premise: 'A traveller at a locked gate.',
           direction: 'Strange but gentle.',
         });
         const savedURL = page.url();
@@ -50,7 +51,7 @@ export async function checkDraftBrowser(
           await page
             .getByLabel(/World, character and starting circumstances/i)
             .inputValue(),
-          'A traveller at a locked gate.',
+          scriptedBrowserDraft.premise,
         );
         const second = await context.newPage();
         await second.goto(savedURL);
@@ -80,6 +81,7 @@ export async function checkDraftBrowser(
           await page.getByLabel(/Story title/i).inputValue(),
           'First-tab saved idea',
         );
+        await returnDraftToReview(page);
         await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
           .getByRole('button', {
@@ -88,9 +90,11 @@ export async function checkDraftBrowser(
           })
           .click();
         await page.getByRole('region', { name: 'Opening candidate' }).waitFor();
-        await page.getByText('A fork in the path', { exact: true }).waitFor();
         await page
-          .getByRole('button', { name: 'Walk toward the water' })
+          .getByText(scriptedBrowserDraft.openingTitle, { exact: true })
+          .waitFor();
+        await page
+          .getByRole('button', { name: scriptedBrowserDraft.openingChoice })
           .waitFor();
         const opening = await page
           .getByRole('region', { name: 'Opening candidate' })
@@ -102,7 +106,7 @@ export async function checkDraftBrowser(
             .innerText(),
           opening,
         );
-        await page.getByRole('link', { name: 'Back to draft' }).click();
+        await page.getByRole('link', { name: 'Back to story setup' }).click();
         await openDraftRoleStep(page);
         await page
           .getByLabel(/World, character and starting circumstances/i)

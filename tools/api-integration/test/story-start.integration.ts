@@ -420,9 +420,10 @@ export async function checkStoryStart({
         await page.goto(`${origin}/stories/new`);
         const { createCustomDraftSetup } =
           await import('./helpers/draft-wizard.js');
+        const { scriptedBrowserDraft } =
+          await import('./helpers/draft-wizard.js');
         await createCustomDraftSetup(page, {
           title: 'Started from candidate',
-          premise: 'A traveller at a locked gate.',
         });
         await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
@@ -434,15 +435,19 @@ export async function checkStoryStart({
         await page.getByRole('button', { name: 'Start story' }).waitFor();
         await page.getByRole('button', { name: 'Start story' }).click();
         await page.waitForURL(/\/play\/[0-9a-f-]{36}$/);
-        await page.getByText('A fork in the path', { exact: true }).waitFor();
+        await page
+          .getByText(scriptedBrowserDraft.openingTitle, { exact: true })
+          .waitFor();
         const choice = page.getByRole('button', {
-          name: 'Walk toward the water',
+          name: scriptedBrowserDraft.openingChoice,
         });
         assert.equal(await choice.isEnabled(), true);
         const liveUrl = page.url();
         await page.reload();
         assert.equal(page.url(), liveUrl);
-        await page.getByText('A fork in the path', { exact: true }).waitFor();
+        await page
+          .getByText(scriptedBrowserDraft.openingTitle, { exact: true })
+          .waitFor();
         assert.equal(await choice.isEnabled(), true);
       });
     },

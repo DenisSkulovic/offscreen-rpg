@@ -1,13 +1,25 @@
 import type { Page } from 'playwright';
 
+/**
+ * Default custom-draft inputs for provider-free browser proof.
+ * Premise must match narrative-rehearsal matchTerms; storyteller must exist in
+ * that rehearsal catalogue so openings are not the generic fallback.
+ */
+export const scriptedBrowserDraft = {
+  premise: 'A morning in the pineapple under the sea with SpongeBob.',
+  storytellerName: 'Absurd Action Comedy',
+  openingTitle: 'Morning in the pineapple',
+  openingChoice: 'Walk to work and leave this for later',
+} as const;
+
 /** Drive the W08 multi-step draft editor from /stories/new through Save setup. */
 export async function createCustomDraftSetup(
   page: Page,
   args: {
     title: string;
-    premise: string;
+    premise?: string;
     direction?: string;
-    /** Accessible name fragment matching a catalogue radio, e.g. "Driven Adventure". */
+    /** Accessible name fragment matching a catalogue radio. */
     storytellerName?: string;
   },
 ) {
@@ -15,10 +27,13 @@ export async function createCustomDraftSetup(
   await page.getByLabel(/Story title/i).fill(args.title);
   await page
     .getByLabel(/World, character and starting circumstances/i)
-    .fill(args.premise);
+    .fill(args.premise ?? scriptedBrowserDraft.premise);
   await page.getByRole('button', { name: 'Continue to Storyteller' }).click();
   const storyteller = page.getByRole('radio', {
-    name: new RegExp(args.storytellerName ?? 'Driven Adventure', 'i'),
+    name: new RegExp(
+      args.storytellerName ?? scriptedBrowserDraft.storytellerName,
+      'i',
+    ),
   });
   await storyteller.waitFor();
   await storyteller.check();
@@ -44,4 +59,11 @@ export async function openDraftRoleStep(page: Page) {
   await page.getByLabel(/Personal direction/i).waitFor();
   await page.getByRole('button', { name: 'Back' }).click();
   await title.waitFor();
+}
+
+/** Return from the role step to Review so Create the opening is available. */
+export async function returnDraftToReview(page: Page) {
+  await page.getByRole('button', { name: 'Continue to Storyteller' }).click();
+  await page.getByRole('button', { name: 'Review setup' }).click();
+  await page.getByRole('link', { name: 'Create the opening' }).waitFor();
 }

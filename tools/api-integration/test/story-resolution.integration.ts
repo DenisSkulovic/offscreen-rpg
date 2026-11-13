@@ -757,9 +757,10 @@ export async function checkGeneratedResolution({
         await page.goto(`${origin}/stories/new`);
         const { createCustomDraftSetup } =
           await import('./helpers/draft-wizard.js');
+        const { scriptedBrowserDraft } =
+          await import('./helpers/draft-wizard.js');
         await createCustomDraftSetup(page, {
           title: 'Generated resolution',
-          premise: 'A traveller at a locked gate.',
         });
         await page.getByRole('link', { name: 'Create the opening' }).click();
         await page
@@ -771,9 +772,11 @@ export async function checkGeneratedResolution({
         await page.getByRole('button', { name: 'Start story' }).waitFor();
         await page.getByRole('button', { name: 'Start story' }).click();
         await page.waitForURL(/\/play\/[0-9a-f-]{36}$/);
-        await page.getByText('A fork in the path', { exact: true }).waitFor();
         await page
-          .getByRole('button', { name: 'Walk toward the water' })
+          .getByText(scriptedBrowserDraft.openingTitle, { exact: true })
+          .waitFor();
+        await page
+          .getByRole('button', { name: scriptedBrowserDraft.openingChoice })
           .click();
         await page
           .getByText('The storyteller is resolving this intention.')
@@ -783,16 +786,18 @@ export async function checkGeneratedResolution({
           .getByText('The storyteller is resolving this intention.')
           .waitFor();
         await page
-          .getByText('On the road', { exact: true })
+          .getByText('On the way to work', { exact: true })
           .waitFor({ timeout: 20000 });
         await page.getByText('Still travelling.').waitFor();
         await page.reload();
-        await page.getByRole('heading', { name: 'On the road' }).waitFor();
         await page
-          .getByText('At the tavern', { exact: true })
+          .getByRole('heading', { name: 'On the way to work' })
+          .waitFor();
+        await page
+          .getByText('Outside work', { exact: true })
           .waitFor({ timeout: 20000 });
         const next = page.getByRole('button', {
-          name: 'Speak to the bartender',
+          name: 'Return home to Gary',
         });
         assert.equal(await next.isEnabled(), true);
         await next.click();
