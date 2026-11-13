@@ -671,7 +671,7 @@ if (storyMode || evaluationConfig) {
   });
   if (
     world.rootHash !==
-    '19275f254da9bbd62f8bdadf253440b62cdfa1ef37f0c78cea0469ad57e5ae27'
+    '5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9'
   ) {
     throw new Error(
       'Checked-in Vvardenfell package root changed without updating the start package',
