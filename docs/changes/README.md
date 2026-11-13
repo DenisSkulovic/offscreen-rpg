@@ -4,6 +4,8 @@
 
 Current change: none
 
+**Proposed player experience redesign (2026-11-13, NO CODE AUTHORIZATION):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). All **19 new Change dossiers** remain **Proposed**, unselected and on this docs-only handoff branch. Current React W-series and Chamber CH-series implementation status below is preserved from `main`; no changes to engine/React auth/Query or developer-tool isolation are authorized by design documents. Select exactly one bounded Change after owner review and current-source reinspection; don't hand Cursor all proposals as a global rewrite.
+
 **Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (all Done; live Sandbox/Connected Nest boots remain gated where noted). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)

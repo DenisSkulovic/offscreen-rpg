@@ -14,6 +14,7 @@
 | Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
 | Execution route | [Current Change index](changes/README.md) → selected Change, if any; [legacy initiatives](features/README.md) only for historical context | One future code-bearing outcome, its current permission, evidence and blockers; old initiatives are supporting context |
 | Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |
+| **Proposed player UX destination** | [Experience design](experience/README.md) → [selected Living Stage blueprint](experience/spaces/living-stage-blueprint.md) → [first Cursor wave](experience/handoff/first-cursor-wave.md) | Independently redesigned gameplay UX, source-backed gaps, 12 UX Changes and 7 future mechanics Changes; design-only until owner selects a Change |
 | Technical contract | [Technical owner index](technical/README.md), selected below | Authority, state transitions, invariants and intended failure/retry semantics |
 | Implemented flow | [Engineering index](engineering/README.md) → [code navigation](engineering/code-navigation.md) → package guide | Input → authoritative operation → output; concrete source entry points and current limits |
 | Local detail | Relevant source and tests | Algorithm, transaction ordering, local invariant and executable examples |
