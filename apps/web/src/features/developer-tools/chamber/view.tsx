@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { SessionRefresh } from '@/src/features/session/session-refresh';
 import { ChamberScene, ChamberStart } from './scene';
+import { LabWorkbench } from './lab-workbench';
 import { useChamberPlay } from './use-chamber-play';
 import type { StorySnapshot } from '@offscreen/contracts/stories';
 import { QaWorkspace } from './qa-workspace';
@@ -24,6 +25,9 @@ export function Chamber({
         Local developer scenarios that exercise real persistence and execution.
         No AI calls. The inspector is read-only.
       </p>
+      <LabWorkbench viewerId={viewerId} />
+      <hr />
+      <h2>Legacy scripted scenes</h2>
       {play.story ? (
         <ChamberScene
           viewerId={viewerId}

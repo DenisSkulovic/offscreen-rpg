@@ -37,6 +37,8 @@ import {
 } from './modules/drafts/openings-controller.js';
 import {
   createChamber,
+  createLabWorkbenchService,
+  createQaJourneys,
   type ChamberStorytellerControl,
 } from '@offscreen/application/developer-tools';
 import { createStoryApplication } from '@offscreen/application/stories';
@@ -54,7 +56,10 @@ import {
   ChamberStoriesController,
   ChamberToolsController,
 } from './modules/stories/chamber-tools-controller.js';
-import { createQaJourneys } from '@offscreen/application/developer-tools';
+import {
+  CHAMBER_LAB,
+  ChamberLabController,
+} from './modules/stories/chamber-lab-controller.js';
 import type { CacheIncident, ReadCache } from '@offscreen/application/cache';
 import type { DocumentStore, RulePackageReference } from '@offscreen/documents';
 import {
@@ -169,6 +174,7 @@ export async function createApp(
           ? [
               ChamberStoriesController,
               ChamberToolsController,
+              ChamberLabController,
               QaJourneysController,
             ]
           : []),
@@ -250,6 +256,13 @@ export async function createApp(
                     environment: { identity: 'local-test' },
                   },
                 ),
+              },
+              {
+                provide: CHAMBER_LAB,
+                useValue: createLabWorkbenchService({
+                  gitCommit: options.qaContext?.git.commit ?? 'unrecorded',
+                  dirty: options.qaContext?.git.dirty ?? true,
+                }),
               },
             ]
           : []),

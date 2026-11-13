@@ -2,7 +2,9 @@
 
 > **Cursor first look:** [current Chamber React map](../../../apps/web/src/features/developer-tools/chamber/README.md) → `view.tsx`, `use-chamber-play.ts`, `qa-workspace.tsx`, `inspector.tsx`. **Target:** [C01/C06/C11/C16](../../engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 7](../../technical/chamber-lab-protocol.md#7-client-api-and-workbench); [audit H10](../../engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** do not polish old scripted scenes into a pretend laboratory or copy game rules into React.
 
-**State:** Specified/Proposed; owner will separately authorize Cursor. **Depends on:** CH01, CH06, CH07, CH09, CH10 and frontend **W15** (TanStack SSR/query foundation). **This supersedes old unexecuted W12**, preserving its viewer-scoped Query/cache, QA isolation and conditional Nest developer registration invariants. **Current source:** `470a5df`.
+**State: Done** (2026-11-13). Owner authorized via continue after CH10. **Depends on:** CH01/CH06–CH10 and W15 (Done). Preserves developerTools Nest gate and legacy scene/QA.
+
+**Evidence:** `lab-workbench-service.ts` + `ChamberLabController` (developerTools-only) + `LabWorkbench` Query UI. Tests: `lab-workbench-service.test.mjs` 2/2; `lab-workbench.test.tsx` 1/1. Normal: open activity-clock-wait-eighty, advanceClock delta, finalize replay command. Negatives: foreign owner not_found; blocked/planned lane refuses open; UI disables Open when lane unavailable. No provider; ordinary API omits lab controller.
 
 ## One bounded executable result
 

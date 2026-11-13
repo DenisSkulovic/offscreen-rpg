@@ -4,7 +4,7 @@
 **Start:** [useChamberPlay](use-chamber-play.ts) → [transport](transport.ts) → [Nest createApp](../../../../../api/src/app.ts). Do **not** add hosted RBAC because a controller lacks a role check: **normal API startup does not register Chamber/QA controllers**.
 **Source inspected:** `470a5df`, 2026-11-12, no live test. **W12 is superseded** by the [Chamber CH01–CH16 program](../../../../../../docs/engineering/chamber-program.md); [CH11](../../../../../../docs/changes/2026-11-12--chamber-workbench/CHANGE.md) owns new UI composition and depends on W15 Query. W03/W05 remain relevant for safe story identity/poll policy. Current source code and QA view have not been rewritten.
 
-**Current vs target:** existing component is scripted scene + point-in-time inspector + manual QA journal. The new laboratory will add valid semantic specimen setup, run/step engine, causal before/after diff, command palette, reproducible evidence and Lane-aware catalogue. Do not renovate the current screen before actual CH core exists.
+**Current vs target:** CH11 added [`LabWorkbench`](lab-workbench.tsx) (Query-scoped scenario search, LabRun console, delta/replay) above legacy scripted scene + inspector + QA journal. Lab HTTP lives under `/api/chamber-tools/lab/*` and mounts only when Nest `developerTools===true`.
 
 ## Actual component and boot paths
 
