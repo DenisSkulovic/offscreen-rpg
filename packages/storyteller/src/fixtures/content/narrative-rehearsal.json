@@ -101,14 +101,7 @@
           },
           "next": "$offer"
         },
-        "currentNotes": [
-          {
-            "kind": "create",
-            "key": "starting-place",
-            "text": "The character woke in the pineapple, with Gary nearby.",
-            "evidence": ["current"]
-          }
-        ],
+        "currentNotes": [],
         "arrivalNotes": []
       },
       "continuations": {
@@ -196,14 +189,7 @@
           },
           "next": "$offer"
         },
-        "currentNotes": [
-          {
-            "kind": "create",
-            "key": "starting-place",
-            "text": "The character woke in the pineapple, with Gary nearby.",
-            "evidence": ["current"]
-          }
-        ],
+        "currentNotes": [],
         "arrivalNotes": []
       },
       "continuations": {
