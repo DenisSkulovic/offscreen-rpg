@@ -6,6 +6,8 @@ This is a **replacement product-experience specification**, not a transcription 
 
 **First Cursor implementation wave:** [one-page handoff](handoff/first-cursor-wave.md) → [selected stage blueprint](spaces/living-stage-blueprint.md) → [UX01 Change](../changes/2026-11-13--ux-story-shell/CHANGE.md). This is ready **for owner authorization and implementation feedback**, not a claim of rendered/human-validated UX. [Independent readiness audit](evidence/design-readiness-review.md) lists what is in scope and what is deliberately blocked.
 
+**New presentation post-implementation review (2026-11-13):** PX01–PX04 landed but the rendered Harbor, Cave and Sterile fixtures expose real cross-surface contrast, viewport, art scale and proof problems. See [source-grounded review](evidence/presentation-post-px-review-2026-11-13.md) and [PX05–PX07 calibration program](presentation-calibration-program.md) before any engine-side appearance contract. This is design review, not code authorization.
+
 ## Start with a question, not the whole folder
 
 | Question | Read |
