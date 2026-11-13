@@ -63,7 +63,7 @@ The writing guidance recommends brevity for repeatable content and recognizes th
 
 **Primary sources:** [Developer FAQ](https://steamcommunity.com/app/893850/discussions/0/1745646819953576288/) and [developer interview](https://www.gamedeveloper.com/business/road-to-the-igf-studio-seufz-s-i-the-longing-i-). The developer explicitly describes long real-world waiting and continued timer progression with the game closed.
 
-**Lesson:** a wait can feel emotionally consequential if the fiction acknowledges it and offers curiosity during the interval. But \`The Longing\` advances a global clock even if the player does nothing. Our current contract does **not**: only accepted commitments move time.
+**Lesson:** a wait can feel emotionally consequential if the fiction acknowledges it and offers curiosity during the interval. But `The Longing` advances a global clock even if the player does nothing. Our current contract does **not**: only accepted commitments move time.
 
 **Product tension:** the two models deliver different fantasies. One feels like a living world independent of the player; the other preserves agency and no silent danger. A hybrid standing-routine model may preserve the best of both but requires a serious rules and consent design. See [time/agency alternatives](../foundations/temporal-philosophy.md).
 

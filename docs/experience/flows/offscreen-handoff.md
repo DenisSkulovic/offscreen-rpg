@@ -22,7 +22,7 @@ Actions: **Back to Stories**, **Review work**, and any genuinely supported **Pau
 
 **Entry:** from a quiet situation where the Storyteller has already authorized several compatible tasks. An affordance “Plan a little ahead” opens a **single focused review sheet**, not an advanced queue editor.
 
-\`\`\`text
+```text
 PLAN YOUR NEXT STRETCH
 
 Start with
@@ -43,7 +43,7 @@ What can change
   again when their turn arrives.
 
 [Back]                          [Begin this plan]
-\`\`\`
+```
 
 **Important:** this is a *conceptual UI*. If actual accepted plan contract requires an exact horizon in game seconds, the app can calculate/admit it from a **human-readable world duration** captured by the current rules, but must not invent calendar mappings. A bounded plan may need a fixed horizon even if the UI describes natural stopping conditions.
 
@@ -73,7 +73,7 @@ Assume H4 has reauthorized secured-tool task B and saved repair A (3/9). The pla
 6. **Leave:** no browser polling required; server resumes/settles in background within bounds.
 7. **On return:** show which entries actually completed, what remained blocked, current condition and if a decision is waiting. The entry “Repair A completed” appears only if its reward and final check were settled.
 
-**Current UI conflict:** player-facing \`Add as a later activity\` and \`Successor horizon in fictional seconds\` controls were observed in \`ui/campaign-offer.tsx\`; these are good evidence of an implementation-oriented flow to replace, not a desirable game grammar. See [source audit](../evidence/current-ui-source-audit.md).
+**Current UI conflict:** player-facing `Add as a later activity` and `Successor horizon in fictional seconds` controls were observed in `ui/campaign-offer.tsx`; these are good evidence of an implementation-oriented flow to replace, not a desirable game grammar. See [source audit](../evidence/current-ui-source-audit.md).
 
 ## A future step becomes ineligible
 

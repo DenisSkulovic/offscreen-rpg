@@ -17,7 +17,7 @@ Do not fill empty visual space with fictional stats. The reading content is the 
 
 The initial three-column sketch in this design was deliberately challenged. **A permanent navigation rail plus permanent context sidebar risks recreating the existing dashboard**. Prefer a **single living situation stage**, with story identity, contextual status, narrative and actions in one coherent reading flow. A secondary context shelf may appear **only if decision-critical facts justify it**, not simply because desktop space exists. See [composition alternatives](../foundations/composition-experiments.md).
 
-\`\`\`text
+```text
 ┌──────────────────────────────────────────────────────────────────────┐
 │ ← Stories    Greywake Beacon          Now · Journal    Details · ⋯   │
 ├──────────────────────────────────────────────────────────────────────┤
@@ -40,7 +40,7 @@ The initial three-column sketch in this design was deliberately challenged. **A 
 │    [Try something else] (FUTURE, only with supported engine)           │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-\`\`\`
+```
 
 This is an **information-flow wireframe**, not a pixel template or commitment to a specific card treatment. An optional setting-specific atmosphere/illustration can frame the situation, but an absent image never leaves a hole. The action boundary must be explicit through grouping/structure, not only color. It is okay to scroll naturally through long prose. The current scene remains central even when a player opens contextual Details.
 

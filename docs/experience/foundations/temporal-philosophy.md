@@ -103,4 +103,4 @@ Compare correct predictions and desire to return. Do not select the fanciest aut
 
 ## Decision requested from the owner in later design review
 
-**Recommendation:** retain deterministic time authority; evolve toward **bounded standing life** as a first-class future experience. Do **not** treat strict no-idle as automatically the final dream, and do **not** enable unrestricted world ticking merely to simulate life. This is a **design direction**, not permission to modify \`docs/time-and-autonomy.md\`, schemas or runtime.
+**Recommendation:** retain deterministic time authority; evolve toward **bounded standing life** as a first-class future experience. Do **not** treat strict no-idle as automatically the final dream, and do **not** enable unrestricted world ticking merely to simulate life. This is a **design direction**, not permission to modify `docs/time-and-autonomy.md`, schemas or runtime.

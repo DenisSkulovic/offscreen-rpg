@@ -12,7 +12,7 @@ A long wait is a design risk. Players need enough orientation and emotional cont
 
 **Context:** the Storyteller has established a viable authored route and rules support a specific travel process. The player selects an intention.
 
-\`\`\`text
+```text
 LEAVE SEYDA NEEN
 Travel toward Gnisis
 
@@ -24,7 +24,7 @@ Your destination is not reached until travel
 really completes.
 
 [Begin journey]       [Stay here]
-\`\`\`
+```
 
 **What could be disclosed when known:** rough fictional duration, declared route, accepted horizon, known food/cost or capacity requirements, existing work suspended, risk of interruption. Do not invent mandatory hunger, weather or currency rules just because fantasy travel is involved.
 
@@ -34,7 +34,7 @@ really completes.
 
 The player opens Now, sees:
 
-\`\`\`text
+```text
 ON THE ROAD TO GNISIS
 Journey underway
 
@@ -46,7 +46,7 @@ Nothing needs your attention right now.
 Your accepted journey continues without the page open.
 
 [Review journey]   [Journal]
-\`\`\`
+```
 
 The page may have a restrained atmospheric map, route motif or landscape image **only if content knows enough to show it accurately**. If progress is temporal but position unknown, do not draw a moving dot at 15% of a route. The only thing a clock proves is elapsed admitted time.
 
@@ -56,7 +56,7 @@ It is okay for **nothing fresh** to have been narrated. The value of the journey
 
 Assume an **admitted** hazard/encounter commits at an eligible world boundary and stops incompatible travel. The user opens a notification or the site and finds:
 
-\`\`\`text
+```text
 THE ROAD IS BLOCKED
 Decision waiting · Journey interrupted
 
@@ -68,7 +68,7 @@ Decision waiting · Journey interrupted
 Your journey is stopped. The last established
 travel milestone is preserved.
 No additional route distance is being earned.
-\`\`\`
+```
 
 This is a **real scene**, not a toast on top of a still-running 10-hour progress bar. The four hours of actual earned travel do not vanish, but exact spatial position must come from admitted route mechanics. A partial journey is not automatically “40% of distance” just because 4/10 hours elapsed.
 

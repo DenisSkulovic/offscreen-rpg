@@ -20,7 +20,7 @@ A single static arrangement may not be ideal for both a forty-second conversatio
 
 **Concept:** a beautifully composed text page with contextual action rows underneath and almost no persistent chrome.
 
-\`\`\`text
+```text
 ┌──────────────────────────────────────────┐
 │ ← Stories                   Journal · ...│
 │                                          │
@@ -34,7 +34,7 @@ A single static arrangement may not be ideal for both a forty-second conversatio
 │    [Decline further contact]             │
 │                                          │
 └──────────────────────────────────────────┘
-\`\`\`
+```
 
 **Strengths:** high reading comfort; easy accessible order; works for unusual worlds with zero imagery. Low component debt.  
 **Weaknesses:** may look like a prose publishing website; sense of place and earned time require stronger identity. A ten-hour activity can feel like a static article with a countdown.  
@@ -45,7 +45,7 @@ A single static arrangement may not be ideal for both a forty-second conversatio
 
 **Concept:** one contextual *stage* whose foreground shifts between scene, activity and return. Text is still the center, but a **situation band** and optional atmospheric area suggest the world. Relevant facts are promoted only when actually useful. No permanent 3-column admin chrome.
 
-\`\`\`text
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ Stories ▾   THE BEACON LANDING         Decision waiting  ⋯  │
 ├──────────────────────────────────────────────────────────────┤
@@ -63,7 +63,7 @@ A single static arrangement may not be ideal for both a forty-second conversatio
 │                                                            │
 │                               Journal  ·  Relevant details │
 └──────────────────────────────────────────────────────────────┘
-\`\`\`
+```
 
 **Strengths:** maintains narrative focus while creating a recognizably game-specific stage; the **same location/situation** changes authentically; supports short and long states; works without artwork. A concise context strip can preserve an interrupted commitment without a second dashboard.  
 **Weaknesses:** still at risk of feeling like stacked cards if every block gets a border and button. Long text and mobile keyboard require careful composition.  
@@ -75,14 +75,14 @@ A single static arrangement may not be ideal for both a forty-second conversatio
 
 **Concept:** a place-first canvas, with map/illustration and narrative drawer.
 
-\`\`\`text
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │ World/path/navigation overview               Condition     │
 │ [large spatial region / map / vector character scene]       │
 │ ──────────────────────────────────────────────────────────── │
 │ An arrival. A description. Current offers in a lower pane.  │
 └──────────────────────────────────────────────────────────────┘
-\`\`\`
+```
 
 **Strengths:** powerful for spatial travel, route choices, relationship networks, recognizable destinations; can feel like a premium game.  
 **Weaknesses:** requires asset/model/geometry investment, map truth and world-knowledge permissions; fails for a microbe, bodiless mind or purely social domestic story. Risks making the *map* drive the experience instead of the Storyteller.  
@@ -110,7 +110,7 @@ Score each dimension 1–5 (5 = stronger). These are provisional design judgment
 | Maintainable with small team | 10% | 5 | 4 | 1 | 2 |
 | **Weighted total** | 100% | **4.05** | **4.65** | **2.95** | **2.65** |
 
-\`* C\` presupposes expensive spatial assets not currently justified. If unavailable, its score falls. The quantitative table is *a forcing function for trade-offs*, not empirical usability evidence. A human study can reverse B.
+`* C` presupposes expensive spatial assets not currently justified. If unavailable, its score falls. The quantitative table is *a forcing function for trade-offs*, not empirical usability evidence. A human study can reverse B.
 
 ## Responsive composition for selected B
 

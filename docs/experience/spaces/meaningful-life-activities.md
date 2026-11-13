@@ -23,7 +23,7 @@ None of these categories grants authoring authority over world facts. A Storytel
 
 Scenario: an authored port with repair, watch, social opportunity and waiting already admitted. Show the situation first, not a job board:
 
-\`\`\`text
+```text
 THE HARBOR IS QUIET
 Morning. The customs office is open, and the
 beacon still stands dark across the water.
@@ -43,7 +43,7 @@ HOW WOULD YOU LIKE TO SPEND YOUR TIME?
   [Wait]
 
   [Review what I know]       [Plan while away] (when supported)
-\`\`\`
+```
 
 **Note:** visually this is *not* a dense 4-column catalogue of tasks with icons, percentages and priority flags. A relationship/social direction may lead to a conversation scene, a task to a commitment, and observation to supported waiting.
 

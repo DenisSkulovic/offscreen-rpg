@@ -39,7 +39,7 @@ Precedence is not a naive list of backend holds. Use these questions in order:
 7. **Is nothing underway and no decision available?** Show the quiet current situation, still-valid offered opportunities if any, and the fact that no time is advancing.
 8. **Has the story truly ended?** Preserve last outcome, journal and future options such as reading/forking only when supported.
 
-**Caveat:** these are *visual priority questions*, not a new engine transition graph. A controlling decision and manual pause may coexist. The exact resulting active controls must be derived from server-authorized \`canRespond\`/holds and supported commands; a UI designer cannot assume a paused decision is selectable.
+**Caveat:** these are *visual priority questions*, not a new engine transition graph. A controlling decision and manual pause may coexist. The exact resulting active controls must be derived from server-authorized `canRespond`/holds and supported commands; a UI designer cannot assume a paused decision is selectable.
 
 ## Content and action availability by state
 
@@ -102,7 +102,7 @@ Distinguish **the story may have moved on** from **the world is definitely stopp
 
 Each Now render can derive a presentation result of this conceptual shape:
 
-\`\`\`text
+```text
 {
   storyIdentity: viewer/story,
   dataFreshness: verified | stale | loading | unavailable,
@@ -115,9 +115,9 @@ Each Now render can derive a presentation result of this conceptual shape:
   primaryActions: server-authorized, stable identity choices/controls,
   secondaryAffordances: Journal/World/You/Settings as applicable
 }
-\`\`\`
+```
 
-This is a **design view model**, not an instruction to add a second Query cache, duplicate \`StorySnapshot\`, or derive executable authority in React. Current server projection and existing command lifecycle remain sources of truth.
+This is a **design view model**, not an instruction to add a second Query cache, duplicate `StorySnapshot`, or derive executable authority in React. Current server projection and existing command lifecycle remain sources of truth.
 
 ## Required fixtures
 
