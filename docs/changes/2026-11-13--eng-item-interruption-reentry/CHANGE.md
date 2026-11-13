@@ -1,6 +1,6 @@
 # ENG09 | An invalidated item-transfer action must not strand a story
 
-**State:** Proposed, **NOT Ready** until interruption lifecycle policy and exact source route are selected. **Priority:** gameplay correctness follow-up to ENG01; may be implemented independently of ENG08. **Authority:** [post-wave code review](../../engine-architecture/evidence/postwave-implementation-review.md), [time/decision model](../../time-and-autonomy.md), [causal trace](../../engine-architecture/evidence/causal-transition-review.md).
+**State:** Proposed, **NOT Ready** until interruption lifecycle policy and exact source route are selected. **Priority:** gameplay correctness follow-up to ENG01; may be implemented independently of ENG08. **Authority:** [post-wave code review](../../engine-architecture/evidence/postwave-implementation-review.md), [time/decision model](../../time-and-autonomy.md), [causal trace](../../engine-architecture/evidence/causal-transition-review.md). **Probe evidence (2026-11-13):** [mid-flight playability probe](../../engine-architecture/evidence/eng09-interruption-playability-probe-2026-11-13.md) confirms no offer/hold/consequence/recovery after holder-mismatch interrupt — dead-end is real; Cursor must not invent the reentry contract.
 
 ## Core player failure to investigate and close
 

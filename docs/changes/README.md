@@ -4,7 +4,7 @@
 
 Current change: none
 
-**Engine postwave (2026-11-13):** [code review](../engine-architecture/evidence/postwave-implementation-review.md) → [Cursor handoff](../engine-architecture/handoff/postwave-cursor-handoff.md). **ENG01/ENG04/ENG02 Done**; **ENG07 Cancelled**; **ENG08 Done** (reject provider-authored `worldEffects` unless exact authorized reference). [ENG05](2026-11-13--eng-shared-cas-store/CHANGE.md) design-ready for owner authorization; [ENG06](2026-11-13--eng-workflow-versioning/CHANGE.md) design-ready for local replay-first proof; [ENG09](2026-11-13--eng-item-interruption-reentry/CHANGE.md) and full [ENG03](2026-11-13--eng-short-lock-context/CHANGE.md) remain Proposed. `Current change: none`.
+**Engine postwave (2026-11-13):** [code review](../engine-architecture/evidence/postwave-implementation-review.md) → [Cursor handoff](../engine-architecture/handoff/postwave-cursor-handoff.md). **ENG01/ENG04/ENG02/ENG08/ENG05/ENG06 Done**; **ENG07 Cancelled**. [ENG09](2026-11-13--eng-item-interruption-reentry/CHANGE.md) awaits reentry-contract decision (dead-end probe confirmed); full [ENG03](2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed (measure-first). `Current change: none`.
 
 **Player experience redesign (2026-11-13):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). Owner authorized continuing the sequence on 2026-11-13 (polish deferred). **UX01–UX10 + UX12 Done**; UX11 (visual evidence) remains Proposed until selected.
 

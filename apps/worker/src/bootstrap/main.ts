@@ -7,8 +7,10 @@ import {
   writeRuntimeLog,
 } from '@offscreen/application/runtime-logging';
 import { OutboxRelayError } from '../outbox/relay';
-import { LocalDocumentStore } from '@offscreen/documents';
-import { resolve } from 'node:path';
+import {
+  createDocumentStoreFromEnv,
+  S3DocumentStore,
+} from '@offscreen/documents';
 
 async function main() {
   const database = createDatabase(readDatabaseConfig(process.env), () =>
@@ -27,6 +29,10 @@ async function main() {
   };
   try {
     await database.checkConnection();
+    const documentStore = createDocumentStoreFromEnv(process.env);
+    if (documentStore instanceof S3DocumentStore) {
+      await documentStore.ensureBucket();
+    }
     runtime = await startRuntime(
       database,
       readWorkerConfig(process.env),
@@ -49,13 +55,7 @@ async function main() {
         }),
       {
         ...readStorytellerWorkerOptions(process.env),
-        ...(process.env['OFFSCREEN_DOCUMENT_ROOT']
-          ? {
-              documentStore: new LocalDocumentStore(
-                resolve(process.env['OFFSCREEN_DOCUMENT_ROOT']),
-              ),
-            }
-          : {}),
+        ...(documentStore ? { documentStore } : {}),
       },
     );
     process.once('SIGINT', stop);

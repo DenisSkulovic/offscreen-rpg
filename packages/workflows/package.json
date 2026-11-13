@@ -10,6 +10,10 @@
     "./contracts": {
       "types": "./dist/contracts.d.ts",
       "default": "./dist/contracts.js"
+    },
+    "./eng06-incompatible": {
+      "types": "./dist/eng06-incompatible.d.ts",
+      "default": "./dist/eng06-incompatible.js"
     }
   },
   "scripts": {

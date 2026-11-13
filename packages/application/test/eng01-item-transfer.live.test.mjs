@@ -4,7 +4,11 @@ import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { storyItem } from '@offscreen/db/story-schema';
-import { gameActionReceipt } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  campaignConsequence,
+  gameActionReceipt,
+} from '@offscreen/db/campaign-schema';
 import { createStories } from '../dist/stories/index.js';
 import { initializeStoryInTransaction } from '../dist/stories/initialization.js';
 import { initializeCampaign } from '../dist/campaign/settings.js';
@@ -314,5 +318,35 @@ test('ENG01 live: failed check and wrong holder never transfer', async () => {
       interrupted.items.find((item) => item.key === 'brass-compass')?.holderKey,
       'thief',
     );
+    // ENG09 playability probe: interruption correctly blocks the transfer, but
+    // admission already consumed the offer. Assert the public/recovery surface
+    // instead of inventing a new continuation.
+    assert.equal(interrupted.campaign?.offer, null);
+    assert.deepEqual(interrupted.campaign?.holds ?? [], []);
+    assert.equal(interrupted.campaign?.activityAccess.kind, 'none');
+    assert.equal(interrupted.campaign?.activity, null);
+    assert.equal(interrupted.decision, null);
+    assert.equal(interrupted.waiting, null);
+    assert.equal(interrupted.resolution, null);
+    assert.equal(
+      interrupted.campaign?.actionExecutionEvents.some(
+        (event) =>
+          event.executionId === midOperation && event.kind === 'interrupted',
+      ),
+      true,
+    );
+    const [state] = await database.db
+      .select()
+      .from(campaign)
+      .where(eq(campaign.storyId, mid.storyId));
+    assert.equal(state.offer, null);
+    assert.equal(state.activeActionOperationId, null);
+    assert.deepEqual(state.holds, []);
+    assert.equal(state.situationAuthorization?.offerId ?? null, null);
+    const consequences = await database.db
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.storyId, mid.storyId));
+    assert.equal(consequences.length, 0);
   });
 });

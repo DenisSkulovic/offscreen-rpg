@@ -2,7 +2,7 @@
 
 **Design decision update (post-ENG wave, Nov 13):** This packet is now **design-ready for explicit owner authorization**, while remaining formally Proposed. The open storage backend, credential, retention, test-topology and cutover choices are resolved in [the selected ENG05 contract](../../engine-architecture/decisions/eng05-shared-cas-contract.md). **Mode:** private S3-compatible adapter, disposable local service, existing CAS canonical hash/1 MiB limit, no automatic GC or legacy data copy, local remains default. Current remote adapter must not be enabled for live stories until lock-latency/cutover evidence exists. The earlier “must first choose backend” gate below is superseded by this decision; unperformed *code tests* are still exit gates, not design blockers.
 
-**State:** Proposed, **design-ready for explicit owner authorization of the bounded local adapter proof**; not yet formally Ready or Implementing. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [release/storage design](../../engine-architecture/evolution-and-release.md) and [scale design](../../engine-architecture/scale-and-load.md).
+**State:** Done (2026-11-13) for the **local S3-compatible adapter proof**. `S3DocumentStore` + `createDocumentStoreFromEnv`, API/worker bootstrap, disposable `adobe/s3mock` in Compose, cross-client and child-process hash proofs. **No** production cutover, GC, or legacy local migration. **Kind:** storage-port/adapter + durability/fault tests, no game-rule changes. **Authority:** [selected contract](../../engine-architecture/decisions/eng05-shared-cas-contract.md), [release/storage design](../../engine-architecture/evolution-and-release.md).
 
 ## Cursor first-screen brief
 

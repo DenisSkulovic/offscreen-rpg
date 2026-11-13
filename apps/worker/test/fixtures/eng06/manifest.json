@@ -1,0 +1,21 @@
+{
+  "sdk": "1.24.0",
+  "recordedAt": "2026-11-13T19:19:04.175Z",
+  "workflows": [
+    {
+      "workflowType": "campaignActionV1",
+      "workflowId": "eng06-action/cbf811be-9027-444b-8610-205beb7b37ea",
+      "eventCount": 22
+    },
+    {
+      "workflowType": "campaignActivityV1",
+      "workflowId": "eng06-activity/e2361dc0-892b-46f8-92a4-177a9a3e5a5a",
+      "eventCount": 11
+    },
+    {
+      "workflowType": "storyIntervalV1",
+      "workflowId": "eng06-interval/c48c41d2-dbe2-4022-beee-424b8f414ccc",
+      "eventCount": 21
+    }
+  ]
+}

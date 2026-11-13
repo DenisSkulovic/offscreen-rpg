@@ -10,8 +10,9 @@ import {
 } from '@offscreen/application/runtime-logging';
 import { createCacheAdapter } from '@offscreen/cache';
 import {
-  LocalDocumentStore,
+  createDocumentStoreFromEnv,
   importRulePackageDirectory,
+  S3DocumentStore,
 } from '@offscreen/documents';
 import { resolve } from 'node:path';
 
@@ -38,12 +39,12 @@ async function main() {
       errorKind: incident.errorKind,
     }),
   );
-  const documentRoot = process.env['OFFSCREEN_DOCUMENT_ROOT'];
   try {
     await database.checkConnection();
-    const documentStore = documentRoot
-      ? new LocalDocumentStore(resolve(documentRoot))
-      : undefined;
+    const documentStore = createDocumentStoreFromEnv(process.env);
+    if (documentStore instanceof S3DocumentStore) {
+      await documentStore.ensureBucket();
+    }
     const defaultRulePackage = documentStore
       ? await importRulePackageDirectory(
           documentStore,

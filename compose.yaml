@@ -47,6 +47,24 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+  # Disposable S3-compatible CAS for ENG05 local adapter proofs. Not production.
+  # adobe/s3mock is used because minio/minio pulls are blocked in this environment.
+  s3mock:
+    image: adobe/s3mock:4.9.1
+    environment:
+      initialBuckets: offscreen-cas
+      COM_ADOBE_TESTING_S3MOCK_DOMAIN_RETAINFILES_ONEXIT: 'false'
+    ports:
+      - '127.0.0.1:9090:9090'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q -O - http://127.0.0.1:9090/ || exit 1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 volumes:
   postgres-data:
   temporal-data:
