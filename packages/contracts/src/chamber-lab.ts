@@ -523,3 +523,68 @@ export function parseLabObservation(input: unknown): LabObservation {
 export function parseLabSemanticDelta(input: unknown): LabSemanticDelta {
   return labSemanticDeltaSchema.parse(input);
 }
+
+/** CH09: immutable LabRun evidence capsule (machine authority, not QA). */
+export const labEvidenceAuthoritySchema = z.enum([
+  'lab-run-machine',
+  'qa-human-journal',
+]);
+export type LabEvidenceAuthority = z.infer<typeof labEvidenceAuthoritySchema>;
+
+export const labEvidenceArtifactRefSchema = z.strictObject({
+  digest: z.string().regex(/^[a-f0-9]{64}$/),
+  kind: z.enum([
+    'step-trace',
+    'semantic-delta',
+    'private-observation',
+    'provider-packet',
+    'operator-note',
+  ]),
+  bytes: z.number().int().nonnegative().max(16_000_000),
+  redactedFromDefault: z.boolean(),
+});
+export type LabEvidenceArtifactRef = z.infer<
+  typeof labEvidenceArtifactRefSchema
+>;
+
+export const labRunEvidenceCapsuleSchema = z.strictObject({
+  evidenceId: z.uuid(),
+  authority: z.literal('lab-run-machine'),
+  runId: z.uuid(),
+  scenarioId: identifierSchema.nullable(),
+  scenarioVersion: z.number().int().positive().nullable(),
+  fixtureHash: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  commandHash: z.string().regex(/^[a-f0-9]{64}$/),
+  faultHash: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  seed: z.number().int().nonnegative(),
+  gitCommit: z.string().min(7).max(64),
+  dirty: z.boolean(),
+  lane: chamberLabLaneSchema,
+  clockPolicy: z.literal('labeled-lab-domains'),
+  providerMode: z.enum(['offline', 'held', 'forbidden']),
+  steps: z.array(z.unknown()).max(500),
+  assertionResults: z.array(labAssertionResultSchema).max(100),
+  observedVersions: z.record(z.string(), z.number().int().nonnegative()),
+  semanticDiff: labSemanticDeltaSchema.nullable(),
+  sideEffectCounts: z.record(z.string(), z.number().int().nonnegative()),
+  artifacts: z.array(labEvidenceArtifactRefSchema).max(64),
+  redactionLevel: z.enum(['default', 'private-drilldown']),
+  limits: z.strictObject({
+    maxSteps: z.number().int().positive(),
+    maxArtifacts: z.number().int().positive(),
+  }),
+  startedAt: z.string().datetime(),
+  finishedAt: z.string().datetime(),
+  status: labRunLifecycleSchema,
+  replayCommand: shortTextSchema,
+  linkedQaRunId: z.uuid().nullable(),
+  /** Human QA never upgrades machine proof. */
+  manualPassedIsNotMachineProof: z.literal(true),
+});
+export type LabRunEvidenceCapsule = z.infer<typeof labRunEvidenceCapsuleSchema>;
+
+export function parseLabRunEvidenceCapsule(
+  input: unknown,
+): LabRunEvidenceCapsule {
+  return labRunEvidenceCapsuleSchema.parse(input);
+}
