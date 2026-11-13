@@ -12,6 +12,7 @@
 
 ## Boundaries
 
+- **Local disposable infra:** if Postgres/Temporal/Docker/build caches needed for an authorized local lab/integration proof are down or missing, **bring them up yourself** (repo `infra:*` / disposable DBs / chamber guards) and continue. Do not report “blocked” for unplugged local services. Still require explicit permission for paid providers, deploy, secrets, non-disposable/remote DB, or live spend.
 - Do **not** call paid model providers, deploy, expose secrets, reset non-disposable data, migrate a live database or launch destructive integration tests without explicit task-specific permission. `pnpm test:focus` rebuilds and resets disposable `offscreen_auth_test`; it is not a quick React check.
 - Implement **only** the authorized code scope. Preserve unrelated work; inspect `git status --short` before editing. No speculative libraries, broad formatting, automatic subagents or self-appointed follow-up Changes.
 - If a source fact contradicts an approved design, report **file/symbol, conflict and a negative case**; don't quietly change product/technical authority. Do not treat a mocked test as real authorization/idempotency evidence.

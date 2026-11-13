@@ -1,0 +1,23 @@
+---
+description: Missing local disposable infra is work to do, not a blocker to report
+alwaysApply: true
+---
+
+# Local infrastructure is your job
+
+If a task needs local disposable infrastructure that is missing, stopped, unplugged, misconfigured, or cold — **fix it yourself and continue**. Do not stop and tell the owner you are “blocked” because Docker/Postgres/Temporal/Node/pnpm/build caches/browser deps are not ready.
+
+## Do this
+
+- Start or repair local Compose/Postgres/Temporal when a lab, Sandbox, Connected, or integration proof needs them.
+- Use the repo’s existing scripts (`infra:up`, migrations, disposable DB names, chamber guards). Prefer `offscreen_chamber_run_*` / other disposable targets; never ordinary user or production data.
+- Install/build/warm the packages the proof actually needs; re-run the check after infra is up.
+- Treat “kettle not plugged in” as an action item for you, not a status report.
+
+## Still stop and ask
+
+- Paid model provider calls / live spend
+- Deploy, secrets exposure, non-disposable or remote DB reset
+- Material product/architecture authority changes
+
+Missing local infra ≠ permission denied. Unblock locally, then finish the authorized proof.

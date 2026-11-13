@@ -23,6 +23,7 @@ For new/changed behavior: update product intent, then technical contract, then c
 
 ## Operating behavior
 
+- **Local disposable infra is agent work, not a blocker.** If Docker/Postgres/Temporal/build caches/browser deps are missing or down for an authorized local proof, start/repair them with repo scripts and continue. Do not return “blocked: kettle unplugged.” Still stop for paid providers, deploy, secrets, and non-disposable/remote data. See `.cursor/rules/local-infra-unblock.mdc`.
 - Trace the **narrow actual route** before proposing changes. Prefer an existing owning operation over a new framework, service, abstraction or parallel truth store.
 - A significant **code-bearing Change** uses the `change-workflow` skill and [Change index](../../docs/changes/README.md); a bounded authorized coding task uses `implementation-slice`. Design, evaluation and documentation-only work do not need implementation dossiers. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
 - Architectural discoveries should identify the owner, actual source, consequence, and the smallest useful next step. Do not write long exploratory transcripts into durable docs.
