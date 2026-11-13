@@ -97,6 +97,10 @@ Stop thinking of the “story state” as one enum. A passage can be published w
 
 The engine should not require a Storyteller call at every second, every chance roll, every user menu inspection or every minor activity completion. A rules event may request a Storyteller wake at an admitted meaningful boundary. **No event** is a valid result.
 
+## Revised causal boundaries from pass 2
+
+The source shows some context reading from canonical documents while an action's story lock remains held. The preferred evolution is a **short capture transaction → immutable evidence materialization outside the lock → fenced publication transaction**, with exact captured authority; see [locking/context decision](decisions/context-capture-and-locks.md). Early outcome generation must remain selective for explicitly covered dependencies rather than become a universal future-action policy; see [prediction fences](decisions/prediction-dependency-fences.md). The general capability engine remains a *conceptual* target pending one demonstrated new mechanic, not permission to build a plugin framework; see [capability-kernel alternatives](decisions/world-capability-kernel.md). These aren't demonstrated performance fixes or authorized migrations.
+
 ## What stays deliberately open
 
 - The right first generalized **world/actor capability vocabulary** needs multiple contrasting fixtures before freezing a public generic schema.

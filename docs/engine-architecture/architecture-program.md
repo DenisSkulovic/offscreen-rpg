@@ -10,6 +10,12 @@ Current source is not a hopeless write-off; replacing all code would lose alread
 
 The target is a **capability-oriented, time-authoritative, source-backed fiction engine** with explicit cost/consent and a causal business ledger, implemented incrementally as one coherent modular monolith.
 
+## What pass 2 changes in the final handoff
+
+The source review supports **five decisions**, subject to owner approval. Preserve the existing serialized causal core and outbox/receipt boundaries. Avoid remote canonical I/O under story write locks through a captured-version preparation protocol when justified. Future actions with mutable targets default to settle-at-boundary, with early result preparation only for explicit complete dependencies. Evolve mechanics through one statically compiled typed capability slice before introducing a general registry. Bound Now/Storyteller reads as long history grows, and investigate the unconsumed `knowledge.index.v1` notice independently rather than falsely claiming indexing is live. The [causal audit](evidence/causal-transition-review.md) and [four supporting decisions](decisions/world-capability-kernel.md) contain examples and disproof cases.
+
+**What remains before Cursor:** choose the first capability/continuity product slice, reconcile it with the already proposed UX GM Changes, decide how legacy campaigns/captured tasks migrate or remain readable, and design one meaningful multiworld scenario with its negative test. **Do not** optimize hypothetical scale or move directories first.
+
 ## Four architecture phases, then iterative product expansion
 
 ### Phase D0 | Deepen product/engine design (CURRENT, no code)
@@ -148,4 +154,4 @@ A proposed change should improve one or more of:
 4. For any code change, review exact stored schema, migrations, rolling-version behavior and safe verification side effects.
 5. Explicitly select one bounded Change and authorize coding, just as was done for UX01.
 
-**Current verdict: NOT READY for engine implementation.** This is pass 1, with a strong desired architecture and an initial source audit. The next passes must inspect the hardest source transactions and challenge the capability/time model against realistic scenarios before generating execution-ready Cursor packets.
+**Current verdict: NOT READY for engine implementation; pass 2 architecture decisions recorded.** We have now [traced real causal paths](evidence/causal-transition-review.md), selected a [short-lock context-capture direction](decisions/context-capture-and-locks.md), narrowed [safe early predictions](decisions/prediction-dependency-fences.md), compared [world-capability models](decisions/world-capability-kernel.md) and audited [long-story read amplification](evidence/read-growth-and-availability.md). No runtime tests were executed. **Final handoff must pick a single player-valued first slice, map exact source/data migrations, define rollback and compatibility, then prepare one bounded code Change.**
