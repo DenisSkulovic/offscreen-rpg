@@ -6,6 +6,8 @@
 
 **Latest decision queue:** [ENG09 → ENG03-M → GM05 / live presentation handoff](handoff/decision-queue-2026-11-13.md) selects a source-grounded item-interruption consequence and an independent 0/250/2000ms lock measurement, with later capture guarded by actual evidence. These are design/packet updates, not code completion or broad engine authorization.
 
+**Separate in-game Storyteller audit and desired target (2026-11-14):** [agent architecture renewal](../storyteller-architecture/README.md) gives a source trace, exact judgement of the optional tool loop, source/context economics, creative and funding authority, and [bounded SA implementation program](../storyteller-architecture/implementation-program.md). It is guided by the original vision but owns **model reasoning and narration**, not ENG03 SQL lock migration, GM rule mechanics, or frontend presentation. Documentation only; no automatic Cursor code approval.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |
