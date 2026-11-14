@@ -1,6 +1,6 @@
 # AD07 | Staff access inspector and sanitized administrative audit view
 
-**State: Proposed, NOT Ready.** Code-bearing governance visibility. **Depends on:** AD01–AD04. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad07](../../admin/evidence/ad07-staff-access-audit-2026-11-14.md). Code-bearing governance visibility. **Depends on:** AD01–AD06 Done. **Parent:** [Admin program](../../admin/implementation-program.md).
 
 ## Cursor first-screen
 

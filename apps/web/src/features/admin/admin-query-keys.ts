@@ -66,4 +66,19 @@ export const adminQueryKeys = {
       'usage',
       accountRef,
     ] as const,
+  staffAccess: (
+    staffPrincipalId: string,
+    accessEpoch: number,
+    targetStaffId: string,
+  ) =>
+    [
+      'admin',
+      staffPrincipalId,
+      accessEpoch,
+      'staff',
+      targetStaffId,
+      'access',
+    ] as const,
+  audit: (staffPrincipalId: string, accessEpoch: number) =>
+    ['admin', staffPrincipalId, accessEpoch, 'audit'] as const,
 };

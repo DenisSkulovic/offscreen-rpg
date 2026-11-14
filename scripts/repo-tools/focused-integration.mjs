@@ -25,6 +25,7 @@ const suites = {
   'admin-player-reads': 'admin-player-reads.integration.js',
   'admin-diagnostics': 'admin-diagnostics.integration.js',
   'admin-usage': 'admin-usage.integration.js',
+  'admin-audit': 'admin-audit.integration.js',
 };
 
 function usage() {
@@ -55,7 +56,8 @@ try {
     suite === 'admin-policy' ||
     suite === 'admin-player-reads' ||
     suite === 'admin-diagnostics' ||
-    suite === 'admin-usage'
+    suite === 'admin-usage' ||
+    suite === 'admin-audit'
   ) {
     const env = providerFreeEnvironment();
     for (const filter of [

@@ -5,8 +5,12 @@ import {
   redactedOperationPageV1Schema,
   redactedOperationEnvelopeV1Schema,
   usageStatusEnvelopeV1Schema,
+  adminStaffAccessV1Schema,
+  adminAuditPageV1Schema,
   adminSelfV1Schema,
   type AdminSelfV1,
+  type AdminStaffAccessV1,
+  type AdminAuditPageV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
   type CampaignMetadataPageV1,
@@ -155,4 +159,38 @@ export async function readAdminUsageStatus(
     throw new Error(`usage_failed_${response.status}`);
   }
   return usageStatusEnvelopeV1Schema.parse(await readJson(response));
+}
+
+export async function readAdminStaffAccess(
+  staffId: string,
+  signal?: AbortSignal,
+): Promise<AdminStaffAccessV1> {
+  const response = await fetch(
+    `/api/admin/staff/${encodeURIComponent(staffId)}/access`,
+    { credentials: 'same-origin', signal, cache: 'no-store' },
+  );
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`access_failed_${response.status}`);
+  }
+  return adminStaffAccessV1Schema.parse(await readJson(response));
+}
+
+export async function listAdminAuditEvents(
+  signal?: AbortSignal,
+): Promise<AdminAuditPageV1> {
+  const response = await fetch(`/api/admin/audit`, {
+    credentials: 'same-origin',
+    signal,
+    cache: 'no-store',
+  });
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`audit_failed_${response.status}`);
+  }
+  return adminAuditPageV1Schema.parse(await readJson(response));
 }

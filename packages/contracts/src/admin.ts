@@ -46,6 +46,16 @@ export const adminAccessDecisionV1Schema = z.strictObject({
 });
 export type AdminAccessDecisionV1 = z.infer<typeof adminAccessDecisionV1Schema>;
 
+export const adminGrantScopeSummaryV1Schema = z.strictObject({
+  environments: z.array(z.enum(['production', 'staging', 'local'])).max(8),
+  playerScope: z.enum(['any', 'named']),
+  campaignScope: z.enum(['any', 'named']),
+  accountScope: z.enum(['any', 'named']),
+});
+export type AdminGrantScopeSummaryV1 = z.infer<
+  typeof adminGrantScopeSummaryV1Schema
+>;
+
 export const adminStaffAccessV1Schema = z.strictObject({
   version: z.literal(1),
   staffPrincipalId: z.string().uuid(),
@@ -56,11 +66,31 @@ export const adminStaffAccessV1Schema = z.strictObject({
         packageVersion: z.number().int().positive(),
         status: z.enum(['inert', 'active', 'revoked']),
         workspaceFamilies: z.array(z.string().min(1).max(64)).max(32),
+        scope: adminGrantScopeSummaryV1Schema,
+        provenanceKind: z.string().min(1).max(64),
       }),
     )
     .max(32),
 });
 export type AdminStaffAccessV1 = z.infer<typeof adminStaffAccessV1Schema>;
+
+export const adminAuditEventV1Schema = z.strictObject({
+  id: z.string().uuid(),
+  kind: z.string().min(1).max(64),
+  createdAt: z.string().datetime(),
+  staffPrincipalId: z.string().uuid().nullable(),
+  /** Safe discriminator only — never private narrative or raw grant dumps. */
+  reasonCode: z.string().min(1).max(64).optional(),
+});
+export type AdminAuditEventV1 = z.infer<typeof adminAuditEventV1Schema>;
+
+export const adminAuditPageV1Schema = z.strictObject({
+  version: z.literal(1),
+  items: z.array(adminAuditEventV1Schema).max(50),
+  nextCursor: z.string().min(1).max(256).nullable(),
+  coverage: z.enum(['complete', 'since-enabled', 'partial', 'unknown']),
+});
+export type AdminAuditPageV1 = z.infer<typeof adminAuditPageV1Schema>;
 
 export const ADMIN_BOOTSTRAP_PACKAGE_ID = 'admin-reader' as const;
 export const ADMIN_BOOTSTRAP_PACKAGE_VERSION = 1 as const;

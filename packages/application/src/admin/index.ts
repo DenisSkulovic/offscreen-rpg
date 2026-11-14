@@ -63,3 +63,10 @@ export {
   projectUsageStatus,
   type AdminUsageReads,
 } from './usage-reads.js';
+export {
+  createAdminAuditReads,
+  projectAuditEvent,
+  projectStaffAccess,
+  summarizeGrantScope,
+  type AdminAuditReads,
+} from './audit-reads.js';

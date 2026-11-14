@@ -23,8 +23,11 @@ import {
   playerSummaryEnvelopeV1Schema,
   redactedOperationEnvelopeV1Schema,
   redactedOperationPageV1Schema,
+  adminAuditPageV1Schema,
+  adminStaffAccessV1Schema,
   usageStatusEnvelopeV1Schema,
   type AdminAccessDecisionV1,
+  type AdminAuditPageV1,
   type AdminErrorV1,
   type AdminSelfV1,
   type AdminStaffAccessV1,
@@ -39,16 +42,18 @@ import {
   AdminSessionError,
   clearAdminCookie,
   createAdminAccess,
+  createAdminAuditReads,
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
   createAdminUsageReads,
-  getAdminPackage,
+  projectStaffAccess,
   readAdminTokenFromCookieHeader,
   resourceKindForCapability,
   selectAdminCookieMode,
   serializeAdminCookie,
   type AdminAccess,
   type AdminActor,
+  type AdminAuditReads,
   type AdminCapability,
   type AdminDiagnosticsReads,
   type AdminEnvironment,
@@ -65,6 +70,7 @@ export const ADMIN_ACCESS = Symbol('ADMIN_ACCESS');
 export const ADMIN_PLAYER_READS = Symbol('ADMIN_PLAYER_READS');
 export const ADMIN_DIAGNOSTICS = Symbol('ADMIN_DIAGNOSTICS');
 export const ADMIN_USAGE = Symbol('ADMIN_USAGE');
+export const ADMIN_AUDIT = Symbol('ADMIN_AUDIT');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
@@ -249,6 +255,8 @@ export class AdminController {
     private readonly diagnostics: AdminDiagnosticsReads,
     @Inject(ADMIN_USAGE)
     private readonly usage: AdminUsageReads,
+    @Inject(ADMIN_AUDIT)
+    private readonly audit: AdminAuditReads,
   ) {}
 
   /** Player- or campaign-scoped visibility for legacy-owned stories. */
@@ -386,25 +394,27 @@ export class AdminController {
       });
     }
     const assignments = await this.access.listAssignments(staffId);
-    return {
-      version: 1,
-      staffPrincipalId: staffId,
-      packages: assignments.map((assignment) => {
-        const pkg = getAdminPackage(
-          assignment.packageId,
-          assignment.packageVersion,
-        );
-        const workspaceFamilies = pkg
-          ? [...new Set(pkg.grants.map((grant) => grant.workspaceFamily))].sort()
-          : [];
-        return {
-          packageId: assignment.packageId,
-          packageVersion: assignment.packageVersion,
-          status: assignment.status,
-          workspaceFamilies,
-        };
-      }),
-    };
+    return adminStaffAccessV1Schema.parse(
+      projectStaffAccess(staffId, assignments),
+    );
+  }
+
+  @Get('audit')
+  async auditPage(
+    @Req() request: Request,
+    @Query('cursor') cursor: string | undefined,
+  ): Promise<AdminAuditPageV1> {
+    await this.actors.requireCapability(request, {
+      capability: 'audit.events.read',
+      resourceKind: 'audit',
+      resourceId: null,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: false,
+    });
+    const page = await this.audit.listAuditEvents({
+      cursor: cursor ?? null,
+    });
+    return adminAuditPageV1Schema.parse(page);
   }
 
   /**
@@ -727,4 +737,10 @@ export function createAdminUsageReadsProvider(
   database: Database,
 ): AdminUsageReads {
   return createAdminUsageReads(database);
+}
+
+export function createAdminAuditReadsProvider(
+  database: Database,
+): AdminAuditReads {
+  return createAdminAuditReads(database);
 }

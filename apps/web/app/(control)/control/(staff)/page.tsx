@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireAdminActor } from '@/src/server/admin-actor';
+import { AdminGovernancePanel } from '@/src/features/admin/governance-panel';
 import { AdminUsageLookup } from '@/src/features/admin/usage-lookup';
 
 export default async function ControlHomePage() {
@@ -22,6 +23,7 @@ export default async function ControlHomePage() {
           ? self.workspaceFamilies.join(', ')
           : 'none yet'}
       </p>
+      <AdminGovernancePanel self={self} />
       <AdminUsageLookup self={self} />
     </main>
   );
