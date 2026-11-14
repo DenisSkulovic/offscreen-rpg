@@ -1,6 +1,6 @@
 # AD01 | Explicit staff principal, Admin session and bootstrap audit
 
-**State: Ready (2026-11-14).** Owner reconcile turn selected AD01 after merging designs onto main. Code-bearing security foundation. **Depends on:** none; revalidate Better Auth on current main before coding. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Code-bearing security foundation. **Depends on:** none. **Parent:** [Admin program](../../admin/implementation-program.md). Evidence: [ad01-staff-session](../../admin/evidence/ad01-staff-session-2026-11-14.md).
 
 ## Cursor first-screen
 
@@ -12,25 +12,20 @@
 >
 > **Do not:** install Admin UI, add `user.isAdmin`, expose `POST /create-root`, invite everyone with a particular email, call a paid provider, deploy or change game access.
 
-## Intended code delta
+## Landed code delta
 
-1. Add additive `admin_staff_principal`, `admin_staff_session`, **inert bootstrap `admin_capability_assignment` records**, and minimal protected `admin_audit_event` tables/migration with uniqueness, indexes, status/epoch and non-cascading audit provenance. The assignment row records a narrowly named package but conveys **no customer-data capability until AD02's evaluator/guard exists**. Keep Better Auth schema and story ownership intact.
-2. Implement Admin actor resolver requiring an existing Better Auth login **plus** distinct high-entropy opaque, digest-stored Admin session, bound to underlying authenticated session, staff status and revocation epoch.
-3. Implement typed `POST /api/admin/session/enter`, `GET /api/admin/me`, `POST /api/admin/session/exit` with appropriate Origin/CSRF, secure cookie and safe error response; **entry requires a verifiably fresh real login (≤15 minutes), not merely a refreshed seven-day session**. If fresh auth cannot be proven, deny/re-authenticate; no other Admin resource is yet exposed.
-4. Implement explicit local operator CLI for first staff bootstrap by **verified auth subject ID**, environment and inert restricted starter-package assignment; never automatically authorize resource reads from this record before AD02. No automatic startup grant; audit bootstrap/entry/logout/revocation.
-5. Select the [bounded cookie/session settings](../../admin/technical/first-wave-design-decisions.md#1-staff-authentication-adapter-for-the-first-safe-foundation). In HTTPS use Secure HttpOnly `__Host-offscreen-admin`, SameSite Strict, Path=/; dev nonsecure fallback only on loopback. Check actual Better Auth APIs before coding.
-6. Add pure and integration tests for session binding, expiry, revocation, no player privilege and no token exposure.
+1. Additive `admin_staff_principal`, `admin_staff_session`, inert `admin_capability_assignment`, `admin_audit_event` + migration `0004_ad01_admin_staff_session`.
+2. `@offscreen/application/admin` session enter/resolve/exit + CLI bootstrap; digest-only tokens; 8h/30m TTL; ≤15m login freshness via Better Auth `session.createdAt`.
+3. Nest `POST /api/admin/session/enter`, `GET /api/admin/me`, `POST /api/admin/session/exit` with Origin CSRF (existing `/api` middleware), loopback `offscreen-admin` / HTTPS `__Host-offscreen-admin`.
+4. `scripts/repo-tools/admin-bootstrap-staff.mjs` (local|staging only; production rejected).
+5. Pure cookie/token tests + disposable `pnpm test:focus -- admin-session` (API-only, no Next).
 
 ## Normal and discriminating negative
 
-**Normal:** a deliberately bootstrapped active staff subject signs into Better Auth, enters Admin, obtains safe `AdminSelfV1`; logout revokes only Admin purpose and auditing captures the event.
+**Normal:** bootstrapped staff enters Admin, gets `AdminSelfV1` with empty `workspaceFamilies`; exit revokes Admin cookie only; audits record bootstrap/enter/exit.
 
-**Negative:** ordinary player uses `/api/admin/me` or tries `session/enter`, user with matching email but no staff subject, stale epoch, expired/forged cookie, cross-origin mutation, terminated staff or repeated bootstrap. All fail closed; no private customer payload or Admin privilege is created.
+**Negative:** anonymous 401; nonstaff enter 403 `not_authorized`; player cookie alone 403 `staff_session_required`; cross-origin enter 403; forged Admin cookie 403; inert assignment never grants customer reads (no read endpoints yet).
 
-**Proof:** provider-free tests of pure session context; **approved disposable** PostgreSQL/Nest auth integration demonstrating two distinct users, cookie/CSRF/epoch and recorded audit. A mocked auth unit alone does not prove session safety.
+## Excluded / next
 
-## Excluded / risk
-
-No SSO provider change or production staff MFA claim; hosted real-user operator launch requires separately approved assurance/ops controls. No migration/deployment to non-disposable DB. `pnpm test:focus` resets disposable DB and requires explicit safe environment check.
-
-**Ready gate:** owner selects AD01; Cursor revalidates Better Auth session interface, config and migrations at current main; confirms disposable DB and no concurrent auth/source modifications. **Return:** paths/diff, positive and negative test commands/results, security risk, database reset target, spend none, next AD02 dependency.
+No Admin UI, no grant evaluator (AD02), no MFA claim, no production bootstrap. Provider spend: none. Next dependency: **AD02** grant policy/guard.

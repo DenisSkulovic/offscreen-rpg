@@ -42,6 +42,10 @@
     "./qa-schema": {
       "types": "./dist/src/schema/qa.d.ts",
       "default": "./dist/src/schema/qa.js"
+    },
+    "./admin-schema": {
+      "types": "./dist/src/schema/admin.d.ts",
+      "default": "./dist/src/schema/admin.js"
     }
   },
   "scripts": {

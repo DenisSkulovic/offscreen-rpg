@@ -62,6 +62,10 @@
     "./story-retrieval": {
       "types": "./dist/src/story-retrieval.d.ts",
       "default": "./dist/src/story-retrieval.js"
+    },
+    "./admin": {
+      "types": "./dist/src/admin.d.ts",
+      "default": "./dist/src/admin.js"
     }
   },
   "scripts": {

@@ -1,6 +1,6 @@
 # Offscreen Control | Cursor first-wave handoff
 
-**Status:** Docs-ready handoff guide, 2026-11-14; **no active authorized Admin code Change**. The product target is [owner-accepted](../product-acceptance-and-scope.md) and the initial technical target has a [desk-review result](../technical/architecture-review-2026-11-14.md). Eight [code-bearing Changes](../implementation-program.md) exist under `docs/changes/2026-11-14--admin-*` as **Proposed, NOT Ready**. `docs/changes/README.md` still says `Current change: none`.
+**Status:** AD01 **Done** 2026-11-14 ([evidence](../evidence/ad01-staff-session-2026-11-14.md)). Remaining AD02–AD08 stay **Proposed** until the owner selects the next packet. `docs/changes/README.md` is `Current change: none` after AD01.
 
 ## Do not paste the entire Admin corpus into Cursor's context
 

@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected, **AD01–AD08 Changes Proposed, not Ready**, 2026-11-14. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md). **Source basis:** [audited snapshot](technical/source-baseline-2026-11-14.md), which must be rechecked against Cursor's current `main` before execution. **No application code was changed, tests run, live spend authorized or current Change selected** by writing this program.
+**Status:** Scoped core technical target selected 2026-11-14. **AD01 Done** ([evidence](evidence/ad01-staff-session-2026-11-14.md)). **AD02–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 
@@ -28,7 +28,7 @@ AD01 Staff principal, session + audit bootstrap
 
 | ID | Code-bearing outcome | Dependencies | Packet |
 | --- | --- | --- | --- |
-| **AD01** | Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None; current source recheck | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
+| **AD01** | **Done:** Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
 | **AD02** | Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../changes/2026-11-14--admin-grant-policy/CHANGE.md) |
 | **AD03** | Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../changes/2026-11-14--admin-player-safe-reads/CHANGE.md) |
 | **AD04** | Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../changes/2026-11-14--admin-operator-shell/CHANGE.md) |

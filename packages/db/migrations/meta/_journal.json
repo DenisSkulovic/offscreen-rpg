@@ -29,6 +29,13 @@
       "when": 1794660000000,
       "tag": "0003_eng03_context_capture",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794680045371,
+      "tag": "0004_ad01_admin_staff_session",
+      "breakpoints": true
     }
   ]
 }

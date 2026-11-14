@@ -28,6 +28,13 @@ import {
   IdentityService,
   type IdentityResolver,
 } from './modules/auth/identity.js';
+import {
+  ADMIN_ORIGIN,
+  ADMIN_SESSIONS,
+  AdminActorService,
+  AdminController,
+} from './modules/admin/controller.js';
+import { createAdminSessions } from '@offscreen/application/admin';
 import { createDrafts } from '@offscreen/application/drafts';
 import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/application/generations';
@@ -166,6 +173,7 @@ export async function createApp(
       controllers: [
         HealthController,
         IdentityController,
+        AdminController,
         DraftsController,
         StorytellersController,
         OpeningsController,
@@ -193,6 +201,12 @@ export async function createApp(
         },
         { provide: STORY_UPDATE_HUB, useValue: storyUpdateHub },
         { provide: AUTH, useValue: auth },
+        { provide: ADMIN_ORIGIN, useValue: origin },
+        {
+          provide: ADMIN_SESSIONS,
+          useValue: createAdminSessions(database),
+        },
+        AdminActorService,
         { provide: DRAFTS, useValue: createDrafts(database) },
         {
           provide: OPENINGS,

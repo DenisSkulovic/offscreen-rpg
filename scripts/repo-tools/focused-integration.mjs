@@ -20,6 +20,7 @@ const suites = {
   'private-route': 'private-route-evidence.integration.js',
   storyteller: 'storyteller.integration.js',
   'start-package': 'start-package.integration.js',
+  'admin-session': 'admin-session.integration.js',
 };
 
 function usage() {
@@ -44,9 +45,23 @@ try {
       'Unknown suite or too many arguments. Quote a multi-word pattern.',
     );
   }
-  runPnpm(['turbo', 'run', 'build', '--filter=@offscreen/api-integration'], {
-    env: providerFreeEnvironment(),
-  });
+  // admin-session is Nest/API-only; do not turbo-build api-integration (it depends on web).
+  if (suite === 'admin-session') {
+    const env = providerFreeEnvironment();
+    for (const filter of [
+      '@offscreen/contracts',
+      '@offscreen/db',
+      '@offscreen/application',
+      '@offscreen/api',
+      '@offscreen/api-integration',
+    ]) {
+      runPnpm(['--filter', filter, 'build'], { env });
+    }
+  } else {
+    runPnpm(['turbo', 'run', 'build', '--filter=@offscreen/api-integration'], {
+      env: providerFreeEnvironment(),
+    });
+  }
   await resetTestDatabase({ build: false });
   const testArgs = ['--test', '--test-concurrency=1'];
   if (pattern) testArgs.push(`--test-name-pattern=${pattern}`);

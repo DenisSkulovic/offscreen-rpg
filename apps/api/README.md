@@ -11,6 +11,7 @@
 | Nest application wiring, optional developer routes | [src/app.ts](src/app.ts) `createApp` | [Application guide](../../packages/application/README.md) |
 | Config, DB/auth, process startup | [src/main.ts](src/main.ts), [src/config.ts](src/config.ts) | Database and runtime dependencies |
 | Sessions and owner identity | [auth.ts](src/modules/auth/auth.ts), [identity.ts](src/modules/auth/identity.ts) | `IdentityService` and application ownership guards |
+| Admin staff session (AD01) | [admin controller](src/modules/admin/controller.ts) | `@offscreen/application/admin` + `admin_*` tables; player `/api/me` is never Admin authority |
 | Draft saving, opening requests and profile selection | [draft controller](src/modules/drafts/controller.ts), [opening controller](src/modules/drafts/openings-controller.ts), [profile controller](src/modules/drafts/storytellers-controller.ts) | `@offscreen/application/drafts` and generation operations |
 | Story read, Start/fork, selected actions, controls | [stories controller](src/modules/stories/controller.ts) | `@offscreen/application/stories`, validated public contracts |
 | Committed-view SSE hints | `GET /api/stories/:id/updates` + [story-update-hub](src/modules/stories/story-update-hub.ts) | PostgreSQL LISTEN/NOTIFY after `advanceStoryView` / `incrementStoryViewVersion`; no narrative |
