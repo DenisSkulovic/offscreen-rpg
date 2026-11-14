@@ -1,6 +1,6 @@
 # Operational workflows, casework and accountable interventions
 
-**Status:** Proposed product design, 2026-11-14. **Owns:** cross-team investigation, case resolution and administrative-action lifecycles. Technical transaction, queue and idempotency design is intentionally deferred. For who may perform an action, see [authority](authority-and-delegation.md).
+**Status:** Proposed product design, 2026-11-14. **Owns:** cross-team investigation, case resolution and administrative-action lifecycles. Technical transaction, queue and idempotency design is intentionally deferred. For who may perform an action, see [authority](authority-and-delegation.md). Screen-level product journeys and adversarial paths: [operator journeys](operator-journeys-and-interaction-contracts.md).
 
 ## A serious Admin is a workflow system, not a tray of dangerous buttons
 

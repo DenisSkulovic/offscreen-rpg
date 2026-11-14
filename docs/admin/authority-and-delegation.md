@@ -1,6 +1,6 @@
 # Administrative authority, staff governance and delegated player access
 
-**Status:** Proposed product model, 2026-11-14; **not** an implemented IAM system or technical authorization policy. **Owns:** meaning of internal authority, role composition, approval, sensitive operation classes, staff lifecycle and player-access modes. The owner must confirm open choices before technical design.
+**Status:** Proposed product model, 2026-11-14; **not** an implemented IAM system or technical authorization policy. **Owns:** meaning of internal authority, role composition, approval, sensitive operation classes, staff lifecycle and player-access modes. The owner must confirm open choices before technical design. Worked product-level examples and staff journeys: [authority operating policy](authority-operating-policy.md).
 
 ## Core proposition: five dimensions of authority
 

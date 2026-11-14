@@ -1,6 +1,6 @@
 # Player 360 and the connected operational entity model
 
-**Status:** Proposed product design, 2026-11-14. **Owns:** how authorized staff understand the player and navigate related business/game records. This defines product concepts and investigation experience, **not** storage schemas, APIs or the actual current code. Permissions: [authority and delegation](authority-and-delegation.md).
+**Status:** Proposed product design, 2026-11-14. **Owns:** how authorized staff understand the player and navigate related business/game records. This defines product concepts and investigation experience, **not** storage schemas, APIs or the actual current code. Permissions: [authority and delegation](authority-and-delegation.md). Detailed solo/shared-campaign, payer/beneficiary and operator experience: [Player 360 service blueprint](player-360-service-blueprint.md).
 
 ## Center of gravity: the player relationship
 

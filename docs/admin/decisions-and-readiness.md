@@ -30,6 +30,23 @@
 
 The entire product-specification suite remains **Proposed** until the owner reviews/corrects it. A plausible detailed recommendation is not an agreed contract.
 
+## Second-pass product analysis (2026-11-14; proposals, NOT owner decisions)
+
+Three focused product deep dives have been added:
+- [Authority operating policy](authority-operating-policy.md): access is a union of **intact bounded grants**, not a cross-product of actions and scopes from unrelated packages; Access Inspector, ordinary playbooks, self-access conflicts, staff lifecycle and constrained emergency paths.
+- [Player 360 service blueprint](player-360-service-blueprint.md): the game vision includes **shared campaigns**. Player account, membership, controlled character, paying entity, entitlement beneficiary and funding source cannot all be conflated. Privacy and impact of shared-world actions become first-class.
+- [Operator journeys](operator-journeys-and-interaction-contracts.md): concrete actor, evidence, action, approval, verification and negative paths for Support, sensitive narrative investigation, compensation, shared-campaign repair, staff offboarding and an AI cost incident.
+
+**Recommendations that are strong candidates for owner approval, not yet selected:**
+1. Staff-only core console; external/community moderation, if ever required, is a separate later restricted experience (AD-P01).
+2. Roles are reusable package **bundles of bounded grants**; package overlap cannot create new action/scope combinations (AD-P03/04).
+3. Default Support access is metadata/effective-access first; private narrative, raw model context and bulk export require independent authority and purpose (AD-P05).
+4. Player preview, assisted player session and diagnostic sandbox are distinct capabilities (AD-P06).
+5. Interventions target a **named subject** with impact preview and verified outcome; shared-campaign repairs must address other participants (AD-P02/07).
+6. Small-team ergonomics should combine narrowly preauthorized low-risk actions with an explicit emergency exception and retrospective review, rather than routine global superuser access (AD-P04/15).
+
+**New cross-domain decision pressure:** multiplayer billing is not yet selected. A future player may participate in a campaign without being its payer; do not invent a payer/beneficiary policy while drafting the console. Game vision supports shared campaigns, but commercial ownership, consent, notice and repair authority remain unresolved (AD-P02/05/07/09/13).
+
 ## Highest-priority product decisions to resolve
 
 | ID | Decision | Consequence |
