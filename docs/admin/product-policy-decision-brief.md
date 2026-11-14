@@ -1,6 +1,6 @@
 # Admin product policy decision brief | converge without prematurely coding
 
-**Status:** Author recommendations for owner review, 2026-11-14; **not accepted policy**. **Owns:** grouping the decision register's questions into a manageable set of product decisions. It does not replace the domain owners or [decision register](decisions-and-readiness.md). The [adversarial review](product-adversarial-review.md) explains why several choices are safety-critical.
+**Status:** Historical owner decision brief. Recommended strategic direction **accepted 2026-11-14** with capability-specific deferrals; authoritative disposition: [product acceptance and staged scope](product-acceptance-and-scope.md). Unresolved numerical/legal/advanced feature policies remain conditional. **Owns:** grouping the decision register's questions into a manageable set of product decisions. It does not replace the domain owners or [decision register](decisions-and-readiness.md). The [adversarial review](product-adversarial-review.md) explains why several choices are safety-critical.
 
 ## How to use this brief
 

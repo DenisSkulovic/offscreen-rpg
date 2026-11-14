@@ -1,6 +1,12 @@
 # Admin product decisions, unknowns and readiness gates
 
-**Status:** Working decision register, 2026-11-14. It distinguishes **owner direction** from **author recommendations**. Nothing here authorizes implementation. Link new owner decisions to the relevant permanent product document rather than letting a decision log become a duplicate source of truth.
+**Status:** Product target accepted by owner on 2026-11-14, with conditional policies; see [acceptance and staged scope](product-acceptance-and-scope.md). This register preserves open capability-specific choices and distinguishes confirmed direction from future implementation permission. Nothing here authorizes application code. Link new owner decisions to the relevant permanent product document rather than letting a decision log become a duplicate source of truth.
+
+## Accepted product direction and conditionals
+
+The owner explicitly approved proceeding with the recommended Admin product vision on 2026-11-14. The [acceptance record](product-acceptance-and-scope.md) is authoritative for accepted default safeguards, P0 dispositions, safe initial scope and deferred capability policy. Earlier headings below record the pre-acceptance deliberation; they should not be mistaken for a newly required second blanket approval.
+
+**Product gate:** passed for bounded, safe technical architecture; hazardous feature-specific policies remain gated. **Code gate:** closed.
 
 ## Confirmed owner direction
 
@@ -28,7 +34,7 @@
 - Native product control workflows with thoughtful integrations for specialized billing/helpdesk/analytics/monitoring services.
 - Operational console landing tailored to staff responsibilities, not a universal bloated KPI dashboard.
 
-The entire product-specification suite remains **Proposed** until the owner reviews/corrects it. A plausible detailed recommendation is not an agreed contract.
+**Historical note:** these were authored recommendations before the owner's 2026-11-14 acceptance. The acceptance record selects the default target direction, but does not select the remaining legal, numeric or future-capability policies.
 
 ## Second-pass product analysis (2026-11-14; proposals, NOT owner decisions)
 
@@ -79,7 +85,7 @@ The remaining five specialist operator experiences have dedicated proposed produ
 
 **Critical unresolved categories:** case self-assignment as privilege escalation; raw/private evidence crossing case or vendor boundaries; genuinely non-mutating player preview; shared campaign repair and data rights; uncertain billed AI provider work versus commercial allowances; emergency access and staff conflicts. Recommendations are not approved merely because they are detailed.
 
-**Next gate:** owner acceptance/revision/explicit deferral of the high-impact policies, followed by adversarial re-review. Technical architecture and Change dossiers remain forbidden by this document alone.
+**Gate disposition:** the owner accepted the product target and accepted default safeguards; [acceptance](product-acceptance-and-scope.md) explicitly defers feature-specific high-risk policy. Technical design may now proceed for the bounded initial scope. Change dossiers must still await coherent technical design; no product document alone authorizes coding.
 
 ## Highest-priority product decisions to resolve
 
@@ -152,7 +158,9 @@ A product spec failing a scenario should be revised at its **owning product docu
 
 ## Product-design completion gate
 
-Do **not** advance to technical design until:
+**Outcome (2026-11-14): accepted for the scoped technical program** via [owner acceptance](product-acceptance-and-scope.md). The checklist below remains relevant for *each later hazardous capability*; a deferred capability is not selected for implementation until its specific policy has been decided.
+
+Original review checklist:
 - The owner has reviewed the charter and workspace/domain boundaries.
 - The Player 360/entity relationships are coherent for single-player and shared gameplay, payments and account status.
 - Critical capabilities, scopes, privilege elevation and delegated-player modes have settled business rules.
@@ -162,7 +170,7 @@ Do **not** advance to technical design until:
 - Native-versus-integrated ownership is clear at the product level.
 - P0 questions AD-P01–AD-P10 are either resolved or explicitly constrained out of initial scope with a defined later decision.
 - An independent product challenge has examined misuse, confused-operator and adverse player scenarios; its **critical findings have an accepted policy or explicitly deferred capability**.
-- Owner marks the product direction accepted. Until then, these are **design proposals**.
+- Owner marks the product direction accepted. **Satisfied for core scope, with deferrals detailed in the acceptance record.**
 
 ## Technical-design completion gate (future)
 
@@ -202,8 +210,6 @@ After technical design, produce **bounded, code-bearing** Changes in [docs/chang
 
 This sequence is illustrative and depends on demand. **Critical safeguards must ship with the sensitive capability they protect**, not in a distant future stage.
 
-## Next product-design session
+## Next phase
 
-All proposed logical workspace product specifications are now drafted. **Next is a decision and challenge phase, not another catalog expansion.** Review the [product policy decision brief](product-policy-decision-brief.md) and [adversarial product review](product-adversarial-review.md). Resolve Gate A decisions and explicitly scope any Gate B deferrals in the permanent owning documents; validate the negative cases again.
-
-A specific owner acceptance is required before the product gate changes status. Only then may technical design begin. Only approved technical design leads to code-bearing Change folders for Cursor.
+Begin source-grounded **technical architecture** for the accepted core. Maintain design-level gates for raw private data, assisted sessions, commercial writes, arbitrary repairs and advanced LiveOps. The [policy decision brief](product-policy-decision-brief.md) remains useful for future choices; it is not a reason to reopen already approved default safeguards. Only reviewed technical contracts lead to code-bearing Change folders for Cursor.

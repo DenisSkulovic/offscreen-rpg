@@ -1,6 +1,6 @@
 # Admin product charter | the internal operating system
 
-**Status:** Proposed, 2026-11-14; owner review required. **Owns:** product purpose, principles, boundaries and target outcomes. Read [the map](README.md) for deeper owners. This is not a technical design or statement of deployed behavior.
+**Status:** Accepted long-term product direction, 2026-11-14, subject to explicit [conditional capability gates](product-acceptance-and-scope.md). **Owns:** product purpose, principles, boundaries and target outcomes. Read [the map](README.md) for deeper owners. This is not a technical design or statement of deployed behavior.
 
 ## The product we are designing
 

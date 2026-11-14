@@ -1,6 +1,6 @@
 # Offscreen Control | Admin platform product design
 
-**Status:** Proposed product vision, 2026-11-14. Owner review required. **Product design only:** no technical architecture selected, no implementation Changes drafted, no code authorized. This is a long-term target, not a claim about the existing app.
+**Status:** **Product direction accepted, 2026-11-14**, for technical design. See [product acceptance and staged scope](product-acceptance-and-scope.md). Detailed business/legal policies for privileged and commercial features remain conditional. No Admin code is authorized by this product decision; this is a long-term target, not a claim about the existing app.
 
 **Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, existing engine implementation, technical auth/storage designs or the implementation queue. The [platform ecosystem](../experience/platform-ecosystem.md) already separates the operator console from player/public experiences. The [product vision](../vision.md) and [game domain](../concepts.md) remain owners of gameplay intent.
 
@@ -8,6 +8,7 @@
 
 | Question | Product document |
 | --- | --- |
+| Which product direction did the owner accept, and what remains conditional? | [Product acceptance and scope](product-acceptance-and-scope.md) |
 | Why does Admin exist; what are the enduring rules and boundaries? | [Product charter](product-charter.md) |
 | Who uses it, how do responsibilities overlap, what workspaces exist? | [Personas and workspaces](personas-and-workspaces.md) |
 | How are accounts, campaigns, executions, cases and subscriptions investigated together? | [Player 360 and entity model](player-360-and-entities.md) |
@@ -41,9 +42,9 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 
 ## Strict design sequence and authority
 
-1. **Product design (current):** specify end-state outcomes, journeys, information architecture, authority expectations, sensitive-data boundaries, negative cases and open choices. Obtain owner review; reject incoherent or unsafe interactions. Documentation changes are not implementation Changes.
-2. **Technical design (future, after product gate):** translate selected product guarantees into architecture, identity/session model, access evaluation, audit/action contracts, data sources, reliability, observability, API/UI boundaries, retention and integration plans. Inspect the source then, but do **not** let present code dictate desired product.
-3. **Implementation program and Change dossiers (future, after technical gate):** define small, code-bearing, independently verifiable Changes under [docs/changes](../changes/README.md), each with a normal and negative case, dependencies and a Cursor handoff. Proposed is not Ready. Only the owner selects/authorizes coding.
+1. **Product direction: accepted (2026-11-14):** end-state outcomes and default safeguards selected; conditional commercial, legal, sensitive-access and multiplayer specifics remain explicitly gated under [acceptance](product-acceptance-and-scope.md).
+2. **Technical design (now authorized as documentation):** translate approved product guarantees into architecture, identity/session model, access evaluation, audit/action contracts, data sources, reliability, observability, API/UI boundaries, retention and integration plans. Inspect current source without letting its POC limitations dictate desired product.
+3. **Implementation program and Change dossiers (after technical review):** define small, code-bearing, independently verifiable Changes under [docs/changes](../changes/README.md), each with normal and negative acceptance, dependencies and Cursor handoff. Proposed is not Ready; coding still needs explicit owner selection.
 
 **No Admin Change folder or technical contract should be inferred from these Markdown proposals.** Keep the current Change queue unchanged while Cursor is working on unrelated authorized tasks.
 
@@ -53,7 +54,7 @@ The first pass defined the charter and domain map. The second refined [authority
 
 **All ten proposed logical workspaces now have a product-level owner document**, counting the Player 360/account experience. This is broad *design coverage*, not owner approval. The [adversarial review](product-adversarial-review.md) identified critical unresolved policies; the [decision brief](product-policy-decision-brief.md) groups the owner choices into manageable packages. The [decision register](decisions-and-readiness.md) remains the status owner.
 
-**Next:** resolve high-severity cross-domain policies, especially case-assignment privilege laundering, raw evidence and consent, shared-campaign rights, customer funding/metering, repairs, LiveOps emergency authority and data-rights outcomes. Re-walk affected journeys and obtain owner product acceptance. **Do not start technical architecture or Cursor Changes just because detailed documentation exists.**
+**Next:** technical target design is now authorized for the accepted bounded scope; review unresolved business-policy hazards as explicit future capability gates. **Do not create or authorize Cursor Changes until the technical architecture and source-dependent verification plan are coherent.**
 
 ## Status language
 
