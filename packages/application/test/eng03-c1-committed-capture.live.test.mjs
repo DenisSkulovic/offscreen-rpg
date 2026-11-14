@@ -9,6 +9,7 @@ import { createDatabase, readDatabaseConfig } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   campaign,
+  gameActionExecution,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
 import { storyResolution } from '@offscreen/db/story-schema';
@@ -195,6 +196,22 @@ async function seedCommittedReceiptStory(database, storage) {
   const before = await stories.read({ ownerId, storyId });
   assert.ok(before.campaign?.offer);
   const operationId = randomUUID();
+  await database.db.insert(gameActionExecution).values({
+    operationId,
+    storyId,
+    offerId: before.campaign.offer.id,
+    actionKey: persuadePlan.key,
+    baseRevision: before.revision,
+    offer: before.campaign.offer,
+    plan: persuadePlan,
+    pendingResolution: null,
+    preparationGenerationId: null,
+    startGameSecond: 0,
+    targetGameSecond: 5,
+    state: 'settled',
+    revision: 1,
+    settledAt: new Date(),
+  });
   await database.db.insert(gameActionReceipt).values({
     operationId,
     storyId,

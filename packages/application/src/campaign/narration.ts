@@ -506,16 +506,39 @@ export function createConsequenceNarration(
     );
     if (captureResult.handled) return;
     await database.db.transaction(async (tx) => {
-      const [actionReceipt] = await tx
-        .select()
+      // ENG03-C1 lock order: unlocked receipt preflight → story lock → receipt FOR UPDATE.
+      const [receiptPeek] = await tx
+        .select({
+          storyId: gameActionReceipt.storyId,
+          generationId: gameActionReceipt.generationId,
+        })
         .from(gameActionReceipt)
-        .where(eq(gameActionReceipt.operationId, operationId))
-        .for('update');
-      if (actionReceipt) {
-        if (actionReceipt.generationId) return;
-        const current = await lockStoryById(tx, actionReceipt.storyId);
+        .where(eq(gameActionReceipt.operationId, operationId));
+      if (receiptPeek) {
+        if (receiptPeek.generationId) return;
+        const current = await lockStoryById(tx, receiptPeek.storyId);
+        const [actionReceipt] = await tx
+          .select()
+          .from(gameActionReceipt)
+          .where(eq(gameActionReceipt.operationId, operationId))
+          .for('update');
+        if (!actionReceipt || actionReceipt.generationId) return;
         if (current.revision !== actionReceipt.baseRevision) {
           throw new Error('Action narration lost its story revision fence');
+        }
+        const [execution] = await tx
+          .select()
+          .from(gameActionExecution)
+          .where(eq(gameActionExecution.operationId, operationId));
+        if (
+          !execution ||
+          execution.storyId !== current.id ||
+          execution.state !== 'settled' ||
+          execution.preparationGenerationId !== null
+        ) {
+          throw new Error(
+            'Committed capture requires a settled execution without preparation G',
+          );
         }
         // ENG03-C1: SQL-only Stage 1 capture; CAS/materialization runs off-lock.
         const generationId = await captureCommittedActionNarration(
@@ -533,13 +556,21 @@ export function createConsequenceNarration(
         });
         return;
       }
+      const [intentPeek] = await tx
+        .select({
+          storyId: campaignConsequence.storyId,
+          generationId: campaignConsequence.generationId,
+        })
+        .from(campaignConsequence)
+        .where(eq(campaignConsequence.operationId, operationId));
+      if (!intentPeek || intentPeek.generationId) return;
+      const current = await lockStoryById(tx, intentPeek.storyId);
       const [intent] = await tx
         .select()
         .from(campaignConsequence)
         .where(eq(campaignConsequence.operationId, operationId))
         .for('update');
       if (!intent || intent.generationId) return;
-      const current = await lockStoryById(tx, intent.storyId);
       if (current.revision !== intent.baseRevision) {
         throw new Error('Consequence narration lost its story revision fence');
       }

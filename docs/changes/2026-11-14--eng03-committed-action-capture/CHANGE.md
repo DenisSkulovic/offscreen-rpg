@@ -12,16 +12,17 @@
 - Stage 3 C1 publication fence; legacy under-lock `admitActionNarration` DocumentStore path removed for this case.
 - Provider-free unit + disposable live proofs; ENG03-narrow suite still green.
 
-## Residual gaps vs latest design branch (not Done)
+## Residual gaps vs latest design branch
 
-Latest `design/eng03-followon-committed-action-2026-11-14` still requires before calling C1 complete against the hardened contract:
+Closed in harden pass (2026-11-14):
 
-1. **Lock order:** story lock before receipt `FOR UPDATE` (do not keep receipt-first ordering).
-2. **Execution ownership fence:** matching `gameActionExecution.state='settled'` and `preparationGenerationId=NULL` (protect pending G).
+1. **Lock order:** unlocked receipt preflight → story lock → receipt `FOR UPDATE`.
+2. **Execution ownership fence:** require `gameActionExecution.state='settled'` and `preparationGenerationId=NULL`.
+
+Still open (next ENG03 follow-up, not priorities 2–6):
+
 3. **Provisional G status:** reads must not offer ordinary Storyteller retry for provisional capture kind; `canRetry=false` until promoted.
 4. **Exhausted-attempt rearm:** explicit same-G operator rearm after bounded CAS exhaustion (no second paid G).
-
-Track these as the next ENG03 follow-up slice (C1-harden), not as priorities 2–6.
 
 ## Cursor first screen (original)
 
