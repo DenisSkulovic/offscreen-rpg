@@ -4,6 +4,8 @@ Implemented for profiled solo stories, with offline rehearsal limits described b
 
 Shared application behavior is creatively neutral. It provides the same bounded narrative and mechanical capabilities to radically different profiles but does not supply a fallback taste for excitement, restraint, humor, option density or pace. Effective creative direction is the resolved combination of the selected profile, campaign direction, opening and established fiction. Evaluation must first ask whether a result fulfilled those captured commitments; reviewer enjoyment is a separate observation and cannot silently redefine the engine's defaults.
 
+**Narrative-agent end-state companion (2026-11-14):** [Storyteller constitution](storyteller-architecture/vision-and-quality-constitution.md) and [adaptive bounded operating model](storyteller-architecture/target-operating-model.md) preserve creative profiles as choices about fictional tone and initiative, **separate** from effective model-route/effort/funding policy. [SA program](storyteller-architecture/implementation-program.md) is proposed, not automatically in source. This document continues to own creative settings and consent semantics.
+
 ## Settings with distinct meanings
 
 | Setting | Representation and meaning |
