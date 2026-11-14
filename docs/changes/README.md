@@ -4,6 +4,8 @@
 
 Current change: none
 
+**Storyteller agent architecture renewal (2026-11-14, design-only):** [full index](../storyteller-architecture/README.md) → [vision constitution](../storyteller-architecture/vision-and-quality-constitution.md) → [current code trace](../storyteller-architecture/evidence/current-flow-audit-2026-11-14.md) → [honest agent audit](../storyteller-architecture/evidence/agent-capability-audit-2026-11-14.md) → [target model](../storyteller-architecture/target-operating-model.md) → [SA01–SA12 execution program](../storyteller-architecture/implementation-program.md). **All SA packets Proposed, no code/model/DB spend authorized.** SA01 trace is first recommended, SA02 prompt/profile next, SA03 coordinate with full ENG03, SA07/SA12 conditional. `Current change: none` remains active policy.
+
 **Decision handoff (2026-11-13):** [four selected priorities](../engine-architecture/handoff/decision-queue-2026-11-13.md). Owner authorized merge + implement received designs (2026-11-14). **ENG09, ENG03-M, GM05, PW01 Done.** Full ENG03 rewrite not auto-authorized (`proceed-narrow-eng03-capture` evidence only).
 
 **Engine postwave (2026-11-13):** [code review](../engine-architecture/evidence/postwave-implementation-review.md) → [Cursor handoff](../engine-architecture/handoff/postwave-cursor-handoff.md). **ENG01/ENG04/ENG02/ENG08/ENG05/ENG06/ENG09/ENG03-M/GM05/PW01 Done**; **ENG07 Cancelled**. Full [ENG03](2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed pending explicit capture-DTO Ready.
