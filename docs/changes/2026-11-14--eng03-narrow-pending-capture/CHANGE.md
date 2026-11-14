@@ -1,0 +1,48 @@
+# ENG03-narrow | Short-lock pending-consequence capture (one controlling generation)
+
+**State: Design complete, owner-selection + latest-tree check required before Ready.** **Kind:** bounded code/test Change. **Purpose:** pending-consequence ONLY. **Full ENG03:** remains Proposed. **No code implemented here.** Authoritative typed [ContextCaptureV1 + lifecycle/race contract](../../engine-architecture/decisions/eng03-narrow-capture-v1.md). Evidence: [ENG03-M measured same-story lock contention](../../engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md), +8,018ms action hold and +8,021ms competing writer wait at injected 2-second CAS delay.
+
+## Cursor first screen
+
+> **Goal:** move all pending-consequence passage/canonical DocumentStore reads out of createCampaignActions' story FOR UPDATE transaction without losing accepted action, receipt, provider-spend, scene, actor, source or idempotency fences.
+>
+> **Chosen shape:** Stage 1 freezes typed ContextCaptureV1 and reserves one generation ID **G** (captureId=G, storyResolution.generationId=G, gameActionExecution.preparationGenerationId=G). G is non-dispatchable provisional kind until Stage 2 materializes off-lock and promotes **the same G** to one valid Storyteller task. Stage 3 revalidates and publishes under a short story lock. Reuse existing campaignConsequenceTopic / storytellerTopic, existing Temporal workflows and campaign hold mechanisms. **No second saga or generation identity.**
+>
+> **Read only first:** [exact DTO/source table](../../engine-architecture/decisions/eng03-narrow-capture-v1.md#typescript--zod-contract-new-application-private-context-capturets), [three-stage contract](../../engine-architecture/decisions/eng03-narrow-capture-v1.md#three-stage-lifecycle-and-invariants), [race matrix](../../engine-architecture/decisions/eng03-narrow-capture-v1.md#provider-free-speculative-settlement-race-matrix). Then actual current application/campaign/narration.ts::preparePendingActionNarration; application/storyteller/context.ts::loadStorytellerContext; campaign/action-execution-transition.ts and follow-up-intents.ts; storyteller/publication.ts; db schema; existing consequence worker wiring.
+>
+> **Known source drift:** GitHub main inspected for design still has storyteller.v16, while owner's newer SA handoff reports prompt v17 and SA01–SA11 Done. Reinspect the exact latest checkout/branch and adapt identifiers conservatively without weakening the DTO. Report any changed source contract to design owner before expanding scope. This source check is a necessary Ready gate, not an excuse to reconstruct the whole SA program.
+
+## One Change, dependency-ordered implementation
+
+1. **Capture schema and persistence (small additive migration):** create strict contextCaptureV1Schema. Export existing private activeSceneAnchorSchema and librarySectionSelectionSchema without changing semantics. Add additive storyteller_context_capture with captureId PK/FK generation, operationId UNIQUE, storyId, capture/sha, bounded capture lease/retry state, request sha and failure code. Keep old generation/task data untouched. Provisional generation.kind=storyteller.context-capture.v1, pending, input tagged pointer (not storytellerTaskSchema).
+2. **Stage 1 under action lock:** preserve command admission, gameActionExecution and freezePendingActionResolution. Replace only current pending-context DocumentStore reads with bounded SQL snapshot + CAS hash refs; freeze exact source passages, notes, scene, projected pending result, relevant world/actor/activity/settings/policy inputs. Reserve G + storyResolution and enqueue existing campaignConsequenceTopic with execution operationId **in the same transaction**. Stage-1 failure rolls back this new command, not previously committed mechanics. Never read DocumentStore under FOR UPDATE.
+3. **Stage 2 off-lock:** add capture-first branch **outside the existing createConsequenceNarration database.db.transaction callback**. Under a brief DB lease claim, inspect status, release connection; load immutable CAS by frozen hash (validate source passage envelope/coverage); use frozen canonical rule selection; build contextInputSchema, current/notes/evidence and existing prepareAdmittedStorytellerTask. Promote the *same G* inside a new short story-lock transaction after eligibility fences, enqueue storytellerTopic. The legacy committed receipt / campaignConsequence branches stay unchanged. No Storyteller task notice is emitted before G is fully parseable as storytellerTaskSchema.
+4. **Settlement and Stage 3:** keep existing projected-state roll/receipt mechanics, same G linkage, hold transition and post-settlement wake. A provisional G gets a campaignConsequenceTopic materialization wake, not a premature Storyteller execution; a promoted G gets storytellerTopic. Publication for new captures additionally enforces frozen source root/scene/receipt/actor projected digest/settings/ownership and exact G. Legacy tasks with no capture row stay on their old publication path.
+5. **Failure handling:** typed missing/corrupt CAS, >256KiB capture, final context over-budget, stale scene/root, receipt mismatch, expired lease, confirmed unsent vs uncertain/paid, and interruption. Capture retries bounded to 3 provider-free materializations; no automatic paid regeneration after spend or uncertainty. After settlement, preserve exact G campaign hold if held/stale/blocked; no player-visible fake continuation. A competing post-settlement consequence may be admitted only after an **atomic, proven-unsent retirement** of G's controlling slot under story lock, never concurrently.
+
+## Required provider-free test receipts
+
+| Test | Normal/negative assertion |
+| --- | --- |
+| 0/250/2000ms CAS delay + genuine same-story contender | CAS delay does **not** propagate into story-lock hold; baseline may still have real SQL/business conflicts. Unrelated writer remains fast. Record raw traces and environment; do not invent performance improvement. |
+| Pending source, 7 passages and 40-passage active scene | Stage-2 task.context and request digest match frozen Stage-1 authority; no current mutable SQL facts reread during model context construction; selected canonical evidence/omission consistent |
+| Settle before CAS, during CAS, after promotion, and before publication | **Same G** receipt/storyResolution/capture/task identity; exact receipt fence; no early publish before settlement; campaignConsequenceTopic only for provisional wake |
+| Duplicate action command / duplicate notices / two workers / lease expiry | One command receipt, one accepted execution, one G, one controlling storyResolution, one terminal task/publish, no second paid attempt |
+| Missing CAS, corruption, over-budget, stale root/scene/settings, projected mismatch | Typed hold/blocked/stale; no fabricated prose, no illegal publish, no extra spend, no infinite retry |
+| True interruption pre-send vs post confirmed/uncertain spend | Pre-send: atomic retirement and existing consequence path only; post-send: no automatic second charge, visible operator hold |
+| Old generations admitted before this Change (v10–16 and current checked v17 if present) | storytellerTaskSchema still decodes/executes/publishes with no migration/backfill; tasks without capture rows unchanged |
+| Security and funding | owner verified by story lock; provider-disabled scripted tests; captured usage policy cannot grant more than currently authorized dispatch; no provider/network/cloud call |
+
+**Focus command:** targeted application unit + disposable SQL integration / ENG03 lock harness appropriate to actual checkout. Capture exact commands and their results. Existing CI red status alone is not this Change's proof. Never run destructive tests against shared DB.
+
+## Allowed edits and exclusions
+
+**Allowed:** packages/application/src/campaign/{actions,narration,action-executions,follow-up-intents}.ts; application/storyteller/{context,canonical-knowledge,publication}.ts; new application/storyteller/{context-capture,capture-materialization}.ts; narrow application/stories facade that owns prepareCampaignConsequence; packages/db/src/schema/storyteller.ts plus **additive migration**; existing outbox wiring only if a small route correction is necessary; provider-free tests. Worker/Temporal source may only be touched for a demonstrated existing-workflow timeout/route incompatibility and must be called out explicitly first. Source-adjacent README updated only if owner boundaries change.
+
+**Excluded:** full ENG03 rewrite; continuation/opening/report capture; generic saga engine, bus, queue or Temporal workflow replacement; changes to game rules, time, dice, item ownership or action eligibility; changing storytellerTaskSchema legacy union; changes to paid provider routes/prices/entitlements; remote DB/cloud cutover; destructive migration, data backfill, production data, external provider calls; SA07 and SA12 live spend.
+
+## Ready / completion gate
+
+**Ready for Cursor implementation** when the owner explicitly selects this packet, the actual latest SA03/v17 tree has been compared with every named symbol/DTO dependency, and there is no unresolved source contradiction. This design branch does not declare this Change active in docs/changes/README.md and does **not** grant autonomous code permission.
+
+**Done** only after source diff, typechecks/focused test results, provider-free SQL race matrix, measurable short-lock regression and old-task replay proof are attached to this packet. Record provider-spend status (expected: zero). Keep parent full ENG03 Proposed, regardless of narrow completion.

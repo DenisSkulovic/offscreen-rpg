@@ -8,6 +8,8 @@
 
 **Separate in-game Storyteller audit and desired target (2026-11-14):** [agent architecture renewal](../storyteller-architecture/README.md) gives a source trace, exact judgement of the optional tool loop, source/context economics, creative and funding authority, and [bounded SA implementation program](../storyteller-architecture/implementation-program.md). It is guided by the original vision but owns **model reasoning and narration**, not ENG03 SQL lock migration, GM rule mechanics, or frontend presentation. Documentation only; no automatic Cursor code approval.
 
+**Post-measurement ENG03 first path (2026-11-14):** [typed ContextCaptureV1, single generation identity, off-lock CAS and settle race](decisions/eng03-narrow-capture-v1.md) → [one bounded Cursor Change](../changes/2026-11-14--eng03-narrow-pending-capture/CHANGE.md). ENG03-M supports a narrow path only; full ENG03 remains Proposed. Verify current SA/v17 source before Ready.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |
