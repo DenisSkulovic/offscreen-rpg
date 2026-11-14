@@ -6,7 +6,7 @@
 
 > **Goal:** when a published consequence establishes a named relationship/favor/gift with future relevance, the model's descriptive source patch can be validated, persisted and later retrieved at the correct revision, and an unrelated later scene can recall it without inventing or changing mechanical ownership.
 >
-> **Authority:** [vision memory promises](../../storyteller-architecture/vision-and-quality-constitution.md), [durable memory discipline](../../storyteller-architecture/context-and-retrieval.md#recall-across-months-and-content-types), [historical POC observed absence of descriptive records](../../engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
+> **Authority:** [vision memory promises](../../storyteller-architecture/vision-and-quality-constitution.md), [durable memory discipline](../../storyteller-architecture/context-and-retrieval.md#recall-across-months-and-content-types), [historical POC observed absence of descriptive records](../../engineering/connected-poc-proof.md#memory-reinspection-2026-10-23).
 >
 > **Source:** `packages/storyteller/src/tasks/index.ts::documentChangeRules`, `packages/storyteller/src/tasks/result-validation.ts::validateStorytellerResult`, `packages/application/src/storyteller/publication.ts::publishStorytellerResult`, `application/storyteller/canonical-knowledge.ts::loadCanonicalKnowledge`, current descriptive-document/continuity note tests.
 
