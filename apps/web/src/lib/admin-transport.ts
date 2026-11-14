@@ -4,6 +4,7 @@ import {
   campaignMetadataPageV1Schema,
   redactedOperationPageV1Schema,
   redactedOperationEnvelopeV1Schema,
+  usageStatusEnvelopeV1Schema,
   adminSelfV1Schema,
   type AdminSelfV1,
   type PlayerSearchPageV1,
@@ -11,6 +12,7 @@ import {
   type CampaignMetadataPageV1,
   type RedactedOperationPageV1,
   type RedactedOperationEnvelopeV1,
+  type UsageStatusEnvelopeV1,
 } from '@offscreen/contracts/admin';
 
 async function readJson(response: Response): Promise<unknown> {
@@ -133,4 +135,24 @@ export async function readAdminOperation(
     throw new Error(`operation_failed_${response.status}`);
   }
   return redactedOperationEnvelopeV1Schema.parse(await readJson(response));
+}
+
+export async function readAdminUsageStatus(
+  accountRef: string,
+  signal?: AbortSignal,
+): Promise<UsageStatusEnvelopeV1> {
+  const response = await fetch(
+    `/api/admin/usage/status?accountRef=${encodeURIComponent(accountRef)}`,
+    { credentials: 'same-origin', signal, cache: 'no-store' },
+  );
+  if (response.status === 404) {
+    throw new Error('not_found');
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`usage_failed_${response.status}`);
+  }
+  return usageStatusEnvelopeV1Schema.parse(await readJson(response));
 }

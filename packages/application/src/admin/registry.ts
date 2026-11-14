@@ -8,6 +8,8 @@ export const ADMIN_CAPABILITIES = [
   'player.identity.read',
   'campaign.metadata.read',
   'ai.operation.read',
+  'commercial.usage.read',
+  'platform.spend.read',
   'platform.status.read',
   'staff.profile.read',
   'staff.access.inspect',
@@ -21,6 +23,7 @@ export const ADMIN_RESOURCE_KINDS = [
   'player',
   'campaign',
   'operation',
+  'account',
   'staff',
   'case',
   'platform',
@@ -36,6 +39,7 @@ export type AdminGrantScope = Readonly<{
   /** Empty = any named resource of the grant's resource kinds (still needs exact id when required). */
   playerIds?: readonly string[];
   campaignIds?: readonly string[];
+  accountIds?: readonly string[];
   caseIds?: readonly string[];
   /** When true, resource must be covered by an authorized case assignment in context. */
   requireAuthorizedCaseAssignment?: boolean;
@@ -106,9 +110,27 @@ const ENGINEERING_OBSERVER_V1: AdminCapabilityPackage = {
       workspaceFamily: 'platform',
     },
     {
+      capability: 'platform.spend.read',
+      resourceKinds: ['platform'],
+      workspaceFamily: 'platform',
+    },
+    {
       capability: 'ai.operation.read',
       resourceKinds: ['operation'],
       workspaceFamily: 'ai',
+    },
+  ],
+};
+
+const USAGE_OBSERVER_V1: AdminCapabilityPackage = {
+  id: 'usage-observer',
+  version: 1,
+  label: 'Usage Observer',
+  grants: [
+    {
+      capability: 'commercial.usage.read',
+      resourceKinds: ['account'],
+      workspaceFamily: 'commercial',
     },
   ],
 };
@@ -153,6 +175,7 @@ const PACKAGES: readonly AdminCapabilityPackage[] = [
   ADMIN_READER_V1,
   SUPPORT_OPERATOR_V1,
   ENGINEERING_OBSERVER_V1,
+  USAGE_OBSERVER_V1,
   STAFF_ACCESS_STEWARD_V1,
   SECURITY_AUDITOR_V1,
 ];
@@ -188,6 +211,8 @@ export function resourceKindForCapability(
       return 'campaign';
     case 'ai':
       return 'operation';
+    case 'commercial':
+      return 'account';
     case 'platform':
       return 'platform';
     case 'staff':

@@ -1,6 +1,6 @@
 # AD06 | Honest technical usage and exposure view (not subscriptions)
 
-**State: Proposed, NOT Ready.** Code-bearing source-backed metering read. **Depends on:** AD03 + AD04; coordinate AI source ownership with AD05. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad06](../../admin/evidence/ad06-usage-exposure-2026-11-14.md). Code-bearing source-backed metering read. **Depends on:** AD03–AD05 Done. **Parent:** [Admin program](../../admin/implementation-program.md).
 
 ## Cursor first-screen
 

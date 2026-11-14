@@ -35,6 +35,7 @@ import {
   ADMIN_ORIGIN,
   ADMIN_PLAYER_READS,
   ADMIN_SESSIONS,
+  ADMIN_USAGE,
   AdminActorService,
   AdminController,
 } from './modules/admin/controller.js';
@@ -43,6 +44,7 @@ import {
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
   createAdminSessions,
+  createAdminUsageReads,
   type AdminEnvironment,
 } from '@offscreen/application/admin';
 
@@ -243,6 +245,10 @@ export async function createApp(
         {
           provide: ADMIN_DIAGNOSTICS,
           useValue: createAdminDiagnosticsReads(database),
+        },
+        {
+          provide: ADMIN_USAGE,
+          useValue: createAdminUsageReads(database),
         },
         AdminActorService,
         { provide: DRAFTS, useValue: createDrafts(database) },

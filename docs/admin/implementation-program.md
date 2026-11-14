@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD05 Done** (M2 shell + campaign/AI drilldown; Playwright SSR residual on web typecheck). **AD06–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
+**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD06 Done** (M2 shell + campaign/AI drilldown + technical usage; Playwright SSR residual on web typecheck). **AD07–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 

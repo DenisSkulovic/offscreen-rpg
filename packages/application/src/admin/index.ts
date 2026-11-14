@@ -58,3 +58,8 @@ export {
   sanitizeOperationKind,
   type AdminDiagnosticsReads,
 } from './diagnostics-reads.js';
+export {
+  createAdminUsageReads,
+  projectUsageStatus,
+  type AdminUsageReads,
+} from './usage-reads.js';

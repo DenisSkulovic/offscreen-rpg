@@ -86,6 +86,13 @@ function scopeAllowsResource(
   if (resourceKind === 'case' && scope.caseIds && scope.caseIds.length > 0) {
     return scope.caseIds.includes(resourceId);
   }
+  if (
+    resourceKind === 'account' &&
+    scope.accountIds &&
+    scope.accountIds.length > 0
+  ) {
+    return scope.accountIds.includes(resourceId);
+  }
   return true;
 }
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireAdminActor } from '@/src/server/admin-actor';
+import { AdminUsageLookup } from '@/src/features/admin/usage-lookup';
 
 export default async function ControlHomePage() {
   const { self } = await requireAdminActor();
@@ -21,6 +22,7 @@ export default async function ControlHomePage() {
           ? self.workspaceFamilies.join(', ')
           : 'none yet'}
       </p>
+      <AdminUsageLookup self={self} />
     </main>
   );
 }

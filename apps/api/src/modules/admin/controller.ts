@@ -23,6 +23,7 @@ import {
   playerSummaryEnvelopeV1Schema,
   redactedOperationEnvelopeV1Schema,
   redactedOperationPageV1Schema,
+  usageStatusEnvelopeV1Schema,
   type AdminAccessDecisionV1,
   type AdminErrorV1,
   type AdminSelfV1,
@@ -32,6 +33,7 @@ import {
   type PlayerSummaryEnvelopeV1,
   type RedactedOperationEnvelopeV1,
   type RedactedOperationPageV1,
+  type UsageStatusEnvelopeV1,
 } from '@offscreen/contracts/admin';
 import {
   AdminSessionError,
@@ -39,6 +41,7 @@ import {
   createAdminAccess,
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
+  createAdminUsageReads,
   getAdminPackage,
   readAdminTokenFromCookieHeader,
   resourceKindForCapability,
@@ -51,6 +54,7 @@ import {
   type AdminEnvironment,
   type AdminPlayerReads,
   type AdminSessions,
+  type AdminUsageReads,
 } from '@offscreen/application/admin';
 import type { Database } from '@offscreen/db';
 import type { Auth } from '../auth/auth.js';
@@ -60,6 +64,7 @@ export const ADMIN_SESSIONS = Symbol('ADMIN_SESSIONS');
 export const ADMIN_ACCESS = Symbol('ADMIN_ACCESS');
 export const ADMIN_PLAYER_READS = Symbol('ADMIN_PLAYER_READS');
 export const ADMIN_DIAGNOSTICS = Symbol('ADMIN_DIAGNOSTICS');
+export const ADMIN_USAGE = Symbol('ADMIN_USAGE');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
@@ -242,6 +247,8 @@ export class AdminController {
     @Inject(ADMIN_PLAYER_READS) private readonly players: AdminPlayerReads,
     @Inject(ADMIN_DIAGNOSTICS)
     private readonly diagnostics: AdminDiagnosticsReads,
+    @Inject(ADMIN_USAGE)
+    private readonly usage: AdminUsageReads,
   ) {}
 
   /** Player- or campaign-scoped visibility for legacy-owned stories. */
@@ -599,6 +606,56 @@ export class AdminController {
     }
   }
 
+  @Get('usage/status')
+  async usageStatus(
+    @Req() request: Request,
+    @Query('accountRef') accountRefRaw: string | undefined,
+  ): Promise<UsageStatusEnvelopeV1> {
+    const accountRef =
+      typeof accountRefRaw === 'string' ? accountRefRaw.trim() : '';
+    if (!/^[0-9a-fA-F-]{36}$/.test(accountRef)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { actor } = await this.actors.requireStaffActor(request);
+    const env = this.actors.deploymentEnvironment();
+    const accountGate = await this.access.evaluate(actor, {
+      capability: 'commercial.usage.read',
+      resourceKind: 'account',
+      resourceId: accountRef,
+      environment: env,
+    });
+    const platformGate = await this.access.evaluate(actor, {
+      capability: 'platform.spend.read',
+      resourceKind: 'platform',
+      resourceId: null,
+      environment: env,
+    });
+    if (
+      accountGate.decision !== 'allow' &&
+      platformGate.decision !== 'allow'
+    ) {
+      throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+    }
+    try {
+      const envelope = await this.usage.readUsageStatus({
+        accountRef,
+        environment: env,
+      });
+      return usageStatusEnvelopeV1Schema.parse(envelope);
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
+  }
+
   @Get('operations/:operationId')
   async operationDetail(
     @Req() request: Request,
@@ -664,4 +721,10 @@ export function createAdminDiagnosticsReadsProvider(
   database: Database,
 ): AdminDiagnosticsReads {
   return createAdminDiagnosticsReads(database);
+}
+
+export function createAdminUsageReadsProvider(
+  database: Database,
+): AdminUsageReads {
+  return createAdminUsageReads(database);
 }

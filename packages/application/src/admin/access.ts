@@ -36,6 +36,11 @@ function parseScope(raw: unknown): AdminGrantScope {
           campaignIds: value.campaignIds.filter((id) => typeof id === 'string'),
         }
       : {}),
+    ...(Array.isArray(value.accountIds)
+      ? {
+          accountIds: value.accountIds.filter((id) => typeof id === 'string'),
+        }
+      : {}),
     ...(Array.isArray(value.caseIds)
       ? { caseIds: value.caseIds.filter((id) => typeof id === 'string') }
       : {}),

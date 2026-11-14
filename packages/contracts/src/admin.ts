@@ -66,7 +66,15 @@ export const ADMIN_BOOTSTRAP_PACKAGE_ID = 'admin-reader' as const;
 export const ADMIN_BOOTSTRAP_PACKAGE_VERSION = 1 as const;
 
 export const adminSubjectRefV1Schema = z.strictObject({
-  kind: z.enum(['player', 'campaign', 'operation', 'staff', 'case', 'incident']),
+  kind: z.enum([
+    'player',
+    'campaign',
+    'operation',
+    'staff',
+    'case',
+    'incident',
+    'account',
+  ]),
   id: z.string().min(1).max(128),
   environment: z.enum(['production', 'staging', 'local']),
 });
@@ -205,3 +213,46 @@ export const redactedOperationEnvelopeV1Schema = adminReadEnvelopeV1Schema(
 export type RedactedOperationEnvelopeV1 = z.infer<
   typeof redactedOperationEnvelopeV1Schema
 >;
+
+/** Technical funding/allocation status — not a commercial subscription ledger. */
+export const usageStatusV1Schema = z.strictObject({
+  accountRef: z.string().uuid(),
+  usageUnit: z.literal('microusd'),
+  sourceCoverage: z.enum([
+    'complete',
+    'since-enabled',
+    'partial',
+    'unknown',
+  ]),
+  measuredAt: z.string().datetime(),
+  fundingVerifiedAt: z.string().datetime().nullable(),
+  reserved: z.string().regex(/^\d+$/),
+  dispatched: z.string().regex(/^\d+$/),
+  settled: z.string().regex(/^\d+$/),
+  uncertain: z.string().regex(/^\d+$/),
+  /** recorded = consumed amounts present; unknown ≠ zero cost. */
+  costAuthority: z.enum(['recorded', 'estimate', 'unknown']),
+  commercialIntegration: z.enum(['unsupported', 'unknown', 'verified']),
+  commercialExplanationCode: z.string().min(1).max(64).optional(),
+  windows: z
+    .array(
+      z.strictObject({
+        windowId: z.string().min(1).max(128),
+        windowVersion: z.number().int().nonnegative(),
+        scope: z.enum(['platform', 'account', 'story']),
+        metric: z.enum([
+          'requests',
+          'input_tokens',
+          'generated_tokens',
+          'microusd',
+          'background_jobs',
+        ]),
+      }),
+    )
+    .max(32),
+});
+export type UsageStatusV1 = z.infer<typeof usageStatusV1Schema>;
+
+export const usageStatusEnvelopeV1Schema =
+  adminReadEnvelopeV1Schema(usageStatusV1Schema);
+export type UsageStatusEnvelopeV1 = z.infer<typeof usageStatusEnvelopeV1Schema>;

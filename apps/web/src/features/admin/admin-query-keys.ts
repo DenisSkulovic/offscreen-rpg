@@ -54,4 +54,16 @@ export const adminQueryKeys = {
       'operation',
       operationId,
     ] as const,
+  usageStatus: (
+    staffPrincipalId: string,
+    accessEpoch: number,
+    accountRef: string,
+  ) =>
+    [
+      'admin',
+      staffPrincipalId,
+      accessEpoch,
+      'usage',
+      accountRef,
+    ] as const,
 };
