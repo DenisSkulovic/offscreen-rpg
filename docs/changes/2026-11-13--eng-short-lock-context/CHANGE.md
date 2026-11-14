@@ -6,6 +6,8 @@
 
 **Selected measurement/capture companion (2026-11-13):** [ENG03-M measurement packet](../2026-11-13--eng03-lock-measurement/CHANGE.md) and [source-capture contract](../../engine-architecture/decisions/eng03-measurement-and-capture-contract.md). This full refactor remains NOT Ready until the measured go/no-go and exact physically typed capture fields are proven; no automatic authorization follows the measurement.
 
+**Follow-on decision (2026-11-14, design only):** [ENG03 capture migration sequence](../../engine-architecture/decisions/eng03-capture-migration-sequence.md) and [C1 committed finite-action capture packet](../2026-11-14--eng03-committed-action-capture/CHANGE.md). C1 is conditional design-complete, not Ready until owner selection and reinspection of Cursor's implemented pending capture. This parent full ENG03 stays **Proposed / NOT Ready**; no mega-rewrite authorized.
+
 ## Cursor first-screen brief, after exact lifecycle design
 
 > **Goal:** a model/task preparation reading remote immutable objects does not hold the story row `FOR UPDATE` during slow I/O, yet the prepared task is tied to the **exact admitted actor/rules/source/operation versions** and cannot publish stale results.

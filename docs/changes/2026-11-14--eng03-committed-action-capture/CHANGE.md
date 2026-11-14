@@ -1,48 +1,34 @@
 # ENG03-C1 | Capture committed finite-action narration off-lock
 
-**State: Done (2026-11-14).** Evidence: [eng03-c1-committed-capture-2026-11-14](../../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Design from `design/eng03-followon-committed-action-2026-11-14`. **Parent full ENG03:** remains Proposed. **Scope completed:** settled `gameActionReceipt.generationId=null` only. Pending-consequence path unchanged. Priorities 2–6 not authorized.
+**State: Done for core path (2026-11-14); residual design-tightening still open.** Evidence: [eng03-c1-committed-capture-2026-11-14](../../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). **Parent full ENG03:** remains Proposed. **Scope:** settled `gameActionReceipt.generationId` initially null only. Pending-consequence Done path unchanged.
 
-**Authority:** [strict committed-action capture DTO and source table](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md); [full purpose migration sequence](../../engine-architecture/decisions/eng03-capture-migration-sequence.md); [ENG03-M measured pending lock amplification](../../engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md). **Baseline caveat:** GitHub main inspected for this design is adb118f2dc (still prompt v16), while Cursor reportedly implemented SA v17 + pending-capture. Preflight against Cursor's **actual checkout** is mandatory.
+**Authority:** [strict committed-action capture DTO and source table](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md); [full purpose migration sequence](../../engine-architecture/decisions/eng03-capture-migration-sequence.md); [ENG03-M measured pending lock amplification](../../engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md).
 
-## Cursor first screen
+## What shipped
 
-> **Goal:** create a second **strict capture purpose**, not a second capture coordinator. Replace the remaining story-locked DocumentStore read in campaign/narration.ts::admitActionNarration for a settled gameActionReceipt (no earlier speculative generation).
+- Strict `CommittedActionContextCaptureV1` (`purpose=consequence` / `sourceKind=action-receipt`) beside pending capture.
+- Stage 1 SQL-only freeze + provisional G + receipt.generationId=G + hold transfer + durable wake (no DocumentStore under lock).
+- Stage 2 off-lock CAS materialize + promote same G to ordinary `consequence` task.
+- Stage 3 C1 publication fence; legacy under-lock `admitActionNarration` DocumentStore path removed for this case.
+- Provider-free unit + disposable live proofs; ENG03-narrow suite still green.
+
+## Residual gaps vs latest design branch (not Done)
+
+Latest `design/eng03-followon-committed-action-2026-11-14` still requires before calling C1 complete against the hardened contract:
+
+1. **Lock order:** story lock before receipt `FOR UPDATE` (do not keep receipt-first ordering).
+2. **Execution ownership fence:** matching `gameActionExecution.state='settled'` and `preparationGenerationId=NULL` (protect pending G).
+3. **Provisional G status:** reads must not offer ordinary Storyteller retry for provisional capture kind; `canRetry=false` until promoted.
+4. **Exhausted-attempt rearm:** explicit same-G operator rearm after bounded CAS exhaustion (no second paid G).
+
+Track these as the next ENG03 follow-up slice (C1-harden), not as priorities 2–6.
+
+## Cursor first screen (original)
+
+> **Goal:** create a second **strict capture purpose**, not a second capture coordinator. Replace the remaining story-locked DocumentStore read for a settled gameActionReceipt (no earlier speculative generation).
 >
-> **Keep one G:** Existing campaignConsequenceTopic operationId=receipt.operationId → short story-lock SQL freeze + provisional generation G + storyResolution + receipt.generationId=G + hold transfer → immutable CAS outside lock → promote the **same G** to existing storyteller.profiled.v1 consequence task → short fenced publication. Existing generation/outbox/Temporal handles dispatch and spend. No second generation, no reroll, no new task union.
->
-> **First reads:** the exact [schema/field provenance](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md), [three-stage lifecycle](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md), [failure table](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md), [race cases](../../engine-architecture/decisions/eng03-committed-action-capture-v1.md). Inspect actual current packages/application/src/campaign/narration.ts::createConsequenceNarration/admitActionNarration, application/storyteller/context.ts::loadStorytellerContext, actual ENG03-narrow capture/materialization/storage code, gameActionReceipt schema, storyteller/publication.ts, and campaign/holds.ts. Report differences before any broader edits.
+> **Keep one G:** campaignConsequenceTopic → short story-lock SQL freeze + provisional G → immutable CAS outside lock → promote same G → fenced publication.
 
-## Implementation slices
+## Allowlist / non-goals
 
-1. **Schema reuse only:** add strict CommittedActionContextCaptureV1 purpose=consequence/sourceKind=action-receipt to current application-private capture registry. Reuse narrow's actual root, sourcePassages, scene, settings, lease and G helpers; keep pending capture parsing backward-compatible. No unknown JSONB payloads. Extend existing table purpose check only if required, with additive migration and no backfill.
-2. **Stage 1 short-lock claim:** receipt already settled and generationId null; story lock then receipt claim; check current narrative/base passage, owner, storyResolution uniqueness, existing storyteller-intent hold. Copy exact receipt plus current committed actor/facts/items/world/commitments/scene/premise/notes/settings/profile/execution/policy and source hashes or inline bodies. No DocumentStore calls. Insert G provisional capture, existing storyResolution with committed-consequence submission, receipt.generationId=G, storyteller hold transfer, existing campaignConsequenceTopic durable wake and view version. On malformed input roll back **preparation only**; keep committed receipt and storyteller-intent hold, surface a typed failed worker attempt without a false successful ACK or pretend-blocked capture row.
-3. **Stage 2 off-lock:** first branch in existing createConsequenceNarration checks companion capture **before** early return for receipt.generationId. Lease G via current narrow bounded policy, close TX, CAS reads by captured hash and verify envelope. Build exact contextInputSchema + resolution from frozen post-settlement receipt and actor state; call prepareAdmittedStorytellerTask(task=consequence) and budget/manifest gate. Short story-lock source/receipt/stale recheck, promote same G to ordinary storyteller task, enqueue existing storytellerTopic. No current SQL read as prompt source.
-4. **Stage 3 publication:** for C1 capture, check G/receipt/storyResolution/source root/scene/owner, frozen committed outcome, post-settlement actor digest, settings and mutable model context vs latest under short SQL lock. Existing consequence output/plan admission and staged CAS commit remain authoritative. Hold-to-decision only after successful publish. Stale/blocked is typed and visible, not another paid attempt.
-5. **Regression:** preserve all old storytellerTaskSchema generations and no-capture rows, the pending capture implementation and all other consequences. No broad formatting, no generalized task/source type.
-
-## Normal and negative proof matrix
-
-| Test | Observable acceptance |
-| --- | --- |
-| Committed action receipt with generationId null | One G = receipt.generationId = captureId = storyResolution.generationId; same committed mechanical receipt, no second roll; valid consequence scene + offer |
-| Two workers / duplicate outbox / post-Stage-1 crash | Exactly one G/hold transfer/promotion/request digest; durable campaignConsequenceTopic re-entry, no lost intent |
-| Receipt has existing pending speculative G or legacy generation | Do not migrate/capture, hijack or create another controlling row; legacy still decodes/publishes |
-| Injected CAS 0,250,2000ms + legitimate same-story writer | CAS outside FOR UPDATE; report actual medians and control; business conflict independent of SQL wait |
-| 7-passage and 40-scene + notes + inline/CAS mix | Same required evidence/selected note/current, no live model-context SQL after Stage 1; correct CAS identity checks |
-| Root/scene/actor/world/items/commitments/settings change during fetch | Stale or blocked before provider dispatch, never publish mismatched current scene |
-| Missing/corrupt CAS, oversized capture/context, lease expiry | Typed bounded retry/hold/blocked, no invented prose, no infinite worker replay, no provider request |
-| Successful generation then stale source | No controlling publication or paid regeneration; preserve charge identity and required hold/recovery |
-| Pre-existing old continuation/opening/report/action task and new pending-capture task | Unchanged decoder/worker/publication, no migration/backfill |
-| Scripted provider-free SQL integration | Exact commands/DB mode/outputs, no paid calls, no cloud credential use |
-
-## Allowlist and non-goals
-
-**Likely source edits:** campaign/narration.ts plus existing narrow capture/materialization path under application/storyteller (actual file names verified before coding); storyteller/context.ts and canonical-knowledge.ts only for reusable bounded readers; storyteller/publication.ts only for purpose fence; existing campaign/holds.ts only if transfer helper needs narrow reuse; db/schema/storyteller.ts and an **additive** migration only if existing capture table requires a purpose constraint; targeted application integration/unit tests. A narrow worker timeout change may be suggested separately if the existing consequence Activity limit demonstrably prevents bounded materialization.
-
-**Do not edit:** game physics/actions/time/dice/effects/item holders, campaign/action-executions logic, pending capture semantics, interrupted/activity/world consequences, reports, continuation, opening, generic generations, storytellerTaskSchema union, paid provider/route/entitlements, full ENG03 migration, new saga/Temporal workflow, cloud S3 or UI.
-
-## Ready and completion gates
-
-**ENG03-C1 Ready when** owner selects/authorizes this exact packet, Cursor's latest SA03/v17 + ENG03-narrow tree is compared to every referenced source symbol and capture row, physical schema differences are resolved without widening scope, and provider-free disposable SQL tests are authorized. If receipt lock order, capture discriminant or current source query contradicts this contract, return **symbol + difference + negative counterexample** rather than silently redesigning.
-
-**Done when** committed receipt case, duplicates/crash, old input compatibility, CAS failure/oversize, stale root/scene/world, no extra paid dispatch, 0/250/2000 lock regression and actual source diff are documented with commands actually run. Full ENG03 remains Proposed after this Change. **Provider spend expected: zero.**
+Unchanged from design: no game physics changes, no pending-capture rewrite, no interrupted/activity/world/report/continuation/opening, no paid provider, no full ENG03 mega-rewrite.

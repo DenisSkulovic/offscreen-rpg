@@ -4,27 +4,27 @@
 
 Current change: none
 
-**ENG03-C1 (2026-11-14): Done.** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Full ENG03 remains Proposed; priorities 2–6 ungated.
+**ENG03-C1 (2026-11-14): Done (core path).** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Residual harden items (lock order, settled-execution fence, provisional retry status, exhausted rearm) still open vs latest design. Full ENG03 Proposed; priorities 2–6 ungated. Sequence: [migration order](../engine-architecture/decisions/eng03-capture-migration-sequence.md).
 
 **ENG03-narrow (2026-11-14): Done.** Provisional capture → off-lock promote same G; settlement/publish race matrix + short-lock re-baseline provider-free.
 
-**Storyteller agent architecture renewal (2026-11-14):** [full index](../storyteller-architecture/README.md) → [SA01–SA12 program](../storyteller-architecture/implementation-program.md). **SA01–SA12 Done** for code scope (SA07 conditional; SA12 paid live runs still need explicit $ cap). No model spend by default.
+**Storyteller agent architecture renewal (2026-11-14):** [full index](../storyteller-architecture/README.md) → [SA01–SA12 program](../storyteller-architecture/implementation-program.md). **SA01–SA12 Done** for code scope (SA07 conditional; SA12 paid live still needs explicit $ cap). No model spend by default.
+
+**Admin / Offscreen Control (2026-11-14, design merged):** [admin index](../admin/README.md) → [implementation program](../admin/implementation-program.md) → [Cursor first-wave](../admin/handoff/cursor-first-wave.md). **AD01–AD08 Proposed, not Ready** until owner selects one packet (recommended AD01).
 
 **Decision handoff (2026-11-13):** [four selected priorities](../engine-architecture/handoff/decision-queue-2026-11-13.md). Owner authorized merge + implement received designs (2026-11-14). **ENG09, ENG03-M, GM05, PW01 Done.** Full ENG03 rewrite not auto-authorized (`proceed-narrow-eng03-capture` evidence only).
 
-**Engine postwave (2026-11-13):** [code review](../engine-architecture/evidence/postwave-implementation-review.md) → [Cursor handoff](../engine-architecture/handoff/postwave-cursor-handoff.md). **ENG01/ENG04/ENG02/ENG08/ENG05/ENG06/ENG09/ENG03-M/GM05/PW01 Done**; **ENG07 Cancelled**. Full [ENG03](2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed pending explicit capture-DTO Ready.
+**Engine postwave (2026-11-13):** [code review](../engine-architecture/evidence/postwave-implementation-review.md) → [Cursor handoff](../engine-architecture/handoff/postwave-cursor-handoff.md). **ENG01/ENG04/ENG02/ENG08/ENG05/ENG06/ENG09/ENG03-M/GM05/PW01 Done**; **ENG07 Cancelled**. Full [ENG03](2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed.
 
-**Player experience redesign (2026-11-13):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). Owner authorized continuing the sequence on 2026-11-13 (polish deferred). **UX01–UX12 Done** ([UX11 evidence](../experience/evidence/ux11-visual-evidence-2026-11-13.md)).
+**Player experience redesign (2026-11-13):** [design index](../experience/README.md) → [Living Stage blueprint](../experience/spaces/living-stage-blueprint.md) → [first Cursor handoff](../experience/handoff/first-cursor-wave.md) → [UX01–UX12 program](../experience/implementation-program.md), with [GM01–GM07 future mechanics](../experience/mechanics-evolution-program.md). **UX01–UX12 Done**.
 
-**Presentation runtime (frontend-only, 2026-11-13):** [architecture](../experience/system/presentation-runtime.md) → [V1 presentation language](../experience/system/presentation-language.md) → [media and motion](../experience/system/presentation-media-and-motion.md) → [PX implementation program](../experience/presentation-implementation-program.md). **PX01–PX04 Done** in `apps/web` only (resolver, choices, fixture media/motion, Storybook lab). Live Play still omits presentation. Game/engine/public-contract/LLM/image-provider integration is a separately planned later concern.
+**Presentation runtime (frontend-only, 2026-11-13):** [architecture](../experience/system/presentation-runtime.md) → [PX01–PX07 Done](../experience/presentation-calibration-program.md) in `apps/web`. Live Play still omits presentation.
 
-**Post-PX visual-calibration review (2026-11-13):** [source/screenshot audit](../experience/evidence/presentation-post-px-review-2026-11-13.md) → [PX05–PX07 program](../experience/presentation-calibration-program.md). **PX05–PX07 Done** in `apps/web`: per-surface contrast, viewport bounds, injected asset catalog, bounded figures, and a Storybook lab that edits the input document. Live Play still omits presentation.
+**Engine evolution (2026-11-13):** [program](../engine-architecture/implementation-program.md). **ENG01/ENG02/ENG04 Done.** **ENG07 Cancelled.**
 
-**Engine evolution (2026-11-13):** [program](../engine-architecture/implementation-program.md). **ENG01 Done.** **ENG02 Done** (actor envelope v1 + optional health; microbe fixture without HP). **ENG04 Done.** **ENG07 Cancelled.** ENG03/ENG05–ENG06 unselected. No schema migration.
+**Public entry / player home (2026-11-13):** [PF01–PF05 Done](../experience/evidence/platform-entry-journey-proof-2026-11-13.md).
 
-**Public entry / player home (2026-11-13):** [platform ecosystem](../experience/platform-ecosystem.md) → [PF01–PF05 program](../experience/platform-entry-implementation-program.md). **PF01–PF05 Done** ([journey evidence](../experience/evidence/platform-entry-journey-proof-2026-11-13.md)).
-
-**Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. There are **22 W-series frontend/tooling packets** (W12 is **superseded**; W01–W11/W13–W22 completed) and **16 CH-series developer-laboratory packets** (all Done; live Sandbox/Connected Nest boots remain gated where noted). The [Chamber program](../engineering/chamber-program.md) is a separate dependency route. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
+**Architecture is decided; W01–W11, W13–W22 are Done.** Chamber **CH01–CH16 Done**. Do not silently run a broad modernization, destructive integration tests, Storyteller/provider calls or deploy.
 
 ## Execution dependency DAG (source and test changes)
 
