@@ -136,6 +136,14 @@ export const committedActionContextCaptureV1Schema = z.strictObject({
     intention: immediateActionPlanSchema.shape.intention,
   }),
   acceptedReceipt: committedActionReceiptCaptureSchema,
+  sourceExecution: z.strictObject({
+    operationId: uuid,
+    storyId: uuid,
+    offerId: uuid,
+    baseRevision: positiveRevision,
+    state: z.literal('settled'),
+    preparationGenerationId: z.null(),
+  }),
   capturedAt: z.iso.datetime(),          // tracing only; never in provider input
 }).superRefine((v, ctx) => {
   const issue = (path: (string | number)[], message: string) =>
@@ -145,6 +153,12 @@ export const committedActionContextCaptureV1Schema = z.strictObject({
       v.storyId !== r.storyId ||
       v.narrativeRevision !== r.baseRevision) {
     issue(['acceptedReceipt'], 'Committed receipt and source identity mismatch');
+  }
+  if (v.sourceExecution.operationId !== r.operationId ||
+      v.sourceExecution.storyId !== r.storyId ||
+      v.sourceExecution.offerId !== r.offerId ||
+      v.sourceExecution.baseRevision !== r.baseRevision) {
+    issue(['sourceExecution'], 'Settled execution and receipt are not the same action');
   }
   if (r.offer.id !== r.offerId || r.plan.key !== r.actionKey) {
     issue(['acceptedReceipt'], 'Receipt offer/plan identity mismatch');
@@ -223,6 +237,7 @@ export type CommittedActionContextCaptureV1 =
 | --- | --- | --- | --- |
 | G, story/owner, purpose | new UUID G; story.id/ownerId via lockStoryById; generation.id; storyResolution.generationId | Reserve once, check owner from receipt/story (server-controlled), persist private typed capture | Exactly G, never a second generation |
 | operationId, acceptedReceipt | game_action_receipt.operation_id,story_id,offer_id,action_key,base_revision,offer,plan,label,intention,outcome,outcome_text,effects,declarations,roll | Lock/check receipt, require generation_id **null**, parse receipt subset and copy. Assert no competing storyResolution on base | No mutable receipt reread for building prompt; Stage-2/3 may compare receipt identity + state under lock only |
+| sourceExecution | game_action_execution.operation_id,story_id,offer_id,base_revision,state,preparation_generation_id | Copy exact settled execution identity; reject anything except state='settled' and preparationGenerationId=null | Recheck as a publication authority fence; never rerun action mechanics |
 | passageId/narrativeRevision | story_passage.id/sequence and story.revision | Copy existing current passage, require story.revision == receipt.baseRevision | Fence by id/sequence; do not use latest to assemble context |
 | root | story.document_root_hash / document_root_revision | Copy paired hash/revision null/0 or hash/positive | CAS readManifest by frozen hash, verify campaignId/revision, never current alias |
 | sourcePassages[] | story_passage.id,sequence,content_document_hash/content,response; same SQL recent+active+note-source selection in storyteller/context.ts | Copy bounded rows (recent desc + older evidence unique order); inline content deep copied, external content hash only. Normalize response via interactionSubmissionSchema.parse(response).answer.optionId | Read immutable content by hash; verify source envelope.documentId and coverage/sequence and content shape; no SELECT for prompt evidence |
@@ -266,6 +281,17 @@ export type CommittedActionContextCaptureV1 =
 - A changed root, narrative revision, active scene, receipt or model-affecting world/actor/commitment source must fail stale/blocked according to existing typed status policy. Keep any required storyteller hold from becoming a phantom decision/clock unlock; provide explicit recovery, not an automatic second paid job. Historical report semantics are unrelated.
 - Existing generations with **no** capture row retain their old task parser/publication path, including older input/prompt versions; never backfill or rewrite their input.
 
+### Read projection and recovery honesty (required, not optional)
+
+The **existing** story snapshot path in application/stories/reads.ts reads generation.state/publication.state and sets publicResolutionBlocker(publication='blocked' or 'stale') to recovery='retry' without inspecting the generation kind. But application/storyteller/recovery.ts::retryStoryteller only accepts kind storyteller.profiled.v1 with an attemptId; **a provisional capture G cannot use that endpoint**. C1 must not expose a dead retry button.
+
+- Captured/materializing, or a transient scheduled CAS retry: keep public resolution pending/processing, with canRetry=false. A capture row may coexist with generation.state='pending'; that is intentional.
+- Terminal capture held/blocked/stale: produce public resolution state='blocked' and a bounded reason, recovery='operator' or 'none' (never 'retry'), canRetry=false. Use the existing storySnapshotSchema values, not a new client protocol. If a C1 capture is declared terminal but no human/operator recovery route exists, report that limitation explicitly rather than presenting a false action.
+- A promoted capture is an ordinary valid Storyteller generation; afterward the existing normal status and retry rules apply, including confirmed-unsent-only limits. Legacy generations with no capture row retain their old projection.
+- Reinspect the actual shipped narrow capture implementation for any equivalent projection helper before editing. If absent, narrowly update application/stories/reads.ts, application/campaign/reads.ts and, if this G is addressable through the operation receipt API, application/stories/resolution-receipt.ts. The receipt and story snapshot must agree on G's terminal state and allowed recovery. **Do not rewrite the generic retry endpoint to accept provisional generation.input as storytellerTaskSchema**.
+- Whenever a capture changes into an externally visible terminal failure, bump a revision used by story snapshot identity (generation.statusRevision and/or story.viewVersion) **atomically** with capture status/publication; otherwise version-keyed cached snapshots may continue showing "generating" forever. Emit only the existing committed-view notification if viewVersion advances. Test reload/cache invalidation.
+- The outbox ACK is only delivery-to-Temporal. After an exhausted pre-capture failure, an **explicit**, owner-checked operator recovery may re-enqueue campaignConsequenceTopic for the same receipt.operationId via the existing outbox. No new paid dispatch, new G, or silent infinite retry is allowed.
+
 ## 4. Failure and cost taxonomy
 
 | Case | Safe disposition | Forbidden behavior |
@@ -301,7 +327,8 @@ Use disposable PostgreSQL + delayed LocalDocumentStore or mock S3; scripted task
 | Valid source but compiled task > envelope | Held with context_too_large; no provider attempt |
 | Duplicate publication wake after successful story publish | Idempotent single publication and offer; one decision hold; no second game receipt |
 | Action receipt's generationId becomes nonnull between reads | No second generation or competing storyResolution; correct row/fence winner only |
-| Provisional capture held/stale/blocked and player reloads | Show a truthful blocked/no-normal-retry recovery state; retryStoryteller rejects provisional generation kind. No fake canRetry=true. Existing owner/operation receipt read stays consistent |
+| Recovery under uncertain/confirmed spend | Stopped/held until explicit recovery; same task/attempt identity and spend ledger |
+| Provisional capture held/stale/blocked and player reloads | Show blocked/recovery operator-or-none/canRetry=false; retryStoryteller rejects provisional generation kind. Existing owner/operation receipt read stays consistent and cached snapshot identity changes |
 | 0/250/2000ms latency baseline vs old path | DocumentStore delay no longer extends **same-story FOR UPDATE hold**; record real traces for C1 instead of assuming pending-path timing |
 | Legacy report/opening/continuation and pending-consequence tasks | Decodable/publishable by original task schema; no migration or code path hijack |
 
