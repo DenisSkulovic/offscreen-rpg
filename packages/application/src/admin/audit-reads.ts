@@ -21,6 +21,9 @@ const SAFE_AUDIT_KINDS = new Set([
   'admin.bootstrap.idempotent',
   'admin.access.denied',
   'admin.access.checked',
+  'admin.case.created',
+  'admin.case.assigned',
+  'admin.case.status',
 ]);
 
 function toIso(value: Date | string): string {

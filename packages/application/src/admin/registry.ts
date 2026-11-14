@@ -15,6 +15,8 @@ export const ADMIN_CAPABILITIES = [
   'staff.access.inspect',
   'audit.events.read',
   'case.summary.read',
+  'case.create',
+  'case.assign',
 ] as const;
 
 export type AdminCapability = (typeof ADMIN_CAPABILITIES)[number];
@@ -96,6 +98,29 @@ const SUPPORT_OPERATOR_V1: AdminCapabilityPackage = {
       resourceKinds: ['case'],
       workspaceFamily: 'support',
     },
+    {
+      capability: 'case.create',
+      resourceKinds: ['case'],
+      workspaceFamily: 'support',
+    },
+  ],
+};
+
+const SUPPORT_LEAD_V1: AdminCapabilityPackage = {
+  id: 'support-lead',
+  version: 1,
+  label: 'Support Lead',
+  grants: [
+    {
+      capability: 'case.summary.read',
+      resourceKinds: ['case'],
+      workspaceFamily: 'support',
+    },
+    {
+      capability: 'case.assign',
+      resourceKinds: ['case'],
+      workspaceFamily: 'support',
+    },
   ],
 };
 
@@ -174,6 +199,7 @@ const SECURITY_AUDITOR_V1: AdminCapabilityPackage = {
 const PACKAGES: readonly AdminCapabilityPackage[] = [
   ADMIN_READER_V1,
   SUPPORT_OPERATOR_V1,
+  SUPPORT_LEAD_V1,
   ENGINEERING_OBSERVER_V1,
   USAGE_OBSERVER_V1,
   STAFF_ACCESS_STEWARD_V1,

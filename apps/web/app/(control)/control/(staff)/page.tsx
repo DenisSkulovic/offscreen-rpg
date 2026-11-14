@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireAdminActor } from '@/src/server/admin-actor';
+import { AdminCaseQueue } from '@/src/features/admin/case-queue';
 import { AdminGovernancePanel } from '@/src/features/admin/governance-panel';
 import { AdminUsageLookup } from '@/src/features/admin/usage-lookup';
 
@@ -24,6 +25,7 @@ export default async function ControlHomePage() {
           : 'none yet'}
       </p>
       <AdminGovernancePanel self={self} />
+      <AdminCaseQueue self={self} />
       <AdminUsageLookup self={self} />
     </main>
   );

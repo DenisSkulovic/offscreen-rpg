@@ -19,7 +19,7 @@
 | `/chamber` | [(authenticated)/chamber/page.tsx]((authenticated)/chamber/page.tsx) | `src/features/developer-tools/chamber/view.tsx` | backend controller registration is conditional on developerTools |
 | `/demo` | [scripted demo](demo/page.tsx) | Greywake local preview (`demo-state` + `content/script.json`) | simulated; resets on refresh; no provider |
 | `/control/enter` | [(control)/control/enter/page.tsx]((control)/control/enter/page.tsx) | `EnterAdminSessionButton` | player session required; Nest POST mints Admin cookie |
-| `/control` | [(control)/control/(staff)/page.tsx]((control)/control/(staff)/page.tsx) | Admin shell + governance + usage | `requireAdminActor` + isolated Admin Query; AD07 audit needs `audit` family; AD06 usage needs `commercial.usage.read` |
+| `/control` | [(control)/control/(staff)/page.tsx]((control)/control/(staff)/page.tsx) | Admin shell + governance + cases + usage | `requireAdminActor` + isolated Admin Query; AD08 cases need `support`; AD07 audit needs `audit`; AD06 usage needs `commercial.usage.read` |
 | `/control/players` | [(control)/control/(staff)/players/page.tsx]((control)/control/(staff)/players/page.tsx) | `AdminPlayerLookup` | exact-ref AD03 reads; inline AD05 campaign → operation drilldown; SSR hydrate when authorized |
 | `/rules` | [rules page](rules/page.tsx) | none | public |
 

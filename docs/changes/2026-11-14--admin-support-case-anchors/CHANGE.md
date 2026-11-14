@@ -1,6 +1,6 @@
 # AD08 | Minimal internal Support cases and governed assignment provenance
 
-**State: Proposed, NOT Ready.** Code-bearing case/workflow foundation. **Depends on:** AD02/AD03/AD07 and Admin UI shell AD04. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad08](../../admin/evidence/ad08-support-case-anchors-2026-11-14.md). Code-bearing case/workflow foundation. **Depends on:** AD01–AD07 Done. **Parent:** [Admin program](../../admin/implementation-program.md).
 
 ## Cursor first-screen
 

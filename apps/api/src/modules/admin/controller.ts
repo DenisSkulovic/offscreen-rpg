@@ -25,6 +25,11 @@ import {
   redactedOperationPageV1Schema,
   adminAuditPageV1Schema,
   adminStaffAccessV1Schema,
+  caseAssignRequestV1Schema,
+  caseCreateRequestV1Schema,
+  caseStatusUpdateRequestV1Schema,
+  caseSummaryPageV1Schema,
+  caseSummaryV1Schema,
   usageStatusEnvelopeV1Schema,
   type AdminAccessDecisionV1,
   type AdminAuditPageV1,
@@ -32,6 +37,8 @@ import {
   type AdminSelfV1,
   type AdminStaffAccessV1,
   type CampaignMetadataPageV1,
+  type CaseSummaryPageV1,
+  type CaseSummaryV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
   type RedactedOperationEnvelopeV1,
@@ -43,6 +50,7 @@ import {
   clearAdminCookie,
   createAdminAccess,
   createAdminAuditReads,
+  createAdminCaseStore,
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
   createAdminUsageReads,
@@ -55,6 +63,7 @@ import {
   type AdminActor,
   type AdminAuditReads,
   type AdminCapability,
+  type AdminCaseStore,
   type AdminDiagnosticsReads,
   type AdminEnvironment,
   type AdminPlayerReads,
@@ -71,6 +80,7 @@ export const ADMIN_PLAYER_READS = Symbol('ADMIN_PLAYER_READS');
 export const ADMIN_DIAGNOSTICS = Symbol('ADMIN_DIAGNOSTICS');
 export const ADMIN_USAGE = Symbol('ADMIN_USAGE');
 export const ADMIN_AUDIT = Symbol('ADMIN_AUDIT');
+export const ADMIN_CASES = Symbol('ADMIN_CASES');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
@@ -257,6 +267,8 @@ export class AdminController {
     private readonly usage: AdminUsageReads,
     @Inject(ADMIN_AUDIT)
     private readonly audit: AdminAuditReads,
+    @Inject(ADMIN_CASES)
+    private readonly cases: AdminCaseStore,
   ) {}
 
   /** Player- or campaign-scoped visibility for legacy-owned stories. */
@@ -415,6 +427,173 @@ export class AdminController {
       cursor: cursor ?? null,
     });
     return adminAuditPageV1Schema.parse(page);
+  }
+
+  @Post('cases')
+  @HttpCode(HttpStatus.OK)
+  async createCase(
+    @Req() request: Request,
+    @Body() body: unknown,
+  ): Promise<CaseSummaryV1> {
+    const parsed = caseCreateRequestV1Schema.safeParse(body);
+    if (!parsed.success) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { actor } = await this.actors.requireCapability(request, {
+      capability: 'case.create',
+      resourceKind: 'case',
+      resourceId: null,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: false,
+    });
+    if (parsed.data.link?.kind === 'player') {
+      await this.actors.requireCapability(request, {
+        capability: 'player.summary.read',
+        resourceKind: 'player',
+        resourceId: parsed.data.link.id,
+        environment: this.actors.deploymentEnvironment(),
+        hideDenialAsNotFound: true,
+      });
+    }
+    try {
+      const created = await this.cases.createCase({
+        actorStaffId: actor.staffPrincipalId,
+        request: parsed.data,
+      });
+      return caseSummaryV1Schema.parse(created);
+    } catch (error) {
+      throw mapAdminError(error);
+    }
+  }
+
+  @Get('cases')
+  async listCases(
+    @Req() request: Request,
+    @Query('cursor') cursor: string | undefined,
+  ): Promise<CaseSummaryPageV1> {
+    await this.actors.requireCapability(request, {
+      capability: 'case.summary.read',
+      resourceKind: 'case',
+      resourceId: null,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: false,
+    });
+    const page = await this.cases.listCases({ cursor: cursor ?? null });
+    return caseSummaryPageV1Schema.parse(page);
+  }
+
+  @Get('cases/:caseId')
+  async readCase(
+    @Req() request: Request,
+    @Param('caseId') caseId: string,
+  ): Promise<CaseSummaryV1> {
+    if (!/^[0-9a-fA-F-]{36}$/.test(caseId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    await this.actors.requireCapability(request, {
+      capability: 'case.summary.read',
+      resourceKind: 'case',
+      resourceId: caseId,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: true,
+    });
+    try {
+      return caseSummaryV1Schema.parse(await this.cases.readCase(caseId));
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
+  }
+
+  @Post('cases/:caseId/assign')
+  @HttpCode(HttpStatus.OK)
+  async assignCase(
+    @Req() request: Request,
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+  ): Promise<CaseSummaryV1> {
+    if (!/^[0-9a-fA-F-]{36}$/.test(caseId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const parsed = caseAssignRequestV1Schema.safeParse(body);
+    if (!parsed.success) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { actor } = await this.actors.requireCapability(request, {
+      capability: 'case.assign',
+      resourceKind: 'case',
+      resourceId: caseId,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: false,
+    });
+    try {
+      return caseSummaryV1Schema.parse(
+        await this.cases.assignCase({
+          actorStaffId: actor.staffPrincipalId,
+          caseId,
+          assignedStaffId: parsed.data.assignedStaffId,
+        }),
+      );
+    } catch (error) {
+      throw mapAdminError(error);
+    }
+  }
+
+  @Post('cases/:caseId/status')
+  @HttpCode(HttpStatus.OK)
+  async updateCaseStatus(
+    @Req() request: Request,
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+  ): Promise<CaseSummaryV1> {
+    if (!/^[0-9a-fA-F-]{36}$/.test(caseId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const parsed = caseStatusUpdateRequestV1Schema.safeParse(body);
+    if (!parsed.success) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { actor } = await this.actors.requireCapability(request, {
+      capability: 'case.create',
+      resourceKind: 'case',
+      resourceId: caseId,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: false,
+    });
+    try {
+      return caseSummaryV1Schema.parse(
+        await this.cases.updateStatus({
+          actorStaffId: actor.staffPrincipalId,
+          caseId,
+          status: parsed.data.status,
+        }),
+      );
+    } catch (error) {
+      throw mapAdminError(error);
+    }
   }
 
   /**
@@ -743,4 +922,10 @@ export function createAdminAuditReadsProvider(
   database: Database,
 ): AdminAuditReads {
   return createAdminAuditReads(database);
+}
+
+export function createAdminCaseStoreProvider(
+  database: Database,
+): AdminCaseStore {
+  return createAdminCaseStore(database);
 }

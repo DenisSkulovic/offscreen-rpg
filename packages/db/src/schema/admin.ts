@@ -134,3 +134,83 @@ export const adminAuditEvent = pgTable(
     index('admin_audit_event_staff').on(t.staffPrincipalId),
   ],
 );
+
+/** Minimal Support case — links are references only, never private payloads. */
+export const adminCase = pgTable(
+  'admin_case',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    status: text('status')
+      .notNull()
+      .default('open')
+      .$type<'open' | 'assigned' | 'closed'>(),
+    category: text('category')
+      .notNull()
+      .$type<'account' | 'campaign' | 'operation' | 'other'>(),
+    title: text('title').notNull(),
+    createdByStaffId: uuid('created_by_staff_id')
+      .notNull()
+      .references(() => adminStaffPrincipal.id, { onDelete: 'restrict' }),
+    assignedStaffId: uuid('assigned_staff_id').references(
+      () => adminStaffPrincipal.id,
+      { onDelete: 'restrict' },
+    ),
+    idempotencyKey: text('idempotency_key').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('admin_case_idempotency').on(t.idempotencyKey),
+    index('admin_case_status_updated').on(t.status, t.updatedAt),
+    index('admin_case_assigned').on(t.assignedStaffId),
+    check(
+      'admin_case_status',
+      sql`${t.status} IN ('open','assigned','closed')`,
+    ),
+    check(
+      'admin_case_category',
+      sql`${t.category} IN ('account','campaign','operation','other')`,
+    ),
+    check(
+      'admin_case_title_len',
+      sql`char_length(${t.title}) BETWEEN 1 AND 120`,
+    ),
+  ],
+);
+
+export const adminCaseLink = pgTable(
+  'admin_case_link',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    caseId: uuid('case_id')
+      .notNull()
+      .references(() => adminCase.id, { onDelete: 'restrict' }),
+    subjectKind: text('subject_kind')
+      .notNull()
+      .$type<'player' | 'campaign' | 'operation' | 'account'>(),
+    subjectId: text('subject_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('admin_case_link_identity').on(
+      t.caseId,
+      t.subjectKind,
+      t.subjectId,
+    ),
+    index('admin_case_link_case').on(t.caseId),
+    check(
+      'admin_case_link_kind',
+      sql`${t.subjectKind} IN ('player','campaign','operation','account')`,
+    ),
+    check(
+      'admin_case_link_subject_len',
+      sql`char_length(${t.subjectId}) BETWEEN 1 AND 128`,
+    ),
+  ],
+);

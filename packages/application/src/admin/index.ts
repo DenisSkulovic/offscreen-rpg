@@ -70,3 +70,8 @@ export {
   summarizeGrantScope,
   type AdminAuditReads,
 } from './audit-reads.js';
+export {
+  createAdminCaseStore,
+  projectCaseSummary,
+  type AdminCaseStore,
+} from './case-writes.js';

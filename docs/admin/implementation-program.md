@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD07 Done** (through access/audit review; Playwright SSR residual on web typecheck). **AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
+**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD08 Done** (first-wave complete; Playwright SSR residual on web typecheck). **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 
@@ -35,7 +35,7 @@ AD01 Staff principal, session + audit bootstrap
 | **AD05** | **Done:** Safe campaign metadata -> generation status drilldown; no raw prompts/narrative | AD03, AD04 for UI | [Game/AI diagnostics](../changes/2026-11-14--admin-game-ai-diagnostics/CHANGE.md) |
 | **AD06** | **Done:** Technical-only funded usage/status views, reservations/uncertainty/freshness | AD03, AD04; coordinate AD05 source owners | [Usage exposure](../changes/2026-11-14--admin-usage-exposure/CHANGE.md) |
 | **AD07** | **Done:** Staff effective access, safe audit review, no privilege-changing UI | AD01–AD04 | [Access and audit review](../changes/2026-11-14--admin-staff-access-review/CHANGE.md) |
-| **AD08** | Native minimal support case anchors and governed assignment, no authority laundering | AD02, AD03, AD07 | [Case anchors](../changes/2026-11-14--admin-support-case-anchors/CHANGE.md) |
+| **AD08** | **Done:** Native minimal support case anchors and governed assignment, no authority laundering | AD02, AD03, AD07 | [Case anchors](../changes/2026-11-14--admin-support-case-anchors/CHANGE.md) |
 
 ## Milestone acceptance
 

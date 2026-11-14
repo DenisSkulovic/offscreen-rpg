@@ -7,10 +7,15 @@ import {
   usageStatusEnvelopeV1Schema,
   adminStaffAccessV1Schema,
   adminAuditPageV1Schema,
+  caseSummaryPageV1Schema,
+  caseSummaryV1Schema,
   adminSelfV1Schema,
   type AdminSelfV1,
   type AdminStaffAccessV1,
   type AdminAuditPageV1,
+  type CaseCreateRequestV1,
+  type CaseSummaryPageV1,
+  type CaseSummaryV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
   type CampaignMetadataPageV1,
@@ -193,4 +198,42 @@ export async function listAdminAuditEvents(
     throw new Error(`audit_failed_${response.status}`);
   }
   return adminAuditPageV1Schema.parse(await readJson(response));
+}
+
+export async function listAdminCases(
+  signal?: AbortSignal,
+): Promise<CaseSummaryPageV1> {
+  const response = await fetch(`/api/admin/cases`, {
+    credentials: 'same-origin',
+    signal,
+    cache: 'no-store',
+  });
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`cases_failed_${response.status}`);
+  }
+  return caseSummaryPageV1Schema.parse(await readJson(response));
+}
+
+export async function createAdminCase(
+  body: CaseCreateRequestV1,
+): Promise<CaseSummaryV1> {
+  const response = await fetch(`/api/admin/cases`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (response.status === 404) {
+    throw new Error('not_found');
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`case_create_failed_${response.status}`);
+  }
+  return caseSummaryV1Schema.parse(await readJson(response));
 }

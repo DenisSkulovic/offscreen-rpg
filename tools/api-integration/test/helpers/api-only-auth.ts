@@ -85,7 +85,28 @@ export async function withApiOnlyAuth(
     });
   } finally {
     await database.db.$client.query(
-      `DELETE FROM admin_audit_event WHERE auth_user_id = ANY($1::text[])`,
+      `DELETE FROM admin_case_link WHERE case_id IN (
+         SELECT id FROM admin_case WHERE created_by_staff_id IN (
+           SELECT id FROM admin_staff_principal WHERE auth_user_id = ANY($1::text[])
+         ) OR assigned_staff_id IN (
+           SELECT id FROM admin_staff_principal WHERE auth_user_id = ANY($1::text[])
+         )
+       )`,
+      [[user.id, otherUser.id]],
+    );
+    await database.db.$client.query(
+      `DELETE FROM admin_case WHERE created_by_staff_id IN (
+         SELECT id FROM admin_staff_principal WHERE auth_user_id = ANY($1::text[])
+       ) OR assigned_staff_id IN (
+         SELECT id FROM admin_staff_principal WHERE auth_user_id = ANY($1::text[])
+       )`,
+      [[user.id, otherUser.id]],
+    );
+    await database.db.$client.query(
+      `DELETE FROM admin_audit_event WHERE auth_user_id = ANY($1::text[])
+         OR staff_principal_id IN (
+           SELECT id FROM admin_staff_principal WHERE auth_user_id = ANY($1::text[])
+         )`,
       [[user.id, otherUser.id]],
     );
     await database.db.$client.query(

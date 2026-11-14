@@ -92,6 +92,52 @@ export const adminAuditPageV1Schema = z.strictObject({
 });
 export type AdminAuditPageV1 = z.infer<typeof adminAuditPageV1Schema>;
 
+export const caseSubjectLinkV1Schema = z.strictObject({
+  kind: z.enum(['player', 'campaign', 'operation', 'account']),
+  id: z.string().min(1).max(128),
+});
+export type CaseSubjectLinkV1 = z.infer<typeof caseSubjectLinkV1Schema>;
+
+export const caseSummaryV1Schema = z.strictObject({
+  id: z.string().uuid(),
+  status: z.enum(['open', 'assigned', 'closed']),
+  category: z.enum(['account', 'campaign', 'operation', 'other']),
+  title: z.string().min(1).max(120),
+  createdByStaffId: z.string().uuid(),
+  assignedStaffId: z.string().uuid().nullable(),
+  links: z.array(caseSubjectLinkV1Schema).max(8),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type CaseSummaryV1 = z.infer<typeof caseSummaryV1Schema>;
+
+export const caseSummaryPageV1Schema = z.strictObject({
+  version: z.literal(1),
+  items: z.array(caseSummaryV1Schema).max(50),
+  nextCursor: z.string().min(1).max(256).nullable(),
+});
+export type CaseSummaryPageV1 = z.infer<typeof caseSummaryPageV1Schema>;
+
+export const caseCreateRequestV1Schema = z.strictObject({
+  idempotencyKey: z.string().uuid(),
+  category: z.enum(['account', 'campaign', 'operation', 'other']),
+  title: z.string().min(1).max(120),
+  link: caseSubjectLinkV1Schema.optional(),
+});
+export type CaseCreateRequestV1 = z.infer<typeof caseCreateRequestV1Schema>;
+
+export const caseAssignRequestV1Schema = z.strictObject({
+  assignedStaffId: z.string().uuid(),
+});
+export type CaseAssignRequestV1 = z.infer<typeof caseAssignRequestV1Schema>;
+
+export const caseStatusUpdateRequestV1Schema = z.strictObject({
+  status: z.enum(['open', 'assigned', 'closed']),
+});
+export type CaseStatusUpdateRequestV1 = z.infer<
+  typeof caseStatusUpdateRequestV1Schema
+>;
+
 export const ADMIN_BOOTSTRAP_PACKAGE_ID = 'admin-reader' as const;
 export const ADMIN_BOOTSTRAP_PACKAGE_VERSION = 1 as const;
 
