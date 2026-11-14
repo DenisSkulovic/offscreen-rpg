@@ -2,6 +2,8 @@
 
 **Status: future code-bearing program, designed 2026-11-14. No Change automatically Ready or active.** Parent [Storyteller renewal](README.md), [code flow audit](evidence/current-flow-audit-2026-11-14.md), [capability diagnosis](evidence/agent-capability-audit-2026-11-14.md), [vision constitution](vision-and-quality-constitution.md), [target operating model](target-operating-model.md), [context](context-and-retrieval.md), [prompt/tools](prompt-tools-and-models.md), [effort/cost](effort-cost-and-lifecycle.md), [evaluation](evaluation-and-playability.md).
 
+**Cursor short route:** [first-wave handoff](handoff/cursor-first-wave-2026-11-14.md). **Alternative assessment:** [bounded agent vs permanent chat, one-shot, NPC agents and multiagent frameworks](architecture-alternatives.md). Read one selected Change only during implementation.
+
 ## Destination, not a current-code excuse
 
 A new game should compile a task-specific, source-grounded Storyteller request and eligible recipe after a verified event. A complex old-memory/relation/ambiguity may trigger a few scoped read operations; ordinary dialogue usually doesn't. The model should produce grounded, profile-faithful consequences and useful novel choices, while the rules engine decides all actual time/roll/effect. A 2,000-scene game should not require reading 2,000 passages on every turn, and thousands of quiet users should not create hidden inference demand. Full context, tools, cost, publication and failure must be inspectable without reading an unbounded private transcript.
