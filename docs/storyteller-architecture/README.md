@@ -22,7 +22,8 @@ This initiative reopens product-level Storyteller **capabilities** and their qua
 | What should prompts, tools, model routes, caching and disposable task conversations look like? | [Prompt, tool and transport design](prompt-tools-and-models.md) |
 | How should tiers, effective budgets, latency, retries, availability and cost interact? | [Effort, money and lifecycle design](effort-cost-and-lifecycle.md) |
 | How do we prove gameplay, not merely unit green tests or valid JSON? | [Evaluation and experiments](evaluation-and-playability.md) |
-| Which exact code Changes can Cursor implement, and in what order? | **[SA01–SA12 implementation program](implementation-program.md)** |
+| Why not replace it with permanent chat, one agent per NPC or recursive subagents? | [Architectural alternatives and explicit rejection criteria](architecture-alternatives.md) |
+| Which exact code Changes can Cursor implement, and in what order? | **[SA01–SA12 implementation program](implementation-program.md)** → [first Cursor handoff](handoff/cursor-first-wave-2026-11-14.md) |
 
 The permanent target documents own architecture, the dated evidence pages own *inspected current source*, and each `docs/changes/2026-11-14--sa*` packet owns a future independently verifiable code delta. Do not treat an old historical doc's “implemented” badge as new proof.
 
