@@ -18,6 +18,11 @@
 | How does overlapping authority behave in real staff journeys? | [Authority operating policy](authority-operating-policy.md) |
 | How does Player 360 handle shared stories, payer/beneficiary separation and evidence? | [Player 360 service blueprint](player-360-service-blueprint.md) |
 | What should an operator actually experience during critical workflows? | [Operator journeys and interaction contracts](operator-journeys-and-interaction-contracts.md) |
+| How do offerings, entitlements, grants, usage, refunds and cost economics behave? | [Commercial Operations workspace](commercial-operations-product.md) |
+| How do staff investigate persistent worlds, published history and safe repairs? | [Gameplay & Worlds workspace](gameplay-worlds-product.md) |
+| How are AI tasks, model rounds, outcomes, privacy and real cost investigated? | [AI & Engineering Operations workspace](ai-engineering-operations-product.md) |
+| How are game versions, rollouts, experiments and emergency mitigations governed? | [Live Operations workspace](live-operations-product.md) |
+| Do all four domains agree on causal truth and operator responsibility? | [Cross-workspace coherence review](cross-workspace-product-review.md) |
 
 Read one owner for the question; do not preload the entire suite for a narrow decision.
 
@@ -35,9 +40,11 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 
 **No Admin Change folder or technical contract should be inferred from these Markdown proposals.** Keep the current Change queue unchanged while Cursor is working on unrelated authorized tasks.
 
-## First review focus
+## Current product review focus
 
-Start with [authority and delegation](authority-and-delegation.md), its [operating-policy deep dive](authority-operating-policy.md), and [Player 360](player-360-and-entities.md) with the [shared-campaign service blueprint](player-360-service-blueprint.md). Test their behavior against [operator journeys](operator-journeys-and-interaction-contracts.md) and [cross-team workflows](operations-and-workflows.md). Resolve the explicit decision log before calling the product specification settled.
+The first pass defined the product charter, shared entities, workspaces and broad workflows. The second pass deepened [authority](authority-operating-policy.md) and [Player 360](player-360-service-blueprint.md). The third pass deepened [Commercial](commercial-operations-product.md), [Gameplay & Worlds](gameplay-worlds-product.md), [AI & Engineering Operations](ai-engineering-operations-product.md) and [LiveOps](live-operations-product.md), and checked their shared reality in [cross-workspace coherence](cross-workspace-product-review.md).
+
+**Still pending:** critique/resolve the business policies in [decisions](decisions-and-readiness.md), especially funding/usage, shared-campaign authority, sensitive narrative evidence, safe repair and version adoption. Support/Customer Success, Growth/Insights, Trust/Privacy, Command Center and Staff Governance still deserve their own detailed workspace reviews before product acceptance. Neither a long document nor a proposed recommendation constitutes owner approval.
 
 ## Status language
 

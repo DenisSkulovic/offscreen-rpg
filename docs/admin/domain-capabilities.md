@@ -2,6 +2,16 @@
 
 **Status:** Proposed product requirements, 2026-11-14. **Owns:** domain-level administrative experience and product boundaries. This is not a technical plan, billing-provider choice or claim that current metrics exist. Related investigation context: [Player 360](player-360-and-entities.md); intervention model: [workflows](operations-and-workflows.md).
 
+## Detailed workspace owners
+
+This document is the domain **overview**. Detailed operator journeys, surfaces, action classes and negative acceptance are now owned by:
+- [Commercial Operations](commercial-operations-product.md)
+- [Gameplay & Worlds](gameplay-worlds-product.md)
+- [AI & Engineering Operations](ai-engineering-operations-product.md)
+- [Live Operations](live-operations-product.md)
+
+Their cross-domain consistency and open dependencies are assessed in [cross-workspace coherence](cross-workspace-product-review.md). The other domains in this document remain at overview depth pending later product passes. These documents **do not** select a technical implementation.
+
 ## 1. Commercial and customer economics
 
 Do not reduce the commercial state to a single "free/premium" field. Staff must distinguish:

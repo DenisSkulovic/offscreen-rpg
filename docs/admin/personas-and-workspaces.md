@@ -38,6 +38,8 @@ Do not predefine an endless list of compound roles. The persona expresses a **jo
 
 This is a **logical information architecture**. Workspaces can have different navigation density or subviews later, but they must share subjects, identities, links and a consistent meaning of status.
 
+**Specialist workspace details (product proposals):** [Commercial](commercial-operations-product.md), [Gameplay](gameplay-worlds-product.md), [AI & Engineering](ai-engineering-operations-product.md) and [LiveOps](live-operations-product.md). A [coherence review](cross-workspace-product-review.md) tests their common entity/status boundaries. These links are not grants of authority or proof of implemented routes.
+
 ## Cross-workspace design rules
 
 1. **Global search:** allow direct lookup by permitted player, campaign, operation, support case, subscription or incident identifiers. Results, metadata, suggestions and counts must not leak unauthorized records.

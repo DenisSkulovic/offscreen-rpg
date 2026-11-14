@@ -47,6 +47,25 @@ Three focused product deep dives have been added:
 
 **New cross-domain decision pressure:** multiplayer billing is not yet selected. A future player may participate in a campaign without being its payer; do not invent a payer/beneficiary policy while drafting the console. Game vision supports shared campaigns, but commercial ownership, consent, notice and repair authority remain unresolved (AD-P02/05/07/09/13).
 
+## Third-pass workspace product review (2026-11-14; proposals, NOT owner decisions)
+
+Dedicated workspace specifications now cover:
+- [Commercial](commercial-operations-product.md): catalog promises, billing state versus effective access, payer/beneficiary and grant semantics, reservations/usage, refund versus compensation, sponsorship and honest unit economics.
+- [Gameplay & Worlds](gameplay-worlds-product.md): world mechanics versus published prose, source/receipt provenance, earned fictional time, shared-campaign privacy and constrained interventions.
+- [AI & Engineering](ai-engineering-operations-product.md): accepted player actions, Storyteller tasks, model rounds, provider expense and published outcomes as separate units; diagnostic evidence tiers and three lenses of quality.
+- [LiveOps](live-operations-product.md): change categories, existing-campaign adoption policies, staged deployment, emergency spending stops, experiment guardrails and rollback limitations.
+- [Cross-workspace coherence](cross-workspace-product-review.md): shared-truth matrix and adverse scenarios across all four workspaces.
+
+**Strong proposed product guardrails:**
+1. Never collapse plan, entitlement, allowance, model spend and in-world resource into one "credits" field.
+2. Never collapse command, mechanical receipt, Storyteller task, model call and published passage into one "turn succeeded" field.
+3. Never let a configuration rollback promise to undo previously committed world events.
+4. Existing persistent games should keep accepted promises; incompatible future behavior requires an explicit adoption/migration policy.
+5. Treat internal diagnostics, player allowances and company sponsor spend as independently accountable.
+6. Show incomplete or unavailable evidence and actual blast radius rather than fake certainty.
+
+**Not accepted yet:** exact commercial metering/cancellation rules, paid contract treatment, multiplayer funding and participant authority, sensitive evidence access/notification, repair taxonomy, task-version compatibility, and metric/alert policies. The product gate remains **open**. The next domain-depth work should address Support, Growth, Trust/Privacy, Command Center and Staff Governance, followed by cross-functional owner review.
+
 ## Highest-priority product decisions to resolve
 
 | ID | Decision | Consequence |
@@ -78,6 +97,12 @@ Do not answer these by merely copying implementation choices from the current re
 | AD-P18 | Should an internal AI investigator be offered later, and what advisory-only scope is useful? |
 | AD-P19 | Final naming and layout of the workspaces; which should be merged/split in a realistic staff navigation? |
 | AD-P20 | When does a real operating team justify native case management versus a full external support suite? |
+| AD-P21 | Catalog/version adoption: when may commercial plan changes affect existing subscribers, and how are grandfathered promises handled? |
+| AD-P22 | Sponsored versus paid versus internal provider expense: exact usage units, reservation/finalization, funding ownership and financial reconciliation policy? |
+| AD-P23 | Shared/private narrative, other participants' content and customer notification: which surfaces/actions require access, notice or consent? |
+| AD-P24 | Permissible game repair and historical correction classes, including what cannot be reversed or rewound? |
+| AD-P25 | AI/gameplay quality: which correctness, fidelity and experiential measures are meaningful, with coverage and human review? |
+| AD-P26 | Which LiveOps artifacts can staff author/publish through Admin versus gated external release review, and under what change approvals? |
 
 ## Product validation: scenario reviews
 
@@ -150,4 +175,6 @@ This sequence is illustrative and depends on demand. **Critical safeguards must 
 
 ## Next product-design session
 
-Critically refine **[authority](authority-and-delegation.md)** and **[Player 360](player-360-and-entities.md)** first, then use [cross-team workflows](operations-and-workflows.md) as adversarial scenarios. Product acceptance is the next milestone, not immediate coding.
+The Authority/Player 360 and Commercial/Gameplay/AI/LiveOps deep dives are recorded and remain proposed. Next, examine **Support & Customer Success**, **Growth & Insights**, **Trust & Privacy**, the **personalized Command Center**, and **Access & Governance** at equivalent operational depth. Run [cross-workspace coherence](cross-workspace-product-review.md) and [operator journeys](operator-journeys-and-interaction-contracts.md) against all of them.
+
+Then resolve or explicitly defer each owner decision with a product acceptance rationale; do **not** quietly treat author recommendations as selected policy. Only an accepted product model permits technical design, and only accepted technical design permits bounded Cursor implementation Changes.
