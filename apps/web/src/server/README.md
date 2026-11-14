@@ -10,6 +10,7 @@
 | --- | --- |
 | `api-origin.ts` | `API_INTERNAL_ORIGIN` for SSR; pure helper (safe for Next config patterns). Proxy rewrite uses `API_PROXY_ORIGIN` in [`next.config.ts`](../../next.config.ts) — never `NEXT_PUBLIC_*`. |
 | `viewer.ts` | `requireViewer()` — cookie → Nest `/api/me`, 401 → `/sign-in`, React `cache()` per request. Layout gate ≠ resource authorization. |
+| `admin-actor.ts` | `requireAdminActor()` — cookie → Nest `/api/admin/me`; 401 → control sign-in next; 403 → `/control/enter`. Not resource auth. |
 | `nest-reader.ts` | `nestFetch` / `readNestJson` / `applyNestRoutePolicy`: `no-store`, 5s timeout, 401 sign-in, 404 `notFound`, other → `NestTransientError`. |
 | `seed-authorized-query.ts` | Seed SSR Query from an already-authorized value. Nest reads that must throw route outcomes happen *before* this helper — never inside `prefetchQuery` queryFn. |
 | `parse-nest-json.ts` | Zod parse; malformed body → `NestProtocolError` (not 404). |

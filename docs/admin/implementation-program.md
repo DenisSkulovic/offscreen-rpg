@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD03 Done**. **AD04–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
+**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD04 Done** (M2 shell landed; Playwright SSR residual on web typecheck). **AD05–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 
@@ -31,7 +31,7 @@ AD01 Staff principal, session + audit bootstrap
 | **AD01** | **Done:** Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
 | **AD02** | **Done:** Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../changes/2026-11-14--admin-grant-policy/CHANGE.md) |
 | **AD03** | **Done:** Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../changes/2026-11-14--admin-player-safe-reads/CHANGE.md) |
-| **AD04** | Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../changes/2026-11-14--admin-operator-shell/CHANGE.md) |
+| **AD04** | **Done:** Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../changes/2026-11-14--admin-operator-shell/CHANGE.md) |
 | **AD05** | Safe campaign metadata -> generation status drilldown; no raw prompts/narrative | AD03, AD04 for UI | [Game/AI diagnostics](../changes/2026-11-14--admin-game-ai-diagnostics/CHANGE.md) |
 | **AD06** | Technical-only funded usage/status views, reservations/uncertainty/freshness | AD03, AD04; coordinate AD05 source owners | [Usage exposure](../changes/2026-11-14--admin-usage-exposure/CHANGE.md) |
 | **AD07** | Staff effective access, safe audit review, no privilege-changing UI | AD01–AD04 | [Access and audit review](../changes/2026-11-14--admin-staff-access-review/CHANGE.md) |

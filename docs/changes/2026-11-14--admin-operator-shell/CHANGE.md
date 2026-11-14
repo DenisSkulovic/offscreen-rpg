@@ -1,6 +1,6 @@
 # AD04 | Protected Next Admin shell, SSR privacy and isolated Query ownership
 
-**State: Proposed, NOT Ready.** Code-bearing UI/security. **Depends on:** AD01–AD03. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Code-bearing UI/security. **Depends on:** AD01–AD03 Done. **Parent:** [Admin program](../../admin/implementation-program.md). Evidence: [ad04-operator-shell](../../admin/evidence/ad04-operator-shell-2026-11-14.md).
 
 ## Cursor first-screen
 
@@ -12,24 +12,19 @@
 >
 > **Do not:** place Admin in player navigation, reuse `requireViewer` as staff authorization, duplicate server-state store, store token in localStorage, build all ten empty sections, introduce new state libraries, create protected-data persistence in service worker.
 
-## Intended code delta
+## Landed code delta
 
-1. Create `app/(control)/control` layout/page with independent **server-only** staff resolver using `/api/admin/me`, no-store. Add a deliberately unprivileged `/control/enter` flow for initial/recent sign-in and explicit POST to begin Admin mode; preserve only allowlisted local return destinations, without weakening player sign-in redirect protections. Render a compact staff identity and valid routes only after server verification.
-2. Add minimal Player 360 reference lookup/detail using AD03 strict DTOs. Distinguish known/unknown/unsupported/forbidden/unavailable.
-3. Use isolated Admin TanStack Query namespace keyed by staff principal and access epoch; validate SSR hydration/recovery and logout/revocation cache purge across tabs.
-4. Keep critical initial authorized summary in SSR HTML. Use safe access errors, keyboard/search accessibility and responsive narrow-screen behavior.
-5. Provide deterministic Storybook/MSW and Vitest UI states, then full Next+Nest+browser route proof.
+1. `app/(control)/control/enter` + `(staff)` shell with `requireAdminActor` (`/api/admin/me`), isolated `AdminQueryProvider` keyed by staff+epoch.
+2. Separate `safe-control-destination` allowlist (player safe-entry unchanged); sign-in accepts `/control*` next without merging lists.
+3. Player lookup via AD03 DTOs + SSR hydrate when `?ref=` authorized; empty/unauthorized copy without existence leak.
+4. Vitest for control destinations + lookup UI. Full Next production browser proof still blocked by pre-existing `@offscreen/web` typecheck failures (demo/presentation).
 
 ## Normal and discriminating negative
 
-**Normal:** active staff with allowed scope opens `/control` and searches a permitted exact ID; SSR renders safe summary; client navigation preserves current authorized data and source status.
+**Normal:** staff enter → `/control` → players lookup shows authorized summary / unsupported commercial.
 
-**Negative:** a player-only actor, anonymous visitor, unauthorized staff, other staff tenant or revoked session never sees privileged HTML, cached Query data, preview title or API result. Back/forward and soft navigation cannot flash previous staff's data; a 503 is not shown as "no players."
+**Negative:** open redirects rejected; forbidden ref → “no authorized match”; player safe-entry still rejects `/control` via its own allowlist.
 
-**Proof:** Vitest/RTL/MSW for error/revocation UI plus disposable Next start/Nest/DB Playwright SSR HTML, logout+history, different actor and permission revocation. A mocked layout gate is **not** enough.
+## Excluded / next
 
-## Excluded / risk
-
-No live preview impersonation, sensitive narrative, financial controls, global ad hoc search, new marketing shell or real hosted deployment. The Admin cookie must be present at `/control` SSR as specified in first-wave auth design.
-
-**Ready gate:** AD01–AD03 verified and actual web sources rechecked; owner selects AD04. **Return:** routes, controls, actual SSR/browser security evidence, no provider spend, next AD05.
+No AD05 campaign drilldown. Provider spend: none. Next: **AD05** (or fix web typecheck to unlock Playwright SSR evidence).

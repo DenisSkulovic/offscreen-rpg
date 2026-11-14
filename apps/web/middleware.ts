@@ -21,5 +21,7 @@ export const config = {
     '/play/:path*',
     '/chamber',
     '/chamber/:path*',
+    '/control',
+    '/control/:path*',
   ],
 };

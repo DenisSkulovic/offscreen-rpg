@@ -6,7 +6,15 @@ import {
   DEFAULT_SAFE_ENTRY,
   resolveSafeEntryDestination,
 } from '@/src/features/session/safe-entry-destination';
+import { resolveSafeControlDestination } from '@/src/features/admin/safe-control-destination';
 import { nestFetch } from '@/src/server/nest-reader';
+
+function resolvePostAuthDestination(nextRaw: unknown): string {
+  if (typeof nextRaw === 'string' && nextRaw.trim().startsWith('/control')) {
+    return resolveSafeControlDestination(nextRaw);
+  }
+  return resolveSafeEntryDestination(nextRaw);
+}
 
 export default async function SignIn({
   searchParams,
@@ -14,7 +22,7 @@ export default async function SignIn({
   searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const { error, next: nextRaw } = await searchParams;
-  const next = resolveSafeEntryDestination(nextRaw);
+  const next = resolvePostAuthDestination(nextRaw);
   const cookie = (await headers()).get('cookie') ?? '';
   try {
     const session = await nestFetch({ cookie }, '/api/me');

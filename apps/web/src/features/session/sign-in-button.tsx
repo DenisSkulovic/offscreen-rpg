@@ -6,6 +6,14 @@ import {
   DEFAULT_SAFE_ENTRY,
   resolveSafeEntryDestination,
 } from './safe-entry-destination';
+import { resolveSafeControlDestination } from '@/src/features/admin/safe-control-destination';
+
+function resolveCallbackURL(next: string): string {
+  if (next.startsWith('/control')) {
+    return resolveSafeControlDestination(next);
+  }
+  return resolveSafeEntryDestination(next);
+}
 
 export function SignInButton({
   next = DEFAULT_SAFE_ENTRY,
@@ -14,7 +22,7 @@ export function SignInButton({
 }) {
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
-  const callbackURL = resolveSafeEntryDestination(next);
+  const callbackURL = resolveCallbackURL(next);
   async function signIn() {
     setPending(true);
     setFailed(false);
