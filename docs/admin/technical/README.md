@@ -1,6 +1,6 @@
 # Offscreen Control | selected technical target and route map
 
-**Status:** Technical **target selected for design review**, 2026-11-14. Product direction was [accepted by owner](../product-acceptance-and-scope.md). These are **technical architecture specifications, not deployed capabilities**, and do not authorize source edits, migrations, hosted provider spend or Cursor execution. Subsequent implementation packets require source revalidation and owner selection.
+**Status:** Technical target **selected and desk-reviewed for bounded read-only foundation**, 2026-11-14; see [architecture review](architecture-review-2026-11-14.md). Product direction was [accepted by owner](../product-acceptance-and-scope.md). These are **technical architecture specifications, not deployed capabilities**, and do not authorize source edits, migrations, hosted provider spend or Cursor execution. Subsequent implementation packets require source revalidation and owner selection.
 
 **Scope:** A production-credible internal administrative control plane for a persistent, AI-driven game and commercial service, initially constrained to safe, useful read-only operations and staff governance. Advanced assistance, financial writes, state repairs, LiveOps changes and private narrative access remain capability-gated.
 
@@ -17,6 +17,10 @@
 | How do money, model costs, gameplay facts, incidents and LiveOps share evidence without sharing authority? | [Operations, economics and release boundaries](operations-economics-and-releases.md) |
 | How do we falsify security, state, concurrency and privacy claims? | [Security and verification matrix](security-and-verification.md) |
 | What has been chosen versus intentionally deferred? | [Architecture decisions and capability gates](architecture-decisions.md) |
+| What are the exact first-wave session/cookie/bootstrap decisions? | [First-wave technical decisions](first-wave-design-decisions.md) |
+| What are the initial Admin APIs, wire shapes and error semantics? | [Core Admin V1 contracts](core-v1-contracts.md) |
+| What is the architecture review outcome before code packets? | [Technical desk review](architecture-review-2026-11-14.md) |
+| Which scoped source changes could Cursor implement after selection? | [AD01–AD08 program](../implementation-program.md) |
 
 Read the owning document and only its immediate source references. Do not preload the entire suite for a narrow Cursor Change.
 
@@ -46,8 +50,8 @@ Browser (/control)  -> Next server-only Admin BFF/SSR + isolated Query cache
 
 1. Product acceptance: **complete for scoped core**, with hazardous business rules explicitly deferred.
 2. Technical architecture: **these documents**; must be reviewed for cross-document contracts and source evidence.
-3. Bounded implementation program: only after the technical review; exact source paths and branch head must be rechecked against Cursor's evolving `main`.
-4. `docs/changes` code-bearing dossiers: Proposed until the owner authorizes a selected, dependency-ready packet as Ready.
+3. Bounded implementation program: [AD01–AD08](../implementation-program.md) and their `docs/changes` dossiers now exist as **Proposed**; exact source paths and branch head must be rechecked against Cursor's evolving `main`.
+4. `docs/changes` code-bearing dossiers remain Proposed until the owner authorizes a selected, dependency-ready packet as Ready.
 5. Implementation and proof: provider-free focused tests, then a dedicated disposable DB/Nest/browser integration lane, then any separately approved live deployment/security review.
 
 Do not allow a design-only branch to overwrite or rebase another agent's local work. Current source inspection is tied to the snapshot in the [audit](source-baseline-2026-11-14.md).

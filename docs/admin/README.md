@@ -1,6 +1,6 @@
 # Offscreen Control | Admin platform product design
 
-**Status:** **Product direction accepted, 2026-11-14**, for technical design. See [product acceptance and staged scope](product-acceptance-and-scope.md). Detailed business/legal policies for privileged and commercial features remain conditional. No Admin code is authorized by this product decision; this is a long-term target, not a claim about the existing app.
+**Status:** **Product direction accepted and core technical design documented, 2026-11-14.** See [product acceptance](product-acceptance-and-scope.md), [selected technical architecture](technical/README.md), and [proposed AD01–AD08 Change program](implementation-program.md). Sensitive/commercial capabilities remain conditional. No Admin application code has been authorized or implemented by these design documents.
 
 **Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, existing engine implementation, technical auth/storage designs or the implementation queue. The [platform ecosystem](../experience/platform-ecosystem.md) already separates the operator console from player/public experiences. The [product vision](../vision.md) and [game domain](../concepts.md) remain owners of gameplay intent.
 
@@ -9,6 +9,8 @@
 | Question | Product document |
 | --- | --- |
 | Which product direction did the owner accept, and what remains conditional? | [Product acceptance and scope](product-acceptance-and-scope.md) |
+| How will the Admin actually be secured and built? | [Technical architecture and contract map](technical/README.md) |
+| Which bounded code changes are proposed for Cursor, in what order? | [Implementation program AD01–AD08](implementation-program.md) |
 | Why does Admin exist; what are the enduring rules and boundaries? | [Product charter](product-charter.md) |
 | Who uses it, how do responsibilities overlap, what workspaces exist? | [Personas and workspaces](personas-and-workspaces.md) |
 | How are accounts, campaigns, executions, cases and subscriptions investigated together? | [Player 360 and entity model](player-360-and-entities.md) |
@@ -43,8 +45,8 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 ## Strict design sequence and authority
 
 1. **Product direction: accepted (2026-11-14):** end-state outcomes and default safeguards selected; conditional commercial, legal, sensitive-access and multiplayer specifics remain explicitly gated under [acceptance](product-acceptance-and-scope.md).
-2. **Technical design (now authorized as documentation):** translate approved product guarantees into architecture, identity/session model, access evaluation, audit/action contracts, data sources, reliability, observability, API/UI boundaries, retention and integration plans. Inspect current source without letting its POC limitations dictate desired product.
-3. **Implementation program and Change dossiers (after technical review):** define small, code-bearing, independently verifiable Changes under [docs/changes](../changes/README.md), each with normal and negative acceptance, dependencies and Cursor handoff. Proposed is not Ready; coding still needs explicit owner selection.
+2. **Technical design: selected and desk-reviewed for the bounded core.** The [technical index](technical/README.md) maps actors, policy, audit, data, UI, operations and verification. Current code was inspected but the POC does not constrain the target. Advanced/unsafe capabilities remain separately gated.
+3. **Implementation program: eight Proposed Change dossiers, NOT Ready.** See [AD01–AD08](implementation-program.md). Each requires latest-source revalidation, exact dependency evidence and owner authorization before Cursor edits code. `Current change: none` remains valid.
 
 **No Admin Change folder or technical contract should be inferred from these Markdown proposals.** Keep the current Change queue unchanged while Cursor is working on unrelated authorized tasks.
 

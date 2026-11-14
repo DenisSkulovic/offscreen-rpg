@@ -9,7 +9,7 @@
 Exact initial flow:
 1. Operator signs in through existing Better Auth. Player session alone cannot reach Admin resources.
 2. A staff principal exists only after explicit, out-of-band bootstrap or later governed invitation/acceptance. Link it by stable authenticated `user.id`, **never email, domain or OAuth handle alone**.
-3. `POST /api/admin/session/enter` checks the current Better Auth session and staff principal; it mints a cryptographically random, >=256-bit opaque Admin token, stores only a cryptographic digest, binds it to the current authenticated session and staff principal, and responds with an HttpOnly Admin-purpose cookie. Login/entry is audited.
+3. `POST /api/admin/session/enter` checks a **recent, verifiable primary authentication event within 15 minutes** and the active staff principal; a cookie refresh or old seven-day player session alone is not a fresh login. If this freshness cannot be established with the pinned Better Auth session data, require explicit reauthentication and fail closed. It mints a cryptographically random, >=256-bit opaque Admin token, stores only a cryptographic digest, binds it to the underlying authenticated session and staff principal, and responds with an HttpOnly Admin-purpose cookie. Login/entry is audited.
 4. Every Admin API request and private `/control` SSR read checks the still-valid original auth session, Admin token digest, session purpose, staff status, expiry/idle window, access epoch and current policy. API authorization is never inferred from cookie presence.
 5. Logout/revocation deletes/invalidates the Admin session and increments the relevant revocation marker. An expired/changed assignment cannot continue authorizing open browser tabs.
 
@@ -17,7 +17,7 @@ Exact initial flow:
 
 **Cookie:** same-origin `__Host-offscreen-admin` in HTTPS deployments (`Secure`, `HttpOnly`, `SameSite=Strict`, `Path=/`, no Domain). The explicit Path=/ permits `/control` SSR to see the cookie. A deliberately named **localhost-only** non-Secure dev cookie may be used in disposable environments; reject that fallback under a non-loopback production origin. Never persist the raw Admin token in DB or localStorage.
 
-**CSRF:** require the expected trusted Origin/anti-CSRF policy for state-changing staff endpoints, plus the existing API request constraints; do not treat `SameSite` alone as sufficient. Do not let a Next Server Action become an alternate unguarded mutation path.
+**CSRF:** require the expected trusted Origin/anti-CSRF policy for state-changing staff endpoints, plus the existing API request constraints; do not treat `SameSite` alone as sufficient. Do not let a Next Server Action become an alternate unguarded mutation path. A staff-only entry journey at `/control/enter` first checks the normal login and prompts a fresh sign-in when needed; its actual privileged session creation is the protected POST, not SSR GET. A separate allowlisted return target handles `/control` URLs; do **not** relax the player `safe-entry-destination` into arbitrary redirects.
 
 **No implicit staff invite endpoint at bootstrap:** a deliberate CLI/provisioning step with explicit authenticated subject ID, intended environment, narrow initial package and durable bootstrap audit reference. It is idempotent/controlled, not auto-run at startup or exposed on a public page. No email allowlist that silently grants staff on login.
 

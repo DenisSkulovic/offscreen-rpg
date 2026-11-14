@@ -14,7 +14,7 @@
 
 ## Intended code delta
 
-1. Create `app/(control)/control` layout/page with independent **server-only** staff resolver using `/api/admin/me`, no-store. Render a compact staff identity and valid routes only after server verification.
+1. Create `app/(control)/control` layout/page with independent **server-only** staff resolver using `/api/admin/me`, no-store. Add a deliberately unprivileged `/control/enter` flow for initial/recent sign-in and explicit POST to begin Admin mode; preserve only allowlisted local return destinations, without weakening player sign-in redirect protections. Render a compact staff identity and valid routes only after server verification.
 2. Add minimal Player 360 reference lookup/detail using AD03 strict DTOs. Distinguish known/unknown/unsupported/forbidden/unavailable.
 3. Use isolated Admin TanStack Query namespace keyed by staff principal and access epoch; validate SSR hydration/recovery and logout/revocation cache purge across tabs.
 4. Keep critical initial authorized summary in SSR HTML. Use safe access errors, keyboard/search accessibility and responsive narrow-screen behavior.

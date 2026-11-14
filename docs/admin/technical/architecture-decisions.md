@@ -75,4 +75,4 @@ Documentation cannot prove runtime security. Future Change acceptance must estab
 
 ## E. Initial implementation program status
 
-This file authorizes the **technical direction** only. A subsequent [core V1 wire contract](core-v1-contracts.md) and source-validated [implementation program](../implementation-program.md) will define candidate code-bearing Changes for Cursor. No packet is Ready merely because the architect prefers this topology.
+This file establishes the **technical direction** only. The [core V1 wire contract](core-v1-contracts.md), [first-wave authentication design](first-wave-design-decisions.md) and [proposed implementation program](../implementation-program.md) now define eight candidate code-bearing Changes. No packet is Ready merely because the architect prefers this topology; implementation requires current-source revalidation and owner selection.

@@ -8,7 +8,7 @@ A **player identity** proves who may play/read their own story. A **staff princi
 
 **Target flow:**
 1. Authenticate a human through a supported provider. Current code has Better Auth with GitHub OAuth; a future staff SSO/MFA provider can replace authentication without changing authorization contracts.
-2. **Explicitly enter Admin**. A verified active staff principal linked to that authenticated subject, not email alone, receives a distinct short-lived `admin_session` purpose and scope. A player cookie alone is **never** an Admin credential.
+2. **Explicitly enter Admin** following a verifiably fresh human authentication (selected first-wave threshold: 15 minutes since real login, not cookie refresh). A verified active staff principal linked to that authenticated subject, not email alone, receives a distinct short-lived `admin_session` purpose and scope. A player cookie alone is **never** an Admin credential.
 3. For every Admin operation, validate the Admin session, underlying authenticated actor, staff active status, authentication assurance level, current grant/revocation epoch and operation-specific policy. Request context carries stable `staffPrincipalId`, `adminSessionId`, assurance and current policy version.
 4. Session invalidation (logout, expiry, suspension, grant revocation, step-up expiry) removes authority on the next request and invalidates open streams/assisted views. A cached frontend role badge is not authoritative.
 5. Mutation requires origin/CSRF defenses, not just a cookie; sensitive actions require fresh assurance/step-up when policy says so.

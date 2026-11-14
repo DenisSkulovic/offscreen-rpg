@@ -16,7 +16,7 @@
 
 | Method / path | Meaning | Required actor/authority | Result |
 | --- | --- | --- | --- |
-| `POST /api/admin/session/enter` | Explicitly begin staff-mode from an authenticated, verified human identity | Existing login plus active staff principal and enrollment/assurance policy; CSRF/origin | Rotated, short-lived admin-purpose cookie; safe `AdminSelfV1` |
+| `POST /api/admin/session/enter` | Explicitly begin staff-mode from a **freshly authenticated** human identity | Real login age ≤15 minutes, active staff principal and enrollment/assurance policy; CSRF/origin | Rotated, short-lived admin-purpose cookie; safe `AdminSelfV1` |
 | `GET /api/admin/me` | Validate current staff session for SSR/Query | Active staff session | Safe identity, staff ID, session expiry, access epoch and allowed workspace families |
 | `POST /api/admin/session/exit` | Terminate admin-purpose session, clear cookie | Existing session or safe logout | Idempotent close; no player session authority granted |
 | `GET /api/admin/staff/:staffId/access` | Inspect effective scoped authority | `staff.access.inspect` (staff self-view narrowly allowed) | Named capabilities, scope descriptors, provenance/expiry and safe denial explanation |

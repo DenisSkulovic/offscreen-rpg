@@ -4,6 +4,8 @@
 
 Current change: none
 
+**Admin control plane (design only, 2026-11-14):** [accepted product](../admin/product-acceptance-and-scope.md) → [selected technical target](../admin/technical/README.md) → [AD01–AD08 proposed Change program](../admin/implementation-program.md). All eight packets are **Proposed, NOT Ready**, and are not the current Change. Existing Cursor work on `main` remains separate.
+
 **Storyteller agent architecture renewal (2026-11-14, design-only):** [full index](../storyteller-architecture/README.md) → [vision constitution](../storyteller-architecture/vision-and-quality-constitution.md) → [current code trace](../storyteller-architecture/evidence/current-flow-audit-2026-11-14.md) → [honest agent audit](../storyteller-architecture/evidence/agent-capability-audit-2026-11-14.md) → [target model](../storyteller-architecture/target-operating-model.md) → [SA01–SA12 execution program](../storyteller-architecture/implementation-program.md). **All SA packets Proposed, no code/model/DB spend authorized.** SA01 trace is first recommended, SA02 prompt/profile next, SA03 coordinate with full ENG03, SA07/SA12 conditional. `Current change: none` remains active policy.
 
 **Decision handoff (2026-11-13):** [four selected priorities](../engine-architecture/handoff/decision-queue-2026-11-13.md). Owner authorized merge + implement received designs (2026-11-14). **ENG09, ENG03-M, GM05, PW01 Done.** Full ENG03 rewrite not auto-authorized (`proceed-narrow-eng03-capture` evidence only).

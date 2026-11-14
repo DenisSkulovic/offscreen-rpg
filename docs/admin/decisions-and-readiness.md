@@ -212,4 +212,4 @@ This sequence is illustrative and depends on demand. **Critical safeguards must 
 
 ## Next phase
 
-Begin source-grounded **technical architecture** for the accepted core. Maintain design-level gates for raw private data, assisted sessions, commercial writes, arbitrary repairs and advanced LiveOps. The [policy decision brief](product-policy-decision-brief.md) remains useful for future choices; it is not a reason to reopen already approved default safeguards. Only reviewed technical contracts lead to code-bearing Change folders for Cursor.
+The [technical target](technical/README.md) and [architect's scope review](technical/architecture-review-2026-11-14.md) are now documented for the accepted read-only core, with [eight Proposed code-bearing Changes](implementation-program.md). Capability-specific product policy remains gated for raw private data, assisted sessions, commercial writes, arbitrary repairs and advanced LiveOps. The policy brief remains relevant to future decisions. **Current Change stays none**, until the owner explicitly selects a dependency-ready packet after current-source revalidation.
