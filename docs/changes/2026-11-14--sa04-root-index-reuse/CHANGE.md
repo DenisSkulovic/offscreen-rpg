@@ -1,6 +1,6 @@
 # SA04 | Reuse a versioned lexical story index instead of rebuilding every exploration
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Program [SA queue](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa04 sample](../../storyteller-architecture/evidence/sa04-root-index-reuse-2026-11-14.md). Program [SA queue](../../storyteller-architecture/implementation-program.md). SA03 deferred for ENG03.
 
 ## Cursor first-screen brief
 

@@ -12,10 +12,13 @@ import { retainsCapturedAuthority } from './dispatch-authority';
 import { prepareDispatchReview } from './dispatch-review';
 import type {
   CapturedMemoryRoundDelivery,
-  MemoryRoundInterruption,
   PersistedMemoryRoundSettlement,
   ScriptedMemoryRoundSource,
 } from './memory-exploration-controller';
+import {
+  MemoryProviderRoundError,
+  classifyMemoryProviderRoundError,
+} from './loop-lifecycle';
 
 const telemetrySchema = z.strictObject({
   durationMs: z.number().int().nonnegative().nullable(),
@@ -53,22 +56,6 @@ const settlementSchema = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('uncertain'), telemetry: telemetrySchema }),
 ]);
-
-export type MemoryProviderRoundStop =
-  | 'review-held'
-  | 'review-stopped'
-  | 'authority-unavailable'
-  | 'budget-unavailable'
-  | 'usage-uncertain'
-  | 'provider-refusal'
-  | 'invalid-output'
-  | 'provider-uncertain';
-
-export class MemoryProviderRoundError extends Error {
-  constructor(readonly code: MemoryProviderRoundStop) {
-    super(`Memory provider round stopped: ${code}`);
-  }
-}
 
 export function memoryRoundGeneratedTokenCeilings(input: {
   maxGeneratedTokens: number;
@@ -156,7 +143,7 @@ export function createMemoryProviderRoundRuntime(
   source: ScriptedMemoryRoundSource;
   captureDelivery: (raw: unknown) => CapturedMemoryRoundDelivery;
   settlePersistedRound: PersistedMemoryRoundSettlement;
-  classifyRoundError: (error: unknown) => MemoryRoundInterruption | null;
+  classifyRoundError: typeof classifyMemoryProviderRoundError;
   closeSettledOperation: () => Promise<void>;
 } {
   if (input.task.execution.mode !== 'provider') {
@@ -333,22 +320,6 @@ export function createMemoryProviderRoundRuntime(
     }
   };
 
-  const classifyRoundError = (
-    error: unknown,
-  ): MemoryRoundInterruption | null => {
-    if (!(error instanceof MemoryProviderRoundError)) return null;
-    if (error.code === 'review-held') {
-      return { state: 'held', code: error.code };
-    }
-    if (
-      error.code === 'usage-uncertain' ||
-      error.code === 'provider-uncertain'
-    ) {
-      return { state: 'uncertain', code: error.code };
-    }
-    return { state: 'failed', code: error.code };
-  };
-
   const closeSettledOperation = async () => {
     await budget.completeOperation(input.generationId, execution);
   };
@@ -357,7 +328,7 @@ export function createMemoryProviderRoundRuntime(
     source,
     captureDelivery: captureOutcome,
     settlePersistedRound,
-    classifyRoundError,
+    classifyRoundError: classifyMemoryProviderRoundError,
     closeSettledOperation,
   };
 }

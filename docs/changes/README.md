@@ -4,7 +4,11 @@
 
 Current change: none
 
-**Storyteller agent architecture renewal (2026-11-14, design-only):** [full index](../storyteller-architecture/README.md) → [vision constitution](../storyteller-architecture/vision-and-quality-constitution.md) → [current code trace](../storyteller-architecture/evidence/current-flow-audit-2026-11-14.md) → [honest agent audit](../storyteller-architecture/evidence/agent-capability-audit-2026-11-14.md) → [target model](../storyteller-architecture/target-operating-model.md) → [SA01–SA12 execution program](../storyteller-architecture/implementation-program.md). **All SA packets Proposed, no code/model/DB spend authorized.** SA01 trace is first recommended, SA02 prompt/profile next, SA03 coordinate with full ENG03, SA07/SA12 conditional. `Current change: none` remains active policy.
+**ENG03-C1 (2026-11-14): Done.** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Full ENG03 remains Proposed; priorities 2–6 ungated.
+
+**ENG03-narrow (2026-11-14): Done.** Provisional capture → off-lock promote same G; settlement/publish race matrix + short-lock re-baseline provider-free.
+
+**Storyteller agent architecture renewal (2026-11-14):** [full index](../storyteller-architecture/README.md) → [SA01–SA12 program](../storyteller-architecture/implementation-program.md). **SA01–SA12 Done** for code scope (SA07 conditional; SA12 paid live runs still need explicit $ cap). No model spend by default.
 
 **Decision handoff (2026-11-13):** [four selected priorities](../engine-architecture/handoff/decision-queue-2026-11-13.md). Owner authorized merge + implement received designs (2026-11-14). **ENG09, ENG03-M, GM05, PW01 Done.** Full ENG03 rewrite not auto-authorized (`proceed-narrow-eng03-capture` evidence only).
 

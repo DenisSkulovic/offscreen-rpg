@@ -19,7 +19,8 @@ import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { prepareDispatchReview } from './dispatch-review';
 import { retainsCapturedAuthority } from './dispatch-authority';
 import type { DocumentStore } from '@offscreen/documents';
-import { buildLexicalStoryIndex } from './lexical-story-index';
+import { createLexicalStoryIndexCache } from './lexical-story-index-cache';
+import type { LexicalStoryIndexCache } from './lexical-story-index-cache';
 import { createCanonicalMemoryExplorer } from './memory-exploration';
 import {
   MemoryExplorationControllerError,
@@ -37,6 +38,11 @@ export type StorytellerRuntimeOptions = {
   }) => 'proceed' | 'hold' | 'fail' | Promise<'proceed' | 'hold' | 'fail'>;
   realDurationMs?: (gameDurationMs: number) => number;
   documentStore?: DocumentStore;
+  /**
+   * Optional root-keyed lexical index reuse for memory exploration.
+   * Defaults to a process-local LRU when omitted.
+   */
+  lexicalIndexCache?: LexicalStoryIndexCache;
   /** Resolves current server authority immediately before transport. */
   dispatchAuthority?: (input: {
     generationId: string;
@@ -51,6 +57,8 @@ export function createStorytellerExecution(
 ) {
   const budget = createStorytellerBudget(database);
   const scriptedSource = options.scriptedSource ?? scriptedStorytellerResult;
+  const lexicalIndexCache =
+    options.lexicalIndexCache ?? createLexicalStoryIndexCache({ maxEntries: 8 });
   async function saveOutcome(
     id: string,
     attemptId: string,
@@ -159,7 +167,7 @@ export function createStorytellerExecution(
           maxRetainedBytes: task.resources.recipe.maxRetainedReadBytes,
         },
       });
-      const index = await buildLexicalStoryIndex(options.documentStore, {
+      const { index } = await lexicalIndexCache.resolve(options.documentStore, {
         storyId: task.source.storyId,
         rootHash: root.rootHash,
         rootRevision: root.rootRevision,

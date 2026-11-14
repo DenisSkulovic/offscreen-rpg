@@ -36,10 +36,17 @@ const maximumLibrarySectionBytes = 4 * 1024;
 const maximumSelectedLibrarySectionBytes = 8 * 1024;
 const maximumSelectedCampaignDocuments = 4;
 
+function catalogueTitleFromPath(path: string) {
+  const base = path.split('/').pop() ?? path;
+  const trimmed = base.replace(/\.md$/i, '').trim();
+  return (trimmed.length > 0 ? trimmed : path).slice(0, 240);
+}
+
 const librarySectionHandleSchema = z
   .string()
   .regex(/^k[1-9][0-9]*\.s[1-9][0-9]*$/);
-const librarySectionSelectionSchema = z.strictObject({
+/** Exported for ENG03-narrow ContextCaptureV1; semantics unchanged. */
+export const librarySectionSelectionSchema = z.strictObject({
   handles: z.array(librarySectionHandleSchema).max(8),
   ruleTopics: z.array(z.string().regex(/^[a-z][a-z0-9-]{0,79}$/)).max(8),
   maxReads: z.number().int().min(0).max(maximumLibrarySectionReads),
@@ -373,32 +380,10 @@ export async function loadCanonicalKnowledge(
       return priority || left.path.localeCompare(right.path);
     });
   const selectedEntries = eligible.slice(0, maximumCanonicalCatalogueEntries);
-  const records = await Promise.all(
-    selectedEntries.map(async (entry, index) => {
-      const document = await storage.readDocument(entry.objectHash);
-      if (
-        document.envelope.documentId !== entry.documentId ||
-        document.envelope.revision !== entry.revision ||
-        document.envelope.kind !== entry.kind ||
-        document.envelope.authority !== entry.authority ||
-        document.envelope.visibility !== entry.visibility
-      ) {
-        throw new Error(`Canonical context document mismatch: ${entry.path}`);
-      }
-      return {
-        entry,
-        document,
-        handle: `d${index + 1}`,
-        bytes: Buffer.byteLength(document.body, 'utf8'),
-      };
-    }),
-  );
-  const ranked = [...records].sort((left, right) => {
-    const priority =
-      (canonicalKnowledgePriority.get(left.entry.kind) ?? 99) -
-      (canonicalKnowledgePriority.get(right.entry.kind) ?? 99);
-    return priority || left.entry.path.localeCompare(right.entry.path);
-  });
+  const catalogueSlots = selectedEntries.map((entry, index) => ({
+    entry,
+    handle: `d${index + 1}`,
+  }));
   const selectedCampaignDocumentIds = campaignDocumentSelectionSchema.parse(
     input.campaignDocumentIds ?? [],
   );
@@ -418,20 +403,28 @@ export async function loadCanonicalKnowledge(
     ]),
   ]);
   const byDocumentId = new Map(
-    records.map((record) => [record.entry.documentId, record]),
+    catalogueSlots.map((slot) => [slot.entry.documentId, slot]),
   );
-  const requestedRecords = requestedDocumentIds.map((documentId) => {
-    const record = byDocumentId.get(documentId);
-    if (!record) {
+  for (const documentId of requestedDocumentIds) {
+    if (!byDocumentId.has(documentId)) {
       throw new Error('Selected campaign document is unavailable');
     }
-    return record;
-  });
+  }
   const requestedSet = new Set(requestedDocumentIds);
   const loadingOrder = [
-    ...requestedRecords,
-    ...ranked.filter((record) => !requestedSet.has(record.entry.documentId)),
+    ...requestedDocumentIds.map((documentId) => byDocumentId.get(documentId)!),
+    ...catalogueSlots.filter(
+      (slot) => !requestedSet.has(slot.entry.documentId),
+    ),
   ];
+  const inspected = new Map<
+    string,
+    {
+      title: string;
+      body: string;
+      bytes: number;
+    }
+  >();
   const loaded = new Set<string>();
   const documents: Array<{ handle: string; title: string; body: string }> = [];
   const omittedDocuments: Array<{
@@ -440,15 +433,41 @@ export async function loadCanonicalKnowledge(
     bytes: number;
   }> = [];
   let loadedBytes = 0;
-  for (const record of loadingOrder) {
+
+  async function inspectSlot(slot: (typeof catalogueSlots)[number]) {
+    const existing = inspected.get(slot.handle);
+    if (existing) return existing;
+    const document = await storage.readDocument(slot.entry.objectHash);
     if (
-      documents.length >= maximumCanonicalDocuments ||
+      document.envelope.documentId !== slot.entry.documentId ||
+      document.envelope.revision !== slot.entry.revision ||
+      document.envelope.kind !== slot.entry.kind ||
+      document.envelope.authority !== slot.entry.authority ||
+      document.envelope.visibility !== slot.entry.visibility
+    ) {
+      throw new Error(`Canonical context document mismatch: ${slot.entry.path}`);
+    }
+    const value = {
+      title: document.title,
+      body: document.body,
+      bytes: Buffer.byteLength(document.body, 'utf8'),
+    };
+    inspected.set(slot.handle, value);
+    return value;
+  }
+
+  for (const slot of loadingOrder) {
+    if (documents.length >= maximumCanonicalDocuments) {
+      break;
+    }
+    const record = await inspectSlot(slot);
+    if (
       record.bytes > maximumCanonicalDocumentBytes ||
       loadedBytes + record.bytes > maximumCanonicalContextBytes
     ) {
-      if (requestedSet.has(record.entry.documentId)) {
+      if (requestedSet.has(slot.entry.documentId)) {
         omittedDocuments.push({
-          documentId: record.entry.documentId,
+          documentId: slot.entry.documentId,
           reason:
             record.bytes > maximumCanonicalDocumentBytes
               ? 'document-too-large'
@@ -458,12 +477,12 @@ export async function loadCanonicalKnowledge(
       }
       continue;
     }
-    loaded.add(record.handle);
+    loaded.add(slot.handle);
     loadedBytes += record.bytes;
     documents.push({
-      handle: record.handle,
-      title: record.document.title,
-      body: record.document.body,
+      handle: slot.handle,
+      title: record.title,
+      body: record.body,
     });
   }
   const worldReferenceEntry = manifest.entries.find(
@@ -509,34 +528,58 @@ export async function loadCanonicalKnowledge(
   return canonicalKnowledgeSchema.parse({
     rootHash: input.rootHash,
     rootRevision: input.rootRevision,
-    catalogue: records.map((record) => ({
-      handle: record.handle,
-      documentId: record.entry.documentId,
-      revision: record.entry.revision,
-      path: record.entry.path,
-      kind: record.entry.kind,
-      authority: record.entry.authority,
-      visibility: record.entry.visibility,
-      title: record.document.title,
-      bytes: record.bytes,
-      loaded: loaded.has(record.handle),
-    })),
+    catalogue: catalogueSlots.map((slot) => {
+      const record = inspected.get(slot.handle);
+      if (record) {
+        return {
+          handle: slot.handle,
+          documentId: slot.entry.documentId,
+          revision: slot.entry.revision,
+          path: slot.entry.path,
+          kind: slot.entry.kind,
+          authority: slot.entry.authority,
+          visibility: slot.entry.visibility,
+          title: record.title,
+          bytes: record.bytes,
+          bodyInspected: true,
+          loaded: loaded.has(slot.handle),
+        };
+      }
+      return {
+        handle: slot.handle,
+        documentId: slot.entry.documentId,
+        revision: slot.entry.revision,
+        path: slot.entry.path,
+        kind: slot.entry.kind,
+        authority: slot.entry.authority,
+        visibility: slot.entry.visibility,
+        title: catalogueTitleFromPath(slot.entry.path),
+        bytes: 0,
+        bodyInspected: false,
+        loaded: false,
+      };
+    }),
     catalogueTruncated: eligible.length > selectedEntries.length,
     documents,
     documentSelection: {
       cueResolution: cueResolution.trace,
       requestedDocumentIds,
-      loadedHandles: requestedRecords
-        .filter((record) => loaded.has(record.handle))
-        .map((record) => record.handle),
+      loadedHandles: requestedDocumentIds.flatMap((documentId) => {
+        const slot = byDocumentId.get(documentId);
+        return slot && loaded.has(slot.handle) ? [slot.handle] : [];
+      }),
       omitted: omittedDocuments,
       maxReads: maximumSelectedCampaignDocuments,
       maxBytes: maximumCanonicalContextBytes,
-      usedReads: requestedRecords.filter((record) => loaded.has(record.handle))
-        .length,
-      usedBytes: requestedRecords
-        .filter((record) => loaded.has(record.handle))
-        .reduce((total, record) => total + record.bytes, 0),
+      usedReads: requestedDocumentIds.filter((documentId) => {
+        const slot = byDocumentId.get(documentId);
+        return slot ? loaded.has(slot.handle) : false;
+      }).length,
+      usedBytes: requestedDocumentIds.reduce((total, documentId) => {
+        const slot = byDocumentId.get(documentId);
+        if (!slot || !loaded.has(slot.handle)) return total;
+        return total + (inspected.get(slot.handle)?.bytes ?? 0);
+      }, 0),
     },
     libraries: canonicalLibraries.libraries,
     librarySelection: canonicalLibraries.selection,
@@ -597,6 +640,7 @@ export async function loadStartPackageKnowledge(
       visibility: entry.visibility,
       title: document.title,
       bytes,
+      bodyInspected: true,
       loaded,
     });
   }

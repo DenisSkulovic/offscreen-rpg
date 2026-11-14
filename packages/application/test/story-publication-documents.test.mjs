@@ -12,6 +12,7 @@ import {
   publicationPassageId,
   stageStoryPublicationDocuments,
 } from '../dist/stories/passage-documents.js';
+import { createDescriptiveMaterializationFixtures } from '@offscreen/storyteller/tasks';
 
 const passage = (title) => ({
   version: 1,
@@ -177,4 +178,119 @@ test('story publication stores one source passage and revisioned canonical chang
     }),
     (error) => error?.reason === 'document_revision',
   );
+});
+
+test('gift relationship survives twenty intervening passages with source linkage', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'offscreen-sa09-gift-'));
+  const storage = new LocalDocumentStore(root);
+  const storyId = randomUUID();
+  const base = documentManifestSchema.parse({
+    format: 'offscreen.manifest.v1',
+    campaignId: storyId,
+    revision: 1,
+    previousRootHash: null,
+    authorOperationId: randomUUID(),
+    entries: [],
+  });
+  let rootHash = await storage.putManifest(base);
+  let rootRevision = 1;
+
+  const giftFixture = createDescriptiveMaterializationFixtures({
+    scenarioIds: ['named-gift-relationship'],
+  })[0];
+  assert.equal(giftFixture.accepted, true);
+  assert.ok(giftFixture.change);
+
+  const giftOperationId = randomUUID();
+  const gifted = await stageStoryPublicationDocuments({
+    storage,
+    storyId,
+    passageId: publicationPassageId(giftOperationId),
+    sequence: 2,
+    operationId: giftOperationId,
+    rootHash,
+    rootRevision,
+    content: passage('The clasp changes hands'),
+    changes: [giftFixture.change],
+  });
+  rootHash = gifted.rootHash;
+  rootRevision = 2;
+
+  const sameNameOperationId = randomUUID();
+  const sameName = await stageStoryPublicationDocuments({
+    storage,
+    storyId,
+    passageId: publicationPassageId(sameNameOperationId),
+    sequence: 3,
+    operationId: sameNameOperationId,
+    rootHash,
+    rootRevision,
+    content: passage('Another Mira appears'),
+    changes: [
+      {
+        operation: 'create',
+        path: 'identities/people/mira-pell.md',
+        kind: 'identity',
+        authority: 'canon',
+        visibility: 'player-known',
+        title: 'Mira Pell',
+        body: 'A different Mira who never received the clasp.',
+        reason: 'Same given name must not collapse into Mira Vale',
+      },
+    ],
+  });
+  rootHash = sameName.rootHash;
+  rootRevision = 3;
+
+  for (let index = 0; index < 20; index += 1) {
+    const operationId = randomUUID();
+    const staged = await stageStoryPublicationDocuments({
+      storage,
+      storyId,
+      passageId: publicationPassageId(operationId),
+      sequence: rootRevision + 1,
+      operationId,
+      rootHash,
+      rootRevision,
+      content: passage(`Unrelated quay weather ${index}`),
+      changes: [
+        {
+          operation: 'create',
+          path: `lore/weather/day-${String(index).padStart(2, '0')}.md`,
+          kind: 'lore',
+          authority: 'canon',
+          visibility: 'player-known',
+          title: `Weather ${index}`,
+          body: `The tide note for day ${index} mentions nobody named Mira Vale.`,
+          reason: 'Intervening noise must not erase the gift record',
+        },
+      ],
+    });
+    rootHash = staged.rootHash;
+    rootRevision += 1;
+  }
+
+  const manifest = await storage.readManifest(rootHash);
+  const favor = manifest.entries.find(
+    (entry) => entry.path === giftFixture.change.path,
+  );
+  const miraPell = manifest.entries.find(
+    (entry) => entry.path === 'identities/people/mira-pell.md',
+  );
+  assert.ok(favor);
+  assert.ok(miraPell);
+  assert.notEqual(favor.documentId, miraPell.documentId);
+  const favorDocument = await storage.readDocument(favor.objectHash);
+  assert.match(favorDocument.body, /Mira Vale still owes/);
+  assert.equal(favorDocument.envelope.sources.length, 1);
+  assert.equal(
+    favorDocument.envelope.sources[0]?.documentId,
+    gifted.passageId,
+  );
+
+  const rejected = createDescriptiveMaterializationFixtures({
+    scenarioIds: ['failed-transfer-rejected', 'passing-crowd-omit'],
+  });
+  assert.equal(rejected[0]?.decision.action, 'reject');
+  assert.equal(rejected[1]?.decision.action, 'omit');
 });

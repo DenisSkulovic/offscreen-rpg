@@ -318,6 +318,7 @@ const common = {
     z.literal(14),
     z.literal(15),
     z.literal(16),
+    z.literal(17),
   ]),
   promptVersion: z.union([
     z.literal('storyteller.v10'),
@@ -327,6 +328,7 @@ const common = {
     z.literal('storyteller.v14'),
     z.literal('storyteller.v15'),
     z.literal('storyteller.v16'),
+    z.literal('storyteller.v17'),
   ]),
   profile: storytellerProfileSchema,
   execution: executionPolicySchema,

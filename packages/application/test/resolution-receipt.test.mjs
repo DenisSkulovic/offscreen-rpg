@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  publicReceiptRecovery,
   publicReceiptState,
   resolutionRequestDigest,
 } from '../dist/stories/resolution-receipt.js';
@@ -11,6 +12,16 @@ test('receipt state maps generation lifecycle without inventing failure', () => 
   assert.equal(publicReceiptState('succeeded'), 'settled');
   assert.equal(publicReceiptState('failed'), 'failed');
   assert.equal(publicReceiptState('uncertain'), 'uncertain');
+});
+
+test('uncertain receipts require operator; confirmed-budget failures stay retryable', () => {
+  assert.equal(publicReceiptRecovery('uncertain', null), 'operator');
+  assert.equal(publicReceiptRecovery('failed', 'usage_uncertain'), 'operator');
+  assert.equal(publicReceiptRecovery('failed', 'budget_unavailable'), 'retry');
+  assert.equal(publicReceiptRecovery('failed', 'provider_disabled'), 'retry');
+  assert.equal(publicReceiptRecovery('failed', 'context_too_large'), 'none');
+  assert.equal(publicReceiptRecovery('succeeded', null), null);
+  assert.equal(publicReceiptRecovery('running', null), null);
 });
 
 test('request digest is SHA-256 of canonical validated expectedRevision+submission', () => {

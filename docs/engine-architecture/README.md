@@ -8,6 +8,8 @@
 
 **Separate in-game Storyteller audit and desired target (2026-11-14):** [agent architecture renewal](../storyteller-architecture/README.md) gives a source trace, exact judgement of the optional tool loop, source/context economics, creative and funding authority, and [bounded SA implementation program](../storyteller-architecture/implementation-program.md). It is guided by the original vision but owns **model reasoning and narration**, not ENG03 SQL lock migration, GM rule mechanics, or frontend presentation. Documentation only; no automatic Cursor code approval.
 
+**Post-measurement ENG03 (2026-11-14):** [narrow pending capture](decisions/eng03-narrow-capture-v1.md) **Done**; [C1 committed-action capture](decisions/eng03-committed-action-capture-v1.md) **Done** ([evidence](evidence/eng03-c1-committed-capture-2026-11-14.md)); [purpose sequence](decisions/eng03-capture-migration-sequence.md) priorities 2–6 still ungated. Full ENG03 remains Proposed.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |

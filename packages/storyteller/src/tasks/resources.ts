@@ -45,6 +45,24 @@ const memoryExplorationRecipeSchema = z
     'Exploration must leave a final-answer round',
   );
 
+export const storytellerRecipeDecisionSchema = z.strictObject({
+  version: z.literal('storyteller-recipe-decision.v1'),
+  selectedRecipeFamily: z.enum([
+    'single-turn',
+    'repairable-turn',
+    'memory-exploration',
+    'hold',
+  ]),
+  reasons: z.array(z.string().trim().min(1).max(240)).min(1).max(16),
+  evidenceNeedVersion: z.literal('task-evidence-need.v1'),
+  mandatoryComplete: z.boolean(),
+  missingExactSourceRefs: z.array(z.string().trim().min(1).max(240)).max(32),
+  creativePreference: z.enum(['off', 'minimal', 'balanced', 'rich']),
+});
+export type StorytellerRecipeDecision = z.infer<
+  typeof storytellerRecipeDecisionSchema
+>;
+
 export const storytellerTaskResourcesSchema = z.strictObject({
   version: z.literal('storyteller-resources.v2'),
   recipe: z.union([
@@ -55,6 +73,7 @@ export const storytellerTaskResourcesSchema = z.strictObject({
   creativeExploration: creativeExplorationRecipeSchema.default(
     disabledCreativeExplorationRecipe,
   ),
+  recipeDecision: storytellerRecipeDecisionSchema.optional(),
   envelope: z.strictObject({
     maxSerializedRequestBytes: count.positive().max(1_000_000),
     maxInputTokens: count.positive().max(200_000),

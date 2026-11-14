@@ -11,6 +11,8 @@ import type { OutcomeEffect } from '@offscreen/game/effects';
 import { transitionStorytellerIntentToGeneration } from './holds';
 import { enqueue } from '../outbox/index';
 import { storytellerTopic } from '../storyteller/records';
+import { isProvisionalContextCapture } from '../storyteller/capture-materialization';
+import { campaignConsequenceTopic } from './topics';
 import { randomUUID } from 'node:crypto';
 import type { DocumentStore } from '@offscreen/documents';
 
@@ -86,14 +88,21 @@ export async function applyCampaignFollowUpIntents(
           intent.generationId,
           now,
         );
-        // A fast preparation may already have attempted publication while its
-        // receipt was private. Settlement gives the same generation a fresh,
-        // idempotent publication wake; a slow execution safely sees it too.
-        await enqueue(tx, {
-          id: randomUUID(),
-          operationId: intent.generationId,
-          topic: storytellerTopic,
-        });
+        // ENG03-narrow: provisional G must materialize via consequence topic;
+        // promoted G gets the existing Storyteller publication wake.
+        if (await isProvisionalContextCapture(tx, intent.generationId)) {
+          await enqueue(tx, {
+            id: randomUUID(),
+            operationId: intent.operationId,
+            topic: campaignConsequenceTopic,
+          });
+        } else {
+          await enqueue(tx, {
+            id: randomUUID(),
+            operationId: intent.generationId,
+            topic: storytellerTopic,
+          });
+        }
         break;
       case 'prepare-activity-consequence':
         nextState = await holdCampaignForStorytellerIntent(

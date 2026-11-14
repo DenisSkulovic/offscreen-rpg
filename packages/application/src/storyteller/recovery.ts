@@ -19,6 +19,11 @@ import {
 } from '../stories/persistence';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
 import { enqueue } from '../outbox/index';
+import {
+  evaluateStorytellerRetryGate,
+  type StorytellerAttemptLifecycleState,
+  type StorytellerGenerationLifecycleState,
+} from './loop-lifecycle';
 import { storytellerKind, storytellerTopic } from './records';
 
 /** Explicit retry of the same admitted intention. Never creates a second resolution. */
@@ -72,6 +77,7 @@ export async function retryStoryteller(
       throw new StoryError('conflict');
     }
     const task = storytellerTaskSchema.parse(record.input);
+    let pendingConsequenceSettled: boolean | undefined;
     if (task.task === 'pending-consequence') {
       const [settled] = await tx
         .select({
@@ -90,52 +96,66 @@ export async function retryStoryteller(
             eq(gameActionExecution.storyId, input.storyId),
           ),
         );
-      if (
-        !settled ||
-        settled.state !== 'settled' ||
-        settled.preparationGenerationId !== record.id ||
-        settled.receiptGenerationId !== record.id
-      ) {
-        throw new StoryError('conflict');
-      }
+      pendingConsequenceSettled = Boolean(
+        settled &&
+          settled.state === 'settled' &&
+          settled.preparationGenerationId === record.id &&
+          settled.receiptGenerationId === record.id,
+      );
     }
     const [publication] = await tx
       .select()
       .from(storytellerPublication)
       .where(eq(storytellerPublication.generationId, record.id));
-    if (record.state === 'succeeded' && publication?.state === 'blocked') {
+    let attemptState: StorytellerAttemptLifecycleState | null = null;
+    let operationState: string | null = null;
+    let dispatchedRounds: number | null = null;
+    let maxModelRounds: number | null = null;
+    if (task.execution.mode === 'provider' && record.state === 'failed') {
+      const [attempt] = await tx
+        .select()
+        .from(storytellerAttempt)
+        .where(eq(storytellerAttempt.id, record.attemptId));
+      const [operation] = await tx
+        .select({
+          state: storytellerOperation.state,
+          dispatchedRounds: storytellerOperation.dispatchedRounds,
+          maxModelRounds: storytellerOperation.maxModelRounds,
+        })
+        .from(storytellerOperation)
+        .where(eq(storytellerOperation.generationId, record.id));
+      attemptState =
+        (attempt?.state as StorytellerAttemptLifecycleState | undefined) ?? null;
+      operationState = operation?.state ?? null;
+      dispatchedRounds = operation?.dispatchedRounds ?? null;
+      maxModelRounds = operation?.maxModelRounds ?? null;
+    }
+    const gate = evaluateStorytellerRetryGate({
+      priorRetryRecorded: false,
+      generationState: record.state as StorytellerGenerationLifecycleState,
+      publicationState: publication?.state,
+      executionMode: task.execution.mode,
+      attemptState,
+      failureCode: record.failureCode,
+      recipeVersion: task.resources.recipe.version,
+      hasRepairCandidate: record.repairCandidate !== null,
+      hasRepairDiagnostic: record.repairDiagnostic !== null,
+      operationState,
+      dispatchedRounds,
+      maxModelRounds,
+      ...(pendingConsequenceSettled === undefined
+        ? {}
+        : { pendingConsequenceSettled }),
+    });
+    if (!gate.allowed) {
+      throw new StoryError('conflict');
+    }
+    if (gate.reason === 'publication-blocked') {
       await tx
         .update(storytellerPublication)
         .set({ state: 'pending', failureCode: null })
         .where(eq(storytellerPublication.generationId, record.id));
-    } else if (record.state === 'failed') {
-      if (task.execution.mode === 'provider') {
-        const [attempt] = await tx
-          .select()
-          .from(storytellerAttempt)
-          .where(eq(storytellerAttempt.id, record.attemptId));
-        const [operation] = await tx
-          .select({
-            state: storytellerOperation.state,
-            dispatchedRounds: storytellerOperation.dispatchedRounds,
-            maxModelRounds: storytellerOperation.maxModelRounds,
-          })
-          .from(storytellerOperation)
-          .where(eq(storytellerOperation.generationId, record.id));
-        const repairEligible =
-          attempt?.state === 'settled' &&
-          record.failureCode === 'invalid_output' &&
-          task.resources.recipe.version === 'repairable-turn.v1' &&
-          record.repairCandidate !== null &&
-          record.repairDiagnostic !== null &&
-          operation?.state === 'open' &&
-          operation.dispatchedRounds < operation.maxModelRounds;
-        // Confirmed-unsent work may repeat its exact round. A settled invalid
-        // candidate may proceed only through its captured repair round.
-        if (attempt?.state !== 'unsent' && !repairEligible) {
-          throw new StoryError('conflict');
-        }
-      }
+    } else {
       await tx
         .update(generation)
         .set({
@@ -147,8 +167,6 @@ export async function retryStoryteller(
           statusRevision: sql`${generation.statusRevision} + 1`,
         })
         .where(eq(generation.id, record.id));
-    } else {
-      throw new StoryError('conflict');
     }
     await tx.insert(storytellerRetry).values({
       generationId: record.id,

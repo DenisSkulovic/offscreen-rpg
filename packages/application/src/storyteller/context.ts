@@ -32,6 +32,10 @@ import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from '../stories/passage-documents';
 import type { CanonicalRecallCue } from './canonical-search';
 import {
+  isStorytellerActivityState,
+  storytellerActivityContextFilter,
+} from './activity-context';
+import {
   loadCanonicalKnowledge,
   type CanonicalLibrarySectionSelection,
   type CanonicalCampaignDocumentSelection,
@@ -49,7 +53,8 @@ export {
   type CanonicalCampaignDocumentSelection,
 } from './canonical-knowledge';
 
-const activeSceneAnchorSchema = z.strictObject({
+/** Exported for ENG03-narrow ContextCaptureV1; semantics unchanged. */
+export const activeSceneAnchorSchema = z.strictObject({
   version: z.literal('active-scene-anchor.v1'),
   fromSequence: z.number().int().positive(),
   requiredPassageIds: z.array(z.uuid()).max(40),
@@ -223,7 +228,12 @@ export async function loadStorytellerContext(
     ? await tx
         .select()
         .from(gameActivity)
-        .where(eq(gameActivity.storyId, input.storyId))
+        .where(
+          storytellerActivityContextFilter({
+            storyId: input.storyId,
+            activeActivityId: settingsRow.activeActivityId,
+          }),
+        )
     : [];
   const acceptedPlan = settingsRow
     ? readAcceptedActivityPlan(settingsRow.acceptedActivityPlan)
@@ -270,16 +280,7 @@ export async function loadStorytellerContext(
         activeActivityId: settingsRow.activeActivityId,
         ...(acceptedHandoff ? { acceptedPlan: acceptedHandoff } : {}),
         commitments: commitments.flatMap((record) => {
-          if (
-            ![
-              'running',
-              'paused',
-              'suspended',
-              'blocked',
-              'encounter',
-              'completion-pending',
-            ].includes(record.state)
-          ) {
+          if (!isStorytellerActivityState(record.state)) {
             return [];
           }
           const projected = projectActivityProgress(

@@ -1,6 +1,6 @@
 # SA12 | Owner-controlled live Storyteller comparison tooling and full POC evidence
 
-**State: Proposed / needs explicit owner approval for actual paid runs, 2026-11-14.** Dependencies SA11 provider-free baseline, SA01 trace, pinned route/cost policy. This Change's **code-bearing tooling** can be implemented with zero provider calls first; live evaluation is a separately authorized step, not automatic.
+**State: Done for dry-run tooling (2026-11-14); one paid Gate-1 Luna shot authorized and recorded under a $0.05 hard cap (2026-11-14).** Dependencies SA11 provider-free baseline, SA01 trace, pinned route/cost policy. Evidence: [sa12 dry-run](../../storyteller-architecture/evidence/sa12-live-comparison-dry-run-2026-11-14.md), [paid Gate-1 Luna](../../storyteller-architecture/evidence/sa12-gate1-paid-luna-2026-11-14.md). Existing Gate-1 `live-evaluation` preflight retained. Two-variant paid comparison + multi-turn POC still separately gated.
 
 ## Cursor first-screen brief
 

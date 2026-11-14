@@ -27,6 +27,30 @@
       "types": "./dist/src/providers/request-audit-fixtures.d.ts",
       "default": "./dist/src/providers/request-audit-fixtures.js"
     },
+    "./providers/operation-trace": {
+      "types": "./dist/src/providers/operation-trace.d.ts",
+      "default": "./dist/src/providers/operation-trace.js"
+    },
+    "./providers/operation-trace-fixtures": {
+      "types": "./dist/src/providers/operation-trace-fixtures.d.ts",
+      "default": "./dist/src/providers/operation-trace-fixtures.js"
+    },
+    "./providers/evidence-lineage": {
+      "types": "./dist/src/providers/evidence-lineage.d.ts",
+      "default": "./dist/src/providers/evidence-lineage.js"
+    },
+    "./providers/evidence-lineage-fixtures": {
+      "types": "./dist/src/providers/evidence-lineage-fixtures.d.ts",
+      "default": "./dist/src/providers/evidence-lineage-fixtures.js"
+    },
+    "./providers/model-route-capabilities": {
+      "types": "./dist/src/providers/model-route-capabilities.d.ts",
+      "default": "./dist/src/providers/model-route-capabilities.js"
+    },
+    "./providers/model-route-capability-fixtures": {
+      "types": "./dist/src/providers/model-route-capability-fixtures.d.ts",
+      "default": "./dist/src/providers/model-route-capability-fixtures.js"
+    },
     "./fixtures": {
       "types": "./dist/src/fixtures/index.d.ts",
       "default": "./dist/src/fixtures/index.js"

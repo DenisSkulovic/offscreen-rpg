@@ -80,4 +80,9 @@ test('Chamber control injects one failure without affecting other task kinds', (
     control.evaluate({ generationId, task: pendingTask(storyId) }),
     'proceed',
   );
+  // Injected fail is one-shot: a refresh/re-evaluate does not invent a second failure.
+  assert.equal(
+    control.evaluate({ generationId, task: pendingTask(storyId) }),
+    'proceed',
+  );
 });

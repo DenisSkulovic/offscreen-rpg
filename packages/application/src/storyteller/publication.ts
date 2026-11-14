@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { and, eq } from 'drizzle-orm';
+import { isDeepStrictEqual } from 'node:util';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
@@ -9,8 +10,25 @@ import {
   gameActivity,
 } from '@offscreen/db/campaign-schema';
 import { generation } from '@offscreen/db/generation-schema';
-import { story, storyResolution } from '@offscreen/db/story-schema';
-import { storytellerPublication } from '@offscreen/db/storyteller-schema';
+import {
+  story,
+  storyPassage,
+  storyResolution,
+} from '@offscreen/db/story-schema';
+import {
+  storytellerContextCapture,
+  storytellerPublication,
+} from '@offscreen/db/storyteller-schema';
+import {
+  hashContextCapture,
+  parseContextCapture,
+} from './context-capture';
+import { activeSceneAnchorSchema } from './context';
+
+function normalizeActiveSceneScope(scope: unknown) {
+  if (scope === null || scope === undefined) return null;
+  return activeSceneAnchorSchema.parse(scope);
+}
 import { offerSchema } from '@offscreen/game/offers';
 import {
   authorizeSituation,
@@ -294,6 +312,157 @@ export async function publishStorytellerResult(
       ) {
         throw new StoryError('invalid');
       }
+      const [captureRow] = await tx
+        .select()
+        .from(storytellerContextCapture)
+        .where(eq(storytellerContextCapture.captureId, id));
+      if (captureRow) {
+        const capture = parseContextCapture(captureRow.capture);
+        if (capture.purpose !== 'pending-consequence') {
+          throw new StoryError('invalid');
+        }
+        const sourceStillMatches =
+          hashContextCapture(capture) === captureRow.captureSha256 &&
+          capture.operationId === task.source.executionId &&
+          capture.passageId === task.source.passageId &&
+          capture.narrativeRevision === task.source.narrativeRevision &&
+          capture.acceptedPendingResult.projectedStateDigest ===
+            task.source.projectedStateDigest &&
+          captureRow.state === 'ready' &&
+          current.ownerId === capture.ownerId &&
+          (capture.root.hash === null
+            ? current.documentRootHash === null
+            : current.documentRootHash === capture.root.hash &&
+              current.documentRootRevision === capture.root.revision) &&
+          isDeepStrictEqual(
+            normalizeActiveSceneScope(current.activeSceneScope),
+            normalizeActiveSceneScope(capture.activeSceneScope),
+          ) &&
+          isDeepStrictEqual(current.premise, capture.narrative.premise) &&
+          isDeepStrictEqual(
+            current.continuityNotes ?? [],
+            capture.narrative.notes,
+          ) &&
+          isDeepStrictEqual(current.storyteller, capture.settings.profile) &&
+          isDeepStrictEqual(current.execution, capture.settings.execution);
+        if (!sourceStillMatches) {
+          await setPublication(tx, id, 'stale');
+          return;
+        }
+        for (const source of capture.sourcePassages) {
+          const [row] = await tx
+            .select({
+              id: storyPassage.id,
+              sequence: storyPassage.sequence,
+              contentDocumentHash: storyPassage.contentDocumentHash,
+              content: storyPassage.content,
+              response: storyPassage.response,
+            })
+            .from(storyPassage)
+            .where(
+              and(
+                eq(storyPassage.storyId, current.id),
+                eq(storyPassage.id, source.passageId),
+              ),
+            );
+          if (
+            !row ||
+            row.sequence !== source.sequence ||
+            (source.storage === 'cas'
+              ? row.contentDocumentHash !== source.contentHash
+              : row.contentDocumentHash !== null ||
+                !isDeepStrictEqual(row.content, source.inlineContent))
+          ) {
+            await setPublication(tx, id, 'stale');
+            return;
+          }
+        }
+        if (
+          receipt.outcome !== capture.acceptedPendingResult.resolution.outcome ||
+          receipt.outcomeText !==
+            capture.acceptedPendingResult.resolution.text ||
+          !isDeepStrictEqual(
+            receipt.effects,
+            capture.acceptedPendingResult.resolution.effects,
+          ) ||
+          !isDeepStrictEqual(
+            receipt.declarations,
+            capture.acceptedPendingResult.resolution.declarations,
+          ) ||
+          !isDeepStrictEqual(
+            receipt.roll,
+            capture.acceptedPendingResult.resolution.roll,
+          )
+        ) {
+          await setPublication(tx, id, 'blocked', 'receipt_mismatch');
+          return;
+        }
+      }
+    }
+    if (task.task === 'consequence') {
+      const [captureRow] = await tx
+        .select()
+        .from(storytellerContextCapture)
+        .where(eq(storytellerContextCapture.captureId, id));
+      if (captureRow) {
+        const capture = parseContextCapture(captureRow.capture);
+        if (
+          capture.purpose !== 'consequence' ||
+          capture.sourceKind !== 'action-receipt'
+        ) {
+          throw new StoryError('invalid');
+        }
+        const [receipt] = await tx
+          .select()
+          .from(gameActionReceipt)
+          .where(eq(gameActionReceipt.operationId, capture.operationId));
+        const [campaignState] = await tx
+          .select()
+          .from(campaign)
+          .where(eq(campaign.storyId, current.id));
+        const sourceStillMatches =
+          hashContextCapture(capture) === captureRow.captureSha256 &&
+          captureRow.state === 'ready' &&
+          current.ownerId === capture.ownerId &&
+          capture.passageId === task.source.passageId &&
+          capture.narrativeRevision === task.source.narrativeRevision &&
+          receipt?.generationId === id &&
+          receipt.operationId === capture.acceptedReceipt.operationId &&
+          receipt.outcome === capture.acceptedReceipt.outcome &&
+          receipt.outcomeText === capture.acceptedReceipt.outcomeText &&
+          isDeepStrictEqual(receipt.offer, capture.acceptedReceipt.offer) &&
+          isDeepStrictEqual(receipt.effects, capture.acceptedReceipt.effects) &&
+          isDeepStrictEqual(
+            receipt.declarations,
+            capture.acceptedReceipt.declarations,
+          ) &&
+          isDeepStrictEqual(receipt.roll, capture.acceptedReceipt.roll) &&
+          !!campaignState &&
+          actionProjectedStateDigest({
+            character: campaignState.character,
+            storyFacts: campaignState.storyFacts,
+            gameSecond: campaignState.gameSecond,
+          }) === capture.actorAndWorld.postSettlementStateDigest &&
+          (capture.root.hash === null
+            ? current.documentRootHash === null
+            : current.documentRootHash === capture.root.hash &&
+              current.documentRootRevision === capture.root.revision) &&
+          isDeepStrictEqual(
+            normalizeActiveSceneScope(current.activeSceneScope),
+            normalizeActiveSceneScope(capture.activeSceneScope),
+          ) &&
+          isDeepStrictEqual(current.premise, capture.narrative.premise) &&
+          isDeepStrictEqual(
+            current.continuityNotes ?? [],
+            capture.narrative.notes,
+          ) &&
+          isDeepStrictEqual(current.storyteller, capture.settings.profile) &&
+          isDeepStrictEqual(current.execution, capture.settings.execution);
+        if (!sourceStillMatches) {
+          await setPublication(tx, id, 'stale');
+          return;
+        }
+      }
     }
     if (task.task === 'consequence' || task.task === 'pending-consequence') {
       if (
@@ -352,11 +521,13 @@ export async function publishStorytellerResult(
             await tx
               .select()
               .from(gameActivity)
-              .where(eq(gameActivity.storyId, current.id))
+              .where(
+                and(
+                  eq(gameActivity.storyId, current.id),
+                  inArray(gameActivity.state, ['encounter', 'suspended']),
+                ),
+              )
           ).filter((candidate) => {
-            if (!['encounter', 'suspended'].includes(candidate.state)) {
-              return false;
-            }
             if (
               resolvedActivityPlanSchema.parse(candidate.plan).action.id ===
               resume.activityActionId

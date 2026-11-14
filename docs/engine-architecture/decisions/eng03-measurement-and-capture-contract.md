@@ -1,6 +1,6 @@
 # ENG03 decision | instrument first; conditional bounded short-lock capture V1
 
-**Status: selected measurement design, conditional capture target (2026-11-13).** Existing [instrument-first decision](eng03-instrument-before-refactor.md) remains the starting authority. **Do not** mark the full ENG03 rewrite Ready based on intuition: new remote CAS reads under `FOR UPDATE` are a risk to *measure*, not proof of the production bottleneck. Diagnostic code Change: [ENG03-M](../../changes/2026-11-13--eng03-lock-measurement/CHANGE.md); existing larger [ENG03](../../changes/2026-11-13--eng-short-lock-context/CHANGE.md) remains a conditional follow-up. No production DB/provider/cloud work authorized.
+**Status: measured proceed-narrow decision, typed first-path capture chosen (2026-11-14).** Existing [instrument-first decision](eng03-instrument-before-refactor.md) remains the starting authority. **Do not** mark the full ENG03 rewrite Ready based on intuition: new remote CAS reads under `FOR UPDATE` are a risk to *measure*, not proof of the production bottleneck. Diagnostic code Change: [ENG03-M](../../changes/2026-11-13--eng03-lock-measurement/CHANGE.md); existing larger [ENG03](../../changes/2026-11-13--eng-short-lock-context/CHANGE.md) remains a conditional follow-up. No production DB/provider/cloud work authorized.
 
 ## A. Measurement design is fully chosen
 
@@ -20,68 +20,20 @@
 
 Do not conflate a second **legitimately rejected action** with a database failure. Only the time spent awaiting the lock is at issue.
 
-## B. Conditional source-capture contract (target, not present code)
+## B. Narrow source-capture contract (chosen first path, implementation pending)
 
-If A supports proceeding, reuse existing `campaignConsequence` / `storyResolution` / generation-outbox mechanisms rather than creating a second general workflow coordinator. An immutable **`ContextCaptureV1`** provides the exact source frontier for one narration purpose.
+**ENG03-M result:** 0ms median lock hold 53.8ms and same-story contender wait 51.3ms; at 2000ms CAS delay, hold 8072.1ms and wait 8072.0ms. The decision is **proceed-narrow-eng03-capture**, not approval of the full ENG03 rewrite. [Raw evidence](../evidence/eng03-lock-measurement-2026-11-14.md).
 
-**Required fields, separated by authority:**
+The former conditional TypeScript sketch with untyped field groups has been **superseded** by the authoritative [ENG03-narrow ContextCaptureV1 Zod/schema, physical source map, three-stage lifecycle and settlement race matrix](eng03-narrow-capture-v1.md). That document binds every first-path group to verified existing types or declares an explicit omission, including passage CAS/inline, active-scene anchor and recall cues, actor/facts/items/conditions/commitments, offer authorization, clock, frozen settings/profile/execution/usage, selected action and acceptedPendingResult.
 
-~~~ts
-type ContextCaptureV1 = {
-  version: 1;
-  captureId: UUID;                 // immutable preparation intent
-  storyId: UUID;
-  ownerId: string;                 // authorization scope (not client-provided)
-  purpose: 'pending-consequence';  // selected first path ONLY
-  operationId: UUID;               // accepted finite action
-  passageId: UUID;
-  narrativeRevision: number;       // exact published source frontier
-  root: { hash: Sha256 | null; revision: number };
-  sourcePassages: readonly {
-    passageId: UUID;
-    sequence: number;
-    contentHash: Sha256 | null;    // immutable CAS identity if external
-    // Local inline content must be immutable/version-fenced at captured ID.
-  }[];
-  activeSceneScope: unknown;       // validated frozen scope/cues, bounded
-  actorAndWorld: {
-    character: unknown;           // captured already accepted actor envelope
-    storyFacts: unknown;
-    itemHolders: unknown;         // only needed known player-visible/item-dependent facts
-    worldConditions: unknown;
-    commitments: unknown;         // bounded active nonterminal context, not all history
-    offerAndAuthorization: unknown;
-    clock: { gameSecond: number; targetGameSecond: number };
-  };
-  settings: {
-    revision: number;
-    capturedSettings: unknown;    // immutable campaign_settings row data
-    profile: unknown;
-    execution: unknown;
-    effectiveUsagePolicy: unknown;// exact accepted funding/recipe envelope
-  };
-  selected: { id: UUID; label: string; intention: string };
-  acceptedPendingResult: unknown;  // frozen v1 pending resolution and source/projected digests
-  capturedAt: string;             // trace only; not canonical story time
-};
-~~~
+**Selected implementation architecture:** one reserved generation ID G, initially a non-dispatchable capture placeholder; an additive typed capture row; existing story_resolution and accepted-action linkage; immutable CAS materialization using the existing campaignConsequence outbox/workflow outside story lock; atomic promotion of G to one valid storytellerTaskSchema task; existing Storyteller execution and short locked publication. Settlement always references G, whether it wins the race before or after materialization. Never construct a second speculative controlling generation or automatically issue a second paid attempt after a confirmed/uncertain send.
 
-**Exact physical fields and validation:** this is a **minimal semantic contract**, not permission to persist `unknown` blobs as-is. Cursor must map each `unknown` group to existing Zod types and exact source symbol at the measured path when converting ENG03 to formal Ready. Mutable SQL values that affect model context must be **copied/frozen under lock**, not represented by mutable row IDs later re-read. Immutable CAS sources can be referenced by hash; passage IDs + sequence require immutability/capture verification. A small bounded serialized capture must not become a dump of all history. Remove unsupported fields only with explicit source audit proof; do not infer missing actor categories or build a universal ECS.
+**Scoped handoff:** [ENG03-narrow single-Change Cursor packet](../../changes/2026-11-14--eng03-narrow-pending-capture/CHANGE.md). **Only purpose pending-consequence**, no reroll/game-rule/Temporal redesign or cloud cutover. Historical/full tasks require no migration or new task union. The full [ENG03](../../changes/2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed.
 
-**Stage 1: short lock/capture.** Under existing story lock, establish same command admission and idempotency; freeze exact source references and mutable context/usage values; durably record a deterministic preparation intent/outbox keyed by accepted operation. Commit without external DocumentStore I/O. Any necessary story hold is recorded in same transaction so no fiction continues between capture and preparation.
+## C. What measurements and design can authorize
 
-**Stage 2: off-lock materialize.** Read CAS by captured hash and passage frontier, verify source bytes/schema and required evidence selections; assemble bounded ContextInput and final provider request exactly once (hash/digest). Save its identity and effective cost authority, then dispatch through existing Storyteller generation mechanism. No long PostgreSQL transaction, no reading mutable `campaign` rows for current facts after capture. Missing/corrupt CAS or over-budget results in typed held/blocked preparation and no fallback invented prose. An unsent intent may retry its immutable materialization under bounded worker policy; a dispatched paid attempt follows existing uncertainty rules.
+**ENG03-M is Done (2026-11-14)** on disposable PostgreSQL and delayed local DocumentStore, provider-free. It supports a **narrow** first-path materialization Change, not wholesale rewiring.
 
-**Stage 3: short lock/publication.** Recheck task purpose, story/owner, unchanged controlling narrative/source identity, canonical root hash/revision, correct accepted operation/receipt, projected state digest and current eligibility to publish. A changed current scene/root means **stale** controlling draft, not forced merge or fresh auto-paid regeneration. The existing publication CAS and `storyResolution` uniqueness are authoritative. A historical/report task is not automatically treated like current control; it may publish an appropriately source-bound report independently (separate later scope).
+**Design complete for owner selection:** [ENG03-narrow Change](../../changes/2026-11-14--eng03-narrow-pending-capture/CHANGE.md) with strict [typed capture contract](eng03-narrow-capture-v1.md). Mark Ready only with explicit owner selection and reinspection of the **latest** code checkout. The GitHub main inspected for this packet still shows storyteller.v16 while the owner's subsequent SA handoff reports v17. That mismatch is a real preflight gate, not permission for Cursor to guess.
 
-**Speculation settles before draft:** if accepted finite mechanics settle while a speculative narration capture/materialization is pending, its source-bound pending draft cannot become an unearned result. For the first path, retain one eligible generation/admission identity across settlement, then either (a) publish it if final exact receipt/projected state still match or (b) mark it ineligible and enqueue the **existing** post-settlement consequence under its own correct idempotency/cost policy, but **never two competing controlling `storyResolution` rows** on one base revision and never an automatic second paid attempt after confirmed spend. This race requires explicit provider-free test before a full refactor is authorized.
-
-**Old task compatibility:** `storytellerTaskSchema` tasks admitted before this work remain decodable/publishable with original `task` format and source/attempt identity. Add a versioned capture-intent union only if new persistence actually requires it; no destructive migration/backfill. An already sent, failed or uncertain old attempt is not moved to a new task solely because a worker restarted. Bounded task de-duplication must cover repeated outbox delivery.
-
-## C. What measurements can authorize
-
-**Ready for owner authorization today:** ONLY [ENG03-M](../../changes/2026-11-13--eng03-lock-measurement/CHANGE.md), provider-free instrumentation and disposable SQL/local object-store verification.
-
-**Not yet Ready:** wholesale short-lock capture/admission/publication rewiring. To close its readiness, attach measured lock/contender traces, pick first source path, replace `unknown` groups above with exact existing schemas, demonstrate task/old-worker migration and settle one-generation speculative race in tests. If the measured evidence justifies only a simpler source-prefetch/revalidation improvement, prefer that narrower Change and park full ENG03.
-
-**Not included:** generic saga/bus rewrite, cloud bucket cutover, worker deployment/versioning, game-rule changes, model provider calls, unbounded history fetch, free retries, raw private text logging or fake continuation after missing source.
+**Still Not Ready:** the full ENG03 architecture move, non-pending paths, cloud/provider authorization, second saga/bus/Temporal migration, new game rules, destructive data migration, historical backfill or automatic paid retries. If focused integration evidence reveals an unmodeled source or an unsafe interruption race, stop and return a named failing case rather than silently broadening implementation.

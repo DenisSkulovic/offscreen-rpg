@@ -44,6 +44,29 @@ import {
   selectStorytellerRequestSections,
 } from '../src/providers/request-audit';
 import { createRequestAuditFixtureCases } from '../src/providers/request-audit-fixtures';
+import {
+  assertOperationTraceStoryIsolation,
+  formatStorytellerOperationTrace,
+  serializeStorytellerOperationTrace,
+} from '../src/providers/operation-trace';
+import { createOperationTraceFixtureTraces } from '../src/providers/operation-trace-fixtures';
+import {
+  assertEvidenceLineageCitationIntegrity,
+  formatStorytellerEvidenceLineage,
+} from '../src/providers/evidence-lineage';
+import { createEvidenceLineageFixtures } from '../src/providers/evidence-lineage-fixtures';
+import {
+  assertOpenRouterRequestMatchesCapabilities,
+  createModelRoutePacketReport,
+  formatModelRoutePacketReport,
+  resolveModelRouteCapabilities,
+} from '../src/providers/model-route-capabilities';
+import { createModelRouteCapabilityFixtures } from '../src/providers/model-route-capability-fixtures';
+import {
+  decideDescriptiveMaterialization,
+} from '../src/tasks/descriptive-materialization';
+import { createDescriptiveMaterializationFixtures } from '../src/tasks/descriptive-materialization-fixtures';
+import { proposedDocumentChangeSchema } from '../src/tasks/document-changes';
 
 function quantityDeltaSchemas(value: unknown): Record<string, unknown>[] {
   if (Array.isArray(value)) {
@@ -1247,8 +1270,8 @@ test('captured schemas expose only the result for the requested task', () => {
     assert.equal(schema.properties.scene.properties.version.const, version);
     assert.equal(schema.properties.scene.anyOf, undefined);
     assert.ok(Buffer.byteLength(JSON.stringify(task.request)) <= 48 * 1024);
-    assert.equal(task.inputVersion, 16);
-    assert.equal(task.promptVersion, 'storyteller.v16');
+    assert.equal(task.inputVersion, 17);
+    assert.equal(task.promptVersion, 'storyteller.v17');
     assert.deepEqual(task.resources.recipe, {
       version: 'single-turn.v1',
       maxModelRounds: 1,
@@ -2762,5 +2785,404 @@ test('request audit reports cold bounds and reusable prefixes for an active-scen
   assert.match(
     formatStorytellerRequestAudit(audit),
     /structural potential only/,
+  );
+});
+
+test('prompt constitution v17 drops immortal/option-count defaults without loosening mechanics', () => {
+  const passageId = randomUUID();
+  const current = {
+    id: passageId,
+    sequence: 3,
+    content: {
+      version: 1 as const,
+      title: 'Still water',
+      paragraphs: ['The harbor stays quiet.'],
+    },
+    response: 'Wait.',
+  };
+  const quiet = prepareStorytellerTask({
+    task: 'continuation',
+    source: {
+      storyId: randomUUID(),
+      narrativeRevision: 2,
+      passageId,
+      interactionId: randomUUID(),
+    },
+    profile: storytellerCatalogue.resolve({
+      id: 'quiet-eerie-mystery',
+      revision: 1,
+    }),
+    execution: { mode: 'scripted', version: 'offline-rehearsal.v1' },
+    context: {
+      premise: {
+        title: 'Quiet dock',
+        premise: 'Mara waits through a long calm night.',
+        storytellingDirection: 'Stay quiet; do not invent danger.',
+      },
+      current,
+      selected: {
+        id: 'wait',
+        label: 'Wait',
+        intention: 'Remain quiet without forcing a climax.',
+      },
+      items: [],
+      notes: [],
+      evidence: [current],
+    },
+  });
+  const comic = prepareStorytellerTask({
+    task: 'continuation',
+    source: quiet.source,
+    profile: storytellerCatalogue.resolve({
+      id: 'absurd-action-comedy',
+      revision: 1,
+    }),
+    execution: quiet.execution,
+    context: quiet.context,
+  });
+  const quietSystem = quiet.request.messages[0]?.content ?? '';
+  const comicSystem = comic.request.messages[0]?.content ?? '';
+  assert.equal(quiet.promptVersion, 'storyteller.v17');
+  assert.doesNotMatch(quietSystem, /end the character's life/);
+  assert.doesNotMatch(quietSystem, /Offer 2-5/);
+  assert.match(
+    quietSystem,
+    /currently captured and supported nonlethal\/risk policy/,
+  );
+  assert.match(
+    quietSystem,
+    /one or more distinct plausible intentions/,
+  );
+  assert.match(
+    quietSystem,
+    /unless this task's captured recipe explicitly admits a bounded memory-read phase/,
+  );
+  const quietUser = JSON.parse(quiet.request.messages[1]!.content);
+  const comicUser = JSON.parse(comic.request.messages[1]!.content);
+  assert.notEqual(quietUser.profile.tone, comicUser.profile.tone);
+  assert.equal(
+    quietUser.profile.taskGuidance,
+    quiet.profile.tasks.continuation,
+  );
+  assert.equal(
+    comicUser.profile.taskGuidance,
+    comic.profile.tasks.continuation,
+  );
+
+  const single = structuredClone(scriptedStorytellerResult(quiet));
+  if (single.scene.next.kind !== 'choice') {
+    throw new Error('Expected choice');
+  }
+  single.scene.next.options = [single.scene.next.options[0]!];
+  assert.equal(
+    validateStorytellerResult(quiet, single).scene.next.kind,
+    'choice',
+  );
+
+  const report = prepareStorytellerTask({
+    task: 'report',
+    source: {
+      storyId: randomUUID(),
+      narrativeRevision: 2,
+      passageId: randomUUID(),
+      hookId: randomUUID(),
+    },
+    profile: quiet.profile,
+    execution: { mode: 'scripted', version: 'offline-rehearsal.v1' },
+    context: quiet.context,
+  });
+  const reportSystem = report.request.messages[0]?.content ?? '';
+  assert.match(reportSystem, /Do not propose choices, plans/);
+  assert.doesNotMatch(reportSystem, /Offer only currently authorized next choices/);
+  assert.doesNotMatch(reportSystem, /Continuity notes are derived reminders/);
+  assert.equal(
+    Buffer.byteLength(JSON.stringify(report.request), 'utf8') <
+      Buffer.byteLength(JSON.stringify(quiet.request), 'utf8'),
+    true,
+  );
+
+  const legacyV16 = storytellerTaskSchema.parse({
+    ...quiet,
+    inputVersion: 16,
+    promptVersion: 'storyteller.v16',
+  });
+  assert.equal(legacyV16.inputVersion, 16);
+  assert.equal(legacyV16.task, 'continuation');
+  const legacyResult = validateStorytellerResult(
+    legacyV16 as typeof quiet,
+    scriptedStorytellerResult(legacyV16 as typeof quiet),
+  );
+  assert.equal(legacyResult.scene.version, 2);
+
+  const heldConsequence = consequence({});
+  const held = scriptedStorytellerResult(heldConsequence);
+  // Post-receipt consequence may be available; force held zero-plan semantics.
+  const forcedHeld = {
+    ...held,
+    scene: {
+      ...held.scene,
+      next: {
+        kind: 'action-plans' as const,
+        state: 'held' as const,
+        activityAccess: { kind: 'none' as const },
+        plans: [],
+      },
+    },
+  };
+  const heldValidated = validateStorytellerResult(heldConsequence, forcedHeld);
+  assert.equal(heldValidated.scene.next.kind, 'action-plans');
+  if (heldValidated.scene.next.kind === 'action-plans') {
+    assert.equal(heldValidated.scene.next.state, 'held');
+  }
+
+  assert.throws(
+    () =>
+      validateStorytellerResult(quiet, {
+        ...single,
+        scene: {
+          ...single.scene,
+          next: { ...single.scene.next, options: [] },
+        },
+      }),
+    /1-12 distinct choices|at least 1|Too small/,
+  );
+});
+
+test('evidence lineage distinguishes gift recall, pruned rumor and false citation', () => {
+  const fixtures = createEvidenceLineageFixtures();
+  const byId = Object.fromEntries(fixtures.map((entry) => [entry.id, entry]));
+
+  const gift = byId['gift-recall']!;
+  assert.ok(gift.lineage);
+  const giftEntry = gift.lineage.entries.find((entry) => entry.handle === 'p6');
+  assert.equal(giftEntry?.stages['final-packet'].present, true);
+  assert.equal(giftEntry?.stages['cited-used'].present, true);
+  assert.equal(giftEntry?.stages.published.present, true);
+  assert.equal(gift.lineage.checkpoints.resultUses, true);
+  assertEvidenceLineageCitationIntegrity(gift.lineage);
+
+  const rumor = byId['rumor-corrected']!;
+  assert.ok(rumor.lineage);
+  const rumorEntry = rumor.lineage.entries.find((entry) => entry.handle === 'p2');
+  const correction = rumor.lineage.entries.find(
+    (entry) => entry.handle === 'p10',
+  );
+  assert.equal(rumorEntry?.stages['exact-loaded'].present, true);
+  assert.equal(rumorEntry?.stages['final-packet'].present, false);
+  assert.equal(correction?.stages['cited-used'].present, true);
+  assert.equal(correction?.stages['final-packet'].present, true);
+
+  const pruned = byId['selected-then-pruned']!;
+  assert.ok(pruned.lineage);
+  assert.equal(pruned.lineage.failureClass, 'selected-then-pruned');
+  assert.equal(
+    pruned.lineage.entries.find((entry) => entry.handle === 'p2')?.stages[
+      'cited-used'
+    ].present,
+    false,
+  );
+
+  const ordinary = byId['ordinary-no-memory']!;
+  assert.ok(ordinary.lineage);
+  assert.equal(ordinary.lineage.failureClass, 'none');
+  assert.equal(ordinary.lineage.checkpoints.resultUses, false);
+
+  const rejected = byId['false-citation-rejected']!;
+  assert.equal(rejected.rejected, true);
+  assert.equal(rejected.lineage, null);
+  assert.match(
+    formatStorytellerEvidenceLineage(gift.lineage),
+    /failureClass: none/,
+  );
+});
+
+test('operation trace covers memory, single-shot, omission and isolation negatives', () => {
+  const fixtures = createOperationTraceFixtureTraces();
+  const byId = Object.fromEntries(
+    fixtures.map((entry) => [entry.id, entry]),
+  );
+  const memory = byId['memory-exploration']!;
+  assert.equal(memory.trace.version, 'storyteller-operation-trace.v1');
+  assert.equal(memory.trace.reads.count, 1);
+  assert.ok(memory.trace.sources.finalIncludedHandles.includes('x1'));
+  assert.equal(memory.trace.publication.state, 'published');
+  assert.equal(memory.trace.cost.inputTokens, null);
+  assert.equal(memory.trace.cost.cacheHit, null);
+  assert.equal(memory.trace.transportPerformed, false);
+  assert.ok(
+    memory.trace.spans.some(
+      (span) =>
+        span.kind === 'provider-round' && span.summary.includes('read_memory'),
+    ),
+  );
+
+  const ordinary = byId['ordinary-consequence']!;
+  assert.equal(ordinary.trace.reads.count, 0);
+  assert.equal(ordinary.trace.paidProviderRounds, 0);
+
+  const interrupted = byId['interrupted-generation']!;
+  assert.equal(interrupted.trace.publication.state, 'interrupted');
+  assert.equal(interrupted.trace.publication.publishedPassageId, null);
+
+  const omitted = byId['loaded-then-omitted']!;
+  assert.ok(
+    omitted.trace.sources.loadedHandles.includes('p2') ||
+      omitted.trace.sources.omitted.some((entry) => entry.handle === 'p2'),
+  );
+  assert.ok(
+    omitted.trace.sources.omitted.some(
+      (entry) =>
+        entry.handle === 'p2' &&
+        entry.reason === 'loaded-then-pruned-from-final-packet',
+    ),
+  );
+  assert.equal(
+    omitted.trace.sources.finalIncludedHandles.includes('p2'),
+    false,
+  );
+
+  const duplicate = byId['duplicate-delivery']!;
+  assert.equal(duplicate.trace.paidProviderRounds, 0);
+  assert.ok(
+    duplicate.trace.spans.some(
+      (span) =>
+        span.kind === 'provider-round' && span.status === 'replayed',
+    ),
+  );
+
+  const stale = byId['stale-publication']!;
+  assert.equal(stale.trace.publication.state, 'stale-refused');
+
+  for (const entry of fixtures) {
+    assertOperationTraceStoryIsolation(entry.trace, entry.foreignStoryId);
+    const serialized = serializeStorytellerOperationTrace(entry.trace);
+    assert.equal(/sk-[a-zA-Z0-9]{16,}/.test(serialized), false);
+    assert.equal(/Bearer\s+\S+/i.test(serialized), false);
+    assert.equal(serialized.includes('"promptBodies": "omitted"'), true);
+    assert.match(
+      formatStorytellerOperationTrace(entry.trace),
+      /tokens\/cache unknown/,
+    );
+  }
+});
+
+test('model route capabilities keep reasoning off and prefix bytes are not cache hits', () => {
+  const fixtures = createModelRouteCapabilityFixtures();
+  const byId = Object.fromEntries(fixtures.map((entry) => [entry.id, entry]));
+
+  const priced = byId['priced-cold-warm']!;
+  assert.ok(priced.cold);
+  assert.ok(priced.warm);
+  assert.equal(priced.cold.capabilities.reasoning.mode, 'disabled');
+  assert.equal(priced.cold.capabilities.caching.prefixBytesAreNotHits, true);
+  assert.equal(priced.cold.capabilities.pricing.priceKnown, true);
+  assert.equal(priced.cold.usage.estimatedInputTokens, null);
+  assert.equal(priced.cold.usage.cachedTokens, null);
+  assert.equal(priced.cold.packet.potentialReusablePrefixBytes, null);
+  assert.ok((priced.warm.packet.potentialReusablePrefixBytes ?? 0) > 0);
+  assert.ok(
+    priced.warm.unknowns.includes('prefixBytesAreNotProviderCacheHits'),
+  );
+  assert.equal(priced.warm.transportPerformed, false);
+  assert.match(
+    formatModelRoutePacketReport(priced.warm),
+    /prefix≠hit/,
+  );
+
+  const rejected = byId['not-priced-fails-closed']!;
+  assert.equal(rejected.rejected, true);
+  assert.equal(rejected.errorCode, 'storyteller_route_price_unknown');
+
+  const captured = byId['captured-cache-usage']!;
+  assert.ok(captured.report);
+  assert.equal(captured.report.usage.cachedTokens, 100);
+  assert.equal(captured.report.usage.cacheWriteTokens, 200);
+  assert.equal(captured.report.usage.calculatedCostMicrousd, '7000');
+  assert.equal(captured.report.durationMs, 42);
+
+  const auditCases = createRequestAuditFixtureCases({
+    caseIds: ['continuity-human-turn-13'],
+    profile: { id: 'quiet-eerie-mystery', revision: 1 },
+  });
+  const auditTask = auditCases[0]!.task;
+  if (auditTask.execution.mode !== 'provider') {
+    throw new Error('expected provider audit fixture');
+  }
+  const audit = createStorytellerRequestAudit(auditCases);
+  assert.equal(audit.cases[0]?.routeCapabilities.reasoning.mode, 'disabled');
+  assert.equal(audit.cases[0]?.routeCapabilities.pricing.priceKnown, false);
+  assert.equal(
+    audit.cases[0]?.routeCapabilities.caching.mode,
+    'provider-reported-only',
+  );
+  assert.match(formatStorytellerRequestAudit(audit), /reasoning disabled/);
+
+  const inspection = inspectOpenRouterRequest(auditTask);
+  const capabilities = resolveModelRouteCapabilities(auditTask.execution.policy);
+  assertOpenRouterRequestMatchesCapabilities(inspection.body, capabilities);
+  assert.throws(
+    () =>
+      assertOpenRouterRequestMatchesCapabilities(
+        {
+          ...inspection.body,
+          reasoning: { enabled: true, exclude: false },
+        },
+        capabilities,
+      ),
+    /reasoning to stay disabled/,
+  );
+  assert.throws(
+    () => createModelRoutePacketReport({ task: auditTask }),
+    /storyteller_route_price_unknown/,
+  );
+});
+
+test('descriptive materialization promotes gifts, omits crowd, attributes disputes, rejects failed gifts', () => {
+  const fixtures = createDescriptiveMaterializationFixtures();
+  const byId = Object.fromEntries(fixtures.map((entry) => [entry.id, entry]));
+
+  const gift = byId['named-gift-relationship']!;
+  assert.equal(gift.decision.action, 'create');
+  assert.equal(gift.accepted, true);
+  assert.equal(gift.change?.kind, 'relationship');
+  assert.equal(gift.change?.authority, 'canon');
+
+  const crowd = byId['passing-crowd-omit']!;
+  assert.equal(crowd.decision.action, 'omit');
+  assert.equal(crowd.change, null);
+  assert.equal(crowd.accepted, true);
+
+  const disputed = byId['disputed-attributed-lore']!;
+  assert.equal(disputed.decision.action, 'create');
+  assert.equal(disputed.change?.authority, 'attributed');
+  assert.equal(disputed.accepted, true);
+
+  const failed = byId['failed-transfer-rejected']!;
+  assert.equal(failed.decision.action, 'reject');
+  assert.equal(failed.accepted, true);
+
+  assert.equal(
+    decideDescriptiveMaterialization({
+      situation: 'named-gift-or-favor',
+      personStable: true,
+      transferSucceeded: true,
+      futureRelevance: false,
+      counterpartExact: true,
+    }).action,
+    'create',
+  );
+
+  assert.throws(
+    () =>
+      proposedDocumentChangeSchema.parse({
+        operation: 'create',
+        path: 'private/thought.md',
+        kind: 'private-possibility',
+        authority: 'canon',
+        visibility: 'player-known',
+        title: 'Secret',
+        body: 'Private thought must not become public relationship.',
+        reason: 'Negative',
+      }),
   );
 });

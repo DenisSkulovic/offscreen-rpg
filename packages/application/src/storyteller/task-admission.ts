@@ -7,6 +7,7 @@ import {
   maximumProviderCharge,
   storytellerTaskResourcesSchema,
   type ExecutionPolicy,
+  type StorytellerRecipeDecision,
   type StorytellerTask,
   type StorytellerTaskResources,
 } from '@offscreen/storyteller/tasks';
@@ -15,6 +16,8 @@ import type {
   CreativeExplorationPosture,
 } from '@offscreen/contracts/creative-exploration';
 import { resolveCreativeExplorationRecipe } from './creative-exploration-recipes';
+import { decideAdmittedRecipe } from './adaptive-recipe';
+import type { TaskEvidenceNeedInput } from './task-evidence-need';
 
 function minimumMicrousd(left: string, right: string) {
   return BigInt(left) <= BigInt(right) ? left : right;
@@ -33,6 +36,7 @@ export function resourcesForEffectiveUsagePolicy(
     requested?: Partial<CreativeExplorationLimits>;
     maxRepairRounds?: 0 | 1;
   },
+  recipeDecision?: StorytellerRecipeDecision,
 ): StorytellerTaskResources {
   const policy = effectiveUsagePolicySchema.parse(policyInput);
   if (policy.route !== execution.policy.route) {
@@ -123,6 +127,7 @@ export function resourcesForEffectiveUsagePolicy(
     version: 'storyteller-resources.v2',
     recipe,
     creativeExploration,
+    ...(recipeDecision ? { recipeDecision } : {}),
     envelope: {
       maxSerializedRequestBytes: Math.min(
         policy.limits.maxSerializedBytesPerRequest,
@@ -148,6 +153,35 @@ export function resourcesForEffectiveUsagePolicy(
 
 type PreparedTaskInput = Parameters<typeof prepareStorytellerTask>[0];
 
+function defaultEvidenceNeedFromTask(
+  input: PreparedTaskInput,
+): TaskEvidenceNeedInput {
+  const available = [
+    ...(input.context.current
+      ? [`p${input.context.current.sequence}`]
+      : []),
+    ...input.context.evidence.map((passage) => `p${passage.sequence}`),
+    ...(input.context.canonicalKnowledge?.catalogue.map(
+      (entry) => entry.handle,
+    ) ?? []),
+  ];
+  const activeSceneNeedsHistory = Boolean(
+    input.context.activeSceneScope &&
+      input.context.activeSceneScope.throughSequence -
+        input.context.activeSceneScope.fromSequence >=
+        5,
+  );
+  return {
+    purpose: input.task,
+    availableSourceRefs: available,
+    mandatorySourceRefs: input.context.current
+      ? [`p${input.context.current.sequence}`]
+      : [],
+    creativePreference: 'off',
+    activeSceneNeedsHistory,
+  };
+}
+
 /** Provider admission fails closed unless the caller supplies resolved authority. */
 export function prepareAdmittedStorytellerTask(
   input: PreparedTaskInput,
@@ -157,6 +191,7 @@ export function prepareAdmittedStorytellerTask(
     requested?: Partial<CreativeExplorationLimits>;
     maxRepairRounds?: 0 | 1;
   },
+  evidenceNeedInput?: TaskEvidenceNeedInput,
 ): StorytellerTask {
   if (input.execution.mode === 'scripted') {
     return prepareStorytellerTask(input);
@@ -164,18 +199,29 @@ export function prepareAdmittedStorytellerTask(
   if (!usagePolicy) {
     throw new Error('effective_usage_policy_required');
   }
-  const selectedRecipe =
-    creativeInput ??
-    (input.task !== 'report' &&
-    usagePolicy.limits.maxModelRoundsPerOperation >= 2
-      ? { posture: 'off' as const, maxRepairRounds: 1 as const }
-      : undefined);
+
+  let selectedRecipe = creativeInput;
+  let recipeDecision: StorytellerRecipeDecision | undefined;
+  if (!selectedRecipe) {
+    const selection = decideAdmittedRecipe({
+      evidenceNeed: evidenceNeedInput ?? defaultEvidenceNeedFromTask(input),
+      policy: usagePolicy,
+      taskKind: input.task,
+    });
+    if (selection.hold) {
+      throw new Error(selection.hold.code);
+    }
+    selectedRecipe = selection.creativeInput;
+    recipeDecision = selection.decision;
+  }
+
   return prepareStorytellerTask({
     ...input,
     resources: resourcesForEffectiveUsagePolicy(
       input.execution,
       usagePolicy,
       selectedRecipe,
+      recipeDecision,
     ),
   });
 }

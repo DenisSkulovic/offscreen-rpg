@@ -442,21 +442,23 @@ export function createCampaignActions(
       });
       if (pendingResolution) {
         try {
-          await preparePendingActionNarration(
-            tx,
-            current,
-            {
-              executionId: args.operationId,
-              targetGameSecond,
-              offer,
-              label: definition.label,
-              intention: definition.intention,
-              pending: pendingResolution,
-            },
-            documentStore,
-          );
+          await preparePendingActionNarration(tx, current, {
+            executionId: args.operationId,
+            startGameSecond,
+            targetGameSecond,
+            offer,
+            plan: definition,
+            label: definition.label,
+            intention: definition.intention,
+            pending: pendingResolution,
+          });
         } catch (error) {
-          if (error instanceof Error && error.message === 'context_too_large') {
+          if (
+            error instanceof Error &&
+            (error.message === 'context_too_large' ||
+              error.message === 'context_capture_too_large' ||
+              error.message.includes('context_capture_too_large'))
+          ) {
             throw new StoryError('unavailable', 'context_too_large');
           }
           throw error;

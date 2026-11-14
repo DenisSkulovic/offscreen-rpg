@@ -1,6 +1,6 @@
 # SA02 | A profile-faithful task prompt without universal taste defaults
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** [SA program](../../storyteller-architecture/implementation-program.md). Focused compiler/validator change, **not** an engine rules expansion.
+**State: Done (2026-11-14).** Evidence: [sa02 sample](../../storyteller-architecture/evidence/sa02-prompt-constitution-2026-11-14.md). [SA program](../../storyteller-architecture/implementation-program.md). Focused compiler/validator change, **not** an engine rules expansion.
 
 ## Cursor first-screen brief
 

@@ -84,8 +84,12 @@ const frequencySchema = z.record(
   z.number().int().positive(),
 );
 
+/** Snapshot/format version; cache keys and durable loads must match exactly. */
+export const LEXICAL_STORY_INDEX_SCHEMA_VERSION =
+  'offscreen.lexical-story-index.v1' as const;
+
 export const lexicalStoryIndexSnapshotSchema = z.strictObject({
-  format: z.literal('offscreen.lexical-story-index.v1'),
+  format: z.literal(LEXICAL_STORY_INDEX_SCHEMA_VERSION),
   storyId: z.uuid(),
   rootHash: z.string().regex(/^[0-9a-f]{64}$/),
   rootRevision: z.number().int().positive(),
@@ -106,6 +110,23 @@ export const lexicalStoryIndexSnapshotSchema = z.strictObject({
 export type LexicalStoryIndexSnapshot = z.infer<
   typeof lexicalStoryIndexSnapshotSchema
 >;
+
+export type LexicalStoryIndexIdentity = Readonly<{
+  storyId: string;
+  rootHash: string;
+  rootRevision: number;
+}>;
+
+export function lexicalStoryIndexMatchesIdentity(
+  index: LexicalStoryIndexIdentity,
+  identity: LexicalStoryIndexIdentity,
+) {
+  return (
+    index.storyId === identity.storyId &&
+    index.rootHash === identity.rootHash &&
+    index.rootRevision === identity.rootRevision
+  );
+}
 
 function frequencyRecord(frequencies: ReadonlyMap<string, number>) {
   return Object.fromEntries(
@@ -165,7 +186,7 @@ export class LexicalStoryIndex {
 
   snapshot(): LexicalStoryIndexSnapshot {
     return lexicalStoryIndexSnapshotSchema.parse({
-      format: 'offscreen.lexical-story-index.v1',
+      format: LEXICAL_STORY_INDEX_SCHEMA_VERSION,
       storyId: this.storyId,
       rootHash: this.rootHash,
       rootRevision: this.rootRevision,

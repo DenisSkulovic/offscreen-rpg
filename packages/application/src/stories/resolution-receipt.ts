@@ -45,7 +45,8 @@ export function publicReceiptState(
   }
 }
 
-function publicReceiptRecovery(
+/** Coarse player-facing recovery hint; attempt-level retry gate remains authoritative. */
+export function publicReceiptRecovery(
   state: GenerationState,
   failureCode: string | null,
 ): ResolutionOperationReceipt['recovery'] {

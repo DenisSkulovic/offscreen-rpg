@@ -1,6 +1,6 @@
 # SA05 | Trace exact evidence from source through final model packet and publication
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Dependency SA01 strongly preferred; can be implemented before SA04 cache if both measure. Program [SA queue](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa05 sample](../../storyteller-architecture/evidence/sa05-evidence-lineage-2026-11-14.md). Dependency SA01 done. Program [SA queue](../../storyteller-architecture/implementation-program.md).
 
 ## Cursor first-screen
 

@@ -223,6 +223,8 @@ export const canonicalKnowledgeSchema = z.strictObject({
           .int()
           .nonnegative()
           .max(512 * 1024),
+        /** False when catalogue metadata is path-derived and the body was never opened. */
+        bodyInspected: z.boolean(),
         loaded: z.boolean(),
       }),
     )

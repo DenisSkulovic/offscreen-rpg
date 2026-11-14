@@ -20,6 +20,8 @@ export * from './qa-journeys';
 export * from './usage-profiles';
 export * from './storyteller-control';
 export * from './live-evaluation';
+export * from './live-comparison';
+export * from './playability-harness';
 export * from './retrieval-oracle';
 export * from './long-story-memory-corpus';
 export * from './memory-evaluator';

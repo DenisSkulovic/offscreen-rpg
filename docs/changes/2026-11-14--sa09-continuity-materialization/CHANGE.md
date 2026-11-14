@@ -1,6 +1,6 @@
 # SA09 | A significant fictional relationship survives creation, retrieval and return
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Depends on source/evidence lineage SA05; may use SA04 indexed root reuse. This is a **specific narrative continuity behavior**, not a universal entity database.
+**State: Done (2026-11-14).** Evidence: [sa09 sample](../../storyteller-architecture/evidence/sa09-continuity-materialization-2026-11-14.md). Provider-free. Depends SA05; may use SA04. Not a universal entity database.
 
 ## Cursor first-screen
 

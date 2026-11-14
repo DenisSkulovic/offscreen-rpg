@@ -1,6 +1,6 @@
 # SA08 | Make model route limits, caching, reasoning and billing claims explicit
 
-**State: Proposed / design-complete 2026-11-14, provider-specific promotion conditional on measured support.** No code/paid authorization. Program [SA queue](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa08 sample](../../storyteller-architecture/evidence/sa08-model-route-capabilities-2026-11-14.md). Provider-free only; no paid cold/warm. Program [SA queue](../../storyteller-architecture/implementation-program.md).
 
 ## Cursor first-screen
 

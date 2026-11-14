@@ -33,6 +33,11 @@ import {
   canonicalRuleEvidence,
   loadStorytellerContext,
 } from '../storyteller/context';
+import {
+  captureCommittedActionNarration,
+  capturePendingActionNarration,
+} from '../storyteller/context-capture';
+import { materializePendingActionCapture } from '../storyteller/capture-materialization';
 import { insertStorytellerTask } from '../storyteller/records';
 import { enqueue } from '../outbox/index';
 import { outcomeEffectsSchema } from '@offscreen/game/effects';
@@ -60,98 +65,25 @@ export async function preparePendingActionNarration(
   current: StoryRecord,
   input: {
     executionId: string;
+    startGameSecond: number;
     targetGameSecond: number;
     offer: unknown;
+    plan: unknown;
     label: string;
     intention: string;
     pending: PendingImmediateActionResolution;
   },
-  documentStore?: DocumentStore,
 ) {
-  const [passage] = await tx
-    .select({ id: storyPassage.id })
-    .from(storyPassage)
-    .where(
-      and(
-        eq(storyPassage.storyId, current.id),
-        eq(storyPassage.sequence, current.revision),
-      ),
-    );
-  if (!passage) throw new Error('Missing pending action passage');
-  const context = await loadStorytellerContext(tx, {
-    storyId: current.id,
-    revision: current.revision,
-    premise: current.premise,
-    notes: current.continuityNotes,
-    activeSceneScope: current.activeSceneScope,
-    selected: {
-      id: input.executionId,
-      label: input.label,
-      intention: input.intention,
-    },
-    projectGameSecond: input.targetGameSecond,
-    ...canonicalContextDependencies(
-      current,
-      documentStore,
-      canonicalRuleEvidence(
-        input.pending.resolution.roll ? ['time', 'ability-check'] : ['time'],
-      ),
-    ),
-  });
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'pending-consequence',
-      source: {
-        storyId: current.id,
-        narrativeRevision: current.revision,
-        passageId: passage.id,
-        executionId: input.executionId,
-        targetGameSecond: input.targetGameSecond,
-        projectedStateDigest: input.pending.projectedStateDigest,
-      },
-      profile: storytellerProfileSchema.parse(current.storyteller),
-      execution: executionPolicySchema.parse(current.execution),
-      context: contextInputSchema.parse({
-        ...context,
-        resolution: {
-          character: input.pending.resolution.character,
-          storyFacts: input.pending.resolution.storyFacts,
-          gameSecond: input.targetGameSecond,
-          offer: offerSchema.parse(input.offer),
-          receipts: [
-            {
-              id: input.executionId,
-              outcome: input.pending.resolution.outcome,
-              text: input.pending.resolution.text,
-              roll: input.pending.resolution.roll,
-              effects: input.pending.resolution.effects,
-              declarations: input.pending.resolution.declarations,
-            },
-          ],
-        },
-      }),
-    },
-    current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(current.usagePolicy),
-  );
-  const generationId = randomUUID();
-  await insertStorytellerTask(tx, {
-    id: generationId,
-    ownerId: current.ownerId,
-    task,
-  });
-  await tx.insert(storyResolution).values({
-    generationId,
-    storyId: current.id,
-    basePassageId: passage.id,
-    baseRevision: current.revision,
-    operationId: generationId,
-    submission: {
-      kind: 'pending-action-consequence',
-      executionId: input.executionId,
-      projectedStateDigest: input.pending.projectedStateDigest,
-    },
+  // ENG03-narrow Stage 1: freeze ContextCaptureV1 under lock; no DocumentStore.
+  const generationId = await capturePendingActionNarration(tx, current, {
+    executionId: input.executionId,
+    startGameSecond: input.startGameSecond,
+    targetGameSecond: input.targetGameSecond,
+    offer: input.offer,
+    plan: input.plan,
+    label: input.label,
+    intention: input.intention,
+    pending: input.pending,
   });
   await tx
     .update(gameActionExecution)
@@ -230,111 +162,6 @@ export async function requestActionNarration(
     operationId,
     topic: campaignConsequenceTopic,
   });
-}
-
-async function admitActionNarration(
-  tx: Transaction,
-  current: StoryRecord,
-  receipt: typeof gameActionReceipt.$inferSelect,
-  documentStore?: DocumentStore,
-) {
-  const [state] = await tx
-    .select()
-    .from(campaign)
-    .where(eq(campaign.storyId, current.id));
-  const [passage] = await tx
-    .select({ id: storyPassage.id })
-    .from(storyPassage)
-    .where(
-      and(
-        eq(storyPassage.storyId, current.id),
-        eq(storyPassage.sequence, current.revision),
-      ),
-    );
-  if (!state || !passage) {
-    throw new Error('Missing committed action context');
-  }
-  const context = await loadStorytellerContext(tx, {
-    storyId: current.id,
-    revision: current.revision,
-    premise: current.premise,
-    notes: current.continuityNotes,
-    activeSceneScope: current.activeSceneScope,
-    selected: {
-      id: receipt.operationId,
-      label: receipt.label,
-      intention: receipt.intention,
-    },
-    ...canonicalContextDependencies(
-      current,
-      documentStore,
-      canonicalRuleEvidence(
-        receipt.roll ? ['time', 'ability-check'] : ['time'],
-      ),
-    ),
-  });
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'consequence',
-      source: {
-        storyId: current.id,
-        narrativeRevision: current.revision,
-        passageId: passage.id,
-      },
-      profile: storytellerProfileSchema.parse(current.storyteller),
-      execution: executionPolicySchema.parse(current.execution),
-      context: contextInputSchema.parse({
-        ...context,
-        resolution: {
-          character: characterSchema.parse(state.character),
-          storyFacts: storyFactsSchema.parse(state.storyFacts),
-          gameSecond: state.gameSecond,
-          offer: offerSchema.parse(receipt.offer),
-          receipts: [
-            {
-              id: receipt.operationId,
-              outcome: receipt.outcome,
-              text: receipt.outcomeText,
-              roll:
-                receipt.roll === null ? null : rollSchema.parse(receipt.roll),
-              effects: outcomeEffectsSchema.parse(receipt.effects),
-              declarations: storyFactDeclarationsSchema.parse(
-                receipt.declarations,
-              ),
-            },
-          ],
-        },
-      }),
-    },
-    current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(current.usagePolicy),
-  );
-  const generationId = randomUUID();
-  await insertStorytellerTask(tx, {
-    id: generationId,
-    ownerId: current.ownerId,
-    task,
-  });
-  await tx.insert(storyResolution).values({
-    generationId,
-    storyId: current.id,
-    basePassageId: passage.id,
-    baseRevision: current.revision,
-    operationId: generationId,
-    submission: {
-      kind: 'committed-consequence',
-      operationId: receipt.operationId,
-    },
-  });
-  await transitionStorytellerIntentToGeneration(
-    tx,
-    state,
-    receipt.operationId,
-    generationId,
-    await readDatabaseClockMs(tx, current.id),
-  );
-  return generationId;
 }
 
 /**
@@ -672,6 +499,12 @@ export function createConsequenceNarration(
   documentStore?: DocumentStore,
 ) {
   return async function prepare(operationId: string) {
+    const captureResult = await materializePendingActionCapture(
+      database,
+      operationId,
+      documentStore,
+    );
+    if (captureResult.handled) return;
     await database.db.transaction(async (tx) => {
       const [actionReceipt] = await tx
         .select()
@@ -684,11 +517,11 @@ export function createConsequenceNarration(
         if (current.revision !== actionReceipt.baseRevision) {
           throw new Error('Action narration lost its story revision fence');
         }
-        const generationId = await admitActionNarration(
+        // ENG03-C1: SQL-only Stage 1 capture; CAS/materialization runs off-lock.
+        const generationId = await captureCommittedActionNarration(
           tx,
           current,
           actionReceipt,
-          documentStore,
         );
         await tx
           .update(gameActionReceipt)

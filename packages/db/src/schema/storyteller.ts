@@ -35,6 +35,81 @@ export const storytellerPublication = pgTable(
 );
 
 /**
+ * ENG03-narrow: per-generation pending-consequence materialization record.
+ * Capture JSON is ContextCaptureV1; provisional generation.kind is
+ * storyteller.context-capture.v1 until Stage-2 promotion.
+ */
+export const storytellerContextCapture = pgTable(
+  'storyteller_context_capture',
+  {
+    captureId: uuid('capture_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    storyId: uuid('story_id').notNull(),
+    operationId: uuid('operation_id').notNull(),
+    capture: jsonb('capture').notNull().$type<unknown>(),
+    captureSha256: text('capture_sha256').notNull(),
+    state: text('state')
+      .notNull()
+      .default('captured')
+      .$type<
+        | 'captured'
+        | 'materializing'
+        | 'ready'
+        | 'held'
+        | 'stale'
+        | 'blocked'
+      >(),
+    materializationAttempts: integer('materialization_attempts')
+      .notNull()
+      .default(0),
+    leaseId: uuid('lease_id'),
+    leaseExpiresAt: timestamp('lease_expires_at', {
+      withTimezone: true,
+      precision: 3,
+    }),
+    materializedRequestSha256: text('materialized_request_sha256'),
+    failureCode: text('failure_code'),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('storyteller_context_capture_operation').on(t.operationId),
+    index('storyteller_context_capture_story').on(t.storyId),
+    check(
+      'storyteller_context_capture_state',
+      sql`${t.state} IN ('captured','materializing','ready','held','stale','blocked')`,
+    ),
+    check(
+      'storyteller_context_capture_sha',
+      sql`${t.captureSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_context_capture_attempts',
+      sql`${t.materializationAttempts} >= 0 AND ${t.materializationAttempts} <= 3`,
+    ),
+    check(
+      'storyteller_context_capture_request_sha',
+      sql`${t.materializedRequestSha256} IS NULL OR ${t.materializedRequestSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_context_capture_lease',
+      sql`(${t.leaseId} IS NULL) = (${t.leaseExpiresAt} IS NULL)`,
+    ),
+  ],
+);
+
+/**
  * Private, restart-safe working state for one bounded memory-exploration
  * operation. A final candidate is only input to eventual generation
  * completion; this row never grants story authority or replaces

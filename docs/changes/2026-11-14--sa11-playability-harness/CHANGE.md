@@ -1,6 +1,6 @@
 # SA11 | Reproducible provider-free Storyteller life and quality evaluation harness
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Depends SA01 trace and a credible source baseline; useful **before** tuning SA06 as an independent baseline. [SA program](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa11 sample](../../storyteller-architecture/evidence/sa11-playability-harness-2026-11-14.md). Provider-free; no paid/DB. [SA program](../../storyteller-architecture/implementation-program.md).
 
 ## Cursor first-screen brief
 

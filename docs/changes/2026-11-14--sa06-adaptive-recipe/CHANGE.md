@@ -1,6 +1,6 @@
 # SA06 | Select an investigative recipe from actual task need and effective policy
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Depends on accurate SA01/SA05 trace baseline. **This is the first intentional adaptive-agent product behavior change**, not cosmetic naming. Program [SA queue](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa06 sample](../../storyteller-architecture/evidence/sa06-adaptive-recipe-2026-11-14.md). Depends on SA01/SA05 baseline. **First intentional adaptive-agent product behavior change.** Program [SA queue](../../storyteller-architecture/implementation-program.md).
 
 ## Cursor first-screen
 

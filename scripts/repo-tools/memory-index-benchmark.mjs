@@ -7,7 +7,7 @@ import {
   materializeLongStoryMemoryCorpus,
 } from '../../packages/application/dist/developer-tools/long-story-memory-corpus.js';
 import { evaluateIndexedMemoryRetrieval } from '../../packages/application/dist/developer-tools/memory-evaluator.js';
-import { buildLexicalStoryIndex } from '../../packages/application/dist/storyteller/lexical-story-index.js';
+import { createLexicalStoryIndexCache } from '../../packages/application/dist/storyteller/lexical-story-index-cache.js';
 import { resolveStoryRetrievalRecipe } from '../../packages/application/dist/storyteller/retrieval-recipes.js';
 
 const requested = process.argv.slice(2).map(Number);
@@ -32,13 +32,15 @@ for (const sceneCount of sceneCounts) {
       storage,
       corpus,
     );
-    const buildStarted = performance.now();
-    const index = await buildLexicalStoryIndex(storage, {
+    const identity = {
       storyId: materialized.storyId,
       rootHash: materialized.rootHash,
       rootRevision: materialized.rootRevision,
-    });
-    const buildMs = performance.now() - buildStarted;
+    };
+    const cache = createLexicalStoryIndexCache({ maxEntries: 4 });
+    const cold = await cache.resolve(storage, identity);
+    const warm = await cache.resolve(storage, identity);
+    const index = warm.index;
     const evaluations = {};
     for (const posture of ['minimal', 'balanced', 'rich']) {
       const queryStarted = performance.now();
@@ -55,7 +57,10 @@ for (const sceneCount of sceneCounts) {
     reports.push({
       sceneCount,
       indexedUnits: index.snapshot().units.length,
-      buildMs,
+      coldBuildMs: cold.buildMs,
+      warmHit: warm.hit,
+      warmBuildMs: warm.buildMs,
+      cacheStats: cache.stats(),
       evaluations,
     });
   } finally {
@@ -66,7 +71,7 @@ for (const sceneCount of sceneCounts) {
 console.log(
   JSON.stringify(
     {
-      format: 'offscreen.memory-index-benchmark.v1',
+      format: 'offscreen.memory-index-benchmark.v2',
       providerCalls: 0,
       reports,
     },

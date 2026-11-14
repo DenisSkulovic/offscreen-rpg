@@ -291,10 +291,10 @@ export function validateStorytellerResult(
       (task.task !== 'consequence' &&
         task.task !== 'pending-consequence' &&
         !task.context.mechanicalOpening &&
-        (next.options.length < 2 || next.options.length > 5)) ||
+        (next.options.length < 1 || next.options.length > 12)) ||
       new Set(labels).size !== labels.length
     ) {
-      throw new Error('Offer must contain 2-5 distinct choices');
+      throw new Error('Offer must contain 1-12 distinct choices');
     }
   }
   const evidence = taskEvidence(task);

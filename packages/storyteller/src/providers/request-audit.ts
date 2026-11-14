@@ -1,5 +1,9 @@
 import type { StorytellerTask } from '../tasks';
 import {
+  assertOpenRouterRequestMatchesCapabilities,
+  resolveModelRouteCapabilities,
+} from './model-route-capabilities';
+import {
   compareOpenRouterRequests,
   inspectOpenRouterRequest,
 } from './openrouter';
@@ -131,6 +135,16 @@ export function createStorytellerRequestAudit(
         usedReads: 0,
         usedBytes: 0,
       };
+      if (task.execution.mode !== 'provider') {
+        throw new Error('Request audit requires provider execution');
+      }
+      const routeCapabilities = resolveModelRouteCapabilities(
+        task.execution.policy,
+      );
+      assertOpenRouterRequestMatchesCapabilities(
+        inspection.body,
+        routeCapabilities,
+      );
       return {
         id,
         sequence: sequence ?? null,
@@ -140,6 +154,7 @@ export function createStorytellerRequestAudit(
         taskInputVersion: task.inputVersion,
         promptVersion: inspection.promptVersion,
         contextPolicyVersion: inspection.contextPolicyVersion,
+        routeCapabilities,
         packet: {
           sha256: inspection.sha256,
           serializedBytes: inspection.serializedBytes,
@@ -251,6 +266,7 @@ export function formatStorytellerRequestAudit(audit: StorytellerRequestAudit) {
       `  library sections: ${entry.librarySelection.loadedHandles.join(', ') || 'none'}; omitted: ${entry.librarySelection.omitted.map((item) => `${item.handle}:${item.reason}`).join(', ') || 'none'}; reads ${entry.librarySelection.usedReads}/${entry.librarySelection.maxReads}; bytes ${entry.librarySelection.usedBytes}/${entry.librarySelection.maxBytes}`,
       `  rule topics: ${entry.librarySelection.requestedTopics.join(', ') || 'none'}; unmatched: ${entry.librarySelection.unmatchedTopics.join(', ') || 'none'}`,
       `  coverage: missing required ${entry.evidence.expectations.missingRequiredHandles.join(', ') || 'none'}; loaded forbidden ${entry.evidence.expectations.loadedForbiddenHandles.join(', ') || 'none'}`,
+      `  route: ${entry.routeCapabilities.route}; reasoning ${entry.routeCapabilities.reasoning.mode}; cache ${entry.routeCapabilities.caching.mode}; priceKnown ${entry.routeCapabilities.pricing.priceKnown}`,
       `  tokens/cache: unknown / unknown`,
     );
   }

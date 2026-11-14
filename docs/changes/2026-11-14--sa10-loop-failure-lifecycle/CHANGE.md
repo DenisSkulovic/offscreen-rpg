@@ -1,6 +1,6 @@
 # SA10 | Bounded Storyteller loop never loses gameplay or spends twice on failure
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** Implement only if the negative proof reveals gaps or adds a valuable regression. Depends SA01 trace. [SA program](../../storyteller-architecture/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa10 sample](../../storyteller-architecture/evidence/sa10-loop-failure-lifecycle-2026-11-14.md). Provider-free retry/charge gates; no paid/DB. Depends SA01 trace. [SA program](../../storyteller-architecture/implementation-program.md).
 
 ## Cursor first-screen brief
 

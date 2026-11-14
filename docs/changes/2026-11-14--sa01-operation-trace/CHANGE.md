@@ -1,6 +1,6 @@
 # SA01 | One redacted Storyteller operation trace from cause to publication
 
-**State: Proposed / design-complete 2026-11-14. No code authorization.** **Program:** [SA queue](../../storyteller-architecture/implementation-program.md). **Why first:** absent a complete causal trace, we cannot know whether bad prose came from missing evidence, omitted final context, invalid output, a rejected plan or a model choice. This is an observable instrumentation/test-code Change, **not** evaluation-only paperwork.
+**State: Done (2026-11-14).** Evidence: [sa01 sample](../../storyteller-architecture/evidence/sa01-operation-trace-sample-2026-11-14.md). **Program:** [SA queue](../../storyteller-architecture/implementation-program.md). Owner authorized merge + SA01 only; stop for critique before SA02.
 
 ## Cursor first-screen brief
 

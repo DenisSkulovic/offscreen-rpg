@@ -301,3 +301,153 @@ export const liveEvaluationManifestSchema = z
 export type LiveEvaluationManifest = z.infer<
   typeof liveEvaluationManifestSchema
 >;
+
+/** SA12: one-variable A/B comparison; dry-run is the default mode. */
+export const liveComparisonDimensionSchema = z.enum([
+  'promptVersion',
+  'recipe',
+  'route',
+]);
+export type LiveComparisonDimension = z.infer<
+  typeof liveComparisonDimensionSchema
+>;
+
+const comparisonRouteSchema = z.strictObject({
+  provider: z.literal('openrouter'),
+  endpointProvider: z.string().min(1).max(100),
+  endpointTag: z.string().min(1).max(100),
+  route: z.string().min(1),
+  model: z.string().min(1),
+  priceVersion: z.string().min(1),
+  outputProtocol: z.enum([
+    'native-json-schema',
+    'json-object-local-validation',
+    'memory-json-object-native-final',
+  ]),
+  responseTransport: z.enum(['buffered-json', 'streaming-sse']),
+  serviceTier: z.enum(['default', 'flex', 'priority']),
+  inputMicrousdPerMillion: unsignedIntegerString,
+  cacheReadMicrousdPerMillion: unsignedIntegerString,
+  cacheWriteMicrousdPerMillion: unsignedIntegerString,
+  outputMicrousdPerMillion: unsignedIntegerString,
+  supportsStructuredOutput: z.boolean(),
+  reasoning: z.literal('disabled'),
+  verifiedAt: z.iso.datetime(),
+  validUntil: z.iso.datetime(),
+});
+
+export const liveComparisonCandidateSchema = z.strictObject({
+  id: z.string().min(1).max(80),
+  label: z.string().min(1).max(160),
+  promptVersion: z.string().min(1).max(80),
+  recipe: liveEvaluationRecipeSchema,
+  route: comparisonRouteSchema,
+  requestSha256: sha256.optional(),
+  requestBytes: z.number().int().nonnegative().optional(),
+});
+export type LiveComparisonCandidate = z.infer<
+  typeof liveComparisonCandidateSchema
+>;
+
+export const liveComparisonStopPolicySchema = z.strictObject({
+  hardCashCapMicrousd: unsignedIntegerString,
+  maxModelRounds: z.number().int().min(1).max(3),
+  maxDispatches: z.number().int().min(1).max(6),
+  allowPaid: z.literal(false),
+  allowAutomaticFallback: z.literal(false),
+  allowRetryAfterUncertain: z.literal(false),
+});
+
+export const humanReviewWorksheetSchema = z.strictObject({
+  version: z.literal('human-review-worksheet.v1'),
+  comparisonId: z.uuid(),
+  dimensions: z.strictObject({
+    profileFaithfulness: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    narrativeOriginality: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    oldPromiseRecall: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    mechanicallyEarnedConsequence: z
+      .enum(['unobserved', 'pass', 'fail'])
+      .default('unobserved'),
+    quietness: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+    nextChoiceAppeal: z.enum(['unobserved', 'pass', 'fail']).default('unobserved'),
+  }),
+  notes: z.string().max(4000).default(''),
+  completedAt: z.iso.datetime().nullable().default(null),
+});
+export type HumanReviewWorksheet = z.infer<typeof humanReviewWorksheetSchema>;
+
+export const liveComparisonTrialManifestSchema = z
+  .strictObject({
+    version: z.literal('live-comparison-trial.v1'),
+    id: z.uuid(),
+    mode: z.enum(['dry-run', 'paid']),
+    createdAt: z.iso.datetime(),
+    case: z.strictObject({
+      id: z.string().min(1).max(120),
+      version: z.string().min(1).max(40),
+      storyFingerprint: z.string().min(1).max(200),
+    }),
+    variedDimension: liveComparisonDimensionSchema,
+    baseline: liveComparisonCandidateSchema,
+    candidate: liveComparisonCandidateSchema,
+    stopPolicy: liveComparisonStopPolicySchema,
+    worstCaseReservationMicrousd: unsignedIntegerString,
+    providerTransport: z.enum(['none', 'openrouter']),
+    outcomes: z.array(
+      z.strictObject({
+        candidateId: z.string().min(1).max(80),
+        status: z.enum([
+          'dry-run-only',
+          'accepted',
+          'malformed',
+          'refused',
+          'blocked',
+          'unknown',
+        ]),
+        chargedMicrousd: unsignedIntegerString.nullable(),
+        latencyMs: z.number().int().nonnegative().nullable(),
+        publicationEligible: z.boolean().nullable(),
+        reportedInputTokens: z.number().int().nonnegative().nullable(),
+        reportedOutputTokens: z.number().int().nonnegative().nullable(),
+        reportedReasoningTokens: z.number().int().nonnegative().nullable(),
+        reportedCacheReadTokens: z.number().int().nonnegative().nullable(),
+        reportedCacheWriteTokens: z.number().int().nonnegative().nullable(),
+      }),
+    ),
+    humanReview: humanReviewWorksheetSchema,
+  })
+  .superRefine((trial, context) => {
+    if (trial.mode === 'paid') {
+      context.addIssue({
+        code: 'custom',
+        path: ['mode'],
+        message:
+          'Paid comparison mode requires a separate owner-authorized runner; dry-run schemas reject paid',
+      });
+    }
+    if (trial.stopPolicy.allowPaid !== false) {
+      context.addIssue({
+        code: 'custom',
+        path: ['stopPolicy', 'allowPaid'],
+        message: 'Dry-run stop policy cannot authorize paid dispatch',
+      });
+    }
+    if (trial.providerTransport !== 'none') {
+      context.addIssue({
+        code: 'custom',
+        path: ['providerTransport'],
+        message: 'Dry-run trials must not open a provider transport',
+      });
+    }
+    if (trial.baseline.id === trial.candidate.id) {
+      context.addIssue({
+        code: 'custom',
+        path: ['candidate', 'id'],
+        message: 'Baseline and candidate identities must differ',
+      });
+    }
+  });
+export type LiveComparisonTrialManifest = z.infer<
+  typeof liveComparisonTrialManifestSchema
+>;
+
