@@ -1,6 +1,6 @@
 # AD01 | Explicit staff principal, Admin session and bootstrap audit
 
-**State: Proposed, NOT Ready.** Code-bearing security foundation. **No implementation authorized by this design branch.** **Depends on:** none; first source/Better Auth version revalidation. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Ready (2026-11-14).** Owner reconcile turn selected AD01 after merging designs onto main. Code-bearing security foundation. **Depends on:** none; revalidate Better Auth on current main before coding. **Parent:** [Admin program](../../admin/implementation-program.md).
 
 ## Cursor first-screen
 

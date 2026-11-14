@@ -2,9 +2,9 @@
 
 **Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Implementation retrieval:** [source-adjacent owner maps](../../apps/web/README.md) before code, [staged toolchain](../engineering/frontend-execution-playbook.md) only if needed. **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
 
-Current change: none
+Current change: [AD01 Staff principal / Admin session](2026-11-14--admin-staff-session/CHANGE.md)
 
-**ENG03-C1 (2026-11-14): Done (core path).** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Residual harden items (lock order, settled-execution fence, provisional retry status, exhausted rearm) still open vs latest design. Full ENG03 Proposed; priorities 2–6 ungated. Sequence: [migration order](../engine-architecture/decisions/eng03-capture-migration-sequence.md).
+**ENG03-C1 (2026-11-14): Done (core path + lock/execution harden).** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Still open: provisional retry status + exhausted rearm. Full ENG03 Proposed; priorities 2–6 ungated. Sequence: [migration order](../engine-architecture/decisions/eng03-capture-migration-sequence.md).
 
 **ENG03-narrow (2026-11-14): Done.** Provisional capture → off-lock promote same G; settlement/publish race matrix + short-lock re-baseline provider-free.
 
