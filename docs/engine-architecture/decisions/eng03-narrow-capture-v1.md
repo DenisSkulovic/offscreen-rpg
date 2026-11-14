@@ -40,7 +40,10 @@ import {
 import { storytellerProfileSchema } from '@offscreen/storyteller/profiles';
 import { executionPolicySchema } from '@offscreen/storyteller/tasks';
 import { activeSceneAnchorSchema } from './context';
-import { librarySectionSelectionSchema } from './canonical-knowledge';
+import {
+  canonicalRuleEvidence,
+  librarySectionSelectionSchema,
+} from './canonical-knowledge';
 import {
   pendingImmediateActionResolutionSchema,
   actionResolutionSourceDigest,
@@ -202,10 +205,9 @@ export const contextCaptureV1Schema = z.strictObject({
   }
   const expectedTopics = v.acceptedPendingResult.resolution.roll
     ? ['time', 'ability-check'] : ['time'];
-  if (JSON.stringify(v.canonicalSelection.ruleSections.ruleTopics) !==
-        JSON.stringify(expectedTopics) ||
-      v.canonicalSelection.ruleSections.handles.length !== 0) {
-    issue(['canonicalSelection'], 'First path requires the frozen rule-evidence recipe');
+  if (JSON.stringify(v.canonicalSelection.ruleSections) !==
+      JSON.stringify(canonicalRuleEvidence(expectedTopics))) {
+    issue(['canonicalSelection'], 'First path requires the exact frozen rule-evidence recipe');
   }
   // Deliberate first-path SQL capture ceiling. No opaque/unbounded history dump.
   if (Buffer.byteLength(JSON.stringify(v), 'utf8') > 256 * 1024) {
@@ -259,7 +261,7 @@ Zod validates structural shape. The Stage-1 collector additionally enforces exac
 5. **One controlling slot:** never insert campaign_consequence for this same base while G owns story_resolution. No new game clock hold while the finite action legitimately runs. If it settles before context preparation, the normal exact G storyteller hold is transferred within the settlement transaction.
 6. A duplicate action command returns its original command receipt. A duplicate materialization wake uses capture.operationId unique and the same G. A Stage-1 error aborts the new action transaction just as admission failure did before refactor.
 
-**Additive row, not a new saga:** storyteller_context_capture has PK capture_id FK generation.id; unique(operation_id), story_id, capture jsonb, capture_sha256, state enum captured/materializing/ready/held/stale/blocked, materialization_attempts bounded integer, lease_id and lease_expires_at nullable, materialized_request_sha256 nullable, failure_code nullable, timestamps. Bounded lease controls concurrent **storage reads only**, not a provider claim. No destructive backfill, and existing generations have no companion row.
+**Additive row, not a new saga:** storyteller_context_capture has PK capture_id FK generation.id; unique(operation_id), story_id, capture JSONB **typed as ContextCaptureV1 in Drizzle and parsed with contextCaptureV1Schema on every read/write**, capture_sha256 SHA256, state checked to captured/materializing/ready/held/stale/blocked, materialization_attempts nonnegative bounded integer, lease_id UUID and lease_expires_at timestamp nullable, materialized_request_sha256 SHA256 nullable, failure_code bounded text nullable, created_at/updated_at timestamps. A single operation has at most one such row. A bounded lease controls concurrent **storage reads only**, not a provider claim. No destructive backfill, and existing generations have no companion row.
 
 ### Stage 2: off-lock immutable materialization and task promotion
 
@@ -276,7 +278,7 @@ Zod validates structural shape. The Stage-1 collector additionally enforces exac
 Preserve publication.ts and the existing staged immutable output CAS commit. For captures with a companion row, require:
 
 - generation.kind=storyteller.profiled.v1, task.task=pending-consequence and source.executionId/capture.operationId/source.passageId/source.revision/targetGameSecond/projectedStateDigest match exactly; generation.id=story_resolution.generationId=execution.preparationGenerationId=receipt.generationId=G;
-- current owner, base passage id/sequence, narrative revision, root hash+revision and frozen active-scene anchor match; an invalid current source yields **stale**, no forced merge or automatic second paid job;
+- current owner, base passage id/sequence, narrative revision, root hash+revision and frozen active-scene anchor match; under the short lock reselect the bounded passage rows and compare their SQL id/sequence/contentDocumentHash or inline content/decoded response to frozen sourcePassages, without reading CAS; also reject unexplained changes to story.premise, continuityNotes, storyteller profile or execution selection. Invalid source yields **stale**, no forced merge or automatic second paid job;
 - current campaign settings revision and relevant scene/world/item/commitment dependencies remain valid, **except for explicitly expected action-settlement mutations**. The character/storyFacts/gameSecond comparison after settlement uses actionProjectedStateDigest and the captured projected digest, **not** the pre-action character/world snapshot; the pre-action offer clearing and activeActionOperationId release are expected transitions, not false staleness;
 - game_action_receipt is settled, exact operation/offer/base revision/outcome/roll/effects/declarations match acceptedPendingResult and game_action_execution; no result while receipt absent;
 - staged root remains based on the frozen root and passes commitStagedStoryPublication's CAS. Never run external DocumentStore reads inside publication lock.
