@@ -14,6 +14,8 @@ The steps are not a compulsory wizard. Straightforward permitted actions should 
 
 A case may contain many actions; an action may be associated with a case, incident or independently justified administrative purpose. A case being closed does not turn failed actions into successes.
 
+**Assignment is not a privilege hack.** If assigned-case membership is used to scope account access or service actions, creating/reassigning a case cannot itself manufacture unrestricted authority. The [Support workspace](support-and-customer-success-product.md) owns customer work; [Governance](access-and-governance-product.md) owns privilege policy; the [adversarial review](product-adversarial-review.md) challenges their intersection. Trust investigations retain their own restricted audience even when linked to an ordinary Support case.
+
 ## Case experience: what staff actually need
 
 - **Entry:** from player contact, system alert, trust report, internal observation or another team.

@@ -23,6 +23,13 @@
 | How are AI tasks, model rounds, outcomes, privacy and real cost investigated? | [AI & Engineering Operations workspace](ai-engineering-operations-product.md) |
 | How are game versions, rollouts, experiments and emergency mitigations governed? | [Live Operations workspace](live-operations-product.md) |
 | Do all four domains agree on causal truth and operator responsibility? | [Cross-workspace coherence review](cross-workspace-product-review.md) |
+| How do customer-facing cases, escalations and proactive success work? | [Support & Customer Success workspace](support-and-customer-success-product.md) |
+| How are activation, retention, cohorts and experiments defined honestly? | [Growth & Insights workspace](growth-and-insights-product.md) |
+| How do restricted investigations, appeals and privacy requests work? | [Trust & Privacy workspace](trust-and-privacy-product.md) |
+| What should a multi-role employee see when opening Admin? | [Command Center workspace](command-center-product.md) |
+| How are staff, authority requests, privileged sessions and audits governed? | [Access & Governance workspace](access-and-governance-product.md) |
+| Where could the product model fail under abuse or ambiguous outcomes? | [Adversarial product review](product-adversarial-review.md) |
+| How can the owner settle key policies without answering forty scattered questions? | [Product policy decision brief](product-policy-decision-brief.md) |
 
 Read one owner for the question; do not preload the entire suite for a narrow decision.
 
@@ -42,9 +49,11 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 
 ## Current product review focus
 
-The first pass defined the product charter, shared entities, workspaces and broad workflows. The second pass deepened [authority](authority-operating-policy.md) and [Player 360](player-360-service-blueprint.md). The third pass deepened [Commercial](commercial-operations-product.md), [Gameplay & Worlds](gameplay-worlds-product.md), [AI & Engineering Operations](ai-engineering-operations-product.md) and [LiveOps](live-operations-product.md), and checked their shared reality in [cross-workspace coherence](cross-workspace-product-review.md).
+The first pass defined the charter and domain map. The second refined [authority](authority-operating-policy.md) and [Player 360](player-360-service-blueprint.md). The third specified [Commercial](commercial-operations-product.md), [Gameplay](gameplay-worlds-product.md), [AI Operations](ai-engineering-operations-product.md) and [LiveOps](live-operations-product.md). The fourth specified [Support & Customer Success](support-and-customer-success-product.md), [Growth](growth-and-insights-product.md), [Trust & Privacy](trust-and-privacy-product.md), [Command Center](command-center-product.md) and [Access & Governance](access-and-governance-product.md).
 
-**Still pending:** critique/resolve the business policies in [decisions](decisions-and-readiness.md), especially funding/usage, shared-campaign authority, sensitive narrative evidence, safe repair and version adoption. Support/Customer Success, Growth/Insights, Trust/Privacy, Command Center and Staff Governance still deserve their own detailed workspace reviews before product acceptance. Neither a long document nor a proposed recommendation constitutes owner approval.
+**All ten proposed logical workspaces now have a product-level owner document**, counting the Player 360/account experience. This is broad *design coverage*, not owner approval. The [adversarial review](product-adversarial-review.md) identified critical unresolved policies; the [decision brief](product-policy-decision-brief.md) groups the owner choices into manageable packages. The [decision register](decisions-and-readiness.md) remains the status owner.
+
+**Next:** resolve high-severity cross-domain policies, especially case-assignment privilege laundering, raw evidence and consent, shared-campaign rights, customer funding/metering, repairs, LiveOps emergency authority and data-rights outcomes. Re-walk affected journeys and obtain owner product acceptance. **Do not start technical architecture or Cursor Changes just because detailed documentation exists.**
 
 ## Status language
 

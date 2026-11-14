@@ -9,8 +9,14 @@ This document is the domain **overview**. Detailed operator journeys, surfaces, 
 - [Gameplay & Worlds](gameplay-worlds-product.md)
 - [AI & Engineering Operations](ai-engineering-operations-product.md)
 - [Live Operations](live-operations-product.md)
+- [Support & Customer Success](support-and-customer-success-product.md)
+- [Growth & Insights](growth-and-insights-product.md)
+- [Trust & Privacy](trust-and-privacy-product.md)
+- [Command Center](command-center-product.md)
+- [Access & Governance](access-and-governance-product.md)
+- [Player 360](player-360-service-blueprint.md) for the account/participation experience
 
-Their cross-domain consistency and open dependencies are assessed in [cross-workspace coherence](cross-workspace-product-review.md). The other domains in this document remain at overview depth pending later product passes. These documents **do not** select a technical implementation.
+All logical workspaces now have dedicated product-level owner documents, but unresolved cross-domain choices remain in [adversarial review](product-adversarial-review.md) and [product policy brief](product-policy-decision-brief.md). Their causal boundaries are assessed in [cross-workspace coherence](cross-workspace-product-review.md). None of these documents selects a technical implementation or constitutes owner acceptance.
 
 ## 1. Commercial and customer economics
 

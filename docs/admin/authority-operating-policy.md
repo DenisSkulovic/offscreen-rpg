@@ -30,6 +30,8 @@ Likewise, "can see a record" + "can edit a different class of record" never beco
 
 **Non-negotiable product behavior:** global restrictions, legal/privacy boundaries, separation-of-duty controls, explicit account restrictions, and resource ownership must not disappear simply because an employee has a second role. Exact evaluation and deny precedence are technical design, but these safety outcomes are product requirements.
 
+**Case-assignment privilege laundering must be excluded.** If case assignment is a condition for compensation, account access or sensitive investigation, staff cannot self-assign an arbitrary protected case to manufacture that condition. Case creation, assignment and reassignment have their own bounded governance, provenance and review requirements; a named sensitive-data exception may still be needed beyond general case assignment. This is a product rule prompted by [adversarial review PR-01](product-adversarial-review.md#pr-01-case-ownership-becomes-privilege-escalation), not a technical role-engine prescription.
+
 ### The scope vocabulary operators should understand
 
 | Scope dimension | Operator-facing meaning | Why it matters |

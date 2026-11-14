@@ -66,6 +66,21 @@ Dedicated workspace specifications now cover:
 
 **Not accepted yet:** exact commercial metering/cancellation rules, paid contract treatment, multiplayer funding and participant authority, sensitive evidence access/notification, repair taxonomy, task-version compatibility, and metric/alert policies. The product gate remains **open**. The next domain-depth work should address Support, Growth, Trust/Privacy, Command Center and Staff Governance, followed by cross-functional owner review.
 
+## Fourth-pass workspaces and adversarial review (2026-11-14; proposed, NOT owner decisions)
+
+The remaining five specialist operator experiences have dedicated proposed product documents:
+- [Support & Customer Success](support-and-customer-success-product.md): native case context, escalation, credible remedies and nonintrusive customer success.
+- [Growth & Insights](growth-and-insights-product.md): human engagement versus world simulation, cohort/experiment provenance, marketing consent and honest metrics.
+- [Trust & Privacy](trust-and-privacy-product.md): restricted evidence, generated versus player-authored material, proportional enforcement, appeals and rights-request completion.
+- [Command Center](command-center-product.md): personalized cross-role work, search, queues and freshness without privilege or data-ownership expansion.
+- [Access & Governance](access-and-governance-product.md): staff lifecycle, bounded package composition, assignment authority, delegated sessions, approvals and audit.
+
+**Design coverage:** all ten proposed logical workspaces have product-owner documents, with [Player 360](player-360-service-blueprint.md) representing Players & Accounts. The [adversarial review](product-adversarial-review.md) identifies **critical policy risks** that still prevent product acceptance; the [policy decision brief](product-policy-decision-brief.md) groups open questions into ten decision packages.
+
+**Critical unresolved categories:** case self-assignment as privilege escalation; raw/private evidence crossing case or vendor boundaries; genuinely non-mutating player preview; shared campaign repair and data rights; uncertain billed AI provider work versus commercial allowances; emergency access and staff conflicts. Recommendations are not approved merely because they are detailed.
+
+**Next gate:** owner acceptance/revision/explicit deferral of the high-impact policies, followed by adversarial re-review. Technical architecture and Change dossiers remain forbidden by this document alone.
+
 ## Highest-priority product decisions to resolve
 
 | ID | Decision | Consequence |
@@ -103,6 +118,20 @@ Do not answer these by merely copying implementation choices from the current re
 | AD-P24 | Permissible game repair and historical correction classes, including what cannot be reversed or rewound? |
 | AD-P25 | AI/gameplay quality: which correctness, fidelity and experiential measures are meaningful, with coverage and human review? |
 | AD-P26 | Which LiveOps artifacts can staff author/publish through Admin versus gated external release review, and under what change approvals? |
+| AD-P27 | What verifies a legitimate support requester for account recovery and what case information may they see? |
+| AD-P28 | Which proactive Customer Success outreach is legitimate and how are contact preferences and opt-outs handled? |
+| AD-P29 | What counts as first meaningful activation, human engagement, retention and paid conversion across account/campaign units? |
+| AD-P30 | What cohort privacy, minimum-size, export and messaging permission controls are necessary for Growth? |
+| AD-P31 | What experiment/exposure/attribution evidence is required, especially for shared campaigns? |
+| AD-P32 | Which Trust enforcement actions, evidence standards, independent review and appeals are appropriate? |
+| AD-P33 | Which data-rights, lawful retention, shared-story and external-processor policies must the Admin communicate and track? |
+| AD-P34 | How should generated versus player-authored content be represented as enforcement and disclosure evidence? |
+| AD-P35 | What is the shared work-item/assignment/alert taxonomy across professional homepages? |
+| AD-P36 | Which search, autocomplete, dashboard and saved-view metadata may be exposed under varying authority? |
+| AD-P37 | What personalization is worth supporting for the Command Center versus simple curated defaults? |
+| AD-P38 | How does first-staff bootstrap work, how do packages evolve, and what conflict-of-interest exclusions apply? |
+| AD-P39 | What are the governance boundaries and accountable owners for automated/service identities? |
+| AD-P40 | What sensitive-read review, staff-audit visibility, recertification and retention policies are appropriate? |
 
 ## Product validation: scenario reviews
 
@@ -132,7 +161,7 @@ Do **not** advance to technical design until:
 - LiveOps/repair limitations do not contradict committed gameplay truth.
 - Native-versus-integrated ownership is clear at the product level.
 - P0 questions AD-P01–AD-P10 are either resolved or explicitly constrained out of initial scope with a defined later decision.
-- A independent product challenge has examined misuse, confused-operator and adverse player scenarios.
+- An independent product challenge has examined misuse, confused-operator and adverse player scenarios; its **critical findings have an accepted policy or explicitly deferred capability**.
 - Owner marks the product direction accepted. Until then, these are **design proposals**.
 
 ## Technical-design completion gate (future)
@@ -175,6 +204,6 @@ This sequence is illustrative and depends on demand. **Critical safeguards must 
 
 ## Next product-design session
 
-The Authority/Player 360 and Commercial/Gameplay/AI/LiveOps deep dives are recorded and remain proposed. Next, examine **Support & Customer Success**, **Growth & Insights**, **Trust & Privacy**, the **personalized Command Center**, and **Access & Governance** at equivalent operational depth. Run [cross-workspace coherence](cross-workspace-product-review.md) and [operator journeys](operator-journeys-and-interaction-contracts.md) against all of them.
+All proposed logical workspace product specifications are now drafted. **Next is a decision and challenge phase, not another catalog expansion.** Review the [product policy decision brief](product-policy-decision-brief.md) and [adversarial product review](product-adversarial-review.md). Resolve Gate A decisions and explicitly scope any Gate B deferrals in the permanent owning documents; validate the negative cases again.
 
-Then resolve or explicitly defer each owner decision with a product acceptance rationale; do **not** quietly treat author recommendations as selected policy. Only an accepted product model permits technical design, and only accepted technical design permits bounded Cursor implementation Changes.
+A specific owner acceptance is required before the product gate changes status. Only then may technical design begin. Only approved technical design leads to code-bearing Change folders for Cursor.

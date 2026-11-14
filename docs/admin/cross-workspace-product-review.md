@@ -1,6 +1,6 @@
 # Cross-workspace coherence | product-design review
 
-**Status:** Proposed product review lens, 2026-11-14. **Owns:** checking that Commercial, Gameplay, AI Operations and LiveOps tell one consistent story. **Not:** an approval record, a system architecture, technical data contract, or implementation Change. Review the full domain owners: [Commercial](commercial-operations-product.md), [Gameplay](gameplay-worlds-product.md), [AI Operations](ai-engineering-operations-product.md), [LiveOps](live-operations-product.md); [Player 360](player-360-service-blueprint.md), [Authority](authority-operating-policy.md), and [operator journeys](operator-journeys-and-interaction-contracts.md).
+**Status:** Proposed product review lens, 2026-11-14. **Owns:** checking that Commercial, Gameplay, AI Operations and LiveOps tell one consistent story, with other staff workspaces seeing permissioned projections of that truth. **Not:** an approval record, a system architecture, technical data contract, or implementation Change. Review the full domain owners: [Commercial](commercial-operations-product.md), [Gameplay](gameplay-worlds-product.md), [AI Operations](ai-engineering-operations-product.md), [LiveOps](live-operations-product.md); [Player 360](player-360-service-blueprint.md), [Authority](authority-operating-policy.md), and [operator journeys](operator-journeys-and-interaction-contracts.md).
 
 ## The central product model: four kinds of truth
 
@@ -60,25 +60,40 @@ Gameplay: a long accepted activity may progress and still be healthy. AI: no mod
 - **Explain player impact:** other participants, contractual promises, earned work and previously seen narrative cannot be made to disappear by a UI toggle.
 - **Explain product scope:** desired Admin behavior does not prove the current engine implements it.
 
+## Extended responsibilities across the remaining workspaces
+
+- **Support & Customer Success:** compose customer-facing explanations and case remediations from permissible facts. A case link may identify an issue without exposing raw prompt, Trust allegations or another participant's data.
+- **Growth & Insights:** distinguish human action from offscreen simulation and provider work; correlate retention, reliability and economics without conflating accounts, campaigns and payers.
+- **Trust & Privacy:** protect restricted evidence, handle generated-versus-player content provenance, manage appeals and verified data-rights requests even where shared history or processors complicate completion.
+- **Command Center:** compose queues and metrics without becoming its own data or authorization owner. Saved links and notifications are also sensitive output surfaces.
+- **Access & Governance:** enforce bounded grant provenance, case-assignment restrictions, independent approvals, staff lifecycle, delegated session revocation and audit review.
+
+### Additional cross-workspace tests
+
+| Exercise | Required coherent result |
+| --- | --- |
+| Support self-assigns a case about a high-profile player | Case assignment itself does not unlock protected raw narratives, grants or secret account existence |
+| Trust links an allegation to an ordinary Support case | Support sees safe restriction/appeal info, not reporter identity or confidential evidence |
+| CS follows up with a dormant player | Only permitted onboarding/engagement facts and contact preferences; no covert story-content profiling |
+| Growth reports "daily engagement" while world work runs offline | Counts of actual human action and campaigns remain separate; model calls are not DAU |
+| Privacy request references one member of a shared campaign | Account rights, shared published history, other members and external processors are separately assessed |
+| Operator revocation occurs with a pinned Command Center card | Cached titles/details/actions lose effective access; pending work is reassigned |
+| Emergency cost stop during pending mechanical action | Future funded dispatch can be restricted without pretending prior game time, provider spend or contractual rights were erased |
+
+The [adversarial product review](product-adversarial-review.md) expands these tests into explicit failure modes. The [decision brief](product-policy-decision-brief.md) groups outstanding product choices.
+
 ## What cannot be accepted yet
 
-The four workspace specifications are substantial but remain proposed. We have **not** settled:
-- subscription/allowance and sponsorship policies;
-- shared-campaign payer/beneficiary/ownership and notice;
-- precise repair, replay and historical-correction permissions;
-- LiveOps compatibility version matrix or emergency stop obligations;
-- sensitive prompt/story exposure policy;
-- which metrics and data coverage justify operational decisions;
-- all required stakeholder journeys for Growth, Trust, Privacy, support communications and access governance.
+All logical workspaces have **proposed product specifications**, but broad documentation coverage is not approval. We have not settled customer metering and sponsorship promises, shared-campaign rights and notice, acceptable repairs, version adoption, private-story access and consent, scope escalation via case assignment, emergency separation of duties, trusted identity recovery, rights-request retention/processor policy or defensible metric definitions.
 
-Those are owner/product decisions, not reasons to improvise technical infrastructure.
+The [decision register](decisions-and-readiness.md) stays the formal status owner. Do not improvise unresolved policy as middleware configuration or allow a UI workflow to make the decision by default.
 
 ## Next product review order
 
-1. Owner critique of these four workspace promises and their open decisions.
-2. Apply the same level of specificity to Support & Cases, Growth & Insights, Trust & Privacy, Command Center and Staff Governance where still underspecified.
-3. Run adversarial cross-workspace scenarios, including unauthorized staff access, shared-game consent, external billing ambiguity and active-task compatibility.
-4. Record accepted versus deferred business policy in the [decision register](decisions-and-readiness.md).
-5. **Only then** assess product-design completion and begin technical architecture. Implementation Change folders come after technical approval.
+1. Owner challenges [product policy decision brief](product-policy-decision-brief.md) and high-severity [adversarial scenarios](product-adversarial-review.md).
+2. Accept, revise or intentionally defer each gate-relevant capability at its owning product document.
+3. Re-walk multi-role, shared-campaign, cost-uncertainty and privacy journeys with the chosen rules.
+4. Reassess [product completion gate](decisions-and-readiness.md#product-design-completion-gate) with owner acceptance.
+5. **Only then** begin technical architecture. Cursor Change folders follow approved technical design.
 
 This is a design-check document, not a green light to code.

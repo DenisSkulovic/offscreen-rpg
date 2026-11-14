@@ -38,7 +38,7 @@ Do not predefine an endless list of compound roles. The persona expresses a **jo
 
 This is a **logical information architecture**. Workspaces can have different navigation density or subviews later, but they must share subjects, identities, links and a consistent meaning of status.
 
-**Specialist workspace details (product proposals):** [Commercial](commercial-operations-product.md), [Gameplay](gameplay-worlds-product.md), [AI & Engineering](ai-engineering-operations-product.md) and [LiveOps](live-operations-product.md). A [coherence review](cross-workspace-product-review.md) tests their common entity/status boundaries. These links are not grants of authority or proof of implemented routes.
+**Specialist workspace product specs:** [Support & Customer Success](support-and-customer-success-product.md), [Gameplay](gameplay-worlds-product.md), [AI & Engineering](ai-engineering-operations-product.md), [LiveOps](live-operations-product.md), [Commercial](commercial-operations-product.md), [Growth & Insights](growth-and-insights-product.md), [Trust & Privacy](trust-and-privacy-product.md), [Command Center](command-center-product.md) and [Access & Governance](access-and-governance-product.md). [Player 360](player-360-service-blueprint.md) details Players & Accounts. Their boundaries are challenged by [cross-workspace coherence](cross-workspace-product-review.md) and [adversarial review](product-adversarial-review.md). Links are not grants of authority or proof of implemented routes.
 
 ## Cross-workspace design rules
 
