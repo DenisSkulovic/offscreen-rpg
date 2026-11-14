@@ -1,6 +1,6 @@
 # Offscreen Control | Cursor first-wave handoff
 
-**Status:** AD01 **Done** 2026-11-14 ([evidence](../evidence/ad01-staff-session-2026-11-14.md)). Remaining AD02–AD08 stay **Proposed** until the owner selects the next packet. `docs/changes/README.md` is `Current change: none` after AD01.
+**Status:** AD01 + AD02 **Done** 2026-11-14 ([ad01](../evidence/ad01-staff-session-2026-11-14.md), [ad02](../evidence/ad02-grant-policy-2026-11-14.md)). Remaining AD03–AD08 stay **Proposed** until the owner selects the next packet. `docs/changes/README.md` is `Current change: none`.
 
 ## Do not paste the entire Admin corpus into Cursor's context
 

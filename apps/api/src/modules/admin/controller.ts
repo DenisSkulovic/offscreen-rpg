@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   Inject,
   Injectable,
+  Param,
   Post,
   Req,
   Res,
@@ -14,19 +16,33 @@ import {
 import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { fromNodeHeaders } from 'better-auth/node';
-import type { AdminErrorV1, AdminSelfV1 } from '@offscreen/contracts/admin';
+import type {
+  AdminAccessDecisionV1,
+  AdminErrorV1,
+  AdminSelfV1,
+  AdminStaffAccessV1,
+} from '@offscreen/contracts/admin';
 import {
   AdminSessionError,
   clearAdminCookie,
+  createAdminAccess,
+  getAdminPackage,
   readAdminTokenFromCookieHeader,
+  resourceKindForCapability,
   selectAdminCookieMode,
   serializeAdminCookie,
+  type AdminAccess,
+  type AdminActor,
+  type AdminCapability,
+  type AdminEnvironment,
   type AdminSessions,
 } from '@offscreen/application/admin';
+import type { Database } from '@offscreen/db';
 import type { Auth } from '../auth/auth.js';
 import { AUTH } from '../auth/identity.js';
 
 export const ADMIN_SESSIONS = Symbol('ADMIN_SESSIONS');
+export const ADMIN_ACCESS = Symbol('ADMIN_ACCESS');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 
 type AuthProof = Readonly<{
@@ -40,6 +56,7 @@ export class AdminActorService {
   constructor(
     @Inject(AUTH) private readonly auth: Auth,
     @Inject(ADMIN_SESSIONS) private readonly sessions: AdminSessions,
+    @Inject(ADMIN_ACCESS) private readonly access: AdminAccess,
     @Inject(ADMIN_ORIGIN) private readonly origin: string,
   ) {}
 
@@ -53,11 +70,17 @@ export class AdminActorService {
         throw new ServiceUnavailableException('Identity service unavailable');
       });
     if (!session?.session || !session.user) {
-      throw new HttpException(adminError('unauthenticated'), HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        adminError('unauthenticated'),
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     const createdAt = session.session.createdAt;
     if (!(createdAt instanceof Date) && typeof createdAt !== 'string') {
-      throw new HttpException(adminError('step_up_required'), HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        adminError('step_up_required'),
+        HttpStatus.FORBIDDEN,
+      );
     }
     return {
       userId: session.user.id,
@@ -78,7 +101,9 @@ export class AdminActorService {
     );
   }
 
-  async requireStaff(request: Request): Promise<AdminSelfV1> {
+  async requireStaffActor(
+    request: Request,
+  ): Promise<{ actor: AdminActor; self: AdminSelfV1 }> {
     const proof = await this.requireAuthProof(request.headers);
     const token = this.readToken(request);
     if (!token) {
@@ -88,13 +113,62 @@ export class AdminActorService {
       );
     }
     try {
-      const { self } = await this.sessions.resolve({
+      const { actor, self } = await this.sessions.resolve({
         token,
         authUserId: proof.userId,
         authSessionId: proof.sessionId,
       });
-      return self;
+      const workspaceFamilies = await this.access.workspaceFamilies(
+        actor.staffPrincipalId,
+      );
+      return {
+        actor,
+        self: { ...self, workspaceFamilies },
+      };
     } catch (error) {
+      throw mapAdminError(error);
+    }
+  }
+
+  async requireStaff(request: Request): Promise<AdminSelfV1> {
+    return (await this.requireStaffActor(request)).self;
+  }
+
+  /**
+   * Deny-by-default capability gate. Missing authority → privacy 404.
+   * Unknown capability strings → 403.
+   */
+  async requireCapability(
+    request: Request,
+    input: {
+      capability: AdminCapability;
+      resourceKind?: string;
+      resourceId?: string | null;
+      environment: AdminEnvironment;
+      caseId?: string | null;
+      /** Customer resource lookups hide denial as 404; staff/meta use 403. */
+      hideDenialAsNotFound?: boolean;
+    },
+  ): Promise<{ actor: AdminActor; decisionId: string }> {
+    const { actor } = await this.requireStaffActor(request);
+    try {
+      const result = await this.access.requireCapability(actor, {
+        capability: input.capability,
+        resourceKind:
+          input.resourceKind ?? resourceKindForCapability(input.capability),
+        resourceId: input.resourceId ?? null,
+        environment: input.environment,
+        caseId: input.caseId ?? null,
+      });
+      return { actor, decisionId: result.decisionId };
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized' &&
+        input.hideDenialAsNotFound !== false
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
       throw mapAdminError(error);
     }
   }
@@ -122,14 +196,26 @@ function mapAdminError(error: unknown): HttpException {
         return new HttpException(body, HttpStatus.FORBIDDEN);
     }
   }
-  return new HttpException(adminError('unavailable'), HttpStatus.SERVICE_UNAVAILABLE);
+  return new HttpException(
+    adminError('unavailable'),
+    HttpStatus.SERVICE_UNAVAILABLE,
+  );
 }
+
+type AccessCheckBody = {
+  capability?: string;
+  resourceKind?: string;
+  resourceId?: string;
+  environment?: string;
+  caseId?: string;
+};
 
 @Controller('admin')
 export class AdminController {
   constructor(
     @Inject(AdminActorService) private readonly actors: AdminActorService,
     @Inject(ADMIN_SESSIONS) private readonly sessions: AdminSessions,
+    @Inject(ADMIN_ACCESS) private readonly access: AdminAccess,
   ) {}
 
   @Post('session/enter')
@@ -145,6 +231,10 @@ export class AdminController {
         authSessionId: proof.sessionId,
         authSessionCreatedAt: proof.sessionCreatedAt,
       });
+      const workspaceFamilies = await this.access.workspaceFamilies(
+        self.staffPrincipalId,
+      );
+      const enriched = { ...self, workspaceFamilies };
       response.setHeader(
         'Set-Cookie',
         serializeAdminCookie(
@@ -153,7 +243,7 @@ export class AdminController {
           new Date(self.sessionExpiresAt),
         ),
       );
-      return self;
+      return enriched;
     } catch (error) {
       throw mapAdminError(error);
     }
@@ -194,4 +284,111 @@ export class AdminController {
     );
     return { version: 1 as const, closed: true };
   }
+
+  /** Narrow self access view; other staff requires staff.access.inspect. */
+  @Get('staff/:staffId/access')
+  async staffAccess(
+    @Req() request: Request,
+    @Param('staffId') staffId: string,
+  ): Promise<AdminStaffAccessV1> {
+    const { actor } = await this.actors.requireStaffActor(request);
+    if (staffId !== actor.staffPrincipalId) {
+      await this.actors.requireCapability(request, {
+        capability: 'staff.access.inspect',
+        resourceKind: 'staff',
+        resourceId: staffId,
+        environment: 'local',
+        hideDenialAsNotFound: false,
+      });
+    }
+    const assignments = await this.access.listAssignments(staffId);
+    return {
+      version: 1,
+      staffPrincipalId: staffId,
+      packages: assignments.map((assignment) => {
+        const pkg = getAdminPackage(
+          assignment.packageId,
+          assignment.packageVersion,
+        );
+        const workspaceFamilies = pkg
+          ? [...new Set(pkg.grants.map((grant) => grant.workspaceFamily))].sort()
+          : [];
+        return {
+          packageId: assignment.packageId,
+          packageVersion: assignment.packageVersion,
+          status: assignment.status,
+          workspaceFamilies,
+        };
+      }),
+    };
+  }
+
+  /**
+   * Access Inspector internal decision (safe codes only).
+   * Does not reveal whether a customer resource exists.
+   */
+  @Post('access/check')
+  @HttpCode(HttpStatus.OK)
+  async accessCheck(
+    @Req() request: Request,
+    @Body() body: AccessCheckBody,
+  ): Promise<AdminAccessDecisionV1> {
+    const { actor } = await this.actors.requireStaffActor(request);
+    if (
+      !body?.capability ||
+      !body.resourceKind ||
+      !body.environment ||
+      (body.environment !== 'local' &&
+        body.environment !== 'staging' &&
+        body.environment !== 'production')
+    ) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const result = await this.access.evaluate(actor, {
+      capability: body.capability,
+      resourceKind: body.resourceKind,
+      resourceId: body.resourceId ?? null,
+      environment: body.environment,
+      caseId: body.caseId ?? null,
+    });
+    return {
+      version: 1,
+      decision: result.decision,
+      reason: result.reason,
+      decisionId: result.decisionId,
+      ...(result.matchedPackageId
+        ? { matchedPackageId: result.matchedPackageId }
+        : {}),
+    };
+  }
+
+  /**
+   * Guard probe for AD02: player summary gate without AD03 DTO.
+   * Denied → privacy 404; allowed → acknowledgement only.
+   */
+  @Get('players/:playerId/summary-probe')
+  async playerSummaryProbe(
+    @Req() request: Request,
+    @Param('playerId') playerId: string,
+  ) {
+    const { decisionId } = await this.actors.requireCapability(request, {
+      capability: 'player.summary.read',
+      resourceKind: 'player',
+      resourceId: playerId,
+      environment: 'local',
+    });
+    return {
+      version: 1 as const,
+      allowed: true as const,
+      playerId,
+      decisionId,
+    };
+  }
+}
+
+export function createAdminAccessProvider(database: Database): AdminAccess {
+  return createAdminAccess(database);
 }

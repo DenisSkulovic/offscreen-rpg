@@ -87,7 +87,7 @@ test(
       const self = await readJson<AdminSelfV1>(enter);
       assert.equal(self.version, 1);
       assert.equal(self.staffPrincipalId, boot.staffPrincipalId);
-      assert.deepEqual(self.workspaceFamilies, []);
+      assert.ok(self.workspaceFamilies.includes('player'));
       const adminCookie = adminCookieFrom(enter);
       assert.ok(adminCookie);
       assert.ok(!adminCookie.includes(self.staffPrincipalId));
@@ -155,7 +155,7 @@ test(
          WHERE staff_principal_id = $1`,
         [boot.staffPrincipalId],
       );
-      assert.equal(assignment.rows[0]?.status, 'inert');
+      assert.equal(assignment.rows[0]?.status, 'active');
       assert.equal(assignment.rows[0]?.package_id, 'admin-reader');
 
       // Email twin without principal still denied (otherUser).

@@ -21,6 +21,7 @@ const suites = {
   storyteller: 'storyteller.integration.js',
   'start-package': 'start-package.integration.js',
   'admin-session': 'admin-session.integration.js',
+  'admin-policy': 'admin-policy.integration.js',
 };
 
 function usage() {
@@ -45,8 +46,8 @@ try {
       'Unknown suite or too many arguments. Quote a multi-word pattern.',
     );
   }
-  // admin-session is Nest/API-only; do not turbo-build api-integration (it depends on web).
-  if (suite === 'admin-session') {
+  // Admin API suites are Nest-only; do not turbo-build api-integration (depends on web).
+  if (suite === 'admin-session' || suite === 'admin-policy') {
     const env = providerFreeEnvironment();
     for (const filter of [
       '@offscreen/contracts',

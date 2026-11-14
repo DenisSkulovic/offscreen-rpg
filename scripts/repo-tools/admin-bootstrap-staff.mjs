@@ -51,7 +51,7 @@ try {
         created: result.created,
         staffPrincipalId: result.staffPrincipalId,
         assignmentId: result.assignmentId,
-        assignmentStatus: 'inert',
+        assignmentStatus: 'active',
       },
       null,
       2,

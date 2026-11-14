@@ -29,12 +29,16 @@ import {
   type IdentityResolver,
 } from './modules/auth/identity.js';
 import {
+  ADMIN_ACCESS,
   ADMIN_ORIGIN,
   ADMIN_SESSIONS,
   AdminActorService,
   AdminController,
 } from './modules/admin/controller.js';
-import { createAdminSessions } from '@offscreen/application/admin';
+import {
+  createAdminAccess,
+  createAdminSessions,
+} from '@offscreen/application/admin';
 import { createDrafts } from '@offscreen/application/drafts';
 import { DRAFTS, DraftsController } from './modules/drafts/controller.js';
 import { createScriptedOpenings } from '@offscreen/application/generations';
@@ -205,6 +209,10 @@ export async function createApp(
         {
           provide: ADMIN_SESSIONS,
           useValue: createAdminSessions(database),
+        },
+        {
+          provide: ADMIN_ACCESS,
+          useValue: createAdminAccess(database),
         },
         AdminActorService,
         { provide: DRAFTS, useValue: createDrafts(database) },

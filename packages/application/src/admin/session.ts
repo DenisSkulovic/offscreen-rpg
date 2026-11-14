@@ -354,8 +354,9 @@ export async function bootstrapAdminStaff(
       staffPrincipalId: principal.id,
       packageId: ADMIN_BOOTSTRAP_PACKAGE_ID,
       packageVersion: ADMIN_BOOTSTRAP_PACKAGE_VERSION,
-      status: 'inert',
-      scope: { environment: input.environment },
+      // AD02 registry gives the package meaning; new bootstraps are active.
+      status: 'active',
+      scope: { environments: [input.environment] },
       provenance: {
         kind: 'cli-bootstrap',
         actorLabel: input.actorLabel,
@@ -376,7 +377,7 @@ export async function bootstrapAdminStaff(
       packageId: ADMIN_BOOTSTRAP_PACKAGE_ID,
       packageVersion: ADMIN_BOOTSTRAP_PACKAGE_VERSION,
       assignmentId: assignment.id,
-      assignmentStatus: 'inert',
+      assignmentStatus: 'active',
     },
   });
 

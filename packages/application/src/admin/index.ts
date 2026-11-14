@@ -20,3 +20,27 @@ export {
   type AdminSessions,
   type AdminSessionErrorCode,
 } from './session.js';
+export {
+  ADMIN_CAPABILITIES,
+  ADMIN_RESOURCE_KINDS,
+  getAdminPackage,
+  listAdminPackages,
+  isAdminCapability,
+  isAdminResourceKind,
+  resourceKindForCapability,
+  type AdminCapability,
+  type AdminResourceKind,
+  type AdminEnvironment,
+  type AdminGrantScope,
+  type AdminCapabilityPackage,
+} from './registry.js';
+export {
+  evaluateAdminAccess,
+  workspaceFamiliesFromAssignments,
+  type AdminAccessDecision,
+  type AdminAccessReason,
+  type IntactGrantAssignment,
+  type AdminAccessRequest,
+  type AdminAccessResult,
+} from './policy.js';
+export { createAdminAccess, type AdminAccess } from './access.js';

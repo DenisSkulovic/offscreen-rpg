@@ -1,6 +1,6 @@
 # AD02 | Scoped capability packages and deny-by-default Admin policy
 
-**State: Proposed, NOT Ready.** Code-bearing authorization. **Depends on:** AD01. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Code-bearing authorization. **Depends on:** AD01 Done. **Parent:** [Admin program](../../admin/implementation-program.md). Evidence: [ad02-grant-policy](../../admin/evidence/ad02-grant-policy-2026-11-14.md).
 
 ## Cursor first-screen
 
@@ -12,25 +12,20 @@
 >
 > **Do not:** add generic IAM scripting, unrestricted `isAdmin`, role header from browser, legacy story owner spoofing, private narrative reads, admin mutations or unrelated UI.
 
-## Intended code delta
+## Landed code delta
 
-1. Add closed typed capability/resource registry, stable package versions, complete scoped grant assignments with expiration/provenance. Package content is code-defined for V1; assignments are durable and revocable.
-2. Implement pure policy evaluator: valid Admin actor + resource kind + requested operation + environment + exact scope/conditions + deny and assurance/approval gates; union of **intact** grants, not verb/scope Cartesian product.
-3. Add Nest Admin guard/context that centrally denies by default for each new Admin endpoint. Resource existence and protected metadata cannot leak through denied lookups or policy failure responses.
-4. Make case/assignment-based scope conditional on separately authorized assignment provenance. A fabricated self-assignment must not satisfy private/sensitive access.
-5. Add Access Inspector internal decision model and safe result codes; no broad policy-introspection endpoint yet.
-6. Tests for resource families, compound-role intersections, expiry/revocation and no scope elevation.
+1. Closed capability/package registry (`admin-reader`, `support-operator`, `engineering-observer`, `staff-access-steward`, `security-auditor` v1).
+2. Pure `evaluateAdminAccess`: intact-grant union, env/scope/case-provenance gates; inert/revoked/expired never authorize.
+3. Nest `requireCapability` deny-by-default; customer denials → privacy `404 not_found`. `POST /api/admin/access/check`, `GET /api/admin/staff/:id/access`, guard probe `GET /api/admin/players/:id/summary-probe`.
+4. Bootstrap assignments now `active` with `environments[]` (AD02 gives package meaning).
+5. Pure table tests + `pnpm test:focus -- admin-policy`.
 
 ## Normal and discriminating negative
 
-**Normal:** a staff Reader can inspect a named allowed player summary (once AD03 exists) and an Engineer Observer can inspect redacted operations where permitted; a staff user can hold both grants without losing their legitimate permissions.
+**Normal:** scoped Reader allows named local player probe; self access inspect lists active packages; `/me` workspace families reflect active grants.
 
-**Negative:** case-scoped compensation grant plus global analytics read does **not** permit global compensation. Self-assigning a case cannot make the hidden player readable. Nonstaff, stale privilege epoch, unknown capability, environment mismatch and exported/hidden field access all deny.
+**Negative:** out-of-scope player → 404; production env mismatch deny; unknown capability deny; self-made case id without provenance deny; player-only cookie 403; nonstaff enter 403.
 
-**Proof:** pure table-driven policy cases and disposable DB/Nest access guard integration, including legitimate allowed request and forbidden guessed resource. Distinguish 401, safe 403 and privacy-preserving 404 without exposing hidden subject existence.
+## Excluded / next
 
-## Excluded / risk
-
-No money-moving action, permissions-editing UI, full invitation system, external SSO policy or staff-hosted production approval.
-
-**Ready gate:** AD01 Done and current staff DB/auth code inspected; owner selects this packet. No single helper should silently skip resource checks for a future Admin route. **Return:** actual tests/negative proof, migration changes, audit and denied behavior, next AD03.
+No AD03 Player 360 DTO, no invitation UI, no MFA. Provider spend: none. Next: **AD03**.

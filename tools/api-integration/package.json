@@ -18,7 +18,8 @@
     "test:private-route": "node --test dist/test/private-route-evidence.integration.js",
     "test:storyteller": "node --test dist/test/storyteller.integration.js",
     "test:start-package": "node --test dist/test/start-package.integration.js",
-    "test:admin-session": "node --test dist/test/admin-session.integration.js"
+    "test:admin-session": "node --test dist/test/admin-session.integration.js",
+    "test:admin-policy": "node --test dist/test/admin-policy.integration.js"
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",
