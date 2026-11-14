@@ -1,10 +1,16 @@
 import {
   playerSearchPageV1Schema,
   playerSummaryEnvelopeV1Schema,
+  campaignMetadataPageV1Schema,
+  redactedOperationPageV1Schema,
+  redactedOperationEnvelopeV1Schema,
   adminSelfV1Schema,
   type AdminSelfV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
+  type CampaignMetadataPageV1,
+  type RedactedOperationPageV1,
+  type RedactedOperationEnvelopeV1,
 } from '@offscreen/contracts/admin';
 
 async function readJson(response: Response): Promise<unknown> {
@@ -70,4 +76,61 @@ export async function readAdminPlayerSummary(
     throw new Error(`summary_failed_${response.status}`);
   }
   return playerSummaryEnvelopeV1Schema.parse(await readJson(response));
+}
+
+export async function listAdminPlayerCampaigns(
+  playerId: string,
+  signal?: AbortSignal,
+): Promise<CampaignMetadataPageV1> {
+  const response = await fetch(
+    `/api/admin/players/${encodeURIComponent(playerId)}/campaigns`,
+    { credentials: 'same-origin', signal, cache: 'no-store' },
+  );
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`campaigns_failed_${response.status}`);
+  }
+  return campaignMetadataPageV1Schema.parse(await readJson(response));
+}
+
+export async function listAdminCampaignOperations(
+  campaignId: string,
+  signal?: AbortSignal,
+): Promise<RedactedOperationPageV1> {
+  const response = await fetch(
+    `/api/admin/campaigns/${encodeURIComponent(campaignId)}/operations`,
+    { credentials: 'same-origin', signal, cache: 'no-store' },
+  );
+  if (response.status === 404) {
+    throw new Error('not_found');
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`operations_failed_${response.status}`);
+  }
+  return redactedOperationPageV1Schema.parse(await readJson(response));
+}
+
+export async function readAdminOperation(
+  operationId: string,
+  signal?: AbortSignal,
+): Promise<RedactedOperationEnvelopeV1> {
+  const response = await fetch(
+    `/api/admin/operations/${encodeURIComponent(operationId)}`,
+    { credentials: 'same-origin', signal, cache: 'no-store' },
+  );
+  if (response.status === 404) {
+    throw new Error('not_found');
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('staff_session_required');
+  }
+  if (!response.ok) {
+    throw new Error(`operation_failed_${response.status}`);
+  }
+  return redactedOperationEnvelopeV1Schema.parse(await readJson(response));
 }

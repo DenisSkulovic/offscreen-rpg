@@ -71,8 +71,9 @@ function scopeAllowsResource(
   resourceKind: AdminResourceKind,
   resourceId: string | null | undefined,
 ): boolean {
+  // Collection/list gates omit resourceId; item reads must still pass the id list.
+  if (!resourceId) return true;
   if (resourceKind === 'player' && scope.playerIds && scope.playerIds.length > 0) {
-    if (!resourceId) return false;
     return scope.playerIds.includes(resourceId);
   }
   if (
@@ -80,11 +81,9 @@ function scopeAllowsResource(
     scope.campaignIds &&
     scope.campaignIds.length > 0
   ) {
-    if (!resourceId) return false;
     return scope.campaignIds.includes(resourceId);
   }
   if (resourceKind === 'case' && scope.caseIds && scope.caseIds.length > 0) {
-    if (!resourceId) return false;
     return scope.caseIds.includes(resourceId);
   }
   return true;

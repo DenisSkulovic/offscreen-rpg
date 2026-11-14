@@ -152,3 +152,56 @@ export const playerSummaryEnvelopeV1Schema =
 export type PlayerSummaryEnvelopeV1 = z.infer<
   typeof playerSummaryEnvelopeV1Schema
 >;
+
+export const campaignMetadataV1Schema = z.strictObject({
+  id: z.string().uuid(),
+  relation: z.literal('legacy-owner'),
+  createdAt: z.string().datetime(),
+  currentRevision: z.number().int().positive().nullable(),
+  viewVersion: z.number().int().positive().nullable(),
+  operationHealth: z.enum(['normal', 'pending', 'uncertain', 'unavailable']),
+});
+export type CampaignMetadataV1 = z.infer<typeof campaignMetadataV1Schema>;
+
+export const campaignMetadataPageV1Schema = z.strictObject({
+  version: z.literal(1),
+  playerId: z.string().min(1).max(128),
+  items: z.array(campaignMetadataV1Schema).max(50),
+  nextCursor: z.string().min(1).max(256).nullable(),
+});
+export type CampaignMetadataPageV1 = z.infer<
+  typeof campaignMetadataPageV1Schema
+>;
+
+export const redactedOperationV1Schema = z.strictObject({
+  id: z.string().uuid(),
+  kind: z.string().min(1).max(64),
+  state: z.enum(['pending', 'running', 'succeeded', 'failed', 'uncertain']),
+  publication: z.enum(['pending', 'published', 'stale', 'blocked', 'unknown']),
+  sourceCoverage: z.enum([
+    'complete',
+    'since-enabled',
+    'partial',
+    'unknown',
+  ]),
+  lastObservedAt: z.string().datetime(),
+  safeFailureCode: z.string().min(1).max(64).optional(),
+});
+export type RedactedOperationV1 = z.infer<typeof redactedOperationV1Schema>;
+
+export const redactedOperationPageV1Schema = z.strictObject({
+  version: z.literal(1),
+  campaignId: z.string().uuid(),
+  items: z.array(redactedOperationV1Schema).max(50),
+  nextCursor: z.string().min(1).max(256).nullable(),
+});
+export type RedactedOperationPageV1 = z.infer<
+  typeof redactedOperationPageV1Schema
+>;
+
+export const redactedOperationEnvelopeV1Schema = adminReadEnvelopeV1Schema(
+  redactedOperationV1Schema,
+);
+export type RedactedOperationEnvelopeV1 = z.infer<
+  typeof redactedOperationEnvelopeV1Schema
+>;

@@ -1,6 +1,6 @@
 # AD05 | Permission-safe campaign and AI operation drilldown
 
-**State: Proposed, NOT Ready.** Code-bearing redacted diagnostics. **Depends on:** AD02–AD04; source API reads can be developed after AD03. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad05](../../admin/evidence/ad05-game-ai-diagnostics-2026-11-14.md). Code-bearing redacted diagnostics. **Depends on:** AD01–AD04 Done. **Parent:** [Admin program](../../admin/implementation-program.md).
 
 ## Cursor first-screen
 

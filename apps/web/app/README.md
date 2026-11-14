@@ -20,7 +20,7 @@
 | `/demo` | [scripted demo](demo/page.tsx) | Greywake local preview (`demo-state` + `content/script.json`) | simulated; resets on refresh; no provider |
 | `/control/enter` | [(control)/control/enter/page.tsx]((control)/control/enter/page.tsx) | `EnterAdminSessionButton` | player session required; Nest POST mints Admin cookie |
 | `/control` | [(control)/control/(staff)/page.tsx]((control)/control/(staff)/page.tsx) | Admin shell | `requireAdminActor` + isolated Admin Query |
-| `/control/players` | [(control)/control/(staff)/players/page.tsx]((control)/control/(staff)/players/page.tsx) | `AdminPlayerLookup` | exact-ref AD03 reads; SSR hydrate when authorized |
+| `/control/players` | [(control)/control/(staff)/players/page.tsx]((control)/control/(staff)/players/page.tsx) | `AdminPlayerLookup` | exact-ref AD03 reads; inline AD05 campaign → operation drilldown; SSR hydrate when authorized |
 | `/rules` | [rules page](rules/page.tsx) | none | public |
 
 **Next config:** [next.config.ts](../next.config.ts) rewrites browser `/api/*` via `API_PROXY_ORIGIN` (default loopback `127.0.0.1:3001`). SSR uses `API_INTERNAL_ORIGIN`. Both are Node-only; do not publish them with `NEXT_PUBLIC_*`. Query provider + Play hydration live inside `(authenticated)`; keep user-facing URL paths exactly.

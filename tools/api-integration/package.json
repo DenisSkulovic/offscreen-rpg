@@ -20,7 +20,8 @@
     "test:start-package": "node --test dist/test/start-package.integration.js",
     "test:admin-session": "node --test dist/test/admin-session.integration.js",
     "test:admin-policy": "node --test dist/test/admin-policy.integration.js",
-    "test:admin-player-reads": "node --test dist/test/admin-player-reads.integration.js"
+    "test:admin-player-reads": "node --test dist/test/admin-player-reads.integration.js",
+    "test:admin-diagnostics": "node --test dist/test/admin-diagnostics.integration.js"
   },
   "dependencies": {
     "@offscreen/api": "workspace:*",

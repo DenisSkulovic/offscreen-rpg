@@ -30,6 +30,7 @@ import {
 } from './modules/auth/identity.js';
 import {
   ADMIN_ACCESS,
+  ADMIN_DIAGNOSTICS,
   ADMIN_ENVIRONMENT,
   ADMIN_ORIGIN,
   ADMIN_PLAYER_READS,
@@ -39,6 +40,7 @@ import {
 } from './modules/admin/controller.js';
 import {
   createAdminAccess,
+  createAdminDiagnosticsReads,
   createAdminPlayerReads,
   createAdminSessions,
   type AdminEnvironment,
@@ -237,6 +239,10 @@ export async function createApp(
         {
           provide: ADMIN_PLAYER_READS,
           useValue: createAdminPlayerReads(database),
+        },
+        {
+          provide: ADMIN_DIAGNOSTICS,
+          useValue: createAdminDiagnosticsReads(database),
         },
         AdminActorService,
         { provide: DRAFTS, useValue: createDrafts(database) },

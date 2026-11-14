@@ -100,7 +100,7 @@ type RedactedOperationV1 = {
   kind: string;                   // allowlisted safe task category
   state: 'pending' | 'running' | 'succeeded' | 'failed' | 'uncertain';
   publication: 'pending' | 'published' | 'stale' | 'blocked' | 'unknown';
-  sourceCoverage: 'complete' | 'partial' | 'unknown';
+  sourceCoverage: 'complete' | 'since-enabled' | 'partial' | 'unknown';
   lastObservedAt: string;
   safeFailureCode?: string;       // server allowlist, no raw provider error
 };

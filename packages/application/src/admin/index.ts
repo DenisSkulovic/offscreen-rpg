@@ -50,3 +50,11 @@ export {
   wrapPlayerSummaryEnvelope,
   type AdminPlayerReads,
 } from './player-reads.js';
+export {
+  createAdminDiagnosticsReads,
+  projectCampaignMetadata,
+  projectRedactedOperation,
+  sanitizeFailureCode,
+  sanitizeOperationKind,
+  type AdminDiagnosticsReads,
+} from './diagnostics-reads.js';

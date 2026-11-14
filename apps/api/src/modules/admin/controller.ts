@@ -18,19 +18,26 @@ import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { fromNodeHeaders } from 'better-auth/node';
 import {
+  campaignMetadataPageV1Schema,
   playerSearchPageV1Schema,
   playerSummaryEnvelopeV1Schema,
+  redactedOperationEnvelopeV1Schema,
+  redactedOperationPageV1Schema,
   type AdminAccessDecisionV1,
   type AdminErrorV1,
   type AdminSelfV1,
   type AdminStaffAccessV1,
+  type CampaignMetadataPageV1,
   type PlayerSearchPageV1,
   type PlayerSummaryEnvelopeV1,
+  type RedactedOperationEnvelopeV1,
+  type RedactedOperationPageV1,
 } from '@offscreen/contracts/admin';
 import {
   AdminSessionError,
   clearAdminCookie,
   createAdminAccess,
+  createAdminDiagnosticsReads,
   createAdminPlayerReads,
   getAdminPackage,
   readAdminTokenFromCookieHeader,
@@ -40,6 +47,7 @@ import {
   type AdminAccess,
   type AdminActor,
   type AdminCapability,
+  type AdminDiagnosticsReads,
   type AdminEnvironment,
   type AdminPlayerReads,
   type AdminSessions,
@@ -51,6 +59,7 @@ import { AUTH } from '../auth/identity.js';
 export const ADMIN_SESSIONS = Symbol('ADMIN_SESSIONS');
 export const ADMIN_ACCESS = Symbol('ADMIN_ACCESS');
 export const ADMIN_PLAYER_READS = Symbol('ADMIN_PLAYER_READS');
+export const ADMIN_DIAGNOSTICS = Symbol('ADMIN_DIAGNOSTICS');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
@@ -231,7 +240,60 @@ export class AdminController {
     @Inject(ADMIN_SESSIONS) private readonly sessions: AdminSessions,
     @Inject(ADMIN_ACCESS) private readonly access: AdminAccess,
     @Inject(ADMIN_PLAYER_READS) private readonly players: AdminPlayerReads,
+    @Inject(ADMIN_DIAGNOSTICS)
+    private readonly diagnostics: AdminDiagnosticsReads,
   ) {}
+
+  /** Player- or campaign-scoped visibility for legacy-owned stories. */
+  private async assertLegacyCampaignVisible(
+    request: Request,
+    campaignId: string,
+  ): Promise<{ ownerId: string }> {
+    const ownerId = await this.diagnostics.loadCampaignOwner(campaignId);
+    if (!ownerId) {
+      throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+    }
+    const { actor } = await this.actors.requireStaffActor(request);
+    const env = this.actors.deploymentEnvironment();
+    const playerGate = await this.access.evaluate(actor, {
+      capability: 'player.summary.read',
+      resourceKind: 'player',
+      resourceId: ownerId,
+      environment: env,
+    });
+    if (playerGate.decision === 'allow') {
+      return { ownerId };
+    }
+
+    const campaignGate = await this.access.evaluate(actor, {
+      capability: 'campaign.metadata.read',
+      resourceKind: 'campaign',
+      resourceId: campaignId,
+      environment: env,
+    });
+    if (campaignGate.decision !== 'allow') {
+      throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+    }
+
+    // Player-id scopes must not open every campaign via empty campaignIds.
+    const assignments = await this.access.listAssignments(
+      actor.staffPrincipalId,
+    );
+    const active = assignments.filter((row) => row.status === 'active');
+    const namedCampaignIds = active.flatMap(
+      (row) => row.scope.campaignIds ?? [],
+    );
+    if (namedCampaignIds.includes(campaignId)) {
+      return { ownerId };
+    }
+    const playerRestricted = active.some(
+      (row) => (row.scope.playerIds?.length ?? 0) > 0,
+    );
+    if (!playerRestricted && namedCampaignIds.length === 0) {
+      return { ownerId };
+    }
+    throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+  }
 
   @Post('session/enter')
   @HttpCode(HttpStatus.OK)
@@ -450,6 +512,142 @@ export class AdminController {
       throw mapAdminError(error);
     }
   }
+
+  @Get('players/:playerId/campaigns')
+  async playerCampaigns(
+    @Req() request: Request,
+    @Param('playerId') playerId: string,
+    @Query('cursor') cursor: string | undefined,
+  ): Promise<CampaignMetadataPageV1> {
+    if (!playerId || playerId.length > 128) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    await this.actors.requireCapability(request, {
+      capability: 'player.summary.read',
+      resourceKind: 'player',
+      resourceId: playerId,
+      environment: this.actors.deploymentEnvironment(),
+    });
+    const { actor } = await this.actors.requireStaffActor(request);
+    const campaignGate = await this.access.evaluate(actor, {
+      capability: 'campaign.metadata.read',
+      resourceKind: 'campaign',
+      resourceId: null,
+      environment: this.actors.deploymentEnvironment(),
+    });
+    if (campaignGate.decision !== 'allow') {
+      // No campaign metadata capability → empty page (no leak of ownership).
+      return campaignMetadataPageV1Schema.parse({
+        version: 1,
+        playerId,
+        items: [],
+        nextCursor: null,
+      });
+    }
+    const assignments = await this.access.listAssignments(
+      actor.staffPrincipalId,
+    );
+    const allowedCampaignIds = assignments
+      .filter((row) => row.status === 'active')
+      .flatMap((row) => row.scope.campaignIds ?? []);
+    const page = await this.diagnostics.listPlayerCampaigns({
+      playerId,
+      cursor: cursor ?? null,
+      allowedCampaignIds:
+        allowedCampaignIds.length > 0 ? allowedCampaignIds : null,
+    });
+    return campaignMetadataPageV1Schema.parse(page);
+  }
+
+  @Get('campaigns/:campaignId/operations')
+  async campaignOperations(
+    @Req() request: Request,
+    @Param('campaignId') campaignId: string,
+    @Query('cursor') cursor: string | undefined,
+  ): Promise<RedactedOperationPageV1> {
+    if (!/^[0-9a-fA-F-]{36}$/.test(campaignId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    await this.assertLegacyCampaignVisible(request, campaignId);
+    await this.actors.requireCapability(request, {
+      capability: 'ai.operation.read',
+      resourceKind: 'operation',
+      resourceId: null,
+      environment: this.actors.deploymentEnvironment(),
+      hideDenialAsNotFound: true,
+    });
+    try {
+      const page = await this.diagnostics.listCampaignOperations({
+        campaignId,
+        cursor: cursor ?? null,
+      });
+      return redactedOperationPageV1Schema.parse(page);
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
+  }
+
+  @Get('operations/:operationId')
+  async operationDetail(
+    @Req() request: Request,
+    @Param('operationId') operationId: string,
+  ): Promise<RedactedOperationEnvelopeV1> {
+    if (!/^[0-9a-fA-F-]{36}$/.test(operationId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { actor } = await this.actors.requireStaffActor(request);
+    try {
+      const { envelope, ownerId, campaignId } =
+        await this.diagnostics.readOperation({
+          operationId,
+          environment: this.actors.deploymentEnvironment(),
+        });
+      if (campaignId) {
+        await this.assertLegacyCampaignVisible(request, campaignId);
+      } else {
+        const playerGate = await this.access.evaluate(actor, {
+          capability: 'player.summary.read',
+          resourceKind: 'player',
+          resourceId: ownerId,
+          environment: this.actors.deploymentEnvironment(),
+        });
+        if (playerGate.decision !== 'allow') {
+          throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+        }
+      }
+      await this.actors.requireCapability(request, {
+        capability: 'ai.operation.read',
+        resourceKind: 'operation',
+        resourceId: operationId,
+        environment: this.actors.deploymentEnvironment(),
+      });
+      return redactedOperationEnvelopeV1Schema.parse(envelope);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
+  }
 }
 
 export function createAdminAccessProvider(database: Database): AdminAccess {
@@ -460,4 +658,10 @@ export function createAdminPlayerReadsProvider(
   database: Database,
 ): AdminPlayerReads {
   return createAdminPlayerReads(database);
+}
+
+export function createAdminDiagnosticsReadsProvider(
+  database: Database,
+): AdminDiagnosticsReads {
+  return createAdminDiagnosticsReads(database);
 }

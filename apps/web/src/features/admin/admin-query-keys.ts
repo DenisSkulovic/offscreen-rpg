@@ -16,4 +16,42 @@ export const adminQueryKeys = {
     playerId: string,
   ) =>
     ['admin', staffPrincipalId, accessEpoch, 'player', playerId, 'summary'] as const,
+  playerCampaigns: (
+    staffPrincipalId: string,
+    accessEpoch: number,
+    playerId: string,
+  ) =>
+    [
+      'admin',
+      staffPrincipalId,
+      accessEpoch,
+      'player',
+      playerId,
+      'campaigns',
+    ] as const,
+  campaignOperations: (
+    staffPrincipalId: string,
+    accessEpoch: number,
+    campaignId: string,
+  ) =>
+    [
+      'admin',
+      staffPrincipalId,
+      accessEpoch,
+      'campaign',
+      campaignId,
+      'operations',
+    ] as const,
+  operation: (
+    staffPrincipalId: string,
+    accessEpoch: number,
+    operationId: string,
+  ) =>
+    [
+      'admin',
+      staffPrincipalId,
+      accessEpoch,
+      'operation',
+      operationId,
+    ] as const,
 };
