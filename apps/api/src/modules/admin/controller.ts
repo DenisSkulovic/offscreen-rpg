@@ -6,6 +6,7 @@ import {
   Injectable,
   Param,
   Post,
+  Query,
   Req,
   Res,
   HttpCode,
@@ -16,16 +17,21 @@ import {
 import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { fromNodeHeaders } from 'better-auth/node';
-import type {
-  AdminAccessDecisionV1,
-  AdminErrorV1,
-  AdminSelfV1,
-  AdminStaffAccessV1,
+import {
+  playerSearchPageV1Schema,
+  playerSummaryEnvelopeV1Schema,
+  type AdminAccessDecisionV1,
+  type AdminErrorV1,
+  type AdminSelfV1,
+  type AdminStaffAccessV1,
+  type PlayerSearchPageV1,
+  type PlayerSummaryEnvelopeV1,
 } from '@offscreen/contracts/admin';
 import {
   AdminSessionError,
   clearAdminCookie,
   createAdminAccess,
+  createAdminPlayerReads,
   getAdminPackage,
   readAdminTokenFromCookieHeader,
   resourceKindForCapability,
@@ -35,6 +41,7 @@ import {
   type AdminActor,
   type AdminCapability,
   type AdminEnvironment,
+  type AdminPlayerReads,
   type AdminSessions,
 } from '@offscreen/application/admin';
 import type { Database } from '@offscreen/db';
@@ -43,7 +50,9 @@ import { AUTH } from '../auth/identity.js';
 
 export const ADMIN_SESSIONS = Symbol('ADMIN_SESSIONS');
 export const ADMIN_ACCESS = Symbol('ADMIN_ACCESS');
+export const ADMIN_PLAYER_READS = Symbol('ADMIN_PLAYER_READS');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
+export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
 type AuthProof = Readonly<{
   userId: string;
@@ -58,7 +67,12 @@ export class AdminActorService {
     @Inject(ADMIN_SESSIONS) private readonly sessions: AdminSessions,
     @Inject(ADMIN_ACCESS) private readonly access: AdminAccess,
     @Inject(ADMIN_ORIGIN) private readonly origin: string,
+    @Inject(ADMIN_ENVIRONMENT) private readonly environment: AdminEnvironment,
   ) {}
+
+  deploymentEnvironment(): AdminEnvironment {
+    return this.environment;
+  }
 
   async requireAuthProof(headers: Request['headers']): Promise<AuthProof> {
     const session = await this.auth.api
@@ -216,6 +230,7 @@ export class AdminController {
     @Inject(AdminActorService) private readonly actors: AdminActorService,
     @Inject(ADMIN_SESSIONS) private readonly sessions: AdminSessions,
     @Inject(ADMIN_ACCESS) private readonly access: AdminAccess,
+    @Inject(ADMIN_PLAYER_READS) private readonly players: AdminPlayerReads,
   ) {}
 
   @Post('session/enter')
@@ -297,7 +312,7 @@ export class AdminController {
         capability: 'staff.access.inspect',
         resourceKind: 'staff',
         resourceId: staffId,
-        environment: 'local',
+        environment: this.actors.deploymentEnvironment(),
         hideDenialAsNotFound: false,
       });
     }
@@ -365,30 +380,84 @@ export class AdminController {
     };
   }
 
-  /**
-   * Guard probe for AD02: player summary gate without AD03 DTO.
-   * Denied → privacy 404; allowed → acknowledgement only.
-   */
-  @Get('players/:playerId/summary-probe')
-  async playerSummaryProbe(
+  /** Exact-ref player finder. Unauthorized/missing → empty page (no leak). */
+  @Get('players')
+  async searchPlayers(
+    @Req() request: Request,
+    @Query('ref') ref: string | undefined,
+    @Query('limit') limitRaw: string | undefined,
+  ): Promise<PlayerSearchPageV1> {
+    const { actor } = await this.actors.requireStaffActor(request);
+    if (!ref || typeof ref !== 'string' || ref.length === 0 || ref.length > 128) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const limit = limitRaw ? Number(limitRaw) : 1;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 20) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const decision = await this.access.evaluate(actor, {
+      capability: 'player.summary.read',
+      resourceKind: 'player',
+      resourceId: ref,
+      environment: this.actors.deploymentEnvironment(),
+    });
+    const page = await this.players.searchByExactRef({
+      ref,
+      limit,
+      environment: this.actors.deploymentEnvironment(),
+      authorized: decision.decision === 'allow',
+    });
+    return playerSearchPageV1Schema.parse(page);
+  }
+
+  /** Permission-safe Player 360 summary. Denied/missing → privacy 404. */
+  @Get('players/:playerId')
+  async playerSummary(
     @Req() request: Request,
     @Param('playerId') playerId: string,
-  ) {
-    const { decisionId } = await this.actors.requireCapability(request, {
+  ): Promise<PlayerSummaryEnvelopeV1> {
+    if (!playerId || playerId.length > 128) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    await this.actors.requireCapability(request, {
       capability: 'player.summary.read',
       resourceKind: 'player',
       resourceId: playerId,
-      environment: 'local',
+      environment: this.actors.deploymentEnvironment(),
     });
-    return {
-      version: 1 as const,
-      allowed: true as const,
-      playerId,
-      decisionId,
-    };
+    try {
+      const envelope = await this.players.readSummary({
+        playerId,
+        environment: this.actors.deploymentEnvironment(),
+      });
+      return playerSummaryEnvelopeV1Schema.parse(envelope);
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
   }
 }
 
 export function createAdminAccessProvider(database: Database): AdminAccess {
   return createAdminAccess(database);
+}
+
+export function createAdminPlayerReadsProvider(
+  database: Database,
+): AdminPlayerReads {
+  return createAdminPlayerReads(database);
 }

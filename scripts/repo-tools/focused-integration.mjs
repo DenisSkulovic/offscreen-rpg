@@ -22,6 +22,7 @@ const suites = {
   'start-package': 'start-package.integration.js',
   'admin-session': 'admin-session.integration.js',
   'admin-policy': 'admin-policy.integration.js',
+  'admin-player-reads': 'admin-player-reads.integration.js',
 };
 
 function usage() {
@@ -47,7 +48,11 @@ try {
     );
   }
   // Admin API suites are Nest-only; do not turbo-build api-integration (depends on web).
-  if (suite === 'admin-session' || suite === 'admin-policy') {
+  if (
+    suite === 'admin-session' ||
+    suite === 'admin-policy' ||
+    suite === 'admin-player-reads'
+  ) {
     const env = providerFreeEnvironment();
     for (const filter of [
       '@offscreen/contracts',

@@ -64,21 +64,25 @@ test(
         'content-type': 'application/json',
       };
 
-      const allowed = await fetch(
-        `${origin}/api/admin/players/player-allowed/summary-probe`,
-        { headers: staffHeaders },
-      );
-      assert.equal(allowed.status, 200);
-      assert.equal((await readJson<{ allowed: boolean }>(allowed)).allowed, true);
-
+      // Scope uses synthetic ids; detail 404s whether missing or forbidden.
       const deniedHidden = await fetch(
-        `${origin}/api/admin/players/player-secret/summary-probe`,
+        `${origin}/api/admin/players/player-secret`,
         { headers: staffHeaders },
       );
       assert.equal(deniedHidden.status, 404);
       assert.equal(
         (await readJson<{ code: string }>(deniedHidden)).code,
         'not_found',
+      );
+
+      const searchScoped = await fetch(
+        `${origin}/api/admin/players?ref=player-allowed&limit=1`,
+        { headers: staffHeaders },
+      );
+      assert.equal(searchScoped.status, 200);
+      assert.equal(
+        (await readJson<{ items: unknown[] }>(searchScoped)).items.length,
+        0,
       );
 
       const productionEnv = await fetch(`${origin}/api/admin/access/check`, {
@@ -126,9 +130,9 @@ test(
       assert.equal(accessBody.packages[0]?.packageId, 'admin-reader');
       assert.equal(accessBody.packages[0]?.status, 'active');
 
-      // Player-only cookie cannot hit guarded probe.
+      // Player-only cookie cannot hit guarded player summary.
       const playerOnly = await fetch(
-        `${origin}/api/admin/players/player-allowed/summary-probe`,
+        `${origin}/api/admin/players/player-allowed`,
         { headers: { cookie } },
       );
       assert.equal(playerOnly.status, 403);

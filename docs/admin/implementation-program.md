@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected 2026-11-14. **AD01 Done** ([evidence](evidence/ad01-staff-session-2026-11-14.md)). **AD02 Done** ([evidence](evidence/ad02-grant-policy-2026-11-14.md)). **AD03–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
+**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD03 Done**. **AD04–AD08 Proposed, not Ready**. **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 
@@ -30,7 +30,7 @@ AD01 Staff principal, session + audit bootstrap
 | --- | --- | --- | --- |
 | **AD01** | **Done:** Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
 | **AD02** | **Done:** Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../changes/2026-11-14--admin-grant-policy/CHANGE.md) |
-| **AD03** | Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../changes/2026-11-14--admin-player-safe-reads/CHANGE.md) |
+| **AD03** | **Done:** Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../changes/2026-11-14--admin-player-safe-reads/CHANGE.md) |
 | **AD04** | Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../changes/2026-11-14--admin-operator-shell/CHANGE.md) |
 | **AD05** | Safe campaign metadata -> generation status drilldown; no raw prompts/narrative | AD03, AD04 for UI | [Game/AI diagnostics](../changes/2026-11-14--admin-game-ai-diagnostics/CHANGE.md) |
 | **AD06** | Technical-only funded usage/status views, reservations/uncertainty/freshness | AD03, AD04; coordinate AD05 source owners | [Usage exposure](../changes/2026-11-14--admin-usage-exposure/CHANGE.md) |

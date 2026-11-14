@@ -10,7 +10,7 @@ Current change: none
 
 **Storyteller agent architecture renewal (2026-11-14):** [full index](../storyteller-architecture/README.md) → [SA01–SA12 program](../storyteller-architecture/implementation-program.md). **SA01–SA12 Done** for code scope (SA07 conditional; SA12 paid live still needs explicit $ cap). No model spend by default.
 
-**Admin / Offscreen Control (2026-11-14):** [admin index](../admin/README.md) → [accepted product](../admin/product-acceptance-and-scope.md) → [implementation program](../admin/implementation-program.md) → [Cursor first-wave](../admin/handoff/cursor-first-wave.md). **AD01 Done** ([ad01](../admin/evidence/ad01-staff-session-2026-11-14.md)); **AD02 Done** ([ad02](../admin/evidence/ad02-grant-policy-2026-11-14.md)). **AD03–AD08 Proposed**; next recommended **AD03**.
+**Admin / Offscreen Control (2026-11-14):** [admin index](../admin/README.md) → [accepted product](../admin/product-acceptance-and-scope.md) → [implementation program](../admin/implementation-program.md) → [Cursor first-wave](../admin/handoff/cursor-first-wave.md). **AD01–AD03 Done** ([ad01](../admin/evidence/ad01-staff-session-2026-11-14.md), [ad02](../admin/evidence/ad02-grant-policy-2026-11-14.md), [ad03](../admin/evidence/ad03-player-safe-reads-2026-11-14.md)). **AD04–AD08 Proposed**; next recommended **AD04**.
 
 **Decision handoff (2026-11-13):** [four selected priorities](../engine-architecture/handoff/decision-queue-2026-11-13.md). Owner authorized merge + implement received designs (2026-11-14). **ENG09, ENG03-M, GM05, PW01 Done.** Full ENG03 rewrite not auto-authorized (`proceed-narrow-eng03-capture` evidence only).
 

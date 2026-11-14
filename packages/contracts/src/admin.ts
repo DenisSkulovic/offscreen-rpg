@@ -64,3 +64,91 @@ export type AdminStaffAccessV1 = z.infer<typeof adminStaffAccessV1Schema>;
 
 export const ADMIN_BOOTSTRAP_PACKAGE_ID = 'admin-reader' as const;
 export const ADMIN_BOOTSTRAP_PACKAGE_VERSION = 1 as const;
+
+export const adminSubjectRefV1Schema = z.strictObject({
+  kind: z.enum(['player', 'campaign', 'operation', 'staff', 'case', 'incident']),
+  id: z.string().min(1).max(128),
+  environment: z.enum(['production', 'staging', 'local']),
+});
+export type AdminSubjectRefV1 = z.infer<typeof adminSubjectRefV1Schema>;
+
+export const playerSummaryV1Schema = z.strictObject({
+  id: z.string().min(1).max(128),
+  createdAt: z.string().datetime(),
+  status: z.enum(['active', 'restricted', 'unknown']),
+  relationshipSummary: z.strictObject({
+    legacyOwnedCampaignCount: z.number().int().nonnegative().nullable(),
+    coverage: z.enum(['complete', 'partial', 'unknown']),
+  }),
+  commercial: z.strictObject({
+    status: z.enum(['unsupported', 'unknown', 'verified']),
+    explanationCode: z.string().min(1).max(64).optional(),
+  }),
+});
+export type PlayerSummaryV1 = z.infer<typeof playerSummaryV1Schema>;
+
+export const adminReadEnvelopeV1Schema = <T extends z.ZodType>(dataSchema: T) =>
+  z.strictObject({
+    version: z.literal(1),
+    subject: adminSubjectRefV1Schema,
+    data: dataSchema,
+    observedAt: z.string().datetime(),
+    consistency: z.enum(['verified', 'delayed', 'partial', 'unavailable']),
+    sources: z
+      .array(
+        z.strictObject({
+          kind: z.string().min(1).max(64),
+          coverage: z.enum(['complete', 'since-enabled', 'partial', 'unknown']),
+          observedAt: z.string().datetime().optional(),
+        }),
+      )
+      .max(16),
+    limitations: z
+      .array(
+        z.enum([
+          'unsupported',
+          'stale',
+          'incomplete-evidence',
+          'source-unavailable',
+        ]),
+      )
+      .max(16),
+  });
+
+export type AdminReadEnvelopeV1<T> = {
+  version: 1;
+  subject: AdminSubjectRefV1;
+  data: T;
+  observedAt: string;
+  consistency: 'verified' | 'delayed' | 'partial' | 'unavailable';
+  sources: Array<{
+    kind: string;
+    coverage: 'complete' | 'since-enabled' | 'partial' | 'unknown';
+    observedAt?: string;
+  }>;
+  limitations: Array<
+    'unsupported' | 'stale' | 'incomplete-evidence' | 'source-unavailable'
+  >;
+};
+
+export const playerSearchHitV1Schema = z.strictObject({
+  id: z.string().min(1).max(128),
+  createdAt: z.string().datetime(),
+  status: z.enum(['active', 'restricted', 'unknown']),
+});
+export type PlayerSearchHitV1 = z.infer<typeof playerSearchHitV1Schema>;
+
+export const playerSearchPageV1Schema = z.strictObject({
+  version: z.literal(1),
+  items: z.array(playerSearchHitV1Schema).max(20),
+  limit: z.number().int().min(1).max(20),
+  /** Exact-ref search has no cursor page; always null in V1. */
+  nextCursor: z.null(),
+});
+export type PlayerSearchPageV1 = z.infer<typeof playerSearchPageV1Schema>;
+
+export const playerSummaryEnvelopeV1Schema =
+  adminReadEnvelopeV1Schema(playerSummaryV1Schema);
+export type PlayerSummaryEnvelopeV1 = z.infer<
+  typeof playerSummaryEnvelopeV1Schema
+>;

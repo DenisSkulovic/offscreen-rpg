@@ -44,3 +44,9 @@ export {
   type AdminAccessResult,
 } from './policy.js';
 export { createAdminAccess, type AdminAccess } from './access.js';
+export {
+  createAdminPlayerReads,
+  projectPlayerSummary,
+  wrapPlayerSummaryEnvelope,
+  type AdminPlayerReads,
+} from './player-reads.js';

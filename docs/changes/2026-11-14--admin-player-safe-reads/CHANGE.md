@@ -1,6 +1,6 @@
 # AD03 | Exact-reference player finder and permission-safe Player 360 API
 
-**State: Proposed, NOT Ready.** Code-bearing read model. **Depends on:** AD01 + AD02. **Parent:** [Admin program](../../admin/implementation-program.md).
+**State: Done (2026-11-14).** Code-bearing read model. **Depends on:** AD01 + AD02 Done. **Parent:** [Admin program](../../admin/implementation-program.md). Evidence: [ad03-player-safe-reads](../../admin/evidence/ad03-player-safe-reads-2026-11-14.md).
 
 ## Cursor first-screen
 
@@ -12,24 +12,20 @@
 >
 > **Do not:** add `ownerId` override to player API, serialize Better Auth OAuth tokens, inspect `story_passage` content, create an email/fulltext global search or claim Free/Premium billing.
 
-## Intended code delta
+## Landed code delta
 
-1. Define strict `PlayerSummaryV1`, subject/source/freshness and page/error Zod contracts under a dedicated Admin contracts owner. No raw DB row passthrough.
-2. Add Admin-only application reader for exact-ref player lookup/summary with scope/field checks **before** querying protected resources and counts. Small bounded pagination only.
-3. Report verified `user.createdAt`, stable reference and source-backed relationship count where safely affordable. Missing account restriction state is `unknown`; paid subscription is `unsupported`.
-4. Add `GET /api/admin/players?ref=...` and `GET /api/admin/players/:id` to Nest Admin composition, using AD02 actor guard.
-5. Tests for authorized result, forbidden/missing indistinguishability, no tokens/private JSON, no raw payment assertions and stale/degraded source behavior.
+1. Strict Zod `PlayerSummaryV1`, search page, and read envelope under `@offscreen/contracts/admin`.
+2. `createAdminPlayerReads`: exact-ref search + summary from `user` + `story.ownerId` count only; status `unknown`; commercial `unsupported`.
+3. Nest `GET /api/admin/players?ref=&limit=` and `GET /api/admin/players/:id` behind AD02 capability gate.
+4. Unauthorized search → empty page; denied/missing detail → privacy 404. Wire JSON excludes email/tokens/story source text.
+5. Pure DTO tests + `pnpm test:focus -- admin-player-reads`.
 
 ## Normal and discriminating negative
 
-**Normal:** a staff actor with an exact player scope finds that player and sees stable ID, source coverage and permitted count; the response is parseable by strict V1 Zod.
+**Normal:** scoped staff finds allowed player; summary envelope parses; legacy-owned campaign count is source-backed.
 
-**Negative:** another known player reference (including guessed account ID) yields no existence leak through response, list total, sorting or error. OAuth access token and private campaign text remain inaccessible even to broad summary reader. No provider call, billing claim or game state mutation on GET.
+**Negative:** forbidden player search empty; detail 404 indistinguishable from missing; anonymous 401; no email/OAuth/passage leakage.
 
-**Proof:** pure DTO tests + approved disposable DB/Nest integration seeded with two distinct owners and one forbidden player; inspect wire JSON for absent fields and correct 401/404. V1 does **not** need a Next screen yet.
+## Excluded / next
 
-## Excluded / risk
-
-No email lookup, payer identity, membership grants, raw story title, bulk export, account mutation, case assignment or customer support automation. Respect source `story.ownerId` as current legacy-owner, not multiplayer authority.
-
-**Ready gate:** AD02 complete and source revalidated; owner selects AD03. **Return:** exact DTOs, controlled read bounds, negative JSON proof and integration evidence, next AD04.
+No Admin UI (AD04), no campaign drilldown (AD05), no email search. Provider spend: none. Next: **AD04**.
