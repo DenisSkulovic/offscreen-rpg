@@ -11,6 +11,7 @@
 | Which product direction did the owner accept, and what remains conditional? | [Product acceptance and scope](product-acceptance-and-scope.md) |
 | How will the Admin actually be secured and built? | [Technical architecture and contract map](technical/README.md) |
 | Which bounded code changes are proposed for Cursor, in what order? | [Implementation program AD01–AD08](implementation-program.md) |
+| What should be passed to Cursor when an authorized first Change is selected? | [Cursor first-wave handoff](handoff/cursor-first-wave.md) |
 | Why does Admin exist; what are the enduring rules and boundaries? | [Product charter](product-charter.md) |
 | Who uses it, how do responsibilities overlap, what workspaces exist? | [Personas and workspaces](personas-and-workspaces.md) |
 | How are accounts, campaigns, executions, cases and subscriptions investigated together? | [Player 360 and entity model](player-360-and-entities.md) |

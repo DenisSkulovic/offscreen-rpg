@@ -28,7 +28,7 @@ AD01 Staff principal, session + audit bootstrap
 
 | ID | Code-bearing outcome | Dependencies | Packet |
 | --- | --- | --- | --- |
-| **AD01** | Explicit staff principal, revocable Admin-purpose session and audited out-of-band bootstrap | None; current source recheck | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
+| **AD01** | Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None; current source recheck | [Staff session](../changes/2026-11-14--admin-staff-session/CHANGE.md) |
 | **AD02** | Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../changes/2026-11-14--admin-grant-policy/CHANGE.md) |
 | **AD03** | Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../changes/2026-11-14--admin-player-safe-reads/CHANGE.md) |
 | **AD04** | Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../changes/2026-11-14--admin-operator-shell/CHANGE.md) |

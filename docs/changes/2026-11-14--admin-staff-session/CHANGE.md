@@ -14,10 +14,10 @@
 
 ## Intended code delta
 
-1. Add additive `admin_staff_principal`, `admin_staff_session` and minimal protected `admin_audit_event` tables/migration with uniqueness, indexes, status/epoch and non-cascading audit provenance. Keep Better Auth schema and story ownership intact.
+1. Add additive `admin_staff_principal`, `admin_staff_session`, **inert bootstrap `admin_capability_assignment` records**, and minimal protected `admin_audit_event` tables/migration with uniqueness, indexes, status/epoch and non-cascading audit provenance. The assignment row records a narrowly named package but conveys **no customer-data capability until AD02's evaluator/guard exists**. Keep Better Auth schema and story ownership intact.
 2. Implement Admin actor resolver requiring an existing Better Auth login **plus** distinct high-entropy opaque, digest-stored Admin session, bound to underlying authenticated session, staff status and revocation epoch.
 3. Implement typed `POST /api/admin/session/enter`, `GET /api/admin/me`, `POST /api/admin/session/exit` with appropriate Origin/CSRF, secure cookie and safe error response; **entry requires a verifiably fresh real login (≤15 minutes), not merely a refreshed seven-day session**. If fresh auth cannot be proven, deny/re-authenticate; no other Admin resource is yet exposed.
-4. Implement explicit local operator CLI for first staff bootstrap by **verified auth subject ID**, environment, narrow starter package, no automatic startup grant; audit bootstrap/entry/logout/revocation.
+4. Implement explicit local operator CLI for first staff bootstrap by **verified auth subject ID**, environment and inert restricted starter-package assignment; never automatically authorize resource reads from this record before AD02. No automatic startup grant; audit bootstrap/entry/logout/revocation.
 5. Select the [bounded cookie/session settings](../../admin/technical/first-wave-design-decisions.md#1-staff-authentication-adapter-for-the-first-safe-foundation). In HTTPS use Secure HttpOnly `__Host-offscreen-admin`, SameSite Strict, Path=/; dev nonsecure fallback only on loopback. Check actual Better Auth APIs before coding.
 6. Add pure and integration tests for session binding, expiry, revocation, no player privilege and no token exposure.
 

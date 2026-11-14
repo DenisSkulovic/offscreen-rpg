@@ -1,4 +1,4 @@
-# Code-bearing Changes | React/Next and Chamber laboratory
+# Code-bearing Changes | React/Next, Chamber and Admin
 
 **Chosen architecture:** [React/Next F1–F15](../engineering/targets/react-next.md), selected by owner direction on **2026-11-12**, including **TanStack Query v5, SSR HydrationBoundary, React Hook Form + Zod, typed Nest API, immutable useMutation commands, authenticated SSE/GET, Vitest/RTL/MSW/Playwright/axe, Storybook, strict lint/import rules**. **Source baseline:** [Nov 12 audit](../engineering/audits/react-next-gap-2026-11-12.md). **Implementation retrieval:** [source-adjacent owner maps](../../apps/web/README.md) before code, [staged toolchain](../engineering/frontend-execution-playbook.md) only if needed. **Purpose:** engineering portfolio, not gameplay or visual redesign. See [work-unit standard](../../.agents/references/change-work-unit-standard.md) and [Cursor handoff skill](../../.agents/skills/cursor-handoff/SKILL.md).
 

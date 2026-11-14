@@ -29,7 +29,7 @@ Use additive Drizzle schema/migration naming consistent with `packages/db/src/sc
 | --- | --- | --- |
 | `admin_staff_principal` | Stable staff ID linked to verified auth user subject, status, epoch | Unique link, explicit active/inactive, no role inferred from email |
 | `admin_staff_session` | Opaque-token digest, staff+underlying auth session link, expiry, idle/revocation, purpose | Fast invalidation, no plaintext token persistence, bounded lifetime |
-| `admin_capability_assignment` | Approved package/version and intact resource scope/conditions/expiry/provenance | No arbitrary policy strings/wildcards from users |
+| `admin_capability_assignment` | Package/version and intact resource scope/conditions/expiry/provenance. Table and inert bootstrap record start in AD01; AD02 installs the evaluator/guard that gives it meaning | No role record can authorize a customer read before AD02; no arbitrary policy strings/wildcards from users |
 | `admin_audit_event` | Append-only staff/bootstrap/session/privilege and sensitive-operation facts | No secrets/private narratives, immutable from ordinary app roles |
 | `admin_case` and assignment/link records | Only in later case-specific Change | Case assignment cannot manufacture sensitive privilege |
 
