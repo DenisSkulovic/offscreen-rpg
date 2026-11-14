@@ -2,6 +2,8 @@
 
 **Status: proposed cross-platform experience architecture, 2026-11-13. Owner review required. Documentation only, no code permission.** This document owns the *envelope around gameplay*: public discovery, activation, personal game library, account/allowance presentation and operator separation. It does **not** replace [the in-story experience](README.md), [information architecture](spaces/information-architecture.md), [creation](flows/creation-and-first-run.md), [return](flows/return-and-memory.md), or technical [identity](../technical/client-and-identity.md)/[usage-policy](../technical/usage-policy.md) authority. Detailed journey conditions and negative states live in [platform journey atlas](platform-journeys-and-states.md).
 
+**Operator scope follow-on (proposed, 2026-11-14):** [Dedicated Admin platform product design](../admin/README.md) owns staff personas, overlapping capability packages, Player 360, delegated access, operational workflows and mature internal workspaces. This ecosystem document continues to own the public/player/operator shell separation. No Admin code or technical design is approved.
+
 **Focused first frontend wave (proposed):** [public portal](spaces/public-portal-blueprint.md), [preview-to-play journey](flows/preview-to-play.md), [authenticated player home](spaces/player-home-blueprint.md) and [PF01–PF05 code-bearing program](platform-entry-implementation-program.md). These detail the first two product surfaces and navigation seam without changing backend/engine or authorizing implementation.
 
 ## Why a separate platform experience is required
