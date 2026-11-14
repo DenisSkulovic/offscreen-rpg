@@ -4,7 +4,7 @@
 
 Current change: none
 
-**ENG03 follow-on (design only, 2026-11-14):** [purpose-by-purpose sequencing](../engine-architecture/decisions/eng03-capture-migration-sequence.md) → [C1 committed finite-action capture Change](2026-11-14--eng03-committed-action-capture/CHANGE.md) → [strict receipt/capture Zod and lifecycle](../engine-architecture/decisions/eng03-committed-action-capture-v1.md). Cursor reports prior pending-consequence capture Done, but its implementation is not on the GitHub main visible to this design author; C1 remains conditional, not selected. Full ENG03 Proposed. Current change: none.
+**ENG03 follow-on (design only, 2026-11-14):** [purpose-by-purpose sequencing](../engine-architecture/decisions/eng03-capture-migration-sequence.md) → [C1 committed finite-action capture Change](2026-11-14--eng03-committed-action-capture/CHANGE.md) → [strict receipt/capture Zod and lifecycle](../engine-architecture/decisions/eng03-committed-action-capture-v1.md). Cursor reports prior pending-consequence capture Done, but its implementation is not on the GitHub main visible to this design author; C1 remains conditional, not selected. Full ENG03 Proposed. No active selection made in this design branch.
 
 **ENG03-narrow design packet (2026-11-14):** [pending-consequence short-lock capture](2026-11-14--eng03-narrow-pending-capture/CHANGE.md) → [exact ContextCaptureV1 and settlement lifecycle](../engine-architecture/decisions/eng03-narrow-capture-v1.md). Design complete; owner-selection plus latest v17/SA checkout check required before Ready. Full ENG03 remains Proposed; `Current change: none` stays unchanged.
 
