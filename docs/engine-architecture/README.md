@@ -10,6 +10,8 @@
 
 **Post-measurement ENG03 first path (2026-11-14):** [typed ContextCaptureV1, single generation identity, off-lock CAS and settle race](decisions/eng03-narrow-capture-v1.md) → [one bounded Cursor Change](../changes/2026-11-14--eng03-narrow-pending-capture/CHANGE.md). ENG03-M supports a narrow path only; full ENG03 remains Proposed. Verify current SA/v17 source before Ready.
 
+**ENG03 staged migration design (2026-11-14):** [purpose-specific sequencing and source priorities](decisions/eng03-capture-migration-sequence.md) → [C1 committed-action receipt capture contract](decisions/eng03-committed-action-capture-v1.md) → [one narrow Change dossier](../changes/2026-11-14--eng03-committed-action-capture/CHANGE.md). No blanket authorization for remaining purpose migrations; pending capture completion is Cursor-reported but not visible on the checked main.
+
 ## Read by question, not by file count
 
 | If deciding... | Start here |
