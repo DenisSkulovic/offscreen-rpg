@@ -33,6 +33,8 @@ These documents are **on-demand**. Root `AGENTS.md` points a fresh session to th
 | Offline/manual test cases and acceptance | [QA journeys](qa-journeys.md), [offline acceptance](offline-poc-acceptance.md) | A written QA stage is not proof it was executed |
 | Controlled Storyteller tuning experiments | [Storyteller tuning](storyteller-tuning.md) | Model evidence and method, not live-spend permission |
 
+**In-game Storyteller-specific target and code audit (2026-11-14):** [renewal index](../storyteller-architecture/README.md) → [existing flow audit](../storyteller-architecture/evidence/current-flow-audit-2026-11-14.md) → [agent gap audit](../storyteller-architecture/evidence/agent-capability-audit-2026-11-14.md) → [proposed SA changes](../storyteller-architecture/implementation-program.md). Distinct from the **development coding agents** above. Neither an abstract field manual nor a source-implemented model loop is itself an accepted sustained game.
+
 ## Research about the game's LLM agent
 
 **These do not describe how Claude Code/Cursor should work on the repo.**
