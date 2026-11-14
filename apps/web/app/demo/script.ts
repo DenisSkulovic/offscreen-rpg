@@ -47,3 +47,12 @@ export const scenes = scriptSchema.parse(definitions);
 export type SceneId = keyof typeof scenes;
 export type SceneChoice = (typeof scenes)[SceneId]['choices'][number];
 export type ScenePresentation = (typeof scenes)[SceneId];
+
+/** Zod record indexing is `T | undefined`; demo scene ids are closed. */
+export function requireScene(sceneId: SceneId): ScenePresentation {
+  const scene = scenes[sceneId];
+  if (!scene) {
+    throw new Error(`Unknown demo scene: ${sceneId}`);
+  }
+  return scene;
+}

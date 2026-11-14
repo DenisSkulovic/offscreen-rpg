@@ -124,11 +124,28 @@ function withControls(
 ) {
   if (!document || typeof document !== 'object' || !('schemaVersion' in document)) return document;
   if (document.schemaVersion !== 1) return document;
-  const scene = 'scene' in document && document.scene ? document.scene : {};
+  const scene =
+    'scene' in document &&
+    document.scene &&
+    typeof document.scene === 'object'
+      ? document.scene
+      : {};
+  const storyStyle =
+    'storyStyle' in document &&
+    document.storyStyle &&
+    typeof document.storyStyle === 'object'
+      ? document.storyStyle
+      : {};
+  const atmosphere =
+    'atmosphere' in scene &&
+    scene.atmosphere &&
+    typeof scene.atmosphere === 'object'
+      ? scene.atmosphere
+      : {};
   return {
     ...document,
     storyStyle: {
-      ...('storyStyle' in document ? document.storyStyle : {}),
+      ...storyStyle,
       typography: args.typography,
       texture: args.texture,
     },
@@ -136,7 +153,7 @@ function withControls(
       ...scene,
       stage: args.stage,
       atmosphere: {
-        ...(typeof scene === 'object' && scene && 'atmosphere' in scene ? scene.atmosphere : {}),
+        ...atmosphere,
         lighting: args.lighting,
         vignette: args.vignette,
       },

@@ -17,7 +17,7 @@
 1. `app/(control)/control/enter` + `(staff)` shell with `requireAdminActor` (`/api/admin/me`), isolated `AdminQueryProvider` keyed by staff+epoch.
 2. Separate `safe-control-destination` allowlist (player safe-entry unchanged); sign-in accepts `/control*` next without merging lists.
 3. Player lookup via AD03 DTOs + SSR hydrate when `?ref=` authorized; empty/unauthorized copy without existence leak.
-4. Vitest for control destinations + lookup UI. Full Next production browser proof still blocked by pre-existing `@offscreen/web` typecheck failures (demo/presentation).
+4. Vitest for control destinations + lookup UI. Production `next start` + Playwright SSR privacy proved via `pnpm test:focus admin-control-ssr` (2026-11-14 residual).
 
 ## Normal and discriminating negative
 
@@ -27,4 +27,4 @@
 
 ## Excluded / next
 
-No AD05 campaign drilldown. Provider spend: none. Next: **AD05** (or fix web typecheck to unlock Playwright SSR evidence).
+No AD05 campaign drilldown. Provider spend: none. Playwright SSR residual cleared 2026-11-14.

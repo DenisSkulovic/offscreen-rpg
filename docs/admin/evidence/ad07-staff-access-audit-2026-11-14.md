@@ -23,6 +23,6 @@
 
 ## Not claimed / residual
 
-- Playwright SSR residual.
+- Playwright `/control` SSR covered by AD04 residual suite `admin-control-ssr` (cleared 2026-11-14).
 - No staff invite / privilege mutation UI.
 - Audit coverage `since-enabled` only.

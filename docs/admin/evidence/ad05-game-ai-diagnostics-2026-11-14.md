@@ -21,6 +21,6 @@
 
 ## Not claimed / residual
 
-- Production-like Playwright SSR for `/control` (web `next build` typecheck still blocked by pre-existing demo/presentation files).
+- Playwright `/control` SSR covered by AD04 residual suite `admin-control-ssr` (cleared 2026-11-14).
 - Exhaustive historical operation coverage (`sourceCoverage: since-enabled`).
 - Named `campaignIds`-only grants without player summary (path exists in assert; not separately integration-seeded).

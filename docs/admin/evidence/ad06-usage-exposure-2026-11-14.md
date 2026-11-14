@@ -20,6 +20,6 @@
 
 ## Not claimed / residual
 
-- Playwright SSR for `/control` (web typecheck residual).
+- Playwright `/control` SSR covered by AD04 residual suite `admin-control-ssr` (cleared 2026-11-14).
 - `platform.spend.read` path exists in Nest gate; not separately seeded in this suite.
 - No commercial subscription ledger (explicitly unsupported).

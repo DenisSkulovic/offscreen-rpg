@@ -12,10 +12,10 @@ export function IntentionChoice({
   onClick,
 }: {
   label: string;
-  support?: string;
-  disabled?: boolean;
+  support?: string | undefined;
+  disabled?: boolean | undefined;
   behavior: 'commit' | 'explore';
-  treatment?: ResolvedChoice;
+  treatment?: ResolvedChoice | undefined;
   onClick: () => void;
 }) {
   const style = treatment

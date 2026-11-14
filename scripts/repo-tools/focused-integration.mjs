@@ -27,6 +27,7 @@ const suites = {
   'admin-usage': 'admin-usage.integration.js',
   'admin-audit': 'admin-audit.integration.js',
   'admin-cases': 'admin-cases.integration.js',
+  'admin-control-ssr': 'admin-control-ssr.integration.js',
 };
 
 function usage() {

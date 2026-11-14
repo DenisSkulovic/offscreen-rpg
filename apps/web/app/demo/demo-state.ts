@@ -1,4 +1,4 @@
-import { scenes, type SceneChoice, type SceneId } from './script';
+import { requireScene, type SceneChoice, type SceneId } from './script';
 
 export type DemoFacts = {
   noticeRead: boolean;
@@ -42,7 +42,7 @@ export function visibleChoices(
   sceneId: SceneId,
   facts: DemoFacts,
 ): SceneChoice[] {
-  const scene = scenes[sceneId];
+  const scene = requireScene(sceneId);
   return scene.choices.filter(
     (choice) => !choice.requiresNoticeRead || facts.noticeRead,
   );
@@ -82,7 +82,7 @@ export function transitionDemo(
   choiceId: string,
 ): DemoState {
   if (state.paused) return state;
-  const scene = scenes[state.sceneId];
+  const scene = requireScene(state.sceneId);
   if (scene.phase === 'ended') return state;
 
   if (scene.phase === 'decision') {

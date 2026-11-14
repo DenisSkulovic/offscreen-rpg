@@ -1,6 +1,6 @@
 # Offscreen Control | staged technical implementation program
 
-**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD08 Done** (first-wave complete; Playwright SSR residual on web typecheck). **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
+**Status:** Scoped core technical target selected 2026-11-14. **AD01–AD08 Done** (first-wave complete; web typecheck/`next build` and Playwright `/control` SSR residual cleared 2026-11-14). **Product authority:** [accepted product direction](product-acceptance-and-scope.md). **Technical authority:** [technical index](technical/README.md) and [architecture review](technical/architecture-review-2026-11-14.md).
 
 ## Program objective
 

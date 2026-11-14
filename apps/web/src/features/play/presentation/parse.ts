@@ -38,11 +38,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function finiteNumber(value: unknown) {
+function finiteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function inRange(value: unknown, min: number, max: number) {
+function inRange(value: unknown, min: number, max: number): value is number {
   return finiteNumber(value) && value >= min && value <= max;
 }
 
@@ -176,13 +176,17 @@ function parseStoryStyle(
     if (palette) style.palette = palette;
   }
   if (value.typography !== undefined) {
-    if (TYPOGRAPHY.has(String(value.typography))) {
-      style.typography = value.typography as StoryVisualIdentity['typography'];
+    const typography = String(value.typography);
+    if (TYPOGRAPHY.has(typography)) {
+      style.typography = typography as NonNullable<
+        StoryVisualIdentity['typography']
+      >;
     } else reject(rejected, 'storyStyle.typography', 'typography rejected');
   }
   if (value.texture !== undefined) {
-    if (TEXTURE.has(String(value.texture))) {
-      style.texture = value.texture as StoryVisualIdentity['texture'];
+    const texture = String(value.texture);
+    if (TEXTURE.has(texture)) {
+      style.texture = texture as NonNullable<StoryVisualIdentity['texture']>;
     } else reject(rejected, 'storyStyle.texture', 'texture rejected');
   }
   return style;
@@ -288,8 +292,9 @@ function parseScene(
       );
       const atmosphere: NonNullable<SceneArtDirection['atmosphere']> = {};
       if (value.atmosphere.lighting !== undefined) {
-        if (LIGHTING.has(String(value.atmosphere.lighting))) {
-          atmosphere.lighting = value.atmosphere.lighting as NonNullable<
+        const lighting = String(value.atmosphere.lighting);
+        if (LIGHTING.has(lighting)) {
+          atmosphere.lighting = lighting as NonNullable<
             typeof atmosphere.lighting
           >;
         } else reject(rejected, 'scene.atmosphere.lighting', 'lighting rejected');
@@ -310,8 +315,10 @@ function parseScene(
     }
   }
   if (value.stage !== undefined) {
-    if (STAGE.has(String(value.stage))) scene.stage = value.stage as SceneArtDirection['stage'];
-    else reject(rejected, 'scene.stage', 'stage rejected');
+    const stage = String(value.stage);
+    if (STAGE.has(stage)) {
+      scene.stage = stage as NonNullable<SceneArtDirection['stage']>;
+    } else reject(rejected, 'scene.stage', 'stage rejected');
   }
   if (value.media !== undefined) {
     if (!Array.isArray(value.media)) reject(rejected, 'scene.media', 'media rejected');
@@ -388,8 +395,10 @@ function parseChoice(
   if (!target) return undefined;
   const choice: ChoiceTreatment = { target };
   if (value.surface !== undefined) {
-    if (SURFACE.has(String(value.surface))) choice.surface = value.surface as ChoiceTreatment['surface'];
-    else reject(rejected, `${path}.surface`, 'surface rejected');
+    const surface = String(value.surface);
+    if (SURFACE.has(surface)) {
+      choice.surface = surface as NonNullable<ChoiceTreatment['surface']>;
+    } else reject(rejected, `${path}.surface`, 'surface rejected');
   }
   if (value.accent !== undefined) {
     if (isHexColor(value.accent)) choice.accent = value.accent.toLowerCase();
@@ -400,8 +409,10 @@ function parseChoice(
     else reject(rejected, `${path}.emphasis`, 'emphasis rejected');
   }
   if (value.effect !== undefined) {
-    if (EFFECT.has(String(value.effect))) choice.effect = value.effect as ChoiceTreatment['effect'];
-    else reject(rejected, `${path}.effect`, 'effect rejected');
+    const effect = String(value.effect);
+    if (EFFECT.has(effect)) {
+      choice.effect = effect as NonNullable<ChoiceTreatment['effect']>;
+    } else reject(rejected, `${path}.effect`, 'effect rejected');
   }
   if (value.css !== undefined) reject(rejected, path, 'raw css rejected');
   return choice;

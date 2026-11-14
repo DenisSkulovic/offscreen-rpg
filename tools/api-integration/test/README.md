@@ -14,6 +14,7 @@
 | Start from reviewed candidate | [story-start.integration.ts](story-start.integration.ts) | Persisted Start, current published opening, same ID retry |
 | Real navigation/Play/Chamber | [stories-browser.integration.ts](stories-browser.integration.ts) | Browser UI, reload and persisted story scenario with local fixture |
 | Private SSR/hydration/cache/logout-back (W14) | [private-route-evidence.integration.ts](private-route-evidence.integration.ts) | Production `next start` HTML no-store, hydrate without pre-heading snapshot GET, other-owner/anonymous denial, logout+history.back isolation, redacted metrics receipt |
+| Admin `/control` SSR privacy (AD04 residual) | [admin-control-ssr.integration.ts](admin-control-ssr.integration.ts) | Production `next start` + Nest: anonymous/player-only deny, staff overview + players hydrate, foreign cookie isolation, Playwright + exit |
 | Draft two-tab/version | [drafts.browser.ts](drafts.browser.ts) | React edit/draft conflict, browser session interaction |
 | Storyteller uncertain/accounting | [storyteller.integration.ts](storyteller.integration.ts) | Fake provider and durable attempt lifecycle, **no paid model** |
 | Shared launch/DB setup | [app-integration helper](helpers/app-integration.ts), [story-suite helper](helpers/story-suite.ts) | Test server composition, disposable URL and local dependencies |

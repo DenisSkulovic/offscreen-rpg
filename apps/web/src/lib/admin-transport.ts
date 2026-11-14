@@ -28,6 +28,14 @@ async function readJson(response: Response): Promise<unknown> {
   return response.json();
 }
 
+function getInit(signal?: AbortSignal): RequestInit {
+  return {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    ...(signal ? { signal } : {}),
+  };
+}
+
 /** Browser Admin session enter. Same-origin so Origin CSRF is present. */
 export async function enterAdminSession(): Promise<AdminSelfV1> {
   const response = await fetch('/api/admin/session/enter', {
@@ -58,7 +66,7 @@ export async function searchAdminPlayers(
 ): Promise<PlayerSearchPageV1> {
   const response = await fetch(
     `/api/admin/players?ref=${encodeURIComponent(ref)}&limit=1`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 401 || response.status === 403) {
     throw new Error('staff_session_required');
@@ -75,7 +83,7 @@ export async function readAdminPlayerSummary(
 ): Promise<PlayerSummaryEnvelopeV1> {
   const response = await fetch(
     `/api/admin/players/${encodeURIComponent(playerId)}`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 404) {
     throw new Error('not_found');
@@ -95,7 +103,7 @@ export async function listAdminPlayerCampaigns(
 ): Promise<CampaignMetadataPageV1> {
   const response = await fetch(
     `/api/admin/players/${encodeURIComponent(playerId)}/campaigns`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 401 || response.status === 403) {
     throw new Error('staff_session_required');
@@ -112,7 +120,7 @@ export async function listAdminCampaignOperations(
 ): Promise<RedactedOperationPageV1> {
   const response = await fetch(
     `/api/admin/campaigns/${encodeURIComponent(campaignId)}/operations`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 404) {
     throw new Error('not_found');
@@ -132,7 +140,7 @@ export async function readAdminOperation(
 ): Promise<RedactedOperationEnvelopeV1> {
   const response = await fetch(
     `/api/admin/operations/${encodeURIComponent(operationId)}`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 404) {
     throw new Error('not_found');
@@ -152,7 +160,7 @@ export async function readAdminUsageStatus(
 ): Promise<UsageStatusEnvelopeV1> {
   const response = await fetch(
     `/api/admin/usage/status?accountRef=${encodeURIComponent(accountRef)}`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 404) {
     throw new Error('not_found');
@@ -172,7 +180,7 @@ export async function readAdminStaffAccess(
 ): Promise<AdminStaffAccessV1> {
   const response = await fetch(
     `/api/admin/staff/${encodeURIComponent(staffId)}/access`,
-    { credentials: 'same-origin', signal, cache: 'no-store' },
+    getInit(signal),
   );
   if (response.status === 401 || response.status === 403) {
     throw new Error('staff_session_required');
@@ -186,11 +194,7 @@ export async function readAdminStaffAccess(
 export async function listAdminAuditEvents(
   signal?: AbortSignal,
 ): Promise<AdminAuditPageV1> {
-  const response = await fetch(`/api/admin/audit`, {
-    credentials: 'same-origin',
-    signal,
-    cache: 'no-store',
-  });
+  const response = await fetch(`/api/admin/audit`, getInit(signal));
   if (response.status === 401 || response.status === 403) {
     throw new Error('staff_session_required');
   }
@@ -203,11 +207,7 @@ export async function listAdminAuditEvents(
 export async function listAdminCases(
   signal?: AbortSignal,
 ): Promise<CaseSummaryPageV1> {
-  const response = await fetch(`/api/admin/cases`, {
-    credentials: 'same-origin',
-    signal,
-    cache: 'no-store',
-  });
+  const response = await fetch(`/api/admin/cases`, getInit(signal));
   if (response.status === 401 || response.status === 403) {
     throw new Error('staff_session_required');
   }

@@ -7,13 +7,13 @@ import {
   transitionDemo,
   visibleChoices,
 } from '../../../app/demo/demo-state';
-import { scenes } from '../../../app/demo/script';
+import { requireScene } from '../../../app/demo/script';
 
 describe('Greywake scripted preview state', () => {
   it('opens on a decision without requiring advance first', () => {
     const state = createInitialDemoState();
     expect(state.sceneId).toBe('landing');
-    expect(scenes.landing.phase).toBe('decision');
+    expect(requireScene('landing').phase).toBe('decision');
     expect(visibleChoices(state.sceneId, state.facts).map((c) => c.id)).toEqual(
       ['begin_repair', 'read_notice'],
     );

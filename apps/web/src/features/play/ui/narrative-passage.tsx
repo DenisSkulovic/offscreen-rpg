@@ -30,12 +30,12 @@ export function NarrativePassage({
   identity,
   arrival = 'none',
 }: {
-  passageId?: string;
-  title?: string | null;
+  passageId?: string | undefined;
+  title?: string | null | undefined;
   paragraphs: readonly string[];
-  media?: readonly ResolvedMedia[];
+  media?: readonly ResolvedMedia[] | undefined;
   identity: string;
-  arrival?: ResolvedPresentation['passageArrival'];
+  arrival?: ResolvedPresentation['passageArrival'] | undefined;
 }) {
   const arriving = usePassageArrival(passageId, arrival);
   const before = media.filter((item) => item.slot.kind === 'before-passage');

@@ -19,6 +19,6 @@
 
 ## Not claimed / residual
 
-- Playwright SSR residual.
+- Playwright `/control` SSR covered by AD04 residual suite `admin-control-ssr` (cleared 2026-11-14).
 - No helpdesk/email, Trust evidence, or free-text narrative notes.
 - Case queue UI is present on `/control` when `support` family is active; not separately Vitest-covered in this packet.

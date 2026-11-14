@@ -11,11 +11,11 @@ import {
   waitingAdvanceLabel,
 } from './demo-state';
 import { SceneView } from './scene-view';
-import { scenes } from './script';
+import { requireScene } from './script';
 
 export function StoryDemo() {
   const [state, setState] = useState(createInitialDemoState);
-  const scene = scenes[state.sceneId];
+  const scene = requireScene(state.sceneId);
   const choices = visibleChoices(state.sceneId, state.facts);
 
   function choose(id: string) {
@@ -101,8 +101,8 @@ export function StoryDemo() {
                   You chose: {visit.intention}
                 </p>
               ) : null}
-              <h2>{scenes[visit.sceneId].title}</h2>
-              {scenes[visit.sceneId].paragraphs.map((text) => (
+              <h2>{requireScene(visit.sceneId).title}</h2>
+              {requireScene(visit.sceneId).paragraphs.map((text) => (
                 <p key={text}>{text}</p>
               ))}
             </li>

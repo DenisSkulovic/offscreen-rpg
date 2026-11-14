@@ -12,7 +12,7 @@ import './story-frame.css';
 export type StoryFrameIntention = {
   id: string;
   label: string;
-  support?: string;
+  support?: string | undefined;
 };
 
 export type StoryFrameProps = {
@@ -24,39 +24,39 @@ export type StoryFrameProps = {
    */
   storyLabel: string;
   /** Known place/context only when the source supplies it. */
-  situationLabel?: string | null;
+  situationLabel?: string | null | undefined;
   /** Truthful player-facing status such as “Waiting for your choice”. */
-  statusLabel?: string | null;
-  passageTitle?: string | null;
+  statusLabel?: string | null | undefined;
+  passageTitle?: string | null | undefined;
   paragraphs: readonly string[];
   /** One conditional fact strip; omit when nothing important is known. */
-  memory?: string | null;
-  intentions?: readonly StoryFrameIntention[];
-  thresholdHeading?: string;
+  memory?: string | null | undefined;
+  intentions?: readonly StoryFrameIntention[] | undefined;
+  thresholdHeading?: string | undefined;
   /**
    * Journal only when a real destination exists.
    * Pass null/undefined to omit — never render a dead tab.
    */
-  journalHref?: string | null;
+  journalHref?: string | null | undefined;
   /** Optional low-attention Details disclosure content. */
-  details?: ReactNode;
+  details?: ReactNode | undefined;
   /**
    * Extra stage content after the passage/memory strip
    * (holds, recovery, campaign play, custom decision UI).
    */
-  stageExtras?: ReactNode;
+  stageExtras?: ReactNode | undefined;
   /** When true, intention buttons stay visible but do not accept activation. */
-  intentionsDisabled?: boolean;
-  onIntentionSelect?: (id: string) => void;
+  intentionsDisabled?: boolean | undefined;
+  onIntentionSelect?: ((id: string) => void) | undefined;
   /** Verified published passage. Arrival motion uses this, never the title. */
-  passageId?: string;
+  passageId?: string | undefined;
   /** Legacy interaction whose options may receive fixture treatments. */
-  interactionId?: string;
+  interactionId?: string | undefined;
   /**
    * Optional resolved presentation. Real Play omits this until a public
    * projection exists. Absent means the baseline field journal.
    */
-  presentation?: ResolvedPresentation | null;
+  presentation?: ResolvedPresentation | null | undefined;
 };
 
 /**
