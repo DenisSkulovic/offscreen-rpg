@@ -8,6 +8,8 @@
 
 **Layer B: model-neutral compiled request** from `packages/storyteller/src/tasks/index.ts::requestFor` and `prepareStorytellerTask`. A `storytellerTaskSchema` task stores `inputVersion:17`, `promptVersion:'storyteller.v17'`, resources, `context`, `contextManifest` and `request`. It is a **valuable historic source artifact**, not proof that all its upstream candidate decisions are preserved.
 
+**Pre-live source correction (wave 4):** [default worker preflight](../evidence/live-worker-dispatch-preflight-2026-11-15.md) found that the OpenRouter adapter correctly shares a builder/JSON serializer, **but** `readStorytellerWorkerOptions` wraps it as `provider(task)` and drops the caller's `dispatch` override; default bootstrap also supplies no `dispatchAuthority`, which appears to deny paid sends. Therefore the entire configured worker path must be tested before calling the reviewed packet actual transmitted evidence. [OBS00](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) is a **P0 source-based pre-live gate**, not a proven live billing incident.
+
 **Layer C: actual provider packet** from `packages/storyteller/src/providers/openrouter.ts::buildOpenRouterRequest`. It projects structured output schemas for the provider, selects response format/streaming, model/provider restrictions, token limits and transport flags. `inspectOpenRouterRequest` currently computes body SHA/bytes and message/section hashes; `application/storyteller/dispatch-review.ts::prepareDispatchReview` persists `packet` and `packetSha256`. The exact bytes that the HTTP transport sends still require an **at-the-transport-edge equality proof** before the inspector advertises “byte-perfect sent request”.
 
 ~~~text
