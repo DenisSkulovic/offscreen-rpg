@@ -1,18 +1,34 @@
 /**
- * GM01: authenticate + bind source + template interpret. No game mutation, $0 provider.
+ * GM01/GM02: template interpret + one-shot inspect admission. $0 provider.
  */
 import { createHash, randomUUID } from 'node:crypto';
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Database } from '@offscreen/db';
-import { campaign } from '@offscreen/db/campaign-schema';
+import {
+  campaign,
+  campaignConsequence,
+  gameActionExecution,
+} from '@offscreen/db/campaign-schema';
 import {
   customIntentCandidate,
   storyPassage,
   storyPublicInspectTarget,
+  storyResolution,
 } from '@offscreen/db/story-schema';
+import { immediateActionPlanSchema } from '@offscreen/game/immediate-actions';
 import { StoryError, parseStoryIdentifier } from '../stories/errors';
-import { lockOwnedStory } from '../stories/persistence';
+import {
+  incrementStoryViewVersion,
+  lockOwnedStory,
+  readDatabaseClockMs,
+} from '../stories/persistence';
+import { commandReceipt, saveCommand } from './settings';
+import { campaignHoldsSchema } from './holds';
+import {
+  recordActionExecutionEvent,
+  scheduleActionExecution,
+} from './action-executions';
 import {
   customIntentMatchSchema,
   hashCustomIntentRequest,
@@ -244,6 +260,226 @@ export function createCustomIntentInterpretation(database: Database) {
         requestDigest,
       });
     });
+  };
+}
+
+function sealedInspectPlan(targetLabel: string, targetHandle: string) {
+  return immediateActionPlanSchema.parse({
+    version: 1,
+    key: `inspect-${targetHandle}`,
+    label: `Inspect ${targetLabel}`,
+    intention: `Examine the publicly visible ${targetLabel}.`,
+    risk: null,
+    evidence: [],
+    requires: [],
+    resolution: {
+      kind: 'automatic',
+      fictionalDurationSeconds: 10,
+      outcome: {
+        text: `You take a careful look at the ${targetLabel}.`,
+        effects: [],
+        declarations: [],
+        worldEffects: [],
+      },
+    },
+  });
+}
+
+const acceptBodySchema = z.strictObject({
+  expectedRevision: z.number().int().positive(),
+  candidateId: z.uuid(),
+  requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+});
+
+/** GM02: admit one reviewable inspect candidate into the existing finite-action path. */
+export function createCustomIntentAcceptance(database: Database) {
+  return async function acceptCustomIntent(args: {
+    ownerId: string;
+    storyId: string;
+    operationId: string;
+    body: unknown;
+  }) {
+    const storyId = parseStoryIdentifier(args.storyId);
+    const operationId = z.uuid().parse(args.operationId);
+    const body = acceptBodySchema.parse(args.body);
+
+    await database.db.transaction(async (tx) => {
+      const current = await lockOwnedStory(tx, {
+        ownerId: args.ownerId,
+        storyId,
+      });
+      const request = {
+        kind: 'custom-intent-accept',
+        candidateId: body.candidateId,
+        requestDigest: body.requestDigest,
+        expectedRevision: body.expectedRevision,
+      };
+      if (await commandReceipt(tx, current.id, operationId, request)) {
+        return;
+      }
+      if (current.revision !== body.expectedRevision) {
+        throw new StoryError('conflict', 'revision');
+      }
+
+      const [narration] = await tx
+        .select()
+        .from(storyResolution)
+        .where(
+          and(
+            eq(storyResolution.storyId, current.id),
+            eq(storyResolution.baseRevision, current.revision),
+          ),
+        );
+      if (narration) throw new StoryError('conflict', 'narration_pending');
+
+      const [pendingConsequence] = await tx
+        .select({ operationId: campaignConsequence.operationId })
+        .from(campaignConsequence)
+        .where(eq(campaignConsequence.storyId, current.id));
+      if (pendingConsequence) {
+        throw new StoryError('conflict', 'consequence_pending');
+      }
+
+      const [candidate] = await tx
+        .select()
+        .from(customIntentCandidate)
+        .where(
+          and(
+            eq(customIntentCandidate.candidateId, body.candidateId),
+            eq(customIntentCandidate.storyId, storyId),
+            eq(customIntentCandidate.viewerId, args.ownerId),
+          ),
+        )
+        .for('update');
+      if (!candidate) throw new StoryError('not_found', 'candidate');
+      if (candidate.acceptedOperationId) {
+        if (candidate.acceptedOperationId === operationId) return;
+        throw new StoryError('conflict', 'candidate_already_accepted');
+      }
+      if (candidate.status !== 'reviewable') {
+        throw new StoryError('conflict', 'candidate_not_reviewable');
+      }
+      if (candidate.expiresAt.getTime() <= Date.now()) {
+        throw new StoryError('conflict', 'candidate_expired');
+      }
+      if (
+        candidate.narrativeRevision !== current.revision ||
+        candidate.requestDigest !== body.requestDigest
+      ) {
+        throw new StoryError('conflict', 'candidate_stale');
+      }
+
+      const match = customIntentMatchSchema.parse(candidate.response);
+      if (match.status !== 'reviewable' || match.family !== 'inspect') {
+        throw new StoryError('conflict', 'candidate_not_reviewable');
+      }
+
+      const [target] = await tx
+        .select()
+        .from(storyPublicInspectTarget)
+        .where(
+          and(
+            eq(storyPublicInspectTarget.storyId, storyId),
+            eq(storyPublicInspectTarget.handle, match.targetHandle),
+          ),
+        );
+      if (!target) throw new StoryError('conflict', 'target_missing');
+
+      const [state] = await tx
+        .select()
+        .from(campaign)
+        .where(eq(campaign.storyId, storyId))
+        .for('update');
+      if (!state) throw new StoryError('invalid', 'campaign');
+      if (state.activeActionOperationId) {
+        throw new StoryError('conflict', 'action_active');
+      }
+
+      const plan = sealedInspectPlan(match.targetLabel, match.targetHandle);
+      if (plan.resolution.kind !== 'automatic') {
+        throw new StoryError('invalid', 'inspect_plan');
+      }
+      const durationSeconds = plan.resolution.fictionalDurationSeconds;
+      const offerId = randomUUID();
+      const offer = {
+        id: offerId,
+        nodes: [
+          {
+            id: plan.key,
+            parent: null,
+            label: plan.label,
+            description: plan.intention,
+            action: {
+              kind: 'attempt' as const,
+              timing: {
+                kind: 'finite' as const,
+                fictionalSeconds: durationSeconds,
+              },
+            },
+          },
+        ],
+      };
+      const startGameSecond = state.gameSecond;
+      const targetGameSecond = startGameSecond + durationSeconds;
+      const selectionNow = await readDatabaseClockMs(tx, current.id);
+
+      await tx.insert(gameActionExecution).values({
+        operationId,
+        storyId: current.id,
+        offerId,
+        actionKey: plan.key,
+        baseRevision: current.revision,
+        offer,
+        plan,
+        pendingResolution: null,
+        preparationGenerationId: null,
+        startGameSecond,
+        targetGameSecond,
+        state: 'running',
+        revision: 0,
+      });
+      await recordActionExecutionEvent(tx, {
+        storyId: current.id,
+        executionId: operationId,
+        executionRevision: 0,
+        gameSecond: startGameSecond,
+        kind: 'started',
+        label: plan.label,
+      });
+      const holds = campaignHoldsSchema
+        .parse(state.holds)
+        .filter((hold) => hold.kind !== 'decision');
+      await tx
+        .update(campaign)
+        .set({
+          offer: null,
+          holds,
+          situationAuthorization: {
+            version: 2,
+            offerId: null,
+            activityAccess: { kind: 'none' },
+            preparedPlans: [],
+          },
+          activeActionOperationId: operationId,
+          clockAnchorAt: new Date(selectionNow),
+        })
+        .where(eq(campaign.storyId, current.id));
+      await tx
+        .update(customIntentCandidate)
+        .set({
+          status: 'accepted',
+          acceptedOperationId: operationId,
+        })
+        .where(eq(customIntentCandidate.candidateId, candidate.candidateId));
+      await incrementStoryViewVersion(tx, {
+        storyId: current.id,
+        viewVersion: current.viewVersion + 1,
+      });
+      await saveCommand(tx, current.id, operationId, request);
+      await scheduleActionExecution(tx, operationId);
+    });
+
+    return { operationId, candidateId: body.candidateId };
   };
 }
 

@@ -1,6 +1,6 @@
 # GM02 | Admit one reviewed custom attempt through existing game authority
 
-**State:** Proposed, **not Ready**. **2026-11-15 candidate admission design:** [one server-declared inspect target and provider-free GM01→GM02 contract](../../experience/decisions/gm01-custom-intent-policy-v1.md). GM02 cannot start before the GM01 candidate/identity proof and owner approval of exact supported fixture. **Owner approval:** none. **Kind:** domain action admission, immutable command/receipt and tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Dependency:** GM01 completed with noncanonical candidate contract and player-facing review design approved.
+**State: Done (2026-11-15).** Evidence: [gm02-custom-intent-admit-2026-11-15](../../experience/evidence/gm02-custom-intent-admit-2026-11-15.md). **Policy:** [one server-declared inspect target](../../experience/decisions/gm01-custom-intent-policy-v1.md). **Kind:** domain action admission, immutable command/receipt and tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Dependency:** GM01 Done. Provider spend: zero.
 
 ## Cursor first-screen brief
 

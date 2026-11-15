@@ -64,6 +64,13 @@
       "when": 1794767200000,
       "tag": "0008_gm01_custom_intent_candidate",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794770800000,
+      "tag": "0009_gm02_custom_intent_accept",
+      "breakpoints": true
     }
   ]
 }

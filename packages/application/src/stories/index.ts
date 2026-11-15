@@ -28,7 +28,10 @@ import {
   acknowledgeStoryVisit,
   readStoryVisitOpening,
 } from './visit-checkpoint';
-import { createCustomIntentInterpretation } from '../campaign/custom-intent';
+import {
+  createCustomIntentAcceptance,
+  createCustomIntentInterpretation,
+} from '../campaign/custom-intent';
 import type { ReadCacheOptions } from '../cache/read-cache';
 import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
@@ -176,6 +179,7 @@ export function createStories(
       return readPublicStoryEvents(database, args);
     },
     interpretCustomIntent: createCustomIntentInterpretation(database),
+    acceptCustomIntent: createCustomIntentAcceptance(database),
     visit(args: { ownerId: string; storyId: string }) {
       return readStoryVisitOpening(database, args);
     },

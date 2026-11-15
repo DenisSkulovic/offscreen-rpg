@@ -350,6 +350,7 @@ export const customIntentCandidate = pgTable(
     narrativeRevision: integer('narrative_revision').notNull(),
     settingsRevision: integer('settings_revision').notNull(),
     clarificationUsed: boolean('clarification_used').notNull().default(false),
+    acceptedOperationId: uuid('accepted_operation_id'),
     expiresAt: timestamp('expires_at', {
       withTimezone: true,
       precision: 3,
@@ -366,6 +367,7 @@ export const customIntentCandidate = pgTable(
       t.storyId,
       t.interpretOperationId,
     ),
+    unique('custom_intent_candidate_accepted_op').on(t.acceptedOperationId),
     index('custom_intent_candidate_rate').on(
       t.viewerId,
       t.storyId,
@@ -373,7 +375,7 @@ export const customIntentCandidate = pgTable(
     ),
     check(
       'custom_intent_candidate_status',
-      sql`${t.status} in ('reviewable', 'clarify', 'rejected', 'unsupported')`,
+      sql`${t.status} in ('reviewable', 'clarify', 'rejected', 'unsupported', 'accepted')`,
     ),
     check('custom_intent_candidate_revision', sql`${t.narrativeRevision} > 0`),
     check('custom_intent_candidate_settings', sql`${t.settingsRevision} > 0`),

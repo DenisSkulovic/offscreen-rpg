@@ -317,6 +317,25 @@ export class StoriesController {
       }),
     );
   }
+  /** GM02: accept one reviewable inspect candidate into the finite-action path. */
+  @Put(':id/custom-intent-accepts/:operationId')
+  @HttpCode(200)
+  acceptCustomIntent(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('operationId') operationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, async (ownerId) => {
+      await this.stories.acceptCustomIntent({
+        ownerId,
+        storyId: id,
+        operationId,
+        body,
+      });
+      return this.stories.read({ ownerId, storyId: id });
+    });
+  }
   @Get(':id/visit')
   visit(@Req() request: Request, @Param('id') id: string) {
     return this.run(request, (ownerId) =>
