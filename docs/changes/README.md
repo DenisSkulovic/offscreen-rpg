@@ -4,6 +4,8 @@
 
 Current change: none
 
+**2026-11-15 forensic observability / replay design-only initiative:** [product and technical index](../observability/README.md) → [current source inventory](../observability/evidence/current-source-inventory-2026-11-15.md) → [backend-first staged program](../observability/design-program.md). **No Fxx code-bearing Changes created or selected yet.** Preserve existing ENG03/SA/GM/AD ownership and current status; this documentation is not authorization for telemetry deployment, data retention mutation, provider spending, or code work.
+
 **GM04 (2026-11-15): Done.** Failed `calm-gary` sets `gary-reassurance-tried`; next offer is cover + doorway observation. Evidence [gm04](../experience/evidence/gm04-failed-approach-2026-11-15.md).
 
 **ENG03-C1-R (2026-11-15): Done.** Provisional `canRetry=false` + operator blocker; same-G audited rearm (epoch 1). Evidence [eng03-c1r](../engine-architecture/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). [ENG03-C2](2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md) and remaining GM packets Proposed. No provider spend.
