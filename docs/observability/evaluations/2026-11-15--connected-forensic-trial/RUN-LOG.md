@@ -96,6 +96,22 @@ Cost: 0
 Artifacts: `S2-LEDGER.json`
 Next exact step: Execute [S3](03-FAULTS-AND-RETRIES.md)
 
+### S3 — faults and retries — 2026-11-15T18:12Z approx
+Status: PASS
+Authorization: provider-free; disposable DBs only
+Fault matrix: see `S3-FAULT-MATRIX.json`
+
+| Case | Result | Evidence |
+| --- | --- | --- |
+| F1 CAS/interrupt | PASS | eng03 C1/C2 live 5/5; lock proof JSON emitted |
+| F2 rearm/lease | PASS | obs02-h 3/3 |
+| F3 worker restart | PASS | focused named storyteller subtest 1/1 |
+| F4 stale publication | PASS | operation-trace fixture (stale-refused) |
+| F5 uncertain/unsent | PASS | provider adapter + memory/lifecycle gates |
+
+Cost: 0. No core mechanics patched under evaluation.
+Next exact step: Execute [S4](04-OBS06-OBS07-ADMIN.md)
+
 ## Investigation questions to answer
 
 - Which story/operation/G actually produced a stage receipt and which did not?
