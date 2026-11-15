@@ -235,7 +235,7 @@ Avoid `storyId` as a Prometheus metric label (high cardinality) while keeping it
 - `storyteller_memory_exploration.snapshot` and pending model request/output can contain tool and model content;
 - `storyPassage` / immutable canonical CAS contain player story narrative.
 
-Therefore, an artifact catalog with `retain_until=30 days` **cannot make the raw input disappear** if an older source row continues to store the same bytes indefinitely. A claim of any finite raw model context retention would be materially false until every SQL/CAS/backup/derived copy follows its policy.
+Therefore, an artifact catalog with **any** `retain_until` **cannot make the raw input disappear** if an older source row continues to store the same bytes indefinitely. A claim of any finite raw model context retention would be materially false until every SQL/CAS/backup/derived copy follows its policy.
 
 **Required staged plan:**
 
