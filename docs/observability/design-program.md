@@ -1,6 +1,19 @@
 # Forensic observability and replay | Design convergence and execution sequence
 
-**Status: design waves 1–2, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. All proposed names below are **candidate outcomes**, not created or authorized `docs/changes` packets.
+**Status: design waves 1–3, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap; **OBS01/OBS02/OBS03 are now concrete Proposed code-bearing packets**, none Ready, selected or authorized.
+
+## Wave-3 physical/retention/read contracts and first code menu
+
+| New source-backed design | Main decision / dependency |
+| --- | --- |
+| [Actual private raw-data copies](evidence/private-content-retention-inventory-2026-11-15.md) | SQL `generation.input/output`, dispatch packets, memory rounds, draft/story/QA/CAS are independent retention owners; don't claim TTL on new store alone |
+| [ProtectedEvidenceStore contract](technical/protected-artifact-store-v1.md) | Existing canonical DocumentStore has no deletion API, protected access or configurable raw retention; separate artifact port may share infrastructure |
+| [Archive codec/version evolution](technical/archive-codecs-and-evolution-v1.md) | Original validated runtime data shape with pinned codec/source hash; actual transport bytes separate, existing canonical hash algorithms preserved |
+| [Temporal/replay coverage](technical/temporal-frontiers-and-coverage-v1.md) | `viewVersion` / narrative revision / GM05 public events are not full state frontier; projected activity `dueAt` is not committed earned state |
+| [Concrete policy recommendations](product-policy-recommendations-v1.md) | 90/180-day raw AI retention is a **new candidate**, previously 30/90; player story lifetime independent, Support S1 vs case-bound developer S3 |
+| [First Cursor handoff](handoff/first-forensic-wave.md) | [OBS01 operation coverage](../changes/2026-11-15--obs01-operation-coverage/CHANGE.md), [OBS02 live stages](../changes/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md), [OBS03 prompt provenance](../changes/2026-11-15--obs03-prompt-provenance/CHANGE.md) **all Proposed / NOT Ready** |
+
+**Source-grounded quick win:** `admin/diagnostics-reads.ts::listCampaignOperations` starts from `storytellerAttempt`, which can omit a real G captured/held before any attempt. OBS01 is a **metadata-only coverage correction**, not a giant evidence-storage migration.
 
 ## Wave-2 source and technical contract status
 
@@ -49,7 +62,7 @@ The first proof must be **provider-disabled and disposable**, with known fault i
 
 - Choose the enduring **player playback** promise (published scenes and source-backed effects vs full historical hidden state) and retention/deletion expectations.
 - Choose privileged **raw AI-context/body** access policy. Default: Support gets metadata; individual developer disclosure is separately purpose-bound, short-lived and audited; Trust can have a distinct lawful scope. No broad “staff can see all player prose.”
-- Choose raw AI artifact retention candidates (30 days ordinary / 90 days documented incident hold), and separate longer-lived published history, source metadata, metrics and audit. Treat legal requirements, storage quotas, deletion/export and shared-story rights as gates, not implementation afterthoughts.
+- Review [updated policy recommendation](product-policy-recommendations-v1.md): 90 days ordinary / 180 days documented incident hold **as candidates** (the prior 30/90 candidate is superseded as advice), and separate longer-lived published history, source metadata, metrics and audit. Treat legal requirements, storage quotas, deletion/export and shared-story rights as gates, not implementation afterthoughts.
 - Choose explicit `no-model-call` first wave, financial/environment caps, and allowed disposable verification environment.
 
 ### B. Source/technical feasibility acceptance
@@ -142,7 +155,7 @@ A pre-live acceptance pack must include at least:
 ## 8. Explicit unresolved policies (owner decision package)
 
 The design is coherent enough to challenge, but the following **cannot be solved by code craftsmanship alone**:
-1. Do ordinary player stories retain raw Storyteller packets for 30 days, 90 days or a player-adjustable term? The current **30/90-day model is a recommendation**, not accepted policy.
+1. Which raw Storyteller packet retention policy is appropriate? **90/180 days is now the proposed candidate** pending storage/legal/cost proof; production does not enforce any such policy today.
 2. Are Support specialists ever allowed to read protected narrative bodies, and what constitutes sufficient player authorization/case linkage? Default recommendation: no unless specific approval.
 3. Is player replay **published narrative only** at first, or is complete historical character/world state a launch promise? Recommendation: ship faithful published playback first; never call it complete game state replay until F05/F06.
 4. What is the accepted per-user/turn storage cost envelope? Do a real measurement before deciding quotas or tiering; do not choose based on abstract “infinite retention.”
