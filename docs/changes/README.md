@@ -4,6 +4,8 @@
 
 Current change: none
 
+**OBS06 next recommended code candidate (2026-11-15, Proposed, not Ready):** [case-scoped Support Situation → Why read](2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) → [OBS07 first Support UI, Proposed after OBS06](2026-11-15--obs07-support-situation-ui/CHANGE.md). [Source + security audit](../observability/evidence/obs06-support-situation-source-audit-2026-11-15.md) and [decision handoff](../observability/handoff/obs06-support-investigator-2026-11-15.md). **Exact case/campaign grant binding requires owner/security acceptance.** OBS04 remains Proposed, OBS00-B blocked; no active code authorization.
+
 **OBS05 (2026-11-15): Done.** Evidence lineage v2: `packet-included-uncited` observation; v1 fixtures preserved. Evidence [obs05](../observability/evidence/obs05-evidence-claim-truth-2026-11-15.md).
 
 **OBS02-H (2026-11-15): Done.** Rearm-epoch stage keys, lease-fenced terminal receipts, divergent-key integrity conflict. Evidence [obs02-h](../observability/evidence/obs02-h-stage-integrity-2026-11-15.md).
