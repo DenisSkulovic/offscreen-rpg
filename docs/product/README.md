@@ -29,7 +29,3 @@
 | [Storytelling](storytelling/storytelling.md) | What shapes narration without owning mechanics? |
 | [Storyteller settings](storytelling/storyteller-settings.md) | What creative controls may players set? |
 | [Continuity and consequences](storytelling/continuity-and-consequences.md) | How does memory and lasting consequence work? |
-
-## Compat paths
-
-Old paths under `docs/*.md` (for example `docs/vision.md`) are **stubs** that point here. Prefer linking the canonical `docs/product/…` path in new writing.

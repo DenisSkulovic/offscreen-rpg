@@ -9,5 +9,3 @@
 | Engine | [engine/](engine/README.md) | What engine architecture realizes product rules? |
 | Storyteller | [storyteller/](storyteller/README.md) | How should the adaptive Storyteller operate? |
 | Observability | [observability/](observability/README.md) | How do we investigate real historical behavior? |
-
-Old top-level paths (`docs/programs/experience/`, `docs/programs/admin/`, `docs/programs/engine/`, `docs/programs/storyteller/`, `docs/programs/observability/`) remain as **README stubs**.

@@ -47,7 +47,7 @@ For task-oriented tutorials, explanation, reference and how-to, adapt [Diátaxis
 
 `README.md` → `docs/README.md` → **`docs/product/`** (bible) and/or **`docs/technical/README.md`** / **`docs/programs/`** / **`docs/engineering/README.md`** → _exact authoritative heading_ → selected source if needed.
 
-**Product canon lives under `docs/product/`**; design programs under **`docs/programs/`** (2026-11-15). Compat stubs remain at old top-level paths. Topic indexes are **routers, not a fourth authority layer**. An agent should follow one route, not read every router in sequence.
+**Product canon lives under `docs/product/`**; design programs under **`docs/programs/`**; history under **`docs/history/`** (2026-11-15). Topic indexes are **routers, not a fourth authority layer**. An agent should follow one route, not read every router in sequence.
 
 ## Maintenance without documentation theater
 

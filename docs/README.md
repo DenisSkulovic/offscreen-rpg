@@ -48,10 +48,6 @@ Technical specifications can include unbuilt design. When product, technical, an
 | Staff Admin at scale? | [Admin](programs/admin/README.md) | [Admin technical](programs/admin/technical/README.md) | [Changes](changes/README.md); Support grants still governance-gated |
 | What is still undecided? | [Open questions](questions.md) | Relevant contract's proposed boundary | [Changes](changes/README.md); legacy disposition in [initiatives audit](history/initiatives/AUDIT-2026-11-11.md) |
 
-## Compat stubs
-
-Compat stubs remain for: root product files → `product/`; `features/` → `history/initiatives/`; `development.md` → `operations/`; `rules-attribution.md` → `history/legal/`; `minutes/` → `history/minutes/`; and top-level `experience|admin|engine-architecture|storyteller-architecture|observability` → `programs/…`. Prefer canonical paths in new writing.
-
 ## Read with a question, stop with an answer
 
 Before opening source, identify the behavior, its authority and the evidence needed. Once you can name the entry point, owning operation, output and unresolved issue, follow only that path. Preserve discoveries at the nearest owner. The [maintenance rule](../.agents/rules/documentation.md) defines when to update those layers.

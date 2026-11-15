@@ -8,6 +8,6 @@
 | --- | --- |
 | Sept 2026 initiative dossiers (frozen) | [initiatives/](initiatives/README.md) |
 | Legal / SRD attribution | [legal/rules-attribution.md](legal/rules-attribution.md) |
-| Session minutes | [minutes/](minutes/README.md) (compat stub at [`docs/minutes/`](../minutes/README.md)) |
+| Session minutes | [minutes/](minutes/README.md) |
 
 History explains *what was tried or decided*; it is **not** execution permission.
