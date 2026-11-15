@@ -70,6 +70,32 @@ Duration: stories-browser ~85s; chamber smoke ~14s; forensic-campaigns ~30s; pac
 Discrepancy: interactive headed chamber avoided (owner request: no desktop control); headless `--forensic-campaigns` used instead
 Next exact step: Execute [S2](02-FORENSIC-CAPTURE.md)
 
+### S2 — forensic source capture — 2026-11-15T18:09Z approx
+Status: PASS
+Environment: read-only SQL on `offscreen_chamber`; disposable sandbox for OBS02 consequence G (destroyed after capture)
+Authorization: provider-free
+Commands actually run:
+- docker exec psql queries for Story A/B story/passage/public_event/item
+- `pnpm --filter @offscreen/application exec node --test test/obs02*.live.test.mjs test/obs03-prompt-provenance.test.mjs` → 9/9 pass
+- one-shot disposable consequence capture → `S2-LEDGER.json` (sandbox destroyed)
+Observed:
+- Story A/B: **no** `source_generation_id`, **no** chamber OBS02 stages; A item `sealed-letter`→`caretaker`; B seq3 `default`
+- Held opening G `14275b91-…` state=running in chamber; **0** stage rows; **0** provenance rows; **0** attempt rows
+- Disposable consequence G `3985fb72-69ae-45fd-b6c4-cb1bf922fecd`: stages cause→materialize→task→skipped→validation→publication; OBS03 provenance present (task/compiled SHA); passage seq2 linked to G; attempts=0
+- OBS05 adapter fixture `packet-included-uncited` failureClass observational (not model-ignored)
+Sanitized one-page trace (G + command):
+- O=`a6d96226-…` → G=`3985fb72-…` (Recorded receipt.generationId)
+- stages (7) as listed in S2-LEDGER; epoch keys on materialization start `e0:a1`
+- OBS03: taskInputSha256=`cbdab23e…` compiledRequestSha256=`be782d16…` manifest chars=3323
+- private body: not committed; classification=local-only
+- effect vs G vs publication: scripted skip (no provider); publication-decided completed; published passage seq2 has source_generation_id=G
+- unanswerable: chamber held opening wire bytes / stage order (no stages persisted)
+Result: causal ledger for scripted A/B + full OBS02/03 consequence episode captured
+Coverage: full S2 goals with explicit coverage gaps for held chamber G
+Cost: 0
+Artifacts: `S2-LEDGER.json`
+Next exact step: Execute [S3](03-FAULTS-AND-RETRIES.md)
+
 ## Investigation questions to answer
 
 - Which story/operation/G actually produced a stage receipt and which did not?
