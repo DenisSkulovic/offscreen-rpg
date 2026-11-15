@@ -8,6 +8,7 @@
 
 | Need | Document | Authority |
 | --- | --- | --- |
+| **How does Cursor actually RUN the stack, play campaigns, test failures and report results?** | **[Cursor executable S0–S6 forensic handoff](handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md)** → [run ledger / resumption](evaluations/2026-11-15--connected-forensic-trial/README.md) | Evaluation **prepared, not executed**; local/disposable, conditional live only under explicit budget and authority |
 | What experience and forensic guarantees should exist for player, Support and Engineering? | [Product destination and golden journeys](product-vision.md) | Product target / recommendations for owner acceptance |
 | **How do we distinguish a fact from a diagnosis?** | [Evidence-claims and quality V1](technical/evidence-claims-and-quality-v1.md) | Source claims vs derived statements vs hypotheses |
 | **What exactly should one incident explorer load?** | [Turn Evidence Capsule V1](technical/forensic-turn-capsule-v1.md) | Read-only composed source graph, not a second GameData blob |
