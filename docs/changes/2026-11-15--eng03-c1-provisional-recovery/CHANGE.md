@@ -1,6 +1,6 @@
 # ENG03-C1-R | Prevent provisional retry and recover exhausted capture on same G
 
-**State: Proposed, design specified, not Ready.** **Kind:** bounded read/recovery code, optional additive audit migration and provider-free proof. **Design authority:** [provisional status and same-G rearm V1](../../engine-architecture/decisions/eng03-provisional-recovery-v1.md). **Dependency:** ENG03-narrow and ENG03-C1 core Done. **No source implementation, provider spend or Admin UI authorized.**
+**State: Done (2026-11-15).** Evidence: [eng03-c1r-provisional-recovery-2026-11-15](../../engine-architecture/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). **Kind:** bounded read/recovery code, additive audit migration and provider-free proof. **Design authority:** [provisional status and same-G rearm V1](../../engine-architecture/decisions/eng03-provisional-recovery-v1.md). **Dependency:** ENG03-narrow and ENG03-C1 core Done. **No provider spend or Admin UI.**
 
 ## Cursor first screen
 

@@ -15,6 +15,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import {
   storytellerAttempt,
+  storytellerContextCapture,
   storytellerOperation,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
@@ -41,6 +42,7 @@ import { decisionPlanSchema, waitPlanSchema } from './plans';
 import { disabledReadCache, type ReadCacheOptions } from '../cache/read-cache';
 import type { DocumentStore } from '@offscreen/documents';
 import { readPassageDocument } from './passage-documents';
+import { storytellerContextCaptureKind } from '../storyteller/context-capture';
 
 type StoryReadOptions = ReadCacheOptions &
   Readonly<{
@@ -213,6 +215,8 @@ export function createStoryReads(
         resolutionState: generation.state,
         resolutionVersion: generation.statusRevision,
         failureCode: generation.failureCode,
+        generationKind: generation.kind,
+        captureState: storytellerContextCapture.state,
         publicationState: storytellerPublication.state,
         publicationFailure: storytellerPublication.failureCode,
         attemptState: storytellerAttempt.state,
@@ -238,6 +242,10 @@ export function createStoryReads(
         ),
       )
       .leftJoin(generation, eq(generation.id, storyResolution.generationId))
+      .leftJoin(
+        storytellerContextCapture,
+        eq(storytellerContextCapture.captureId, generation.id),
+      )
       .leftJoin(
         storytellerAttempt,
         eq(storytellerAttempt.id, generation.attemptId),
@@ -387,9 +395,11 @@ export function createStoryReads(
               resolutionSubmission: storyResolution.submission,
               resolutionVersion: generation.statusRevision,
               failureCode: generation.failureCode,
+              generationKind: generation.kind,
               generationInput: generation.input,
               repairCandidate: generation.repairCandidate,
               repairDiagnostic: generation.repairDiagnostic,
+              captureState: storytellerContextCapture.state,
               publicationState: storytellerPublication.state,
               publicationFailure: storytellerPublication.failureCode,
               attemptState: storytellerAttempt.state,
@@ -418,6 +428,10 @@ export function createStoryReads(
               eq(generation.id, storyResolution.generationId),
             )
             .leftJoin(
+              storytellerContextCapture,
+              eq(storytellerContextCapture.captureId, generation.id),
+            )
+            .leftJoin(
               storytellerAttempt,
               eq(storytellerAttempt.id, generation.attemptId),
             )
@@ -443,6 +457,8 @@ export function createStoryReads(
             resolutionState: row.resolutionState,
             resolutionVersion: row.resolutionVersion,
             failureCode: row.failureCode,
+            generationKind: row.generationKind,
+            captureState: row.captureState,
             publicationState: row.publicationState,
             publicationFailure: row.publicationFailure,
             attemptState: row.attemptState,
@@ -552,23 +568,34 @@ export function createStoryReads(
               row.resolutionState === null
                 ? null
                 : (() => {
-                    const blocker = publicResolutionBlocker(
-                      row.resolutionState,
-                      row.publicationState,
-                      row.failureCode,
-                      row.execution == null
-                        ? 'scripted'
-                        : executionPolicySchema.parse(row.execution).mode,
-                      row.attemptState,
-                      {
-                        task: row.generationInput,
-                        candidate: row.repairCandidate,
-                        diagnostic: row.repairDiagnostic,
-                        operationState: row.operationState,
-                        dispatchedRounds: row.operationDispatchedRounds,
-                        maxModelRounds: row.operationMaxModelRounds,
-                      },
-                    );
+                    const provisional =
+                      row.generationKind === storytellerContextCaptureKind;
+                    // Provisional capture G is preparation, never a player-retryable
+                    // Storyteller failure. Do not parse its pointer as a task.
+                    const blocker = provisional
+                      ? row.captureState === 'held'
+                        ? {
+                            kind: 'generation' as const,
+                            recovery: 'operator' as const,
+                          }
+                        : null
+                      : publicResolutionBlocker(
+                          row.resolutionState,
+                          row.publicationState,
+                          row.failureCode,
+                          row.execution == null
+                            ? 'scripted'
+                            : executionPolicySchema.parse(row.execution).mode,
+                          row.attemptState,
+                          {
+                            task: row.generationInput,
+                            candidate: row.repairCandidate,
+                            diagnostic: row.repairDiagnostic,
+                            operationState: row.operationState,
+                            dispatchedRounds: row.operationDispatchedRounds,
+                            maxModelRounds: row.operationMaxModelRounds,
+                          },
+                        );
                     return {
                       ...publicResolutionState(row.resolutionState),
                       evidence: publicResolutionEvidence(
@@ -580,9 +607,13 @@ export function createStoryReads(
                           ? 'blocked'
                           : publicResolutionState(row.resolutionState)?.state,
                       version: row.resolutionVersion ?? 0,
-                      reason: row.publicationFailure ?? row.failureCode,
+                      reason: provisional
+                        ? null
+                        : (row.publicationFailure ?? row.failureCode),
                       blocker,
-                      canRetry: blocker?.recovery === 'retry',
+                      canRetry: provisional
+                        ? false
+                        : blocker?.recovery === 'retry',
                     };
                   })(),
           });

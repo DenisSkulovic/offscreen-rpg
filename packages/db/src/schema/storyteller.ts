@@ -63,6 +63,7 @@ export const storytellerContextCapture = pgTable(
     materializationAttempts: integer('materialization_attempts')
       .notNull()
       .default(0),
+    rearmEpoch: integer('rearm_epoch').notNull().default(0),
     leaseId: uuid('lease_id'),
     leaseExpiresAt: timestamp('lease_expires_at', {
       withTimezone: true,
@@ -99,6 +100,10 @@ export const storytellerContextCapture = pgTable(
       sql`${t.materializationAttempts} >= 0 AND ${t.materializationAttempts} <= 3`,
     ),
     check(
+      'storyteller_context_capture_rearm_epoch',
+      sql`${t.rearmEpoch} >= 0 AND ${t.rearmEpoch} <= 1`,
+    ),
+    check(
       'storyteller_context_capture_request_sha',
       sql`${t.materializedRequestSha256} IS NULL OR ${t.materializedRequestSha256} ~ '^[0-9a-f]{64}$'`,
     ),
@@ -106,6 +111,47 @@ export const storytellerContextCapture = pgTable(
       'storyteller_context_capture_lease',
       sql`(${t.leaseId} IS NULL) = (${t.leaseExpiresAt} IS NULL)`,
     ),
+  ],
+);
+
+/**
+ * ENG03-C1-R: durable same-G operator rearm audit. One epoch per capture in V1.
+ * Not a player endpoint and not an Admin UI grant surface.
+ */
+export const storytellerContextCaptureRearm = pgTable(
+  'storyteller_context_capture_rearm',
+  {
+    rearmId: uuid('rearm_id').primaryKey(),
+    captureId: uuid('capture_id')
+      .notNull()
+      .references(() => storytellerContextCapture.captureId, {
+        onDelete: 'restrict',
+      }),
+    storyId: uuid('story_id').notNull(),
+    operatorId: text('operator_id').notNull(),
+    reasonCode: text('reason_code')
+      .notNull()
+      .$type<'storage-restored' | 'transient-infra-recovered'>(),
+    incidentRef: text('incident_ref'),
+    previousState: text('previous_state').notNull(),
+    previousAttempts: integer('previous_attempts').notNull(),
+    previousFailureCode: text('previous_failure_code'),
+    epoch: integer('epoch').notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('storyteller_context_capture_rearm_one_epoch').on(t.captureId),
+    index('storyteller_context_capture_rearm_story').on(t.storyId),
+    check(
+      'storyteller_context_capture_rearm_reason',
+      sql`${t.reasonCode} IN ('storage-restored','transient-infra-recovered')`,
+    ),
+    check('storyteller_context_capture_rearm_epoch', sql`${t.epoch} = 1`),
   ],
 );
 

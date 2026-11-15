@@ -24,3 +24,4 @@ export * from './creative-exploration-recipes';
 export * from './task-evidence-need';
 export * from './adaptive-recipe';
 export * from './creative-discovery';
+export * from './capture-rearm';

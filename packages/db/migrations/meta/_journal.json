@@ -43,6 +43,13 @@
       "when": 1794684000000,
       "tag": "0005_ad08_admin_cases",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794760000000,
+      "tag": "0006_eng03_c1r_provisional_recovery",
+      "breakpoints": true
     }
   ]
 }

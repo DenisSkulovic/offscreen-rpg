@@ -19,10 +19,10 @@ Closed in harden pass (2026-11-14):
 1. **Lock order:** unlocked receipt preflight → story lock → receipt `FOR UPDATE`.
 2. **Execution ownership fence:** require `gameActionExecution.state='settled'` and `preparationGenerationId=NULL`.
 
-Still open (next ENG03 follow-up, not priorities 2–6):
+Closed by [ENG03-C1-R](../2026-11-15--eng03-c1-provisional-recovery/CHANGE.md) (2026-11-15):
 
-3. **Provisional G status:** reads must not offer ordinary Storyteller retry for provisional capture kind; `canRetry=false` until promoted.
-4. **Exhausted-attempt rearm:** explicit same-G operator rearm after bounded CAS exhaustion (no second paid G).
+3. **Provisional G status:** reads force `canRetry=false`; held exhausted uses operator blocker.
+4. **Exhausted-attempt rearm:** application-private same-G rearm with durable audit epoch.
 
 ## Cursor first screen (original)
 
