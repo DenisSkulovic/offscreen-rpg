@@ -1,6 +1,6 @@
 # S2 | Trace real persisted game/Storyteller evidence through its original source
 
-**Goal:** produce one verifiable diagram/data table built from **actual SQL rows and source IDs**, not from log snippets, mock JSON or an inferred SA01 fixture. Read [S1 checkpoint](CHECKPOINT.md), [OBS02](../obs02-execution-stages-2026-11-15.md) and [OBS03](../obs03-prompt-provenance-2026-11-15.md) via paths under `docs/observability/evidence/` only when needed, and this phase. Provider-free, read-only except synthetic fixture runs.
+**Goal:** produce one verifiable diagram/data table built from **actual SQL rows and source IDs**, not from log snippets, mock JSON or an inferred SA01 fixture. Read [S1 checkpoint](CHECKPOINT.md), [OBS02](../../evidence/obs02-execution-stages-2026-11-15.md) and [OBS03](../../evidence/obs03-prompt-provenance-2026-11-15.md) via paths under `docs/observability/evidence/` only when needed, and this phase. Provider-free, read-only except synthetic fixture runs.
 
 ## 1. Build the causal ledger from the *actual* campaigns
 
