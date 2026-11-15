@@ -8,6 +8,8 @@
 
 **Wave-5 investigation workbench detail:** [Support/Developer interaction contract](../observability/admin-investigator-interactions-v1.md) → [Turn Evidence Capsule](../observability/technical/forensic-turn-capsule-v1.md) → [evidence truth rules](../observability/technical/evidence-claims-and-quality-v1.md). **OBS01 S1 operation coverage, OBS02 stage receipts and OBS03 initial provenance sidecar are implemented**; the fully interactive workbench and exceptional raw-evidence disclosure API are **not**. [Current design handoff](../observability/handoff/wave5-evidence-quality-2026-11-15.md). No staff capability expansion is authorized by this link.
 
+**OBS06/OBS07 next Support investigation design (2026-11-15):** [source and case-grant audit](../observability/evidence/obs06-support-situation-source-audit-2026-11-15.md) → [strict S1 Situation → Why read](../observability/technical/support-situation-and-why-v1.md) → [current handoff](../observability/handoff/obs06-support-investigator-2026-11-15.md). These two bounded Changes are **Proposed**, with an explicit case/campaign authorization decision before code. No staff package is automatically enlarged and no raw narrative access is authorized.
+
 ## Choose the product question
 
 | Question | Product document |

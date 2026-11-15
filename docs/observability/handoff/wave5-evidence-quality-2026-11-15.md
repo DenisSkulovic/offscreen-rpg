@@ -1,6 +1,6 @@
 # Forensic observability | Wave-5 evidence quality and investigation handoff
 
-**Status:** design-only continuation on 2026-11-15, after the waves 1–4 PR was merged into `main`. **Source recheck:** `main@4e932da` after OBS01, OBS00-A, OBS02, OBS03 landed. **No runtime code/test/migration/provider call made in this design PR.** Current Change remains **none** until owner selects an implementation.
+**Status:** historical wave-5 design snapshot, **superseded for implementation status/selection** by [OBS06 decision handoff](obs06-support-investigator-2026-11-15.md), after main@18158402 landed OBS02-H and OBS05. The wave-5 source review and design artifacts remain valid, but its earlier “Proposed” labels for these two Changes are no longer current. Original context: design-only continuation on 2026-11-15, after the waves 1–4 PR was merged into `main`. **Source recheck:** `main@4e932da` after OBS01, OBS00-A, OBS02, OBS03 landed. **No runtime code/test/migration/provider call made in this design PR.** Current Change remains **none** until owner selects an implementation.
 
 ## 1. What changed while design continued
 
@@ -10,10 +10,10 @@
 | **OBS00-B** | **Blocked / not implemented** | Provider sends remain denied without independently current account/entitlement/usage authority; don't hardcode allow or reuse captured task policy |
 | **OBS01** | **Done** | Safe Admin operation discovery can include G without a Storyteller attempt; see [Cursor evidence](../evidence/obs01-operation-coverage-2026-11-15.md) |
 | **OBS02** | **Done (first pilot)** | True redacted stage SQL receipts for scripted consequence and held capture; see [actual implementation evidence](../evidence/obs02-execution-stages-2026-11-15.md) |
-| **OBS02-H** | **Proposed residual** | [Source review](../evidence/obs02-stage-integrity-review-2026-11-15.md) finds stage identity omits rearm epoch, stale lease can record phantom terminal failure, and stage conflicts can be silently ignored |
+| **OBS02-H** | **Done (2026-11-15)** | [Source review](../evidence/obs02-stage-integrity-review-2026-11-15.md) finds stage identity omits rearm epoch, stale lease can record phantom terminal failure, and stage conflicts can be silently ignored |
 | **OBS03** | **Done (first pilot)** | Redacted same-G consequence prompt source manifest and code component hashes, no compiled-request changes; [source review](../evidence/obs03-provenance-quality-review-2026-11-15.md) clarifies it is **not exact per-attempt transport provenance** |
 | **OBS04** | **Proposed** | First source-atomic finite-action E0 state transition, not implemented |
-| **OBS05** | **Proposed** | Replace overstrong SA05 “model ignored” diagnosis with truthful uncited/unknown claim semantics and v1 compatibility |
+| **OBS05** | **Done (2026-11-15)** | Replace overstrong SA05 “model ignored” diagnosis with truthful uncited/unknown claim semantics and v1 compatibility |
 
 **Source-grounded interpretation:** OBS01–OBS03 are real, useful progress. They **do not yet** constitute a complete provider/worker/semantic history, a retained raw artifact store, full historical actor-state replay or a production Admin Context Workbench. Do not mark those product goals Done from the first packet tests.
 
@@ -56,7 +56,7 @@
 ## 5. Review/verification gates for owner
 
 1. **Accept/adjust evidence statement semantics** (recorded/derived/hypothesis) and source disclosure boundaries.
-2. Select at most one narrow implementation slice (OBS02-H or OBS05 for diagnostic truth; OBS00-B before actual paid provider work).
+2. Select one new implementation slice only after the [OBS06 current handoff](obs06-support-investigator-2026-11-15.md) and owner authorization; OBS02-H/OBS05 are already Done. OBS00-B remains mandatory before actual paid provider work.
 3. Run targeted provider-disabled/disposable SQL tests and report exact source SHA, observed row identities and failure cases. A Markdown design is not runtime proof.
 4. Before retaining new raw model bodies or promising player R2 replay, accept storage/retention/erasure law and fully audited E0 writer/codec data contracts.
 5. Do not let Admin visualization or data export run ahead of verified source completeness/authorization.

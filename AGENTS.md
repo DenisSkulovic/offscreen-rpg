@@ -1,5 +1,7 @@
 # Offscreen RPG | coding-agent entry
 
+**Owner-directed forensic evaluation (not a Change):** if the owner explicitly asks you to run the forensic experiment, **start at [the Cursor forensic runbook](docs/observability/handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md)**. It contains exact S0–S6 local startup/play/fault/inspection/live-gate steps, a resumable checkpoint and required Git evidence report. **Do not start this program merely because this link exists.** Paid requests and OBS06/OBS07 code still require the task-specific kickoff permissions stated there. The user must not be asked to drive the browser or run the commands manually.
+
 **If you have one authorized Change:** read its `docs/changes/<folder>/CHANGE.md` first, then **one nearby owner README** and 2–5 named source files. Do **not** preload all repo maps, past minutes, the architecture target, or specialist manuals. [Change queue](docs/changes/README.md) owns selection; `Current change: none` is valid and is not permission to code.
 
 **Project:** pre-POC persistent-story RPG, currently an **engineering portfolio**. React/Next architecture is [selected](docs/engineering/targets/react-next.md); gameplay/visual redesign are deferred. The game engine/application/DB, **not** a browser or LLM, own rules, time, permissions, publication and provider costs.
