@@ -62,6 +62,7 @@ import {
   captureHeldMemoryPacket,
 } from './memory-packet-review.js';
 import { parseLauncherFlags } from './modes/cli-flags.js';
+import { createLocalStoryProvider } from './story-provider.js';
 import {
   bootstrapLocalStoryFunding,
   describeStoryFundingDenial,
@@ -818,45 +819,13 @@ try {
     () => {},
     storyAuthority
       ? {
-          provider: createOpenRouterProvider({
-            enabled: true,
+          provider: createLocalStoryProvider({
             apiKey: storyAuthority.apiKey,
-            recordResponse: async (evidence) => {
-              const directory = join(
-                workspaceRoot,
-                'data',
-                'story-local-evidence',
-              );
-              await mkdir(directory, { recursive: true });
-              const evidenceId =
-                evidence.providerId &&
-                /^[a-zA-Z0-9_-]{1,200}$/.test(evidence.providerId)
-                  ? evidence.providerId
-                  : crypto.randomUUID();
-              await writeFile(
-                join(directory, `provider-response-${evidenceId}.json`),
-                `${JSON.stringify(evidence, null, 2)}\n`,
-                { flag: 'wx' },
-              );
-            },
-            recordDiagnostic: async (evidence) => {
-              const directory = join(
-                workspaceRoot,
-                'data',
-                'story-local-evidence',
-              );
-              await mkdir(directory, { recursive: true });
-              const evidenceId =
-                evidence.providerId &&
-                /^[a-zA-Z0-9_-]{1,200}$/.test(evidence.providerId)
-                  ? evidence.providerId
-                  : crypto.randomUUID();
-              await writeFile(
-                join(directory, `provider-diagnostic-${evidenceId}.json`),
-                `${JSON.stringify(evidence, null, 2)}\n`,
-                { flag: 'wx' },
-              );
-            },
+            evidenceDirectory: join(
+              workspaceRoot,
+              'data',
+              'story-local-evidence',
+            ),
           }),
           dispatchAuthority: pinnedLocalStoryDispatchAuthority(
             storyAuthority.usagePolicy,

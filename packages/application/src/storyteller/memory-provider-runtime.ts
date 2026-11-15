@@ -9,7 +9,7 @@ import {
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
 import { retainsCapturedAuthority } from './dispatch-authority';
-import { prepareDispatchReview } from './dispatch-review';
+import { prepareReviewedDispatch } from './dispatch-review';
 import type {
   CapturedMemoryRoundDelivery,
   PersistedMemoryRoundSettlement,
@@ -186,18 +186,22 @@ export function createMemoryProviderRoundRuntime(
           }
         : {}),
     };
-    const review = await prepareDispatchReview(
+    const reviewed = await prepareReviewedDispatch(
       database,
       input.generationId,
       round.attemptId,
       input.task,
       providerDispatch,
+      input.provider,
     );
-    if (review !== 'proceed') {
+    if (reviewed.disposition !== 'proceed') {
+      // A wire refusal is a stopped review: the bytes the provider would send
+      // are not the approved packet. Refused before reserve/dispatch (OBS00-C).
       throw new MemoryProviderRoundError(
-        review === 'held' ? 'review-held' : 'review-stopped',
+        reviewed.disposition === 'held' ? 'review-held' : 'review-stopped',
       );
     }
+    const wireDispatch = reviewed.dispatch;
 
     let reservation;
     try {
@@ -270,7 +274,7 @@ export function createMemoryProviderRoundRuntime(
       throw new MemoryProviderRoundError('provider-uncertain');
     }
     try {
-      return await input.provider(input.task, providerDispatch);
+      return await input.provider(input.task, wireDispatch);
     } catch {
       return {
         kind: 'uncertain',

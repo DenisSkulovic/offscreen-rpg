@@ -38,15 +38,41 @@ export type ProviderOutcome =
       telemetry: ProviderTelemetry;
     }
   | { kind: 'uncertain'; telemetry: ProviderTelemetry };
+/**
+ * OBS00-C: the exact credential-free HTTP body string for one attempt, with the
+ * digest of those exact UTF-8 bytes. Produced by ONE serializer
+ * (`prepareOpenRouterWire`); the application compares `sha256` with the
+ * persisted `storyteller_dispatch_review.packet_sha256` before any possible-send
+ * boundary, and the provider hands `serialized` to the transport unchanged.
+ */
+export type PreparedProviderWire = Readonly<{
+  version: 'openrouter-wire.v1';
+  serialized: string;
+  sha256: string;
+  serializedBytes: number;
+}>;
 export type StorytellerProviderDispatch = Readonly<{
   request: CapturedProviderRequest;
   maxGeneratedTokens: number;
   outputProtocol?: 'native-json-schema' | 'json-object-local-validation';
+  /** Frozen reviewed bytes. When present the provider sends exactly these. */
+  wire?: PreparedProviderWire;
 }>;
-export type StorytellerProvider = (
-  task: StorytellerTask,
-  dispatch?: StorytellerProviderDispatch,
-) => Promise<ProviderOutcome>;
+export type StorytellerProvider = {
+  (
+    task: StorytellerTask,
+    dispatch?: StorytellerProviderDispatch,
+  ): Promise<ProviderOutcome>;
+  /**
+   * Pure, I/O-free: the exact wire this provider WOULD send for (task,
+   * dispatch). Absent means the provider cannot attest wire equality and the
+   * application refuses to dispatch through it.
+   */
+  readonly prepareWire?: (
+    task: StorytellerTask,
+    dispatch?: StorytellerProviderDispatch,
+  ) => PreparedProviderWire;
+};
 
 function providerDispatch(
   task: StorytellerTask,
@@ -339,6 +365,38 @@ export function buildOpenRouterRequest(
   };
 }
 
+function wireForBody(body: ReturnType<typeof buildOpenRouterRequest>) {
+  // The only serializer for the provider-facing body (OBS00-C).
+  const serialized = JSON.stringify(body);
+  return {
+    version: 'openrouter-wire.v1' as const,
+    serialized,
+    sha256: createHash('sha256').update(serialized, 'utf8').digest('hex'),
+    serializedBytes: Buffer.byteLength(serialized, 'utf8'),
+  } satisfies PreparedProviderWire;
+}
+
+/** Build + serialize once; inspection, review and transport all derive from this. */
+export function prepareOpenRouterWire(
+  task: StorytellerTask,
+  dispatch?: StorytellerProviderDispatch,
+): PreparedProviderWire {
+  return wireForBody(
+    buildOpenRouterRequest(task, providerDispatch(task, dispatch)),
+  );
+}
+
+/** True only when the claimed digest/length describe exactly these bytes. */
+export function preparedWireIsSelfConsistent(wire: PreparedProviderWire) {
+  return (
+    wire.version === 'openrouter-wire.v1' &&
+    typeof wire.serialized === 'string' &&
+    wire.sha256 ===
+      createHash('sha256').update(wire.serialized, 'utf8').digest('hex') &&
+    wire.serializedBytes === Buffer.byteLength(wire.serialized, 'utf8')
+  );
+}
+
 /** Exact packet facts only; token counts remain unknown without a verified tokenizer. */
 export function inspectOpenRouterRequest(
   task: StorytellerTask,
@@ -346,7 +404,7 @@ export function inspectOpenRouterRequest(
 ) {
   const selected = providerDispatch(task, dispatch);
   const body = buildOpenRouterRequest(task, selected);
-  const serialized = JSON.stringify(body);
+  const wire = wireForBody(body);
   const userMessage = body.messages.find((message) => message.role === 'user');
   let userSections: ReadonlyArray<{
     key: string;
@@ -402,8 +460,8 @@ export function inspectOpenRouterRequest(
         ? (task.execution.policy.responseTransport ?? 'buffered-json')
         : 'buffered-json',
     body,
-    sha256: createHash('sha256').update(serialized).digest('hex'),
-    serializedBytes: Buffer.byteLength(serialized, 'utf8'),
+    sha256: wire.sha256,
+    serializedBytes: wire.serializedBytes,
     capturedRequestBytes: Buffer.byteLength(
       JSON.stringify(selected.request),
       'utf8',
@@ -826,14 +884,46 @@ export function createOpenRouterProvider(config: {
     throw new Error('Live provider is disabled');
   }
   const transport = config.transport ?? fetch;
-  return async (task, dispatch) => {
+  const send: StorytellerProvider = async (task, dispatch) => {
     const selected = providerDispatch(task, dispatch);
-    const request = buildOpenRouterRequest(task, selected);
+    // Rebuild from the captured (task, dispatch); a supplied frozen wire must
+    // equal it. The frozen bytes, not a second serialization, are what is sent.
+    const rebuilt = prepareOpenRouterWire(task, selected);
+    const wire = dispatch?.wire ?? rebuilt;
     const policy = task.execution.mode === 'provider' && task.execution.policy;
     if (!policy) throw new Error('Wrong execution mode');
     const startedAt = Date.now();
     let httpStatus: number | null = null;
     let providerId: string | null = null;
+    if (
+      !preparedWireIsSelfConsistent(wire) ||
+      wire.sha256 !== rebuilt.sha256 ||
+      wire.serialized !== rebuilt.serialized
+    ) {
+      // Defence in depth: the application refuses this earlier, before the
+      // possible-send boundary. Reaching here means no HTTP was attempted, so
+      // the attempt is confirmed unsent rather than uncertain.
+      return {
+        kind: 'failed',
+        failureCode: 'provider_unavailable',
+        usage: {
+          reportedCostMicrousd: 0n,
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          reasoningTokens: null,
+          cachedTokens: null,
+          cacheWriteTokens: null,
+        },
+        telemetry: {
+          durationMs: Date.now() - startedAt,
+          httpStatus: null,
+          providerId: null,
+          reportedModel: null,
+          finishReason: 'wire-mismatch-unsent',
+        },
+      };
+    }
     try {
       const response = await transport(
         'https://openrouter.ai/api/v1/chat/completions',
@@ -845,7 +935,7 @@ export function createOpenRouterProvider(config: {
             authorization: `Bearer ${config.apiKey}`,
             'content-type': 'application/json',
           },
-          body: JSON.stringify(request),
+          body: wire.serialized,
         },
       );
       httpStatus = response.status;
@@ -861,9 +951,7 @@ export function createOpenRouterProvider(config: {
         httpStatus,
         receivedAt: new Date().toISOString(),
         providerId,
-        requestSha256: createHash('sha256')
-          .update(JSON.stringify(request))
-          .digest('hex'),
+        requestSha256: wire.sha256,
         purpose: describeStorytellerRequestPurpose(task),
       });
       const parsed = responseSchema.safeParse(bounded.parsed);
@@ -974,9 +1062,7 @@ export function createOpenRouterProvider(config: {
         if (diagnostic.stage !== 'valid') {
           await config.recordDiagnostic?.({
             providerId: parsed.data.id,
-            requestSha256: createHash('sha256')
-              .update(JSON.stringify(request))
-              .digest('hex'),
+            requestSha256: wire.sha256,
             diagnostic,
             recordedAt: new Date().toISOString(),
           });
@@ -1008,4 +1094,10 @@ export function createOpenRouterProvider(config: {
       };
     }
   };
+  return Object.assign(send, {
+    prepareWire: (
+      task: StorytellerTask,
+      dispatch?: StorytellerProviderDispatch,
+    ) => prepareOpenRouterWire(task, dispatch),
+  });
 }

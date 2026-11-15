@@ -11,6 +11,9 @@ import {
 } from '@offscreen/db/storyteller-schema';
 import {
   inspectOpenRouterRequest,
+  preparedWireIsSelfConsistent,
+  type PreparedProviderWire,
+  type StorytellerProvider,
   type StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
 import type { StorytellerTask } from '@offscreen/storyteller/tasks';
@@ -38,6 +41,83 @@ export async function prepareDispatchReview(
   task: StorytellerTask,
   dispatch?: StorytellerProviderDispatch,
 ): Promise<DispatchReviewDisposition> {
+  return (
+    await reviewDispatchPacket(
+      database,
+      generationId,
+      attemptId,
+      task,
+      dispatch,
+    )
+  ).disposition;
+}
+
+export type ReviewedDispatchRefusal = 'wire-unattested' | 'wire-mismatch';
+
+export type ReviewedDispatch =
+  | Readonly<{ disposition: 'held' }>
+  | Readonly<{ disposition: 'stopped' }>
+  | Readonly<{ disposition: 'wire-refused'; reason: ReviewedDispatchRefusal }>
+  | Readonly<{
+      disposition: 'proceed';
+      /** Dispatch carrying the frozen reviewed wire when a provider attested it. */
+      dispatch: StorytellerProviderDispatch;
+    }>;
+
+/**
+ * OBS00-C: review the packet, then prove the exact bytes the provider would
+ * hand to transport equal the digest persisted under the row lock, BEFORE any
+ * reservation or possible-send transition. A refusal never touches the review
+ * row, so the original approved packet remains the evidence of record.
+ */
+export async function prepareReviewedDispatch(
+  database: Database,
+  generationId: string,
+  attemptId: string,
+  task: StorytellerTask,
+  dispatch: StorytellerProviderDispatch,
+  provider: StorytellerProvider | undefined,
+): Promise<ReviewedDispatch> {
+  const reviewed = await reviewDispatchPacket(
+    database,
+    generationId,
+    attemptId,
+    task,
+    dispatch,
+  );
+  if (reviewed.disposition !== 'proceed') {
+    return { disposition: reviewed.disposition };
+  }
+  // No provider means the caller will fail with provider_disabled; nothing to prove.
+  if (!provider) return { disposition: 'proceed', dispatch };
+  if (typeof provider.prepareWire !== 'function') {
+    return { disposition: 'wire-refused', reason: 'wire-unattested' };
+  }
+  let wire: PreparedProviderWire;
+  try {
+    wire = provider.prepareWire(task, dispatch);
+  } catch {
+    return { disposition: 'wire-refused', reason: 'wire-mismatch' };
+  }
+  if (
+    !preparedWireIsSelfConsistent(wire) ||
+    wire.sha256 !== reviewed.persistedPacketSha256
+  ) {
+    return { disposition: 'wire-refused', reason: 'wire-mismatch' };
+  }
+  return { disposition: 'proceed', dispatch: { ...dispatch, wire } };
+}
+
+async function reviewDispatchPacket(
+  database: Database,
+  generationId: string,
+  attemptId: string,
+  task: StorytellerTask,
+  dispatch?: StorytellerProviderDispatch,
+): Promise<{
+  disposition: DispatchReviewDisposition;
+  persistedPacketSha256: string;
+}> {
   const execution = task.execution;
   if (execution.mode !== 'provider') {
     throw new Error('Dispatch review requires provider execution');
@@ -90,13 +170,19 @@ export async function prepareDispatchReview(
             ),
           );
       }
-      return 'stopped';
+      return {
+        disposition: 'stopped' as const,
+        persistedPacketSha256: review.packetSha256,
+      };
     }
-    if (review.state === 'awaiting-review') return 'held';
+    const persistedPacketSha256 = review.packetSha256;
+    if (review.state === 'awaiting-review') {
+      return { disposition: 'held' as const, persistedPacketSha256 };
+    }
     if (review.state === 'released' || review.state === 'not-held') {
-      return 'proceed';
+      return { disposition: 'proceed' as const, persistedPacketSha256 };
     }
-    return 'stopped';
+    return { disposition: 'stopped' as const, persistedPacketSha256 };
   });
 }
 

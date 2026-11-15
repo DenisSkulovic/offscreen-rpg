@@ -2,10 +2,12 @@ import {
   executionPolicySchema,
   offlineExecution,
   type ExecutionPolicy,
+  type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
 import {
   createOpenRouterProvider,
   type StorytellerProvider,
+  type StorytellerProviderDispatch,
 } from '@offscreen/storyteller/providers/openrouter';
 
 /** Explicit opt-in only. A credential alone never selects a provider or creates an allowance. */
@@ -32,12 +34,28 @@ export function wrapApprovedWorkerProvider(
   provider: StorytellerProvider,
   approvedExecution: ExecutionPolicy,
 ): StorytellerProvider {
-  return async (task, dispatch) => {
+  const assertApproved = (task: StorytellerTask) => {
     if (JSON.stringify(task.execution) !== JSON.stringify(approvedExecution)) {
       throw new Error('Execution policy differs from approved worker policy');
     }
+  };
+  const wrapped: StorytellerProvider = async (task, dispatch) => {
+    assertApproved(task);
     return provider(task, dispatch);
   };
+  // OBS00-C: forward the pure wire attestation (never invent one). A wrapped
+  // provider without `prepareWire` stays unattested and is refused pre-send.
+  const prepareWire = provider.prepareWire;
+  if (!prepareWire) return wrapped;
+  return Object.assign(wrapped, {
+    prepareWire: (
+      task: StorytellerTask,
+      dispatch?: StorytellerProviderDispatch,
+    ) => {
+      assertApproved(task);
+      return prepareWire.call(provider, task, dispatch);
+    },
+  });
 }
 
 export function readStorytellerWorkerOptions(env: NodeJS.ProcessEnv) {

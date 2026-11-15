@@ -1,20 +1,18 @@
 # Cursor resumption checkpoint | Local live safety
 
-**OBS00-L DONE (2026-11-15).** Next phase is OBS00-C as the owner's one authorized Change. Previous S0–S6 budget permission does **not** carry over.
+**OBS00-L and OBS00-C DONE (2026-11-15, provider-free).** Next phase is QA-SF01 as the owner's one authorized Change (not started). Previous S0–S6 budget permission does **not** carry over.
 
-- Source baseline: OBS00-L built on `main@52a3c6d8a50c365e731ca0dc7507d5baeb65e9e4` (OBS00-L commit SHA recorded in Git log / return message)
-- Active Change: none (cleared after OBS00-L)
-- Latest finished: [OBS00-L](../../../changes/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md), receipt [obs00-l](../../evidence/obs00-l-local-story-trial-guards-2026-11-15.md)
-- Next recommended Change: [OBS00-C](../../../changes/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) (**not started**)
-- After OBS00-C: [QA-SF01](../../../changes/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md)
-- Paid local Story trial: **NOT AUTHORIZED** until owner approves a new explicit cap and OBS00-C is Done
-- Total actual provider attempts this wave: 0 real (mock only)
+- Source baseline: OBS00-C built on `main@c887716a53698c2e1afe375b91b41342787f75c3` (OBS00-L); the OBS00-C commit SHA is in the Git log / return message
+- Active Change: none (cleared after OBS00-C)
+- Latest finished: [OBS00-C](../../../changes/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md), receipt [obs00-c](../../evidence/obs00-c-provider-wire-equality-2026-11-15.md); before it [OBS00-L](../../../changes/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md), receipt [obs00-l](../../evidence/obs00-l-local-story-trial-guards-2026-11-15.md)
+- Next recommended Change: [QA-SF01](../../../changes/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) (**not started**). It must also add `prepareWire` attestation to the plain fake providers in `tools/api-integration/test/{storyteller,start-package}.integration.ts` (see OBS00-C receipt finding 2).
+- Paid local Story trial: **NOT AUTHORIZED** until the owner approves a new explicit cap; both OBS00-L and OBS00-C guards are now proven provider-free. Generic worker still denied (OBS00-B).
+- Total actual provider attempts this wave: 0 real (mock transport only)
 - Spend: $0; external HTTP: 0
-- Last result: chamber suite 20/20 pass; OBS00-L restart-denial and SQL trial cap (4 attempts / 250,000 µusd) proven on disposable PostgreSQL
-- Known limit: real `story:server` launch not exercised (needs live OpenRouter reads); `main.ts` wiring covered by build/typecheck only. Owner `offscreen_story_local` untouched; if its account is already stopped, `--story-mode` now refuses live start.
-- Next exact action: `git status --short; git rev-parse HEAD; pnpm repo:brief`, set Current change to OBS00-C, read OBS00-C CHANGE.md plus `openrouter.ts::{inspectOpenRouterRequest,buildOpenRouterRequest,createOpenRouterProvider}`, `dispatch-review.ts`, memory-provider-runtime; use injected fake `transport`, no live network.
-- Next evidence commit: OBS00-C receipt
-
+- Last result (OBS00-C): reviewed packet SHA == `RequestInit.body` SHA/length for one-shot, repair R, memory decision + final rounds, held→released, worker-wrapped and local-Story compositions; a one-byte divergence is refused pre-reserve with 0 HTTP, no attempt row and an untouched review; chamber suite 35/35, new file 15/15.
+- Known limits: provider receipt not proven (mock transport only); pre-existing `budget.settle` defect from `7ba3ff1d` blocks the real memory controller loop after round 1 (pinned by a test, separate Change recommended; the local Story profile has no memory reads); `ENG03-M` application live test is red (stale expectation) and rewrites the uncommitted `eng03-lock-measurement` doc; real `story:server` not launched.
+- Next exact action: `git status --short; git rev-parse HEAD; pnpm repo:brief`, set Current change to QA-SF01, read its CHANGE.md, run only the named focused suites on disposable `offscreen_auth_test`.
+- Next evidence commit: QA-SF01 receipt
 ### End each Cursor session with
 
 ~~~text

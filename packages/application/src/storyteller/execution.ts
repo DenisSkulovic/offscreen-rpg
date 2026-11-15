@@ -16,7 +16,7 @@ import type {
 } from '@offscreen/storyteller/providers/openrouter';
 import type { EffectiveUsagePolicy } from '@offscreen/contracts/usage-policy';
 import { createStorytellerBudget, StorytellerBudgetError } from './budget';
-import { prepareDispatchReview } from './dispatch-review';
+import { prepareReviewedDispatch } from './dispatch-review';
 import { retainsCapturedAuthority } from './dispatch-authority';
 import type { DocumentStore } from '@offscreen/documents';
 import { createLexicalStoryIndexCache } from './lexical-story-index-cache';
@@ -59,7 +59,8 @@ export function createStorytellerExecution(
   const budget = createStorytellerBudget(database);
   const scriptedSource = options.scriptedSource ?? scriptedStorytellerResult;
   const lexicalIndexCache =
-    options.lexicalIndexCache ?? createLexicalStoryIndexCache({ maxEntries: 8 });
+    options.lexicalIndexCache ??
+    createLexicalStoryIndexCache({ maxEntries: 8 });
   async function saveOutcome(
     id: string,
     attemptId: string,
@@ -299,15 +300,16 @@ export function createStorytellerExecution(
         Math.floor(task.resources.envelope.maxGeneratedTokens / roundCount),
       ),
     };
-    const reviewDisposition = await prepareDispatchReview(
+    const reviewed = await prepareReviewedDispatch(
       database,
       record.id,
       attemptId,
       task,
       providerDispatch,
+      options.provider,
     );
-    if (reviewDisposition !== 'proceed') {
-      return reviewDisposition;
+    if (reviewed.disposition === 'held' || reviewed.disposition === 'stopped') {
+      return reviewed.disposition;
     }
     if (!options.provider) {
       await saveOutcome(record.id, attemptId, {
@@ -316,6 +318,16 @@ export function createStorytellerExecution(
       });
       return;
     }
+    if (reviewed.disposition === 'wire-refused') {
+      // OBS00-C: refused before reserve/dispatch. No HTTP, no liability, and
+      // the persisted review row is left exactly as approved.
+      await saveOutcome(record.id, attemptId, {
+        state: 'failed',
+        failureCode: 'wire_mismatch',
+      });
+      return;
+    }
+    const wireDispatch = reviewed.dispatch;
     try {
       const state = await budget.reserve({
         id: attemptId,
@@ -383,7 +395,7 @@ export function createStorytellerExecution(
       }
       let outcome;
       try {
-        outcome = await options.provider(task, providerDispatch);
+        outcome = await options.provider(task, wireDispatch);
       } catch {
         outcome = {
           kind: 'uncertain' as const,

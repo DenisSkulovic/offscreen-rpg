@@ -28,9 +28,10 @@ import {
   type ExecutionPolicy,
   type StorytellerTask,
 } from '@offscreen/storyteller/tasks';
-import type {
-  ProviderOutcome,
-  StorytellerProvider,
+import {
+  prepareOpenRouterWire,
+  type ProviderOutcome,
+  type StorytellerProvider,
 } from '@offscreen/storyteller/providers/openrouter';
 import {
   bootstrapLocalStoryFunding,
@@ -245,27 +246,32 @@ function fakeProvider(
   let calls = 0;
   return {
     calls: () => calls,
-    provider: async (): Promise<ProviderOutcome> => {
-      calls += 1;
-      if (outcome === 'uncertain') {
-        return { kind: 'uncertain', telemetry: telemetry(`fake-${calls}`) };
-      }
-      return {
-        kind: 'result',
-        // Deliberately schema-invalid: the attempt is still a billed provider attempt.
-        output: { invalid: true },
-        usage: {
-          reportedCostMicrousd: charge,
-          promptTokens: 20,
-          completionTokens: 10,
-          totalTokens: 30,
-          reasoningTokens: 0,
-          cachedTokens: 0,
-          cacheWriteTokens: 0,
-        },
-        telemetry: telemetry(`fake-${calls}`),
-      };
-    },
+    // OBS00-C: a plain fake never reaches HTTP; it nominally attests the wire so
+    // the dispatch-ledger behaviour under test is unchanged.
+    provider: Object.assign(
+      async (): Promise<ProviderOutcome> => {
+        calls += 1;
+        if (outcome === 'uncertain') {
+          return { kind: 'uncertain', telemetry: telemetry(`fake-${calls}`) };
+        }
+        return {
+          kind: 'result',
+          // Deliberately schema-invalid: the attempt is still a billed provider attempt.
+          output: { invalid: true },
+          usage: {
+            reportedCostMicrousd: charge,
+            promptTokens: 20,
+            completionTokens: 10,
+            totalTokens: 30,
+            reasoningTokens: 0,
+            cachedTokens: 0,
+            cacheWriteTokens: 0,
+          },
+          telemetry: telemetry(`fake-${calls}`),
+        };
+      },
+      { prepareWire: prepareOpenRouterWire },
+    ),
   };
 }
 
