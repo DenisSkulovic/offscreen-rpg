@@ -2,6 +2,8 @@
 
 **Status: technical design target, 2026-11-15.** This is about the *actual* input used by a real Storyteller operation, not a synthetic explanation reconstructed from the latest settings. Context and prompt policy remain owned by [Storyteller](../../storyteller-architecture/prompt-tools-and-models.md); [data capture authority](evidence-model.md) defines storage and links. No code authorized.
 
+**Wave-4 pre-live prerequisite:** the [default worker adapter source](../evidence/live-worker-dispatch-preflight-2026-11-15.md) currently discards the per-round `dispatch` override, and no current usage-authority resolver is wired by the default bootstrap. A frozen `dispatch-review.packet` and a shared `buildOpenRouterRequest` function are not sufficient to establish **actual sent packet custody** until the configured worker composition is verified by a mock transport. See proposed [OBS00](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md). No paid mismatch is asserted from source inspection alone.
+
 ## 1. “What did it know, why, and from where?” is a data question
 
 An investigator must be able to select generation G at historical moment T and trace:
