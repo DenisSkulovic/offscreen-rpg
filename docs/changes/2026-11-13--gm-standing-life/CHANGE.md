@@ -1,6 +1,6 @@
 # GM03 | One bounded standing routine, not global autoplay
 
-**State:** Proposed, **not Ready**. **Approval:** none. **Kind:** deterministic game/autonomy contract + persisted execution + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Prerequisite:** owner selects [bounded-standing-life target](../../experience/foundations/temporal-philosophy.md#model-c--bounded-standing-life-recommended-long-term-direction), after comparing strict vs short-plan vs standing-routine player expectations.
+**State:** Proposed, **not Ready**. **2026-11-15 recommended pilot:** [one quiet-watch routine, three 600-fictional-second intervals, strict stop horizon and **cancel-if-existing-itinerary-is-enough** gate](../../experience/decisions/gm03-bounded-routine-v1.md). Existing Seyda Neen warehouse shift is intentionally excluded because it has a limited one-time occurrence/payout; no code permission implied. **Approval:** none. **Kind:** deterministic game/autonomy contract + persisted execution + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Prerequisite:** owner selects [bounded-standing-life target](../../experience/foundations/temporal-philosophy.md#model-c--bounded-standing-life-recommended-long-term-direction), after comparing strict vs short-plan vs standing-routine player expectations.
 
 ## Cursor first-screen brief
 
