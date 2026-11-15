@@ -2,6 +2,8 @@
 
 **Status: decision/handoff draft, 2026-11-15.** Source reviewed `main@18158402`. [Original wave-5 handoff](wave5-evidence-quality-2026-11-15.md) retains its dated design history; this document supersedes it for **next-Change selection**. **Current change: none.** No code, migration, provider call, monitoring deployment or new staff grant is authorized here.
 
+**Execution runbook for Cursor (new owner request):** [S0–S6 autonomous forensic trial](CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md), including actual local stack/campaigns, source evidence, fault injections, safe OBS06→OBS07 code trials when authorized, conditional capped real model test and [FINAL-HANDOFF](../evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md). **Prepared, not executed.** This is a real evaluation schedule, not authorization to begin merely because the Markdown was committed.
+
 ## 1. Verified state, no stale “Proposed” labels
 
 | Work item | Actual state | Evidence level and limitation |
