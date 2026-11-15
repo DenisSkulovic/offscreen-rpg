@@ -154,7 +154,7 @@ Options: avoid shared optimistic state and show pending locally; serialize confl
 
 **Accessibility and actual UX:** Keyboard focus, busy states, disabled actions, live updates, long text, mobile sizes and errors need actual rendered review. A good TypeScript build does not show whether the user can understand the pending/uncertain state.
 
-Project sources: [Web workspace map](../../apps/web/README.md), [player experience](../../docs/player-experience.md), [technical client/identity](../../docs/technical/client-and-identity.md).
+Project sources: [Web workspace map](../../apps/web/README.md), [player experience](../../docs/product/journeys/player-experience.md), [technical client/identity](../../docs/technical/client-and-identity.md).
 
 ## 7. Adversarial proof matrix
 

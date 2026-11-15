@@ -1,6 +1,6 @@
 # Storyteller tuning discipline
 
-Read before tuning quality, profiles, prompts, context, output contracts or model routes. Use the [tuning procedure](../../docs/skills/storyteller-tuning/SKILL.md) to investigate; [spending](spending.md) independently controls provider work.
+Read before tuning quality, profiles, prompts, context, output contracts or model routes. Use the [tuning manual](../../docs/engineering/storyteller-tuning.md) and this rule to investigate; [spending](spending.md) independently controls provider work.
 
 Treat a disappointing model result as evidence to classify, not permission to
 edit the nearest shared prompt. Before tuning, identify which layer owns the

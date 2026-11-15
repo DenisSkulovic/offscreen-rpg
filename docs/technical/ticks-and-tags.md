@@ -4,7 +4,7 @@ Status: the fictional-second coordinate, exact arithmetic and campaign-owned app
 
 ## Fixed real-second scheduling and fictional time
 
-The [product requirement](../time-and-autonomy.md) fixes one scheduler step to one real second. Speed is fictional seconds advanced per eligible real second, not a configurable scheduler period.
+The [product requirement](../product/journeys/time-and-autonomy.md) fixes one scheduler step to one real second. Speed is fictional seconds advanced per eligible real second, not a configurable scheduler period.
 
 Keep canonical elapsed game time, admitted durations, cadence and deadlines in a stable fictional coordinate with explicit units. In-game seconds are available without a calendar; choose exact subsecond representation for microscopic cases before implementation. The Storyteller proposes fictional effort/duration under the world/rule context, never real wait or tick count. Code validates the proposal and derives waiting from speed.
 

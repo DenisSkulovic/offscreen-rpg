@@ -8,11 +8,11 @@
 | --- | --- | --- |
 | F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
 | W01–W11, W13–W22 | **Done** | [changes queue](../../changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
-| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../experience/implementation-program.md) |
-| Admin `/control` | **Done** (AD04+) | [admin](../../admin/README.md) |
+| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../programs/experience/implementation-program.md) |
+| Admin `/control` | **Done** (AD04+) | [admin](../../programs/admin/README.md) |
 | New frontend Changes | Only via [docs/changes/README.md](../../changes/README.md) | Not authorized by this target alone |
 
-**Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution](../../technical/execution.md), [player experience](../../player-experience.md).
+**Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution](../../technical/execution.md), [player experience](../../product/journeys/player-experience.md).
 
 **Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../apps/web/README.md). A selected Change should link only its relevant heading.
 

@@ -1,6 +1,6 @@
 # Batman: a night away is not a night of model calls
 
-Companion to the [overnight benchmark](../../playthroughs.md). This entire extended routine/queue flow is **target behavior**, not implemented Batman content. Values below are fixture choices, not required campaign defaults.
+Companion to the [overnight benchmark](../../product/journeys/playthroughs.md). This entire extended routine/queue flow is **target behavior**, not implemented Batman content. Values below are fixture choices, not required campaign defaults.
 
 ## BM-01: the player makes a bounded plan
 

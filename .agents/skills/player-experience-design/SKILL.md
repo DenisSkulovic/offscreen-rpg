@@ -9,7 +9,7 @@ description: Design or review an Offscreen RPG player-facing screen, narrative i
 
 ## Ground the screen in the actual game
 
-Read only the relevant portions of `docs/player-experience.md`, `docs/gameplay.md`, `docs/technical/solo-gameplay-contract.md` and `docs/engineering/qa-journeys.md`. Source routes are in `apps/web/app/` and `apps/web/src/features/`; use `docs/engineering/code-navigation.md` to find the actual owners.
+Read only the relevant portions of `docs/product/journeys/player-experience.md`, `docs/product/foundations/gameplay.md`, `docs/technical/solo-gameplay-contract.md` and `docs/engineering/qa-journeys.md`. Source routes are in `apps/web/app/` and `apps/web/src/features/`; use `docs/engineering/code-navigation.md` to find the actual owners.
 
 The intended UI is a place to **inhabit a character's situation**. A current scene and the available interaction lead; possessions, mechanics, event history and developer traces are secondary unless the player explicitly opens them. Quiet life must not become a mandatory escalation carousel. A debug state machine is not a player-first hierarchy.
 

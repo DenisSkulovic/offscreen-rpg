@@ -1,6 +1,6 @@
 # Microbe and abstract consciousness: no hidden human-shaped engine
 
-Companion to the small/abstract benchmark in [playthroughs](../../playthroughs.md). The first microbe check is grounded in the current fixture; extended activities and the consciousness example are target behavior. This is an architectural contrast, not a biological simulation or proposed game of microbe economics.
+Companion to the small/abstract benchmark in [playthroughs](../../product/journeys/playthroughs.md). The first microbe check is grounded in the current fixture; extended activities and the consciousness example are target behavior. This is an architectural contrast, not a biological simulation or proposed game of microbe economics.
 
 ## NH-01: current microbe opening
 

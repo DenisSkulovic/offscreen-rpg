@@ -1,6 +1,6 @@
 # Vvardenfell: a life accumulates rather than a paragraph granting a life
 
-Companion to the continuing-life benchmark in [playthroughs](../../playthroughs.md). Target design; the current engine does not implement this general travel/economy/memory loop. Names and route lengths are illustrative, not an external-lore claim.
+Companion to the continuing-life benchmark in [playthroughs](../../product/journeys/playthroughs.md). Target design; the current engine does not implement this general travel/economy/memory loop. Names and route lengths are illustrative, not an external-lore claim.
 
 The [prepared-local-opportunities trace](local-opportunities.md) details how fishing, tavern downtime and rumor gathering can be selected and repeated without new model calls, and how a controlling story situation restricts that menu. This trace focuses on the longer earned history, travel and recall.
 

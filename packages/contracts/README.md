@@ -1,6 +1,6 @@
 # Contracts: validated interface shapes
 
-`@offscreen/contracts` owns shared Zod schemas and types. A validated payload has a **shape**, not authorization, accepted gameplay state or a right to disclose private data. [Product concepts](../../docs/concepts.md), [data/consistency design](../../docs/technical/data.md) and [application operations](../application/README.md) explain the other layers.
+`@offscreen/contracts` owns shared Zod schemas and types. A validated payload has a **shape**, not authorization, accepted gameplay state or a right to disclose private data. [Product concepts](../../docs/product/foundations/concepts.md), [data/consistency design](../../docs/technical/data.md) and [application operations](../application/README.md) explain the other layers.
 
 ## Select the contract, not the whole package
 
@@ -19,4 +19,4 @@
 
 Find both the **producer** (usually application) and **consumer** (API, web, worker or inspector). A new public field requires explicit projection and privacy review. Some contracts import `@offscreen/game` and `@offscreen/documents` as the manifest declares; this is not a dependency-free DTO layer.
 
-The package scripts provide `build`, `typecheck` and `test`; relevant tests are under [test/](test/). Use [code navigation](../../docs/engineering/code-navigation.md) before searching every consumer.
+The package scripts provide `build`, `typecheck` and `test`; relevant tests are under [test/](test). Use [code navigation](../../docs/engineering/code-navigation.md) before searching every consumer.

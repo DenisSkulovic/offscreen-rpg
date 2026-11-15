@@ -1,6 +1,6 @@
 # Space cargo: the worker, vehicle and reward recipient differ
 
-Companion to the sixteen-hour cargo benchmark in [playthroughs](../../playthroughs.md). All transport, inventory and delivery-contract behavior here is target design. It is not provided by the current numeric-quantity effects alone.
+Companion to the sixteen-hour cargo benchmark in [playthroughs](../../product/journeys/playthroughs.md). All transport, inventory and delivery-contract behavior here is target design. It is not provided by the current numeric-quantity effects alone.
 
 ## CG-01: accept a delivery with visible commitments
 

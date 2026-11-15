@@ -41,7 +41,7 @@ Admission captures the draft revision, profile, execution policy and context. Fo
 
 Extended activities have three distinct follow-ups: quiet factual completion, a historical report, or a controlling scene. Report publication changes the view without replacing current decisions. An accepted itinerary stores exact authored terms; continuation rechecks them and the horizon. A controlling scene blocks the itinerary until a matching fresh offer is explicitly selected. See [rules/activities](../../docs/technical/rules-and-activities.md), [committed time](../../docs/technical/committed-time.md) and [solo integration](../../docs/technical/solo-gameplay-contract.md).
 
-**Current continuity gap:** narrative choices can carry canonical document dependencies, including same-result changes. Mechanical plans still lack that sidecar. Follow [S3's selected route](../../docs/features/README.md#coding-route); do not assume existing narrative handoff covers `campaign/actions.ts`.
+**Current continuity gap:** narrative choices can carry canonical document dependencies, including same-result changes. Mechanical plans still lack that sidecar. Follow [S3's selected route](../../docs/history/initiatives/README.md#coding-route); do not assume existing narrative handoff covers `campaign/actions.ts`.
 
 ## Campaign transition boundary
 
@@ -83,4 +83,4 @@ Chamber layers explicit development controls over ordinary operations. Its [Stor
 
 ## Contracts and continuation point
 
-[Progress](../../docs/progress.md) owns coverage and [the feature route](../../docs/features/README.md) selects unfinished work. This guide owns source navigation. Detailed invariants live in the linked contracts; update this map when an entry point or surprising cross-file boundary changes.
+[Progress](../../docs/progress.md) owns coverage and [the feature route](../../docs/history/initiatives/README.md) selects unfinished work. This guide owns source navigation. Detailed invariants live in the linked contracts; update this map when an entry point or surprising cross-file boundary changes.

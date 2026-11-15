@@ -16,14 +16,14 @@ Continuity is several connected mechanisms: typed facts/receipts, published pass
 
 | Lens | Current responsibility and boundary | Deeper owner |
 | --- | --- | --- |
-| Player agency | Public offers refer to admitted private plans; subsequent choice consumes the current offer. Generated prose cannot grant unsupported mechanics. Broader delegated autonomy is unfinished. | [Gameplay](../gameplay.md), [solo integration](../technical/solo-gameplay-contract.md) |
+| Player agency | Public offers refer to admitted private plans; subsequent choice consumes the current offer. Generated prose cannot grant unsupported mechanics. Broader delegated autonomy is unfinished. | [Gameplay](../product/foundations/gameplay.md), [solo integration](../technical/solo-gameplay-contract.md) |
 | Mechanics | D&D-style checks, declared facts/quantities, constrained outcomes and activity definitions. World content supplies meaning; policy validates supported operations. | [Rules/activities](../technical/rules-and-activities.md), [pure game source](../../packages/game/src/immediate-actions.ts) |
 | Time | One campaign frontier; accepted action/activity earns time, pause/decision/model holds constrain advancement, obligations can interrupt. Scheduler delay and player deliberation are not fictional labor. | [Committed time](../technical/committed-time.md), [transition policy](../../packages/application/src/campaign/action-execution-transition.ts) |
-| Narrative | Profile, current evidence and task purpose shape prose/options. Reports describe historical work without acquiring a new controlling scene. Mechanical outcomes constrain narration. | [Storytelling](../storytelling.md), [runtime](../technical/storyteller-runtime.md) |
+| Narrative | Profile, current evidence and task purpose shape prose/options. Reports describe historical work without acquiring a new controlling scene. Mechanical outcomes constrain narration. | [Storytelling](../product/storytelling/storytelling.md), [runtime](../technical/storyteller-runtime.md) |
 | Memory | Sources, notes, descriptive documents and exact retrieval have different authority and lifecycles; scene restart changes the working set, not all persistent history. | [Canonical files](../technical/canonical-files.md), [long-story memory](long-story-memory-and-retrieval.md) |
 | Persistence | SQL transactions own command identity and current state; staged immutable objects become visible through a fenced root commit. Storage migration is partial. | [Documents guide](../../packages/documents/README.md), [publication](../../packages/application/src/storyteller/publication.ts) |
 | Failure and money | Durable operations, outbox/workflow delivery, generation attempts, reservations and publication state are separate. Uncertain provider delivery needs reconciliation; retry is not a license to reroll or buy another response. | [Application recovery](../../packages/application/README.md#execution-failure-and-retry), [provider dispatch](../technical/provider-dispatch-review.md) |
-| Presentation | Next.js consumes public projections; API and workers call shared application operations. A browser demo, fixture rehearsal and real Story run are different evidence. | [Development modes](../development.md), [code map](code-navigation.md) |
+| Presentation | Next.js consumes public projections; API and workers call shared application operations. A browser demo, fixture rehearsal and real Story run are different evidence. | [Development modes](../operations/development.md), [code map](code-navigation.md) |
 
 ## Execution, identities and failure boundaries
 
@@ -49,7 +49,7 @@ flowchart TD
 | Delayed/invalid narration | A receipt is authoritative independently of narration. Publication checks projected-result identity/digest and current root/state; a held or rejected candidate cannot rewrite the roll. | A successfully saved response is not evidence that its publication or every memory change committed. |
 | Workflow redelivery | Workflows coordinate wakeups and application calls; application/database operations own state. Paid dispatch has its own authority, attempts and uncertainty handling. | Workflow retry settings alone do not prove safe provider retry. The broader failure/hold matrix remains acceptance work. |
 
-Keep these coordinates separate: **operation ID** deduplicates a command; **offer ID** identifies available permission; **execution/receipt ID** identifies accepted work/result; **fictional seconds** measure earned world time; **narrative revision** orders publications; **public view revision** can change with quiet mechanical progress; **document root/revision** fixes knowledge; **task/attempt IDs** identify captured work and provider delivery. None is a substitute for all the others. [Concepts](../concepts.md) owns the vocabulary.
+Keep these coordinates separate: **operation ID** deduplicates a command; **offer ID** identifies available permission; **execution/receipt ID** identifies accepted work/result; **fictional seconds** measure earned world time; **narrative revision** orders publications; **public view revision** can change with quiet mechanical progress; **document root/revision** fixes knowledge; **task/attempt IDs** identify captured work and provider delivery. None is a substitute for all the others. [Concepts](../product/foundations/concepts.md) owns the vocabulary.
 
 ## How narrow are the mechanics?
 
@@ -63,7 +63,7 @@ Keep these coordinates separate: **operation ID** deduplicates a command; **offe
 
 Sources: [state](../../packages/game/src/state.ts), [effects](../../packages/game/src/effects.ts), [plans](../../packages/game/src/immediate-actions.ts), [activities](../../packages/game/src/activities.ts). When a feature needs a new target, effect or lifecycle, design that typed boundary before asking the Storyteller to narrate it. When it only needs different tone, lore or motivation, use the owning content/profile instead of adding a simulation subsystem.
 
-The [abstract and ordinary-life benchmarks](../playthroughs.md) remain design pressure. A microbe need not acquire a wallet, biography or settlement to satisfy continuity. A quiet routine need not generate a scene at every progress boundary.
+The [abstract and ordinary-life benchmarks](../product/journeys/playthroughs.md) remain design pressure. A microbe need not acquire a wallet, biography or settlement to satisfy continuity. A quiet routine need not generate a scene at every progress boundary.
 
 ## Memory: persistence → selection → final request
 
@@ -83,7 +83,7 @@ The September 24 v16 responses proposed creating and twice updating a clue note,
 
 | Candidate | Information or capability gained | Decision |
 | --- | --- | --- |
-| Connected continuity slice | Distinguishes retained notes, record creation, dependency selection and final request retention; proves one changed fact survives departure and return. | **Parked S3 (gameplay track).** If reactivated, follow the [bounded phases](../features/2026-09-21--21-56--story-mode-vvardenfell-continuity/PLAN.md), not a blind sidecar-only implementation. |
+| Connected continuity slice | Distinguishes retained notes, record creation, dependency selection and final request retention; proves one changed fact survives departure and return. | **Parked S3 (gameplay track).** If reactivated, follow the [bounded phases](../history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity), not a blind sidecar-only implementation. |
 | More live campaign turns immediately | Reveals model behavior, but leaves the same missing causal evidence and can repeat an already-known gap. | Use a short falsifiable live experiment after the relevant structural change; retain every failed result. |
 | Broader mechanics/autonomy | Enables more kinds of life, conflict and absence. | Keep product questions explicit; choose the next mechanic from a concrete playthrough rather than accumulating generic engine primitives. |
 | Canonical migration or semantic search | Improves ownership consistency or retrieval reach. | Important later work, but neither by itself explains absent document proposals in a six-generation run. |

@@ -2,20 +2,24 @@
 
 Root `AGENTS.md` owns minimal global boundaries. Read this agreement for a significant change, a cross-package task, or an ambiguous handoff. Do not automatically load it for a typo or a narrow, fully specified edit.
 
-## Authority and design order
+## Authority and design order (documentation first — absolute)
 
-1. **Product specification** defines player/developer outcomes and their observable acceptance. Start with `docs/vision.md`, `docs/concepts.md`, then the _affected_ product owner via `docs/README.md`.
-2. **Technical specification** defines ownership, transitions, failure/retry semantics, data contracts and cost limits. Update the affected authoritative topic rather than cloning its explanation in a plan.
-3. **Code** implements the contracts; tests, traces and play are evidence of behavior. An implemented alternative is not automatically the accepted design.
+**Product documentation is the bible.** It is the pinnacle and cornerstone of the product: what the game *is*, what players/staff may experience, and what “done” means. **Technical documentation is the second layer** (ownership, transitions, failure, data, cost). **Code is a third-layer artifact** of those two—not the source of product truth. Code and tests prove machine behavior; they do not outrank an accepted product or technical owner. Prefer the blunt rule: documentation is mandatory; code is the derived implementation.
 
-For new/changed behavior: update product intent, then technical contract, then code. For a bug where intent and contract already say the right thing: keep them, repair the code, and add an appropriate regression check. For an internal structural change with no product effect: confirm the existing product contract, update the technical owner if responsibility changes, then implement. Correct discovered drift; distinguish **designed**, **implemented**, **fixture-exercised**, **live-observed**, and **human-accepted** statements. `docs/progress.md` owns present coverage.
+1. **Product specification** — ultimate authority for outcomes and acceptance. Start at [`docs/product/`](../../docs/product/README.md) ([vision](../../docs/product/foundations/vision.md), [concepts](../../docs/product/foundations/concepts.md)), then the _affected_ product owner via `docs/README.md`.
+2. **Technical specification** — translates product truth into implementable guarantees. Update the affected owner; do not clone it into a plan.
+3. **Code** — implements the contracts. An implemented alternative is **not** automatically the accepted design.
+
+**Edit-order flexibility ≠ documentation optional.** During a single authorized Change you may edit product docs, technical docs, and code in any practical order. What is **forbidden** is finishing with significant code (or behavior) advances while permanent docs stay silent or **more stale than the code**—that is a **critical / criminal process failure**. Every planned Change and every material code change **must be preceded or followed by a documentation pass** in the same authorized work. Leaving “docs for later” after merge is not allowed.
+
+For new/changed behavior: ensure product intent and technical contract reflect the accepted decision, then keep code aligned—or escalate if code cannot honor them. For a bug where intent and contract already say the right thing: keep the docs, repair the code, add regression evidence. For an internal structural change with no product effect: confirm the product contract, update the technical owner if responsibility moves, then implement. Never rewrite the bible to excuse defective code. Distinguish **designed**, **implemented**, **fixture-exercised**, **live-observed**, and **human-accepted**. `docs/progress.md` owns present coverage.
 
 **Portfolio-renewal gate:** for any significant React/Next, backend, UX or architecture redesign, use [target-first engineering](target-driven-renewal.md) before diagnosing code or cutting Changes. Agree the intended end state, then document evidence-based gaps, then Changes that move toward it. A random cleanup or technology insertion with no target trace is not an approved plan.
 
 ## Invariants not to optimize away
 
 - Engine is world-independent and creatively neutral. The selected profile/world determines tone, pace and fiction. Game/application logic owns mechanics, fictional time, rights, persistence, model budget and publication.
-- A _Storyteller turn_, _scene_, _passage_, _model round_ and _memory segment_ are different concepts. Use `docs/concepts.md`; no chapters.
+- A _Storyteller turn_, _scene_, _passage_, _model round_ and _memory segment_ are different concepts. Use `docs/product/foundations/concepts.md`; no chapters.
 - Narration, offers and model-generated changes are proposals until validated and published against the authoritative state. Do not convert fictional prose into mechanical effects without admission.
 - Idempotency, clock advancement, transaction ordering, durable outbox/Temporal execution, document-root commits, budget reservations and ambiguous provider failure are correctness boundaries. Never weaken them for convenience.
 - A saved fact is not proof that retrieval selected it; selection is not proof it survived request packing; generation is not publication. Trace the complete path when diagnosing continuity.
@@ -28,7 +32,8 @@ For new/changed behavior: update product intent, then technical contract, then c
 - A significant **code-bearing Change** uses the `change-workflow` skill and [Change index](../../docs/changes/README.md); a bounded authorized coding task uses `implementation-slice`. Design, evaluation and documentation-only work do not need implementation dossiers. One implementation owner per slice. The task contract, not the coding agent's enthusiasm, controls scope.
 - Architectural discoveries should identify the owner, actual source, consequence, and the smallest useful next step. Do not write long exploratory transcripts into durable docs.
 - Product intent and technical architecture can be creatively designed in ChatGPT; a codebase-connected investigator can validate feasibility; Cursor usually implements bounded slices. Tool allocation is an economic default, not a mandatory three-model ceremony.
-- A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass.
+- A coding agent may make local implementation decisions consistent with the contract, but must **stop/report** when fulfilling the task would require a material change to product intent, architecture, money, data authority or authorization. Do not rewrite acceptance to make the code pass. Do not ship code that leaves permanent docs lying.
+- Treat permanent-doc freshness as a **correctness requirement** equal to tests for any significant Change. A Change whose Reconciliation ledger is missing, empty, or dishonest is not Done.
 - Use a focused read/review budget: find symbols and headings first; inspect the owner and immediate edges; expand only when the evidence requires it. Summarize useful discoveries in a current owner, not duplicated in five places.
 
 ## Session history and cross-chat continuity

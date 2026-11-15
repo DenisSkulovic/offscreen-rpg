@@ -13,8 +13,8 @@
 | Generation, provider attempt and financial records | [schema/generations.ts](src/schema/generations.ts), [schema/storyteller.ts](src/schema/storyteller.ts) |
 | Authentication, drafts, outbox and QA | [schema/auth.ts](src/schema/auth.ts), [schema/drafts.ts](src/schema/drafts.ts), [schema/outbox.ts](src/schema/outbox.ts), [schema/qa.ts](src/schema/qa.ts) |
 
-The named public exports are in [package.json](package.json). Baseline SQL/migration metadata are under [migrations/](migrations/). [Canonical files](../../docs/technical/canonical-files.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
+The named public exports are in [package.json](package.json). Baseline SQL/migration metadata are under [migrations/](migrations). [Canonical files](../../docs/technical/canonical-files.md) also defines a **future/mixed** file-ownership target; do not infer live migration completion from that design.
 
 ## Side effects and verification
 
-`build` and `typecheck` don't require a running DB. `generate`, `migrate` and `test:integration` have materially different effects. Read [development](../../docs/development.md) and [verification policy](../../.agents/rules/verification.md) before invoking them. Never reset or migrate an arbitrary database for routine checking. SQL constraints are not proof of correct concurrent application commands; follow the transaction owner and one genuine failure/retry case.
+`build` and `typecheck` don't require a running DB. `generate`, `migrate` and `test:integration` have materially different effects. Read [development](../../docs/operations/development.md) and [verification policy](../../.agents/rules/verification.md) before invoking them. Never reset or migrate an arbitrary database for routine checking. SQL constraints are not proof of correct concurrent application commands; follow the transaction owner and one genuine failure/retry case.

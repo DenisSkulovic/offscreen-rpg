@@ -12,11 +12,11 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional engineering manuals: concepts, alternatives, trade-offs, interactions and adversarial examples | One relevant domain/section when a consequential decision merits it, never universal startup |
 | `docs/` and package READMEs | Product intent, technical contracts, maps and evidence | Read the relevant owner/section |
 | `docs/changes/<change>/CHANGE.md` | Significant, bounded code-bearing implementation outcome | Only when selected; no active Change is valid |
-| `docs/features/` | Dated legacy initiatives, design and evaluation context | Only for the historical topic; never an execution queue |
+| `docs/history/initiatives/` | Dated legacy initiatives, design and evaluation context | Only for the historical topic; never an execution queue |
 | `TODO.md` | Owner's portfolio-engineering goals and sequence | When choosing the next engineering area |
 | Tests, fixtures, scripts | Executable evidence and safe procedures | Run selectively; inspect side effects |
 
-**Working-session continuity:** the [daily minutes rule](rules/session-minutes.md) governs consequential conversation decisions and handoffs. Read the [latest relevant log](../docs/minutes/README.md) when returning in a fresh context; append the active day's minutes with actual write permission rather than relying on disappearing chat context.
+**Working-session continuity:** the [daily minutes rule](rules/session-minutes.md) governs consequential conversation decisions and handoffs. Read the [latest relevant log](../docs/history/minutes/README.md) when returning in a fresh context; append the active day's minutes with actual write permission rather than relying on disappearing chat context.
 
 ## Roles and delegation
 
@@ -61,7 +61,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. [Layer-zero h
 - [`implementation-slice`](skills/implementation-slice/SKILL.md): execute one bounded, already specified coding task (ideal for Cursor).
 - [`diff-review`](skills/diff-review/SKILL.md): independent review against intended behavior and failure paths.
 - [`documentation-reconciliation`](skills/documentation-reconciliation/SKILL.md): repair contradictions, navigation and unnecessary verbosity.
-- [`storyteller-tuning`](../docs/skills/storyteller-tuning/SKILL.md): exact-packet evaluation and targeted Storyteller quality changes.
+- [`storyteller-tuning`](rules/storyteller.md): exact-packet evaluation and targeted Storyteller quality changes.
 
 Cursor discovers project skills from `.agents/skills/` directly. Claude loads the adapters under `.claude/skills/`, which point to the same canonical skills. Discoverability should be smoke-tested in each installed client; direct path invocation remains valid if discovery misses a skill.
 

@@ -23,7 +23,7 @@ This harness governs **how** coding agents navigate the three authority layers: 
 
 ## Durable session context across chats
 
-The [daily session-minutes rule](rules/session-minutes.md) makes significant owner statements, decisions, alternatives, rejected work and evidence persist as dated [tracked minutes](../docs/minutes/README.md). **Fresh substantive sessions** should consult the latest relevant log and current roadmap/Change selection before making assumptions; focused known edits need not reread old discussions. **During** important chats or role handoffs, authorized agents append the current day's minutes, and update permanent specs separately when a decision actually changes them. Meeting minutes are history and context, not source-of-truth contracts or permission to execute. No automatic always-on loading of the full archive.
+The [daily session-minutes rule](rules/session-minutes.md) makes significant owner statements, decisions, alternatives, rejected work and evidence persist as dated [tracked minutes](../docs/history/minutes/README.md). **Fresh substantive sessions** should consult the latest relevant log and current roadmap/Change selection before making assumptions; focused known edits need not reread old discussions. **During** important chats or role handoffs, authorized agents append the current day's minutes, and update permanent specs separately when a decision actually changes them. Meeting minutes are history and context, not source-of-truth contracts or permission to execute. No automatic always-on loading of the full archive.
 
 ## Role-centered development
 
@@ -41,7 +41,7 @@ At a significant design gate, the role selects **one relevant manual** (and mayb
 
 Only two initially: **design-challenger** and **test-strategist**. Their canonical procedures are linked from [role orchestration](roles/README.md). The `.claude/agents/` definitions restrict tools to read/search and plan mode, while `.cursor/agents/` uses client-supported read-only mode. They inherit the current model to avoid surprising model selection. Treat separate subagent context as a **usage cost**, not free parallel labor; explicit invocation is preferred until actual discovery/auto-delegation is understood.
 
-**Planning-unit boundary:** the [Change work-unit standard](references/change-work-unit-standard.md) separates initiatives, research, design, evaluation and docs maintenance from actual code-bearing Changes. The [dated legacy-dossier audit](../docs/features/AUDIT-2026-11-11.md) identifies what in `docs/features/` is not ready to implement. That audit remains historical context. The canonical execution route is now [Changes](../docs/changes/README.md); `repo:brief` permits no active Change. No gameplay implementation is selected by default.
+**Planning-unit boundary:** the [Change work-unit standard](references/change-work-unit-standard.md) separates initiatives, research, design, evaluation and docs maintenance from actual code-bearing Changes. The [dated legacy-dossier audit](../docs/history/initiatives/AUDIT-2026-11-11.md) identifies what in `docs/history/initiatives/` is not ready to implement. That audit remains historical context. The canonical execution route is now [Changes](../docs/changes/README.md); `repo:brief` permits no active Change. No gameplay implementation is selected by default.
 
 ## Five development modes
 
@@ -74,7 +74,7 @@ At a role change, pass **decisions and evidence identifiers**, not the transcrip
 
 ## Frontend Cursor efficiency route
 
-The [preinvestigated frontend execution playbook](../docs/engineering/frontend-execution-playbook.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../docs/changes/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../docs/changes/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
+The [preinvestigated frontend execution playbook](../docs/engineering/frontend-execution-playbook.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../docs/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../docs/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
 
 ## First real-client proof, before buying more tools
 

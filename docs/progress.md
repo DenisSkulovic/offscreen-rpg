@@ -11,11 +11,11 @@
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
 3. Permanent hubs were reconciled 2026-11-15 — see [documentation convergence ledger](engineering/evidence/documentation-convergence-2026-11-15.md). Do not treat stale “Proposed / no code” banners as truth.
 
-Gameplay dossiers such as [S3a continuity](changes/2026-11-11--s3a-continuity-report/CHANGE.md) remain deferred, not cancelled.
+Gameplay dossiers such as [S3a continuity](changes/open/2026-11-11--s3a-continuity-report/CHANGE.md) remain deferred, not cancelled.
 
 ## Evidence and limits
 
-The [connected proof](engineering/connected-poc-proof.md#latest-evidence--2026-09-24) owns the dated Sep/Oct run identity. Forensic connected evaluation: [S0–S6 FINAL-HANDOFF](observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) (0 paid). Post-trial safety: [FINAL-HANDOFF](observability/evaluations/2026-11-15--post-trial-safety/FINAL-HANDOFF.md) (OBS00-L/C Done; QA-SF01 Blocked).
+The [connected proof](engineering/connected-poc-proof.md#latest-evidence--2026-09-24) owns the dated Sep/Oct run identity. Forensic connected evaluation: [S0–S6 FINAL-HANDOFF](programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) (0 paid). Post-trial safety: [FINAL-HANDOFF](programs/observability/evaluations/2026-11-15--post-trial-safety/FINAL-HANDOFF.md) (OBS00-L/C Done; QA-SF01 Blocked).
 
 **Lifecycle:** Pre-POC, solo development on `main`, disposable local data. Checks under [verification](../.agents/rules/verification.md). Inference under [spending](../.agents/rules/spending.md).
 
@@ -40,4 +40,4 @@ Start at [changes queue](changes/README.md) and [documentation map](README.md). 
 
 ## What can be tried
 
-[Development](development.md). `pnpm chamber` offline; `pnpm story:local` with separately authorized live generation. `/demo` is browser-only prototype. Green fixtures ≠ meaningful agency or owner enjoyment.
+[Development](operations/development.md). `pnpm chamber` offline; `pnpm story:local` with separately authorized live generation. `/demo` is browser-only prototype. Green fixtures ≠ meaningful agency or owner enjoyment.

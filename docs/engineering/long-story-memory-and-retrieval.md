@@ -1,6 +1,6 @@
 # Long-story memory, navigation and synthesis
 
-Research and implementation guide for making a Storyteller useful across a large, changing body of narrative text. This is an evolving engineering reference, not a frozen architecture or permission to enable hosted models. Product authority remains in [Storytelling](../storytelling.md); canonical ownership and implemented boundaries remain in [Canonical files](../technical/canonical-files.md); active work remains in the [memory feature](../features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md).
+Research and implementation guide for making a Storyteller useful across a large, changing body of narrative text. This is an evolving engineering reference, not a frozen architecture or permission to enable hosted models. Product authority remains in [Storytelling](../product/storytelling/storytelling.md); canonical ownership and implemented boundaries remain in [Canonical files](../technical/canonical-files.md); active work remains in the [memory feature](../history/initiatives/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall).
 
 Research refreshed: **2026-09-21**. Recheck current primary sources, model behavior, licenses, hardware fit and pricing before selecting a semantic model or hosted service.
 

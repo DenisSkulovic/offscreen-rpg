@@ -1,5 +1,7 @@
 # Change: specific code-bearing outcome
 
+**Create under:** `docs/changes/open/YYYY-MM-DD--slug/` (never flat under `docs/changes/`). On **Done** or **Cancelled**, after the Reconciliation ledger, `git mv` to `docs/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/` and repair inbound links.
+
 **State:** Proposed / Ready / Implementing / Verifying / Blocked / Done / Cancelled.
 **Approval and owner:** [who approved actual code implementation, when, and who executes it; no automatic authority from historical notes].
 **Kind:** behavior / defect / refactor / test code / tool or executable configuration / migration.
@@ -53,12 +55,12 @@ One observable change to executable code/tests/configuration and why it matters.
 
 ## Reconciliation ledger (required before Done)
 
-Fill one row per Authority heading listed above (product, technical, evidence if claimed). Do **not** mark Done or clear `Current change` with an empty ledger.
+**Product docs are the bible; technical docs second; code is the artifact.** Fill one row per Authority heading listed above (product, technical, evidence if claimed). Do **not** mark Done or clear `Current change` with an empty ledger, or while permanent docs would remain more stale than the landed code.
 
 | Authority (doc + heading) | Result | Note |
 | --- | --- | --- |
 | [product/technical/evidence path#heading] | unchanged \| updated | unchanged: one-line why; updated: owner path + what changed |
 
-For every `updated` row (and any spec-vs-code mismatch found while closing), run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite authority to match an unauthorized product change.
+For every `updated` row (and any spec-vs-code mismatch found while closing), run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite the product bible to rationalize defective code—escalate.
 
 **Closing rule:** record actual diff and verification, complete the reconciliation ledger above, then retire the active packet. Git retains the historical plan.

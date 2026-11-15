@@ -1,51 +1,57 @@
 # Documentation map
 
-**For a coding agent given an approved Change:** skip this broad index. Read the **one Change's first-screen brief**, follow its linked [source-adjacent owner map](../apps/web/README.md) and inspect only the named symbols. Deep product/technical docs below are **on demand**. For architecture/review (not cheap implementation), use the [independent target standard](engineering/coding-agent-target-standard.md), [expert knowledge index](engineering/coding-agent-knowledge.md) and [evaluation protocol](engineering/coding-agent-evaluation.md).
+**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → design **programs** → [execution Changes](changes/README.md) → [history](history/README.md). Code is an artifact of product and technical documentation.
 
-**For unscoped questions:** start with the [one-page overview](../README.md), [current priority](../TODO.md) or [progress](progress.md), **not all three**. Consult the [minutes index](minutes/README.md) only when a past decision actually matters. Then choose a question below. For a specific design owner, use [technical contracts](technical/README.md); for source navigation, proof and specialist research, use [engineering knowledge](engineering/README.md). These are **small routes**, not additional authorities. This is a routing map, not a reading list: a small change should not require the whole library.
+**For a coding agent given an approved Change:** skip this broad index. Read the **one Change's first-screen brief**, follow its linked source-adjacent owner map and inspect only the named symbols. Deep product/technical docs below are **on demand**.
+
+**For unscoped questions:** start with the [one-page overview](../README.md), [current priority](../TODO.md) or [progress](progress.md), **not all three**. Consult [minutes](history/minutes/README.md) only when a past decision matters. This is a routing map, not a reading list.
 
 ## Choose the level of detail
 
 | Level | Owner | What you should learn before going deeper |
 | --- | --- | --- |
-| Product in one page | [Root README](../README.md) | Experience, core loop, demonstrated boundary and where to go next |
-| Current state | [Progress](progress.md) | What exists, what evidence supports it, largest gaps and next outcome |
-| Discussion continuity | [Session minutes](minutes/README.md) | What the owner actually intended, why an approach was chosen or rejected, what is still unresolved across chats; historical context, not authority |
-| Engine understanding | [Engine model](engineering/engine-model.md) | How the pieces cooperate, where the primitives stop, what can fail and which uncertainty the next feature resolves |
-| Execution route | [Current Change index](changes/README.md) → selected Change, if any; [legacy initiatives](features/README.md) only for historical context | One future code-bearing outcome, its current permission, evidence and blockers; old initiatives are supporting context |
-| Product intent | [Vision](vision.md), [concepts](concepts.md), topic below | Why a capability exists and what its nouns mean; intent is not proof of implementation |
-| **Forensic observability, prompt/source provenance, Admin investigation and story replay** | **[Forensic program](observability/README.md)** → [actual source gap audit](observability/evidence/current-source-inventory-2026-11-15.md) → [typed evidence architecture](observability/technical/evidence-model.md) → [backend-first design sequence](observability/design-program.md) | Design of durable causality and historical replay with privacy/retention; distinct from sampled OTel logs/traces and no code authorized |
-| **In-game Storyteller agent and long-lived narrative architecture** | **[Storyteller renewal](storyteller-architecture/README.md)** → [code-flow source audit](storyteller-architecture/evidence/current-flow-audit-2026-11-14.md) → [ideal task operating model](storyteller-architecture/target-operating-model.md) → [SA01–SA12 execution program](storyteller-architecture/implementation-program.md) | Distinguishes current one-shot/optional memory loop from desired adaptive, source-grounded agent; design only, no automatic code or paid provider authorization |
-| **Proposed player UX destination** | [Experience design](experience/README.md) → [selected Living Stage blueprint](experience/spaces/living-stage-blueprint.md) → [first Cursor wave](experience/handoff/first-cursor-wave.md) | Independently redesigned gameplay UX, source-backed gaps, 12 UX Changes and 7 future mechanics Changes; design-only until owner selects a Change |
-| **Internal Admin platform** | **[Admin](admin/README.md)** → [technical](admin/technical/README.md) → [AD01–AD08 Done](admin/implementation-program.md) | First-wave staff session/grants/reads/`/control` landed; production Support grant issuer still absent |
-| Technical contract | [Technical owner index](technical/README.md), selected below | Authority, state transitions, invariants and intended failure/retry semantics |
-| Implemented flow | [Engineering index](engineering/README.md) → [code navigation](engineering/code-navigation.md) → package guide | Input → authoritative operation → output; concrete source entry points and current limits |
-| Local detail | Relevant source and tests | Algorithm, transaction ordering, local invariant and executable examples |
-| Evidence | [Engineering index](engineering/README.md) → [connected proof](engineering/connected-poc-proof.md) or [QA](engineering/qa-journeys.md) | What was actually exercised, on which contract/date, and what it did not establish |
+| Product bible | [**Product index**](product/README.md) → [vision](product/foundations/vision.md), [concepts](product/foundations/concepts.md) | Why the game exists and what the nouns mean; intent is not proof of implementation |
+| Current state | [Progress](progress.md) | What exists, evidence, gaps, next outcome |
+| Discussion continuity | [Session minutes](history/minutes/README.md) | Owner intent across chats; history, not authority |
+| Technical contract | [Technical owner index](technical/README.md) | Authority, transitions, failure/retry |
+| Engine understanding | [Engine model](engineering/engine-model.md) | How pieces cooperate today |
+| Execution route | [Change queue](changes/README.md) (`open/` + `archive/`) | One code-bearing outcome or empty queue |
+| Design programs | [Programs index](programs/README.md) | UX / Admin / Engine / Storyteller / Observability |
+| Player UX program | [Experience design](programs/experience/README.md) | Replacement UX destination; human validation separate |
+| Engine design program | [Engine architecture](programs/engine/README.md) | Product-derived engine target and ENG packets |
+| Storyteller design program | [Storyteller renewal](programs/storyteller/README.md) | Adaptive agent destination; SA packets |
+| Forensic program | [Observability](programs/observability/README.md) | Provenance, Support investigation, replay design |
+| Admin program | [Admin](programs/admin/README.md) | Staff control plane; AD Done; production grants absent |
+| Implemented flow | [Engineering](engineering/README.md) → [code navigation](engineering/code-navigation.md) | Source entry points and limits |
+| History / legacy initiatives | [History](history/README.md) → [initiatives](history/initiatives/README.md) · [minutes](history/minutes/README.md) | Sept 2026 dossiers + session logs; **not** a Change queue |
+| Operations | [Development](operations/development.md) | Local runbook |
+| Evidence | [Connected proof](engineering/connected-poc-proof.md), [QA](engineering/qa-journeys.md) | What was exercised, on which date |
 
-Technical specifications can include unbuilt design. Package guides describe wiring; progress describes coverage. When they disagree, inspect the narrow source/evidence boundary and fix the owning claim rather than averaging their stories. An old run or green fixture is not proof of today's complete product.
+Technical specifications can include unbuilt design. When product, technical, and source disagree, inspect the narrow boundary and fix the owning claim. An old run is not proof of today's complete product.
 
 ## Choose the dimension
 
 | Question | Product / vocabulary | Technical owner | Implementation or evidence route |
 | --- | --- | --- | --- |
-| How do I create, play and return? | [Player experience](player-experience.md), [creation](story-creation.md) | [Story lifecycle](technical/story-lifecycle.md) | [Application: opening and Start](../packages/application/README.md#opening-and-start), [code map](engineering/code-navigation.md) for web routes |
-| Who decides outcomes? | [Game rules](game-rules.md), [gameplay](gameplay.md) | [Rules and activities](technical/rules-and-activities.md) | [Application: selection and consequence](../packages/application/README.md#mechanical-selection-and-consequence) |
-| What happens while I'm away? | [Time and autonomy](time-and-autonomy.md) | [Committed time](technical/committed-time.md), [calendars](technical/calendars-and-world-time.md) | [Application: transition boundary](../packages/application/README.md#campaign-transition-boundary), [gold session](technical/playthroughs/harbor-session.md) |
-| What shapes the story? | [Storytelling](storytelling.md), [settings](storyteller-settings.md) | [Storyteller runtime](technical/storyteller-runtime.md) | [Storyteller guide](../packages/storyteller/README.md), [tuning procedure](skills/storyteller-tuning/SKILL.md) before changes |
-| How does it remember? | [Continuity](continuity-and-consequences.md) | [Canonical files](technical/canonical-files.md), [memory/retrieval](engineering/long-story-memory-and-retrieval.md) | [Documents guide](../packages/documents/README.md), [application context](../packages/application/README.md#active-scene-context) |
-| What reaches the model and what does it cost? | [Concepts](concepts.md) distinguishes turns from rounds | [Context/cost](technical/context-and-cost.md), [usage policy](technical/usage-policy.md) | [Storyteller request path](../packages/storyteller/README.md#follow-one-request), [spending rule](../.agents/rules/spending.md) |
-| What survives failure or duplicate work? | [Continuity](continuity-and-consequences.md) | [Execution](technical/execution.md), [provider dispatch](technical/provider-dispatch-review.md) | [Application recovery](../packages/application/README.md#execution-failure-and-retry), worker route in [code map](engineering/code-navigation.md) |
-| What owns storage, access and presentation? | [Player experience](player-experience.md) | [Data](technical/data.md), [persistence/cache](technical/persistence-and-caching.md), [architecture](technical/architecture.md) | API, web, database and cache entries in [code map](engineering/code-navigation.md) |
-| Did it actually work? | [Benchmark stories](playthroughs.md) | [Execution atlas](technical/playthroughs/README.md) | [Live POC proof](engineering/connected-poc-proof.md), [QA journeys](engineering/qa-journeys.md) |
-| How do I run or maintain it? | [Current progress](progress.md) | [Development](development.md), [code quality](engineering/code-quality.md) | [Agent rules/commands](../.agents/README.md), [verification policy](../.agents/rules/verification.md) |
-| How do I test rare mechanics without playing a whole campaign? | [Chamber laboratory C01–C16](engineering/targets/chamber-laboratory.md) | [Source audit](engineering/audits/chamber-gap-2026-11-12.md) | [CH01–CH16 program](engineering/chamber-program.md) and [technical protocol](technical/chamber-lab-protocol.md); design only, no active code Change |
-| What is the selected React/Next implementation destination? | [Engineering portfolio roadmap](../TODO.md) | [React/Next F1–F15 target](engineering/targets/react-next.md) | [Source gap audit](engineering/audits/react-next-gap-2026-11-12.md) → [W01–W22 Change queue](changes/README.md) and [Cursor execution atlas](engineering/frontend-execution-playbook.md); no active code Change |
-| How will staff support, govern and operate players, billing, games and AI at scale? | [Admin](admin/README.md) | [Technical contracts](admin/technical/README.md) + [post-AD baseline](admin/technical/source-baseline-2026-11-14.md#post-ad-implementation-baseline-2026-11-15); commercial/Trust writes still gated | [Changes queue](changes/README.md); OBS06/07 synthetic only |
-| What is still undecided? | [Open questions](questions.md) | Relevant contract's explicit proposed boundary | [Current Change system](changes/README.md) and [dated legacy audit](features/AUDIT-2026-11-11.md) distinguish proposals, initiatives, evaluations and code Changes |
+| How do I create, play and return? | [Player experience](product/journeys/player-experience.md), [creation](product/journeys/story-creation.md) | [Story lifecycle](technical/story-lifecycle.md) | [Application: opening and Start](../packages/application/README.md#opening-and-start), [code map](engineering/code-navigation.md) |
+| Who decides outcomes? | [Game rules](product/foundations/game-rules.md), [gameplay](product/foundations/gameplay.md) | [Rules and activities](technical/rules-and-activities.md) | [Application: selection and consequence](../packages/application/README.md#mechanical-selection-and-consequence) |
+| What happens while I'm away? | [Time and autonomy](product/journeys/time-and-autonomy.md) | [Committed time](technical/committed-time.md), [calendars](technical/calendars-and-world-time.md) | [Application: transition boundary](../packages/application/README.md#campaign-transition-boundary) |
+| What shapes the story? | [Storytelling](product/storytelling/storytelling.md), [settings](product/storytelling/storyteller-settings.md) | [Storyteller runtime](technical/storyteller-runtime.md) | [Storyteller guide](../packages/storyteller/README.md), [tuning](../.agents/rules/storyteller.md) + [manual](engineering/storyteller-tuning.md) |
+| How does it remember? | [Continuity](product/storytelling/continuity-and-consequences.md) | [Canonical files](technical/canonical-files.md), [memory research](engineering/long-story-memory-and-retrieval.md) | [Documents guide](../packages/documents/README.md) |
+| What reaches the model and what does it cost? | [Concepts](product/foundations/concepts.md) | [Context/cost](technical/context-and-cost.md), [usage policy](technical/usage-policy.md) | [Spending rule](../.agents/rules/spending.md) |
+| What survives failure or duplicate work? | [Continuity](product/storytelling/continuity-and-consequences.md) | [Execution](technical/execution.md), [provider dispatch](technical/provider-dispatch-review.md) | [Application recovery](../packages/application/README.md#execution-failure-and-retry) |
+| What owns storage, access and presentation? | [Player experience](product/journeys/player-experience.md) | [Data](technical/data.md), [architecture](technical/architecture.md) | [Code map](engineering/code-navigation.md) |
+| Did it actually work? | [Benchmark stories](product/journeys/playthroughs.md) | [Execution atlas](technical/playthroughs/README.md) | [Live POC proof](engineering/connected-poc-proof.md), [QA](engineering/qa-journeys.md) |
+| How do I run or maintain it? | [Progress](progress.md) | [Development](operations/development.md), [code quality](engineering/code-quality.md) | [Agent rules](../.agents/README.md), [verification](../.agents/rules/verification.md) |
+| Chamber / rare mechanics lab? | [Chamber target](engineering/targets/chamber-laboratory.md) | [Protocol](technical/chamber-lab-protocol.md) | [Chamber program](engineering/chamber-program.md) |
+| React/Next destination? | [Portfolio roadmap](../TODO.md) | [React/Next F1–F15](engineering/targets/react-next.md) | [Change queue](changes/README.md) |
+| Staff Admin at scale? | [Admin](programs/admin/README.md) | [Admin technical](programs/admin/technical/README.md) | [Changes](changes/README.md); Support grants still governance-gated |
+| What is still undecided? | [Open questions](questions.md) | Relevant contract's proposed boundary | [Changes](changes/README.md); legacy disposition in [initiatives audit](history/initiatives/AUDIT-2026-11-11.md) |
+
+## Compat stubs
+
+Compat stubs remain for: root product files → `product/`; `features/` → `history/initiatives/`; `development.md` → `operations/`; `rules-attribution.md` → `history/legal/`; `minutes/` → `history/minutes/`; and top-level `experience|admin|engine-architecture|storyteller-architecture|observability` → `programs/…`. Prefer canonical paths in new writing.
 
 ## Read with a question, stop with an answer
 
-Before opening source, identify the behavior, its authority and the evidence needed. Use headings or `rg -n` to locate a section in a large document; inspect a bounded range rather than concatenating several entire files. Once you can name the entry point, owning operation, output and unresolved issue, follow only that path. Context window size is not a reading target.
-
-Preserve useful discoveries at the nearest owner: a local invariant in a comment, cross-file flow in a package guide, design in a contract, demonstrated coverage in progress/evidence, unfinished execution in a plan. Link instead of copying. The [maintenance rule](../.agents/rules/documentation.md) defines when to update those layers and how to keep a handoff useful after a break.
+Before opening source, identify the behavior, its authority and the evidence needed. Once you can name the entry point, owning operation, output and unresolved issue, follow only that path. Preserve discoveries at the nearest owner. The [maintenance rule](../.agents/rules/documentation.md) defines when to update those layers.

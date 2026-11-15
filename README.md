@@ -29,8 +29,8 @@ A configuration-faithful 10–15-turn campaign with durable change and later rec
 
 - **Returning owner or new contributor:** start with the [engineering priority and work sequence](TODO.md), then [progress](docs/progress.md) and the [documentation map](docs/README.md).
 - **Coding agent:** start with [AGENTS.md](AGENTS.md). Use `pnpm repo:brief` when resuming or disoriented, then route the question via [documentation](docs/README.md) → [technical owner](docs/technical/README.md) → [code navigation](docs/engineering/code-navigation.md) only as needed.
-- **Try it locally:** [development](docs/development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
-- **Understand the intended product:** [vision](docs/vision.md), [concepts](docs/concepts.md), then the relevant product topic in the map.
+- **Try it locally:** [development](docs/operations/development.md). `pnpm chamber` uses offline development fixtures; `pnpm story:local` opens ordinary local Story mode, with live execution requiring explicit configuration and spending authority. `/demo` is a separate browser-only prototype that resets on refresh.
+- **Understand the intended product:** [vision](docs/product/foundations/vision.md), [concepts](docs/product/foundations/concepts.md), then the relevant product topic in the map.
 - **Understand the engine and its limits:** [engine model](docs/engineering/engine-model.md) connects mechanics, time, memory, authority, failure and next design decisions.
 
 Next.js presents the game; NestJS and Temporal workers call shared application operations; PostgreSQL owns transactional state and published document roots. The [code map](docs/engineering/code-navigation.md) separates this wiring from the broader [architecture design](docs/technical/architecture.md).

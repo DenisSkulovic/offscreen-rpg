@@ -2,7 +2,7 @@
 
 This package prepares bounded tasks, projects provider requests and validates results. It does not own story transactions, dice, publication or durable retry; those belong to the [application package](../application/README.md). A creative profile is data, not a running agent.
 
-[Concepts](../../docs/concepts.md) distinguishes a Storyteller turn, model round, published passage and contextual scene. The field `result.scene` is an output envelope, not a scene lifecycle. Historical reports do not open decisions or advance time.
+[Concepts](../../docs/product/foundations/concepts.md) distinguishes a Storyteller turn, model round, published passage and contextual scene. The field `result.scene` is an output envelope, not a scene lifecycle. Historical reports do not open decisions or advance time.
 
 ## Follow one request
 
@@ -43,7 +43,7 @@ Captured policy chooses native JSON schema or evaluation-only JSON-object valida
 
 Notes are source-backed reminders: their referenced non-current passages are mandatory context, while the current body is not duplicated in the evidence array. Retiring a note removes that automatic loading path, not the chronology itself. Canonical catalogues identify unloaded documents explicitly. [Descriptive materialization](src/tasks/descriptive-materialization.ts) (SA09) decides when a gift/relationship/identity patch is warranted versus omitted or rejected; it is not an automatic noun extractor.
 
-The application already selects exact world/rule sections and campaign documents, including narrative-choice dependencies and recall cues. Selection, whole-body byte limits and whole-request pruning must agree; the omission trace distinguishes unavailable material from supplied evidence. Mechanical dependency carriage and progressive identity materialization remain [S3 work](../../docs/features/README.md#coding-route). Semantic retrieval and automatic long-history synthesis are not demonstrated capabilities.
+The application already selects exact world/rule sections and campaign documents, including narrative-choice dependencies and recall cues. Selection, whole-body byte limits and whole-request pruning must agree; the omission trace distinguishes unavailable material from supplied evidence. Mechanical dependency carriage and progressive identity materialization remain [S3 work](../../docs/history/initiatives/README.md#coding-route). Semantic retrieval and automatic long-history synthesis are not demonstrated capabilities.
 
 Ordinary tasks default to one shot. A captured memory recipe can use a bounded multi-round controller: decision rounds request `ask_memory` or `read_memory`, and a protected final round uses the original result schema. Read handles (`m#`/`x#`) differ from provenance citations (`s#`). The application owns retrieval and shared round/read/retained-byte/input/output/cost bounds. Existing retrieval experiments do not establish a reliable default for sustained gameplay.
 
@@ -51,9 +51,9 @@ Read [memory/retrieval](../../docs/engineering/long-story-memory-and-retrieval.m
 
 ## Content and creative ownership
 
-[Profile definitions](src/profiles/definitions/) own creative defaults; [profiles/index.ts](src/profiles/index.ts) validates revisions. [Fixture content](src/fixtures/content/) contains authored offline responses. Scenario-specific fake behavior stays in that adapter; shared application policy does not branch on world names.
+[Profile definitions](src/profiles/definitions) own creative defaults; [profiles/index.ts](src/profiles/index.ts) validates revisions. [Fixture content](src/fixtures/content) contains authored offline responses. Scenario-specific fake behavior stays in that adapter; shared application policy does not branch on world names.
 
-Shared task instructions own authority/evidence/output invariants. Tone, pace, initiative and choice style belong to the captured profile/campaign. Follow the [tuning procedure](../../docs/skills/storyteller-tuning/SKILL.md) before changing these layers; a failed schema, absent mechanic or lost document cannot be repaired by a style preference.
+Shared task instructions own authority/evidence/output invariants. Tone, pace, initiative and choice style belong to the captured profile/campaign. Follow the [tuning procedure](../../.agents/rules/storyteller.md) before changing these layers; a failed schema, absent mechanic or lost document cannot be repaired by a style preference.
 
 ## Working safely and economically
 

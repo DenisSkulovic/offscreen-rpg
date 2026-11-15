@@ -10,7 +10,7 @@ For research-backed options around context selection, retrieval, memory, tools, 
 
 For long histories specifically, [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
 
-For a new code implementation, check the [Change index](../changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../features/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+For a new code implementation, check the [Change index](../changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../history/initiatives/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner
 
@@ -25,7 +25,7 @@ For a new code implementation, check the [Change index](../changes/README.md), w
 | Where do caching and invalidation belong? | [Persistence and caching](../technical/persistence-and-caching.md) | Application read projections own freshness identities; deployables own optional Redis adapters |
 | Is a field public or private? | `packages/contracts/src/` defines transport shapes | Follow the response projection; a shared type alone does not authorize disclosing a private plan |
 | Where do example worlds come from? | Application `campaign/fixtures/content/`, Storyteller `fixtures/content/`, web `app/demo/content/` | Content loaders validate data; fixtures do not demonstrate arbitrary-world generation |
-| How do I explore the running POC? | [Development guide](../development.md), [manual QA workflow](qa-journeys.md) | `tools/chamber/` launches it; `tools/api-integration/` contains optional automated probes |
+| How do I explore the running POC? | [Development guide](../operations/development.md), [manual QA workflow](qa-journeys.md) | `tools/chamber/` launches it; `tools/api-integration/` contains optional automated probes |
 
 ## Package boundaries
 
@@ -35,7 +35,7 @@ The [architecture specification](../technical/architecture.md) also describes in
 
 ## Terms that otherwise send readers to the wrong file
 
-[Concepts](../concepts.md) owns domain vocabulary. In particular, a Storyteller turn, contextual scene, publication passage and model round are different things. Existing `result.scene` is an output envelope, not proof of a scene lifecycle. The game has no chapter concept.
+[Concepts](../product/foundations/concepts.md) owns domain vocabulary. In particular, a Storyteller turn, contextual scene, publication passage and model round are different things. Existing `result.scene` is an output envelope, not proof of a scene lifecycle. The game has no chapter concept.
 
 | Term | Meaning here |
 | --- | --- |

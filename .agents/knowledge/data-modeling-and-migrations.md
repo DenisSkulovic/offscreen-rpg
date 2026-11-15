@@ -135,7 +135,7 @@ A DDL command can be fast **once it gets a lock** but wait behind a long transac
 
 **Critical integration detail:** a migration runner that wraps **every migration in a transaction** is not automatically compatible with PostgreSQL's concurrent index build. Confirm the actual runner contract; split operations or use a supported mode deliberately. Do not work around the PostgreSQL rule by inventing unsupported SQL.
 
-**Offscreen RPG ownership:** [DB package](../../packages/db/README.md), migration files and [development safety](../../docs/development.md) are the local implementation maps. The current project may intentionally use destructive disposable-db operations for POC testing. Those procedures **do not transfer to a live or non-disposable DB**.
+**Offscreen RPG ownership:** [DB package](../../packages/db/README.md), migration files and [development safety](../../docs/operations/development.md) are the local implementation maps. The current project may intentionally use destructive disposable-db operations for POC testing. Those procedures **do not transfer to a live or non-disposable DB**.
 
 ## 7. Review and verification contract
 

@@ -1,6 +1,6 @@
 # Versioned story settings and clock policy
 
-Design and current implementation boundary for [editable presets](../storyteller-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
+Design and current implementation boundary for [editable presets](../product/storytelling/storyteller-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
 
 ## Data and commands
 

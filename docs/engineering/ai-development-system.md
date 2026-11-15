@@ -10,7 +10,7 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 | Layer | Question | Canonical owner | Failure to avoid |
 | --- | --- | --- | --- |
-| Product | What should the player experience, and why? | `docs/vision.md`, `docs/concepts.md`, relevant product topic | Building the first clever implementation without an agreed experience |
+| Product | What should the player experience, and why? | `docs/product/foundations/vision.md`, `docs/product/foundations/concepts.md`, relevant product topic | Building the first clever implementation without an agreed experience |
 | Technical | Which component owns data, transitions, side effects, failures and limits? | The affected `docs/technical/` contract | Duplicating state authority or solving one bug with extra infrastructure |
 | Executable | What actually runs? | `apps/`, `packages/`, `tools/` | Code that silently reinterprets intent or hides complexity |
 | Evidence | Did this implementation fulfill the intended result? | Focused tests, traces, `docs/progress.md`, dated QA evidence and human play | Documentation and code mutually agreeing while gameplay fails |
@@ -23,7 +23,7 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 **Small code task (fix, copy, local refactor).** Agent reads the supplied task and narrow owner/source, edits one coherent slice, runs the cheapest useful check, inspects diff, reports. No Change dossier, architecture meeting, or mandatory full handbook read.
 
-**Significant code-bearing Change or cross-package rework.** Choose an owner-prioritized engineering or product outcome → inspect actual source and alternatives → settle the relevant product/technical boundary → write one bounded `CHANGE.md` with a planned source/test/config delta and discriminating negative proof → authorize and implement in small slices → review actual evidence → reconcile permanent docs and retire the packet. The `change-workflow` skill owns this route. `docs/changes/README.md` may intentionally select **none**. Historical `docs/features/` dossiers are never an implicit coding queue; a portfolio refactor need not add gameplay functionality.
+**Significant code-bearing Change or cross-package rework.** Choose an owner-prioritized engineering or product outcome → inspect actual source and alternatives → settle the relevant product/technical boundary → write one bounded `CHANGE.md` with a planned source/test/config delta and discriminating negative proof → authorize and implement in small slices → review actual evidence → reconcile permanent docs and retire the packet. The `change-workflow` skill owns this route. `docs/changes/README.md` may intentionally select **none**. Historical `docs/history/initiatives/` dossiers are never an implicit coding queue; a portfolio refactor need not add gameplay functionality.
 
 **Bug investigation.** Reproduce/identify the observation → compare competing causes against the full relevant source/trace → find an experiment that distinguishes them → fix the owning layer → regression check → update permanent owner if assumptions changed. Do not start by designing new systems.
 

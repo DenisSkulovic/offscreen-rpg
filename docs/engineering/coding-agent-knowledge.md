@@ -8,7 +8,7 @@
 
 ## Decide which type of knowledge is missing
 
-- **Product knowledge:** what Offscreen RPG should feel like. Owner: `docs/vision.md`, `docs/player-experience.md`, relevant product topic.
+- **Product knowledge:** what Offscreen RPG should feel like. Owner: `docs/product/foundations/vision.md`, `docs/product/journeys/player-experience.md`, relevant product topic.
 - **Project technical knowledge:** state authority, execution semantics, data shape and integration. Owner: `docs/technical/`, package guides and actual tests.
 - **External expert knowledge:** framework semantics, failure patterns, UI heuristics, concurrency practices. This index links the relevant first-party references.
 - **Procedure:** how an agent investigates, challenges a design, implements or reviews. Owner: `.agents/skills/`. A procedure should not replace substantive domain expertise.

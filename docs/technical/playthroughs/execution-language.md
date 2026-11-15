@@ -2,7 +2,7 @@
 
 Read with the [atlas legend](README.md#how-to-read-a-claim). Reusable authority belongs to [rules and activities](../rules-and-activities.md), [execution](../execution.md) and the activity/autonomy plans, not to the invented field names in these examples.
 
-The authoritative vocabulary is [Gameplay and Storyteller concepts](../../concepts.md). A Storyteller turn prepares the next playable situation; a decision point is the player's opportunity to respond; a scene can span many such exchanges. Passage is a publication record. None is a chapter or fixed time unit.
+The authoritative vocabulary is [Gameplay and Storyteller concepts](../../product/foundations/concepts.md). A Storyteller turn prepares the next playable situation; a decision point is the player's opportunity to respond; a scene can span many such exchanges. Passage is a publication record. None is a chapter or fixed time unit.
 
 ## The things the player experiences
 
@@ -78,7 +78,7 @@ Preparation may produce a future scene, but reading its output does not make a v
 
 ## Dice are purpose-specific
 
-Current ability checks use the selected D&D subset: `d20 + ability modifier + applicable proficiency + admitted modifiers >= DC`; ability modifier is `floor((score - 10) / 2)`. Advantage/disadvantage, when applicable, change which recorded draw is used. Do not silently import attack-roll critical rules into ability checks. Detailed rule authority stays in [game rules](../../game-rules.md).
+Current ability checks use the selected D&D subset: `d20 + ability modifier + applicable proficiency + admitted modifiers >= DC`; ability modifier is `floor((score - 10) / 2)`. Advantage/disadvantage, when applicable, change which recorded draw is used. Do not silently import attack-roll critical rules into ability checks. Detailed rule authority stays in [game rules](../../product/foundations/game-rules.md).
 
 An occurrence check such as `d20 <= 8` asks whether an event happens; it is not a skill check with Batman's Persuasion added. A contribution attempt asks how much work this attempt earns. Separate receipts identify the purpose and policy version. The examples fix draws to show consequences; production randomness remains server-owned.
 

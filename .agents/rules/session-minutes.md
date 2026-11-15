@@ -4,7 +4,7 @@
 
 ## Trigger: capture substantive work while it happens
 
-For **each local day (Europe/Vilnius) with meaningful repository work or planning**, maintain exactly one `docs/minutes/YYYY-MM-DD.md`. The date is the local date of the discussion, not the commit date if those differ. On a new workday create that day's file; on subsequent exchanges on the same date **append** new chronological entries rather than generating a second minutes file.
+For **each local day (Europe/Vilnius) with meaningful repository work or planning**, maintain exactly one `docs/history/minutes/YYYY-MM-DD.md`. The date is the local date of the discussion, not the commit date if those differ. On a new workday create that day's file; on subsequent exchanges on the same date **append** new chronological entries rather than generating a second minutes file.
 
 **Do not wait until a chat is almost full.** After a significant user message, decision, changed priority, accepted/rejected architecture, design objection, investigation discovery, implementation outcome or meaningful unresolved problem, update the day's minutes at the next safe documentation-edit opportunity. At an interruption, tool/agent handoff, end of a substantial session or new-chat transition, perform a final continuity pass. There is no need to log a greeting, typo fix, every tool call or an empty day.
 
@@ -30,9 +30,9 @@ Don't write credentials, tokens, private provider payloads, unredacted personal 
 
 ## Access and fresh-session behavior
 
-- **At a fresh substantial repository session:** read the [minutes index](../../docs/minutes/README.md), the **latest relevant date** and the current [roadmap](../../TODO.md) / [Change queue](../../docs/changes/README.md) as needed. For a focused known task, use the current owner/Change and read minutes only when earlier intent or rationale matters. Do **not** preload the entire archive by default.
+- **At a fresh substantial repository session:** read the [minutes index](../../docs/history/minutes/README.md), the **latest relevant date** and the current [roadmap](../../TODO.md) / [Change queue](../../docs/changes/README.md) as needed. For a focused known task, use the current owner/Change and read minutes only when earlier intent or rationale matters. Do **not** preload the entire archive by default.
 - **During work:** append the active day's entries when repository documentation edits and Git writes are authorized. Keep the index's newest-date link current. Do not silently push an unrelated change or override an uncommitted file.
 - **When read-only or without write access:** supply a concrete proposed minutes entry in the handoff and state clearly it was **not persisted**; the next authorized agent should apply it. A rule cannot grant missing tool permissions.
 - **Before changing chat/agent:** ensure the important owner directions, decisions, unresolved items and artifact links reached the day's minutes, or explicitly tell the owner what remains unrecorded.
 
-**Discoverability:** root `AGENTS.md` points to this rule and the latest minutes. `docs/README.md` and `docs/minutes/README.md` route fresh contexts. Log all meaningful work, not just work that produced a `CHANGE.md`.
+**Discoverability:** root `AGENTS.md` points to this rule and the latest minutes. `docs/README.md` and `docs/history/minutes/README.md` route fresh contexts. Log all meaningful work, not just work that produced a `CHANGE.md`.

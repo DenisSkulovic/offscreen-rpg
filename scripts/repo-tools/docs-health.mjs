@@ -6,22 +6,43 @@ import { root } from './process.mjs';
 
 const changesRoot = path.join(root, 'docs', 'changes');
 const limit = 300; // Advisory review trigger; not a hard gate.
-const directories = readdirSync(changesRoot, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name);
 
-const planEntries = directories.filter((name) =>
-  existsSync(path.join(changesRoot, name, 'PLAN.md')),
+/** @returns {{ rel: string, absDir: string }[]} packet dirs that contain CHANGE.md */
+function listChangePackets(dir = changesRoot, parts = []) {
+  if (!existsSync(dir)) return [];
+  /** @type {{ rel: string, absDir: string }[]} */
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+    const absDir = path.join(dir, entry.name);
+    const nextParts = [...parts, entry.name];
+    if (existsSync(path.join(absDir, 'CHANGE.md'))) {
+      found.push({
+        rel: nextParts.join('/'),
+        absDir,
+      });
+    } else {
+      found.push(...listChangePackets(absDir, nextParts));
+    }
+  }
+  return found;
+}
+
+const packets = listChangePackets();
+
+const planEntries = packets.filter((packet) =>
+  existsSync(path.join(packet.absDir, 'PLAN.md')),
 );
 
-const results = planEntries.map((name) => {
-  const pathname = path.join(changesRoot, name, 'PLAN.md');
+const results = planEntries.map((packet) => {
+  const pathname = path.join(packet.absDir, 'PLAN.md');
   let text;
   try {
     text = readFileSync(pathname, 'utf8');
   } catch (error) {
     return {
-      name,
+      name: packet.rel,
       words: 0,
       bytes: 0,
       issue: 'PLAN.md unreadable: ' + error.message,
@@ -30,7 +51,7 @@ const results = planEntries.map((name) => {
   const headings = [...text.matchAll(/^## Current checkpoint\s*$/gm)];
   if (headings.length !== 1) {
     return {
-      name,
+      name: packet.rel,
       words: 0,
       bytes: 0,
       issue: 'Expected exactly one Current checkpoint heading',
@@ -44,7 +65,7 @@ const results = planEntries.map((name) => {
   const words = checkpoint ? checkpoint.split(/\s+/).length : 0;
   const bytes = Buffer.byteLength(checkpoint, 'utf8');
   return {
-    name,
+    name: packet.rel,
     words,
     bytes,
     issue: !words ? 'Empty checkpoint' : undefined,
@@ -54,27 +75,29 @@ const results = planEntries.map((name) => {
 
 results.sort((a, b) => b.words - a.words || a.name.localeCompare(b.name));
 
-const ledgerResults = directories
-  .map((name) => {
-    const pathname = path.join(changesRoot, name, 'CHANGE.md');
-    if (!existsSync(pathname)) return null;
+const ledgerResults = packets
+  .map((packet) => {
+    const pathname = path.join(packet.absDir, 'CHANGE.md');
     let text;
     try {
       text = readFileSync(pathname, 'utf8');
     } catch (error) {
       return {
-        name,
+        name: packet.rel,
         issue: 'CHANGE.md unreadable: ' + error.message,
       };
     }
     const done =
       /\*\*State:\*\*[^*]*\bDone\b/i.test(text) ||
-      /^\*\*State:\*\*[^\n]*\bDone\b/im.test(text) ||
-      /^State:\s*[^\n]*\bDone\b/im.test(text);
+      /\*\*State:[^*]*\bDone\b/i.test(text) ||
+      /\*\*Status:\*\*[^*]*\bDone\b/i.test(text) ||
+      /\*\*Status:[^*]*\bDone\b/i.test(text) ||
+      /^State:\s*[^\n]*\bDone\b/im.test(text) ||
+      /^Status:\s*[^\n]*\bDone\b/im.test(text);
     if (!done) return null;
     const hasLedger = /^## Reconciliation ledger\b/m.test(text);
     return {
-      name,
+      name: packet.rel,
       issue: hasLedger
         ? undefined
         : 'Done CHANGE.md missing ## Reconciliation ledger (required before Done)',
@@ -93,6 +116,7 @@ if (
     JSON.stringify(
       {
         checkpointReviewWords: limit,
+        packetCount: packets.length,
         results,
         doneWithoutReconciliationLedger: ledgerResults,
       },
@@ -104,6 +128,7 @@ if (
   console.log(
     'Change checkpoint health (read-only; advisory >' + limit + ' words):',
   );
+  console.log('Packets scanned: ' + packets.length + ' (open/ + archive/).');
   if (!results.length)
     console.log('No Change execution plans found. An empty queue is valid.');
   for (const result of results) {

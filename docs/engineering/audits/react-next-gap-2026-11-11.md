@@ -78,13 +78,13 @@
 
 | Order | Candidate bounded Change | Target / gap | Why this is the step |
 | --- | --- | --- | --- |
-| 1 | [W01: isolated web test foundation](../../changes/2026-11-11--web-test-foundation/CHANGE.md) | F10, G04 | Prove pure/client guarantees without resetting the DB; retain full-stack Playwright |
-| 2 | [W02: private server-read boundary](../../changes/2026-11-11--web-server-read-boundary/CHANGE.md) | F1–F2, G05 | Consolidate authenticated server loading and error semantics, no new authority |
-| 3 | [W03: resource-safe snapshot owner](../../changes/2026-11-11--web-snapshot-identity/CHANGE.md) | F3–F4, G01–G02 | Establish the identity/version invariant before more async wiring |
-| 4 | [W04: recoverable Play command lifecycle](../../changes/2026-11-11--web-play-command-lifecycle/CHANGE.md) | F5, G03 | Explicitly model stable intent, unknown completion and response reconciliation |
-| 5 | [W05: Play refresh lifecycle](../../changes/2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | F6, G06 | One owner for refresh/visibility/cleanup; do not conflate this with SSE implementation |
-| 6 | [W06: CampaignPlay responsibility split](../../changes/2026-11-11--web-campaign-composition/CHANGE.md) | F7, G07 | Clear rendering and derived state boundaries after controllers stabilize |
-| 7 | [W07: Play route failure/a11y recovery](../../changes/2026-11-11--web-play-route-recovery/CHANGE.md) | F9, G08 | Test visible and keyboard behavior without preempting future visual design |
+| 1 | [W01: isolated web test foundation](../../changes/archive/2026-11/web/2026-11-11--web-test-foundation/CHANGE.md) | F10, G04 | Prove pure/client guarantees without resetting the DB; retain full-stack Playwright |
+| 2 | [W02: private server-read boundary](../../changes/archive/2026-11/web/2026-11-11--web-server-read-boundary/CHANGE.md) | F1–F2, G05 | Consolidate authenticated server loading and error semantics, no new authority |
+| 3 | [W03: resource-safe snapshot owner](../../changes/archive/2026-11/web/2026-11-11--web-snapshot-identity/CHANGE.md) | F3–F4, G01–G02 | Establish the identity/version invariant before more async wiring |
+| 4 | [W04: recoverable Play command lifecycle](../../changes/archive/2026-11/web/2026-11-11--web-play-command-lifecycle/CHANGE.md) | F5, G03 | Explicitly model stable intent, unknown completion and response reconciliation |
+| 5 | [W05: Play refresh lifecycle](../../changes/archive/2026-11/web/2026-11-11--web-play-refresh-lifecycle/CHANGE.md) | F6, G06 | One owner for refresh/visibility/cleanup; do not conflate this with SSE implementation |
+| 6 | [W06: CampaignPlay responsibility split](../../changes/archive/2026-11/web/2026-11-11--web-campaign-composition/CHANGE.md) | F7, G07 | Clear rendering and derived state boundaries after controllers stabilize |
+| 7 | [W07: Play route failure/a11y recovery](../../changes/archive/2026-11/web/2026-11-11--web-play-route-recovery/CHANGE.md) | F9, G08 | Test visible and keyboard behavior without preempting future visual design |
 
 **Not yet a Change:** creation/editor restructuring, preview state, Next deploy-mode improvements, TanStack Query, SSE/WebSockets, global CSS redesign, performance tuning, Tailwind/shadcn and UI art direction. Their target design questions or measured gaps must be resolved first. A new Change should not exist just to keep a coding model busy.
 

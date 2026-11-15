@@ -1,6 +1,6 @@
 # Wizard, apple and companion: strange fiction, precise authority
 
-Companion to the mountain/haunted-house [product playthrough](../../playthroughs.md). This is predominantly **target**, not a claim that the current narrative fixture implements authoritative transformation, containment or multiplayer. The narrative-only prepared-arrival path must not be confused with these mechanics.
+Companion to the mountain/haunted-house [product playthrough](../../product/journeys/playthroughs.md). This is predominantly **target**, not a claim that the current narrative fixture implements authoritative transformation, containment or multiplayer. The narrative-only prepared-arrival path must not be confused with these mechanics.
 
 ## WZ-01: agree a premise and a first intention
 

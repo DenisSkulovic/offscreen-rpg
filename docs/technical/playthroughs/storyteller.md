@@ -20,7 +20,7 @@ New task artifacts have `inputVersion: 17` and `promptVersion: storyteller.v17`;
 
 ## A concrete request: after SpongeBob fails to calm Gary
 
-At [SB-02](spongebob.md#sb-02-a-failed-reassurance--current), the server already resolved 5 + 2 Charisma + 2 proficiency = 9 against DC 12. Conceptually, the consequence request contains:
+At [SB-02](spongebob.md#sb-02-a-failed-reassurance--current-gm04), the server already resolved 5 + 2 Charisma + 2 proficiency = 9 against DC 12. Conceptually, the consequence request contains:
 
 ```text
 Operation: describe the committed failure and propose available next intentions.
@@ -70,7 +70,7 @@ Retiring a note does not delete chronology, but without archive lookup it can re
 
 ## Discovery before composition: current mechanics and missing connection
 
-The [memory feature](../../features/2026-09-18--20-09--storyteller-memory-and-recall/PLAN.md) owns this extension. The result protocol can currently express private `needs_context` requests through `ask_memory` evidence/possibility questions and `read_memory` over returned handles. The application translates those two model-facing actions into internal search/current-record/exact-source operations against one captured canonical root, assigns task-local handles, enforces read/byte ceilings, and serializes and restores the private exploration state. The [Greywake trace](greywake-memory.md) follows that implemented provider-free path.
+The [memory feature](../../history/initiatives/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) owns this extension. The result protocol can currently express private `needs_context` requests through `ask_memory` evidence/possibility questions and `read_memory` over returned handles. The application translates those two model-facing actions into internal search/current-record/exact-source operations against one captured canonical root, assigns task-local handles, enforces read/byte ceilings, and serializes and restores the private exploration state. The [Greywake trace](greywake-memory.md) follows that implemented provider-free path.
 
 The scripted controller now persists private snapshots under the generation, preserves the final round, validates and stores a final candidate, and replays it without another scripted decision. What remains target behavior is normal provider/task dispatch with retained evidence and transfer of that candidate into ordinary generation completion and fenced publication. Existing opening, continuation, consequence and report tasks remain one-shot and receive no callable runtime tools.
 
