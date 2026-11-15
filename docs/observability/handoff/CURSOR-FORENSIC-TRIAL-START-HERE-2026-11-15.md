@@ -55,7 +55,7 @@ At the start of every Cursor session:
 6. Update checkpoint: `DONE/BLOCKED/FAILED/PARTIAL` for the phase, exact next phase and command, new commit SHA; **commit and push** phase docs/evidence and permitted code if selected.
 7. Start a fresh Cursor session for the next phase; **do not wait for human replay of steps or manually ask for a screenshot**. Continue until S6 when all safe work is completed or explicitly blocked.
 
-**No background execution claim:** each Cursor turn must actually execute, save and push its completed slice. Use additional turns as needed; `CHECKPOINT.md` makes this resumable. When all phases finish, send **one** concise handoff message with the GitHub path and final commit SHA for ChatGPT to inspect.
+**No background execution claim:** each Cursor turn must actually execute, save and push its completed slice. Use additional turns as needed; `CHECKPOINT.md` makes this resumable. At context/session boundary, output just **`Resume: read CHECKPOINT.md and perform the next exact phase; no manual commands needed`** with the pushed commit link, so the owner can send a one-line Continue without becoming the human test driver. When all phases finish, send **one** concise handoff message with the GitHub path and final commit SHA for ChatGPT to inspect.
 
 ## 5. What to submit at the end
 
