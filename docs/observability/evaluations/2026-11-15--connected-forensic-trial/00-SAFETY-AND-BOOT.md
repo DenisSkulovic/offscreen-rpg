@@ -12,6 +12,7 @@ git rev-parse HEAD
 node --version
 pnpm --version
 pnpm repo:brief
+pnpm repo:docs-health
 pnpm infra -- ps
 ~~~
 
