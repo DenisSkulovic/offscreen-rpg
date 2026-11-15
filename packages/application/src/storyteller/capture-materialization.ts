@@ -40,6 +40,7 @@ import { storytellerKind, storytellerTopic } from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
 import { campaign } from '@offscreen/db/campaign-schema';
 import { recordExecutionStage } from './execution-stages';
+import { persistPromptProvenance } from './prompt-provenance';
 
 function normalizeActiveSceneScope(scope: unknown) {
   if (scope === null || scope === undefined) return null;
@@ -748,6 +749,11 @@ async function promoteCapture(
     sourceKind: 'context-capture',
     sourceId: capture.captureId,
     sourceSha256: input.requestSha,
+  });
+  await persistPromptProvenance(tx, {
+    generationId: capture.captureId,
+    task,
+    captureStatus: 'promoted',
   });
   await enqueue(tx, {
     id: randomUUID(),

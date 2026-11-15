@@ -639,6 +639,38 @@ export const storytellerRetry = pgTable(
 );
 
 /**
+ * OBS03: redacted prompt/component/source provenance for one generation.
+ * Metadata and hashes only; never stores prompt bodies or source prose.
+ */
+export const storytellerPromptProvenance = pgTable(
+  'storyteller_prompt_provenance',
+  {
+    generationId: uuid('generation_id')
+      .primaryKey()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    taskInputSha256: text('task_input_sha256').notNull(),
+    compiledRequestSha256: text('compiled_request_sha256').notNull(),
+    manifest: jsonb('manifest').notNull().$type<unknown>(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      'storyteller_prompt_provenance_task_sha',
+      sql`${t.taskInputSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      'storyteller_prompt_provenance_request_sha',
+      sql`${t.compiledRequestSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);
+
+/**
  * OBS02: compact typed stage receipts at real Storyteller boundaries.
  * No narrative text; links only to existing generation/attempt/source IDs.
  */

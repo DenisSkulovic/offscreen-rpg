@@ -5,6 +5,7 @@
  * provider-schema-projection.ts and result admission is in result-validation.ts.
  * No database access, provider dispatch or story state mutations belong here.
  */
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { storytellerProfileSchema } from '../profiles';
 import { serializedRequestBytes } from './policy';
@@ -289,3 +290,64 @@ function freezeTask<T>(value: T): T {
   }
   return value;
 }
+
+function sha256Utf8(value: string) {
+  return createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+/**
+ * OBS03: stable code-constant prompt component catalogue for provenance.
+ * Does not participate in request compilation; hashing only.
+ */
+export const storytellerPromptComponentCatalogueV1 = Object.freeze([
+  Object.freeze({
+    stableComponentKey: 'system/game-authority',
+    purpose: 'system-rules' as const,
+    originKind: 'code-constant' as const,
+    originSourceId: 'packages/storyteller/src/tasks/index.ts#rules',
+    contentSha256: sha256Utf8(rules),
+    includedForTasks: Object.freeze([
+      'opening',
+      'continuation',
+      'consequence',
+      'pending-consequence',
+      'report',
+    ] as const),
+  }),
+  Object.freeze({
+    stableComponentKey: 'system/continuity',
+    purpose: 'system-rules' as const,
+    originKind: 'code-constant' as const,
+    originSourceId: 'packages/storyteller/src/tasks/index.ts#continuityRules',
+    contentSha256: sha256Utf8(continuityRules),
+    includedForTasks: Object.freeze([
+      'continuation',
+      'consequence',
+      'pending-consequence',
+    ] as const),
+  }),
+  Object.freeze({
+    stableComponentKey: 'system/scene-scope',
+    purpose: 'system-rules' as const,
+    originKind: 'code-constant' as const,
+    originSourceId: 'packages/storyteller/src/tasks/index.ts#sceneScopeRules',
+    contentSha256: sha256Utf8(sceneScopeRules),
+    includedForTasks: Object.freeze([
+      'continuation',
+      'consequence',
+      'pending-consequence',
+    ] as const),
+  }),
+  Object.freeze({
+    stableComponentKey: 'system/document-changes',
+    purpose: 'system-rules' as const,
+    originKind: 'code-constant' as const,
+    originSourceId: 'packages/storyteller/src/tasks/index.ts#documentChangeRules',
+    contentSha256: sha256Utf8(documentChangeRules),
+    includedForTasks: Object.freeze([
+      'continuation',
+      'consequence',
+      'pending-consequence',
+    ] as const),
+  }),
+] as const);
