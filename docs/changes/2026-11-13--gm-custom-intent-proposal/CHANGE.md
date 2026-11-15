@@ -1,6 +1,6 @@
 # GM01 | Interpret a bounded custom intention without changing the world
 
-**State:** Proposed, **not Ready**. **Owner approval:** none for code, providers or billing. **Kind:** new game contract + application/storyteller path + validation tests. **Parent:** [mechanics evolution](../../experience/mechanics-evolution-program.md). **Prerequisite:** approved [free-intent UX concept](../../experience/patterns/free-intent-future.md), explicit cost policy and intention-corpus review.
+**State:** Proposed, **not Ready**. **2026-11-15 recommended first-slice policy:** [template-first, $0 model interpretation, bounded candidate and 30-intent corpus](../../experience/decisions/gm01-custom-intent-policy-v1.md). Owner acceptance still required; future paid model interpretation remains a separate proposal. **Owner approval:** none for code, providers or billing. **Kind:** new game contract + application/storyteller path + validation tests. **Parent:** [mechanics evolution](../../experience/mechanics-evolution-program.md). **Prerequisite:** approved [free-intent UX concept](../../experience/patterns/free-intent-future.md), explicit cost policy and intention-corpus review.
 
 ## Cursor first-screen brief
 
