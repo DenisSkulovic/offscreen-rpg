@@ -1,19 +1,45 @@
 # Forensic connected trial | Actual execution log
 
-**Status: EMPTY / NOT EXECUTED when authored 2026-11-15.** Cursor fills this **only after actually running each phase**. Do not prefill PASS/FAIL from prior docs, source guesses or screenshots of synthetic mocks. Use [evidence contract](EVIDENCE-CONTRACT.md).
+**Status: S0 executed 2026-11-15.** Cursor fills this **only after actually running each phase**. Use [evidence contract](EVIDENCE-CONTRACT.md).
 
 ## Run metadata
 
-- **Owner kickoff:** not received yet
-- **Source SHA at evaluation start:** not recorded yet
-- **Environment / local DB:** not observed yet
-- **Actual provider requests:** no run yet, not measured
-- **Actual provider spend:** no run yet, not measured
-- **Raw private evidence:** do not commit; local ignored `data/` only
+- **Owner kickoff:** received 2026-11-15 (execute S0–S6; OBS06 then OBS07 if gates; conditional live ≤$0.25 / 4 req / $0.10 op)
+- **Source SHA at evaluation start:** `fa4fef80b523137a6c058dde45c55b4d43665519`
+- **Environment / local DB:** Windows; Node v24.19.0; pnpm 11.19.0; Compose loopback Postgres/Redis/S3mock/Temporal healthy; focused suites use disposable `offscreen_auth_test`
+- **Actual provider requests:** 0
+- **Actual provider spend:** $0
+- **Raw private evidence:** do not commit; local ignored `data/` / `tmp/` only
+- **Preserved dirty worktree (not part of this run):** `docs/engine-architecture/evidence/eng03-lock-measurement-2026-11-14.md`, `tmp/`
 
 ## Executed phases
 
-*No phase entries yet. After S0, create one entry for each real run with exact command, source ID and outcome. Do not delete failed entries after fixing a bug.*
+### S0 — safety/boot baseline — 2026-11-15T17:53Z approx
+Status: PARTIAL
+Git HEAD before / after: `fa4fef80` / (pending S0 evidence commit)
+Environment: OS win32; Node v24.19.0; pnpm 11.19.0; DB `offscreen_auth_test` @ 127.0.0.1:5432; Temporal 7233/8233; Redis 6379; S3 mock 9090; mode Connected-local Compose
+Authorization: provider-free
+Commands actually run:
+- `git status --short`; `git rev-parse HEAD` → `fa4fef80…`
+- `pnpm repo:brief`; `pnpm repo:docs-health` → ok/advisory
+- `pnpm infra -- ps` → postgres/redis/s3mock/temporal Up healthy (already running; `infra:up` not required)
+- `pnpm --filter @offscreen/{db,application,storyteller} build` → exit 0
+- `pnpm test:focus -- admin-diagnostics` → exit 0; 1 pass (AD05 campaign/redacted operation)
+- `pnpm test:focus -- storyteller` → exit 1; **6 pass / 27 fail** (dominant: Zod `time.id` must match `/^[a-z0-9][a-z0-9.-]{0,99}$/` at story start; separate calendar assertion 0≠55)
+- Supplemental OBS proofs (provider-free): OBS00-A 4/4; OBS02+OBS02-H 6/6; OBS03 unit 3/3; OBS05 lineage 2/2 — all pass
+Observed game identity: none created in S0 (baseline only)
+Source checks (inspection, not new runtime rows):
+- OBS00-A: `wrapApprovedWorkerProvider` forwards dispatch; no `dispatchAuthority` in worker options — OBS00-B still blocked
+- OBS01/02/02-H/03/05 symbols present as prior Done evidence
+Result: Local stack healthy; disposable focused DB path confirmed; admin-diagnostics green; broad storyteller integration suite **not** green (pre-existing calendar/time.id fixture mismatch, not introduced by forensic OBS packets)
+Negative case: `pnpm test:focus -- storyteller` failed closed with Zod/assertion errors; no provider keys used
+Evidence class: recorded-runtime (Compose/ps, focused suites) + source-inspection (OBS00-B)
+Coverage: partial (S0 infra+admin ok; full storyteller integration suite unhealthy)
+Cost: external requests 0; settled USD 0; cap unused
+Artifacts: this RUN-LOG entry
+Duration/queries/bytes: admin-diagnostics ~34s wall; storyteller focus ~80s wall; OBS supplemental ~8s
+Discrepancy and cause: storyteller.integration fixtures reject `time.id` against tightened regex; forensic OBS unit/live proofs still pass independently — **hypothesis:** fixture calendar IDs use characters outside `[a-z0-9.-]` or related settings drift; disproof = inspect failing fixture `time.id` in S1/S2 if Connected play also fails
+Next exact step: Execute [S1](01-CONNECTED-CAMPAIGN.md)
 
 ## Investigation questions to answer
 
