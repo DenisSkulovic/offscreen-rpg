@@ -1,6 +1,6 @@
 # Forensic Observability, Provenance & Replay
 
-**Status: new cross-cutting architecture program, design wave 1 (2026-11-15).** No code, migrations, test execution, hosting, external model calls or paid services authorized by this document. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
+**Status: cross-cutting architecture program, design waves 1–2 drafted (2026-11-15).** No code, migrations, test execution, hosting, external model calls or paid services authorized by this document. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
 
 **Project method:** product destination → evidence/authority model → source-grounded audit → technical architecture and cost/privacy challenge → separately accepted bounded code-bearing Changes → verified operational and human evidence. The existing Admin product direction was accepted on 2026-11-14; this program **extends** it rather than superseding its staff authority and redaction guarantees. Active Change selection remains owned by [docs/changes/README.md](../changes/README.md).
 
@@ -11,6 +11,13 @@
 | What experience and forensic guarantees should exist for player, Support and Engineering? | [Product destination and golden journeys](product-vision.md) | Product target / recommendations for owner acceptance |
 | What actually exists, what is only a fixture, what is absent? | [Source-grounded inventory and gap audit](evidence/current-source-inventory-2026-11-15.md) | Dated code inspection, **not** runtime proof |
 | What durable entities, IDs, immutable artifacts and causal edges exist? | [Evidence graph and capture model](technical/evidence-model.md) | Technical target, separate from game authority |
+| **Which actual SQL writers overwrite facts, and where are the replay gaps?** | [Detailed mutation-writer matrix](evidence/mutation-writer-audit-2026-11-15.md) | Dated direct source audit; no running proof |
+| **What exact Postgres/CAS tables, codecs, indexes and lifecycle?** | [Physical evidence storage V1](technical/physical-evidence-storage-v1.md) | Proposed DDL/data contract, **not migration-ready** |
+| **How do we survive crashes, retries and uncertain provider sends?** | [SQL/CAS/Temporal capture protocol](technical/capture-transaction-protocol.md) | Proposed atomicity and failure matrix |
+| **How is an old actor/world/clock state reconstructed without new effects?** | [Historical reconstruction V1](technical/reconstruction-algorithm-v1.md) | Read-only data projection, not implemented |
+| **Which exact prompt compiler functions should emit source maps?** | [Storyteller prompt source map](technical/storyteller-prompt-source-map-v1.md) | Code-inspected instrumentation seams |
+| **Who may open a protected context, with which audit?** | [Forensic read/security contract](technical/forensic-access-and-read-contract-v1.md) | Proposed staff grants/read APIs; not granted |
+| **How do we disprove bad ideas and price the evidence overhead?** | [Adversarial design review](technical/architecture-challenge-and-decisions-v1.md) and [verification/sizing protocol](evidence/verification-and-sizing-protocol.md) | Alternatives, measurable gates; no tests executed |
 | How do we know **which prompt section/instruction/flag/data** was used and why? | [Context assembly and configuration provenance](technical/context-provenance.md) | Exact prompt/data trace target |
 | What belongs in OpenTelemetry, Prometheus, Grafana and logs? | [Runtime telemetry and reliability](technical/telemetry-and-operations.md) | Operational architecture |
 | What does replay actually guarantee, and how long can evidence be kept? | [Replay, retention and privacy](technical/replay-retention-and-privacy.md) | Durable replay / privacy boundaries |
@@ -39,4 +46,4 @@
 - [Chamber](../engineering/targets/chamber-laboratory.md) owns isolated simulation and reproducible test fixtures. Production evidence export into Chamber must be sanitized and separately authorized.
 - [GM05 committed public events](../experience/patterns/committed-event-feed.md) is useful for player chronology but **not** a full historical state/AI/provenance system.
 
-**Next decision:** accept the evidence-tier, privacy and replay taxonomy. Then finalize exact source/SQL contracts and implementation-sized deltas, rather than creating arbitrary OBS01–OBS50 folders before ownership is settled.
+**Wave-2 disposition:** the writer inventory, physical storage/codec, capture crash matrix, replay algorithm, sensitive-read policy, source-map seam audit and sizing/architecture challenge are now **specified as proposed designs**. Remaining before implementation: owner acceptance of evidence/retention/privacy/replay promises, a complete Cursor checkout-wide writer/call-site inventory, verified exact transport byte equality, measured disposable SQL/CAS performance and source-tested codec/retention migration. Only then cut the **first few** bounded code-bearing Changes; do not create an OBS01–OBS50 pile. Active Change stays **none**.
