@@ -1,6 +1,6 @@
 # QA-SF01 | Restore honest focused Storyteller/story-resolution integration checks
 
-**State: Proposed, NOT Ready.** One test-harness reliability outcome: **the existing connected Storyteller and story-resolution suites run against current validated contracts and can distinguish real engine regressions from invalid old fixtures or teardown order**. Test source/cleanup only unless a *separate* accepted runtime defect is actually proven. Provider-free, disposable `offscreen_auth_test` only.
+**State: Blocked, partly repaired (2026-11-15).** Fixtures, OBS00-C attestation and teardown repaired; story-resolution 8/8, admin-situation 3/3, storyteller 27/33 (5 subtests red on genuine runtime defects; see [receipt](../../observability/evidence/qa-sf01-storyteller-integration-2026-11-15.md)). Original text follows. **Previously: Proposed, NOT Ready.** One test-harness reliability outcome: **the existing connected Storyteller and story-resolution suites run against current validated contracts and can distinguish real engine regressions from invalid old fixtures or teardown order**. Test source/cleanup only unless a *separate* accepted runtime defect is actually proven. Provider-free, disposable `offscreen_auth_test` only.
 
 **Source evidence:** [Cursor forensic run log S0/S1](../../observability/evaluations/2026-11-15--connected-forensic-trial/RUN-LOG.md), [independent review](../../observability/evidence/independent-connected-trial-review-2026-11-15.md), [test runner safety](../../../tools/api-integration/test/README.md).
 

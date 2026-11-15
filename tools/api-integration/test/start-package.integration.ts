@@ -41,6 +41,7 @@ import {
   importWorldPackage,
   startPackageManifestSchema,
 } from '@offscreen/documents';
+import { attestedFake } from './helpers/attested-fake-provider.js';
 import { registerStoryConcern } from './helpers/story-suite.js';
 import { createTestUsagePolicy } from './helpers/usage-policy.js';
 
@@ -683,7 +684,7 @@ registerStoryConcern(
           pace: { kind: 'instant' },
           time: {
             kind: 'elapsed',
-            id: 'simulation-gameSeconds',
+            id: 'simulation-game-seconds',
             revision: 1,
             unit: {
               id: 'game-second',
@@ -904,7 +905,7 @@ registerStoryConcern(
           realDurationMs: () => 1000,
           documentStore: storage,
           dispatchAuthority: () => policy,
-          provider: async (providerTask, dispatch) => {
+          provider: attestedFake(async (providerTask, dispatch) => {
             providerRounds += 1;
             assert.ok(dispatch);
             if (providerRounds === 1) {
@@ -975,7 +976,7 @@ registerStoryConcern(
               usage: fakeUsage(0n),
               telemetry: fakeTelemetry('fake-abstract-memory-final'),
             };
-          },
+          }),
         });
         await connectedRuntime.complete(connectedGenerationId);
         assert.equal(providerRounds, 2);
@@ -1313,7 +1314,7 @@ registerStoryConcern(
           pace: { kind: 'instant' },
           time: {
             kind: 'elapsed',
-            id: 'harbor-gameSeconds',
+            id: 'harbor-game-seconds',
             revision: 1,
             unit: {
               id: 'game-second',
@@ -2132,7 +2133,7 @@ registerStoryConcern(
           realDurationMs: () => 1000,
           documentStore: storage,
           dispatchAuthority: () => policy,
-          provider: async (providerTask, dispatch) => {
+          provider: attestedFake(async (providerTask, dispatch) => {
             providerRounds += 1;
             assert.ok(dispatch);
             requestBytes.push(
@@ -2199,7 +2200,7 @@ registerStoryConcern(
               usage: fakeUsage(0n),
               telemetry: fakeTelemetry('fake-connected-memory-final'),
             };
-          },
+          }),
         });
         await connectedRuntime.complete(returnContinuationId);
         assert.equal(providerRounds, 2);
@@ -2292,7 +2293,7 @@ registerStoryConcern(
             pace: { kind: 'instant' },
             time: {
               kind: 'elapsed',
-              id: 'beacon-gameSeconds',
+              id: 'beacon-game-seconds',
               revision: 1,
               unit: {
                 id: 'game-second',

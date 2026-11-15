@@ -262,6 +262,34 @@ export async function withAppIntegration(
           'DELETE FROM storyteller_memory_exploration WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
           [user.id],
         );
+        // Disposable-owner teardown only. Production keeps these evidence rows
+        // under RESTRICT; deleting them here is test cleanup, never a CASCADE.
+        // OBS02 stage receipts, OBS03 prompt provenance, dispatch review
+        // (+ decisions) and ENG03 capture rows (+ rearm) all reference generation.
+        await database.db.$client.query(
+          'DELETE FROM storyteller_execution_stage WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_prompt_provenance WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_dispatch_review_decision WHERE attempt_id IN (SELECT r.attempt_id FROM storyteller_dispatch_review r JOIN generation g ON g.id = r.generation_id WHERE g.owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_dispatch_review WHERE generation_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_context_capture_rearm WHERE capture_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
+        await database.db.$client.query(
+          'DELETE FROM storyteller_context_capture WHERE capture_id IN (SELECT id FROM generation WHERE owner_id = $1)',
+          [user.id],
+        );
         await database.db.$client.query(
           'DELETE FROM generation WHERE owner_id = $1',
           [user.id],

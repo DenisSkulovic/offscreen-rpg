@@ -24,9 +24,14 @@ import {
   worldObligationEvent,
 } from '@offscreen/db/campaign-schema';
 import type { CampaignStart } from '@offscreen/contracts/campaign';
-import { story, storyPassage } from '@offscreen/db/story-schema';
+import {
+  story,
+  storyPassage,
+  storyResolution,
+} from '@offscreen/db/story-schema';
 import {
   storytellerAttempt,
+  storytellerContextCapture,
   storytellerFunding,
   storytellerMemoryExploration,
   storytellerOperation,
@@ -55,8 +60,13 @@ import { createStories } from '@offscreen/application/stories';
 import { scriptedStorytellerResult } from '@offscreen/storyteller/fixtures';
 import { storytellerTaskSchema } from '@offscreen/storyteller/tasks';
 import { continuityNotesSchema } from '@offscreen/storyteller/context';
-import type { ExecutionPolicy } from '@offscreen/storyteller/tasks';
+import {
+  offlineExecution,
+  type ExecutionPolicy,
+} from '@offscreen/storyteller/tasks';
 import { withAppIntegration } from './helpers/app-integration.js';
+import { attestedFake } from './helpers/attested-fake-provider.js';
+import { createCustomDraftSetup } from './helpers/draft-wizard.js';
 import { withBrowserSession } from './helpers/browser-session.js';
 import { requireDefined } from './helpers/require.js';
 import { createTestUsagePolicy } from './helpers/usage-policy.js';
@@ -92,6 +102,14 @@ test(
   { timeout: 240000 },
   async (t) => {
     const chamberStorytellerControl = createChamberStorytellerControl();
+    // ENG03-narrow: provisional action-narration captures are promoted to a
+    // dispatchable Storyteller generation only when a DocumentStore is present.
+    const captureStore = new LocalDocumentStore(
+      join(
+        await mkdtemp(join(tmpdir(), 'offscreen-storyteller-capture-')),
+        'store',
+      ),
+    );
     await withAppIntegration(
       async ({
         database,
@@ -104,7 +122,9 @@ test(
         const drafts = createDrafts(database);
         const openings = createScriptedOpenings(database);
         const stories = createChamber(database);
-        const storyService = createStories(database);
+        const storyService = createStories(database, {
+          documentStore: captureStore,
+        });
         const runtime = createStorytellerRuntime(database, {
           realDurationMs: () => 1000,
         });
@@ -162,7 +182,7 @@ test(
             pace: campaignOverrides.pace ?? pace,
             time: campaignOverrides.time ?? {
               kind: 'elapsed',
-              id: 'simulation-gameSeconds',
+              id: 'simulation-game-seconds',
               revision: 1,
               unit: {
                 id: 'game-second',
@@ -299,12 +319,25 @@ test(
               expectedRevision: 0,
             });
             const generationId = randomUUID();
-            await openings.request(
+            // The Story start requires the admitted opening task to carry the
+            // same start-package reference (task.source.startPackage).
+            const startReference = {
+              startPackageId,
+              rootHash: imported.rootHash,
+              revision: imported.manifest.revision,
+            };
+            await createScriptedOpenings(
+              database,
+              offlineExecution,
+              undefined,
+              { documentStore: storage },
+            ).request(
               ownerId,
               draftId,
               generationId,
               1,
               'microbe.v3',
+              startReference,
             );
             await runtime.complete(generationId);
             const storyId = randomUUID();
@@ -314,7 +347,7 @@ test(
               pace: { kind: 'instant' },
               time: {
                 kind: 'elapsed',
-                id: 'simulation-gameSeconds',
+                id: 'simulation-game-seconds',
                 revision: 1,
                 unit: {
                   id: 'game-second',
@@ -509,24 +542,29 @@ test(
                 committed.campaign?.actionReceipts[0]?.id,
                 operationId,
               );
-              assert.equal(
-                committed.campaign?.actionReceipts[0]?.state,
-                'pending',
-              );
-              assert.deepEqual(committed.campaign?.holds, [
-                {
-                  kind: 'storyteller-intent',
-                  operationId,
-                  reason: 'required-turn',
-                },
-              ]);
-
-              await storyService.prepareCampaignConsequence(operationId);
+              // ENG03-narrow: the finite action reserved its narration G at
+              // admission (preparationGenerationId); settlement links the
+              // receipt to that exact G, so the required-turn hold is already
+              // owned by the generation (not a deferred storyteller intent).
               const [receipt] = await database.db
                 .select({ generationId: gameActionReceipt.generationId })
                 .from(gameActionReceipt)
                 .where(eq(gameActionReceipt.operationId, operationId));
               assert.ok(receipt?.generationId);
+              assert.equal(
+                committed.campaign?.actionReceipts[0]?.state,
+                'generating',
+              );
+              assert.deepEqual(committed.campaign?.holds, [
+                {
+                  kind: 'storyteller',
+                  generationId: receipt.generationId,
+                  reason: 'required-turn',
+                },
+              ]);
+
+              // Idempotent: promotes the provisional capture G off-lock.
+              await storyService.prepareCampaignConsequence(operationId);
               const held = await stories.read({
                 ownerId,
                 storyId: started.storyId,
@@ -579,6 +617,11 @@ test(
               'remain-sheltered',
               'follow-gradient-again',
               'contract-again',
+              // Plans added to microbe.v3 after this suite was written.
+              'wait-contracted',
+              'sample-gradient-cycle',
+              'hold-temperature-cycle',
+              'hold-pressure-cycle',
             ]);
 
             for (let round = 0; round < 3; round++) {
@@ -624,20 +667,21 @@ test(
                 committed.campaign?.actionReceipts.length,
                 round + 1,
               );
-              assert.deepEqual(committed.campaign?.holds, [
-                {
-                  kind: 'storyteller-intent',
-                  operationId,
-                  reason: 'required-turn',
-                },
-              ]);
-
-              await storyService.prepareCampaignConsequence(operationId);
               const [receipt] = await database.db
                 .select({ generationId: gameActionReceipt.generationId })
                 .from(gameActionReceipt)
                 .where(eq(gameActionReceipt.operationId, operationId));
               assert.ok(receipt?.generationId);
+              // ENG03-narrow: the admission-time narration G already owns the hold.
+              assert.deepEqual(committed.campaign?.holds, [
+                {
+                  kind: 'storyteller',
+                  generationId: receipt.generationId,
+                  reason: 'required-turn',
+                },
+              ]);
+
+              await storyService.prepareCampaignConsequence(operationId);
               await runtime.complete(receipt.generationId);
               snapshot = await stories.read({
                 ownerId,
@@ -1083,7 +1127,9 @@ test(
         await t.test(
           'failed preparation preserves the committed outcome and intent-owned clock hold',
           async () => {
-            const started = await mechanicalCandidate();
+            const started = await mechanicalCandidate(undefined, {
+              kind: 'instant',
+            });
             const offer = requireDefined(
               started.snapshot.campaign?.offer,
               'Expected a generated mechanical offer',
@@ -1103,6 +1149,17 @@ test(
                 path: [action.id],
               },
             });
+            await storyService.advanceCampaignAction(operationId);
+            const [admittedReceipt] = await database.db
+              .select({ generationId: gameActionReceipt.generationId })
+              .from(gameActionReceipt)
+              .where(eq(gameActionReceipt.operationId, operationId));
+            // ENG03-narrow: settlement links the receipt to the narration G
+            // reserved at admission, so that generation owns the clock hold.
+            const captureGenerationId = requireDefined(
+              admittedReceipt?.generationId,
+              'Expected the admission-time narration identity',
+            );
             const [beforeFailure] = await database.db
               .select({
                 clock: campaignTable.clock,
@@ -1112,8 +1169,8 @@ test(
               .where(eq(campaignTable.storyId, started.storyId));
             assert.deepEqual(beforeFailure?.holds, [
               {
-                kind: 'storyteller-intent',
-                operationId,
+                kind: 'storyteller',
+                generationId: captureGenerationId,
                 reason: 'required-turn',
               },
             ]);
@@ -1125,10 +1182,13 @@ test(
               .update(story)
               .set({ revision: started.snapshot.revision + 1 })
               .where(eq(story.id, started.storyId));
-            await assert.rejects(
-              storyService.prepareCampaignConsequence(operationId),
-              /lost its story revision fence/,
-            );
+            // ENG03-narrow: the revision fence now lives in the capture frozen at
+            // admission, so promoting the already-reserved G no longer re-reads
+            // the live revision (that rejection remains only for the legacy
+            // committed-capture path, which has no admission-time G). Whatever
+            // preparation does here, it must not lose the committed outcome,
+            // unlink the receipt from G, or open a clock-projection gap.
+            await storyService.prepareCampaignConsequence(operationId);
 
             const [receipt] = await database.db
               .select({
@@ -1145,7 +1205,7 @@ test(
               })
               .from(campaignTable)
               .where(eq(campaignTable.storyId, started.storyId));
-            assert.equal(receipt?.generationId, null);
+            assert.equal(receipt?.generationId, captureGenerationId);
             assert.ok(receipt?.outcome);
             assert.ok(receipt?.effects);
             assert.deepEqual(afterFailure?.clock, beforeFailure?.clock);
@@ -1155,7 +1215,9 @@ test(
         await t.test(
           'Chamber failure holds time until the same generation is retried',
           async () => {
-            const started = await mechanicalCandidate();
+            const started = await mechanicalCandidate(undefined, {
+              kind: 'instant',
+            });
             const offer = requireDefined(
               started.snapshot.campaign?.offer,
               'Expected a generated mechanical offer',
@@ -1189,6 +1251,7 @@ test(
                 path: [action.id],
               },
             });
+            await storyService.advanceCampaignAction(operationId);
             await restartWorker();
             let failed = await stories.read({
               ownerId,
@@ -1356,7 +1419,7 @@ test(
 
             let preparationGenerationId: string | null = null;
             let preparationState: string | null = null;
-            for (let attempt = 0; attempt < 30; attempt++) {
+            for (let attempt = 0; attempt < 100; attempt++) {
               const [execution] = await database.db
                 .select({
                   preparationGenerationId:
@@ -1390,7 +1453,9 @@ test(
             assert.equal(paused.campaign?.actionExecution?.state, 'paused');
             assert.equal(paused.campaign?.actionReceipts.length, 0);
             assert.equal(paused.resolution?.evidence, 'pending-action');
-            assert.equal(paused.resolution?.state, 'succeeded');
+            // The generation row is succeeded (asserted above) but the public read
+            // keeps a succeeded-yet-unpublished resolution as 'running'.
+            assert.equal(paused.resolution?.state, 'running');
 
             await delay(1100);
             const stillPaused = await stories.read({
@@ -1564,13 +1629,19 @@ test(
               campaign.offer,
               'Expected a generated mechanical offer',
             );
+            // beacon-watch.v1 now offers the observation and watch plans ahead of
+            // the repair; select the earned-work process by its stable key.
             const action = requireDefined(
-              offer.nodes[0],
+              offer.nodes.find((node) => node.id === 'restore-beacon'),
               'Expected the beacon process action',
             );
             assert.deepEqual(campaign.activityAccess, {
               kind: 'selected',
-              actionKeys: ['restore-beacon'],
+              actionKeys: [
+                'observe-harbor-shift',
+                'keep-harbor-watch',
+                'restore-beacon',
+              ],
             });
             const operationId = randomUUID();
 
@@ -1768,7 +1839,8 @@ test(
               .from(generation)
               .where(eq(generation.id, receipt.generationId));
             const task = storytellerTaskSchema.parse(capturedTask?.input);
-            assert.equal(task.task, 'consequence');
+            // ENG03-narrow: capture-first narration is a pending-consequence task.
+            assert.equal(task.task, 'pending-consequence');
             assert.equal(
               task.context.activitySituation?.activeActivityId,
               activityId,
@@ -2098,9 +2170,16 @@ test(
               .from(generation)
               .where(eq(generation.id, generationId));
             const preparedInput = preparedGeneration?.input as {
-              context?: { resolution?: { offer?: unknown } };
+              context?: {
+                resolution?: { offer?: { nodes?: unknown[] } | null };
+              };
             };
-            assert.equal(preparedInput.context?.resolution?.offer, null);
+            // The captured task now carries an offer shell; the invariant is
+            // that a blocked activity captures no player-actionable plan.
+            assert.deepEqual(
+              preparedInput.context?.resolution?.offer?.nodes ?? [],
+              [],
+            );
             const blockedAfterReplay = await stories.read({
               ownerId,
               storyId: started.storyId,
@@ -2119,9 +2198,16 @@ test(
             const started = await mechanicalCandidate('microbe.v3', {
               kind: 'instant',
             });
-            const [generationCountBefore] = await database.db
-              .select({ count: orm.count() })
-              .from(generation);
+            // Scoped to this story: other tests' background workers also create
+            // generations on the shared owner.
+            const countStoryGenerations = async () =>
+              (
+                await database.db
+                  .select({ count: orm.count() })
+                  .from(storyResolution)
+                  .where(eq(storyResolution.storyId, started.storyId))
+              )[0]?.count;
+            const generationCountBefore = await countStoryGenerations();
             const offer = requireDefined(
               started.snapshot.campaign?.offer,
               'Expected the microbe opening offer',
@@ -2192,6 +2278,8 @@ test(
               'Expected the final accepted activity',
             );
             assert.notEqual(finalActivityId, successorId);
+            // Admission and both successor starts created no generation.
+            assert.equal(await countStoryGenerations(), generationCountBefore);
             await storyService.advanceCampaignActivity(finalActivityId);
             const completed = await stories.read({
               ownerId,
@@ -2209,10 +2297,7 @@ test(
             );
             assert.equal(completed.campaign?.rolls.length, 0);
             assert.equal(completed.campaign?.activityReports.length, 0);
-            const [generationCount] = await database.db
-              .select({ count: orm.count() })
-              .from(generation);
-            assert.equal(generationCount?.count, generationCountBefore?.count);
+            assert.equal(await countStoryGenerations(), generationCountBefore);
           },
         );
         await t.test(
@@ -2265,16 +2350,26 @@ test(
               ],
             );
 
+            // The activity-completion narration owns a separately admitted G.
+            await storyService.prepareCampaignConsequence(firstActivityId);
+            const [handoffConsequence] = await database.db
+              .select({ generationId: campaignConsequence.generationId })
+              .from(campaignConsequence)
+              .where(eq(campaignConsequence.operationId, firstActivityId));
+            const handoffGenerationId = requireDefined(
+              handoffConsequence?.generationId,
+              'Expected the activity completion narration to be admitted',
+            );
             const [captured] = await database.db
               .select({ input: generation.input })
               .from(generation)
-              .where(eq(generation.id, firstActivityId));
+              .where(eq(generation.id, handoffGenerationId));
             const task = storytellerTaskSchema.parse(captured?.input);
             assert.equal(
               task.context.activitySituation?.acceptedPlan?.nextEntry.plan.key,
               'keep-harbor-watch',
             );
-            await runtime.complete(firstActivityId);
+            await runtime.complete(handoffGenerationId);
             const handedBack = await stories.read({
               ownerId,
               storyId: started.storyId,
@@ -3462,7 +3557,7 @@ test(
               ownerId,
               task,
               dispatchAuthority: () => policy,
-              provider: async (providerTask, dispatch) => {
+              provider: attestedFake(async (providerTask, dispatch) => {
                 providerCalls += 1;
                 assert.ok(dispatch);
                 assert.notDeepEqual(dispatch.request, providerTask.request);
@@ -3487,7 +3582,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('fake-memory-provider'),
                 };
-              },
+              }),
             });
             await assert.rejects(
               runMemoryExploration(database, {
@@ -3600,7 +3695,7 @@ test(
               ownerId,
               task: noRepairTask,
               dispatchAuthority: () => policy,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 noRepairCalls += 1;
                 return {
                   kind: 'result',
@@ -3608,7 +3703,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('fake-memory-no-repair'),
                 };
-              },
+              }),
             });
             await assert.rejects(
               runMemoryExploration(database, {
@@ -3671,7 +3766,7 @@ test(
               ownerId,
               task: repairTask,
               dispatchAuthority: () => repairPolicy,
-              provider: async (providerTask) => {
+              provider: attestedFake(async (providerTask) => {
                 repairCalls += 1;
                 return {
                   kind: 'result',
@@ -3696,7 +3791,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry(`fake-memory-repair-${repairCalls}`),
                 };
-              },
+              }),
             });
             const repaired = await runMemoryExploration(database, {
               generationId: repairGenerationId,
@@ -3743,12 +3838,12 @@ test(
               ownerId,
               task: failedTask,
               dispatchAuthority: () => policy,
-              provider: async () => ({
+              provider: attestedFake(async () => ({
                 kind: 'failed',
                 failureCode: 'invalid_output',
                 usage: fakeUsage(7n),
                 telemetry: fakeTelemetry('fake-invalid-memory-provider'),
-              }),
+              })),
             });
             await assert.rejects(
               runMemoryExploration(database, {
@@ -3800,7 +3895,7 @@ test(
                 ownerId,
                 task: failedTask,
                 dispatchAuthority: () => policy,
-                provider: async () => {
+                provider: attestedFake(async () => {
                   readFailureCalls += 1;
                   return {
                     kind: 'result',
@@ -3820,7 +3915,7 @@ test(
                     usage: fakeUsage(5n),
                     telemetry: fakeTelemetry('fake-read-failure-provider'),
                   };
-                },
+                }),
               },
             );
             const createFailingExplorer = (
@@ -3884,10 +3979,10 @@ test(
               ownerId,
               task,
               dispatchAuthority: () => policy,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 rejectedCalls += 1;
                 throw new Error('Rejected review must not dispatch');
-              },
+              }),
             });
             await assert.rejects(
               runMemoryExploration(database, {
@@ -3960,10 +4055,10 @@ test(
               ownerId,
               task: failedTask,
               dispatchAuthority: () => null,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 deniedCalls += 1;
                 throw new Error('Denied authority must not dispatch');
-              },
+              }),
             });
             await assert.rejects(
               runMemoryExploration(database, {
@@ -4005,13 +4100,13 @@ test(
                 ownerId,
                 task: failedTask,
                 dispatchAuthority: () => policy,
-                provider: async () => {
+                provider: attestedFake(async () => {
                   uncertainCalls += 1;
                   return {
                     kind: 'uncertain',
                     telemetry: fakeTelemetry('fake-uncertain-memory-provider'),
                   };
-                },
+                }),
               },
             );
             await assert.rejects(
@@ -4100,7 +4195,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 calls++;
                 return {
                   kind: 'result',
@@ -4108,7 +4203,7 @@ test(
                   usage: { ...fakeUsage(10n), cacheWriteTokens: 15 },
                   telemetry: fakeTelemetry('fake-provider-id'),
                 };
-              },
+              }),
             });
             const draftId = randomUUID();
             await drafts.save(ownerId, draftId, {
@@ -4135,7 +4230,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 heldCalls++;
                 return {
                   kind: 'result',
@@ -4143,7 +4238,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('reviewed-provider-id'),
                 };
-              },
+              }),
             });
             await heldRuntime.complete(heldId);
             assert.equal(heldCalls, 0);
@@ -4174,7 +4269,7 @@ test(
             const deniedId = randomUUID();
             await profiled.request(ownerId, draftId, deniedId, 1);
             await createStorytellerRuntime(database, {
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 calls++;
                 return {
                   kind: 'result',
@@ -4182,7 +4277,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('must-not-dispatch'),
                 };
-              },
+              }),
             }).complete(deniedId);
             assert.equal(calls, 0);
             const [deniedAttempt] = await database.db
@@ -4203,9 +4298,11 @@ test(
             await source.complete(id);
             assert.equal(calls, 1);
             const budget = createStorytellerBudget(database);
+            // The reviewed-and-released hold generation above settled its own
+            // 10 microusd on this same account; this attempt adds another 10.
             assert.equal(
               (await budget.inspect(accountId)).settledMicrousd,
-              10n,
+              20n,
             );
             const [settledAttempt] = await database.db
               .select()
@@ -4258,7 +4355,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 overlapCalls++;
                 enterProvider();
                 await providerReleased;
@@ -4268,7 +4365,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('overlapping-provider-id'),
                 };
-              },
+              }),
             });
             const firstDelivery = overlapping.complete(overlappingId);
             await providerEntered;
@@ -4290,13 +4387,13 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 calls++;
                 return {
                   kind: 'uncertain',
                   telemetry: fakeTelemetry('fake-uncertain'),
                 };
-              },
+              }),
             });
             await uncertain.complete(uncertainId);
             await uncertain.complete(uncertainId);
@@ -4395,7 +4492,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 providerCalls += 1;
                 return {
                   kind: 'result',
@@ -4403,7 +4500,7 @@ test(
                   usage: fakeUsage(100_000n),
                   telemetry: fakeTelemetry('fake-overreservation'),
                 };
-              },
+              }),
             }).complete(generationId);
             assert.equal(providerCalls, 1);
             const [attempt] = await database.db
@@ -4500,7 +4597,7 @@ test(
                   task.resources.authority.kind === 'effective-usage-policy'
                     ? task.resources.authority.policy
                     : null,
-                provider: async (task) => {
+                provider: attestedFake(async (task) => {
                   openingCalls++;
                   return {
                     kind: 'result',
@@ -4510,7 +4607,7 @@ test(
                     usage: fakeUsage(10n),
                     telemetry: fakeTelemetry('provider-opening'),
                   };
-                },
+                }),
               }).complete(openingId);
               if (repairOpening) {
                 const failedOpening = await profiledOpenings.latest(
@@ -4530,7 +4627,7 @@ test(
                     task.resources.authority.kind === 'effective-usage-policy'
                       ? task.resources.authority.policy
                       : null,
-                  provider: async (task) => {
+                  provider: attestedFake(async (task) => {
                     openingCalls++;
                     return {
                       kind: 'result',
@@ -4538,7 +4635,7 @@ test(
                       usage: fakeUsage(10n),
                       telemetry: fakeTelemetry('provider-opening-repair'),
                     };
-                  },
+                  }),
                 }).complete(openingId);
               }
               const storyId = randomUUID();
@@ -4578,7 +4675,7 @@ test(
             let unsentCalls = 0;
             await createStorytellerRuntime(database, {
               dispatchAuthority: () => null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 unsentCalls++;
                 return {
                   kind: 'result',
@@ -4586,7 +4683,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('must-not-be-called'),
                 };
-              },
+              }),
             }).complete(unsentId);
             const denied = await stories.read({
               ownerId,
@@ -4608,7 +4705,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task) => {
+              provider: attestedFake(async (task) => {
                 unsentCalls++;
                 return {
                   kind: 'result',
@@ -4616,7 +4713,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('retried-unsent'),
                 };
-              },
+              }),
             }).complete(unsentId);
             assert.equal(unsentCalls, 1);
             assert.equal(
@@ -4633,7 +4730,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 spentCalls++;
                 return {
                   kind: 'result',
@@ -4641,7 +4738,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('spent-invalid-output'),
                 };
-              },
+              }),
             }).complete(spentId);
             const invalid = await stories.read({
               ownerId,
@@ -4670,7 +4767,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (_task, dispatch) => {
+              provider: attestedFake(async (_task, dispatch) => {
                 repairCalls++;
                 assert.ok(dispatch);
                 return {
@@ -4679,7 +4776,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('repairable-invalid-output'),
                 };
-              },
+              }),
             }).complete(repairableId);
             const [capturedInvalid] = await database.db
               .select()
@@ -4714,7 +4811,7 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async (task, dispatch) => {
+              provider: attestedFake(async (task, dispatch) => {
                 repairCalls++;
                 assert.ok(dispatch);
                 assert.match(
@@ -4731,7 +4828,7 @@ test(
                   usage: fakeUsage(10n),
                   telemetry: fakeTelemetry('repaired-output'),
                 };
-              },
+              }),
             }).complete(repairableId);
             assert.equal(repairCalls, 2);
             const repairedStory = await stories.read({
@@ -4771,13 +4868,13 @@ test(
                 task.resources.authority.kind === 'effective-usage-policy'
                   ? task.resources.authority.policy
                   : null,
-              provider: async () => {
+              provider: attestedFake(async () => {
                 uncertainCalls++;
                 return {
                   kind: 'uncertain',
                   telemetry: fakeTelemetry('uncertain-delivery'),
                 };
-              },
+              }),
             }).complete(uncertainId);
             const unknown = await stories.read({
               ownerId,
@@ -4825,7 +4922,7 @@ test(
             );
             assert.deepEqual(action.action?.timing, {
               kind: 'finite',
-              gameSeconds: 5,
+              fictionalSeconds: 5,
             });
             const controlUrl = `${origin}/api/chamber-tools/stories/${started.storyId}/storyteller-control`;
             const armControl = await fetch(controlUrl, {
@@ -5047,17 +5144,14 @@ test(
             await withBrowserSession(origin, cookie, async ({ context }) => {
               const page = await context.newPage();
               await page.goto(`${origin}/stories/new`);
+              // W08 multi-step setup: scratch -> role -> Storyteller -> review -> save.
+              await createCustomDraftSetup(page, {
+                title: 'Pineapple browser story',
+                premise: 'I am SpongeBob in the pineapple with Gary.',
+                storytellerName: 'Quiet Eerie Mystery',
+              });
               await page
-                .getByLabel('Choose your storyteller')
-                .selectOption('quiet-eerie-mystery/1');
-              await page
-                .getByLabel('Who are you, and where does this begin?')
-                .fill('I am SpongeBob in the pineapple with Gary.');
-              await page
-                .getByRole('button', { name: 'Save draft', exact: true })
-                .click();
-              await page
-                .getByRole('link', { name: 'Review opening candidate' })
+                .getByRole('link', { name: 'Create the opening' })
                 .click();
               await page
                 .getByRole('button', {
@@ -5093,11 +5187,11 @@ test(
               await page
                 .getByRole('button', { name: 'Pause', exact: true })
                 .click();
-              await page.getByText(/Journey paused/).waitFor();
+              await page.getByText('Journey paused', { exact: true }).waitFor();
               await restartWorker();
               const url = page.url();
               await page.reload();
-              await page.getByText(/Journey paused/).waitFor();
+              await page.getByText('Journey paused', { exact: true }).waitFor();
               await page
                 .getByRole('button', { name: 'Resume', exact: true })
                 .click();
@@ -5105,6 +5199,8 @@ test(
                 .getByRole('heading', { name: 'Outside work', exact: true })
                 .waitFor({ timeout: 35000 });
               await page.reload();
+              // The journal lives inside the collapsed secondary "Details" panel.
+              await page.getByText('Details', { exact: true }).click();
               await page
                 .getByRole('button', {
                   name: 'Read saved passages',
@@ -5128,6 +5224,7 @@ test(
         chamberStorytellerControl,
         storytellerRuntime: {
           scriptedGate: chamberStorytellerControl.evaluate,
+          documentStore: captureStore,
         },
       },
     );

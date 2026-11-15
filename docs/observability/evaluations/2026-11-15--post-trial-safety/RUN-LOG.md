@@ -23,4 +23,12 @@ Cursor appends only actual executed commands, source identities, synthetic DB/ru
 - Mutation control: disabling the digest comparison in `prepareReviewedDispatch` made the one-byte case fail; reverted.
 - Finding: pre-existing `budget.settle` `continue` guard (`7ba3ff1d`) breaks the real memory controller after round 1; pinned by test, not fixed. `ENG03-M` application live test is red independent of this Change and rewrote the already-uncommitted eng03 measurement doc (left uncommitted).
 - External requests: 0 (fetch thrower asserted 0). Settled USD: $0. Provider attempts: 0 real, mock only. Receipt: [obs00-c](../../evidence/obs00-c-provider-wire-equality-2026-11-15.md).
+### 2026-11-15 | QA-SF01 (provider-free) | base `e28f53e4`
+
+- Commands run: `pnpm test:focus -- storyteller` (exit 1, ~67 s, 33 tests: 27 pass / 6 fail = 5 subtests + parent), `pnpm test:focus -- story-resolution` (exit 0, 8/8), `pnpm test:focus -- admin-situation` (exit 0, 3/3), `pnpm test:focus -- start-package` (sanity, exit 1, 1/5; not a named suite). Prettier on touched test files.
+- Disposable DB: `offscreen_auth_test` recreated by each invocation, no overlap. Provider calls 0, external HTTP 0, spend $0.
+- Normal proof: slug fix, OBS00-C `prepareWire` attestation and test-only teardown ordering make the suite reach real assertions; story-resolution cleanup FK failure gone.
+- Negative proof kept red (not loosened): `0 !== 55` x2, rolling-window `clock.now.getTime is not a function`, `Only a retained invalid candidate may keep an operation open` x2.
+- Receipt: [qa-sf01](../../evidence/qa-sf01-storyteller-integration-2026-11-15.md).
+
 **Evidence policy:** no credentials, raw prompt/response body, payer ID, cookie or non-synthetic customer content in Git. A source-code inspection is not a runtime test; a fake HTTP mock is not a real LLM call; a review SHA does not prove external provider receipt.
