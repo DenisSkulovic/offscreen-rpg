@@ -1,6 +1,22 @@
 # Forensic observability and replay | Design convergence and execution sequence
 
-**Status: design waves 1–4, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap; **OBS00–OBS04 are now concrete Proposed code-bearing packets**, none Ready, selected or authorized.
+**Status: design waves 1–5, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap. **Current implementation truth:** OBS01/OBS02/OBS03/OBS00-A Done, OBS00-B blocked, OBS04/OBS02-H/OBS05 Proposed, no active Change. See [wave-5 handoff](handoff/wave5-evidence-quality-2026-11-15.md).
+
+## Wave-5 evidence quality, Turn Capsule and current implementation status
+
+**Important update:** OBS00-A's provider forwarding, OBS01 safe operation discovery, OBS02 redacted stage SQL receipts and OBS03 consequence prompt sidecar have now landed on `main`. The earlier wave-4 "all Proposed" order below is **historical planning**, not current coding authorization. OBS00-B's independent current entitlement resolver is still blocked; no automatic paid provider authorization follows from OBS00-A.
+
+| Wave-5 design | Main value |
+| --- | --- |
+| [Evidence claims and quality](technical/evidence-claims-and-quality-v1.md) | No “model ignored source” claim merely from absent citation; source facts vs validated derivation vs hypothesis |
+| [Turn Evidence Capsule](technical/forensic-turn-capsule-v1.md) | Lazy read-only episode across original action, state, context, packet/round, publication, source lineage and coverage |
+| [Support/Developer interactions](admin-investigator-interactions-v1.md) | Case → situation → timeline → why/source → gated raw body, not unbounded logs |
+| [Configuration/flag provenance](technical/configuration-lineage-and-experiments-v1.md) | Effective Git/profile/player settings versions and future assignments only if actually evaluated |
+| [Player Story Replay](player-replay-experience-v1.md) | Historical published scene data replay first; complete state only after E0 deltas/checkpoints |
+| [OBS02 stage review](evidence/obs02-stage-integrity-review-2026-11-15.md) | Recovery epoch collisions, false stale-lease terminal receipts and non-atomic stage writes |
+| [OBS03 provenance review](evidence/obs03-provenance-quality-review-2026-11-15.md) | First G metadata source chain Done; task-branch inclusion is not verified final transport visibility |
+
+**Proposed code-only residuals (not authorized):** [OBS02-H](../changes/2026-11-15--obs02-h-stage-integrity/CHANGE.md), [OBS05](../changes/2026-11-15--obs05-evidence-claim-truth/CHANGE.md), and prior [OBS04 E0 pilot](../changes/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md). Product/security/raw retention and full replay remain separate gates. [Current handoff](handoff/wave5-evidence-quality-2026-11-15.md) is authoritative for which packet to consider next.
 
 ## Wave-4 source-closure and pre-live correctness checkpoint
 
@@ -14,7 +30,7 @@ The source-level review uncovered **a stronger priority than adding telemetry**:
 | [Typed Support/Developer investigation read models](technical/investigation-read-models-v1.md) | S1 current/status/timeline and S3 generation/context manifests, distinct permission/data boundaries |
 | [Node24/Temporal-safe operational OTel plan](technical/otel-bootstrap-and-correlation-v1.md) | Preloaded SDK, bounded spans/labels, optional Grafana profile, no raw prompt exporter or Workflow replay nondeterminism |
 
-**Small packet queue:** [OBS00](../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) = **pre-live** correctness; [OBS01](../changes/2026-11-15--obs01-operation-coverage/CHANGE.md) = first low-risk **Support visibility**; [OBS02](../changes/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md) then [OBS03](../changes/2026-11-15--obs03-prompt-provenance/CHANGE.md) = real AI evidence; [OBS04](../changes/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) = separately gated first E0 mechanical history witness. **All Proposed, no active Change.** OBS00 and OBS01 have different priority dimensions; do not turn them into an unsafe bulk code task.
+**Small packet queue:** [OBS00](../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) = **pre-live** correctness; [OBS01](../changes/2026-11-15--obs01-operation-coverage/CHANGE.md) = first low-risk **Support visibility**; [OBS02](../changes/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md) then [OBS03](../changes/2026-11-15--obs03-prompt-provenance/CHANGE.md) = real AI evidence; [OBS04](../changes/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) = separately gated first E0 mechanical history witness. **Historical planning at wave 4; see wave-5 status above. No active Change.** OBS00 and OBS01 have different priority dimensions; do not turn them into an unsafe bulk code task.
 
 ## Wave-3 physical/retention/read contracts and first code menu
 
@@ -176,4 +192,4 @@ The design is coherent enough to challenge, but the following **cannot be solved
 5. How much degraded service is acceptable if protected archival storage is unavailable immediately before a provider dispatch? Recommendation: hold paid dispatch rather than perform an untraceable charge, while preserving already committed mechanic.
 6. How will exceptional raw-evidence access and deletion interact with GDPR rights, shared stories, case retention and approved incident holds? Needs product/security/legal review for real users.
 
-**Next practical gate:** review [OBS00–OBS04 proposed handoff](handoff/first-forensic-wave.md); if preparing any real provider deployment, OBS00 is first; for strictly provider-free Admin visibility, OBS01 is first. Accept one exact code packet only after latest-source, privacy and provider-free preflight. F04+ long-term evidence replay/retention work requires stronger codec, disposal, load and security proofs. No packet is Ready or selected, and no provider/test/deploy spending is authorized by these documents.
+**Next practical gate:** review [wave-5 current handoff](handoff/wave5-evidence-quality-2026-11-15.md); do **not** redo OBS01/02/03 or OBS00-A. OBS00-B is still a pre-live paid-dispatch blocker; source quality follow-ups OBS02-H/OBS05 and E0 pilot OBS04 remain Proposed. Accept one exact code packet only after latest-source, privacy and provider-free preflight. F04+ long-term evidence replay/retention work requires stronger codec, disposal, load and security proofs. No packet is Ready or selected, and no provider/test/deploy spending is authorized by these documents.
