@@ -71,6 +71,13 @@
       "when": 1794770800000,
       "tag": "0009_gm02_custom_intent_accept",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794774400000,
+      "tag": "0010_obs02_execution_stage",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,7 @@ import {
 } from '@offscreen/storyteller/tasks';
 import { createGenerations } from '../generations/index';
 import type { Database } from '@offscreen/db';
+import { recordExecutionStage } from './execution-stages';
 
 export const storytellerKind = 'storyteller.profiled.v1';
 export const storytellerTopic = 'storyteller.profiled.v1';
@@ -54,4 +55,18 @@ export async function setPublication(
     .update(storytellerPublication)
     .set({ state, failureCode })
     .where(eq(storytellerPublication.generationId, generationId));
+  await recordExecutionStage(tx, {
+    generationId,
+    stage: 'publication-decided',
+    outcome:
+      state === 'published'
+        ? 'completed'
+        : state === 'stale'
+          ? 'stale'
+          : 'failed',
+    idempotencyKey: `publication:${state}`,
+    sourceKind: 'publication',
+    sourceId: generationId,
+    failureClass: failureCode,
+  });
 }

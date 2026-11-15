@@ -71,6 +71,7 @@ import {
   isStorytellerActivityState,
   storytellerActivityContextFilter,
 } from './activity-context';
+import { recordExecutionStage } from './execution-stages';
 
 export const storytellerContextCaptureKind = 'storyteller.context-capture.v1';
 export const CONTEXT_CAPTURE_MAX_MATERIALIZATION_ATTEMPTS = 3;
@@ -920,6 +921,16 @@ export async function capturePendingActionNarration(
     state: 'captured',
     materializationAttempts: 0,
   });
+  await recordExecutionStage(tx, {
+    generationId: captureId,
+    stage: 'cause-captured',
+    outcome: 'completed',
+    idempotencyKey: 'cause-captured',
+    operationId: input.executionId,
+    sourceKind: 'context-capture',
+    sourceId: captureId,
+    sourceSha256: captureSha256,
+  });
   await tx.insert(storyResolution).values({
     generationId: captureId,
     storyId: current.id,
@@ -1246,6 +1257,16 @@ export async function captureCommittedActionNarration(
     captureSha256,
     state: 'captured',
     materializationAttempts: 0,
+  });
+  await recordExecutionStage(tx, {
+    generationId: captureId,
+    stage: 'cause-captured',
+    outcome: 'completed',
+    idempotencyKey: 'cause-captured',
+    operationId: receipt.operationId,
+    sourceKind: 'context-capture',
+    sourceId: captureId,
+    sourceSha256: captureSha256,
   });
   await tx.insert(storyResolution).values({
     generationId: captureId,
@@ -1654,6 +1675,16 @@ export async function captureInterruptedActionNarration(
     captureSha256,
     state: 'captured',
     materializationAttempts: 0,
+  });
+  await recordExecutionStage(tx, {
+    generationId: captureId,
+    stage: 'cause-captured',
+    outcome: 'completed',
+    idempotencyKey: 'cause-captured',
+    operationId: receipt.operationId,
+    sourceKind: 'context-capture',
+    sourceId: captureId,
+    sourceSha256: captureSha256,
   });
   await tx.insert(storyResolution).values({
     generationId: captureId,

@@ -39,6 +39,7 @@ import { activeSceneAnchorSchema } from './context';
 import { storytellerKind, storytellerTopic } from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
 import { campaign } from '@offscreen/db/campaign-schema';
+import { recordExecutionStage } from './execution-stages';
 
 function normalizeActiveSceneScope(scope: unknown) {
   if (scope === null || scope === undefined) return null;
@@ -496,6 +497,18 @@ async function releaseCaptureFailure(
         eq(storytellerContextCapture.leaseId, input.leaseId),
       ),
     );
+  if (state === 'held' || state === 'blocked' || state === 'stale') {
+    await recordExecutionStage(database.db, {
+      generationId: input.captureId,
+      stage: state === 'held' ? 'stage-held' : 'stage-failed',
+      outcome:
+        state === 'held' ? 'held' : state === 'stale' ? 'stale' : 'failed',
+      idempotencyKey: `capture-terminal:${state}:${input.attempts}`,
+      sourceKind: 'context-capture',
+      sourceId: input.captureId,
+      failureClass: input.code,
+    });
+  }
   return state;
 }
 
@@ -726,6 +739,16 @@ async function promoteCapture(
         eq(storytellerContextCapture.leaseId, input.leaseId),
       ),
     );
+  await recordExecutionStage(tx, {
+    generationId: capture.captureId,
+    stage: 'context-materialization-completed',
+    outcome: 'completed',
+    idempotencyKey: 'context-materialization-completed',
+    operationId: capture.operationId,
+    sourceKind: 'context-capture',
+    sourceId: capture.captureId,
+    sourceSha256: input.requestSha,
+  });
   await enqueue(tx, {
     id: randomUUID(),
     operationId: capture.captureId,
@@ -747,6 +770,14 @@ export async function materializePendingActionCapture(
     if (claim.reason === 'missing') return { handled: false };
     return { handled: true, outcome: 'skipped' };
   }
+  await recordExecutionStage(database.db, {
+    generationId: claim.captureId,
+    stage: 'context-materialization-started',
+    outcome: 'completed',
+    idempotencyKey: `context-materialization-started:${claim.attempts}`,
+    sourceKind: 'context-capture',
+    sourceId: claim.captureId,
+  });
   if (!documentStore) {
     await releaseCaptureFailure(database, {
       captureId: claim.captureId,

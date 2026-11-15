@@ -637,3 +637,93 @@ export const storytellerRetry = pgTable(
   },
   (t) => [unique('storyteller_retry_identity').on(t.generationId, t.retryId)],
 );
+
+/**
+ * OBS02: compact typed stage receipts at real Storyteller boundaries.
+ * No narrative text; links only to existing generation/attempt/source IDs.
+ */
+export const storytellerExecutionStage = pgTable(
+  'storyteller_execution_stage',
+  {
+    id: uuid('id').primaryKey(),
+    generationId: uuid('generation_id')
+      .notNull()
+      .references(() => generation.id, { onDelete: 'restrict' }),
+    operationId: uuid('operation_id'),
+    attemptId: uuid('attempt_id'),
+    stage: text('stage')
+      .notNull()
+      .$type<
+        | 'cause-captured'
+        | 'context-materialization-started'
+        | 'context-materialization-completed'
+        | 'task-prepared'
+        | 'dispatch-review-prepared'
+        | 'provider-dispatch-possible'
+        | 'model-response-recorded'
+        | 'validation-settled'
+        | 'publication-decided'
+        | 'stage-held'
+        | 'stage-skipped'
+        | 'stage-failed'
+      >(),
+    outcome: text('outcome')
+      .notNull()
+      .$type<
+        | 'completed'
+        | 'failed'
+        | 'held'
+        | 'stale'
+        | 'uncertain'
+        | 'not-run'
+      >(),
+    sourceKind: text('source_kind')
+      .notNull()
+      .$type<
+        | 'generation'
+        | 'context-capture'
+        | 'dispatch-review'
+        | 'publication'
+        | 'attempt'
+        | 'none'
+      >(),
+    sourceId: text('source_id'),
+    sourceSha256: text('source_sha256'),
+    failureClass: text('failure_class'),
+    idempotencyKey: text('idempotency_key').notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    producerBuildId: text('producer_build_id').notNull(),
+  },
+  (t) => [
+    unique('storyteller_execution_stage_identity').on(
+      t.generationId,
+      t.stage,
+      t.idempotencyKey,
+    ),
+    index('storyteller_execution_stage_generation').on(
+      t.generationId,
+      t.createdAt,
+    ),
+    check(
+      'storyteller_execution_stage_stage',
+      sql`${t.stage} IN ('cause-captured','context-materialization-started','context-materialization-completed','task-prepared','dispatch-review-prepared','provider-dispatch-possible','model-response-recorded','validation-settled','publication-decided','stage-held','stage-skipped','stage-failed')`,
+    ),
+    check(
+      'storyteller_execution_stage_outcome',
+      sql`${t.outcome} IN ('completed','failed','held','stale','uncertain','not-run')`,
+    ),
+    check(
+      'storyteller_execution_stage_source_kind',
+      sql`${t.sourceKind} IN ('generation','context-capture','dispatch-review','publication','attempt','none')`,
+    ),
+    check(
+      'storyteller_execution_stage_sha',
+      sql`${t.sourceSha256} IS NULL OR ${t.sourceSha256} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);

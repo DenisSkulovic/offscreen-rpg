@@ -28,6 +28,7 @@ import {
 } from './memory-exploration-controller';
 import { createMemoryProviderRoundRuntime } from './memory-provider-runtime';
 import { resolveStoryRetrievalRecipe } from './retrieval-recipes';
+import { recordExecutionStage } from './execution-stages';
 
 export type StorytellerRuntimeOptions = {
   provider?: StorytellerProvider;
@@ -110,18 +111,56 @@ export function createStorytellerExecution(
       }
     }
     if (task.execution.mode === 'scripted') {
+      await recordExecutionStage(database.db, {
+        generationId: record.id,
+        stage: 'task-prepared',
+        outcome: 'completed',
+        idempotencyKey: `task-prepared:${attemptId}`,
+        attemptId,
+        sourceKind: 'generation',
+        sourceId: record.id,
+      });
+      await recordExecutionStage(database.db, {
+        generationId: record.id,
+        stage: 'stage-skipped',
+        outcome: 'not-run',
+        idempotencyKey: `provider-skipped:scripted:${attemptId}`,
+        attemptId,
+        sourceKind: 'none',
+        failureClass: 'scripted_execution',
+      });
       const gate =
         (await options.scriptedGate?.({
           generationId: record.id,
           task,
         })) ?? 'proceed';
       if (gate === 'hold') {
+        await recordExecutionStage(database.db, {
+          generationId: record.id,
+          stage: 'stage-held',
+          outcome: 'held',
+          idempotencyKey: `held:scripted:${attemptId}`,
+          attemptId,
+          sourceKind: 'generation',
+          sourceId: record.id,
+          failureClass: 'scripted_hold',
+        });
         return 'held' as const;
       }
       if (gate === 'fail') {
         await saveOutcome(record.id, attemptId, {
           state: 'failed',
           failureCode: 'chamber_injected_failure',
+        });
+        await recordExecutionStage(database.db, {
+          generationId: record.id,
+          stage: 'validation-settled',
+          outcome: 'failed',
+          idempotencyKey: `validation:${attemptId}`,
+          attemptId,
+          sourceKind: 'generation',
+          sourceId: record.id,
+          failureClass: 'chamber_injected_failure',
         });
         return;
       }
@@ -134,9 +173,28 @@ export function createStorytellerExecution(
           state: 'failed',
           failureCode: 'invalid_output',
         });
+        await recordExecutionStage(database.db, {
+          generationId: record.id,
+          stage: 'validation-settled',
+          outcome: 'failed',
+          idempotencyKey: `validation:${attemptId}`,
+          attemptId,
+          sourceKind: 'generation',
+          sourceId: record.id,
+          failureClass: 'invalid_output',
+        });
         return;
       }
       await saveOutcome(record.id, attemptId, { state: 'succeeded', output });
+      await recordExecutionStage(database.db, {
+        generationId: record.id,
+        stage: 'validation-settled',
+        outcome: 'completed',
+        idempotencyKey: `validation:${attemptId}`,
+        attemptId,
+        sourceKind: 'generation',
+        sourceId: record.id,
+      });
       return;
     }
     if (task.resources.recipe.version === 'memory-exploration.v1') {
