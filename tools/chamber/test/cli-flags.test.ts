@@ -10,8 +10,18 @@ test('launcher accepts single packet-review and rejects conflicting modes', () =
   const flags = parseLauncherFlags(['--packet-review']);
   assert.equal(flags.packetReview, true);
   assert.equal(flags.storyMode, false);
+  assert.equal(
+    parseLauncherFlags(['--forensic-campaigns']).forensicCampaigns,
+    true,
+  );
   assert.throws(
     () => parseLauncherFlags(['--packet-review', '--story-mode']),
+    (error) =>
+      error instanceof LauncherFlagError &&
+      /at most one run mode/i.test(error.message),
+  );
+  assert.throws(
+    () => parseLauncherFlags(['--smoke', '--forensic-campaigns']),
     (error) =>
       error instanceof LauncherFlagError &&
       /at most one run mode/i.test(error.message),

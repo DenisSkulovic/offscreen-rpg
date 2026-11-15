@@ -33,9 +33,9 @@ export async function checkStoryBrowser({
       await withBrowserSession(origin, cookie, async ({ context }) => {
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
-        await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+        await page.locator('#chamber-scenario').waitFor();
         assert.equal(
-          await page.getByRole('combobox', { name: 'Scenario' }).inputValue(),
+          await page.locator('#chamber-scenario').inputValue(),
           'chamber.v3',
         );
         await page
@@ -45,7 +45,7 @@ export async function checkStoryBrowser({
           )
           .waitFor();
         await page
-          .getByRole('combobox', { name: 'Scenario' })
+          .locator('#chamber-scenario')
           .selectOption('chamber.v5');
         await page
           .getByRole('region', { name: 'Selected scenario purpose' })
@@ -118,7 +118,7 @@ export async function checkStoryBrowser({
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
         await page
-          .getByRole('combobox', { name: 'Scenario' })
+          .locator('#chamber-scenario')
           .selectOption('chamber.v4');
         await page
           .getByRole('button', { name: 'Start scripted chamber' })
@@ -174,7 +174,7 @@ export async function checkStoryBrowser({
         const page = await context.newPage();
         await page.goto(`${origin}/chamber`);
         await page
-          .getByRole('combobox', { name: 'Scenario' })
+          .locator('#chamber-scenario')
           .selectOption('chamber.v2');
         await page
           .getByRole('button', { name: 'Start scripted chamber' })

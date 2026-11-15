@@ -69,6 +69,7 @@ import { parseLauncherFlags } from './modes/cli-flags.js';
 
 const launcherFlags = parseLauncherFlags(process.argv.slice(2));
 const smoke = launcherFlags.smoke;
+const forensicCampaigns = launcherFlags.forensicCampaigns;
 const review = launcherFlags.review;
 const packetReview = launcherFlags.packetReview;
 const memoryPacketReview = launcherFlags.memoryPacketReview;
@@ -1305,7 +1306,9 @@ try {
     // Review mode uses the launcher's authenticated production path and saves
     // disposable visual evidence. This avoids introducing test-only auth routes
     // merely to let an automated reviewer see the same pages as a local player.
-    browser = await chromium.launch({ headless: smoke || review });
+    browser = await chromium.launch({
+      headless: smoke || forensicCampaigns || review,
+    });
     const launchedBrowser = browser;
     const context = await launchedBrowser.newContext();
     await context.addCookies(
@@ -1317,7 +1320,7 @@ try {
       await page
         .getByRole('button', { name: 'Start scripted chamber' })
         .waitFor();
-      await page.getByRole('combobox', { name: 'Scenario' }).waitFor();
+      await page.locator('#chamber-scenario').waitFor();
     }
     if (review) {
       const evidenceDirectory = join(tmpdir(), 'offscreen-rpg-review');
@@ -1377,9 +1380,9 @@ try {
       console.log(
         `Local review evidence saved to ${evidenceDirectory}. Model spend: $0; no provider calls.`,
       );
-    } else if (smoke) {
+    } else if (smoke || forensicCampaigns) {
       await page
-        .getByRole('combobox', { name: 'Scenario' })
+        .locator('#chamber-scenario')
         .selectOption('chamber.v5');
       await page
         .getByRole('region', { name: 'Selected scenario purpose' })
@@ -1389,6 +1392,10 @@ try {
         .getByRole('button', { name: 'Start scripted chamber' })
         .click();
       await page.getByRole('region', { name: 'Inspector' }).waitFor();
+      const storyAId = new URL(page.url()).searchParams.get('id');
+      if (!storyAId) {
+        throw new Error('Expected Story A chamber id in URL');
+      }
       await page
         .getByRole('button', { name: 'Give the letter to the caretaker' })
         .click();
@@ -1413,9 +1420,113 @@ try {
       ) {
         throw new Error('Chamber local identity was not available.');
       }
-      console.log(
-        'Local launcher smoke passed: loopback identity, play, inspector, transfer and reload. Model spend: $0; no provider calls.',
-      );
+      let storyBId: string | null = null;
+      let storyBRevisionBefore: number | null = null;
+      let storyBRevisionAfter: number | null = null;
+      let storyBDueAt: string | null = null;
+      if (forensicCampaigns) {
+        await page.goto(`${origin}/chamber`);
+        await page.locator('#chamber-scenario').selectOption('chamber.v4');
+        await page
+          .getByRole('button', { name: 'Start scripted chamber' })
+          .click();
+        await page.getByRole('button', { name: 'Approach the gate' }).click();
+        await page
+          .getByText('This response window cannot be paused.', {
+            exact: false,
+          })
+          .waitFor();
+        const storyBUrl = page.url();
+        storyBId = new URL(storyBUrl).searchParams.get('id');
+        if (!storyBId) {
+          throw new Error('Expected Story B chamber id in URL');
+        }
+        const cookie = login.headers.get('cookie');
+        if (!cookie) {
+          throw new Error('Expected chamber session cookie for Story B reads');
+        }
+        const beforeResponse = await fetch(`${origin}/api/stories/${storyBId}`, {
+          headers: { cookie },
+        });
+        if (!beforeResponse.ok) {
+          throw new Error(`Story B read failed: ${beforeResponse.status}`);
+        }
+        const before = (await beforeResponse.json()) as {
+          revision?: number;
+          decision?: { dueAt?: string };
+        };
+        storyBRevisionBefore =
+          typeof before.revision === 'number' ? before.revision : null;
+        storyBDueAt =
+          typeof before.decision?.dueAt === 'string'
+            ? before.decision.dueAt
+            : null;
+        await page.close();
+        const limit = Date.now() + 30000;
+        let latest = before;
+        while (latest.revision === before.revision && Date.now() < limit) {
+          await delay(300);
+          const poll = await fetch(`${origin}/api/stories/${storyBId}`, {
+            headers: { cookie },
+          });
+          if (!poll.ok) {
+            throw new Error(`Story B poll failed: ${poll.status}`);
+          }
+          latest = (await poll.json()) as {
+            revision?: number;
+            decision?: { dueAt?: string };
+          };
+        }
+        storyBRevisionAfter =
+          typeof latest.revision === 'number' ? latest.revision : null;
+        const reopened = await context.newPage();
+        await reopened.goto(storyBUrl);
+        await reopened
+          .getByRole('heading', { name: 'A quiet departure.' })
+          .waitFor();
+        const evidenceDirectory = join(
+          workspaceRoot,
+          'docs',
+          'observability',
+          'evaluations',
+          '2026-11-15--connected-forensic-trial',
+        );
+        await mkdir(evidenceDirectory, { recursive: true });
+        const evidencePath = join(evidenceDirectory, 'S1-CAMPAIGN-IDS.json');
+        await writeFile(
+          evidencePath,
+          `${JSON.stringify(
+            {
+              recordedAt: new Date().toISOString(),
+              database: 'offscreen_chamber',
+              providerCalls: 0,
+              storyA: {
+                scenario: 'chamber.v5',
+                storyId: storyAId,
+                note: 'letter transfer via authored choice; no Storyteller G',
+              },
+              storyB: {
+                scenario: 'chamber.v4',
+                storyId: storyBId,
+                revisionBeforeDefault: storyBRevisionBefore,
+                revisionAfterDefault: storyBRevisionAfter,
+                dueAt: storyBDueAt,
+                note: 'timed offer defaulted while browser closed; Temporal worker; response_source via SQL after',
+              },
+            },
+            null,
+            2,
+          )}\n`,
+          'utf8',
+        );
+        console.log(
+          `Forensic campaigns recorded to ${evidencePath}. Story A=${storyAId}; Story B=${storyBId}; revision ${storyBRevisionBefore}->${storyBRevisionAfter}. Model spend: $0; no provider calls.`,
+        );
+      } else {
+        console.log(
+          'Local launcher smoke passed: loopback identity, play, inspector, transfer and reload. Model spend: $0; no provider calls.',
+        );
+      }
     } else {
       console.log(
         storyMode

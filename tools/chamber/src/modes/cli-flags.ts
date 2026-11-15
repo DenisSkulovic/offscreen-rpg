@@ -5,6 +5,7 @@
 
 export const LAUNCHER_MODE_FLAGS = [
   '--smoke',
+  '--forensic-campaigns',
   '--review',
   '--packet-review',
   '--memory-packet-review',
@@ -37,6 +38,7 @@ const ALLOWED_PREFIXES = [
 
 export type ParsedLauncherFlags = {
   smoke: boolean;
+  forensicCampaigns: boolean;
   review: boolean;
   packetReview: boolean;
   memoryPacketReview: boolean;
@@ -72,6 +74,7 @@ function readPrefixed(argv: string[], prefix: string): string | null {
 export function parseLauncherFlags(argv: string[]): ParsedLauncherFlags {
   const flags: ParsedLauncherFlags = {
     smoke: argv.includes('--smoke'),
+    forensicCampaigns: argv.includes('--forensic-campaigns'),
     review: argv.includes('--review'),
     packetReview: argv.includes('--packet-review'),
     memoryPacketReview: argv.includes('--memory-packet-review'),
@@ -94,6 +97,7 @@ export function parseLauncherFlags(argv: string[]): ParsedLauncherFlags {
 
   const runModes = [
     flags.smoke,
+    flags.forensicCampaigns,
     flags.review,
     flags.packetReview,
     flags.memoryPacketReview,

@@ -1,6 +1,6 @@
 # Forensic connected trial | Actual execution log
 
-**Status: S0 executed 2026-11-15.** Cursor fills this **only after actually running each phase**. Use [evidence contract](EVIDENCE-CONTRACT.md).
+**Status: S0–S1 executed 2026-11-15.** Cursor fills this **only after actually running each phase**. Use [evidence contract](EVIDENCE-CONTRACT.md).
 
 ## Run metadata
 
@@ -40,6 +40,35 @@ Artifacts: this RUN-LOG entry
 Duration/queries/bytes: admin-diagnostics ~34s wall; storyteller focus ~80s wall; OBS supplemental ~8s
 Discrepancy and cause: storyteller.integration fixtures reject `time.id` against tightened regex; forensic OBS unit/live proofs still pass independently — **hypothesis:** fixture calendar IDs use characters outside `[a-z0-9.-]` or related settings drift; disproof = inspect failing fixture `time.id` in S1/S2 if Connected play also fails
 Next exact step: Execute [S1](01-CONNECTED-CAMPAIGN.md)
+
+### S1 — connected synthetic campaigns — 2026-11-15T18:06Z approx
+Status: PASS (with noted suite partials)
+Git HEAD before / after: (S0 evidence commit) / (this S1 evidence commit)
+Environment: same Compose; durable DB `offscreen_chamber`; focused suites use disposable `offscreen_auth_test`
+Authorization: provider-free
+Commands actually run:
+- Selector unblock: `locator('#chamber-scenario')` in `stories-browser.integration.ts` + chamber smoke path (dual Scenario combobox strict-mode collision)
+- `pnpm test:focus -- stories-browser` → exit 0; 4/4 pass (item transfer, timed Temporal default, reload)
+- `pnpm chamber --smoke` → exit 0; loopback identity/play/inspector/transfer/reload; spend $0
+- `pnpm test:focus -- story-resolution` → exit 1; **7/8 pass**; failing test `generated intention resolution` failed on **cleanup** FK `storyteller_execution_stage_generation_id_fk` (OBS02 stage rows block generation delete) — not a gameplay assertion failure
+- `pnpm chamber:packet` → exit 0; G=`14275b91-51d5-43a0-9931-b578e8dc09ba`; state=`awaiting-review`; packetSha256=`9a9259ca…`; serializedBytes=8371; zero provider attempts
+- `pnpm storyteller:packet-audit` → exit 0; **fixture-only**; 9 operation traces; 5 evidence lineages; no provider transport
+- Added headless `pnpm chamber -- --forensic-campaigns` (no desktop control) → exit 0; wrote `S1-CAMPAIGN-IDS.json`
+- `pnpm chamber:memory-comparison-packets` → exit 0; two held packets; providerAttempts=0
+Observed game identity:
+- Story A `768b7227-4032-4eab-b691-3910a1644341` chamber.v5 revision/view 2; passage seq2 `response_source=player`; **no Storyteller G**; attempts=0
+- Story B `93a23f44-8106-4f47-9992-0dfb131eba82` chamber.v4 revision 2→3; seq3 `response_source=default` (Temporal while browser closed); dueAt `2026-11-15T18:05:54.620Z`; attempts=0
+- Held opening G (not A/B): `14275b91-…`; memory comparison G oneShot `49eb3760-…` / bounded `93e40a35-…`
+Source checks: SQL on `offscreen_chamber` confirmed passages + zero `storyteller_attempt` for A/B
+Result: Two durable scripted campaigns persisted; held packets prepared; browser/Temporal default proved; Storyteller stages expected absent on pure scripted A/B
+Negative case: story-resolution cleanup FK gap after OBS02 stage table; memory-comparison initially blocked by occupied port while interactive chamber was up (resolved after stop)
+Evidence class: recorded-runtime
+Coverage: full S1 campaign + packet probes; story-resolution suite partial due cleanup
+Cost: external requests 0; settled USD 0
+Artifacts: `S1-CAMPAIGN-IDS.json`; local temp packet JSONs (not committed bodies)
+Duration: stories-browser ~85s; chamber smoke ~14s; forensic-campaigns ~30s; packet probes ~10s each
+Discrepancy: interactive headed chamber avoided (owner request: no desktop control); headless `--forensic-campaigns` used instead
+Next exact step: Execute [S2](02-FORENSIC-CAPTURE.md)
 
 ## Investigation questions to answer
 
