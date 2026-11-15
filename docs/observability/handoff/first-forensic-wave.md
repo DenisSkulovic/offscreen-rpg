@@ -53,6 +53,8 @@ This is the **short entrypoint for a fresh Cursor coding session** only after th
 
 ## 5. Source symbols that actually matter for the initial wave
 
+**OBS00:** `packages/application/src/storyteller/config.ts::readStorytellerWorkerOptions`, `apps/worker/src/bootstrap/main.ts`, `storyteller/dispatch-authority.ts::retainsCapturedAuthority`, `storyteller/execution.ts`, `storyteller/memory-provider-runtime.ts`, `storyteller/providers/openrouter.ts::buildOpenRouterRequest`. [Source proof](../evidence/live-worker-dispatch-preflight-2026-11-15.md); mock transport only.
+
 **OBS01:** `packages/application/src/admin/diagnostics-reads.ts::{listCampaignOperations,listPlayerCampaigns,readOperation}`, `packages/db/src/schema/{stories,campaign,storyteller,generations}.ts`, `apps/api/src/modules/admin/controller.ts::{campaignOperations,operationDetail,assertLegacyCampaignVisible}`, `packages/application/src/admin/registry.ts`, `@offscreen/contracts/admin`, `application/test/admin-diagnostics.test.mjs`.
 
 **OBS02:** `application/storyteller/{records,execution,publication,capture-materialization,context-capture,dispatch-review,budget}.ts`, `packages/storyteller/src/providers/operation-trace.ts`, `packages/db/src/schema/storyteller.ts`, `apps/worker/src/activities/index.ts`. Inspect actual source transaction boundaries before any stage INSERT.
