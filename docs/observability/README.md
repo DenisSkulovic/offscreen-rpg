@@ -1,6 +1,6 @@
 # Forensic Observability, Provenance & Replay
 
-**Status: architecture design waves 1–5 and OBS06 planning (2026-11-15). Verified at main@18158402: OBS00-A, OBS01, OBS02, OBS02-H, OBS03 and OBS05 Done; OBS00-B blocked; OBS04, OBS06 and OBS07 Proposed. This Markdown authorizes no code/paid execution.** No code, migrations, test execution, hosting, external model calls or paid services authorized by this document. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
+**Status: forensic design and completed local connected evaluation (2026-11-15). Source baseline main@b88356fe.** OBS00-A, OBS01/02/02-H/03/05 and **OBS06/07 Done in synthetic/disposable scope**; production Support grant issuance absent, default-worker OBS00-B blocked, raw archive/E0 full replay/production OTel not implemented. A completed evaluation is not an authorization for new paid provider or code work. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
 
 **Project method:** product destination → evidence/authority model → source-grounded audit → technical architecture and cost/privacy challenge → separately accepted bounded code-bearing Changes → verified operational and human evidence. The existing Admin product direction was accepted on 2026-11-14; this program **extends** it rather than superseding its staff authority and redaction guarantees. Active Change selection remains owned by [docs/changes/README.md](../changes/README.md).
 
