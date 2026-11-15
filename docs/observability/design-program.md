@@ -1,6 +1,20 @@
 # Forensic observability and replay | Design convergence and execution sequence
 
-**Status: design waves 1–3, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap; **OBS01/OBS02/OBS03 are now concrete Proposed code-bearing packets**, none Ready, selected or authorized.
+**Status: design waves 1–4, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap; **OBS00–OBS04 are now concrete Proposed code-bearing packets**, none Ready, selected or authorized.
+
+## Wave-4 source-closure and pre-live correctness checkpoint
+
+The source-level review uncovered **a stronger priority than adding telemetry**: [the default live worker provider wrapper and current-authority wiring](evidence/live-worker-dispatch-preflight-2026-11-15.md). The worker passes no independent `dispatchAuthority` resolver and drops the `StorytellerProviderDispatch` override in its `provider(task)` wrapper. This is a high-confidence static-source pre-live blocker, **not evidence of a real paid mismatch**. It must be resolved or shown fixed before any real provider launch.
+
+| New wave-4 contract | Primary outcome / dependency |
+| --- | --- |
+| [Source writer closure and three separate histories](evidence/writer-closure-and-sequence-2026-11-15.md) | Game committed state, AI/worker lifecycle and Admin/visitor history have distinct ordering; link by actual domain IDs |
+| [Default worker preflight](evidence/live-worker-dispatch-preflight-2026-11-15.md) | Safe current usage authority and exact per-round envelope forwarding, tested with mock transport |
+| [One-writer finite-action E0 contract](technical/committed-transition-capture-v1.md) | One settled/interrupted action → one co-committed typed transition, never a second game authority |
+| [Typed Support/Developer investigation read models](technical/investigation-read-models-v1.md) | S1 current/status/timeline and S3 generation/context manifests, distinct permission/data boundaries |
+| [Node24/Temporal-safe operational OTel plan](technical/otel-bootstrap-and-correlation-v1.md) | Preloaded SDK, bounded spans/labels, optional Grafana profile, no raw prompt exporter or Workflow replay nondeterminism |
+
+**Small packet queue:** [OBS00](../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) = **pre-live** correctness; [OBS01](../changes/2026-11-15--obs01-operation-coverage/CHANGE.md) = first low-risk **Support visibility**; [OBS02](../changes/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md) then [OBS03](../changes/2026-11-15--obs03-prompt-provenance/CHANGE.md) = real AI evidence; [OBS04](../changes/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) = separately gated first E0 mechanical history witness. **All Proposed, no active Change.** OBS00 and OBS01 have different priority dimensions; do not turn them into an unsafe bulk code task.
 
 ## Wave-3 physical/retention/read contracts and first code menu
 
@@ -144,7 +158,7 @@ A pre-live acceptance pack must include at least:
 
 ## 7. Recommended first execution after design acceptance
 
-**First useful milestone:** one real existing Storyteller operation appears in a native, read-only **causal inspection record** with an exact status/source chain, while both an operation without provider send and an interrupted operation are correctly represented. Build F01/F02 and a minimal F08 metadata read slice before the elaborate developer UI. The first proof can reuse existing `generation`, `storyteller_dispatch_review`, `storyteller_attempt` and SA01 trace shape. It does **not** need universal GameData V1, 12 new databases or Grafana on day one.
+**First forensic visibility milestone:** one real existing Storyteller operation appears in a native, read-only **causal inspection record** with an exact status/source chain, while both an operation without provider send and an interrupted operation are correctly represented. Build F01/F02 and a minimal F08 metadata read slice before the elaborate developer UI. The first proof can reuse existing `generation`, `storyteller_dispatch_review`, `storyteller_attempt` and SA01 trace shape. It does **not** need universal GameData V1, 12 new databases or Grafana on day one.
 
 **Second milestone:** an actual provider-disabled turn can be inspected with source component provenance and an exact request hash; a changed settings version is shown as a historical difference, not overwritten by current state. Then enforce protected artifact retention and its privacy policy.
 
@@ -162,4 +176,4 @@ The design is coherent enough to challenge, but the following **cannot be solved
 5. How much degraded service is acceptable if protected archival storage is unavailable immediately before a provider dispatch? Recommendation: hold paid dispatch rather than perform an untraceable charge, while preserving already committed mechanic.
 6. How will exceptional raw-evidence access and deletion interact with GDPR rights, shared stories, case retention and approved incident holds? Needs product/security/legal review for real users.
 
-**Next practical gate:** review [OBS01–OBS03 proposed handoff](handoff/first-forensic-wave.md); accept one exact code packet only after latest-source, privacy and provider-free preflight. F04+ long-term evidence replay/retention work requires stronger codec, disposal, load and security proofs. No packet is Ready or selected, and no provider/test/deploy spending is authorized by these documents.
+**Next practical gate:** review [OBS00–OBS04 proposed handoff](handoff/first-forensic-wave.md); if preparing any real provider deployment, OBS00 is first; for strictly provider-free Admin visibility, OBS01 is first. Accept one exact code packet only after latest-source, privacy and provider-free preflight. F04+ long-term evidence replay/retention work requires stronger codec, disposal, load and security proofs. No packet is Ready or selected, and no provider/test/deploy spending is authorized by these documents.
