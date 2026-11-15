@@ -112,6 +112,27 @@ Fault matrix: see `S3-FAULT-MATRIX.json`
 Cost: 0. No core mechanics patched under evaluation.
 Next exact step: Execute [S4](04-OBS06-OBS07-ADMIN.md)
 
+### S4 — OBS06/OBS07 — 2026-11-15T18:31–18:40Z
+Status: DONE (synthetic/disposable scope)
+Baseline: admin-policy / admin-cases / admin-diagnostics each pass
+OBS06 `26f4d322`: situation API + investigator package; admin-situation 3/3 re-verified
+OBS07 `8f509c63`: Support Cases situation panel; web test:fast; admin-control-ssr Playwright (authorized + denied + sentinel absent)
+Production grant issuer: unsupported — qualified Done
+Cost: 0
+Next: S5 gates
+
+### S5 — conditional live provider — 2026-11-15T18:40Z
+Status: BLOCKED (honest)
+Gates: kickoff paid cap present; OBS00-B **FAIL** (`config.ts` does not supply `dispatchAuthority`); OBS00-C transport custody **not proven**; no paid send
+Provider-free preflight: `pnpm storyteller:live-comparison` dry-run mode=dry-run provider=none spend=$0; `pnpm chamber:packet` + `chamber:memory-comparison-packets` held packets refreshed in %TEMP%
+Actual outbound provider calls: 0; settled $0
+Next: S6 handoff
+
+### S6 — final handoff — 2026-11-15T18:41Z
+Status: DONE
+Populated `FINAL-HANDOFF.md` with actual commands, IDs, costs, blockers, recommendations
+Provider spend status: zero throughout trial
+
 ## Investigation questions to answer
 
 - Which story/operation/G actually produced a stage receipt and which did not?
