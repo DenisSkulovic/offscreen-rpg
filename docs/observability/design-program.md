@@ -1,6 +1,24 @@
 # Forensic observability and replay | Design convergence and execution sequence
 
-**Status: wave-1 design program, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. All proposed names below are **candidate outcomes**, not created or authorized `docs/changes` packets.
+**Status: design waves 1–2, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. All proposed names below are **candidate outcomes**, not created or authorized `docs/changes` packets.
+
+## Wave-2 source and technical contract status
+
+The following **proposed** design-level artifacts now exist; they sharpen the architecture without claiming runtime verification or approved migrations.
+
+| Area | New detailed contract | Remaining executable/owner gate |
+| --- | --- | --- |
+| **Full writer map** | [Exact gameplay/story/AI SQL mutation owners](evidence/mutation-writer-audit-2026-11-15.md) | Cursor checkout-wide write/call graph, actual historical-state coverage and normal callers of `stageCampaignStateDocument` |
+| **Physical model** | [Postgres transition sequence, typed delta, protected CAS, codecs/indexes](technical/physical-evidence-storage-v1.md) | Source/DDL review, schema size bounds, no migration until measured |
+| **Crash correctness** | [E0/E1/E2/E3 criticality and SQL/CAS/Temporal/provider race matrix](technical/capture-transaction-protocol.md) | Disposable failure injection and lock-duration evidence |
+| **Historical replay** | [Read-only checkpoint/delta seek with independent temporal axes](technical/reconstruction-algorithm-v1.md) | Exact state field codec and source-digest verification, player perspective |
+| **Prompt forensics** | [Compiler and source-selection insertion points](technical/storyteller-prompt-source-map-v1.md) | Same task/packet bytes before and after instrumentation, real provider last-serializer equality |
+| **Admin security** | [Tiered Support/Developer data disclosure and audit](technical/forensic-access-and-read-contract-v1.md) | Owner acceptance of role/purpose/grant/retention, actual server enforcement |
+| **Disproof and measurement** | [Adversarial review](technical/architecture-challenge-and-decisions-v1.md), [sizing/verification harness](evidence/verification-and-sizing-protocol.md) | Provider-free integration and measured storage/latency; no test yet |
+
+**New critical finding:** today’s `generation.input`, `generation.output`, `storyteller_dispatch_review.packet` and memory-round records already store raw/private content in SQL. A new 30-day protected CAS TTL does **not** delete these copies. A truthful raw-prompt retention promise requires a separately designed legacy-compatible storage migration and cross-store deletion proof. Meanwhile the existing packet row is a valuable source to **reuse**, not duplicate indiscriminately.
+
+**Second nuance:** one transaction may settle multiple activity checks. A future replay must keep their **within-commit logical order** but not pretend intermediate calculations were separately committed, externally visible story states.
 
 ## 1. Destination and nonnegotiable success criteria
 
