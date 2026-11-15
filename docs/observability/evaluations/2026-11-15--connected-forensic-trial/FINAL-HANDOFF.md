@@ -79,7 +79,7 @@ Local Compose + Nest/Next/Temporal Connected paths work for scripted chamber cam
 
 ## Appendix: evidence and reproduction pointers
 
-- Git SHAs: baseline `fa4fef80`; S0 `f44b0b33`; S1 `24aef3dd`; S2 `b866cef0`; S3 `7a7ee811`; OBS06 `26f4d322`; OBS07 `8f509c63`; this handoff (push SHA)
+- Git SHAs: baseline `fa4fef80`; S0 `f44b0b33`; S1 `24aef3dd`; S2 `b866cef0`; S3 `7a7ee811`; OBS06 `26f4d322`; OBS07 `8f509c63`; this handoff `bb168002`
 - Artifacts: [S1-CAMPAIGN-IDS.json](S1-CAMPAIGN-IDS.json), [S2-LEDGER.json](S2-LEDGER.json), [S3-FAULT-MATRIX.json](S3-FAULT-MATRIX.json), [RUN-LOG.md](RUN-LOG.md), [CHECKPOINT.md](CHECKPOINT.md)
 - Evidence receipts: [OBS06](../../evidence/obs06-case-scoped-situation-read-2026-11-15.md), [OBS07](../../evidence/obs07-support-situation-ui-2026-11-15.md)
 - Local ignored private evidence: `%TEMP%\offscreen-rpg-packet-review\`, `%TEMP%\offscreen-rpg-live-comparison\`, `%TEMP%\offscreen-rpg-request-audit\`
