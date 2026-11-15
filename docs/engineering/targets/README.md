@@ -4,6 +4,7 @@
 
 | Area | Destination contract | Status | Latest gap audit |
 | --- | --- | --- | --- |
+| Forensic observability, evidence provenance and replay | [Product destination](../../observability/product-vision.md) → [typed evidence model](../../observability/technical/evidence-model.md) → [backend-first design program](../../observability/design-program.md) | **Proposed integrated target (Nov 15); no code authorization** | [2026-11-15 source inventory](../../observability/evidence/current-source-inventory-2026-11-15.md) |
 | Chamber developer laboratory | [Reproducible mechanics lab C01–C16](chamber-laboratory.md) | **Selected design (Nov 12); no implementation yet** | [Source-grounded H01–H14 audit](../audits/chamber-gap-2026-11-12.md) |
 | React 19 / Next.js 16 | [React / Next end-state F1–F15](react-next.md) | **Selected architecture (Nov 12); code not yet implemented** | [November 12 source audit](../audits/react-next-gap-2026-11-12.md) |
 | UI/UX visual design | Not defined today | **Separate future discipline**; do not confuse with keyboard/failure engineering | Not audited |
