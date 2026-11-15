@@ -1,6 +1,6 @@
 # Replay, retention and privacy | Time travel without rewriting history
 
-**Status: technical/product recommendation, 2026-11-15; not approved for implementation.** [Evidence model](evidence-model.md) defines durable source and artifacts; [golden journeys](../product-vision.md) define expected replay experiences. Existing [Chamber](../../engineering/targets/chamber-laboratory.md) owns isolated test execution. Historic display, deterministic re-execution and agent rerun are **different products**.
+**Status: technical/product recommendation, 2026-11-15; not approved for implementation.** **Wave-3 policy update:** the earlier 30/90-day raw AI windows below were exploratory; the [recommended first production candidate](../product-policy-recommendations-v1.md) is now 90 days default and up to 180 days incident hold, **still awaiting product/legal/cost acceptance**. [Evidence model](evidence-model.md) defines durable source and artifacts; [golden journeys](../product-vision.md) define expected replay experiences. Existing [Chamber](../../engineering/targets/chamber-laboratory.md) owns isolated test execution. Historic display, deterministic re-execution and agent rerun are **different products**.
 
 ## 1. Four replay modes (do not call them all “replay”)
 
@@ -112,7 +112,7 @@ A comparator then reports **old recorded truth** vs **newly computed test result
 | Authoritative published player story/passages/committed game history | Retain for active life of story and within user-controlled archive; deletion/closure policy and account rights separately defined | This is the product itself, not diagnostic logging |
 | Complete compact game transition ledger + reconstruction checkpoints | Same story-lifecycle class where replay promised; bounded size and integrity checks | Required for long-term reliable player replay; no hidden future details in player view |
 | Immutable canonical world/story documents used in those scenes | As long as necessary to render/verify retained story, with references/dedup and rights checks | No "delete root but keep full-replay" fiction |
-| Sensitive **raw** provider packets/outputs/tool responses | **Candidate** 30 days normal; 90 days with documented incident/purpose hold, longer only by exceptional approved policy | Highly useful but expensive/private; after expiry retain safe hashes/metadata and honest lost-body coverage |
+| Sensitive **raw** provider packets/outputs/tool responses | **Revised candidate** 90 days ordinary; up to 180 days on documented incident/purpose hold, subject to legal, cost and full SQL/CAS erasure proof; synthetic QA may have a different policy | Highly useful but expensive/private; after expiry retain safe hashes/metadata and honest lost-body coverage |
 | Prompt/component IDs, hashes, effective config/recipe/selection metadata | **Candidate** 12 months, with player-coupled minimum references as genuinely needed for replay | Explains regressions without storing raw player content permanently |
 | Operational spans | **Candidate** 7–14 days, sampled | Performance diagnostics, not permanent player record |
 | Structured process logs | **Candidate** 14–30 days, bounded/error-focused | Short-lived incidents and on-call troubleshooting |
