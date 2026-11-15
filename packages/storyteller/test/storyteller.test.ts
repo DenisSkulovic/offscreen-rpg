@@ -3066,6 +3066,41 @@ test('evidence lineage distinguishes gift recall, pruned rumor and false citatio
   );
 });
 
+test('OBS05: v2 lineage marks uncited inclusion without model-ignored', () => {
+  const fixtures = createEvidenceLineageFixtures({
+    scenarioIds: ['packet-included-uncited', 'selected-then-pruned', 'ordinary-no-memory'],
+  });
+  const byId = Object.fromEntries(fixtures.map((entry) => [entry.id, entry]));
+
+  const uncited = byId['packet-included-uncited']!;
+  assert.ok(uncited.lineage);
+  assert.ok(uncited.lineageV2);
+  assert.equal(uncited.lineage.version, 'storyteller-evidence-lineage.v1');
+  assert.equal(uncited.lineageV2.version, 'storyteller-evidence-lineage.v2');
+  assert.notEqual(uncited.lineageV2.failureClass, 'model-ignored');
+  assert.equal(uncited.lineageV2.failureClass, 'packet-included-uncited');
+  assert.equal(uncited.lineageV2.packetBinding, 'task-request-derived');
+  const p15 = uncited.lineageV2.entries.find((entry) => entry.handle === 'p15');
+  assert.equal(p15?.stages['final-packet'].present, true);
+  assert.equal(p15?.stages['cited-used'].present, false);
+  assert.equal(p15?.stages.discovered.observation, 'observed');
+  assert.equal(p15?.claimPublished, 'unknown');
+  assert.equal(
+    JSON.stringify(uncited.lineageV2).includes('model-ignored'),
+    false,
+  );
+
+  const pruned = byId['selected-then-pruned']!;
+  assert.ok(pruned.lineageV2);
+  assert.equal(pruned.lineageV2.failureClass, 'selected-then-pruned');
+
+  const ordinary = byId['ordinary-no-memory']!;
+  assert.ok(ordinary.lineage);
+  assert.equal(ordinary.lineage.failureClass, 'none');
+  assert.ok(ordinary.lineageV2);
+  assert.equal(ordinary.lineageV2.failureClass, 'packet-included-uncited');
+});
+
 test('operation trace covers memory, single-shot, omission and isolation negatives', () => {
   const fixtures = createOperationTraceFixtureTraces();
   const byId = Object.fromEntries(

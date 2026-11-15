@@ -4,9 +4,11 @@
 
 Current change: none
 
+**OBS05 (2026-11-15): Done.** Evidence lineage v2: `packet-included-uncited` observation; v1 fixtures preserved. Evidence [obs05](../observability/evidence/obs05-evidence-claim-truth-2026-11-15.md).
+
 **OBS02-H (2026-11-15): Done.** Rearm-epoch stage keys, lease-fenced terminal receipts, divergent-key integrity conflict. Evidence [obs02-h](../observability/evidence/obs02-h-stage-integrity-2026-11-15.md).
 
-**Wave-5 forensic design update (2026-11-15):** [current evidence-quality handoff](../observability/handoff/wave5-evidence-quality-2026-11-15.md). OBS01/OBS02/OBS02-H/OBS03 and OBS00-A remain **Done**; **OBS00-B blocked**. Remaining Proposed: [OBS05 citation-vs-model-use truth](2026-11-15--obs05-evidence-claim-truth/CHANGE.md), [OBS04 finite-action E0 pilot](2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md).
+**Wave-5 forensic design update (2026-11-15):** [current evidence-quality handoff](../observability/handoff/wave5-evidence-quality-2026-11-15.md). OBS01/OBS02/OBS02-H/OBS03/OBS05 and OBS00-A remain **Done**; **OBS00-B blocked**. Remaining Proposed: [OBS04 finite-action E0 pilot](2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md).
 
 **OBS03 (2026-11-15): Done.** Consequence prompt-component/source provenance sidecar (same-G promote). Evidence [obs03](../observability/evidence/obs03-prompt-provenance-2026-11-15.md).
 

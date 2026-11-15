@@ -457,7 +457,7 @@ export function formatStorytellerEvidenceLineage(
 
 /** Fail closed when a lineage claims citation without final-packet presence. */
 export function assertEvidenceLineageCitationIntegrity(
-  lineage: StorytellerEvidenceLineage,
+  lineage: StorytellerEvidenceLineage | StorytellerEvidenceLineageV2,
 ) {
   for (const entry of lineage.entries) {
     if (
@@ -473,4 +473,330 @@ export function assertEvidenceLineageCitationIntegrity(
   if (lineage.failureClass === 'false-citation') {
     throw new Error('Evidence lineage recorded a false citation');
   }
+}
+
+/** OBS05: v2 claim semantics — uncited ≠ model-ignored. */
+export const STORYTELLER_EVIDENCE_LINEAGE_V2_VERSION =
+  'storyteller-evidence-lineage.v2' as const;
+
+export type EvidenceObservationOrigin =
+  | 'observed'
+  | 'derived-from-task'
+  | 'unknown';
+
+export type EvidenceLineageFailureClassV2 =
+  | 'retrieval-missed'
+  | 'selected-then-pruned'
+  | 'packet-included-uncited'
+  | 'false-citation'
+  | 'publication-rejected'
+  | 'none';
+
+export type EvidenceLineageStageStateV2 = EvidenceLineageStageState &
+  Readonly<{
+    observation: EvidenceObservationOrigin;
+  }>;
+
+export type EvidenceLineageEntryV2 = Readonly<{
+  handle: string;
+  kind: EvidenceLineageEntry['kind'];
+  stages: Readonly<
+    Record<EvidenceLineageStageName, EvidenceLineageStageStateV2>
+  >;
+  contentSha256: string | null;
+  bytes: number | null;
+  claimPublished: 'yes' | 'unknown' | 'no';
+}>;
+
+export type StorytellerEvidenceLineageV2 = Readonly<{
+  version: typeof STORYTELLER_EVIDENCE_LINEAGE_V2_VERSION;
+  storyId: string | null;
+  rootHash: string | null;
+  rootRevision: number | null;
+  task: StorytellerTask['task'];
+  purposeId: string;
+  packetSha256: string;
+  packetBytes: number;
+  packetBinding: 'task-request-derived';
+  entries: readonly EvidenceLineageEntryV2[];
+  checkpoints: StorytellerEvidenceLineage['checkpoints'];
+  failureClass: EvidenceLineageFailureClassV2;
+  unknowns: readonly string[];
+  redaction: StorytellerEvidenceLineage['redaction'];
+  receiptSha256: string;
+}>;
+
+function stageV2(
+  present: boolean,
+  observation: EvidenceObservationOrigin,
+  reason: string | null = null,
+): EvidenceLineageStageStateV2 {
+  return { present, reason, observation };
+}
+
+function classifyFailureV2(
+  entries: readonly EvidenceLineageEntryV2[],
+): EvidenceLineageFailureClassV2 {
+  if (
+    entries.some(
+      (entry) =>
+        entry.stages['cited-used'].present &&
+        !entry.stages['final-packet'].present,
+    )
+  ) {
+    return 'false-citation';
+  }
+  if (
+    entries.some(
+      (entry) =>
+        entry.stages['exact-loaded'].present &&
+        !entry.stages['final-packet'].present &&
+        !entry.stages['cited-used'].present,
+    )
+  ) {
+    return 'selected-then-pruned';
+  }
+  if (
+    entries.some(
+      (entry) =>
+        (entry.kind === 'memory-item' || entry.kind === 'passage') &&
+        entry.stages['final-packet'].present &&
+        !entry.stages['cited-used'].present &&
+        entry.stages.discovered.present &&
+        entry.stages.discovered.observation === 'observed',
+    )
+  ) {
+    // Observed inclusion without citation is an observation, not "model ignored".
+    return 'packet-included-uncited';
+  }
+  if (
+    entries.some(
+      (entry) =>
+        entry.stages.eligible.present &&
+        !entry.stages.discovered.present &&
+        !entry.stages['final-packet'].present,
+    )
+  ) {
+    return 'retrieval-missed';
+  }
+  if (
+    entries.some(
+      (entry) =>
+        entry.stages['cited-used'].present &&
+        entry.stages.published.reason === 'publication-rejected',
+    )
+  ) {
+    return 'publication-rejected';
+  }
+  return 'none';
+}
+
+/**
+ * OBS05 v2 lineage: same redaction/packet extraction as v1, but claim labels
+ * stay observational. Does not mutate task/request bytes.
+ */
+export function createStorytellerEvidenceLineageV2(
+  input: StorytellerEvidenceLineageInput,
+): StorytellerEvidenceLineageV2 {
+  const { inspection, handles: finalHandles, hashes } = extractFinalPacketHandles(
+    input.task,
+  );
+  const loadedDefault = passageHandles(input.task);
+  const storedObserved = input.storedHandles !== undefined;
+  const eligibleObserved = input.eligibleHandles !== undefined;
+  const discoveredObserved = input.discoveredHandles !== undefined;
+  const exactLoadedObserved = input.exactLoadedHandles !== undefined;
+  const stored = new Set(input.storedHandles ?? loadedDefault);
+  const eligible = new Set(input.eligibleHandles ?? loadedDefault);
+  const discovered = new Set(input.discoveredHandles ?? loadedDefault);
+  const exactLoaded = new Set(input.exactLoadedHandles ?? loadedDefault);
+  const pruned = new Map(
+    (input.prunedFromFinal ?? []).map((entry) => [entry.handle, entry.reason]),
+  );
+  for (const [handle] of pruned) {
+    finalHandles.delete(handle);
+  }
+  for (const sequence of input.task.contextManifest.omittedSequences) {
+    finalHandles.delete(`p${sequence}`);
+  }
+
+  const citedItems = new Set(input.cited?.itemIds ?? []);
+  const citedSources = new Set(input.cited?.sourceIds ?? []);
+  const explicitPreserved = input.publication?.preservedHandles !== undefined;
+  const publishedHandles = new Set(
+    input.publication?.preservedHandles ??
+      (input.publication?.state === 'published'
+        ? [...citedSources, ...citedItems, ...finalHandles]
+        : []),
+  );
+
+  for (const handle of citedSources) {
+    if (!finalHandles.has(handle) && !citedItems.has(handle)) {
+      if (/^p\d+$/.test(handle) || handle.startsWith('m') || handle.startsWith('x')) {
+        throw new Error(
+          `Evidence lineage false citation: ${handle} not in final provider packet`,
+        );
+      }
+    }
+  }
+  for (const handle of citedItems) {
+    if (
+      (/^p\d+$/.test(handle) || /^[mx]\d+$/.test(handle)) &&
+      !finalHandles.has(handle) &&
+      !exactLoaded.has(handle)
+    ) {
+      throw new Error(
+        `Evidence lineage false citation: ${handle} was never loaded into the operation`,
+      );
+    }
+  }
+
+  const allHandles = new Set<string>([
+    ...stored,
+    ...eligible,
+    ...discovered,
+    ...exactLoaded,
+    ...finalHandles,
+    ...citedItems,
+    ...citedSources,
+    ...pruned.keys(),
+    ...publishedHandles,
+  ]);
+
+  const origin = (
+    observed: boolean,
+  ): EvidenceObservationOrigin =>
+    observed ? 'observed' : 'derived-from-task';
+
+  const entries: EvidenceLineageEntryV2[] = [...allHandles]
+    .sort((left, right) => left.localeCompare(right))
+    .map((handle) => {
+      const prunedReason = pruned.get(handle);
+      const cited = citedItems.has(handle) || citedSources.has(handle);
+      const publicationState = input.publication?.state ?? 'not-run';
+      let published = stageV2(false, 'unknown', publicationState);
+      if (publicationState === 'published') {
+        published = stageV2(
+          publishedHandles.has(handle) || (cited && finalHandles.has(handle)),
+          explicitPreserved ? 'observed' : 'derived-from-task',
+          explicitPreserved ? null : 'publication-status-only',
+        );
+      } else if (
+        publicationState === 'rejected' ||
+        publicationState === 'stale-refused'
+      ) {
+        published = stageV2(false, 'observed', 'publication-rejected');
+      }
+      const kind: EvidenceLineageEntry['kind'] = handle.startsWith('p')
+        ? 'passage'
+        : handle.startsWith('s')
+          ? 'source-citation'
+          : handle.startsWith('m') || handle.startsWith('x')
+            ? 'memory-item'
+            : 'canonical-handle';
+      const claimPublished: EvidenceLineageEntryV2['claimPublished'] =
+        publicationState !== 'published'
+          ? 'no'
+          : cited && finalHandles.has(handle)
+            ? 'yes'
+            : 'unknown';
+      const meta = hashes.get(handle);
+      return {
+        handle,
+        kind,
+        stages: {
+          stored: stageV2(
+            stored.has(handle),
+            origin(storedObserved),
+            stored.has(handle) ? null : 'not-stored',
+          ),
+          eligible: stageV2(
+            eligible.has(handle),
+            origin(eligibleObserved),
+            eligible.has(handle) ? null : 'not-eligible',
+          ),
+          discovered: stageV2(
+            discovered.has(handle),
+            origin(discoveredObserved),
+            discovered.has(handle) ? null : 'not-discovered',
+          ),
+          'exact-loaded': stageV2(
+            exactLoaded.has(handle),
+            origin(exactLoadedObserved),
+            exactLoaded.has(handle) ? null : 'not-loaded',
+          ),
+          'final-packet': stageV2(
+            finalHandles.has(handle),
+            'observed',
+            finalHandles.has(handle)
+              ? null
+              : (prunedReason ??
+                  (exactLoaded.has(handle)
+                    ? 'loaded-then-absent-from-final-packet'
+                    : 'absent-from-final-packet')),
+          ),
+          'cited-used': stageV2(
+            cited,
+            input.cited ? 'observed' : 'unknown',
+            cited ? null : 'not-cited',
+          ),
+          published,
+        },
+        contentSha256: meta?.sha256 ?? null,
+        bytes: meta?.bytes ?? null,
+        claimPublished,
+      };
+    });
+
+  const failureClass = classifyFailureV2(entries);
+  const storyId =
+    'storyId' in input.task.source ? input.task.source.storyId : null;
+  const rootHash = input.task.context.canonicalKnowledge?.rootHash ?? null;
+  const rootRevision = input.task.context.canonicalKnowledge?.rootRevision ?? null;
+  const lineage = {
+    version: STORYTELLER_EVIDENCE_LINEAGE_V2_VERSION,
+    storyId,
+    rootHash,
+    rootRevision,
+    task: input.task.task,
+    purposeId: inspection.purpose.id,
+    packetSha256: inspection.sha256,
+    packetBytes: inspection.serializedBytes,
+    packetBinding: 'task-request-derived' as const,
+    entries,
+    checkpoints: {
+      sourceExists: entries.some((entry) => entry.stages.stored.present),
+      sourceSelected: entries.some((entry) => entry.stages.eligible.present),
+      exactLoaded: entries.some((entry) => entry.stages['exact-loaded'].present),
+      finalPacketIncludes: entries.some(
+        (entry) => entry.stages['final-packet'].present,
+      ),
+      resultUses: entries.some((entry) => entry.stages['cited-used'].present),
+      publishedConsistent:
+        (input.publication?.state ?? 'not-run') === 'published'
+          ? !entries.some(
+              (entry) =>
+                entry.stages['cited-used'].present &&
+                !entry.stages.published.present,
+            )
+          : (input.publication?.state ?? 'not-run') === 'not-run',
+    },
+    failureClass,
+    unknowns: [
+      ...(rootHash ? [] : ['rootHash']),
+      'providerUsage',
+      'semanticProseFaithfulness',
+      'actual-transport-packet',
+      ...(storedObserved ? [] : ['stored-stage-producer']),
+      ...(discoveredObserved ? [] : ['discovered-stage-producer']),
+    ],
+    redaction: {
+      sourceBodies: 'omitted' as const,
+      promptBodies: 'omitted' as const,
+    },
+  } as const;
+  const receiptSha256 = createHash('sha256')
+    .update(JSON.stringify(lineage))
+    .digest('hex');
+  return { ...lineage, receiptSha256 };
 }

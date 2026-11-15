@@ -4,7 +4,9 @@ import {
 } from './request-audit-fixtures';
 import {
   createStorytellerEvidenceLineage,
+  createStorytellerEvidenceLineageV2,
   type StorytellerEvidenceLineage,
+  type StorytellerEvidenceLineageV2,
 } from './evidence-lineage';
 
 export const evidenceLineageScenarioIds = [
@@ -13,6 +15,7 @@ export const evidenceLineageScenarioIds = [
   'selected-then-pruned',
   'ordinary-no-memory',
   'false-citation-rejected',
+  'packet-included-uncited',
 ] as const;
 
 export type EvidenceLineageScenarioId =
@@ -21,6 +24,7 @@ export type EvidenceLineageScenarioId =
 export type EvidenceLineageFixture = Readonly<{
   id: EvidenceLineageScenarioId;
   lineage: StorytellerEvidenceLineage | null;
+  lineageV2: StorytellerEvidenceLineageV2 | null;
   rejected: boolean;
   rejectionMessage: RegExp | null;
 }>;
@@ -42,22 +46,24 @@ function build(id: EvidenceLineageScenarioId): EvidenceLineageFixture {
       const task = caseTask('continuity-fifteen-turn');
       const gift = 'p6';
       const handles = passageHandles(task);
+      const input = {
+        task,
+        storedHandles: handles,
+        eligibleHandles: handles,
+        discoveredHandles: ['p1', gift, 'p10', 'p15'],
+        exactLoadedHandles: ['p1', gift, 'p10', 'p15'],
+        cited: { itemIds: [gift], sourceIds: [] },
+        publication: {
+          state: 'published' as const,
+          preservedHandles: [gift, 'p15'],
+        },
+      };
       return {
         id,
         rejected: false,
         rejectionMessage: null,
-        lineage: createStorytellerEvidenceLineage({
-          task,
-          storedHandles: handles,
-          eligibleHandles: handles,
-          discoveredHandles: ['p1', gift, 'p10', 'p15'],
-          exactLoadedHandles: ['p1', gift, 'p10', 'p15'],
-          cited: { itemIds: [gift], sourceIds: [] },
-          publication: {
-            state: 'published',
-            preservedHandles: [gift, 'p15'],
-          },
-        }),
+        lineage: createStorytellerEvidenceLineage(input),
+        lineageV2: createStorytellerEvidenceLineageV2(input),
       };
     }
     case 'rumor-corrected': {
@@ -65,99 +71,144 @@ function build(id: EvidenceLineageScenarioId): EvidenceLineageFixture {
       const rumor = 'p2';
       const correction = 'p10';
       const handles = passageHandles(task);
+      const input = {
+        task,
+        storedHandles: handles,
+        eligibleHandles: handles,
+        discoveredHandles: [rumor, correction, 'p15'],
+        exactLoadedHandles: [rumor, correction, 'p15'],
+        prunedFromFinal: [
+          {
+            handle: rumor,
+            reason: 'superseded-rumor-pruned-from-final-packet',
+          },
+        ],
+        cited: { itemIds: [correction], sourceIds: [] },
+        publication: {
+          state: 'published' as const,
+          preservedHandles: [correction],
+        },
+      };
       return {
         id,
         rejected: false,
         rejectionMessage: null,
-        lineage: createStorytellerEvidenceLineage({
-          task,
-          storedHandles: handles,
-          eligibleHandles: handles,
-          discoveredHandles: [rumor, correction, 'p15'],
-          exactLoadedHandles: [rumor, correction, 'p15'],
-          prunedFromFinal: [
-            {
-              handle: rumor,
-              reason: 'superseded-rumor-pruned-from-final-packet',
-            },
-          ],
-          cited: { itemIds: [correction], sourceIds: [] },
-          publication: {
-            state: 'published',
-            preservedHandles: [correction],
-          },
-        }),
+        lineage: createStorytellerEvidenceLineage(input),
+        lineageV2: createStorytellerEvidenceLineageV2(input),
       };
     }
     case 'selected-then-pruned': {
       const task = caseTask('continuity-fifteen-turn');
       const pruned = 'p2';
       const handles = passageHandles(task);
+      const input = {
+        task,
+        storedHandles: handles,
+        eligibleHandles: handles,
+        discoveredHandles: handles,
+        exactLoadedHandles: handles,
+        prunedFromFinal: [
+          {
+            handle: pruned,
+            reason: 'loaded-then-pruned-from-final-packet',
+          },
+        ],
+        cited: { itemIds: [], sourceIds: [] },
+        publication: {
+          state: 'published' as const,
+          preservedHandles: ['p15'],
+        },
+      };
       return {
         id,
         rejected: false,
         rejectionMessage: null,
-        lineage: createStorytellerEvidenceLineage({
-          task,
-          storedHandles: handles,
-          eligibleHandles: handles,
-          discoveredHandles: handles,
-          exactLoadedHandles: handles,
-          prunedFromFinal: [
-            {
-              handle: pruned,
-              reason: 'loaded-then-pruned-from-final-packet',
-            },
-          ],
-          cited: { itemIds: [], sourceIds: [] },
-          publication: { state: 'published', preservedHandles: ['p15'] },
-        }),
+        lineage: createStorytellerEvidenceLineage(input),
+        lineageV2: createStorytellerEvidenceLineageV2(input),
       };
     }
     case 'ordinary-no-memory': {
       const task = caseTask('activity-consequence');
       const handles = passageHandles(task);
+      const input = {
+        task,
+        storedHandles: handles,
+        eligibleHandles: handles,
+        discoveredHandles: handles,
+        exactLoadedHandles: handles,
+        cited: { itemIds: [], sourceIds: [] },
+        publication: {
+          state: 'published' as const,
+          preservedHandles: handles,
+        },
+      };
       return {
         id,
         rejected: false,
         rejectionMessage: null,
-        lineage: createStorytellerEvidenceLineage({
-          task,
-          storedHandles: handles,
-          eligibleHandles: handles,
-          discoveredHandles: handles,
-          exactLoadedHandles: handles,
-          cited: { itemIds: [], sourceIds: [] },
-          publication: {
-            state: 'published',
-            preservedHandles: handles,
-          },
-        }),
+        lineage: createStorytellerEvidenceLineage(input),
+        lineageV2: createStorytellerEvidenceLineageV2(input),
+      };
+    }
+    case 'packet-included-uncited': {
+      const task = caseTask('continuity-fifteen-turn');
+      const included = 'p15';
+      const handles = passageHandles(task);
+      const input = {
+        task,
+        storedHandles: handles,
+        eligibleHandles: handles,
+        discoveredHandles: [included],
+        exactLoadedHandles: [included],
+        cited: { itemIds: [], sourceIds: [] },
+        publication: {
+          state: 'published' as const,
+          preservedHandles: [included],
+        },
+      };
+      return {
+        id,
+        rejected: false,
+        rejectionMessage: null,
+        lineage: createStorytellerEvidenceLineage(input),
+        lineageV2: createStorytellerEvidenceLineageV2(input),
       };
     }
     case 'false-citation-rejected': {
       const task = caseTask('scene-continuation');
       let lineage: StorytellerEvidenceLineage | null = null;
+      let lineageV2: StorytellerEvidenceLineageV2 | null = null;
       let rejected = false;
       let rejectionMessage: RegExp | null = /false citation/;
+      const input = {
+        task,
+        exactLoadedHandles: passageHandles(task),
+        prunedFromFinal: [
+          {
+            handle: 'p7',
+            reason: 'deliberately-pruned',
+          },
+        ],
+        cited: { itemIds: ['p7'], sourceIds: [] },
+        publication: { state: 'not-run' as const },
+      };
       try {
-        lineage = createStorytellerEvidenceLineage({
-          task,
-          exactLoadedHandles: passageHandles(task),
-          prunedFromFinal: [
-            {
-              handle: 'p7',
-              reason: 'deliberately-pruned',
-            },
-          ],
-          cited: { itemIds: ['p7'], sourceIds: [] },
-          publication: { state: 'not-run' },
-        });
+        lineage = createStorytellerEvidenceLineage(input);
       } catch (error) {
         rejected = error instanceof Error && /false citation/.test(error.message);
         if (!rejected) throw error;
       }
-      return { id, lineage, rejected, rejectionMessage };
+      try {
+        lineageV2 = createStorytellerEvidenceLineageV2(input);
+      } catch (error) {
+        const v2Rejected =
+          error instanceof Error && /false citation/.test(error.message);
+        rejected = rejected || v2Rejected;
+        if (!v2Rejected && !(error instanceof Error && /false citation/.test(error.message))) {
+          throw error;
+        }
+      }
+      return { id, lineage, lineageV2, rejected, rejectionMessage };
     }
     default: {
       const exhaustive: never = id;
