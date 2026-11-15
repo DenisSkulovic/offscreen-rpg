@@ -1,6 +1,6 @@
 # Forensic observability | Owner review and first Cursor wave handoff
 
-**Status:** design waves 1–4 proposed, 2026-11-15. **Code queue:** `Current change: none` in [Change router](../../changes/README.md). **No implementation authorization, migrations, external model calls, paid monitoring service or deployment.**
+**Status:** historical wave-1–4 design handoff (2026-11-15), **superseded for current implementation status** by [wave-5 current handoff](wave5-evidence-quality-2026-11-15.md). OBS01/02/03 and OBS00-A are now Done; OBS00-B blocked; don't blindly run the older Proposed queue. **Code queue:** `Current change: none` in [Change router](../../changes/README.md). **No implementation authorization, migrations, external model calls, paid monitoring service or deployment.**
 
 This is the **short entrypoint for a fresh Cursor coding session** only after the owner selects one packet. Do not preload 18 forensic documents or redo architecture under code pressure. Read the selected Change first, then its narrow source contract and nearest package README.
 
@@ -91,4 +91,4 @@ This is the **short entrypoint for a fresh Cursor coding session** only after th
 - Production OTel/Prometheus/Grafana sizing and actual deployment.
 - Legal/backup erasure proof for real EU users.
 
-**Owner handoff:** the program now has **five small code-bearing packets**, all **Proposed** and none selected. The Admin first-wave is implemented. Choose **OBS00** before enabling paid/provider work, or **OBS01** for the first safe Support visibility improvement; each requires explicit separate implementation authorization.
+**Owner handoff (historical):** the original five packets were Proposed at design time, but OBS00-A/OBS01/OBS02/OBS03 have since landed. For actual next work follow [wave-5 current handoff](wave5-evidence-quality-2026-11-15.md), not the obsolete selection below. The Admin first-wave is implemented. Choose **OBS00** before enabling paid/provider work, or **OBS01** for the first safe Support visibility improvement; each requires explicit separate implementation authorization.
