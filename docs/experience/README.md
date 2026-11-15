@@ -12,6 +12,8 @@ This is a **replacement product-experience specification**, not a transcription 
 
 **2026-11-15 mechanics design handoff:** [one-page cross-program queue](../engine-architecture/handoff/pipeline-design-2026-11-15.md) now routes to new gameplay policy contracts: [GM01→GM02 custom intent](decisions/gm01-custom-intent-policy-v1.md), [GM03 bounded routine](decisions/gm03-bounded-routine-v1.md), [GM04 failed-reassurance distinctness](decisions/gm04-failed-approach-v1.md), [GM06 foreground visitor checkpoint](decisions/gm06-viewer-open-baseline-v1.md), [GM07 consented fallback](decisions/gm07-consented-default-v1.md). These are **recommendations awaiting owner acceptance**, not implemented new mechanics. GM05 event feed is implemented; the GM06 visit baseline is not.
 
+**Wave-5 player replay product direction:** [Data-driven Story Replay V1](../observability/player-replay-experience-v1.md) designs read-only original published scene/choice playback, with later verified mechanical-state stepping only after a complete E0 transition history. No model reruns, game writes or GM06 live-visit acknowledgments from replay. **This is proposed UX/product policy, not a finished player feature.**
+
 ## Start with a question, not the whole folder
 
 | Question | Read |
