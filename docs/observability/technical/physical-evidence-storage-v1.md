@@ -4,7 +4,7 @@
 
 ## 1. Selected physical separation
 
-Use the existing Postgres/Drizzle modular monolith for **business authority, ordered compact evidence and searchable references**, plus a **separate encrypted immutable forensic artifact namespace** backed by the current DocumentStore abstraction or a narrowly adapted storage interface. Do **not** write forensic artifacts into the story's canonical world-document root. A prompt archive is not a player-authored world section.
+Use the existing Postgres/Drizzle modular monolith for **business authority, ordered compact evidence and searchable references**, plus a **separate protected forensic artifact store port**. The inspected existing `DocumentStore` has **no delete/expiry interface, no subject-scoped protected raw-byte API, and a 1 MiB canonical object limit**. Its local/S3 infrastructure may be reused only behind a **new** [ProtectedEvidenceStore V1](protected-artifact-store-v1.md), with independent encryption, custody and lifecycle. Do **not** write forensic artifacts into the story's canonical world-document root. A prompt archive is not a player-authored world section.
 
 ~~~text
 Game authority in existing SQL
@@ -235,7 +235,7 @@ Avoid `storyId` as a Prometheus metric label (high cardinality) while keeping it
 - `storyteller_memory_exploration.snapshot` and pending model request/output can contain tool and model content;
 - `storyPassage` / immutable canonical CAS contain player story narrative.
 
-Therefore, an artifact catalog with `retain_until=30 days` **cannot make the raw input disappear** if an older source row continues to store the same bytes indefinitely. A claim of “30-day raw model context retention” would be materially false.
+Therefore, an artifact catalog with `retain_until=30 days` **cannot make the raw input disappear** if an older source row continues to store the same bytes indefinitely. A claim of any finite raw model context retention would be materially false until every SQL/CAS/backup/derived copy follows its policy.
 
 **Required staged plan:**
 
@@ -245,7 +245,7 @@ Therefore, an artifact catalog with `retain_until=30 days` **cannot make the raw
 4. **Expiry enforcement:** only after every consumer can decode the referenced active content safely and in-flight/uncertain provider tasks are handled, implement retention/erasure of raw SQL bodies and protected CAS. Preserve minimal metadata/hashes **only where lawful**, and mark lost body coverage. Old tasks may remain on their legacy retention policy until explicitly migrated or deleted.
 5. **Backup/derived cleanup:** account for replication, PITR snapshots, local debug exports, temp files and copied diagnostic bundles. TTL on one table does not enforce a whole-system promise.
 
-**Product trade-off:** to replay published scenes for years, retain published story/canon as product data. To re-open the *exact historic private model prompt* after 30 days, either extend its allowed retention or honestly show metadata-only. Both guarantees can coexist with separate data classes, but never with contradictory backdoors in SQL.
+**Product trade-off:** to replay published scenes for years, retain published story/canon as product data. To re-open the *exact historic private model prompt* after its **approved** retention horizon, either extend its lawful access/retention for that case or honestly show metadata-only. The [policy proposal](../product-policy-recommendations-v1.md) now suggests 90/180 days **as candidates**, not installed defaults. Both guarantees can coexist with separate data classes, but never with contradictory backdoors in SQL.
 
 ## 7. Backpressure, safety and physical compatibility gates
 
