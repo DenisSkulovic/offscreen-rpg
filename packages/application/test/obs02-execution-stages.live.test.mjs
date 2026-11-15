@@ -368,22 +368,23 @@ test('OBS02: duplicate stage insert is idempotent; foreign G stays empty', async
       .where(eq(gameActionReceipt.operationId, seeded.operationId));
     const generationId = receipt.generationId;
 
-    await recordExecutionStage(database.db, {
+    const [existing] = await listExecutionStages(database, generationId);
+    assert.equal(existing.stage, 'cause-captured');
+    const replay = {
       generationId,
-      stage: 'cause-captured',
-      outcome: 'completed',
-      idempotencyKey: 'cause-captured',
-      sourceKind: 'context-capture',
-      sourceId: generationId,
-    });
-    await recordExecutionStage(database.db, {
-      generationId,
-      stage: 'cause-captured',
-      outcome: 'completed',
-      idempotencyKey: 'cause-captured',
-      sourceKind: 'context-capture',
-      sourceId: generationId,
-    });
+      stage: existing.stage,
+      outcome: existing.outcome,
+      idempotencyKey: existing.idempotencyKey,
+      operationId: existing.operationId,
+      attemptId: existing.attemptId,
+      sourceKind: existing.sourceKind,
+      sourceId: existing.sourceId,
+      sourceSha256: existing.sourceSha256,
+      failureClass: existing.failureClass,
+      producerBuildId: existing.producerBuildId,
+    };
+    await recordExecutionStage(database.db, replay);
+    await recordExecutionStage(database.db, replay);
     const stages = await listExecutionStages(database, generationId);
     assert.equal(
       stages.filter((row) => row.stage === 'cause-captured').length,

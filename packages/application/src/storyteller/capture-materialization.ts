@@ -39,7 +39,11 @@ import { activeSceneAnchorSchema } from './context';
 import { storytellerKind, storytellerTopic } from './records';
 import { actionProjectedStateDigest } from '../campaign/action-overlap';
 import { campaign } from '@offscreen/db/campaign-schema';
-import { recordExecutionStage } from './execution-stages';
+import {
+  captureMaterializationStartedKey,
+  captureTerminalStageKey,
+  recordExecutionStage,
+} from './execution-stages';
 import { persistPromptProvenance } from './prompt-provenance';
 
 function normalizeActiveSceneScope(scope: unknown) {
@@ -392,6 +396,7 @@ async function claimCaptureLease(
       leaseId: string;
       capture: AnyContextCaptureV1;
       attempts: number;
+      rearmEpoch: number;
     }
 > {
   const leaseId = randomUUID();
@@ -438,6 +443,7 @@ async function claimCaptureLease(
       return { claimed: false as const, reason: 'terminal' as const };
     }
     const nextAttempts = row.materializationAttempts + 1;
+    const rearmEpoch = row.rearmEpoch;
     await tx
       .update(storytellerContextCapture)
       .set({
@@ -448,25 +454,46 @@ async function claimCaptureLease(
         updatedAt: new Date(),
       })
       .where(eq(storytellerContextCapture.captureId, row.captureId));
+    await recordExecutionStage(tx, {
+      generationId: row.captureId,
+      stage: 'context-materialization-started',
+      outcome: 'completed',
+      idempotencyKey: captureMaterializationStartedKey(
+        rearmEpoch,
+        nextAttempts,
+      ),
+      operationId: row.operationId,
+      sourceKind: 'context-capture',
+      sourceId: row.captureId,
+    });
     return {
       claimed: true as const,
       captureId: row.captureId,
       leaseId,
       capture,
       attempts: nextAttempts,
+      rearmEpoch,
     };
   });
 }
 
-async function releaseCaptureFailure(
+/** OBS02-H: lease-fenced terminal release; losers return lease-lost with no stage. */
+export async function releaseCaptureFailure(
   database: Database,
   input: {
     captureId: string;
     leaseId: string;
     attempts: number;
+    rearmEpoch: number;
     code: string;
   },
-) {
+): Promise<
+  | { applied: false; reason: 'lease-lost' }
+  | {
+      applied: true;
+      state: 'captured' | 'held' | 'blocked' | 'stale';
+    }
+> {
   const terminalBlocked =
     input.code === 'corrupt_source' ||
     input.code === 'source_mismatch' ||
@@ -483,34 +510,47 @@ async function releaseCaptureFailure(
         ? ('blocked' as const)
         : ('held' as const)
       : ('captured' as const);
-  await database.db
-    .update(storytellerContextCapture)
-    .set({
-      state,
-      failureCode: input.code,
-      leaseId: null,
-      leaseExpiresAt: null,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(
-        eq(storytellerContextCapture.captureId, input.captureId),
-        eq(storytellerContextCapture.leaseId, input.leaseId),
-      ),
-    );
-  if (state === 'held' || state === 'blocked' || state === 'stale') {
-    await recordExecutionStage(database.db, {
-      generationId: input.captureId,
-      stage: state === 'held' ? 'stage-held' : 'stage-failed',
-      outcome:
-        state === 'held' ? 'held' : state === 'stale' ? 'stale' : 'failed',
-      idempotencyKey: `capture-terminal:${state}:${input.attempts}`,
-      sourceKind: 'context-capture',
-      sourceId: input.captureId,
-      failureClass: input.code,
-    });
-  }
-  return state;
+  return database.db.transaction(async (tx) => {
+    const updated = await tx
+      .update(storytellerContextCapture)
+      .set({
+        state,
+        failureCode: input.code,
+        leaseId: null,
+        leaseExpiresAt: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(storytellerContextCapture.captureId, input.captureId),
+          eq(storytellerContextCapture.leaseId, input.leaseId),
+        ),
+      )
+      .returning({
+        captureId: storytellerContextCapture.captureId,
+        rearmEpoch: storytellerContextCapture.rearmEpoch,
+      });
+    if (!updated.length) {
+      return { applied: false as const, reason: 'lease-lost' as const };
+    }
+    if (state === 'held' || state === 'blocked' || state === 'stale') {
+      await recordExecutionStage(tx, {
+        generationId: input.captureId,
+        stage: state === 'held' ? 'stage-held' : 'stage-failed',
+        outcome:
+          state === 'held' ? 'held' : state === 'stale' ? 'stale' : 'failed',
+        idempotencyKey: captureTerminalStageKey(
+          input.rearmEpoch,
+          input.attempts,
+          state,
+        ),
+        sourceKind: 'context-capture',
+        sourceId: input.captureId,
+        failureClass: input.code,
+      });
+    }
+    return { applied: true as const, state };
+  });
 }
 
 async function promoteCapture(
@@ -776,21 +816,17 @@ export async function materializePendingActionCapture(
     if (claim.reason === 'missing') return { handled: false };
     return { handled: true, outcome: 'skipped' };
   }
-  await recordExecutionStage(database.db, {
-    generationId: claim.captureId,
-    stage: 'context-materialization-started',
-    outcome: 'completed',
-    idempotencyKey: `context-materialization-started:${claim.attempts}`,
-    sourceKind: 'context-capture',
-    sourceId: claim.captureId,
-  });
   if (!documentStore) {
-    await releaseCaptureFailure(database, {
+    const released = await releaseCaptureFailure(database, {
       captureId: claim.captureId,
       leaseId: claim.leaseId,
       attempts: claim.attempts,
+      rearmEpoch: claim.rearmEpoch,
       code: 'document_store',
     });
+    if (!released.applied) {
+      return { handled: true, outcome: 'skipped' };
+    }
     return { handled: true, outcome: 'held' };
   }
 
@@ -807,15 +843,22 @@ export async function materializePendingActionCapture(
             ? error.message
             : 'missing_source'
         : 'materialization_failed';
-    const state = await releaseCaptureFailure(database, {
+    const released = await releaseCaptureFailure(database, {
       captureId: claim.captureId,
       leaseId: claim.leaseId,
       attempts: claim.attempts,
+      rearmEpoch: claim.rearmEpoch,
       code,
     });
+    if (!released.applied) {
+      return { handled: true, outcome: 'skipped' };
+    }
     return {
       handled: true,
-      outcome: state === 'blocked' || state === 'stale' ? 'blocked' : 'held',
+      outcome:
+        released.state === 'blocked' || released.state === 'stale'
+          ? 'blocked'
+          : 'held',
     };
   }
 
@@ -832,15 +875,22 @@ export async function materializePendingActionCapture(
   } catch (error) {
     const code =
       error instanceof Error ? error.message : 'promotion_failed';
-    const state = await releaseCaptureFailure(database, {
+    const released = await releaseCaptureFailure(database, {
       captureId: claim.captureId,
       leaseId: claim.leaseId,
       attempts: claim.attempts,
+      rearmEpoch: claim.rearmEpoch,
       code,
     });
+    if (!released.applied) {
+      return { handled: true, outcome: 'skipped' };
+    }
     return {
       handled: true,
-      outcome: state === 'blocked' || state === 'stale' ? 'blocked' : 'held',
+      outcome:
+        released.state === 'blocked' || released.state === 'stale'
+          ? 'blocked'
+          : 'held',
     };
   }
   return { handled: true, outcome: 'promoted' };
