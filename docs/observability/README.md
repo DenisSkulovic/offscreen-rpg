@@ -1,6 +1,6 @@
 # Forensic Observability, Provenance & Replay
 
-**Status: cross-cutting architecture program, design waves 1–2 drafted (2026-11-15).** No code, migrations, test execution, hosting, external model calls or paid services authorized by this document. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
+**Status: cross-cutting architecture program, design waves 1–3 drafted (2026-11-15), three bounded code Changes Proposed but not authorized.** No code, migrations, test execution, hosting, external model calls or paid services authorized by this document. The owner's request is a serious, permanent system for understanding actual historical behavior, not more verbose console logs.
 
 **Project method:** product destination → evidence/authority model → source-grounded audit → technical architecture and cost/privacy challenge → separately accepted bounded code-bearing Changes → verified operational and human evidence. The existing Admin product direction was accepted on 2026-11-14; this program **extends** it rather than superseding its staff authority and redaction guarantees. Active Change selection remains owned by [docs/changes/README.md](../changes/README.md).
 
@@ -9,9 +9,15 @@
 | Need | Document | Authority |
 | --- | --- | --- |
 | What experience and forensic guarantees should exist for player, Support and Engineering? | [Product destination and golden journeys](product-vision.md) | Product target / recommendations for owner acceptance |
+| **What concrete privacy/access/replay policy do we recommend?** | [Proposed product-policy decisions V1](product-policy-recommendations-v1.md) | Advisor recommendation; owner/legal acceptance pending |
+| **How should a future Cursor session begin safely?** | [OBS01–OBS03 first-wave handoff](handoff/first-forensic-wave.md) | Three code-bearing Changes **Proposed, NOT Ready** |
 | What actually exists, what is only a fixture, what is absent? | [Source-grounded inventory and gap audit](evidence/current-source-inventory-2026-11-15.md) | Dated code inspection, **not** runtime proof |
 | What durable entities, IDs, immutable artifacts and causal edges exist? | [Evidence graph and capture model](technical/evidence-model.md) | Technical target, separate from game authority |
 | **Which actual SQL writers overwrite facts, and where are the replay gaps?** | [Detailed mutation-writer matrix](evidence/mutation-writer-audit-2026-11-15.md) | Dated direct source audit; no running proof |
+| **Where do private model/user bodies actually survive today?** | [Private-content source/retention inventory](evidence/private-content-retention-inventory-2026-11-15.md) | Source-inspected existing SQL/CAS/QA copies; deletion not tested |
+| **Why can't canonical DocumentStore simply be our expiring forensic archive?** | [ProtectedEvidenceStore V1](technical/protected-artifact-store-v1.md) | Separate custody, encryption/erasure/size; proposed only |
+| **How will source data remain interpretable across schema upgrades?** | [Archive codecs and upcasters](technical/archive-codecs-and-evolution-v1.md) | Historical semantic/runtime shape and exact bytes; proposed |
+| **How do committed, estimated, published and AI-candidate time differ?** | [Temporal frontiers and coverage](technical/temporal-frontiers-and-coverage-v1.md) | Source-backed historical truth modes |
 | **What exact Postgres/CAS tables, codecs, indexes and lifecycle?** | [Physical evidence storage V1](technical/physical-evidence-storage-v1.md) | Proposed DDL/data contract, **not migration-ready** |
 | **How do we survive crashes, retries and uncertain provider sends?** | [SQL/CAS/Temporal capture protocol](technical/capture-transaction-protocol.md) | Proposed atomicity and failure matrix |
 | **How is an old actor/world/clock state reconstructed without new effects?** | [Historical reconstruction V1](technical/reconstruction-algorithm-v1.md) | Read-only data projection, not implemented |
