@@ -4,9 +4,11 @@
 
 Current change: none
 
-**OBS01 (2026-11-15): Done.** Admin campaign operations include provisional/held G before any attempt. Evidence [obs01](../observability/evidence/obs01-operation-coverage-2026-11-15.md). Next recommended: [OBS00](2026-11-15--obs00-live-provider-custody/CHANGE.md) (A: dispatch forward) or [OBS02](2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md).
+**OBS00-A (2026-11-15): Done.** Worker provider wrapper forwards `(task, dispatch)` unchanged; no `dispatchAuthority`. Evidence [obs00-a](../observability/evidence/obs00-a-dispatch-forward-2026-11-15.md). **OBS00-B blocked** (independent current authority).
 
-**2026-11-15 forensic observability / replay:** [index](../observability/README.md) → [handoff](../observability/handoff/first-forensic-wave.md). Remaining Proposed: OBS00, OBS02–OBS04.
+**OBS01 (2026-11-15): Done.** Admin campaign operations include provisional/held G before any attempt. Evidence [obs01](../observability/evidence/obs01-operation-coverage-2026-11-15.md).
+
+**2026-11-15 forensic observability / replay:** [index](../observability/README.md) → [handoff](../observability/handoff/first-forensic-wave.md). Remaining Proposed: OBS00-B, OBS02–OBS04.
 
 **GM02 (2026-11-15): Done.** Accept one reviewable inspect candidate into finite-action settlement. Evidence [gm02](../experience/evidence/gm02-custom-intent-admit-2026-11-15.md). Remaining Proposed: GM03/GM07 (conditional), ENG03 priorities 3–6.
 

@@ -1,8 +1,12 @@
 import {
   executionPolicySchema,
   offlineExecution,
+  type ExecutionPolicy,
 } from '@offscreen/storyteller/tasks';
-import { createOpenRouterProvider } from '@offscreen/storyteller/providers/openrouter';
+import {
+  createOpenRouterProvider,
+  type StorytellerProvider,
+} from '@offscreen/storyteller/providers/openrouter';
 
 /** Explicit opt-in only. A credential alone never selects a provider or creates an allowance. */
 export function readStorytellerExecution(env: NodeJS.ProcessEnv) {
@@ -20,6 +24,22 @@ export function readStorytellerExecution(env: NodeJS.ProcessEnv) {
   return execution;
 }
 
+/**
+ * OBS00-A: worker provider adapter that preserves the frozen per-round dispatch.
+ * Must never silently drop the second argument or rewrite request bodies.
+ */
+export function wrapApprovedWorkerProvider(
+  provider: StorytellerProvider,
+  approvedExecution: ExecutionPolicy,
+): StorytellerProvider {
+  return async (task, dispatch) => {
+    if (JSON.stringify(task.execution) !== JSON.stringify(approvedExecution)) {
+      throw new Error('Execution policy differs from approved worker policy');
+    }
+    return provider(task, dispatch);
+  };
+}
+
 export function readStorytellerWorkerOptions(env: NodeJS.ProcessEnv) {
   const execution = readStorytellerExecution(env);
   if (execution.mode !== 'provider') {
@@ -30,12 +50,8 @@ export function readStorytellerWorkerOptions(env: NodeJS.ProcessEnv) {
     apiKey: env['OPENROUTER_API_KEY'] ?? '',
   });
   // A worker cannot silently run a queued policy using a newly selected route/run.
+  // Does not supply dispatchAuthority (OBS00-B); paid sends stay denied until that exists.
   return {
-    provider: async (task: Parameters<typeof provider>[0]) => {
-      if (JSON.stringify(task.execution) !== JSON.stringify(execution)) {
-        throw new Error('Execution policy differs from approved worker policy');
-      }
-      return provider(task);
-    },
+    provider: wrapApprovedWorkerProvider(provider, execution),
   };
 }
