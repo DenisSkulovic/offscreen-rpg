@@ -4,6 +4,8 @@
 
 **Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, existing engine implementation, technical auth/storage designs or the implementation queue. The [platform ecosystem](../experience/platform-ecosystem.md) already separates the operator console from player/public experiences. The [product vision](../vision.md) and [game domain](../concepts.md) remain owners of gameplay intent.
 
+**2026-11-15 cross-workspace forensic observability design:** [Support, Engineering and replay investigation experience](../observability/admin-investigation-experience.md) builds on existing AD01–AD08 security and diagnostic boundaries. It relies on [native evidence and provenance](../observability/technical/evidence-model.md), [prompt/source history](../observability/technical/context-provenance.md), and [retention/replay policy](../observability/technical/replay-retention-and-privacy.md). **This is proposed wave-2 product design, not implemented Admin evidence access or new staff grant.** No read privilege is enlarged by this link.
+
 ## Choose the product question
 
 | Question | Product document |
