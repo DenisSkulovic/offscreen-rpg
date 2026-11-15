@@ -4,7 +4,9 @@
 
 Current change: none
 
-**2026-11-15 forensic observability / replay design-only initiative:** [product and technical index](../observability/README.md) → [current source inventory](../observability/evidence/current-source-inventory-2026-11-15.md) → [backend-first staged program](../observability/design-program.md). **Five bounded code-bearing Changes Proposed:** [OBS00 P0 live worker authority/packet integrity](2026-11-15--obs00-live-provider-custody/CHANGE.md), [OBS01 safe operation coverage](2026-11-15--obs01-operation-coverage/CHANGE.md), [OBS02 real runtime Storyteller stage receipts](2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md), [OBS03 prompt/source provenance](2026-11-15--obs03-prompt-provenance/CHANGE.md), [OBS04 finite-action atomic evidence pilot](2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md). [Short handoff](../observability/handoff/first-forensic-wave.md). **None Ready, selected or implemented.** Preserve existing ENG03/SA/GM/AD ownership and current status; this documentation is not authorization for telemetry deployment, data retention mutation, provider spending, or code work.
+**OBS01 (2026-11-15): Done.** Admin campaign operations include provisional/held G before any attempt. Evidence [obs01](../observability/evidence/obs01-operation-coverage-2026-11-15.md). Next recommended: [OBS00](2026-11-15--obs00-live-provider-custody/CHANGE.md) (A: dispatch forward) or [OBS02](2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md).
+
+**2026-11-15 forensic observability / replay:** [index](../observability/README.md) → [handoff](../observability/handoff/first-forensic-wave.md). Remaining Proposed: OBS00, OBS02–OBS04.
 
 **GM02 (2026-11-15): Done.** Accept one reviewable inspect candidate into finite-action settlement. Evidence [gm02](../experience/evidence/gm02-custom-intent-admit-2026-11-15.md). Remaining Proposed: GM03/GM07 (conditional), ENG03 priorities 3–6.
 

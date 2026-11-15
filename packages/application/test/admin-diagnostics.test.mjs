@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  decodeOperationCursor,
+  encodeOperationCursor,
   projectCampaignMetadata,
   projectRedactedOperation,
   sanitizeFailureCode,
@@ -41,9 +43,22 @@ test('redacted operation strips unsafe kind/failure and keeps publication honest
       publicationState: null,
       failureCode: null,
       updatedAt: '2026-02-01T00:00:00.000Z',
+      attemptCoverage: 'none-recorded',
     }),
   );
   assert.equal(succeededUnpublished.publication, 'pending');
+  assert.equal(succeededUnpublished.attemptCoverage, 'none-recorded');
   assert.equal('input' in succeededUnpublished, false);
   assert.equal('output' in succeededUnpublished, false);
+});
+
+test('OBS01: operation cursor round-trips and rejects garbage', () => {
+  const id = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+  const encoded = encodeOperationCursor('2026-11-15T12:00:00.000Z', id);
+  const decoded = decodeOperationCursor(encoded);
+  assert.ok(decoded);
+  assert.equal(decoded.id, id);
+  assert.equal(decoded.updatedAt.toISOString(), '2026-11-15T12:00:00.000Z');
+  assert.equal(decodeOperationCursor('not-a-cursor'), null);
+  assert.equal(decodeOperationCursor('2026-11-15T12:00:00.000Z~nope'), null);
 });

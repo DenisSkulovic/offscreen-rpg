@@ -52,6 +52,8 @@ export {
 } from './player-reads.js';
 export {
   createAdminDiagnosticsReads,
+  decodeOperationCursor,
+  encodeOperationCursor,
   projectCampaignMetadata,
   projectRedactedOperation,
   sanitizeFailureCode,

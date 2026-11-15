@@ -1,9 +1,15 @@
-import { and, desc, eq, gt, inArray, isNotNull, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
-import { story } from '@offscreen/db/story-schema';
+import { campaignReport } from '@offscreen/db/campaign-schema';
+import {
+  story,
+  storyPassage,
+  storyResolution,
+} from '@offscreen/db/story-schema';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   storytellerAttempt,
+  storytellerContextCapture,
   storytellerPublication,
 } from '@offscreen/db/storyteller-schema';
 import type {
@@ -34,6 +40,10 @@ const SAFE_FAILURE_CODES = new Set([
   'budget_exhausted',
   'cancelled',
   'blocked',
+  'missing_source',
+  'document_store',
+  'corrupt_source',
+  'source_mismatch',
 ]);
 
 function toIso(value: Date | string): string {
@@ -42,7 +52,6 @@ function toIso(value: Date | string): string {
 
 export function sanitizeOperationKind(kind: string): string {
   if (SAFE_KIND_PREFIXES.some((prefix) => kind.startsWith(prefix))) {
-    // Keep a bounded category token only (no prompt-bearing suffix).
     const token = kind.slice(0, 64);
     if (/^[a-z0-9._-]+$/i.test(token)) return token;
   }
@@ -55,6 +64,30 @@ export function sanitizeFailureCode(
   if (!code) return undefined;
   if (SAFE_FAILURE_CODES.has(code)) return code;
   return 'failed';
+}
+
+export function encodeOperationCursor(updatedAt: Date | string, id: string) {
+  return `${toIso(updatedAt)}~${id}`;
+}
+
+export function decodeOperationCursor(cursor: string): {
+  updatedAt: Date;
+  id: string;
+} | null {
+  const sep = cursor.lastIndexOf('~');
+  if (sep <= 0) return null;
+  const iso = cursor.slice(0, sep);
+  const id = cursor.slice(sep + 1);
+  const updatedAt = new Date(iso);
+  if (Number.isNaN(updatedAt.getTime())) return null;
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      id,
+    )
+  ) {
+    return null;
+  }
+  return { updatedAt, id };
 }
 
 export function projectCampaignMetadata(input: {
@@ -85,6 +118,7 @@ export function projectRedactedOperation(input: {
   publicationState: string | null;
   failureCode: string | null;
   updatedAt: Date | string;
+  attemptCoverage?: RedactedOperationV1['attemptCoverage'];
 }): RedactedOperationV1 {
   const publication: RedactedOperationV1['publication'] =
     input.publicationState === 'pending' ||
@@ -93,7 +127,6 @@ export function projectRedactedOperation(input: {
     input.publicationState === 'blocked'
       ? input.publicationState
       : 'unknown';
-  // Succeeded model output without publication must not read as published.
   const effectivePublication =
     input.state === 'succeeded' && publication === 'unknown'
       ? 'pending'
@@ -105,10 +138,81 @@ export function projectRedactedOperation(input: {
     publication: effectivePublication,
     sourceCoverage: 'since-enabled',
     lastObservedAt: toIso(input.updatedAt),
+    ...(input.attemptCoverage
+      ? { attemptCoverage: input.attemptCoverage }
+      : {}),
     ...(sanitizeFailureCode(input.failureCode)
       ? { safeFailureCode: sanitizeFailureCode(input.failureCode) }
       : {}),
   };
+}
+
+function asGenerationState(state: string): RedactedOperationV1['state'] {
+  if (
+    state === 'pending' ||
+    state === 'running' ||
+    state === 'succeeded' ||
+    state === 'failed' ||
+    state === 'uncertain'
+  ) {
+    return state;
+  }
+  return 'failed';
+}
+
+/**
+ * OBS01: campaign-linked generation IDs from every durable story authority,
+ * never inferred from generation.ownerId alone.
+ */
+async function loadCampaignLinkedGenerationIds(
+  database: Database,
+  campaignId: string,
+): Promise<Set<string>> {
+  const [fromResolution, fromPassage, fromReport, fromCapture, fromAttempt] =
+    await Promise.all([
+      database.db
+        .select({ id: storyResolution.generationId })
+        .from(storyResolution)
+        .where(eq(storyResolution.storyId, campaignId)),
+      database.db
+        .select({ id: storyPassage.sourceGenerationId })
+        .from(storyPassage)
+        .where(
+          and(
+            eq(storyPassage.storyId, campaignId),
+            sql`${storyPassage.sourceGenerationId} is not null`,
+          ),
+        ),
+      database.db
+        .select({ id: campaignReport.generationId })
+        .from(campaignReport)
+        .where(
+          and(
+            eq(campaignReport.storyId, campaignId),
+            sql`${campaignReport.generationId} is not null`,
+          ),
+        ),
+      database.db
+        .select({ id: storytellerContextCapture.captureId })
+        .from(storytellerContextCapture)
+        .where(eq(storytellerContextCapture.storyId, campaignId)),
+      database.db
+        .select({ id: storytellerAttempt.generationId })
+        .from(storytellerAttempt)
+        .where(eq(storytellerAttempt.storyId, campaignId)),
+    ]);
+
+  const ids = new Set<string>();
+  for (const row of [
+    ...fromResolution,
+    ...fromPassage,
+    ...fromReport,
+    ...fromCapture,
+    ...fromAttempt,
+  ]) {
+    if (row.id) ids.add(row.id);
+  }
+  return ids;
 }
 
 export function createAdminDiagnosticsReads(database: Database) {
@@ -141,17 +245,20 @@ export function createAdminDiagnosticsReads(database: Database) {
       const page = rows.slice(0, PAGE_SIZE);
       const items: CampaignMetadataV1[] = [];
       for (const row of page) {
-        const health = await database.db
-          .select({
-            pendingOrRunning: sql<number>`coalesce(sum(case when ${generation.state} in ('pending','running') then 1 else 0 end), 0)`,
-            uncertain: sql<number>`coalesce(sum(case when ${generation.state} = 'uncertain' then 1 else 0 end), 0)`,
-          })
-          .from(storytellerAttempt)
-          .innerJoin(
-            generation,
-            eq(generation.id, storytellerAttempt.generationId),
-          )
-          .where(eq(storytellerAttempt.storyId, row.id));
+        const linked = await loadCampaignLinkedGenerationIds(database, row.id);
+        let pendingOrRunning = false;
+        let uncertain = false;
+        if (linked.size > 0) {
+          const health = await database.db
+            .select({
+              pendingOrRunning: sql<number>`coalesce(sum(case when ${generation.state} in ('pending','running') then 1 else 0 end), 0)`,
+              uncertain: sql<number>`coalesce(sum(case when ${generation.state} = 'uncertain' then 1 else 0 end), 0)`,
+            })
+            .from(generation)
+            .where(inArray(generation.id, [...linked]));
+          pendingOrRunning = Number(health[0]?.pendingOrRunning ?? 0) > 0;
+          uncertain = Number(health[0]?.uncertain ?? 0) > 0;
+        }
 
         items.push(
           projectCampaignMetadata({
@@ -159,8 +266,8 @@ export function createAdminDiagnosticsReads(database: Database) {
             createdAt: row.createdAt,
             revision: row.revision,
             viewVersion: row.viewVersion,
-            pendingOrRunning: Number(health[0]?.pendingOrRunning ?? 0) > 0,
-            uncertain: Number(health[0]?.uncertain ?? 0) > 0,
+            pendingOrRunning,
+            uncertain,
           }),
         );
       }
@@ -188,12 +295,37 @@ export function createAdminDiagnosticsReads(database: Database) {
         .limit(1);
       if (!owned) throw new AdminSessionError('not_authorized');
 
-      const filters = [
-        eq(storytellerAttempt.storyId, input.campaignId),
-        isNotNull(storytellerAttempt.storyId),
-      ];
-      if (input.cursor) {
-        filters.push(lt(generation.updatedAt, new Date(input.cursor)));
+      const linked = await loadCampaignLinkedGenerationIds(
+        database,
+        input.campaignId,
+      );
+      if (linked.size === 0) {
+        return {
+          version: 1,
+          campaignId: input.campaignId,
+          items: [],
+          nextCursor: null,
+        };
+      }
+
+      const cursor = input.cursor
+        ? decodeOperationCursor(input.cursor)
+        : null;
+      if (input.cursor && !cursor) {
+        throw new AdminSessionError('conflict');
+      }
+
+      const filters = [inArray(generation.id, [...linked])];
+      if (cursor) {
+        filters.push(
+          or(
+            lt(generation.updatedAt, cursor.updatedAt),
+            and(
+              eq(generation.updatedAt, cursor.updatedAt),
+              lt(generation.id, cursor.id),
+            ),
+          )!,
+        );
       }
 
       const rows = await database.db
@@ -204,42 +336,64 @@ export function createAdminDiagnosticsReads(database: Database) {
           failureCode: generation.failureCode,
           updatedAt: generation.updatedAt,
           publicationState: storytellerPublication.state,
+          captureState: storytellerContextCapture.state,
+          captureFailure: storytellerContextCapture.failureCode,
+          attemptId: storytellerAttempt.id,
         })
-        .from(storytellerAttempt)
-        .innerJoin(
-          generation,
-          eq(generation.id, storytellerAttempt.generationId),
-        )
+        .from(generation)
         .leftJoin(
           storytellerPublication,
           eq(storytellerPublication.generationId, generation.id),
         )
+        .leftJoin(
+          storytellerContextCapture,
+          eq(storytellerContextCapture.captureId, generation.id),
+        )
+        .leftJoin(
+          storytellerAttempt,
+          eq(storytellerAttempt.generationId, generation.id),
+        )
         .where(and(...filters))
-        .orderBy(desc(generation.updatedAt))
-        .limit(PAGE_SIZE * 3);
+        .orderBy(desc(generation.updatedAt), desc(generation.id))
+        .limit(PAGE_SIZE * 4);
 
-      // Deduplicate by generation id (multiple attempts).
       const seen = new Set<string>();
       const items: RedactedOperationV1[] = [];
       for (const row of rows) {
         if (seen.has(row.id)) continue;
         seen.add(row.id);
         if (items.length >= PAGE_SIZE) break;
+
+        const attemptCoverage = row.attemptId
+          ? ('recorded' as const)
+          : ('none-recorded' as const);
+        let failureCode = row.failureCode;
+        if (
+          !failureCode &&
+          (row.captureState === 'held' || row.captureState === 'blocked')
+        ) {
+          failureCode = row.captureFailure ?? 'blocked';
+        }
+
         items.push(
           projectRedactedOperation({
             id: row.id,
             kind: row.kind,
-            state: row.state,
+            state: asGenerationState(row.state),
             publicationState: row.publicationState,
-            failureCode: row.failureCode,
+            failureCode,
             updatedAt: row.updatedAt,
+            attemptCoverage,
           }),
         );
       }
 
       const next =
-        rows.length > PAGE_SIZE && items.length > 0
-          ? items[items.length - 1]!.lastObservedAt
+        items.length >= PAGE_SIZE
+          ? encodeOperationCursor(
+              items[items.length - 1]!.lastObservedAt,
+              items[items.length - 1]!.id,
+            )
           : null;
 
       return {
@@ -267,7 +421,14 @@ export function createAdminDiagnosticsReads(database: Database) {
           updatedAt: generation.updatedAt,
           ownerId: generation.ownerId,
           publicationState: storytellerPublication.state,
-          storyId: storytellerAttempt.storyId,
+          attemptStoryId: storytellerAttempt.storyId,
+          resolutionStoryId: storyResolution.storyId,
+          captureStoryId: storytellerContextCapture.storyId,
+          reportStoryId: campaignReport.storyId,
+          passageStoryId: storyPassage.storyId,
+          attemptId: storytellerAttempt.id,
+          captureState: storytellerContextCapture.state,
+          captureFailure: storytellerContextCapture.failureCode,
         })
         .from(generation)
         .leftJoin(
@@ -278,23 +439,56 @@ export function createAdminDiagnosticsReads(database: Database) {
           storytellerAttempt,
           eq(storytellerAttempt.generationId, generation.id),
         )
+        .leftJoin(
+          storyResolution,
+          eq(storyResolution.generationId, generation.id),
+        )
+        .leftJoin(
+          storytellerContextCapture,
+          eq(storytellerContextCapture.captureId, generation.id),
+        )
+        .leftJoin(
+          campaignReport,
+          eq(campaignReport.generationId, generation.id),
+        )
+        .leftJoin(
+          storyPassage,
+          eq(storyPassage.sourceGenerationId, generation.id),
+        )
         .where(eq(generation.id, input.operationId))
         .limit(1);
 
       if (!row) throw new AdminSessionError('not_authorized');
 
+      const campaignId =
+        row.attemptStoryId ??
+        row.resolutionStoryId ??
+        row.captureStoryId ??
+        row.reportStoryId ??
+        row.passageStoryId ??
+        null;
+
+      let failureCode = row.failureCode;
+      if (
+        !failureCode &&
+        (row.captureState === 'held' || row.captureState === 'blocked')
+      ) {
+        failureCode = row.captureFailure ?? 'blocked';
+      }
+
       const data = projectRedactedOperation({
         id: row.id,
         kind: row.kind,
-        state: row.state,
+        state: asGenerationState(row.state),
         publicationState: row.publicationState,
-        failureCode: row.failureCode,
+        failureCode,
         updatedAt: row.updatedAt,
+        attemptCoverage: row.attemptId ? 'recorded' : 'none-recorded',
       });
       const observedAt = new Date().toISOString();
       return {
         ownerId: row.ownerId,
-        campaignId: row.storyId,
+        campaignId,
         envelope: {
           version: 1,
           subject: {

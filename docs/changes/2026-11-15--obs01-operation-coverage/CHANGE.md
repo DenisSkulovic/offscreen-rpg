@@ -1,6 +1,6 @@
 # OBS01 | Every real campaign Storyteller generation is findable before its first attempt
 
-**State: Proposed; design specified, NOT Ready.** **Code-bearing candidate:** S1 read-only Admin diagnostics + tests; no schema migration, raw context access, model/provider traffic, new data capture or operational stack deployment. This is a **coverage and source-join correctness packet**, not the entire forensic platform.
+**State: Done (2026-11-15).** Evidence: [obs01-operation-coverage-2026-11-15](../../observability/evidence/obs01-operation-coverage-2026-11-15.md). **Code-bearing:** S1 read-only Admin diagnostics + tests; no schema migration, raw context access, model/provider traffic. Provider spend: zero.
 
 **Design authorities:** [forensic vision](../../observability/product-vision.md), [source inventory](../../observability/evidence/current-source-inventory-2026-11-15.md), [source-level private data map](../../observability/evidence/private-content-retention-inventory-2026-11-15.md), [temporal/coverage contract](../../observability/technical/temporal-frontiers-and-coverage-v1.md), [role-safe read policy](../../observability/technical/forensic-access-and-read-contract-v1.md). **Dependency:** AD01–AD08 Done, existing safe `ai.operation.read` and campaign visibility checks. **Cursor must not start** without explicit owner code authorization.
 

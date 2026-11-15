@@ -268,6 +268,11 @@ export const redactedOperationV1Schema = z.strictObject({
     'partial',
     'unknown',
   ]),
+  /**
+   * OBS01: whether any storyteller_attempt row was found for this G.
+   * `none-recorded` is not proof an LLM was never configured.
+   */
+  attemptCoverage: z.enum(['recorded', 'none-recorded']).optional(),
   lastObservedAt: z.string().datetime(),
   safeFailureCode: z.string().min(1).max(64).optional(),
 });
