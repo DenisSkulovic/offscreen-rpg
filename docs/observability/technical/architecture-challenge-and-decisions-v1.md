@@ -2,6 +2,8 @@
 
 **Status:** design challenge and recommended V1 dispositions, 2026-11-15. Source basis: [mutation audit](../evidence/mutation-writer-audit-2026-11-15.md), [SQL/artifact model](physical-evidence-storage-v1.md), [failure protocol](capture-transaction-protocol.md), [historical seek](reconstruction-algorithm-v1.md), [security](forensic-access-and-read-contract-v1.md), [measurement](../evidence/verification-and-sizing-protocol.md). These are engineering design recommendations, not owner-accepted retention/security/product policies or code authorization.
 
+**Wave-4 source challenge:** [default live-worker preflight](../evidence/live-worker-dispatch-preflight-2026-11-15.md) found that the worker's current provider wrapper drops per-round dispatch overrides and does not wire an independent `dispatchAuthority`. This is a P0 **pre-live source correctness** issue. The shared OpenRouter serializer is sound in isolation but does **not** prove the default worker sends the reviewed packet. [OBS00](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) requires mock-transport/authority tests before provider launch. This directly strengthens the decision to capture at *real execution boundaries*, not derive history later from intended call graphs.
+
 ## 1. The leading architectural explanation
 
 The project's biggest future forensic failures are likely to arise from **missing semantic evidence at the moment an operation executes**, not merely insufficient log verbosity. Existing data sources preserve many receipts, tasks and packet hashes, but they lack one consistent historic state frontier and selected/omitted prompt provenance. Capturing those facts in a native searchable ledger gives stronger causality than conventional distributed tracing alone.
