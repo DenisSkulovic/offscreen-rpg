@@ -10,6 +10,8 @@ import {
   caseSummaryPageV1Schema,
   caseSummaryV1Schema,
   adminSelfV1Schema,
+  supportSituationV1Schema,
+  type SupportSituationV1,
   type AdminSelfV1,
   type AdminStaffAccessV1,
   type AdminAuditPageV1,
@@ -215,6 +217,42 @@ export async function listAdminCases(
     throw new Error(`cases_failed_${response.status}`);
   }
   return caseSummaryPageV1Schema.parse(await readJson(response));
+}
+
+const SITUATION_UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * OBS07: case-scoped S1 Support Situation. Both ids must be UUIDs (no free
+ * entry). Every server denial is a privacy 404 → one non-enumerating error.
+ */
+export async function readAdminCaseSituation(
+  caseId: string,
+  campaignId: string,
+  signal?: AbortSignal,
+): Promise<SupportSituationV1> {
+  if (!SITUATION_UUID.test(caseId) || !SITUATION_UUID.test(campaignId)) {
+    throw new Error('situation_not_available');
+  }
+  const response = await fetch(
+    `/api/admin/cases/${caseId}/campaigns/${campaignId}/situation`,
+    getInit(signal),
+  );
+  if (response.status === 401) {
+    throw new Error('staff_session_required');
+  }
+  if (response.status === 403 || response.status === 404) {
+    throw new Error('situation_not_available');
+  }
+  if (!response.ok) {
+    throw new Error(`situation_failed_${response.status}`);
+  }
+  const parsed = supportSituationV1Schema.parse(await readJson(response));
+  // Never trust a response for a different pair than the one requested.
+  if (parsed.caseId !== caseId || parsed.campaignId !== campaignId) {
+    throw new Error('situation_not_available');
+  }
+  return parsed;
 }
 
 export async function createAdminCase(

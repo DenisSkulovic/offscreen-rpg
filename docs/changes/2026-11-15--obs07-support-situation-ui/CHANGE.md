@@ -1,6 +1,6 @@
 # OBS07 | Support Situation → Why: first actual investigation screen
 
-**State: Proposed, NOT Ready.** **Dependency:** [OBS06](../2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) **Done and security/coverage proven** before this UI code is authorized. One bounded frontend packet: render the **existing strict S1 SupportSituationV1 response** in the Admin Support workspace, with source-linked explanation and clear evidence gaps. No backend schema/auth grants, raw context, world changes, player replay or Grafana deployment.
+**State: Done (2026-11-15, synthetic/disposable scope; no production grant issuer). Evidence: [obs07 receipt](../../observability/evidence/obs07-support-situation-ui-2026-11-15.md).** Original design state: Proposed. **Dependency:** [OBS06](../2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) **Done and security/coverage proven** before this UI code is authorized. One bounded frontend packet: render the **existing strict S1 SupportSituationV1 response** in the Admin Support workspace, with source-linked explanation and clear evidence gaps. No backend schema/auth grants, raw context, world changes, player replay or Grafana deployment.
 
 **Target:** [Support/Developer human-first interactions](../../observability/admin-investigator-interactions-v1.md), [S1 read contract](../../observability/technical/support-situation-and-why-v1.md), [source audit](../../observability/evidence/obs06-support-situation-source-audit-2026-11-15.md), [React target](../../engineering/targets/react-next.md). No code authorization from Markdown.
 
