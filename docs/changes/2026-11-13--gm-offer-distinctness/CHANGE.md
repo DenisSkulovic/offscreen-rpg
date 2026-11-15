@@ -1,6 +1,6 @@
 # GM04 | A failed reassurance changes the next meaningful option
 
-**State:** Proposed, **not Ready**. **2026-11-15 recommended content policy and exact fixture:** [failed reassurance durable-approach contract](../../experience/decisions/gm04-failed-approach-v1.md). This selects `gary-reassurance-tried` as an actual failed-branch fact, a non-repeated next offer and negative checks; requires owner approval and latest-source validation, not just a label tweak. **Owner approval:** none; Cursor must not change source without separate authorization. **Kind:** one narrowly bounded fixture/game-content change + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Dependency:** current scripted SpongeBob/Gary benchmark still exhibits the same failure at implementation time.
+**State: Done (2026-11-15).** Evidence: [gm04-failed-approach-2026-11-15](../../experience/evidence/gm04-failed-approach-2026-11-15.md). **2026-11-15 content policy:** [failed reassurance durable-approach contract](../../experience/decisions/gm04-failed-approach-v1.md). **Kind:** one narrowly bounded fixture/game-content change + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md).
 
 ## Cursor first-screen brief
 

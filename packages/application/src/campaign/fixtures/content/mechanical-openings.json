@@ -82,6 +82,7 @@
         "facts": [
           { "id": "gary-alert", "value": true },
           { "id": "under-cover", "value": false },
+          { "id": "gary-reassurance-tried", "value": false },
           { "id": "location", "value": "pineapple" }
         ]
       },

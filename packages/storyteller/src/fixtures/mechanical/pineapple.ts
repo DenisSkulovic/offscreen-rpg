@@ -1,6 +1,147 @@
 import type { StorytellerTask } from '../../tasks';
 import { factValue, outcome, type MechanicalCharacter } from './shared';
 
+function takeCoverPlan() {
+  return {
+    version: 1 as const,
+    key: 'take-cover',
+    label: 'Slip behind the sofa',
+    intention: 'Put solid furniture between you and the rattling delivery.',
+    risk: null,
+    evidence: [] as string[],
+    requires: [
+      { id: 'gary-alert', value: true },
+      { id: 'under-cover', value: false },
+    ],
+    requiresStory: [] as { id: string; value: boolean | string }[],
+    requiresQuantities: [] as never[],
+    resolution: {
+      kind: 'automatic' as const,
+      fictionalDurationSeconds: 5,
+      outcome: outcome(
+        'You slip behind the sofa without approaching the window.',
+        [{ kind: 'fact.set.v1', fact: { id: 'under-cover', value: true } }],
+      ),
+    },
+  };
+}
+
+function calmGaryPlan() {
+  return {
+    version: 1 as const,
+    key: 'calm-gary',
+    label: 'Talk Gary down',
+    intention: 'Reassure Gary and ask what made the delivery seem dangerous.',
+    risk: 'A clumsy reassurance may deepen his alarm.',
+    evidence: [] as string[],
+    requires: [
+      { id: 'gary-alert', value: true },
+      { id: 'gary-reassurance-tried', value: false },
+    ],
+    requiresStory: [] as { id: string; value: boolean | string }[],
+    requiresQuantities: [] as never[],
+    resolution: {
+      kind: 'check' as const,
+      fictionalDurationSeconds: 5,
+      check: {
+        rule: 'srd-5.2.1-subset.v1' as const,
+        purpose: 'Calm Gary',
+        skill: 'persuasion',
+        ability: 'charisma' as const,
+        dc: 12,
+        advantage: false,
+        disadvantage: false,
+        modifiers: [],
+      },
+      difficultyBasis:
+        'Gary recognizes you, but the delivery is still moving on its own.',
+      success: outcome(
+        'Gary steadies himself and stops bristling at every sound.',
+        [{ kind: 'fact.set.v1', fact: { id: 'gary-alert', value: false } }],
+      ),
+      failure: outcome(
+        'Gary remains tense and turns one wary eyestalk toward you.',
+        [
+          {
+            kind: 'fact.set.v1',
+            fact: { id: 'gary-reassurance-tried', value: true },
+          },
+        ],
+      ),
+    },
+  };
+}
+
+function keepDistancePlan() {
+  return {
+    version: 1 as const,
+    key: 'keep-distance',
+    label: 'Call from the doorway',
+    intention: 'Keep your distance and ask Gary to signal what he noticed.',
+    risk: 'Distance is safer, but his answer may be hard to interpret.',
+    evidence: [] as string[],
+    requires: [{ id: 'gary-alert', value: true }],
+    requiresStory: [] as { id: string; value: boolean | string }[],
+    requiresQuantities: [] as never[],
+    resolution: {
+      kind: 'automatic' as const,
+      fictionalDurationSeconds: 5,
+      outcome: outcome(
+        'You stay by the doorway while Gary points both eyestalks toward the window.',
+      ),
+    },
+  };
+}
+
+/** After failed reassurance: cover plus a distinct doorway observation. */
+function observeFromDoorwayPlan(evidence: string) {
+  return {
+    version: 1 as const,
+    key: 'observe-from-doorway',
+    label: 'Study the sill from the doorway',
+    intention:
+      'Confirm what is rattling outside without approaching or trying reassurance again.',
+    risk: 'The doorway angle is poorer than cover beside the window.',
+    evidence: [evidence],
+    requires: [
+      { id: 'gary-alert', value: true },
+      { id: 'under-cover', value: false },
+      { id: 'gary-reassurance-tried', value: true },
+    ],
+    requiresStory: [] as { id: string; value: boolean | string }[],
+    requiresQuantities: [] as never[],
+    resolution: {
+      kind: 'check' as const,
+      fictionalDurationSeconds: 5,
+      check: {
+        rule: 'srd-5.2.1-subset.v1' as const,
+        purpose: 'Identify the disturbance from the doorway',
+        skill: 'perception',
+        ability: 'wisdom' as const,
+        dc: 13,
+        advantage: false,
+        disadvantage: false,
+        modifiers: [],
+      },
+      difficultyBasis:
+        'The doorway leaves more of the sill obscured than a covered angle.',
+      success: outcome(
+        'From the doorway you confirm the rattling damp parcel as the source of the noise.',
+        [],
+        [
+          {
+            fact: { id: 'delivery-at-window', value: 'rattling-parcel' },
+            evidence: [evidence],
+          },
+        ],
+      ),
+      failure: outcome(
+        'From this doorway angle you cannot yet separate the parcel from the other window noise.',
+      ),
+    },
+  };
+}
+
 export function pineappleOpeningPlans(character: MechanicalCharacter) {
   if (
     factValue(character.facts, 'location') !== 'pineapple' ||
@@ -10,81 +151,16 @@ export function pineappleOpeningPlans(character: MechanicalCharacter) {
     return null;
   }
   return [
-    {
-      version: 1,
-      key: 'take-cover',
-      label: 'Slip behind the sofa',
-      intention: 'Put solid furniture between you and the rattling delivery.',
-      risk: null,
-      evidence: [],
-      requires: [
-        { id: 'gary-alert', value: true },
-        { id: 'under-cover', value: false },
-      ],
-      requiresStory: [],
-      requiresQuantities: [],
-      resolution: {
-        kind: 'automatic',
-        fictionalDurationSeconds: 5,
-        outcome: outcome(
-          'You slip behind the sofa without approaching the window.',
-          [{ kind: 'fact.set.v1', fact: { id: 'under-cover', value: true } }],
-        ),
-      },
-    },
-    {
-      version: 1,
-      key: 'calm-gary',
-      label: 'Talk Gary down',
-      intention: 'Reassure Gary and ask what made the delivery seem dangerous.',
-      risk: 'A clumsy reassurance may deepen his alarm.',
-      evidence: [],
-      requires: [{ id: 'gary-alert', value: true }],
-      requiresStory: [],
-      requiresQuantities: [],
-      resolution: {
-        kind: 'check',
-        fictionalDurationSeconds: 5,
-        check: {
-          rule: 'srd-5.2.1-subset.v1',
-          purpose: 'Calm Gary',
-          skill: 'persuasion',
-          ability: 'charisma',
-          dc: 12,
-          advantage: false,
-          disadvantage: false,
-          modifiers: [],
-        },
-        difficultyBasis:
-          'Gary recognizes you, but the delivery is still moving on its own.',
-        success: outcome(
-          'Gary steadies himself and stops bristling at every sound.',
-          [{ kind: 'fact.set.v1', fact: { id: 'gary-alert', value: false } }],
-        ),
-        failure: outcome(
-          'Gary remains tense and turns one wary eyestalk toward you.',
-        ),
-      },
-    },
-    {
-      version: 1,
-      key: 'keep-distance',
-      label: 'Call from the doorway',
-      intention: 'Keep your distance and ask Gary to signal what he noticed.',
-      risk: 'Distance is safer, but his answer may be hard to interpret.',
-      evidence: [],
-      requires: [{ id: 'gary-alert', value: true }],
-      requiresStory: [],
-      requiresQuantities: [],
-      resolution: {
-        kind: 'automatic',
-        fictionalDurationSeconds: 5,
-        outcome: outcome(
-          'You stay by the doorway while Gary points both eyestalks toward the window.',
-        ),
-      },
-    },
+    takeCoverPlan(),
+    ...(factValue(character.facts, 'gary-reassurance-tried') !== true
+      ? [calmGaryPlan()]
+      : []),
+    keepDistancePlan(),
   ];
+}
+
+function pineappleAfterFailedReassurance(evidence: string) {
+  return [takeCoverPlan(), observeFromDoorwayPlan(evidence)];
 }
 
 export function pineappleConsequence(
@@ -97,6 +173,8 @@ export function pineappleConsequence(
   }
   const garyAlert = factValue(character.facts, 'gary-alert') === true;
   const underCover = factValue(character.facts, 'under-cover') === true;
+  const reassuranceTried =
+    factValue(character.facts, 'gary-reassurance-tried') === true;
   const deliverySeen =
     factValue(storyFacts, 'delivery-at-window') === 'rattling-parcel';
   const parcelResolved =
@@ -244,6 +322,9 @@ export function pineappleConsequence(
         },
       },
     ];
+  }
+  if (garyAlert && reassuranceTried) {
+    return pineappleAfterFailedReassurance(evidence);
   }
   if (garyAlert) {
     return pineappleOpeningPlans(character);

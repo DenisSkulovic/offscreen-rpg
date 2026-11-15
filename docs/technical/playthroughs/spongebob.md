@@ -26,19 +26,11 @@ Public offer O1:
 
 One opening task creates this proposal. Start admits its exact reviewed plans. There is no check for waking up, no new activity and no requirement to spend tokens before displaying an already captured result. The third option currently changes prose more than state; that is a limited fixture, not proof that all three are equally strong gameplay choices.
 
-## SB-02: a failed reassurance — current
+## SB-02: a failed reassurance — current (GM04)
 
-The player selects “Talk Gary down.” Command `c2` references O1 and that choice, not a client-supplied DC or intended success. The server records d20 = 5. Total = 5 + 2 + 2 = 9; failure. Receipt R2 has no effects and no declarations. Gary remains alert. O1 is consumed; a second request against O1 cannot earn a second roll.
+The player selects “Talk Gary down.” Command `c2` references O1 and that choice, not a client-supplied DC or intended success. The server records d20 = 5. Total = 5 + 2 + 2 = 9; failure against DC 12. Fictional duration is **5 seconds**. Receipt R2 applies `fact.set.v1` `gary-reassurance-tried=true` (seeded false on `pineapple-mechanics.v4`); Gary remains alert. O1 is consumed; a second request against O1 cannot earn a second roll.
 
-The consequence task receives R2 and the still-alert state. The current scripted result can say Gary remains tense; it returns the same opening-plan family because alert/cover facts are unchanged. It does not implement a durable loss of trust just because the risk text mentions deepened alarm.
-
-**Design gap:** a consequence should make the failed attempt matter in the next situation or available approach, not repeatedly serve an identical Persuasion invitation. Possible target fixes include a supported “reassurance tried” state with changed approach/eligibility, or a genuinely different grounded next plan. Merely changing the label or pretending Gary is calmer is not a fix. Choosing the right small state effect belongs to the agency/taste slice; this atlas does not claim it exists.
-
-Target prose example:
-
-> Gary's eyestalk follows your reassuring hand instead of the window. You haven't convinced him. The parcel knocks twice, as though impatient with both of you.
-
-A target next offer could emphasize cover, indirect observation or disengagement. It should explain why further reassurance needs a changed circumstance. No compulsory confrontation is necessary.
+The consequence task receives R2 and the still-alert / tried state. Scripted plans are **not** the opening family: `calm-gary` is absent. Next grounded avenues are `take-cover` and `observe-from-doorway` (Wisdom/Perception DC 13 from the poorer doorway angle). This is approach memory, not invented distrust or a cooldown timer.
 
 ## SB-03: change approach — current
 

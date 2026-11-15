@@ -474,6 +474,7 @@ function consequence(
           facts: options.facts ?? [
             { id: 'gary-alert', value: true },
             { id: 'under-cover', value: false },
+            { id: 'gary-reassurance-tried', value: false },
             { id: 'location', value: 'pineapple' },
           ],
           quantities: options.quantities ?? [],
@@ -555,6 +556,7 @@ function mechanicalOpening() {
           facts: [
             { id: 'gary-alert', value: true },
             { id: 'under-cover', value: false },
+            { id: 'gary-reassurance-tried', value: false },
             { id: 'location', value: 'pineapple' },
           ],
           quantities: [],
@@ -1735,6 +1737,74 @@ test('ordinary repair requests retain rules and schema without retransmitting co
   assert.notEqual(
     request.messages[1].content,
     task.request.messages[1].content,
+  );
+});
+
+test('GM04: failed reassurance removes calm-gary and offers a distinct next approach', () => {
+  const opening = scriptedStorytellerResult(mechanicalOpening());
+  assert.equal(opening.scene.next.kind, 'action-plans');
+  if (opening.scene.next.kind !== 'action-plans') {
+    throw new Error('Expected opening plans');
+  }
+  const calm = opening.scene.next.plans.find((plan) => plan.key === 'calm-gary');
+  assert.ok(calm);
+  assert.equal(calm.resolution.kind, 'check');
+  if (calm.resolution.kind !== 'check') {
+    throw new Error('Expected calm-gary check');
+  }
+  assert.deepEqual(calm.resolution.failure.effects, [
+    {
+      kind: 'fact.set.v1',
+      fact: { id: 'gary-reassurance-tried', value: true },
+    },
+  ]);
+  assert.ok(
+    calm.factTransitions?.some(
+      (transition) =>
+        transition.branch === 'failure' &&
+        transition.fact.id === 'gary-reassurance-tried' &&
+        transition.fact.value === true,
+    ),
+  );
+
+  const afterFailure = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'gary-alert', value: true },
+        { id: 'under-cover', value: false },
+        { id: 'gary-reassurance-tried', value: true },
+        { id: 'location', value: 'pineapple' },
+      ],
+    }),
+  );
+  if (afterFailure.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    afterFailure.scene.next.plans.map((plan) => plan.key),
+    ['take-cover', 'observe-from-doorway'],
+  );
+  assert.equal(
+    afterFailure.scene.next.plans.some((plan) => plan.key === 'calm-gary'),
+    false,
+  );
+
+  const successStillOpens = scriptedStorytellerResult(
+    consequence({
+      facts: [
+        { id: 'gary-alert', value: false },
+        { id: 'under-cover', value: false },
+        { id: 'gary-reassurance-tried', value: false },
+        { id: 'location', value: 'pineapple' },
+      ],
+    }),
+  );
+  if (successStillOpens.scene.version !== 3) {
+    throw new Error('Expected consequence scene');
+  }
+  assert.deepEqual(
+    successStillOpens.scene.next.plans.map((plan) => plan.key),
+    ['inspect-with-gary'],
   );
 });
 
