@@ -24,6 +24,10 @@ import { createStoryStart, playableOpeningStorySource } from './start';
 import { createStoryTiming } from './timing';
 import { createStoryForks } from './forks';
 import { readPublicStoryEvents } from './public-events';
+import {
+  acknowledgeStoryVisit,
+  readStoryVisitOpening,
+} from './visit-checkpoint';
 import type { ReadCacheOptions } from '../cache/read-cache';
 import { story } from '@offscreen/db/story-schema';
 import { and, eq } from 'drizzle-orm';
@@ -169,6 +173,18 @@ export function createStories(
       limit?: unknown;
     }) {
       return readPublicStoryEvents(database, args);
+    },
+    visit(args: { ownerId: string; storyId: string }) {
+      return readStoryVisitOpening(database, args);
+    },
+    acknowledgeVisit(args: {
+      ownerId: string;
+      storyId: string;
+      ackId: string;
+      visitToken: string;
+      frontier: number;
+    }) {
+      return acknowledgeStoryVisit(database, args);
     },
     /** Server-selected immutable source only. Never pass HTTP bodies here. */
     async initialize(args: {

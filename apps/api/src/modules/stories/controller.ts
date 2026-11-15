@@ -22,6 +22,7 @@ import { StoryError } from '@offscreen/application/stories';
 import {
   forkStorySchema,
   startStorySchema,
+  storyVisitAckBodySchema,
 } from '@offscreen/contracts/stories';
 import { IdentityService } from '../auth/identity.js';
 import type { StoryUpdateHub } from './story-update-hub.js';
@@ -296,6 +297,31 @@ export class StoriesController {
       if (before !== undefined) query.before = before;
       if (limit !== undefined) query.limit = limit;
       return this.stories.events(query);
+    });
+  }
+  @Get(':id/visit')
+  visit(@Req() request: Request, @Param('id') id: string) {
+    return this.run(request, (ownerId) =>
+      this.stories.visit({ ownerId, storyId: id }),
+    );
+  }
+  @Put(':id/visit/acks/:ackId')
+  @HttpCode(200)
+  acknowledgeVisit(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('ackId') ackId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) => {
+      const parsed = storyVisitAckBodySchema.parse(body);
+      return this.stories.acknowledgeVisit({
+        ownerId,
+        storyId: id,
+        ackId,
+        visitToken: parsed.visitToken,
+        frontier: parsed.frontier,
+      });
     });
   }
   @Get(':id/documents')

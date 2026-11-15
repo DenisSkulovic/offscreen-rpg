@@ -50,6 +50,13 @@
       "when": 1794760000000,
       "tag": "0006_eng03_c1r_provisional_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794763600000,
+      "tag": "0007_gm06_viewer_visit_checkpoint",
+      "breakpoints": true
     }
   ]
 }

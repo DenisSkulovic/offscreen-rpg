@@ -1,6 +1,6 @@
 # GM06 | A truthful per-viewer story return baseline
 
-**State:** Proposed, **not Ready**. **2026-11-15 recommended product/API policy:** [per-viewer foreground opening checkpoint](../../experience/decisions/gm06-viewer-open-baseline-v1.md). Selects a shared across-devices **visit** baseline, not a claim that every event was read; **GM05 is Done** with `coverage='since-enabled'`. Client must not ACK from SSR/prefetch/SSE or a hidden tab. **Approval:** no code authorized. **Kind:** authenticated read-position write/read contract + client acknowledgment + tests. **Parent:** [mechanics program](../../experience/mechanics-evolution-program.md). **Dependency:** GM05 stable public ordered event projection, selected viewer/identity behavior and UX07 return design.
+**State: Done (2026-11-15).** Evidence: [gm06-visit-checkpoint-2026-11-15](../../experience/evidence/gm06-visit-checkpoint-2026-11-15.md). **Policy:** [per-viewer foreground opening checkpoint](../../experience/decisions/gm06-viewer-open-baseline-v1.md). **Kind:** authenticated visit read/ack + client ACK gate. Play Journal composition of the digest UI is a follow-up.
 
 ## Cursor first-screen brief
 

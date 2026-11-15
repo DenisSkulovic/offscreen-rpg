@@ -211,6 +211,34 @@ export const storyEventPageSchema = z.strictObject({
 export type PublicStoryEvent = z.infer<typeof publicStoryEventSchema>;
 export type StoryEventPage = z.infer<typeof storyEventPageSchema>;
 
+/** GM06 visit opening read model — never mutates checkpoint. */
+export const storyVisitOpeningSchema = z.strictObject({
+  previous: z
+    .strictObject({
+      eventSequence: z.number().int().nonnegative(),
+    })
+    .nullable(),
+  frontier: z.number().int().nonnegative(),
+  coverage: z.enum(['since-enabled', 'complete']),
+  window: z.strictObject({
+    items: z.array(publicStoryEventSchema).max(20),
+    hasMore: z.boolean(),
+    count: z.number().int().nonnegative().optional(),
+  }),
+  visitToken: z.uuid(),
+});
+export type StoryVisitOpening = z.infer<typeof storyVisitOpeningSchema>;
+
+export const storyVisitAckBodySchema = z.strictObject({
+  visitToken: z.uuid(),
+  frontier: z.number().int().nonnegative(),
+});
+export const storyVisitAckResultSchema = z.strictObject({
+  acknowledgedSequence: z.number().int().nonnegative(),
+  status: z.enum(['applied', 'already-current']),
+});
+export type StoryVisitAckResult = z.infer<typeof storyVisitAckResultSchema>;
+
 export const startStorySchema = z.strictObject({
   campaign: campaignStartSchema.optional(),
   candidateId: z.uuid(),

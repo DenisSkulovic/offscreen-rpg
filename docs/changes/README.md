@@ -4,9 +4,11 @@
 
 Current change: none
 
+**GM06 (2026-11-15): Done.** Per-viewer visit open/ACK API + client ACK gate. Evidence [gm06](../experience/evidence/gm06-visit-checkpoint-2026-11-15.md).
+
 **GM04 (2026-11-15): Done.** Failed `calm-gary` sets `gary-reassurance-tried`; next offer is cover + doorway observation. Evidence [gm04](../experience/evidence/gm04-failed-approach-2026-11-15.md).
 
-**ENG03-C1-R (2026-11-15): Done.** Provisional `canRetry=false` + operator blocker; same-G audited rearm (epoch 1). Evidence [eng03-c1r](../engine-architecture/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). [ENG03-C2](2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md) and remaining GM packets Proposed. No provider spend.
+**ENG03-C1-R (2026-11-15): Done.** Provisional `canRetry=false` + operator blocker; same-G audited rearm (epoch 1). Evidence [eng03-c1r](../engine-architecture/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). Next recommended: [ENG03-C2](2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md) after lock measurement. Remaining GM packets Proposed. No provider spend.
 
 **ENG03-C1 (2026-11-14): Done (core path + lock/execution harden + C1-R recovery).** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Full ENG03 Proposed; C2+ ungated. Sequence: [migration order](../engine-architecture/decisions/eng03-capture-migration-sequence.md).
 

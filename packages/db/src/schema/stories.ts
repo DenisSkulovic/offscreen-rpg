@@ -4,12 +4,14 @@ import {
   uuid,
   text,
   integer,
+  bigint,
   jsonb,
   timestamp,
   unique,
   check,
   foreignKey,
   index,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { generation } from './generations';
@@ -208,4 +210,95 @@ export const storyItem = pgTable(
     holderKey: text('holder_key').notNull(),
   },
   (t) => [unique('story_item_identity').on(t.storyId, t.key)],
+);
+
+/** GM06: shared per-viewer story opening checkpoint (not a read-comprehension claim). */
+export const storyViewerVisit = pgTable(
+  'story_viewer_visit',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    viewerId: text('viewer_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    acknowledgedEventSequence: bigint('acknowledged_event_sequence', {
+      mode: 'number',
+    })
+      .notNull()
+      .default(0),
+    acknowledgedAt: timestamp('acknowledged_at', {
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.storyId, t.viewerId] }),
+    check(
+      'story_viewer_visit_sequence',
+      sql`${t.acknowledgedEventSequence} >= 0`,
+    ),
+  ],
+);
+
+export const storyViewerVisitOpen = pgTable(
+  'story_viewer_visit_open',
+  {
+    visitToken: uuid('visit_token').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    viewerId: text('viewer_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    previousSequence: bigint('previous_sequence', { mode: 'number' }),
+    frontier: bigint('frontier', { mode: 'number' }).notNull(),
+    expiresAt: timestamp('expires_at', {
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('story_viewer_visit_open_story_viewer').on(t.storyId, t.viewerId),
+    check('story_viewer_visit_open_frontier', sql`${t.frontier} >= 0`),
+    check(
+      'story_viewer_visit_open_previous',
+      sql`${t.previousSequence} IS NULL OR ${t.previousSequence} >= 0`,
+    ),
+  ],
+);
+
+export const storyViewerVisitAck = pgTable(
+  'story_viewer_visit_ack',
+  {
+    ackId: uuid('ack_id').primaryKey(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    viewerId: text('viewer_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    visitToken: uuid('visit_token').notNull(),
+    frontier: bigint('frontier', { mode: 'number' }).notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('story_viewer_visit_ack_token').on(t.visitToken),
+    check('story_viewer_visit_ack_frontier', sql`${t.frontier} >= 0`),
+  ],
 );
