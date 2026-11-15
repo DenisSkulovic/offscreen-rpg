@@ -1,6 +1,6 @@
 # Forensic observability | Owner review and first Cursor wave handoff
 
-**Status:** design waves 1–3 proposed, 2026-11-15. **Code queue:** `Current change: none` in [Change router](../../changes/README.md). **No implementation authorization, migrations, external model calls, paid monitoring service or deployment.**
+**Status:** design waves 1–4 proposed, 2026-11-15. **Code queue:** `Current change: none` in [Change router](../../changes/README.md). **No implementation authorization, migrations, external model calls, paid monitoring service or deployment.**
 
 This is the **short entrypoint for a fresh Cursor coding session** only after the owner selects one packet. Do not preload 18 forensic documents or redo architecture under code pressure. Read the selected Change first, then its narrow source contract and nearest package README.
 
@@ -28,15 +28,17 @@ This is the **short entrypoint for a fresh Cursor coding session** only after th
 
 **Not all technical decisions should block safe progress.** The first operation coverage Change can be implemented using already-redacted existing metadata after owner authorizes it. Raw blob storage/retention **must wait** for the access and erasure policy to be accepted.
 
-## 3. Three proposed bounded Changes
+## 3. Five proposed bounded Changes
 
 | Packet | Source-limited result | Dependency / risk |
 | --- | --- | --- |
+| [OBS00 pre-live provider correctness](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) | Source finds missing live `dispatchAuthority` and a wrapper discarding per-round `dispatch`. Must prove safe current-policy resolution and exact reviewed=transport body with mock fetch; no paid request | **P0 pre-live release gate**; part A-only forwarding can be scoped separately if policy source still absent |
 | [OBS01 operation coverage](../../changes/2026-11-15--obs01-operation-coverage/CHANGE.md) | Fix Admin S1 operation list to include captured/held G before any `storyteller_attempt`. Deterministic source joins and no raw leaks | Lowest-risk, independent code candidate after owner selects and latest source recheck |
 | [OBS02 real Storyteller stage evidence](../../changes/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md) | **Actual runtime** redacted cause/task/validation/publication receipts for one consequence G; not a fabricated SA01 fixture timeline | OBS01 preferred; small additive SQL schema/latency review, no provider spend |
 | [OBS03 one exact prompt source map](../../changes/2026-11-15--obs03-prompt-provenance/CHANGE.md) | Capture actual v17 consequence prompt/source/setting/component IDs + inclusion/omission decisions without changing request bytes | OBS02 identity preferred; privacy/metadata schema review; zero provider calls |
+| [OBS04 finite-action source witness](../../changes/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | One real action settlement/interrupt produces one atomic typed before/after transition and stable source refs | Strict E0 schema, full local writer call chain and SQL contention measurement needed before Ready |
 
-**Recommended order:** OBS01 → OBS02 → OBS03, one at a time, but each needs its own owner authorization. OBS01 improves real Support/developer visibility even before new evidence storage. OBS02 proves live capture and source IDs. OBS03 proves *why* actual context was assembled. **Do not automatically implement** OBS04+ raw blob migration or full mechanical replay next.
+**Priority is two-dimensional:** **OBS00 first for any real live-provider launch** (its default worker path appears source-blocked and packet overrides are lost); **OBS01 first if the next goal is provider-free Support visibility**. Then OBS02 → OBS03 for real AI causality/context, and OBS04 as a **separately authorized** one-writer E0 state transition experiment after SQL/codec measurement. None is a blanket authorization. **Do not automatically implement** protected raw blob migration, production OTel, full mechanical replay or the Developer Workbench next.
 
 ## 4. Other required, later code slices (not yet detailed Changes)
 
@@ -56,6 +58,8 @@ This is the **short entrypoint for a fresh Cursor coding session** only after th
 **OBS02:** `application/storyteller/{records,execution,publication,capture-materialization,context-capture,dispatch-review,budget}.ts`, `packages/storyteller/src/providers/operation-trace.ts`, `packages/db/src/schema/storyteller.ts`, `apps/worker/src/activities/index.ts`. Inspect actual source transaction boundaries before any stage INSERT.
 
 **OBS03:** `packages/storyteller/src/tasks/index.ts::{requestFor,prepareStorytellerTask}`, `packages/storyteller/src/context/index.ts::{contextRequestSections,boundStorytellerContext}`, `application/storyteller/{canonical-knowledge,task-admission}.ts`, `providers/openrouter.ts::{buildOpenRouterRequest,inspectOpenRouterRequest}`. Exact equality before/after instrumentation is the primary acceptance bar.
+
+**OBS04:** `application/campaign/action-executions.ts::settleActionExecution`, `action-execution-transition.ts`, `campaign/holds.ts`, `stories/persistence.ts::lockStoryById`. [One-writer atomic source contract](../technical/committed-transition-capture-v1.md).
 
 **Broader writer/retention audit:** [SQL source writers](../evidence/mutation-writer-audit-2026-11-15.md), [raw private columns](../evidence/private-content-retention-inventory-2026-11-15.md), [local/S3 store limitations](../technical/protected-artifact-store-v1.md), [archive codec evolution](../technical/archive-codecs-and-evolution-v1.md), [time/coverage](../technical/temporal-frontiers-and-coverage-v1.md).
 
@@ -85,4 +89,4 @@ This is the **short entrypoint for a fresh Cursor coding session** only after th
 - Production OTel/Prometheus/Grafana sizing and actual deployment.
 - Legal/backup erasure proof for real EU users.
 
-**Owner handoff:** the design program has **three small code-bearing packets**, all **Proposed**. The Admin first-wave is already implemented. Cursor receives no automatic permission to begin; choose OBS01 explicitly to start.
+**Owner handoff:** the program now has **five small code-bearing packets**, all **Proposed** and none selected. The Admin first-wave is implemented. Choose **OBS00** before enabling paid/provider work, or **OBS01** for the first safe Support visibility improvement; each requires explicit separate implementation authorization.
