@@ -129,7 +129,7 @@ It **cannot** recover internal hidden model chain-of-thought that no API exposed
 | Operational tools? | Optional OTel + Prometheus/Grafana/Tempo/Loki; no Kafka requirement in local monolithic mode | Proposed |
 | Player replay? | Read-only published scenes first, state time travel when ledger proves complete | Proposed product staging |
 | Staff raw access? | Exceptional, case/purpose-bound, short-lived and audited | **Needs owner/security policy acceptance** |
-| Raw prompt retention? | Candidate 30 days, 90-day incident hold; scrub existing copies before claiming TTL | **Needs owner/security/legal approval** |
+| Raw prompt retention? | Updated [policy candidate](../product-policy-recommendations-v1.md): 90-day ordinary raw, up to 180-day incident hold; **neither enforced nor approved**, scrub existing copies before claiming any TTL | **Needs owner/security/legal approval** |
 | Migration? | Additive exact-owner changes, dual-read legacy path, no destructive mass backfill | Proposed |
 | First implementation packet? | Minimal actual source-linked live G/command evidence and missing-coverage proof | Not authorized; design gates still open |
 
