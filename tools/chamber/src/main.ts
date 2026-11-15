@@ -62,6 +62,11 @@ import {
   captureHeldMemoryPacket,
 } from './memory-packet-review.js';
 import { parseLauncherFlags } from './modes/cli-flags.js';
+import {
+  bootstrapLocalStoryFunding,
+  describeStoryFundingDenial,
+  pinnedLocalStoryDispatchAuthority,
+} from './story-funding.js';
 
 // An explicit local CLI, never imported by the production API or test discovery.
 // It never loads dotenv files; only the two explicitly authorized run modes
@@ -196,7 +201,10 @@ const memoryDryRunExecution: ExecutionPolicy = {
 };
 const workspaceRoot = fileURLToPath(new URL('../../../../', import.meta.url));
 const storyAccountId = '00000000-0000-4000-8000-000000000010';
-const storyRunId = '00000000-0000-4000-8000-000000000011';
+const storyDefaultRunId = '00000000-0000-4000-8000-000000000011';
+// OBS00-L: an explicit finite trial uses its own saved Run; its caps live in SQL.
+const storyTrial = launcherFlags.storyTrial;
+const storyRunId = storyTrial?.runId ?? storyDefaultRunId;
 const storyModel =
   storyModelArgument?.slice('--story-model='.length) ?? 'openai/gpt-5.6-luna';
 const permittedStoryModels = new Set([
@@ -570,43 +578,27 @@ await applyMigrations(
 );
 const database = createDatabase(config, () => {});
 if (storyAuthority) {
-  await database.db.$client.query(
-    `INSERT INTO storyteller_funding (id, limit_microusd, stopped, verified_at)
-     VALUES ($1, $2, false, $3)
-     ON CONFLICT (id) DO UPDATE SET stopped = false, verified_at = EXCLUDED.verified_at`,
-    [storyAccountId, '1000000', storyAuthority.verifiedAt],
-  );
-  await database.db.$client.query(
-    `INSERT INTO storyteller_run (id, account_id, limit_microusd, max_attempts, enabled)
-     VALUES ($1, $2, $3, $4, true)
-     ON CONFLICT (id) DO UPDATE SET enabled = true`,
-    [storyRunId, storyAccountId, '1000000', 250],
-  );
-  // The disposable Story-mode ledger can outlive a development process. Keep
-  // its aggregate reservation equal to actual unresolved transport liability;
-  // an operator-reclassified unsent attempt must not strand later play.
-  await database.db.$client.query(
-    `UPDATE storyteller_funding
-     SET reserved_microusd = COALESCE((
-       SELECT sum(a.reserved_microusd)
-       FROM storyteller_attempt a
-       WHERE a.account_id = $1
-         AND a.state IN ('reserved', 'dispatched', 'uncertain')
-     ), 0)
-     WHERE id = $1`,
-    [storyAccountId],
-  );
-  await database.db.$client.query(
-    `UPDATE storyteller_run
-     SET reserved_microusd = COALESCE((
-       SELECT sum(a.reserved_microusd)
-       FROM storyteller_attempt a
-       WHERE a.run_id = $1
-         AND a.state IN ('reserved', 'dispatched', 'uncertain')
-     ), 0)
-     WHERE id = $1`,
-    [storyRunId],
-  );
+  // OBS00-L: a restart creates missing rows only. It never clears a stop, re-enables
+  // a disabled run, widens a saved trial cap or resets a counter.
+  const funding = await bootstrapLocalStoryFunding(database.db.$client, {
+    accountId: storyAccountId,
+    defaultRunId: storyDefaultRunId,
+    accountLimitMicrousd: 1_000_000n,
+    defaultRunLimitMicrousd: 1_000_000n,
+    defaultRunMaxAttempts: 250,
+    trial: storyTrial
+      ? {
+          runId: storyTrial.runId,
+          maxMicrousd: BigInt(storyTrial.maxMicrousd),
+          maxAttempts: storyTrial.maxAttempts,
+        }
+      : null,
+    verifiedAt: storyAuthority.verifiedAt,
+  });
+  if (funding.state === 'denied') {
+    await database.close();
+    throw new Error(describeStoryFundingDenial(funding.reasons));
+  }
 }
 const openRouterApiKey =
   evaluationRun || memoryEvaluationRun
@@ -866,7 +858,9 @@ try {
               );
             },
           }),
-          dispatchAuthority: () => storyAuthority.usagePolicy,
+          dispatchAuthority: pinnedLocalStoryDispatchAuthority(
+            storyAuthority.usagePolicy,
+          ),
           documentStore,
         }
       : (evaluationRun || memoryEvaluationRun) && liveDispatchPolicy
@@ -935,6 +929,16 @@ try {
           pricingVerifiedAt: storyAuthority.verifiedAt,
           cumulativeProviderUsageMicrousdAtStartup:
             storyAuthority.totalUsageMicrousd.toString(),
+          runId: storyRunId,
+          trial: storyTrial
+            ? {
+                runId: storyTrial.runId,
+                maxMicrousd: String(storyTrial.maxMicrousd),
+                maxAttempts: storyTrial.maxAttempts,
+                enforcedBy:
+                  'storyteller_run SQL row; saved, not re-minted on restart',
+              }
+            : null,
           reasoning: 'disabled',
           fallback: false,
         },
@@ -1381,9 +1385,7 @@ try {
         `Local review evidence saved to ${evidenceDirectory}. Model spend: $0; no provider calls.`,
       );
     } else if (smoke || forensicCampaigns) {
-      await page
-        .locator('#chamber-scenario')
-        .selectOption('chamber.v5');
+      await page.locator('#chamber-scenario').selectOption('chamber.v5');
       await page
         .getByRole('region', { name: 'Selected scenario purpose' })
         .getByText('authoritative item transfer', { exact: false })
@@ -1445,9 +1447,12 @@ try {
         if (!cookie) {
           throw new Error('Expected chamber session cookie for Story B reads');
         }
-        const beforeResponse = await fetch(`${origin}/api/stories/${storyBId}`, {
-          headers: { cookie },
-        });
+        const beforeResponse = await fetch(
+          `${origin}/api/stories/${storyBId}`,
+          {
+            headers: { cookie },
+          },
+        );
         if (!beforeResponse.ok) {
           throw new Error(`Story B read failed: ${beforeResponse.status}`);
         }

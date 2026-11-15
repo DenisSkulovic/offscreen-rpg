@@ -8,6 +8,7 @@
 | Pure Bench | [`lab/bench.ts`](lab/bench.ts), `pnpm chamber:bench` | Real `@offscreen/game` only; no DB |
 | Lab scenario / inspect CLIs (CH12) | [`scenario-cli.ts`](scenario-cli.ts), [`inspect-cli.ts`](inspect-cli.ts), `pnpm chamber:scenario` / `chamber:inspect` | LabRun via workbench service; no Nest/DB/browser |
 | Shared flag grammar (CH12) | [`modes/cli-flags.ts`](modes/cli-flags.ts) | Mutual exclusion + cheap lab args; used by `main.ts` |
+| Local Story funding / finite trial (OBS00-L) | [`story-funding.ts`](story-funding.ts), `--story-trial-*` flags in `modes/cli-flags.ts` | Restart creates missing rows only; never clears `stopped`/`enabled`, widens a saved trial run or resets counters; denial refuses live start. Not OBS00-B. [Proof](../test/obs00-l-story-trial.live.test.ts) |
 | Sandbox DB name guard | [`@offscreen/application` sandbox-guard](../../../packages/application/src/developer-tools/lab/sandbox-guard.ts) | localhost + `offscreen_chamber_run_<32hex>` only; never `offscreen_chamber` / `offscreen_auth_test` |
 | CLI flags and mutually exclusive modes | `modes/cli-flags.ts` + `main.ts` | `--smoke`, `--review`, `--packet-review`, `--memory-packet-review`, `--evaluation-*`, `--story-mode`, `--reset-database`; don't casually enable live mode |
 | Local DB and service boot | `main.ts` around lines 555–895 | exact database `offscreen_chamber` or `offscreen_story_local`, localhost-only URL, explicit reset, migrations, fixture user, Nest `developerTools: !storyMode` |

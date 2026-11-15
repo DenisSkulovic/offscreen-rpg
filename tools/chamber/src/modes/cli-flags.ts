@@ -33,8 +33,27 @@ const ALLOWED_PREFIXES = [
   '--story-max-microusd=',
   '--story-max-input-tokens=',
   '--story-max-output-tokens=',
+  '--story-trial-max-microusd=',
+  '--story-trial-max-attempts=',
+  '--story-trial-id=',
   '--authorize-story-model=',
 ] as const;
+
+/**
+ * OBS00-L launcher ceilings for the local finite Story trial. These are lab
+ * ceilings recorded in SQL, never production entitlement declarations.
+ */
+export const STORY_TRIAL_CEILING_MICROUSD = 250_000;
+export const STORY_TRIAL_CEILING_ATTEMPTS = 4;
+/** Default saved trial Run ID. Minting another trial requires `--story-trial-id=`. */
+export const DEFAULT_STORY_TRIAL_RUN_ID =
+  '00000000-0000-4000-8000-000000000012';
+
+export type StoryTrialFlags = {
+  runId: string;
+  maxMicrousd: number;
+  maxAttempts: number;
+};
 
 export type ParsedLauncherFlags = {
   smoke: boolean;
@@ -57,6 +76,8 @@ export type ParsedLauncherFlags = {
   storyMaxInputTokens: string | null;
   storyMaxOutputTokens: string | null;
   storyAuthorize: string | null;
+  /** Non-null only when both trial caps were supplied and validated. */
+  storyTrial: StoryTrialFlags | null;
 };
 
 export class LauncherFlagError extends Error {
@@ -64,6 +85,14 @@ export class LauncherFlagError extends Error {
     super(message);
     this.name = 'LauncherFlagError';
   }
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function strictPositiveInteger(value: string): number | null {
+  if (!/^[1-9][0-9]{0,8}$/.test(value)) return null;
+  return Number(value);
 }
 
 function readPrefixed(argv: string[], prefix: string): string | null {
@@ -93,7 +122,12 @@ export function parseLauncherFlags(argv: string[]): ParsedLauncherFlags {
     storyMaxInputTokens: readPrefixed(argv, '--story-max-input-tokens='),
     storyMaxOutputTokens: readPrefixed(argv, '--story-max-output-tokens='),
     storyAuthorize: readPrefixed(argv, '--authorize-story-model='),
+    storyTrial: null,
   };
+
+  const trialMicrousd = readPrefixed(argv, '--story-trial-max-microusd=');
+  const trialAttempts = readPrefixed(argv, '--story-trial-max-attempts=');
+  const trialId = readPrefixed(argv, '--story-trial-id=');
 
   const runModes = [
     flags.smoke,
@@ -131,11 +165,50 @@ export function parseLauncherFlags(argv: string[]): ParsedLauncherFlags {
       flags.storyMaxMicrousd ||
       flags.storyMaxInputTokens ||
       flags.storyMaxOutputTokens ||
-      flags.storyAuthorize)
+      flags.storyAuthorize ||
+      trialMicrousd !== null ||
+      trialAttempts !== null ||
+      trialId !== null)
   ) {
     throw new LauncherFlagError(
       'Story model arguments are supported only with --story-mode.',
     );
+  }
+  if (trialMicrousd !== null || trialAttempts !== null || trialId !== null) {
+    if (trialMicrousd === null || trialAttempts === null) {
+      throw new LauncherFlagError(
+        '--story-trial-max-microusd and --story-trial-max-attempts must be supplied together.',
+      );
+    }
+    const microusd = strictPositiveInteger(trialMicrousd);
+    const attempts = strictPositiveInteger(trialAttempts);
+    if (microusd === null || microusd > STORY_TRIAL_CEILING_MICROUSD) {
+      throw new LauncherFlagError(
+        `--story-trial-max-microusd must be an integer from 1 through ${STORY_TRIAL_CEILING_MICROUSD}.`,
+      );
+    }
+    if (attempts === null || attempts > STORY_TRIAL_CEILING_ATTEMPTS) {
+      throw new LauncherFlagError(
+        `--story-trial-max-attempts must be an integer from 1 through ${STORY_TRIAL_CEILING_ATTEMPTS}.`,
+      );
+    }
+    const runId = trialId ?? DEFAULT_STORY_TRIAL_RUN_ID;
+    if (!UUID_PATTERN.test(runId)) {
+      throw new LauncherFlagError('--story-trial-id must be a UUID.');
+    }
+    const perOperation = flags.storyMaxMicrousd
+      ? strictPositiveInteger(flags.storyMaxMicrousd)
+      : 10_000;
+    if (perOperation !== null && perOperation > microusd) {
+      throw new LauncherFlagError(
+        'The per-operation Story cap may not exceed the total trial cap.',
+      );
+    }
+    flags.storyTrial = {
+      runId: runId.toLowerCase(),
+      maxMicrousd: microusd,
+      maxAttempts: attempts,
+    };
   }
   const evaluationNeedsConfig =
     flags.evaluationPacket ||

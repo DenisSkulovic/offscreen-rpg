@@ -180,6 +180,20 @@ $1 until deliberately changed; an uncertain provider delivery stops further
 admission. Exact raw
 provider responses are retained under ignored `data/story-local-evidence` for
 the owner/Codex debugging loop. Merely launching makes no inference call.
+
+**Restart and finite trial (OBS00-L).** A restart creates missing local funding
+rows only. It never clears `storyteller_funding.stopped`, re-enables a disabled
+`storyteller_run`, widens a saved cap or resets counters; a stopped account,
+disabled run, uncertain attempt or exhausted run makes `--story-mode` refuse to
+start live with a safe message (recovery is a separate owner procedure). An
+explicit finite trial adds `--story-trial-max-microusd=<1..250000>
+--story-trial-max-attempts=<1..4>` (optional `--story-trial-id=<uuid>`, default
+`00000000-0000-4000-8000-000000000012`). Both are saved in a dedicated
+`storyteller_run` row, so `budget.reserve` enforces the total microusd and
+attempt ceiling in SQL, a restart with the same id re-mints nothing, and a
+different cap under the same id is refused. These flags are a local lab ceiling,
+not a production entitlement, and the local startup-pinned dispatch authority is
+not OBS00-B; the generic `apps/worker` stays denied.
 Normal non-loopback application startup still requires real authentication.
 
 ### Headless play and agent operation
