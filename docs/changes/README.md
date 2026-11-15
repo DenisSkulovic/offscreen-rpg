@@ -4,6 +4,8 @@
 
 Current change: none
 
+**Post-forensic-trial review (2026-11-15):** [Independent source-backed findings](../observability/evidence/independent-connected-trial-review-2026-11-15.md) → [current Cursor next-wave handoff](../observability/handoff/post-trial-next-cursor-wave-2026-11-15.md). **New, Proposed (NOT Ready):** [OBS00-L guarded local Story-mode trial funding](2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md), [OBS00-C exact reviewed-to-wire provider bytes](2026-11-15--obs00-c-provider-wire-equality/CHANGE.md), [QA-SF01 restore Storyteller integration suites](2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md). Default worker OBS00-B remains blocked. OBS06/OBS07 are Done in synthetic scope only; production Support grant issuer absent. The earlier S0–S6 trial is finished; **new paid authority must be granted again**. No selected active Change.
+
 **OBS07 (2026-11-15): Done (synthetic/disposable scope).** Support Situation → Why UI in the existing Support Cases area: assigned, campaign-linked case only; strict S1 parse; deterministic `statementCode` templates; allowlisted safe-reference copy; no replay, no free campaign-id entry. Web-only; no production grant issuer. Evidence [obs07](../observability/evidence/obs07-support-situation-ui-2026-11-15.md).
 
 **OBS06 (2026-11-15): Done (synthetic/disposable scope).** Case-scoped Support Situation → Why read; new `support-investigator` v1 + exact case/campaign steward binding; no production grant issuer yet. Evidence [obs06](../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md).
