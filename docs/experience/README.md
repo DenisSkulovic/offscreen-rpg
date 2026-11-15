@@ -10,6 +10,8 @@ This is a **replacement product-experience specification**, not a transcription 
 
 **New contract decisions (2026-11-13):** [GM05 committed event feed](patterns/committed-event-feed.md) is the factual, source-backed return/Journal foundation (not GM06 seen state); [optional published live appearance](system/live-presentation-projection.md) connects the finished frontend presentation renderer to a future backend-owned passage projection, with no automatic model/image spending. See [cross-program handoff](../engine-architecture/handoff/decision-queue-2026-11-13.md). No code authorized.
 
+**2026-11-15 mechanics design handoff:** [one-page cross-program queue](../engine-architecture/handoff/pipeline-design-2026-11-15.md) now routes to new gameplay policy contracts: [GM01→GM02 custom intent](decisions/gm01-custom-intent-policy-v1.md), [GM03 bounded routine](decisions/gm03-bounded-routine-v1.md), [GM04 failed-reassurance distinctness](decisions/gm04-failed-approach-v1.md), [GM06 foreground visitor checkpoint](decisions/gm06-viewer-open-baseline-v1.md), [GM07 consented fallback](decisions/gm07-consented-default-v1.md). These are **recommendations awaiting owner acceptance**, not implemented new mechanics. GM05 event feed is implemented; the GM06 visit baseline is not.
+
 ## Start with a question, not the whole folder
 
 | Question | Read |
