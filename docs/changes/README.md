@@ -4,6 +4,8 @@
 
 Current change: none
 
+**2026-11-15 design-only pipeline review:** [cross-program handoff and selection gates](../engine-architecture/handoff/pipeline-design-2026-11-15.md). **New bounded packets:** [ENG03-C1-R provisional recovery](2026-11-15--eng03-c1-provisional-recovery/CHANGE.md) and [ENG03-C2 interrupted-action capture](2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md), both **Proposed, not Ready**. [GM01–GM07 purpose-specific policy map](../experience/mechanics-evolution-program.md) now links selected recommended V1 contracts; **GM05 is Done**. Markdown design/commits are not permission to run migrations, tests, models or code. Keep one active Change at a time after owner selection.
+
 **ENG03-C1 (2026-11-14): Done (core path + lock/execution harden).** Committed finite-action receipt capture off-lock (same G); evidence [eng03-c1](../engine-architecture/evidence/eng03-c1-committed-capture-2026-11-14.md). Still open: provisional retry status + exhausted rearm. Full ENG03 Proposed; priorities 2–6 ungated. Sequence: [migration order](../engine-architecture/decisions/eng03-capture-migration-sequence.md).
 
 **ENG03-narrow (2026-11-14): Done.** Provisional capture → off-lock promote same G; settlement/publish race matrix + short-lock re-baseline provider-free.
