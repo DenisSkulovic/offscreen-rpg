@@ -45,6 +45,10 @@ If code reveals that the approved contract is wrong/incomplete, **return that de
 
 ## 5. Converge, record evidence and retire
 
-Record what landed, tests/inspection actually run, affected revision, remaining risk and exact next action. Update permanent product/technical/evidence owners only when relevant. A completed Change is removed from the **active** route; Git keeps historical snapshots. Don't preserve a duplicate living implementation history when its decisions have a durable owner.
+Record what landed, tests/inspection actually run, affected revision, remaining risk and exact next action.
+
+**Before `State: Done` or clearing `Current change`:** complete the Change's **Reconciliation ledger** for every authority listed under **Authority and baseline** (product heading, technical heading, and evidence owner if this Change claimed new proof). For each row choose `unchanged` (one-line why) or `updated` (owner path + heading-level delta). For every `updated` row and any discovered spec-vs-code drift, run [documentation-reconciliation](../documentation-reconciliation/SKILL.md) steps 1–5 **on those owners only**. Do not rewrite product or technical authority merely to rationalize the diff; escalate product conflicts. Source-adjacent README/map updates follow [documentation.md](../../rules/documentation.md) only when an owning path, wire contract or important invariant actually moved.
+
+A completed Change is removed from the **active** route; Git keeps historical snapshots. Don't preserve a duplicate living implementation history when its decisions have a durable owner.
 
 Owner-retained and dormant legacy dossiers require explicit preservation. Before deleting/moving any old folder, inspect its unique decisions, inbound links and approval boundaries. See the [dated legacy audit](../../../docs/features/AUDIT-2026-11-11.md).

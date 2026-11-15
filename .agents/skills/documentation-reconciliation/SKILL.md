@@ -7,6 +7,8 @@ description: Resolve stale, contradictory or bloated Offscreen RPG product/techn
 
 Use when a source inspection or completed feature reveals documentation drift, when navigation is confusing, or when text has become expensive to maintain. Assess against the [independent retrieval standard](../../references/documentation-navigation-standard.md), not only today's repository shape. Follow `.agents/rules/documentation.md` for existing map and evidence conventions.
 
+**Required Change-close trigger:** for every code-bearing Change reaching `Done`, this procedure is **mandatory** for each Authority heading marked `updated` (or any spec-vs-code drift found) in the Change **Reconciliation ledger**. Scope is limited to those listed authorities and triggered maps—not a repository-wide rewrite. The ledger itself is required even when every row is `unchanged` (with why).
+
 1. State **which claim or route is wrong**, where its authority should live, and whether the mismatch is spec-vs-code or docs-vs-docs. Do not assume code wins over intended product behavior.
 2. Find the owning product/technical document. Preserve consequential decisions, invariants, examples and unresolved questions. Remove duplicate explanations, dated implementation diaries and repeated speculation; keep links/short summaries where they serve different readers.
 3. Keep _desired_, _implemented_, _fixture-exercised_, _live-observed_ and _human-accepted_ distinctions explicit. Do not turn an unverified claim into a fact while compacting.

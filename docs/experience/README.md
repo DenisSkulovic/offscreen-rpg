@@ -1,18 +1,12 @@
 # Offscreen RPG | player-experience destination
 
-**Status: recommended experience target, 2026-11-13. Design/documentation only. No game or UI source changes authorized by these files.**
+**Status (reconciled 2026-11-15):** experience **target** remains authoritative for design intent; **UX01–UX12, PX01–PX07, PF01–PF05 Done** in `apps/web` (portfolio / fixture proof). **Human UX comprehension is not claimed validated.** New UI work only via [docs/changes/README.md](../changes/README.md).
 
-This is a **replacement product-experience specification**, not a transcription of the existing React screens. The current UI, routes and mechanics are evidence of implementation feasibility and constraints, **not design authority**. The goal is to make Offscreen RPG feel like a place where a character lives, rather than a forms-and-buttons interface administering a simulation.
+This folder is a **replacement product-experience specification**, not a transcription of every current screen. Landed UX/PX/PF packets are evidence of implementation; they do not freeze design forever or prove fun.
 
-**First Cursor implementation wave:** [one-page handoff](handoff/first-cursor-wave.md) → [selected stage blueprint](spaces/living-stage-blueprint.md) → [UX01 Change](../changes/2026-11-13--ux-story-shell/CHANGE.md). This is ready **for owner authorization and implementation feedback**, not a claim of rendered/human-validated UX. [Independent readiness audit](evidence/design-readiness-review.md) lists what is in scope and what is deliberately blocked.
+**Mechanics (GM):** [GM01/02/04/05/06 Done](mechanics-evolution-program.md); **GM03/GM07 remain Proposed** (conditional). GM06 visit checkpoint: [decision](decisions/gm06-viewer-open-baseline-v1.md) + [evidence](evidence/gm06-visit-checkpoint-2026-11-15.md). Live Play still may omit full presentation projection ([PW01](../changes/2026-11-13--live-scene-presentation-wire/CHANGE.md) status in changes queue).
 
-**New presentation post-implementation review (2026-11-13):** PX01–PX04 landed but the rendered Harbor, Cave and Sterile fixtures expose real cross-surface contrast, viewport, art scale and proof problems. See [source-grounded review](evidence/presentation-post-px-review-2026-11-13.md) and [PX05–PX07 calibration program](presentation-calibration-program.md) before any engine-side appearance contract. This is design review, not code authorization.
-
-**New contract decisions (2026-11-13):** [GM05 committed event feed](patterns/committed-event-feed.md) is the factual, source-backed return/Journal foundation (not GM06 seen state); [optional published live appearance](system/live-presentation-projection.md) connects the finished frontend presentation renderer to a future backend-owned passage projection, with no automatic model/image spending. See [cross-program handoff](../engine-architecture/handoff/decision-queue-2026-11-13.md). No code authorized.
-
-**2026-11-15 mechanics design handoff:** [one-page cross-program queue](../engine-architecture/handoff/pipeline-design-2026-11-15.md) now routes to new gameplay policy contracts: [GM01→GM02 custom intent](decisions/gm01-custom-intent-policy-v1.md), [GM03 bounded routine](decisions/gm03-bounded-routine-v1.md), [GM04 failed-reassurance distinctness](decisions/gm04-failed-approach-v1.md), [GM06 foreground visitor checkpoint](decisions/gm06-viewer-open-baseline-v1.md), [GM07 consented fallback](decisions/gm07-consented-default-v1.md). These are **recommendations awaiting owner acceptance**, not implemented new mechanics. GM05 event feed is implemented; the GM06 visit baseline is not.
-
-**Wave-5 player replay product direction:** [Data-driven Story Replay V1](../observability/player-replay-experience-v1.md) designs read-only original published scene/choice playback, with later verified mechanical-state stepping only after a complete E0 transition history. No model reruns, game writes or GM06 live-visit acknowledgments from replay. **This is proposed UX/product policy, not a finished player feature.**
+**Replay product (observability):** [Story Replay V1](../observability/player-replay-experience-v1.md) remains **proposed** — not a finished player feature.
 
 ## Start with a question, not the whole folder
 

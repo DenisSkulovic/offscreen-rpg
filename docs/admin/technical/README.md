@@ -1,8 +1,8 @@
 # Offscreen Control | selected technical target and route map
 
-**Status:** Technical target **selected and desk-reviewed for bounded read-only foundation**, 2026-11-14; see [architecture review](architecture-review-2026-11-14.md). Product direction was [accepted by owner](../product-acceptance-and-scope.md). These are **technical architecture specifications, not deployed capabilities**, and do not authorize source edits, migrations, hosted provider spend or Cursor execution. Subsequent implementation packets require source revalidation and owner selection.
+**Status (reconciled 2026-11-15):** Technical target selected 2026-11-14; **AD01–AD08 first-wave implemented and evidenced**. Desk review: [architecture review](architecture-review-2026-11-14.md). Product: [acceptance](../product-acceptance-and-scope.md). Landed source facts: [post-AD baseline appendix](source-baseline-2026-11-14.md#post-ad-implementation-baseline-2026-11-15). OBS06/07 Support Situation is **Done in synthetic/disposable scope only** — **no production grant issuer**. These specs remain the contract for designed vs implemented; they do not authorize new spend or migrations.
 
-**Scope:** A production-credible internal administrative control plane for a persistent, AI-driven game and commercial service, initially constrained to safe, useful read-only operations and staff governance. Advanced assistance, financial writes, state repairs, LiveOps changes and private narrative access remain capability-gated.
+**Scope:** Internal administrative control plane — staff session, grants, redacted reads, `/control` shell, diagnostics/usage/audit/cases, plus synthetic case-scoped Situation. Advanced assistance, financial writes, state repairs, LiveOps changes, private narrative access, and production Support grants remain capability-gated.
 
 ## Navigate by the question
 
@@ -49,9 +49,9 @@ Browser (/control)  -> Next server-only Admin BFF/SSR + isolated Query cache
 ## Development sequence
 
 1. Product acceptance: **complete for scoped core**, with hazardous business rules explicitly deferred.
-2. Technical architecture: **these documents**; must be reviewed for cross-document contracts and source evidence.
-3. Bounded implementation program: [AD01–AD08](../implementation-program.md) and their `docs/changes` dossiers now exist as **Proposed**; exact source paths and branch head must be rechecked against Cursor's evolving `main`.
-4. `docs/changes` code-bearing dossiers remain Proposed until the owner authorizes a selected, dependency-ready packet as Ready.
-5. Implementation and proof: provider-free focused tests, then a dedicated disposable DB/Nest/browser integration lane, then any separately approved live deployment/security review.
+2. Technical architecture: **these documents** (designed vs implemented called out in the [post-AD appendix](source-baseline-2026-11-14.md#post-ad-implementation-baseline-2026-11-15)).
+3. Bounded implementation: [AD01–AD08](../implementation-program.md) **Done** with evidence under `docs/admin/evidence/`.
+4. Forensic Support Situation: OBS06/07 **Done synthetic**; production grant stewardship still open ([observability](../../observability/README.md)).
+5. Further work: only via [changes queue](../../changes/README.md); disposable-DB proof before any live/security claim.
 
-Do not allow a design-only branch to overwrite or rebase another agent's local work. Current source inspection is tied to the snapshot in the [audit](source-baseline-2026-11-14.md).
+Do not treat design prose as runtime evidence. Pre-code audit remains historical; post-AD appendix is the current source baseline.

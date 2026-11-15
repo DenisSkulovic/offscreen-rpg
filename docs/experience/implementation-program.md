@@ -1,10 +1,10 @@
 # Experience reset | implementation program and owner decision gates
 
-**Status: DESIGN PROGRAM, NOT CODE AUTHORIZATION.** Last designed 2026-11-13. All code-bearing UX packets are **Proposed** until the owner explicitly selects and authorizes one. The active Change declaration in [docs/changes/README.md](../changes/README.md) remains **none**. Cursor must not infer work permission from a Git branch, a program, a green test or the presence of a Change file.
+**Status (reconciled 2026-11-15):** **UX01–UX12 Done** (code + fixture/browser proof). This remains the **design program owner** for what those packets were meant to achieve — not a claim that human playtests validated the fantasy. Further UX work requires a new selected Change in [docs/changes/README.md](../changes/README.md). Historical handoff: [first Cursor wave](handoff/first-cursor-wave.md).
 
-**First narrow handoff is prepared:** [UX01 executor handoff](handoff/first-cursor-wave.md) and [design-readiness review](evidence/design-readiness-review.md) define the source-grounded implementation boundary. The [selected Living Stage blueprint](spaces/living-stage-blueprint.md) is the default composition authority. **Only UX01 is recommended for the first implementation request**, with UX02 held until an actual render is critiqued. A Proposed dossier is **not** formally Ready or code-authorized without the owner's explicit instruction.
+**Presentation:** [PX01–PX07](presentation-calibration-program.md) **Done** in `apps/web`. Live Play may still omit a full presentation document depending on PW01 wiring. PX does not reinterpret game authority or authorize image-provider spend.
 
-**Later frontend presentation capability:** the separate [PX01–PX04 presentation program](presentation-implementation-program.md) owns dynamic scene atmosphere, scoped option styling, art slots and visual-runtime fixtures. PX01–PX04 landed in `apps/web` on 2026-11-13. Live Play still passes no presentation document. PX work must not reinterpret actions, time or current authenticated data, and it does not authorize engine, contract, or image-provider integration.
+**Human validation:** still open — Storybook/axe/browser captures ≠ observed player comprehension ([validation plan](evidence/validation-plan.md)).
 
 ## The target comes first
 
@@ -25,22 +25,22 @@ Authoritative design documents are indexed in [Experience README](README.md), no
 
 This program is not a “big bang redesign” and does not prescribe literal JSX tree names as product requirements. One piece can be implemented and validated at a time.
 
-## Proposed code-bearing queue
+## Code-bearing queue (UX01–UX12 Done)
 
-| Packet | Outcome | Dependencies | Milestone |
+| Packet | Outcome | Status | Milestone |
 | --- | --- | --- | --- |
-| [UX01 shell and primitives](../changes/2026-11-13--ux-story-shell/CHANGE.md) | Original scene-first responsive frame, sparse navigation, tokens + accessible base controls | Current selected React baseline, finished UX target review | **Foundation** |
-| [UX02 narrative stage](../changes/2026-11-13--ux-narrative-stage/CHANGE.md) | Beautiful, readable, truthful current scene and meaningful transitions | UX01 | **Presence** |
-| [UX03 intention interactions](../changes/2026-11-13--ux-intention-actions/CHANGE.md) | Contextual offered actions, menu navigation and safe commit/preview semantics | UX02 | **Agency** |
-| [UX04 commitment + holds](../changes/2026-11-13--ux-commitment-truth/CHANGE.md) | Truthful work/time/interruption/unknown-ack/no-activity presentation | UX02, UX03 | **Earned time** |
-| [UX12 finite offscreen planner](../changes/2026-11-13--ux-offscreen-planner/CHANGE.md) | Replace raw successor-path and fictional-second planning controls with an intelligible bounded **Plan ahead** flow | UX03, UX04 | **Offscreen handoff** |
-| [UX05 story library](../changes/2026-11-13--ux-story-library/CHANGE.md) | Human-centered list of stories/drafts with authentic attention state | UX01 | **Re-entry gateway** |
-| [UX06 guided creation](../changes/2026-11-13--ux-guided-creation/CHANGE.md) | Foundation → role → direction → review → Start as an inviting flow | UX01 | **First-run creation** |
-| [UX07 return and journal](../changes/2026-11-13--ux-return-journal/CHANGE.md) | Source-linked history and honest recent changes, meaningful return path | UX02, UX04; public read model verified | **Continuity** |
-| [UX08 adaptive details](../changes/2026-11-13--ux-adaptive-context/CHANGE.md) | Conditional World/You/context shelf without generic fantasy assumptions | UX02, UX07 | **Depth on demand** |
-| [UX09 public demo](../changes/2026-11-13--ux-public-demo/CHANGE.md) | Short polished, *explicitly scripted* sample demonstrating the fantasy | UX02/03 interaction grammar, independent public route | **Portfolio doorway** |
-| [UX10 motion and feedback](../changes/2026-11-13--ux-motion-feedback/CHANGE.md) | Meaningful, reduced-motion-safe state transitions, saved-roll presentation | UX02, UX03, UX04 | **Game feel** |
-| [UX11 UX evidence](../changes/2026-11-13--ux-visual-evidence/CHANGE.md) | **Done:** Storybook catalogue, axe/Vitest, browser captures, counterexample | UX01–UX10/12 shipped surfaces | **Proof, not polish** |
+| [UX01 shell](../changes/2026-11-13--ux-story-shell/CHANGE.md) | Scene-first frame, tokens, accessible controls | **Done** | Foundation |
+| [UX02 narrative stage](../changes/2026-11-13--ux-narrative-stage/CHANGE.md) | Current scene + transitions | **Done** | Presence |
+| [UX03 intentions](../changes/2026-11-13--ux-intention-actions/CHANGE.md) | Offered actions / commit semantics | **Done** | Agency |
+| [UX04 commitment](../changes/2026-11-13--ux-commitment-truth/CHANGE.md) | Work/time/interruption truth | **Done** | Earned time |
+| [UX12 planner](../changes/2026-11-13--ux-offscreen-planner/CHANGE.md) | Bounded Plan ahead | **Done** | Offscreen handoff |
+| [UX05 library](../changes/2026-11-13--ux-story-library/CHANGE.md) | Stories/drafts list | **Done** | Re-entry |
+| [UX06 creation](../changes/2026-11-13--ux-guided-creation/CHANGE.md) | Guided start flow | **Done** | First-run |
+| [UX07 journal](../changes/2026-11-13--ux-return-journal/CHANGE.md) | Return / history | **Done** | Continuity |
+| [UX08 context](../changes/2026-11-13--ux-adaptive-context/CHANGE.md) | Conditional World/You | **Done** | Depth |
+| [UX09 demo](../changes/2026-11-13--ux-public-demo/CHANGE.md) | Scripted public sample | **Done** | Portfolio |
+| [UX10 motion](../changes/2026-11-13--ux-motion-feedback/CHANGE.md) | State transitions | **Done** | Feel |
+| [UX11 evidence](../changes/2026-11-13--ux-visual-evidence/CHANGE.md) | Storybook/axe/captures | **Done** | Proof |
 
 **No mandatory numerical sequence beyond dependencies.** UX05/UX06 and UX09 may proceed alongside UX03/04 when source owners do not conflict. One active Change at a time by default. Split cross-cutting data-projection requirements into a *separate* contract Change if a frontend packet would otherwise pretend the browser has authoritative fields it does not have.
 

@@ -1,6 +1,6 @@
 # Storyteller architecture renewal | a creative mind anchored to earned life
 
-**Design initiative, 2026-11-14.** **Status: selected analysis and proposed end-state; owner review before code authorization.** No application code, model spending, database reset, production deployment or current Change selection is implied. **The original [game vision](../vision.md) is the constitution**; implementation history is evidence, not an authority to narrow the dream. The [engine target](../engine-architecture/product-derived-requirements.md), [gameplay vocabulary](../concepts.md), [Storyteller preferences](../storyteller-settings.md), and [time/usage policies](../technical/context-and-cost.md) remain companion authority.
+**Design initiative, 2026-11-14.** **Status (reconciled 2026-11-15):** analysis + target selected; **SA01–SA12 code packets Done** for scoped implementation (SA07 conditional; SA12 dry-run tooling — paid live still needs explicit $ cap). **Gameplay quality / sustained 10–15-turn creative proof remains unproved.** New Storyteller work only via [docs/changes/README.md](../changes/README.md). **The original [game vision](../vision.md) is the constitution**; landed SA packets do not declare the dream achieved. Companion authority: [engine](../engine-architecture/product-derived-requirements.md), [concepts](../concepts.md), [settings](../storyteller-settings.md), [context/cost](../technical/context-and-cost.md).
 
 ## The fundamental question
 
@@ -23,9 +23,9 @@ This initiative reopens product-level Storyteller **capabilities** and their qua
 | How should tiers, effective budgets, latency, retries, availability and cost interact? | [Effort, money and lifecycle design](effort-cost-and-lifecycle.md) |
 | How do we prove gameplay, not merely unit green tests or valid JSON? | [Evaluation and experiments](evaluation-and-playability.md) |
 | Why not replace it with permanent chat, one agent per NPC or recursive subagents? | [Architectural alternatives and explicit rejection criteria](architecture-alternatives.md) |
-| Which exact code Changes can Cursor implement, and in what order? | **[SA01–SA12 implementation program](implementation-program.md)** → [first Cursor handoff](handoff/cursor-first-wave-2026-11-14.md) |
+| Which SA packets landed, and what quality remains unproved? | **[SA01–SA12 implementation program](implementation-program.md)** (packets **Done**; quality unproved) → historical [first handoff](handoff/cursor-first-wave-2026-11-14.md) |
 
-The permanent target documents own architecture, the dated evidence pages own *inspected current source*, and each `docs/changes/2026-11-14--sa*` packet owns a future independently verifiable code delta. Do not treat an old historical doc's “implemented” badge as new proof.
+Permanent targets own architecture; dated evidence owns inspected source; Change packets + evidence own landed deltas. Selection for new work: [changes queue](../changes/README.md).
 
 ## Immediate executive verdict
 

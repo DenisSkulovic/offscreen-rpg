@@ -1,16 +1,10 @@
 # Offscreen Control | Admin platform product design
 
-**Status:** **Product direction accepted and core technical design documented, 2026-11-14.** See [product acceptance](product-acceptance-and-scope.md), [selected technical architecture](technical/README.md), and [proposed AD01–AD08 Change program](implementation-program.md). Sensitive/commercial capabilities remain conditional. No Admin application code has been authorized or implemented by these design documents.
+**Status (reconciled 2026-11-15):** Product direction accepted; **AD01–AD08 Done** (first-wave staff session, grants, Player 360 reads, `/control` shell, diagnostics, usage, access/audit, case anchors). See [implementation program](implementation-program.md), [technical index](technical/README.md), and [post-AD source baseline appendix](technical/source-baseline-2026-11-14.md#post-ad-implementation-baseline-2026-11-15). Sensitive/commercial capabilities remain conditional. **No production Support grant issuer** — OBS06/07 Situation UI works only in synthetic/disposable grant fixtures.
 
-**Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, existing engine implementation, technical auth/storage designs or the implementation queue. The [platform ecosystem](../experience/platform-ecosystem.md) already separates the operator console from player/public experiences. The [product vision](../vision.md) and [game domain](../concepts.md) remain owners of gameplay intent.
+**Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, engine mechanics authority, or the Change selection queue ([docs/changes/README.md](../changes/README.md)).
 
-**2026-11-15 cross-workspace forensic observability design:** [Support, Engineering and replay investigation experience](../observability/admin-investigation-experience.md) builds on existing AD01–AD08 security and diagnostic boundaries. It relies on [native evidence and provenance](../observability/technical/evidence-model.md), [prompt/source history](../observability/technical/context-provenance.md), and [retention/replay policy](../observability/technical/replay-retention-and-privacy.md). **This is proposed wave-2 product design, not implemented Admin evidence access or new staff grant.** No read privilege is enlarged by this link.
-
-**Wave-5 investigation workbench detail:** [Support/Developer interaction contract](../observability/admin-investigator-interactions-v1.md) → [Turn Evidence Capsule](../observability/technical/forensic-turn-capsule-v1.md) → [evidence truth rules](../observability/technical/evidence-claims-and-quality-v1.md). **OBS01 S1 operation coverage, OBS02 stage receipts and OBS03 initial provenance sidecar are implemented**; the fully interactive workbench and exceptional raw-evidence disclosure API are **not**. [Current design handoff](../observability/handoff/wave5-evidence-quality-2026-11-15.md). No staff capability expansion is authorized by this link.
-
-**OBS06/OBS07 next Support investigation design (2026-11-15):** [source and case-grant audit](../observability/evidence/obs06-support-situation-source-audit-2026-11-15.md) → [strict S1 Situation → Why read](../observability/technical/support-situation-and-why-v1.md) → [current handoff](../observability/handoff/obs06-support-investigator-2026-11-15.md). These two bounded Changes are **Proposed**, with an explicit case/campaign authorization decision before code. No staff package is automatically enlarged and no raw narrative access is authorized.
-
-**Post-trial reality (2026-11-15):** [OBS06](../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md) and [OBS07](../observability/evidence/obs07-support-situation-ui-2026-11-15.md) **implemented and tested in synthetic/disposable environment**, including real Nest/Next/Playwright permission/redaction checks. **Not yet operational for real Support** because no trusted production issuer of exact `support-investigator` case/campaign grant exists. [Independent trial review](../observability/evidence/independent-connected-trial-review-2026-11-15.md#5-support-is-real-in-test-but-blocked-by-governance). The older OBS06/OBS07 proposed design remains historical context, not today's implementation status.
+**Forensic Support slice (OBS01 + OBS06/07):** OBS01 S1 operation coverage is in Admin diagnostics reads. [OBS06](../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md) / [OBS07](../observability/evidence/obs07-support-situation-ui-2026-11-15.md) are **Done in synthetic scope** (Nest/Next/Playwright permission + redaction). Trusted production `support-investigator` case/campaign grant issuance is **absent** ([trial review](../observability/evidence/independent-connected-trial-review-2026-11-15.md#5-support-is-real-in-test-but-blocked-by-governance)). Full Turn Capsule workbench and raw-evidence disclosure remain **not** implemented.
 
 ## Choose the product question
 
@@ -18,8 +12,8 @@
 | --- | --- |
 | Which product direction did the owner accept, and what remains conditional? | [Product acceptance and scope](product-acceptance-and-scope.md) |
 | How will the Admin actually be secured and built? | [Technical architecture and contract map](technical/README.md) |
-| Which bounded code changes are proposed for Cursor, in what order? | [Implementation program AD01–AD08](implementation-program.md) |
-| What should be passed to Cursor when an authorized first Change is selected? | [Cursor first-wave handoff](handoff/cursor-first-wave.md) |
+| Which AD01–AD08 slices landed, and what remains gated? | [Implementation program AD01–AD08](implementation-program.md) (**Done**; historical first-wave) |
+| What exists in source after AD01–AD08 + OBS06/07? | [Source baseline + post-AD appendix](technical/source-baseline-2026-11-14.md) |
 | Why does Admin exist; what are the enduring rules and boundaries? | [Product charter](product-charter.md) |
 | Who uses it, how do responsibilities overlap, what workspaces exist? | [Personas and workspaces](personas-and-workspaces.md) |
 | How are accounts, campaigns, executions, cases and subscriptions investigated together? | [Player 360 and entity model](player-360-and-entities.md) |
@@ -55,9 +49,9 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 
 1. **Product direction: accepted (2026-11-14):** end-state outcomes and default safeguards selected; conditional commercial, legal, sensitive-access and multiplayer specifics remain explicitly gated under [acceptance](product-acceptance-and-scope.md).
 2. **Technical design: selected and desk-reviewed for the bounded core.** The [technical index](technical/README.md) maps actors, policy, audit, data, UI, operations and verification. Current code was inspected but the POC does not constrain the target. Advanced/unsafe capabilities remain separately gated.
-3. **Implementation program: eight Proposed Change dossiers, NOT Ready.** See [AD01–AD08](implementation-program.md). Each requires latest-source revalidation, exact dependency evidence and owner authorization before Cursor edits code. `Current change: none` remains valid.
+3. **Implementation program: AD01–AD08 Done** (2026-11-14). See [AD01–AD08](implementation-program.md) and evidence under `docs/admin/evidence/`. Further Admin work is selected only via [docs/changes/README.md](../changes/README.md) — not by re-reading these design docs as authorization.
 
-**No Admin Change folder or technical contract should be inferred from these Markdown proposals.** Keep the current Change queue unchanged while Cursor is working on unrelated authorized tasks.
+**Still open (not Done):** production Support grant stewardship; commercial/refund/repair/LiveOps writes; raw narrative export; broad Trust execution.
 
 ## Current product review focus
 
@@ -65,13 +59,11 @@ The first pass defined the charter and domain map. The second refined [authority
 
 **All ten proposed logical workspaces now have a product-level owner document**, counting the Player 360/account experience. This is broad *design coverage*, not owner approval. The [adversarial review](product-adversarial-review.md) identified critical unresolved policies; the [decision brief](product-policy-decision-brief.md) groups the owner choices into manageable packages. The [decision register](decisions-and-readiness.md) remains the status owner.
 
-**Next:** technical target design is now authorized for the accepted bounded scope; review unresolved business-policy hazards as explicit future capability gates. **Do not create or authorize Cursor Changes until the technical architecture and source-dependent verification plan are coherent.**
+**Next:** unresolved business-policy hazards remain future capability gates. New Admin code requires a selected Change packet — design acceptance alone is not authorization.
 
 ## Status language
 
-- **Target / recommended:** authored proposed end state, pending owner approval.
-- **Conditional:** plausible future capability depending on business need, legal obligations or mature infrastructure.
-- **Open:** explicitly requires a decision; do not silently select a default.
-- **Not implemented:** this doc does not claim source evidence, tests, production capability or provider integration.
-
-No tests, provider calls or deployment are authorized by these files.
+- **Target / recommended:** authored end state; may exceed what is implemented.
+- **Implemented (bounded):** AD01–AD08 + OBS06/07 synthetic Support Situation — see evidence and post-AD baseline.
+- **Conditional / open:** commercial, legal, sensitive-access, production grant issuer.
+- **Not claimed:** production Support operations, paid provider Admin tooling, or full forensic workbench.

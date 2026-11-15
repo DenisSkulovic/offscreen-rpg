@@ -1,8 +1,17 @@
 # Context Provenance | Know exactly what the Storyteller was given
 
-**Status: technical design target, 2026-11-15.** This is about the *actual* input used by a real Storyteller operation, not a synthetic explanation reconstructed from the latest settings. Context and prompt policy remain owned by [Storyteller](../../storyteller-architecture/prompt-tools-and-models.md); [data capture authority](evidence-model.md) defines storage and links. No code authorized.
+**Status: technical target with landed custody subset, reconciled 2026-11-15.** This is about the *actual* input used by a real Storyteller operation, not a synthetic explanation reconstructed from the latest settings. Context and prompt policy remain owned by [Storyteller](../../storyteller-architecture/prompt-tools-and-models.md); [data capture authority](evidence-model.md) defines storage and links.
 
-**Wave-4 pre-live prerequisite:** the [default worker adapter source](../evidence/live-worker-dispatch-preflight-2026-11-15.md) currently discards the per-round `dispatch` override, and no current usage-authority resolver is wired by the default bootstrap. A frozen `dispatch-review.packet` and a shared `buildOpenRouterRequest` function are not sufficient to establish **actual sent packet custody** until the configured worker composition is verified by a mock transport. See proposed [OBS00](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md). No paid mismatch is asserted from source inspection alone.
+**Landed (bounded, not production entitlement):**
+- [OBS00-A](../../changes/2026-11-15--obs00-live-provider-custody/CHANGE.md) — provider forwarding / review custody path for the authorized slice.
+- [OBS00-C](../../changes/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) — reviewed `packet_sha256` must equal `prepareWire` bytes before reserve/dispatch; mismatch refuses without HTTP ([provider-dispatch-review](../../technical/provider-dispatch-review.md)).
+- [OBS00-L](../../changes/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) — local Story-mode stop/restart + DB-enforced trial caps (not OBS00-B).
+- [OBS03](../../changes/2026-11-15--obs03-consequence-prompt-sidecar/CHANGE.md) — first redacted consequence prompt sidecar / G metadata chain (final transport lineage still partial; see [OBS03 quality review](../evidence/obs03-provenance-quality-review-2026-11-15.md)).
+
+**Still blocked / not claimed:**
+- **OBS00-B** — default-worker / production current usage-authority resolver ([dispatch preflight](../evidence/live-worker-dispatch-preflight-2026-11-15.md)).
+- Unified provenance graph of every selector/omission decision; raw full-context archive; production OTel.
+- Paid live Story trial — requires a **fresh** owner spend authorization.
 
 ## 1. “What did it know, why, and from where?” is a data question
 

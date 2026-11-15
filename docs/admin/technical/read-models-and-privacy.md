@@ -1,6 +1,6 @@
 # Admin read projections, search, provenance and privacy boundaries
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Player 360](../player-360-service-blueprint.md), [Gameplay](../gameplay-worlds-product.md), [AI Operations](../ai-engineering-operations-product.md), [Trust & Privacy](../trust-and-privacy-product.md). Source reality: [baseline audit](source-baseline-2026-11-14.md). No exposed Admin DTO is implemented by this document.
+**Status:** Selected technical target, 2026-11-14; **first-wave projections implemented** (AD03/05/06/08 + OBS01/OBS06 synthetic). Product owners: [Player 360](../player-360-service-blueprint.md), [Gameplay](../gameplay-worlds-product.md), [AI Operations](../ai-engineering-operations-product.md), [Trust & Privacy](../trust-and-privacy-product.md). Source reality: [baseline + post-AD appendix](source-baseline-2026-11-14.md). Wire shapes: [core-v1-contracts](core-v1-contracts.md). Raw narrative / full capsule remain gated.
 
 ## 1. The problem to solve
 

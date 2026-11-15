@@ -1,6 +1,6 @@
 # Gameplay evolution driven by the player experience
 
-**Status:** separate **future mechanics program**, proposed for owner review. **No runtime/contract/source changes authorized.** It exists because the user explicitly challenged existing mechanics, not merely existing visuals. The [UX01–UX11 program](implementation-program.md) remains the near-term screen redesign; the **GM** queue addresses capabilities the screen cannot honestly invent.
+**Status (reconciled 2026-11-15):** GM track for capabilities UX cannot invent. **Done:** GM01, GM02, GM04, GM05, GM06. **Proposed (conditional):** GM03, GM07. UX01–UX12 are **Done** separately ([implementation program](implementation-program.md)). Further GM work only via [changes queue](../changes/README.md) — this file does not authorize code.
 
 ## Design premise
 

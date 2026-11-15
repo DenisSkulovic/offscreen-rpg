@@ -1,21 +1,21 @@
 # Admin technical architecture review | scoped core decision
 
-**Status:** Architect desk review, 2026-11-14. Product target [accepted](../product-acceptance-and-scope.md). **Review outcome: technically coherent for a proposed read-only foundation implementation program.** This is **not** source implementation evidence, operational certification or an authorization to code. Advanced commercial, shared-campaign, raw narrative, repair and LiveOps designs remain gated by product policy.
+**Status:** Architect desk review, 2026-11-14; **disposition updated 2026-11-15** after AD01–AD08 + OBS06/07 synthetic landing. Original review outcome (coherent read-only foundation) stands. This file is **not** production certification. Advanced commercial, shared-campaign, raw narrative, repair and LiveOps designs remain gated. **No production Support grant issuer.**
 
 ## Review questions and dispositions
 
 | Review question | Outcome | Evidence / limitation |
 | --- | --- | --- |
-| Does staff identity remain distinct from player authorization? | **Pass as design** | [Staff policy](staff-identity-and-policy.md) + [first-wave adapter](first-wave-design-decisions.md); actual Better Auth hooks unproved |
-| Do overlapping permissions avoid cross-product escalation? | **Pass as design** | Bounded complete grants; case assignment recognized as separate governed precondition |
-| Can a reader see account/operation truth without private raw JSON? | **Pass as design** | [Sanitized projection](read-models-and-privacy.md) and [core DTO](core-v1-contracts.md); enforcement not implemented |
-| Does the Admin avoid spoofing `ownerId` and breaking player APIs? | **Pass as design** | Dedicated Nest/Admin application and explicit player-controller separation |
-| Are financial and game outcomes correctly separate? | **Pass as design** | [Operations/funding](operations-economics-and-releases.md); no actual customer billing source audited |
-| Are administrative writes safely attributable and reconciled? | **Pass as long-term contract; not in first wave** | [Action/audit](action-approval-and-audit.md); paid writes deferred |
-| Can the first version be tested without external model costs? | **Pass as design** | [Verification matrix](security-and-verification.md); tests still must execute |
-| Can current `main` be implemented without revalidation? | **No** | Cursor may have uncommitted/more recent changes; source audit pinned to initial baseline |
-| Are all ten workspaces fully executable now? | **No, intentionally** | Only safe source-backed early views selected; no fake commercial/Trust/LiveOps pages |
-| Is broad hosted commercial security approval established? | **No** | Strong staff MFA, legal/commercial, provider and operational acceptance still needed |
+| Does staff identity remain distinct from player authorization? | **Pass — implemented (AD01)** | [AD01 evidence](../evidence/ad01-staff-session-2026-11-14.md); staff session ≠ player cookie |
+| Do overlapping permissions avoid cross-product escalation? | **Pass — implemented (AD02)** | [AD02 evidence](../evidence/ad02-grant-policy-2026-11-14.md); complete grants, deny-by-default |
+| Can a reader see account/operation truth without private raw JSON? | **Pass — implemented (AD03/05/OBS01)** | Redacted Player 360 + diagnostics; raw JSON still excluded by default |
+| Does the Admin avoid spoofing `ownerId` and breaking player APIs? | **Pass — implemented** | Nest `/api/admin/*` + `createAdmin*` application boundary |
+| Are financial and game outcomes correctly separate? | **Pass — implemented for technical usage only (AD06)** | Not customer billing; no paid subscription ledger |
+| Are administrative writes safely attributable and reconciled? | **Pass as long-term contract; first wave read-heavy** | Case assignment (AD08) audited; paid writes deferred |
+| Can the first version be tested without external model costs? | **Pass — proved** | Disposable DB + Playwright `/control`; 0 provider spend for AD/OBS06–07 |
+| Support Situation without production grant issuer? | **Pass synthetic only (OBS06/07)** | [OBS06/07 evidence](../../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md); production issuer **absent** |
+| Are all ten workspaces fully executable now? | **No, intentionally** | First-wave shell + diagnostics; no fake commercial/Trust/LiveOps |
+| Is broad hosted commercial security approval established? | **No** | MFA/legal/commercial/ops acceptance still needed |
 
 ## Important disagreements / anti-patterns rejected
 
@@ -44,4 +44,4 @@
 
 **Not selected for implementation yet:** customer refunds/credits, arbitrary story repair, full impersonation/assisted live gameplay, raw narrative export, commercial plans and paid subscriptions, global production changes, automated AI investigator, broad community moderation or real customer privacy-rights execution.
 
-**Gate:** prepare **Proposed**, code-bearing `docs/changes` packets with exact source-owner paths, dependency and negative proof. The owner may later select dependency-ready packets and instruct Cursor to implement. No packet should be labeled Ready solely because this desk review says the architecture is coherent.
+**Post-implementation note (2026-11-15):** AD01–AD08 packets are **Done**. Further Admin/forensic work requires a new selected Change. This desk review does **not** authorize production Support grants, OBS00-B, or paid spend.

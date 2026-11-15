@@ -29,7 +29,7 @@ Find the existing owner before adding a document. Put the full explanation there
 | Repeated operating mistake                                                          | Small rule at the right trigger, or procedure in a skill; avoid unconditional policy growth                                                       |
 | Consequential owner remarks, decisions, alternatives, exclusions or session handoff | Append chronological entry in the [day's minutes](../../docs/minutes/README.md); promote lasting decisions to their owning spec/Change separately |
 
-Before finishing a slice, ask whether a fresh reader can find its purpose, current boundary, owner and evidence from the nearest map without reverse-engineering source. Repair the missing link or summary during that slice. This is a reasoning check, not a mandatory validation command or a repository-wide rewrite.
+Before finishing a slice, ask whether a fresh reader can find its purpose, current boundary, owner and evidence from the nearest map without reverse-engineering source. Repair the missing link or summary during that slice. For a **code-bearing Change**, finishing also requires the CHANGE.md **Reconciliation ledger** and [documentation-reconciliation](../skills/documentation-reconciliation/SKILL.md) for every `updated`/drift row—scoped to listed authorities, not a repository-wide rewrite.
 
 ## Keep the entry cheap
 

@@ -51,4 +51,14 @@ One observable change to executable code/tests/configuration and why it matters.
 - Decisions/blockers that must be resolved before code work: [...]
 - If this Change spans several independently verifiable code slices, add `PLAN.md` with one active checkpoint. Don't create a second program-level specification here.
 
-**Closing rule:** record actual diff and verification, reconcile the owning product/technical/evidence documents, then retire the active packet. Git retains the historical plan.
+## Reconciliation ledger (required before Done)
+
+Fill one row per Authority heading listed above (product, technical, evidence if claimed). Do **not** mark Done or clear `Current change` with an empty ledger.
+
+| Authority (doc + heading) | Result | Note |
+| --- | --- | --- |
+| [product/technical/evidence path#heading] | unchanged \| updated | unchanged: one-line why; updated: owner path + what changed |
+
+For every `updated` row (and any spec-vs-code mismatch found while closing), run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite authority to match an unauthorized product change.
+
+**Closing rule:** record actual diff and verification, complete the reconciliation ledger above, then retire the active packet. Git retains the historical plan.

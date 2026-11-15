@@ -47,3 +47,34 @@ These are **absence from inspected baseline**, not proof of nonexistence in futu
 ## Source revalidation trigger
 
 Before Cursor receives the first Admin code packet: compare `main` and the design branch; inspect `apps/api/src/app.ts`, auth/identity, schema/migration files, `packages/application/src/stories/reads.ts`, `apps/web/app/README.md`, Query provider, and the API integration runner. Explicitly resolve any changed app composition, auth library, provider admission, or database migration sequence. Never cherry-pick a large outdated design branch over Cursor's active files without review.
+
+---
+
+## Post-AD implementation baseline | 2026-11-15
+
+**Purpose:** record what landed after AD01–AD08 + OBS06/07 without erasing the 2026-11-14 pre-code audit above. Ground truth for packets: [implementation program](../implementation-program.md) and `docs/admin/evidence/`.
+
+### What exists now
+
+| Area | Landed fact | Evidence / owner |
+| --- | --- | --- |
+| Nest `/api/admin/*` | Dedicated Admin controller + composition in `apps/api/src/app.ts` / `modules/admin/` | AD01–AD08 Done |
+| Application factories | `createAdminSessions`, `createAdminAccess`, `createAdminPlayerReads`, `createAdminDiagnosticsReads`, `createAdminUsageReads`, `createAdminAuditReads`, `createAdminCaseStore`, `createAdminSituationReads` | `packages/application` admin boundary |
+| Staff session + grants | Staff principal, Admin-purpose session, deny-by-default grant evaluator | [AD01](../evidence/ad01-staff-session-2026-11-14.md), [AD02](../evidence/ad02-grant-policy-2026-11-14.md) |
+| Player 360 reads | Exact-ref search + redacted summaries | [AD03](../evidence/ad03-player-safe-reads-2026-11-14.md) |
+| Operator UI | Next `/control` SSR shell, isolated Query, revocation | [AD04](../evidence/ad04-operator-shell-2026-11-14.md) |
+| Diagnostics / OBS01 | Campaign → generation status; S1 operation coverage in diagnostics reads | [AD05](../evidence/ad05-game-ai-diagnostics-2026-11-14.md); OBS01 |
+| Technical usage | Funded window / reservation / uncertainty views (not billing) | [AD06](../evidence/ad06-usage-exposure-2026-11-14.md) |
+| Access + audit review | Effective access + safe audit | [AD07](../evidence/ad07-staff-access-audit-2026-11-14.md) |
+| Cases | Minimal support case anchors + assignment | [AD08](../evidence/ad08-support-case-anchors-2026-11-14.md) |
+| Situation → Why (OBS06/07) | Case+campaign scoped Support Situation API + UI | [OBS06](../../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md), [OBS07](../../observability/evidence/obs07-support-situation-ui-2026-11-15.md); contract [support-situation-and-why-v1](../../observability/technical/support-situation-and-why-v1.md) |
+
+### Still absent / blocked
+
+- **Trusted production issuer** of exact `support-investigator` case/campaign grants (OBS06/07 synthetic-only).
+- Customer billing, refunds, LiveOps writes, raw narrative export, full Turn Capsule workbench.
+- Production OBS00-B entitlement for provider dispatch (separate forensic program).
+
+### Diagnostics / OBS01 ownership
+
+Safe operation discovery and redacted generation status live in **Admin diagnostics reads** (`createAdminDiagnosticsReads`) and the AD05 technical surface. Forensic claim rules remain under [observability](../../observability/README.md); Admin does not own raw prompt archives.

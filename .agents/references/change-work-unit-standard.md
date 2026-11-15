@@ -50,7 +50,7 @@ The selected route is `docs/changes/README.md`. A small selected Change needs on
 | **Implementing**           | One owner is executing the approved bounded delta                                                       | Yes, within scope                    |
 | **Verifying**              | Code exists; proof, review or human acceptance incomplete                                               | Only targeted fixes with permission  |
 | **Blocked**                | Cannot continue without named decision, dependency, environment or safety approval                      | Not beyond approved diagnostic scope |
-| **Done**                   | Desired code change landed and its stated evidence recorded; remaining limitations explicit             | No; retire the active packet         |
+| **Done**                   | Desired code change landed, stated evidence recorded, and **Reconciliation ledger** completed for Authority headings; remaining limitations explicit | No; retire the active packet only after the ledger |
 | **Cancelled / superseded** | No longer worth implementing or replaced by a different accepted plan                                   | No                                   |
 
 **Parked** is a scheduling label, not proof that an unreviewed design became approved. Legacy recorded approval describes historical owner communication, not automatic perpetual permission for any future model, deployment, provider spend or newly selected architecture. A newly resumed workstream must recheck source and any changed product/technical decision. The current user can always choose to pause code work without changing the historical specification.
@@ -61,7 +61,7 @@ The selected route is `docs/changes/README.md`. A small selected Change needs on
 
 **Execution:** owner/agent receives only the current Change, relevant headings, source anchors and verification instructions. The agent cannot expand its own scope because a parent initiative contains tempting unfinished phases.
 
-**Exit:** compare actual diff against acceptance; identify checks actually run; update permanent design/evidence owners if needed. Close/retire the packet, rather than leaving a completed active FEATURE/PLAN as a permanent source of truth. Historical Git versions preserve old research.
+**Exit:** compare actual diff against acceptance; identify checks actually run; complete the Change **Reconciliation ledger** for every Authority heading (each `unchanged` with why, or `updated` with owner path + delta); run [documentation-reconciliation](../skills/documentation-reconciliation/SKILL.md) for every `updated`/drift hit. Close/retire the packet only after that ledger is filled—do not leave a completed active FEATURE/PLAN as a permanent source of truth. Historical Git versions preserve old research.
 
 **Audit cadence:** when planning paths become confusing, classify each as active code work, program, proposal, evaluation, or completed history. Never delete a dossier merely because its checkpoint is old or large. Confirm unique decisions have a canonical home and inbound links are repaired before retirement.
 

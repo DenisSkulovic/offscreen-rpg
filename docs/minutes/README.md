@@ -4,12 +4,13 @@
 
 **Maintaining this log:** [Daily minutes rule](../../.agents/rules/session-minutes.md). Use one file per active **Europe/Vilnius calendar day**, `YYYY-MM-DD.md`. Append meaningful updates throughout a working day and before any chat/agent switch. Capture the substance of long user prompts, including `do not` and `not yet` constraints, contrasting options and motivations.
 
-**Current handoff, 2026-11-14:** ENG09 + ENG03-M + GM05 + PW01 Done; `Current change: none`. A separate [Admin product design branch](https://github.com/DenisSkulovic/offscreen-rpg/tree/design/admin-product-2026-11-14/docs/admin) captures the proposed long-term internal console; product review is next, technical/Changes not authorized. [Change queue](../changes/README.md).
+**Current handoff, 2026-11-15:** Documentation convergence complete ([ledger](../engineering/evidence/documentation-convergence-2026-11-15.md)); process gate installed. Portfolio waves Nov 12–15 landed; **Current change:** QA-SF01 **Blocked**. [Change queue](../changes/README.md).
 
 ## Days
 
 | Date | Main topics | Outcome / status |
 | --- | --- | --- |
+| [2026-11-15](2026-11-15.md) | Docs convergence; Change-close reconciliation ledger; hub status waves | Process gate + permanent owners reconciled; residuals = runtime deviations / governance |
 | [2026-11-14](2026-11-14.md) | Merge handoff; ENG09–PW01 implementation; Admin product vision (design branch) | Four packets Done, queue clear; Admin product proposed, no code or provider spend |
 | [2026-11-13](2026-11-13.md) | Chamber CH08–CH16 Done; local-infra unblock rule | CH01–CH16 Done; agent must start local disposable infra itself; no provider spend |
 | [2026-11-12](2026-11-12.md) | React W01–W22 through Storybook W18; Chamber CH01–CH16 Proposed | W01–W11/W13/W15–W21 **Done**; next W22 or W14; no provider spend |

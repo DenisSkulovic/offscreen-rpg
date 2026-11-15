@@ -1,6 +1,6 @@
 # GM06 | Truthful “since last opened” checkpoint V1
 
-**Status:** purpose-specific product + backend/frontend contract **recommended for owner selection**, 2026-11-15; no code approved. **Dependency already implemented:** [GM05](../../changes/2026-11-13--gm-return-event-projection/CHANGE.md) ships private `story_public_event`, per-story committed `eventSequence`, owner `GET /api/stories/:id/events` and only `coverage='since-enabled'` (no historical backfill). [GM06 execution packet](../../changes/2026-11-13--gm-viewer-read-position/CHANGE.md) remains Proposed.
+**Status (reconciled 2026-11-15):** contract **accepted and implemented** for the bounded visit open/ACK slice. Evidence: [gm06-visit-checkpoint-2026-11-15](../evidence/gm06-visit-checkpoint-2026-11-15.md). Packet: [GM06](../../changes/2026-11-13--gm-viewer-read-position/CHANGE.md) **Done**. Dependency: [GM05](../../changes/2026-11-13--gm-return-event-projection/CHANGE.md) public events. This doc remains the product/technical meaning of “since last opened”; it is not authorization for device-local cursors, mind-reading “read” claims, or replay ACK side-effects.
 
 ## 1. Decide what we claim: an opening checkpoint, not mind-reading
 

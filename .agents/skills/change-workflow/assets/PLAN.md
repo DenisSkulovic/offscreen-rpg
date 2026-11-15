@@ -27,4 +27,4 @@ Detail only the next ready slice. **Evaluation-only, design-only and documentati
 - Unresolved decision or blocker and who owns it:
 - Provider/DB/deployment side effects and certainty:
 
-Rewrite this checkpoint instead of appending chronological tool output. Close the packet after evidence reconciliation and remove it from the active route; keep important accepted decisions in permanent specifications.
+Rewrite this checkpoint instead of appending chronological tool output. Close the packet only after the CHANGE.md **Reconciliation ledger** is complete and documentation-reconciliation has been run for every `updated`/drift row; then remove it from the active route. Keep important accepted decisions in permanent specifications.
