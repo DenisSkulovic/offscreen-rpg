@@ -1,6 +1,6 @@
 # CURSOR START HERE | Execute a real forensic observability trial, phase by phase
 
-**Status:** owner-directed execution handoff prepared 2026-11-15, **not yet executed**. Source baseline: `main@18158402` plus [OBS06/OBS07 design branch](obs06-support-investigator-2026-11-15.md). **This is the sole Cursor starting point**, not an invitation to load the entire observability architecture. The owner will send a separate **kickoff** telling Cursor to run this. Until that kickoff, `Current change: none`.
+**HISTORICAL ENTRY: EXECUTED AND CLOSED.** Cursor completed S0–S6 on 2026-11-15 and committed the [real final report](../evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) by main@b88356fe. This original runbook is retained as execution provenance, **not** the next task. For the new source review and next bounded code sequence read [post-trial Cursor handoff](post-trial-next-cursor-wave-2026-11-15.md). **Do not automatically repeat S0–S6 or reuse their paid-task authorization.** Current change remains none until separately selected.
 
 ## 1. Your job, not a speculative research assignment
 
