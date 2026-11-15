@@ -21,6 +21,10 @@
 | [European Commission: Principles of GDPR](https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en) | Purpose limitation, data minimization, storage limitation, confidentiality and accountability | Retain player-published history for its actual product purpose while separately limiting raw AI debugging bodies and staff access; avoid “all data forever” |
 | [European Commission: rights of data subjects](https://commission.europa.eu/law/law-topic/data-protection/information-individuals_en) | Access, erasure, portability, objection and other rights affect stored content | Deleted story, audit exceptions, shared game and incident holds need explicit lawful lifecycle and cross-store propagation |
 
+| [W3C PROV-O: Provenance Ontology](https://www.w3.org/TR/prov-o/) | Entities, activities and agents with explicit used/generated/derived-from relationships | Model original game/task/document/source provenance with typed evidence links, not an arbitrary log-line graph |
+| [OpenLineage: facet extensibility](https://openlineage.io/docs/spec/facets/) | Run/job/input/output facets capture source context and observation provenance | Conceptual support for source/operation/result metadata; no need to deploy OpenLineage in the game |
+| [OpenLineage: explicit lineage edges](https://openlineage.io/docs/spec/facets/job-facets/lineage/) | A producer can identify which specific inputs feed which outputs rather than inventing all pairwise edges | Do not infer every included memory source influenced every published claim; preserve exact observed stage/claim edges |
+
 ## Tool-selection challenges
 
 **OpenTelemetry is a standard, not a storage promise.** Use its semantic conventions, span links, instrumentation context and metrics. Do not embed entire sensitive prompt objects into `gen_ai.input.messages` by default, especially with downstream hosted collectors. The [source audit](evidence/current-source-inventory-2026-11-15.md) found no inspected configured OTel stack.
