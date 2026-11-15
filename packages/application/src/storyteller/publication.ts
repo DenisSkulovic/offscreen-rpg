@@ -4,8 +4,10 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import {
   campaign,
+  campaignConsequence,
   campaignReport,
   gameActionExecution,
+  gameActionExecutionEvent,
   gameActionReceipt,
   gameActivity,
 } from '@offscreen/db/campaign-schema';
@@ -406,43 +408,20 @@ export async function publishStorytellerResult(
         .where(eq(storytellerContextCapture.captureId, id));
       if (captureRow) {
         const capture = parseContextCapture(captureRow.capture);
-        if (
-          capture.purpose !== 'consequence' ||
-          capture.sourceKind !== 'action-receipt'
-        ) {
+        if (capture.purpose !== 'consequence') {
           throw new StoryError('invalid');
         }
-        const [receipt] = await tx
-          .select()
-          .from(gameActionReceipt)
-          .where(eq(gameActionReceipt.operationId, capture.operationId));
         const [campaignState] = await tx
           .select()
           .from(campaign)
           .where(eq(campaign.storyId, current.id));
-        const sourceStillMatches =
+        const commonStillMatches =
           hashContextCapture(capture) === captureRow.captureSha256 &&
           captureRow.state === 'ready' &&
           current.ownerId === capture.ownerId &&
           capture.passageId === task.source.passageId &&
           capture.narrativeRevision === task.source.narrativeRevision &&
-          receipt?.generationId === id &&
-          receipt.operationId === capture.acceptedReceipt.operationId &&
-          receipt.outcome === capture.acceptedReceipt.outcome &&
-          receipt.outcomeText === capture.acceptedReceipt.outcomeText &&
-          isDeepStrictEqual(receipt.offer, capture.acceptedReceipt.offer) &&
-          isDeepStrictEqual(receipt.effects, capture.acceptedReceipt.effects) &&
-          isDeepStrictEqual(
-            receipt.declarations,
-            capture.acceptedReceipt.declarations,
-          ) &&
-          isDeepStrictEqual(receipt.roll, capture.acceptedReceipt.roll) &&
           !!campaignState &&
-          actionProjectedStateDigest({
-            character: campaignState.character,
-            storyFacts: campaignState.storyFacts,
-            gameSecond: campaignState.gameSecond,
-          }) === capture.actorAndWorld.postSettlementStateDigest &&
           (capture.root.hash === null
             ? current.documentRootHash === null
             : current.documentRootHash === capture.root.hash &&
@@ -458,9 +437,86 @@ export async function publishStorytellerResult(
           ) &&
           isDeepStrictEqual(current.storyteller, capture.settings.profile) &&
           isDeepStrictEqual(current.execution, capture.settings.execution);
-        if (!sourceStillMatches) {
-          await setPublication(tx, id, 'stale');
-          return;
+        if (capture.sourceKind === 'action-interrupted') {
+          const [execution] = await tx
+            .select()
+            .from(gameActionExecution)
+            .where(eq(gameActionExecution.operationId, capture.operationId));
+          const [successReceipt] = await tx
+            .select({ operationId: gameActionReceipt.operationId })
+            .from(gameActionReceipt)
+            .where(eq(gameActionReceipt.operationId, capture.operationId));
+          const [event] = await tx
+            .select({ id: gameActionExecutionEvent.id })
+            .from(gameActionExecutionEvent)
+            .where(
+              and(
+                eq(gameActionExecutionEvent.id, capture.interruption.eventId),
+                eq(
+                  gameActionExecutionEvent.executionId,
+                  capture.interruption.executionId,
+                ),
+                eq(
+                  gameActionExecutionEvent.executionRevision,
+                  capture.interruption.executionRevision,
+                ),
+                eq(gameActionExecutionEvent.kind, 'interrupted'),
+                eq(gameActionExecutionEvent.storyId, current.id),
+              ),
+            );
+          const [consequence] = await tx
+            .select()
+            .from(campaignConsequence)
+            .where(eq(campaignConsequence.operationId, capture.operationId));
+          const sourceStillMatches =
+            commonStillMatches &&
+            !successReceipt &&
+            consequence?.generationId === id &&
+            !!event &&
+            execution?.state === 'interrupted' &&
+            execution.revision === capture.interruption.executionRevision &&
+            execution.preparationGenerationId === null &&
+            actionProjectedStateDigest({
+              character: campaignState!.character,
+              storyFacts: campaignState!.storyFacts,
+              gameSecond: campaignState!.gameSecond,
+            }) === capture.actorAndWorld.postInterruptStateDigest;
+          if (!sourceStillMatches) {
+            await setPublication(tx, id, 'stale');
+            return;
+          }
+        } else if (capture.sourceKind === 'action-receipt') {
+          const [receipt] = await tx
+            .select()
+            .from(gameActionReceipt)
+            .where(eq(gameActionReceipt.operationId, capture.operationId));
+          const sourceStillMatches =
+            commonStillMatches &&
+            receipt?.generationId === id &&
+            receipt.operationId === capture.acceptedReceipt.operationId &&
+            receipt.outcome === capture.acceptedReceipt.outcome &&
+            receipt.outcomeText === capture.acceptedReceipt.outcomeText &&
+            isDeepStrictEqual(receipt.offer, capture.acceptedReceipt.offer) &&
+            isDeepStrictEqual(
+              receipt.effects,
+              capture.acceptedReceipt.effects,
+            ) &&
+            isDeepStrictEqual(
+              receipt.declarations,
+              capture.acceptedReceipt.declarations,
+            ) &&
+            isDeepStrictEqual(receipt.roll, capture.acceptedReceipt.roll) &&
+            actionProjectedStateDigest({
+              character: campaignState!.character,
+              storyFacts: campaignState!.storyFacts,
+              gameSecond: campaignState!.gameSecond,
+            }) === capture.actorAndWorld.postSettlementStateDigest;
+          if (!sourceStillMatches) {
+            await setPublication(tx, id, 'stale');
+            return;
+          }
+        } else {
+          throw new StoryError('invalid');
         }
       }
     }

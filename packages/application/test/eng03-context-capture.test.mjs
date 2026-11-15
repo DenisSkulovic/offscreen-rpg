@@ -3,11 +3,14 @@ import test from 'node:test';
 import { randomUUID } from 'node:crypto';
 import {
   committedActionContextCaptureV1Schema,
+  contextCapturePointerSchema,
   contextCaptureV1Schema,
   hashContextCapture,
+  interruptedActionContextCaptureV1Schema,
   parseContextCapture,
   storytellerContextCaptureKind,
 } from '../dist/storyteller/context-capture.js';
+import { harborCompassTransferPlan } from '../dist/campaign/fixtures/item-transfer-plans.js';
 import { canonicalRuleEvidence } from '../dist/storyteller/canonical-knowledge.js';
 import {
   actionProjectedStateDigest,
@@ -353,6 +356,178 @@ test('committed capture rejects digest mismatch', () => {
   assert.throws(
     () => committedActionContextCaptureV1Schema.parse(capture),
     /Committed state digest mismatch/,
+  );
+});
+
+function baseInterruptedCapture() {
+  const captureId = randomUUID();
+  const storyId = randomUUID();
+  const operationId = randomUUID();
+  const passageId = randomUUID();
+  const eventId = randomUUID();
+  const transferOfferId = randomUUID();
+  const transferPlan = harborCompassTransferPlan;
+  const transferOffer = {
+    id: transferOfferId,
+    nodes: [
+      {
+        id: transferPlan.key,
+        parent: null,
+        label: transferPlan.label,
+        description: transferPlan.intention,
+        action: {
+          kind: 'attempt',
+          timing: { kind: 'finite', fictionalSeconds: 10 },
+        },
+      },
+    ],
+  };
+  const digest = actionProjectedStateDigest({
+    character,
+    storyFacts: [],
+    gameSecond: 10,
+  });
+  return {
+    version: 1,
+    captureId,
+    storyId,
+    ownerId: 'owner-interrupt',
+    purpose: 'consequence',
+    sourceKind: 'action-interrupted',
+    operationId,
+    passageId,
+    narrativeRevision: 1,
+    root: { hash: null, revision: 0 },
+    sourcePassages: [
+      {
+        storage: 'inline',
+        passageId,
+        sequence: 1,
+        contentHash: null,
+        inlineContent: {
+          version: 1,
+          title: 'Harbor',
+          paragraphs: ['Harbor fog.'],
+        },
+        response: null,
+      },
+    ],
+    activeSceneScope: null,
+    narrative: {
+      premise: {
+        title: 'Harbor',
+        premise: 'A foggy quay.',
+        storytellingDirection: 'Keep it grounded.',
+      },
+      notes: [],
+    },
+    canonicalSelection: {
+      ruleSections: canonicalRuleEvidence(['time']),
+      campaignDocumentIds: [],
+    },
+    actorAndWorld: {
+      character,
+      storyFacts: [],
+      itemHolders: [
+        { key: 'brass-compass', label: 'Brass compass', holderKey: 'thief' },
+      ],
+      worldConditions: [],
+      activitySituation: {
+        activityAccess: { kind: 'none' },
+        activeActivityId: null,
+        commitments: [],
+      },
+      gameSecond: 10,
+      postInterruptStateDigest: digest,
+    },
+    settings: {
+      revision: 1,
+      capturedSettings: {
+        revision: 1,
+        creative: {
+          profile: { id: profile.id, revision: profile.revision },
+          tone: profile.tone,
+          emphasis: 'balanced',
+          surprises: 'occasional',
+          tags: [],
+          guidance: [],
+        },
+        pace: { kind: 'rate', fictionalSeconds: 1, realSeconds: 1 },
+        time: defaultWorldTimeDefinition,
+        locked: false,
+        rules: 'srd-5.2.1-subset.v1',
+        risk: 'nonlethal',
+      },
+      profile,
+      execution: offlineExecution,
+      effectiveUsagePolicy: null,
+    },
+    selected: {
+      id: operationId,
+      label: transferPlan.label,
+      intention: transferPlan.intention,
+    },
+    interruption: {
+      kind: 'action-interrupted',
+      cause: 'required-item-holder-changed',
+      executionId: operationId,
+      executionRevision: 1,
+      eventId,
+      eventGameSecond: 10,
+      offerId: transferOfferId,
+      actionKey: transferPlan.key,
+      itemKeys: ['brass-compass'],
+      executionOffer: transferOffer,
+      executionPlan: transferPlan,
+      factualText:
+        'The accepted transfer could not complete; the required item was no longer available',
+    },
+    capturedAt: '2026-11-15T14:00:00.000Z',
+  };
+}
+
+test('interruptedActionContextCaptureV1Schema accepts action-interrupted capture', () => {
+  const parsed = interruptedActionContextCaptureV1Schema.parse(
+    baseInterruptedCapture(),
+  );
+  assert.equal(parsed.purpose, 'consequence');
+  assert.equal(parsed.sourceKind, 'action-interrupted');
+  const routed = parseContextCapture(parsed);
+  assert.equal(routed.sourceKind, 'action-interrupted');
+  assert.match(hashContextCapture(parsed), /^[a-f0-9]{64}$/);
+  const pointer = contextCapturePointerSchema.parse({
+    version: 1,
+    captureId: parsed.captureId,
+    purpose: 'consequence',
+    sourceKind: 'action-interrupted',
+  });
+  assert.equal(pointer.sourceKind, 'action-interrupted');
+});
+
+test('parseContextCapture keeps C1 action-receipt distinct from interrupted', () => {
+  const committed = parseContextCapture(baseCommittedCapture());
+  const interrupted = parseContextCapture(baseInterruptedCapture());
+  assert.equal(committed.sourceKind, 'action-receipt');
+  assert.equal(interrupted.sourceKind, 'action-interrupted');
+  assert.throws(
+    () =>
+      parseContextCapture({
+        ...baseCommittedCapture(),
+        sourceKind: 'action-interrupted',
+      }),
+    /Invalid|Required|Unrecognized|interruption|expected/i,
+  );
+});
+
+test('interrupted capture rejects forged success-style digest field', () => {
+  const capture = baseInterruptedCapture();
+  capture.actorAndWorld = {
+    ...capture.actorAndWorld,
+    postInterruptStateDigest: '0'.repeat(64),
+  };
+  assert.throws(
+    () => interruptedActionContextCaptureV1Schema.parse(capture),
+    /Interrupted state digest mismatch/,
   );
 });
 

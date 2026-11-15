@@ -1,6 +1,6 @@
 # ENG03-C2 | Capture a verified interrupted action off the story lock
 
-**State: Proposed, not Ready.** **Kind:** one purpose-specific code/test Change. **Authority:** [strict interrupted-action capture V1](../../engine-architecture/decisions/eng03-interrupted-action-capture-v1.md) and [ENG03 ordered migration](../../engine-architecture/decisions/eng03-capture-migration-sequence.md). **Dependency:** ENG03-narrow and C1 Done; [C1-R](../2026-11-15--eng03-c1-provisional-recovery/CHANGE.md) recovery interaction reviewed. **No code, provider spend, tests or migration authorized by this Markdown.**
+**State: Done (2026-11-15).** **Kind:** one purpose-specific code/test Change. **Authority:** [strict interrupted-action capture V1](../../engine-architecture/decisions/eng03-interrupted-action-capture-v1.md) and [ENG03 ordered migration](../../engine-architecture/decisions/eng03-capture-migration-sequence.md). **Dependency:** ENG03-narrow and C1 Done; [C1-R](../2026-11-15--eng03-c1-provisional-recovery/CHANGE.md) recovery interaction reviewed. **Evidence:** [eng03-c2](../../engine-architecture/evidence/eng03-c2-interrupted-capture-2026-11-15.md). Provider spend: zero.
 
 ## Cursor first screen
 
@@ -29,4 +29,4 @@
 
 Do not touch world-obligation interruption (`fireWorldObligations`), activities, reports, opening, continuation, rules/dice/time, application-wide saga/queue, extra provider policies, destructive migration or cloud deployment. Abort when actual source contradicts fixed event/purpose semantics.
 
-**Ready only** after actual latest source and required lock measurement, no contradicting C1-R status, and separate explicit owner authorization to implement this one packet. `Current change: none` remains accurate until then.
+**Done** after lock measurement (Stage-1 ~28ms vs 500ms CAS inject; contender ~9ms) and focused unit/live proofs. Hard exclusions above still apply to later ENG03 packets.

@@ -1,6 +1,6 @@
 # ENG03-C2 | Interrupted finite-action context capture V1
 
-**Status:** purpose-specific technical contract selected for proposed Change, 2026-11-15; **not implemented or code-authorized**. **Scope:** only the `action-interrupted` consequence caused by `required-item-holder-changed`, **not** a controlling world-obligation interruption. **Prerequisite:** retain ENG03-narrow/C1 one-generation capture mechanism and close/verify [C1 recovery policy](eng03-provisional-recovery-v1.md) independently.
+**Status:** implemented 2026-11-15 ([ENG03-C2](../../changes/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md); evidence [eng03-c2](../evidence/eng03-c2-interrupted-capture-2026-11-15.md)). **Scope:** only the `action-interrupted` consequence caused by `required-item-holder-changed`, **not** a controlling world-obligation interruption. **Prerequisite:** retain ENG03-narrow/C1 one-generation capture mechanism and close/verify [C1 recovery policy](eng03-provisional-recovery-v1.md) independently.
 
 ## 1. Why this purpose is different
 

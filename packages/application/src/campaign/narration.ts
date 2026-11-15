@@ -11,7 +11,6 @@ import {
   campaign,
   campaignConsequence,
   gameActionExecution,
-  gameActionExecutionEvent,
   gameActionReceipt,
   gameRoll,
 } from '@offscreen/db/campaign-schema';
@@ -35,6 +34,7 @@ import {
 } from '../storyteller/context';
 import {
   captureCommittedActionNarration,
+  captureInterruptedActionNarration,
   capturePendingActionNarration,
 } from '../storyteller/context-capture';
 import { materializePendingActionCapture } from '../storyteller/capture-materialization';
@@ -273,137 +273,6 @@ async function admitConsequenceNarration(
   return id;
 }
 
-async function admitActionInterruptedNarration(
-  tx: Transaction,
-  current: StoryRecord,
-  receipt: Extract<
-    z.infer<typeof consequenceReceiptSchema>,
-    { kind: 'action-interrupted' }
-  >,
-  documentStore?: DocumentStore,
-) {
-  const [execution] = await tx
-    .select()
-    .from(gameActionExecution)
-    .where(eq(gameActionExecution.operationId, receipt.operationId))
-    .for('update');
-  if (
-    !execution ||
-    execution.state !== 'interrupted' ||
-    execution.revision !== receipt.executionRevision ||
-    execution.storyId !== current.id
-  ) {
-    throw new Error('Interrupted action consequence lost its execution fence');
-  }
-  if (execution.preparationGenerationId) {
-    throw new Error(
-      'Interrupted item transfer must not reuse a speculative preparation',
-    );
-  }
-  const [successReceipt] = await tx
-    .select({ operationId: gameActionReceipt.operationId })
-    .from(gameActionReceipt)
-    .where(eq(gameActionReceipt.operationId, receipt.operationId));
-  if (successReceipt) {
-    throw new Error('Interrupted action cannot narrate a success receipt');
-  }
-  const [event] = await tx
-    .select({ id: gameActionExecutionEvent.id })
-    .from(gameActionExecutionEvent)
-    .where(
-      and(
-        eq(gameActionExecutionEvent.id, receipt.eventId),
-        eq(gameActionExecutionEvent.executionId, receipt.executionId),
-        eq(gameActionExecutionEvent.executionRevision, receipt.executionRevision),
-        eq(gameActionExecutionEvent.kind, 'interrupted'),
-        eq(gameActionExecutionEvent.storyId, current.id),
-      ),
-    );
-  if (!event) {
-    throw new Error('Interrupted action consequence lost its event fence');
-  }
-  const [state] = await tx
-    .select()
-    .from(campaign)
-    .where(eq(campaign.storyId, current.id));
-  if (!state) {
-    throw new Error('Missing interrupted action consequence state');
-  }
-  const context = await loadStorytellerContext(tx, {
-    storyId: current.id,
-    revision: current.revision,
-    premise: current.premise,
-    notes: current.continuityNotes,
-    activeSceneScope: current.activeSceneScope,
-    selected: {
-      id: receipt.operationId,
-      label: receipt.label,
-      intention: receipt.intention,
-    },
-    ...canonicalContextDependencies(current, documentStore),
-  });
-  const factualText =
-    'The accepted transfer could not complete; the required item was no longer available';
-  const task = prepareAdmittedStorytellerTask(
-    {
-      task: 'consequence',
-      source: {
-        storyId: current.id,
-        narrativeRevision: current.revision,
-        passageId: receipt.passageId,
-      },
-      profile: storytellerProfileSchema.parse(current.storyteller),
-      execution: executionPolicySchema.parse(current.execution),
-      context: contextInputSchema.parse({
-        ...context,
-        resolution: {
-          character: characterSchema.parse(state.character),
-          storyFacts: storyFactsSchema.parse(state.storyFacts),
-          gameSecond: state.gameSecond,
-          offer: null,
-          receipts: [
-            {
-              id: receipt.executionId,
-              text: factualText,
-              roll: null,
-              effects: [],
-              declarations: [],
-            },
-          ],
-        },
-      }),
-    },
-    current.usagePolicy === null
-      ? null
-      : effectiveUsagePolicySchema.parse(current.usagePolicy),
-  );
-  const generationId = randomUUID();
-  await insertStorytellerTask(tx, {
-    id: generationId,
-    ownerId: current.ownerId,
-    task,
-  });
-  await tx.insert(storyResolution).values({
-    generationId,
-    storyId: current.id,
-    basePassageId: receipt.passageId,
-    baseRevision: current.revision,
-    operationId: generationId,
-    submission: {
-      kind: 'committed-consequence',
-      operationId: receipt.operationId,
-    },
-  });
-  await transitionStorytellerIntentToGeneration(
-    tx,
-    state,
-    receipt.operationId,
-    generationId,
-    await readDatabaseClockMs(tx, current.id),
-  );
-  return generationId;
-}
-
 async function admitWorldObligationNarration(
   tx: Transaction,
   current: StoryRecord,
@@ -584,12 +453,7 @@ export function createConsequenceNarration(
               documentStore,
             )
           : receipt.kind === 'action-interrupted'
-            ? await admitActionInterruptedNarration(
-                tx,
-                current,
-                receipt,
-                documentStore,
-              )
+            ? await captureInterruptedActionNarration(tx, current, receipt)
             : await admitConsequenceNarration(
                 tx,
                 current,

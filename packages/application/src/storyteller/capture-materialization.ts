@@ -7,7 +7,9 @@ import { and, eq } from 'drizzle-orm';
 import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
+  campaignConsequence,
   gameActionExecution,
+  gameActionExecutionEvent,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
@@ -31,6 +33,7 @@ import {
   type AnyContextCaptureV1,
   type CommittedActionContextCaptureV1,
   type ContextCaptureV1,
+  type InterruptedActionContextCaptureV1,
 } from './context-capture';
 import { activeSceneAnchorSchema } from './context';
 import { storytellerKind, storytellerTopic } from './records';
@@ -276,14 +279,104 @@ async function assembleCommittedTaskFromCapture(
   );
 }
 
+async function assembleInterruptedTaskFromCapture(
+  capture: InterruptedActionContextCaptureV1,
+  documentStore: DocumentStore,
+) {
+  const evidence = await loadFrozenPassages(capture, documentStore);
+  const current = evidence.find(
+    (passage) => passage.sequence === capture.narrativeRevision,
+  );
+  if (!current || current.id !== capture.passageId) {
+    throw new Error('source_mismatch');
+  }
+
+  const canonicalKnowledge =
+    capture.root.hash === null
+      ? undefined
+      : await loadCanonicalKnowledge(documentStore, {
+          storyId: capture.storyId,
+          rootHash: capture.root.hash,
+          rootRevision: capture.root.revision,
+          librarySectionSelection: capture.canonicalSelection.ruleSections,
+          campaignDocumentIds: capture.canonicalSelection.campaignDocumentIds,
+          recallCues: capture.activeSceneScope?.recallCues ?? [],
+        });
+
+  const compactSettings = (({ time: _time, ...settings }) => settings)(
+    capture.settings.capturedSettings,
+  );
+  const interruption = capture.interruption;
+
+  const context = contextInputSchema.parse({
+    ...(canonicalKnowledge ? { canonicalKnowledge } : {}),
+    ...(capture.activeSceneScope
+      ? {
+          activeSceneScope: {
+            version: 'active-scene.v1' as const,
+            fromSequence: capture.activeSceneScope.fromSequence,
+            throughSequence: capture.narrativeRevision,
+            requiredPassageIds: capture.activeSceneScope.requiredPassageIds,
+          },
+        }
+      : {}),
+    activitySituation: capture.actorAndWorld.activitySituation,
+    campaignSettings: compactSettings,
+    campaignTime: projectWorldTime(
+      capture.settings.capturedSettings.time,
+      capture.actorAndWorld.gameSecond,
+    ),
+    worldConditions: capture.actorAndWorld.worldConditions,
+    premise: capture.narrative.premise,
+    current,
+    items: capture.actorAndWorld.itemHolders,
+    selected: capture.selected,
+    notes: capture.narrative.notes,
+    evidence,
+    resolution: {
+      character: capture.actorAndWorld.character,
+      storyFacts: capture.actorAndWorld.storyFacts,
+      gameSecond: capture.actorAndWorld.gameSecond,
+      offer: null,
+      receipts: [
+        {
+          id: interruption.executionId,
+          text: interruption.factualText,
+          roll: null,
+          effects: [],
+          declarations: [],
+        },
+      ],
+    },
+  });
+
+  return prepareAdmittedStorytellerTask(
+    {
+      task: 'consequence',
+      source: {
+        storyId: capture.storyId,
+        narrativeRevision: capture.narrativeRevision,
+        passageId: capture.passageId,
+      },
+      profile: capture.settings.profile,
+      execution: capture.settings.execution,
+      context,
+    },
+    capture.settings.effectiveUsagePolicy,
+  );
+}
+
 async function assembleTaskFromCapture(
   capture: AnyContextCaptureV1,
   documentStore: DocumentStore,
 ) {
-  if (capture.purpose === 'consequence') {
-    return assembleCommittedTaskFromCapture(capture, documentStore);
+  if (capture.purpose === 'pending-consequence') {
+    return assemblePendingTaskFromCapture(capture, documentStore);
   }
-  return assemblePendingTaskFromCapture(capture, documentStore);
+  if (capture.sourceKind === 'action-interrupted') {
+    return assembleInterruptedTaskFromCapture(capture, documentStore);
+  }
+  return assembleCommittedTaskFromCapture(capture, documentStore);
 }
 
 async function claimCaptureLease(
@@ -498,6 +591,70 @@ async function promoteCapture(
       .where(eq(gameActionReceipt.operationId, capture.operationId));
     if (receipt && receipt.generationId !== capture.captureId) {
       throw new Error('receipt_mismatch');
+    }
+  } else if (capture.sourceKind === 'action-interrupted') {
+    const [execution] = await tx
+      .select()
+      .from(gameActionExecution)
+      .where(eq(gameActionExecution.operationId, capture.operationId))
+      .for('update');
+    if (
+      !execution ||
+      execution.state !== 'interrupted' ||
+      execution.revision !== capture.interruption.executionRevision ||
+      execution.storyId !== capture.storyId ||
+      execution.preparationGenerationId !== null
+    ) {
+      throw new Error('capture_execution_mismatch');
+    }
+    const [successReceipt] = await tx
+      .select({ operationId: gameActionReceipt.operationId })
+      .from(gameActionReceipt)
+      .where(eq(gameActionReceipt.operationId, capture.operationId));
+    if (successReceipt) {
+      throw new Error('receipt_mismatch');
+    }
+    const [event] = await tx
+      .select({ id: gameActionExecutionEvent.id })
+      .from(gameActionExecutionEvent)
+      .where(
+        and(
+          eq(gameActionExecutionEvent.id, capture.interruption.eventId),
+          eq(
+            gameActionExecutionEvent.executionId,
+            capture.interruption.executionId,
+          ),
+          eq(
+            gameActionExecutionEvent.executionRevision,
+            capture.interruption.executionRevision,
+          ),
+          eq(gameActionExecutionEvent.kind, 'interrupted'),
+          eq(gameActionExecutionEvent.storyId, capture.storyId),
+        ),
+      );
+    if (!event) {
+      throw new Error('capture_event_mismatch');
+    }
+    const [consequence] = await tx
+      .select()
+      .from(campaignConsequence)
+      .where(eq(campaignConsequence.operationId, capture.operationId));
+    if (!consequence || consequence.generationId !== capture.captureId) {
+      throw new Error('consequence_mismatch');
+    }
+    const [campaignState] = await tx
+      .select()
+      .from(campaign)
+      .where(eq(campaign.storyId, capture.storyId));
+    if (
+      !campaignState ||
+      actionProjectedStateDigest({
+        character: campaignState.character,
+        storyFacts: campaignState.storyFacts,
+        gameSecond: campaignState.gameSecond,
+      }) !== capture.actorAndWorld.postInterruptStateDigest
+    ) {
+      throw new Error('stale_source:actor');
     }
   } else {
     const [receipt] = await tx

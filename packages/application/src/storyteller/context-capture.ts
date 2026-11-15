@@ -37,8 +37,11 @@ import {
   campaign,
   campaignSettings,
   gameActivity,
+  gameActionExecution,
+  gameActionExecutionEvent,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
+import { positiveItemTransfers } from '@offscreen/game/immediate-actions';
 import { generation } from '@offscreen/db/generation-schema';
 import { storyItem, storyPassage, storyResolution } from '@offscreen/db/story-schema';
 import {
@@ -437,11 +440,128 @@ export type CommittedActionContextCaptureV1 = z.infer<
   typeof committedActionContextCaptureV1Schema
 >;
 
+export const interruptedActionContextCaptureV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    storyId: uuid,
+    ownerId: z.string().min(1),
+    purpose: z.literal('consequence'),
+    sourceKind: z.literal('action-interrupted'),
+    operationId: uuid,
+    passageId: uuid,
+    narrativeRevision,
+    root: z.union([
+      z.strictObject({ hash: z.null(), revision: z.literal(0) }),
+      z.strictObject({ hash: sha256, revision: narrativeRevision }),
+    ]),
+    sourcePassages: z.array(sourcePassage).min(1).max(87),
+    activeSceneScope: activeSceneAnchorSchema.nullable(),
+    narrative: z.strictObject({
+      premise: premiseContentSchema,
+      notes: continuityNotesSchema,
+    }),
+    canonicalSelection: z.strictObject({
+      ruleSections: librarySectionSelectionSchema,
+      campaignDocumentIds: z.array(uuid).length(0),
+    }),
+    actorAndWorld: z.strictObject({
+      character: characterSchema,
+      storyFacts: storyFactsSchema,
+      gameSecond,
+      itemHolders: storyItemsSchema,
+      worldConditions: worldConditionsSchema,
+      activitySituation: activitySituationInner,
+      postInterruptStateDigest: sha256,
+    }),
+    settings: z.strictObject({
+      revision: narrativeRevision,
+      capturedSettings: campaignSettingsSchema,
+      profile: storytellerProfileSchema,
+      execution: executionPolicySchema,
+      effectiveUsagePolicy: effectiveUsagePolicySchema.nullable(),
+    }),
+    selected: z.strictObject({
+      id: uuid,
+      label: immediateActionPlanSchema.shape.label,
+      intention: immediateActionPlanSchema.shape.intention,
+    }),
+    interruption: z.strictObject({
+      kind: z.literal('action-interrupted'),
+      cause: z.literal('required-item-holder-changed'),
+      executionId: uuid,
+      executionRevision: z.number().int().nonnegative(),
+      eventId: uuid,
+      eventGameSecond: gameSecond,
+      offerId: uuid,
+      actionKey: immediateActionPlanSchema.shape.key,
+      itemKeys: z.array(z.string().min(1).max(80)).min(1).max(50),
+      executionOffer: offerSchema,
+      executionPlan: immediateActionPlanSchema,
+      factualText: z.literal(
+        'The accepted transfer could not complete; the required item was no longer available',
+      ),
+    }),
+    capturedAt: z.iso.datetime(),
+  })
+  .superRefine((v, ctx) => {
+    const issue = (path: (string | number)[], message: string) =>
+      ctx.addIssue({ code: 'custom', path, message });
+    const i = v.interruption;
+    if (
+      v.operationId !== i.executionId ||
+      v.selected.id !== v.operationId ||
+      v.selected.label !== i.executionPlan.label ||
+      v.selected.intention !== i.executionPlan.intention
+    ) {
+      issue(['interruption'], 'Interrupted selected identity mismatch');
+    }
+    if (
+      i.executionOffer.id !== i.offerId ||
+      i.executionPlan.key !== i.actionKey ||
+      !i.executionOffer.nodes.some(
+        (n) => n.id === i.actionKey && n.action !== null,
+      )
+    ) {
+      issue(['interruption'], 'Interrupted offer/plan identity mismatch');
+    }
+    if (v.actorAndWorld.gameSecond !== i.eventGameSecond) {
+      issue(['actorAndWorld'], 'Interrupt gameSecond mismatch');
+    }
+    if (
+      v.actorAndWorld.postInterruptStateDigest !==
+      actionProjectedStateDigest({
+        character: v.actorAndWorld.character,
+        storyFacts: v.actorAndWorld.storyFacts,
+        gameSecond: v.actorAndWorld.gameSecond,
+      })
+    ) {
+      issue(['actorAndWorld'], 'Interrupted state digest mismatch');
+    }
+    if (v.settings.capturedSettings.revision !== v.settings.revision) {
+      issue(['settings'], 'Campaign settings revision mismatch');
+    }
+    if (
+      JSON.stringify(v.canonicalSelection.ruleSections) !==
+      JSON.stringify(canonicalRuleEvidence(['time']))
+    ) {
+      issue(['canonicalSelection'], 'Invalid interrupt rule evidence selection');
+    }
+    if (Buffer.byteLength(JSON.stringify(v), 'utf8') > 256 * 1024) {
+      issue([], 'context_capture_too_large');
+    }
+  });
+
+export type InterruptedActionContextCaptureV1 = z.infer<
+  typeof interruptedActionContextCaptureV1Schema
+>;
+
 export type AnyContextCaptureV1 =
   | ContextCaptureV1
-  | CommittedActionContextCaptureV1;
+  | CommittedActionContextCaptureV1
+  | InterruptedActionContextCaptureV1;
 
-export const contextCapturePointerSchema = z.discriminatedUnion('purpose', [
+export const contextCapturePointerSchema = z.union([
   z.strictObject({
     version: z.literal(1),
     captureId: uuid,
@@ -452,6 +572,12 @@ export const contextCapturePointerSchema = z.discriminatedUnion('purpose', [
     captureId: uuid,
     purpose: z.literal('consequence'),
     sourceKind: z.literal('action-receipt'),
+  }),
+  z.strictObject({
+    version: z.literal(1),
+    captureId: uuid,
+    purpose: z.literal('consequence'),
+    sourceKind: z.literal('action-interrupted'),
   }),
 ]);
 
@@ -467,6 +593,13 @@ export function parseContextCapture(raw: unknown): AnyContextCaptureV1 {
       ? (raw as { purpose?: unknown }).purpose
       : undefined;
   if (purpose === 'consequence') {
+    const sourceKind =
+      raw && typeof raw === 'object' && 'sourceKind' in raw
+        ? (raw as { sourceKind?: unknown }).sourceKind
+        : undefined;
+    if (sourceKind === 'action-interrupted') {
+      return interruptedActionContextCaptureV1Schema.parse(raw);
+    }
     return committedActionContextCaptureV1Schema.parse(raw);
   }
   return contextCaptureV1Schema.parse(raw);
@@ -1096,6 +1229,414 @@ export async function captureCommittedActionNarration(
     captureId,
     purpose: 'consequence',
     sourceKind: 'action-receipt',
+  });
+
+  await tx.insert(generation).values({
+    id: captureId,
+    ownerId: current.ownerId,
+    kind: storytellerContextCaptureKind,
+    input: pointer,
+  });
+  await tx.insert(storytellerPublication).values({ generationId: captureId });
+  await tx.insert(storytellerContextCapture).values({
+    captureId,
+    storyId: current.id,
+    operationId: receipt.operationId,
+    capture,
+    captureSha256,
+    state: 'captured',
+    materializationAttempts: 0,
+  });
+  await tx.insert(storyResolution).values({
+    generationId: captureId,
+    storyId: current.id,
+    basePassageId: passage.id,
+    baseRevision: current.revision,
+    operationId: captureId,
+    submission: {
+      kind: 'committed-consequence',
+      operationId: receipt.operationId,
+    },
+  });
+  await transitionStorytellerIntentToGeneration(
+    tx,
+    settingsRow,
+    receipt.operationId,
+    captureId,
+    await readDatabaseClockMs(tx, current.id),
+  );
+  await enqueue(tx, {
+    id: randomUUID(),
+    operationId: receipt.operationId,
+    topic: campaignConsequenceTopic,
+  });
+  return captureId;
+}
+
+/**
+ * ENG03-C2 Stage 1: freeze interrupted-action capture + reserve G under story lock.
+ * Never reads DocumentStore. Caller links campaignConsequence.generationId.
+ */
+export async function captureInterruptedActionNarration(
+  tx: Transaction,
+  current: StoryRecord,
+  receipt: {
+    kind: 'action-interrupted';
+    passageId: string;
+    operationId: string;
+    executionId: string;
+    executionRevision: number;
+    gameSecond: number;
+    cause: 'required-item-holder-changed';
+    offerId: string;
+    actionKey: string;
+    itemKeys: string[];
+    eventId: string;
+    label: string;
+    intention: string;
+  },
+) {
+  if (receipt.executionId !== receipt.operationId) {
+    throw new Error('Interrupted capture requires executionId === operationId');
+  }
+  if (receipt.cause !== 'required-item-holder-changed') {
+    throw new Error('Interrupted capture only supports required-item-holder-changed');
+  }
+
+  const [passage] = await tx
+    .select({ id: storyPassage.id })
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, current.id),
+        eq(storyPassage.sequence, current.revision),
+      ),
+    );
+  if (!passage || passage.id !== receipt.passageId) {
+    throw new Error('Interrupted capture lost its story passage fence');
+  }
+
+  const [existingResolution] = await tx
+    .select({ generationId: storyResolution.generationId })
+    .from(storyResolution)
+    .where(
+      and(
+        eq(storyResolution.storyId, current.id),
+        eq(storyResolution.basePassageId, passage.id),
+        eq(storyResolution.baseRevision, current.revision),
+      ),
+    );
+  if (existingResolution) {
+    throw new Error('Story resolution already owns this interrupted base');
+  }
+
+  const [execution] = await tx
+    .select()
+    .from(gameActionExecution)
+    .where(eq(gameActionExecution.operationId, receipt.operationId))
+    .for('update');
+  if (
+    !execution ||
+    execution.state !== 'interrupted' ||
+    execution.revision !== receipt.executionRevision ||
+    execution.storyId !== current.id ||
+    execution.offerId !== receipt.offerId ||
+    execution.actionKey !== receipt.actionKey
+  ) {
+    throw new Error('Interrupted capture lost its execution fence');
+  }
+  if (execution.preparationGenerationId) {
+    throw new Error(
+      'Interrupted item transfer must not reuse a speculative preparation',
+    );
+  }
+
+  const [successReceipt] = await tx
+    .select({ operationId: gameActionReceipt.operationId })
+    .from(gameActionReceipt)
+    .where(eq(gameActionReceipt.operationId, receipt.operationId));
+  if (successReceipt) {
+    throw new Error('Interrupted action cannot narrate a success receipt');
+  }
+
+  const [event] = await tx
+    .select({
+      id: gameActionExecutionEvent.id,
+      gameSecond: gameActionExecutionEvent.gameSecond,
+    })
+    .from(gameActionExecutionEvent)
+    .where(
+      and(
+        eq(gameActionExecutionEvent.id, receipt.eventId),
+        eq(gameActionExecutionEvent.executionId, receipt.executionId),
+        eq(
+          gameActionExecutionEvent.executionRevision,
+          receipt.executionRevision,
+        ),
+        eq(gameActionExecutionEvent.kind, 'interrupted'),
+        eq(gameActionExecutionEvent.storyId, current.id),
+      ),
+    );
+  if (!event || event.gameSecond !== receipt.gameSecond) {
+    throw new Error('Interrupted capture lost its event fence');
+  }
+
+  const executionOffer = offerSchema.parse(execution.offer);
+  const executionPlan = immediateActionPlanSchema.parse(execution.plan);
+  const transferKeys = positiveItemTransfers(executionPlan).map(
+    (transfer) => transfer.itemKey,
+  );
+  if (
+    transferKeys.length === 0 ||
+    transferKeys.length !== receipt.itemKeys.length ||
+    transferKeys.some((key, index) => key !== receipt.itemKeys[index])
+  ) {
+    throw new Error('Interrupted capture itemKeys mismatch');
+  }
+
+  const notes = continuityNotesSchema.parse(current.continuityNotes ?? []);
+  const activeScene =
+    current.activeSceneScope === null
+      ? null
+      : activeSceneAnchorSchema.parse(current.activeSceneScope);
+
+  const recentQuery = tx
+    .select()
+    .from(storyPassage)
+    .where(
+      and(
+        eq(storyPassage.storyId, current.id),
+        lte(storyPassage.sequence, current.revision),
+        ...(activeScene
+          ? [gte(storyPassage.sequence, activeScene.fromSequence)]
+          : []),
+      ),
+    )
+    .orderBy(desc(storyPassage.sequence));
+  const recent = activeScene ? await recentQuery : await recentQuery.limit(7);
+  const evidenceIds = [
+    ...new Set([
+      ...notes.flatMap((note) => note.sources),
+      ...(activeScene?.requiredPassageIds ?? []),
+    ]),
+  ];
+  const older = evidenceIds.length
+    ? await tx
+        .select()
+        .from(storyPassage)
+        .where(
+          and(
+            eq(storyPassage.storyId, current.id),
+            lte(storyPassage.sequence, current.revision),
+            inArray(storyPassage.id, evidenceIds),
+          ),
+        )
+    : [];
+  const sourcePassages = [
+    ...new Map([...recent, ...older].map((row) => [row.id, row])).values(),
+  ].map((row) => {
+    const response = decodePassageResponse(row.response);
+    if (row.contentDocumentHash !== null) {
+      return {
+        storage: 'cas' as const,
+        passageId: row.id,
+        sequence: row.sequence,
+        contentHash: row.contentDocumentHash,
+        inlineContent: null,
+        response,
+      };
+    }
+    return {
+      storage: 'inline' as const,
+      passageId: row.id,
+      sequence: row.sequence,
+      contentHash: null,
+      inlineContent: passageContentSchema.parse(row.content),
+      response,
+    };
+  });
+
+  const items = storyItemsSchema.parse(
+    await tx
+      .select({
+        key: storyItem.key,
+        label: storyItem.label,
+        holderKey: storyItem.holderKey,
+      })
+      .from(storyItem)
+      .where(eq(storyItem.storyId, current.id)),
+  );
+
+  const [settingsRow] = await tx
+    .select()
+    .from(campaign)
+    .where(eq(campaign.storyId, current.id));
+  if (!settingsRow) throw new Error('Missing campaign for interrupted capture');
+  if (settingsRow.gameSecond !== receipt.gameSecond) {
+    throw new Error('Interrupted capture gameSecond mismatch');
+  }
+
+  const [captured] = await tx
+    .select({ settings: campaignSettings.settings })
+    .from(campaignSettings)
+    .where(
+      and(
+        eq(campaignSettings.storyId, current.id),
+        eq(campaignSettings.revision, settingsRow.settingsRevision),
+      ),
+    );
+  if (!captured) throw new Error('Missing captured campaign settings');
+
+  const acceptedSettings = campaignSettingsSchema.parse(captured.settings);
+  const commitmentsRows = await tx
+    .select()
+    .from(gameActivity)
+    .where(
+      storytellerActivityContextFilter({
+        storyId: current.id,
+        activeActivityId: settingsRow.activeActivityId,
+      }),
+    );
+  const commitments = commitmentsRows.flatMap((record) => {
+    if (!isStorytellerActivityState(record.state)) return [];
+    const projected = projectActivityProgress(record.plan, record.progress);
+    return [
+      {
+        activityId: record.id,
+        actionId: projected.action.id,
+        revision: record.revision,
+        state: record.state,
+        label: projected.action.label,
+        progress: projected.progress,
+      },
+    ];
+  });
+
+  const acceptedPlan = readAcceptedActivityPlan(
+    settingsRow.acceptedActivityPlan,
+  );
+  const blockedEntry = acceptedPlan?.entries[acceptedPlan.cursor];
+  const acceptedHandoff =
+    acceptedPlan?.state === 'blocked' &&
+    blockedEntry?.state === 'blocked' &&
+    blockedEntry.activityId === null
+      ? {
+          id: acceptedPlan.id,
+          revision: acceptedPlan.revision,
+          horizonGameSecond: acceptedPlan.horizonGameSecond,
+          nextEntry: { id: blockedEntry.id, plan: blockedEntry.plan },
+        }
+      : undefined;
+
+  const fullAuthorization = situationAuthorizationSchema.parse(
+    settingsRow.situationAuthorization,
+  );
+  const activitySituation = activitySituationInner.parse({
+    activityAccess: fullAuthorization.activityAccess,
+    activeActivityId: settingsRow.activeActivityId,
+    ...(acceptedHandoff ? { acceptedPlan: acceptedHandoff } : {}),
+    commitments,
+  });
+
+  const character = characterSchema.parse(settingsRow.character);
+  const storyFacts = storyFactsSchema.parse(settingsRow.storyFacts);
+  const postInterruptStateDigest = actionProjectedStateDigest({
+    character,
+    storyFacts,
+    gameSecond: settingsRow.gameSecond,
+  });
+
+  const factualText =
+    'The accepted transfer could not complete; the required item was no longer available' as const;
+
+  const captureId = randomUUID();
+  let capture: InterruptedActionContextCaptureV1;
+  try {
+    capture = interruptedActionContextCaptureV1Schema.parse({
+      version: 1,
+      captureId,
+      storyId: current.id,
+      ownerId: current.ownerId,
+      purpose: 'consequence',
+      sourceKind: 'action-interrupted',
+      operationId: receipt.operationId,
+      passageId: passage.id,
+      narrativeRevision: current.revision,
+      root:
+        current.documentRootHash === null
+          ? { hash: null, revision: 0 as const }
+          : {
+              hash: current.documentRootHash,
+              revision: current.documentRootRevision,
+            },
+      sourcePassages,
+      activeSceneScope: activeScene,
+      narrative: {
+        premise: premiseContentSchema.parse(current.premise),
+        notes,
+      },
+      canonicalSelection: {
+        ruleSections: canonicalRuleEvidence(['time']),
+        campaignDocumentIds: [],
+      },
+      actorAndWorld: {
+        character,
+        storyFacts,
+        itemHolders: items,
+        worldConditions: worldConditionsSchema.parse(
+          settingsRow.worldConditions,
+        ),
+        activitySituation,
+        gameSecond: settingsRow.gameSecond,
+        postInterruptStateDigest,
+      },
+      settings: {
+        revision: settingsRow.settingsRevision,
+        capturedSettings: acceptedSettings,
+        profile: storytellerProfileSchema.parse(current.storyteller),
+        execution: executionPolicySchema.parse(current.execution),
+        effectiveUsagePolicy:
+          current.usagePolicy === null
+            ? null
+            : effectiveUsagePolicySchema.parse(current.usagePolicy),
+      },
+      selected: {
+        id: receipt.operationId,
+        label: executionPlan.label,
+        intention: executionPlan.intention,
+      },
+      interruption: {
+        kind: 'action-interrupted',
+        cause: 'required-item-holder-changed',
+        executionId: receipt.executionId,
+        executionRevision: receipt.executionRevision,
+        eventId: receipt.eventId,
+        eventGameSecond: receipt.gameSecond,
+        offerId: receipt.offerId,
+        actionKey: receipt.actionKey,
+        itemKeys: receipt.itemKeys,
+        executionOffer,
+        executionPlan,
+        factualText,
+      },
+      capturedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    if (
+      error instanceof z.ZodError &&
+      error.issues.some((issue) => issue.message === 'context_capture_too_large')
+    ) {
+      throw new Error('context_capture_too_large');
+    }
+    throw error;
+  }
+
+  const captureSha256 = hashContextCapture(capture);
+  const pointer = contextCapturePointerSchema.parse({
+    version: 1,
+    captureId,
+    purpose: 'consequence',
+    sourceKind: 'action-interrupted',
   });
 
   await tx.insert(generation).values({

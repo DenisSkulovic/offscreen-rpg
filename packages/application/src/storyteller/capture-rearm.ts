@@ -10,7 +10,9 @@ import type { Database } from '@offscreen/db';
 import { generation } from '@offscreen/db/generation-schema';
 import {
   campaign,
+  campaignConsequence,
   gameActionExecution,
+  gameActionExecutionEvent,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
 import { storyPassage, storyResolution } from '@offscreen/db/story-schema';
@@ -277,6 +279,64 @@ export async function rearmContextCapture(
       }
       if (execution.state === 'interrupted') {
         throw new StoryError('conflict', 'capture_interrupted');
+      }
+    } else if (capture.sourceKind === 'action-interrupted') {
+      const [execution] = await tx
+        .select()
+        .from(gameActionExecution)
+        .where(eq(gameActionExecution.operationId, capture.operationId));
+      if (
+        !execution ||
+        execution.state !== 'interrupted' ||
+        execution.revision !== capture.interruption.executionRevision ||
+        execution.storyId !== capture.storyId ||
+        execution.preparationGenerationId !== null
+      ) {
+        throw new StoryError('conflict', 'capture_execution_mismatch');
+      }
+      const [successReceipt] = await tx
+        .select({ operationId: gameActionReceipt.operationId })
+        .from(gameActionReceipt)
+        .where(eq(gameActionReceipt.operationId, capture.operationId));
+      if (successReceipt) {
+        throw new StoryError('conflict', 'receipt_mismatch');
+      }
+      const [event] = await tx
+        .select({ id: gameActionExecutionEvent.id })
+        .from(gameActionExecutionEvent)
+        .where(
+          and(
+            eq(gameActionExecutionEvent.id, capture.interruption.eventId),
+            eq(
+              gameActionExecutionEvent.executionId,
+              capture.interruption.executionId,
+            ),
+            eq(
+              gameActionExecutionEvent.executionRevision,
+              capture.interruption.executionRevision,
+            ),
+            eq(gameActionExecutionEvent.kind, 'interrupted'),
+            eq(gameActionExecutionEvent.storyId, capture.storyId),
+          ),
+        );
+      if (!event) {
+        throw new StoryError('conflict', 'capture_event_mismatch');
+      }
+      const [consequence] = await tx
+        .select()
+        .from(campaignConsequence)
+        .where(eq(campaignConsequence.operationId, capture.operationId));
+      if (!consequence || consequence.generationId !== capture.captureId) {
+        throw new StoryError('conflict', 'consequence_mismatch');
+      }
+      if (
+        actionProjectedStateDigest({
+          character: campaignState.character,
+          storyFacts: campaignState.storyFacts,
+          gameSecond: campaignState.gameSecond,
+        }) !== capture.actorAndWorld.postInterruptStateDigest
+      ) {
+        throw new StoryError('conflict', 'stale_source:actor');
       }
     } else {
       const [receipt] = await tx

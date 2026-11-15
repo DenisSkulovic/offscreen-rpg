@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDatabase, readDatabaseConfig } from '@offscreen/db';
@@ -10,6 +13,7 @@ import {
   gameActionExecution,
   gameActionReceipt,
 } from '@offscreen/db/campaign-schema';
+import { LocalDocumentStore } from '@offscreen/documents';
 import { createStorytellerRuntime } from '../dist/storyteller/runtime.js';
 import { createStories } from '../dist/stories/index.js';
 import { initializeStoryInTransaction } from '../dist/stories/initialization.js';
@@ -215,7 +219,11 @@ test('ENG01 live: automatic transfer settles once under SQL and retries safely',
 
 test('ENG01 live: failed check and wrong holder never transfer', async () => {
   await withDisposableCampaign(async (database) => {
-    const stories = createStories(database);
+    // ENG03-C2 Stage-2 materialization requires a DocumentStore even for inline passages.
+    const storage = new LocalDocumentStore(
+      await mkdtemp(join(tmpdir(), 'eng01-interrupt-')),
+    );
+    const stories = createStories(database, { documentStore: storage });
     const impossible = {
       ...harborCompassTransferPlan,
       resolution: {
