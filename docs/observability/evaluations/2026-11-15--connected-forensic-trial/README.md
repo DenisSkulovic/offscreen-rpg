@@ -1,6 +1,6 @@
 # Connected forensic trial | Cursor-led evaluation and evidence return
 
-**Status: prepared, NOT EXECUTED.** The user requested that Cursor itself launch local services, play real synthetic campaigns, inspect persisted observations, run fault trials and write a source-linked handoff back to ChatGPT. This is an **evaluation program**, not a new game feature or generic logging rewrite. Code-bearing changes remain separately bounded under the [Change queue](../../../changes/README.md).
+**Status: EXECUTED/CLOSED 2026-11-15; old preparation text below retained as historical setup.** Cursor's actual [FINAL-HANDOFF](FINAL-HANDOFF.md) records provider-free S0–S4, S5 blocked and 0 paid calls. See [independent source/evidence review](../../evidence/independent-connected-trial-review-2026-11-15.md) and the [new guarded local trial handoff](../../handoff/post-trial-next-cursor-wave-2026-11-15.md). **Do not re-execute this old S0–S6 runbook or recycle its $0.25 trial authorization.** The user requested that Cursor itself launch local services, play real synthetic campaigns, inspect persisted observations, run fault trials and write a source-linked handoff back to ChatGPT. This is an **evaluation program**, not a new game feature or generic logging rewrite. Code-bearing changes remain separately bounded under the [Change queue](../../../changes/README.md).
 
 **One entrypoint:** [CURSOR START HERE](../../handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md). Don't read all phases at once.
 
