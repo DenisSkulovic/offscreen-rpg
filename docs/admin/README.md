@@ -6,6 +6,8 @@
 
 **2026-11-15 cross-workspace forensic observability design:** [Support, Engineering and replay investigation experience](../observability/admin-investigation-experience.md) builds on existing AD01–AD08 security and diagnostic boundaries. It relies on [native evidence and provenance](../observability/technical/evidence-model.md), [prompt/source history](../observability/technical/context-provenance.md), and [retention/replay policy](../observability/technical/replay-retention-and-privacy.md). **This is proposed wave-2 product design, not implemented Admin evidence access or new staff grant.** No read privilege is enlarged by this link.
 
+**Wave-5 investigation workbench detail:** [Support/Developer interaction contract](../observability/admin-investigator-interactions-v1.md) → [Turn Evidence Capsule](../observability/technical/forensic-turn-capsule-v1.md) → [evidence truth rules](../observability/technical/evidence-claims-and-quality-v1.md). **OBS01 S1 operation coverage, OBS02 stage receipts and OBS03 initial provenance sidecar are implemented**; the fully interactive workbench and exceptional raw-evidence disclosure API are **not**. [Current design handoff](../observability/handoff/wave5-evidence-quality-2026-11-15.md). No staff capability expansion is authorized by this link.
+
 ## Choose the product question
 
 | Question | Product document |
