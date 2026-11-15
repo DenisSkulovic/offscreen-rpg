@@ -299,6 +299,24 @@ export class StoriesController {
       return this.stories.events(query);
     });
   }
+  /** GM01: template-first custom intent interpretation; never mutates game state. */
+  @Put(':id/custom-intents/:interpretOperationId')
+  @HttpCode(200)
+  interpretCustomIntent(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Param('interpretOperationId') interpretOperationId: string,
+    @Body() body: unknown,
+  ) {
+    return this.run(request, (ownerId) =>
+      this.stories.interpretCustomIntent({
+        ownerId,
+        storyId: id,
+        interpretOperationId,
+        body,
+      }),
+    );
+  }
   @Get(':id/visit')
   visit(@Req() request: Request, @Param('id') id: string) {
     return this.run(request, (ownerId) =>

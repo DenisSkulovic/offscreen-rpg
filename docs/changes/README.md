@@ -4,6 +4,8 @@
 
 Current change: none
 
+**GM01 (2026-11-15): Done.** Template-first custom-intent interpret (`$0`); inspect family candidates; no game mutation. Evidence [gm01](../experience/evidence/gm01-custom-intent-2026-11-15.md). Next recommended: [GM02](2026-11-13--gm-custom-intent-admission/CHANGE.md).
+
 **ENG03-C2 (2026-11-15): Done.** Interrupted `required-item-holder-changed` capture off-lock (same G); Stage-1 SQL-only; CAS delay outside story lock. Evidence [eng03-c2](../engine-architecture/evidence/eng03-c2-interrupted-capture-2026-11-15.md).
 
 **GM06 (2026-11-15): Done.** Per-viewer visit open/ACK API + client ACK gate. Evidence [gm06](../experience/evidence/gm06-visit-checkpoint-2026-11-15.md).

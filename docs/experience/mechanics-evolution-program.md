@@ -27,7 +27,7 @@ A mechanical redesign is justified only when it improves **the actual player exp
 | [GM06 seen cursor](../changes/2026-11-13--gm-viewer-read-position/CHANGE.md) | Viewer-specific acknowledged chronology position for **truthful “since last viewed”** | GM05 source sequence, auth/viewer identity semantics | Does not mark content as read merely because delivered to browser |
 | [GM07 delegated safe response](../changes/2026-11-13--gm-delegated-decision/CHANGE.md) | One revision-fenced, consented eligible fallback after a published decision's real deadline | Approved [decision delegation](patterns/decision-delegation.md), clock/actor authority | Not personality-run-anything autoplay or shared actor control |
 
-**GM05 Done (2026-11-14)**: committed public story event index and scoped GET, with `coverage='since-enabled'`, but no acknowledged visit baseline. **GM01–GM04 and GM06–GM07 remain Proposed, not Ready**. Each requires explicit owner approval and source inspection immediately before implementation. These **must not be auto-added to the active Change index** as authorized work.
+**GM05 Done (2026-11-14)**; **GM04/GM06 Done (2026-11-15)**; **GM01 Done (2026-11-15)** template-first `$0` interpret. **GM02, GM03, GM07 remain Proposed** until separately authorized. These **must not be auto-added to the active Change index** as authorized work without owner instruction.
 
 ## Order by player value, not code glamour
 

@@ -5,6 +5,7 @@ import {
   text,
   integer,
   bigint,
+  boolean,
   jsonb,
   timestamp,
   unique,
@@ -300,5 +301,85 @@ export const storyViewerVisitAck = pgTable(
   (t) => [
     unique('story_viewer_visit_ack_token').on(t.visitToken),
     check('story_viewer_visit_ack_frontier', sql`${t.frontier} >= 0`),
+  ],
+);
+
+/** GM01: server-owned public inspect targets for template-first custom intent. */
+export const storyPublicInspectTarget = pgTable(
+  'story_public_inspect_target',
+  {
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    handle: text('handle').notNull(),
+    label: text('label').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.storyId, t.handle] }),
+    check(
+      'story_public_inspect_target_handle',
+      sql`char_length(${t.handle}) BETWEEN 1 AND 80`,
+    ),
+    check(
+      'story_public_inspect_target_label',
+      sql`char_length(${t.label}) BETWEEN 1 AND 120`,
+    ),
+  ],
+);
+
+/** GM01: noncanonical custom-intent candidate; never mutates game state alone. */
+export const customIntentCandidate = pgTable(
+  'custom_intent_candidate',
+  {
+    candidateId: uuid('candidate_id').primaryKey(),
+    interpretOperationId: uuid('interpret_operation_id').notNull(),
+    storyId: uuid('story_id')
+      .notNull()
+      .references(() => story.id, { onDelete: 'cascade' }),
+    ownerId: text('owner_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    viewerId: text('viewer_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    requestDigest: text('request_digest').notNull(),
+    status: text('status').notNull(),
+    inputText: text('input_text').notNull(),
+    response: jsonb('response').notNull().$type<unknown>(),
+    passageId: uuid('passage_id').notNull(),
+    narrativeRevision: integer('narrative_revision').notNull(),
+    settingsRevision: integer('settings_revision').notNull(),
+    clarificationUsed: boolean('clarification_used').notNull().default(false),
+    expiresAt: timestamp('expires_at', {
+      withTimezone: true,
+      precision: 3,
+    }).notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique('custom_intent_candidate_operation').on(
+      t.storyId,
+      t.interpretOperationId,
+    ),
+    index('custom_intent_candidate_rate').on(
+      t.viewerId,
+      t.storyId,
+      t.createdAt,
+    ),
+    check(
+      'custom_intent_candidate_status',
+      sql`${t.status} in ('reviewable', 'clarify', 'rejected', 'unsupported')`,
+    ),
+    check('custom_intent_candidate_revision', sql`${t.narrativeRevision} > 0`),
+    check('custom_intent_candidate_settings', sql`${t.settingsRevision} > 0`),
+    check(
+      'custom_intent_candidate_text',
+      sql`char_length(${t.inputText}) BETWEEN 1 AND 240`,
+    ),
   ],
 );
