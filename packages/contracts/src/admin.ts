@@ -337,3 +337,228 @@ export type UsageStatusV1 = z.infer<typeof usageStatusV1Schema>;
 export const usageStatusEnvelopeV1Schema =
   adminReadEnvelopeV1Schema(usageStatusV1Schema);
 export type UsageStatusEnvelopeV1 = z.infer<typeof usageStatusEnvelopeV1Schema>;
+
+/**
+ * OBS06 Support Situation V1 (body-free S1). Closed enums only: no narrative,
+ * prompt, cost, generation input/output, manifest, hash or GM05 title/summary.
+ */
+export const SUPPORT_REASON_CODES = [
+  'action_interrupted',
+  'action_settlement_recorded',
+  'context_materialization_held',
+  'scripted_provider_skipped',
+  'validation_failed',
+  'publication_stale',
+  'published_passage',
+  'model_attempt_unverified',
+  'source_data_unavailable',
+] as const;
+export const supportReasonCodeSchema = z.enum(SUPPORT_REASON_CODES);
+export type SupportReasonCode = z.infer<typeof supportReasonCodeSchema>;
+
+export const supportEvidenceGapSchema = z.enum([
+  'attempt-not-recorded',
+  'stage-not-instrumented',
+  'mechanical-history-not-instrumented',
+  'source-missing',
+  'source-conflict',
+]);
+export type SupportEvidenceGap = z.infer<typeof supportEvidenceGapSchema>;
+
+export const supportSafeRefV1Schema = z.strictObject({
+  kind: z.enum([
+    'story',
+    'story-passage',
+    'campaign',
+    'generation',
+    'storyteller-operation',
+    'storyteller-stage',
+    'decision-offer',
+    'world-obligation',
+    'action-execution',
+    'action-execution-event',
+    'activity',
+    'activity-event',
+  ]),
+  id: z.string().uuid(),
+});
+export type SupportSafeRefV1 = z.infer<typeof supportSafeRefV1Schema>;
+
+export const supportSafeFailureCodeSchema = z.enum([
+  'invalid_output',
+  'invalid-shape',
+  'provider_error',
+  'timeout',
+  'budget_exhausted',
+  'cancelled',
+  'blocked',
+  'missing_source',
+  'document_store',
+  'corrupt_source',
+  'source_mismatch',
+  'scripted_hold',
+  'scripted_execution',
+  'chamber_injected_failure',
+  'failed',
+  'unavailable',
+]);
+
+export const supportSituationV1Schema = z.strictObject({
+  version: z.literal(1),
+  caseId: z.string().uuid(),
+  campaignId: z.string().uuid(),
+  observedAt: z.string().datetime(),
+  sourceFrontier: z.strictObject({
+    storyRevision: z.number().int().positive().nullable(),
+    viewVersion: z.number().int().positive().nullable(),
+    latestPublishedPassageId: z.string().uuid().nullable(),
+    latestPublishedPassageSequence: z.number().int().positive().nullable(),
+    mechanicalHistoryCoverage: z.enum(['not-instrumented', 'partial', 'unknown']),
+  }),
+  now: z.strictObject({
+    kind: z.enum([
+      'decision-hold',
+      'narration-intent',
+      'storyteller-generation',
+      'world-obligation',
+      'finite-action',
+      'activity',
+      'idle',
+      'narrative-only',
+      'conflicting-sources',
+      'unknown',
+    ]),
+    controllingRef: supportSafeRefV1Schema.nullable(),
+    gameSecond: z.number().int().nonnegative().nullable(),
+    held: z.boolean().nullable(),
+    sourceConfidence: z.enum(['direct-current-source', 'partial', 'unknown']),
+    /** Active commitment shown separately from the controlling hold. */
+    activeCommitment: z
+      .strictObject({
+        kind: z.enum(['finite-action', 'activity']),
+        ref: supportSafeRefV1Schema,
+        status: z.enum([
+          'running',
+          'paused',
+          'interrupted',
+          'settled',
+          'encounter',
+          'complete',
+          'blocked',
+          'cancelled',
+          'horizon-reached',
+          'unknown',
+        ]),
+      })
+      .nullable(),
+  }),
+  activeGeneration: z
+    .strictObject({
+      generationId: z.string().uuid(),
+      state: z.enum([
+        'pending',
+        'running',
+        'succeeded',
+        'failed',
+        'uncertain',
+        'unknown',
+      ]),
+      capture: z.enum([
+        'captured',
+        'materializing',
+        'ready',
+        'held',
+        'blocked',
+        'stale',
+        'not-recorded',
+        'unknown',
+      ]),
+      publication: z.enum([
+        'pending',
+        'published',
+        'stale',
+        'blocked',
+        'unknown',
+      ]),
+      attemptCoverage: z.enum(['recorded', 'none-recorded', 'unknown']),
+      safeFailureCode: supportSafeFailureCodeSchema.nullable(),
+      stageCoverage: z.enum([
+        'recorded',
+        'not-instrumented',
+        'not-applicable',
+        'partial',
+      ]),
+      stages: z
+        .array(
+          z.strictObject({
+            ref: supportSafeRefV1Schema,
+            stage: z.enum([
+              'cause-captured',
+              'context-materialization-started',
+              'context-materialization-completed',
+              'task-prepared',
+              'dispatch-review-prepared',
+              'provider-dispatch-possible',
+              'model-response-recorded',
+              'validation-settled',
+              'publication-decided',
+              'stage-held',
+              'stage-skipped',
+              'stage-failed',
+            ]),
+            outcome: z.enum([
+              'completed',
+              'failed',
+              'held',
+              'stale',
+              'uncertain',
+              'not-run',
+            ]),
+            safeFailureCode: supportSafeFailureCodeSchema.nullable(),
+            observedAt: z.string().datetime(),
+          }),
+        )
+        .max(12),
+    })
+    .nullable(),
+  recentDevelopments: z
+    .array(
+      z.strictObject({
+        sourceRef: supportSafeRefV1Schema,
+        eventSequence: z.string().regex(/^\d+$/).nullable(),
+        kind: z.enum([
+          'passage-published',
+          'action-settled',
+          'action-interrupted',
+          'activity-development',
+          'world-development',
+        ]),
+        gameSecond: z.number().int().nonnegative().nullable(),
+        observedAt: z.string().datetime().nullable(),
+        observation: z.enum(['recorded', 'derived']),
+      }),
+    )
+    .max(8),
+  why: z
+    .array(
+      z.strictObject({
+        statementCode: supportReasonCodeSchema,
+        class: z.enum(['recorded', 'derived', 'unknown']),
+        sourceRefs: z.array(supportSafeRefV1Schema).max(4),
+        missing: z.array(supportEvidenceGapSchema).max(4),
+      }),
+    )
+    .max(6),
+  coverage: z.strictObject({
+    currentState: z.enum(['verified', 'partial', 'unavailable']),
+    gameHistory: z.enum(['since-enabled', 'partial', 'not-instrumented']),
+    storytellerStages: z.enum([
+      'recorded',
+      'partial',
+      'not-instrumented',
+      'not-applicable',
+    ]),
+    promptBody: z.literal('not-included'),
+  }),
+});
+export type SupportSituationV1 = z.infer<typeof supportSituationV1Schema>;

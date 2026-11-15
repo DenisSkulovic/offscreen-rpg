@@ -37,6 +37,7 @@ import {
   ADMIN_ORIGIN,
   ADMIN_PLAYER_READS,
   ADMIN_SESSIONS,
+  ADMIN_SITUATION,
   ADMIN_USAGE,
   AdminActorService,
   AdminController,
@@ -47,6 +48,7 @@ import {
   createAdminCaseStore,
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
+  createAdminSituationReads,
   createAdminSessions,
   createAdminUsageReads,
   type AdminEnvironment,
@@ -261,6 +263,10 @@ export async function createApp(
         {
           provide: ADMIN_CASES,
           useValue: createAdminCaseStore(database),
+        },
+        {
+          provide: ADMIN_SITUATION,
+          useValue: createAdminSituationReads(database),
         },
         AdminActorService,
         { provide: DRAFTS, useValue: createDrafts(database) },

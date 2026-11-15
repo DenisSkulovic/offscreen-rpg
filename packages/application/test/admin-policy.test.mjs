@@ -157,3 +157,155 @@ test('workspace families ignore inert assignments', () => {
     ['ai', 'platform'],
   );
 });
+
+// ---- OBS06: forensics.campaign.situation.read (case+campaign bound) --------
+
+const investigator = {
+  assignmentId: 'inv1',
+  packageId: 'support-investigator',
+  packageVersion: 1,
+  status: 'active',
+  scope: {
+    environments: ['local'],
+    campaignIds: ['camp-1'],
+    requireAuthorizedCaseAssignment: true,
+  },
+  provenance: {
+    kind: 'steward-case-binding',
+    authorizedCaseIds: ['case-1'],
+  },
+};
+
+function situationRequest(overrides = {}) {
+  return {
+    capability: 'forensics.campaign.situation.read',
+    resourceKind: 'campaign',
+    resourceId: 'camp-1',
+    environment: 'local',
+    caseId: 'case-1',
+    ...overrides,
+  };
+}
+
+test('OBS06 support-operator-v1 never carries the situation capability', () => {
+  const result = evaluateAdminAccess([supportCase], situationRequest());
+  assert.equal(result.decision, 'deny');
+  assert.equal(result.reason, 'capability_not_in_package');
+});
+
+test('OBS06 steward-bound investigator grant allows exact case+campaign', () => {
+  const result = evaluateAdminAccess([investigator], situationRequest());
+  assert.equal(result.decision, 'allow');
+  assert.equal(result.matchedPackageId, 'support-investigator');
+});
+
+test('OBS06 empty or absent campaignIds never means any campaign', () => {
+  for (const scope of [
+    { environments: ['local'], requireAuthorizedCaseAssignment: true },
+    {
+      environments: ['local'],
+      campaignIds: [],
+      requireAuthorizedCaseAssignment: true,
+    },
+  ]) {
+    const result = evaluateAdminAccess(
+      [{ ...investigator, scope }],
+      situationRequest(),
+    );
+    assert.equal(result.decision, 'deny');
+    assert.equal(result.reason, 'resource_out_of_scope');
+  }
+});
+
+test('OBS06 requires requireAuthorizedCaseAssignment and listed case', () => {
+  const noFlag = evaluateAdminAccess(
+    [
+      {
+        ...investigator,
+        scope: { environments: ['local'], campaignIds: ['camp-1'] },
+      },
+    ],
+    situationRequest(),
+  );
+  assert.equal(noFlag.decision, 'deny');
+  assert.equal(noFlag.reason, 'case_assignment_required');
+
+  const wrongCase = evaluateAdminAccess(
+    [investigator],
+    situationRequest({ caseId: 'case-self-made' }),
+  );
+  assert.equal(wrongCase.decision, 'deny');
+  assert.equal(wrongCase.reason, 'case_assignment_unproven');
+
+  const noCase = evaluateAdminAccess(
+    [investigator],
+    situationRequest({ caseId: null }),
+  );
+  assert.equal(noCase.decision, 'deny');
+});
+
+test('OBS06 grant for a different campaign or untrusted provenance denies', () => {
+  const otherCampaign = evaluateAdminAccess(
+    [investigator],
+    situationRequest({ resourceId: 'camp-other' }),
+  );
+  assert.equal(otherCampaign.decision, 'deny');
+  assert.equal(otherCampaign.reason, 'resource_out_of_scope');
+
+  const caseCreated = evaluateAdminAccess(
+    [
+      {
+        ...investigator,
+        provenance: {
+          kind: 'case-create',
+          authorizedCaseIds: ['case-1'],
+        },
+      },
+    ],
+    situationRequest(),
+  );
+  assert.equal(caseCreated.decision, 'deny');
+  assert.equal(caseCreated.reason, 'case_assignment_unproven');
+});
+
+test('OBS06 case-only and campaign-only grants cannot be composed', () => {
+  // Grant A proves case-1 but names camp-A; grant B names camp-1 but proves case-B.
+  const grantA = {
+    ...investigator,
+    assignmentId: 'invA',
+    scope: { ...investigator.scope, campaignIds: ['camp-A'] },
+  };
+  const grantB = {
+    ...investigator,
+    assignmentId: 'invB',
+    provenance: {
+      kind: 'steward-case-binding',
+      authorizedCaseIds: ['case-B'],
+    },
+  };
+  const result = evaluateAdminAccess([grantA, grantB], situationRequest());
+  assert.equal(result.decision, 'deny');
+});
+
+test('OBS06 revoked, inert, and wrong-environment investigator grants deny', () => {
+  for (const [patch, reason] of [
+    [{ status: 'revoked' }, 'assignment_revoked'],
+    [{ status: 'inert' }, 'assignment_inert'],
+    [
+      {
+        scope: {
+          ...investigator.scope,
+          environments: ['production'],
+        },
+      },
+      'environment_mismatch',
+    ],
+  ]) {
+    const result = evaluateAdminAccess(
+      [{ ...investigator, ...patch }],
+      situationRequest(),
+    );
+    assert.equal(result.decision, 'deny');
+    assert.equal(result.reason, reason);
+  }
+});

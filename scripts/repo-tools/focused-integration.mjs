@@ -27,6 +27,7 @@ const suites = {
   'admin-usage': 'admin-usage.integration.js',
   'admin-audit': 'admin-audit.integration.js',
   'admin-cases': 'admin-cases.integration.js',
+  'admin-situation': 'admin-situation.integration.js',
   'admin-control-ssr': 'admin-control-ssr.integration.js',
 };
 
@@ -60,7 +61,8 @@ try {
     suite === 'admin-diagnostics' ||
     suite === 'admin-usage' ||
     suite === 'admin-audit' ||
-    suite === 'admin-cases'
+    suite === 'admin-cases' ||
+    suite === 'admin-situation'
   ) {
     const env = providerFreeEnvironment();
     for (const filter of [

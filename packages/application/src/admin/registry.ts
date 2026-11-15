@@ -17,6 +17,7 @@ export const ADMIN_CAPABILITIES = [
   'case.summary.read',
   'case.create',
   'case.assign',
+  'forensics.campaign.situation.read',
 ] as const;
 
 export type AdminCapability = (typeof ADMIN_CAPABILITIES)[number];
@@ -124,6 +125,24 @@ const SUPPORT_LEAD_V1: AdminCapabilityPackage = {
   ],
 };
 
+/**
+ * OBS06: separately assigned, body-free Support Situation read. Never merged into
+ * support-operator-v1; assignment must be issued by a trusted steward with exact
+ * scope.campaignIds + provenance.authorizedCaseIds (see policy strict case binding).
+ */
+const SUPPORT_INVESTIGATOR_V1: AdminCapabilityPackage = {
+  id: 'support-investigator',
+  version: 1,
+  label: 'Support Investigator',
+  grants: [
+    {
+      capability: 'forensics.campaign.situation.read',
+      resourceKinds: ['campaign'],
+      workspaceFamily: 'support',
+    },
+  ],
+};
+
 const ENGINEERING_OBSERVER_V1: AdminCapabilityPackage = {
   id: 'engineering-observer',
   version: 1,
@@ -200,6 +219,7 @@ const PACKAGES: readonly AdminCapabilityPackage[] = [
   ADMIN_READER_V1,
   SUPPORT_OPERATOR_V1,
   SUPPORT_LEAD_V1,
+  SUPPORT_INVESTIGATOR_V1,
   ENGINEERING_OBSERVER_V1,
   USAGE_OBSERVER_V1,
   STAFF_ACCESS_STEWARD_V1,
@@ -247,6 +267,8 @@ export function resourceKindForCapability(
       return 'audit';
     case 'case':
       return 'case';
+    case 'forensics':
+      return 'campaign';
     default:
       return 'platform';
   }

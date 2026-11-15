@@ -23,6 +23,7 @@ import {
   playerSummaryEnvelopeV1Schema,
   redactedOperationEnvelopeV1Schema,
   redactedOperationPageV1Schema,
+  supportSituationV1Schema,
   adminAuditPageV1Schema,
   adminStaffAccessV1Schema,
   caseAssignRequestV1Schema,
@@ -43,6 +44,7 @@ import {
   type PlayerSummaryEnvelopeV1,
   type RedactedOperationEnvelopeV1,
   type RedactedOperationPageV1,
+  type SupportSituationV1,
   type UsageStatusEnvelopeV1,
 } from '@offscreen/contracts/admin';
 import {
@@ -53,6 +55,7 @@ import {
   createAdminCaseStore,
   createAdminDiagnosticsReads,
   createAdminPlayerReads,
+  createAdminSituationReads,
   createAdminUsageReads,
   projectStaffAccess,
   readAdminTokenFromCookieHeader,
@@ -67,6 +70,7 @@ import {
   type AdminDiagnosticsReads,
   type AdminEnvironment,
   type AdminPlayerReads,
+  type AdminSituationReads,
   type AdminSessions,
   type AdminUsageReads,
 } from '@offscreen/application/admin';
@@ -81,6 +85,7 @@ export const ADMIN_DIAGNOSTICS = Symbol('ADMIN_DIAGNOSTICS');
 export const ADMIN_USAGE = Symbol('ADMIN_USAGE');
 export const ADMIN_AUDIT = Symbol('ADMIN_AUDIT');
 export const ADMIN_CASES = Symbol('ADMIN_CASES');
+export const ADMIN_SITUATION = Symbol('ADMIN_SITUATION');
 export const ADMIN_ORIGIN = Symbol('ADMIN_ORIGIN');
 export const ADMIN_ENVIRONMENT = Symbol('ADMIN_ENVIRONMENT');
 
@@ -269,6 +274,8 @@ export class AdminController {
     private readonly audit: AdminAuditReads,
     @Inject(ADMIN_CASES)
     private readonly cases: AdminCaseStore,
+    @Inject(ADMIN_SITUATION)
+    private readonly situations: AdminSituationReads,
   ) {}
 
   /** Player- or campaign-scoped visibility for legacy-owned stories. */
@@ -505,6 +512,64 @@ export class AdminController {
     });
     try {
       return caseSummaryV1Schema.parse(await this.cases.readCase(caseId));
+    } catch (error) {
+      if (
+        error instanceof AdminSessionError &&
+        error.code === 'not_authorized'
+      ) {
+        throw new HttpException(adminError('not_found'), HttpStatus.NOT_FOUND);
+      }
+      throw mapAdminError(error);
+    }
+  }
+
+  /**
+   * OBS06 case-scoped Support Situation → Why. Body-free S1 projection.
+   * All gates are server-side and independent of case-link authorship:
+   * case.summary.read + assigned-to-actor case + exact campaign link +
+   * a single steward-issued forensics.campaign.situation.read assignment whose
+   * scope.campaignIds and provenance.authorizedCaseIds name this exact pair.
+   * Every denial is the same privacy 404.
+   */
+  @Get('cases/:caseId/campaigns/:campaignId/situation')
+  async campaignSituation(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Param('caseId') caseId: string,
+    @Param('campaignId') campaignId: string,
+  ): Promise<SupportSituationV1> {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const uuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuid.test(caseId) || !uuid.test(campaignId)) {
+      throw new HttpException(
+        adminError('invalid_request'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const env = this.actors.deploymentEnvironment();
+    await this.actors.requireCapability(request, {
+      capability: 'case.summary.read',
+      resourceKind: 'case',
+      resourceId: caseId,
+      environment: env,
+      hideDenialAsNotFound: true,
+    });
+    const { actor } = await this.actors.requireCapability(request, {
+      capability: 'forensics.campaign.situation.read',
+      resourceKind: 'campaign',
+      resourceId: campaignId,
+      environment: env,
+      caseId,
+      hideDenialAsNotFound: true,
+    });
+    try {
+      const situation = await this.situations.readSituation({
+        caseId,
+        campaignId,
+        actorStaffId: actor.staffPrincipalId,
+      });
+      return supportSituationV1Schema.parse(situation);
     } catch (error) {
       if (
         error instanceof AdminSessionError &&
@@ -922,6 +987,12 @@ export function createAdminAuditReadsProvider(
   database: Database,
 ): AdminAuditReads {
   return createAdminAuditReads(database);
+}
+
+export function createAdminSituationReadsProvider(
+  database: Database,
+): AdminSituationReads {
+  return createAdminSituationReads(database);
 }
 
 export function createAdminCaseStoreProvider(

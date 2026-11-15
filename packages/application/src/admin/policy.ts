@@ -66,6 +66,19 @@ export type AdminAccessResult = Readonly<{
   matchedPackageId?: string;
 }>;
 
+/**
+ * Capabilities whose single assignment must prove BOTH exact campaign and exact
+ * case. Grant issuance is out of band (trusted steward); case creation/assign
+ * APIs never write assignments.
+ */
+const CASE_CAMPAIGN_BOUND_CAPABILITIES: ReadonlySet<AdminCapability> = new Set([
+  'forensics.campaign.situation.read',
+]);
+
+/** Provenance kinds a trusted grant steward (or disposable test steward fixture) may stamp. */
+export const TRUSTED_CASE_BINDING_PROVENANCE_KINDS: ReadonlySet<string> =
+  new Set(['steward-case-binding']);
+
 function scopeAllowsResource(
   scope: AdminGrantScope,
   resourceKind: AdminResourceKind,
@@ -158,6 +171,38 @@ function evaluateOneGrant(
       reason: 'resource_out_of_scope',
       decisionId: `deny:${assignment.assignmentId}:scope`,
     };
+  }
+
+  if (CASE_CAMPAIGN_BOUND_CAPABILITIES.has(capability)) {
+    // OBS06: empty/absent campaignIds must never mean "any campaign".
+    const named = assignment.scope.campaignIds ?? [];
+    if (
+      !request.resourceId ||
+      named.length === 0 ||
+      !named.includes(request.resourceId)
+    ) {
+      return {
+        decision: 'deny',
+        reason: 'resource_out_of_scope',
+        decisionId: `deny:${assignment.assignmentId}:scope-exact`,
+      };
+    }
+    if (assignment.scope.requireAuthorizedCaseAssignment !== true) {
+      return {
+        decision: 'deny',
+        reason: 'case_assignment_required',
+        decisionId: `deny:${assignment.assignmentId}:case-required`,
+      };
+    }
+    if (
+      !TRUSTED_CASE_BINDING_PROVENANCE_KINDS.has(assignment.provenance.kind)
+    ) {
+      return {
+        decision: 'deny',
+        reason: 'case_assignment_unproven',
+        decisionId: `deny:${assignment.assignmentId}:provenance-untrusted`,
+      };
+    }
   }
 
   if (assignment.scope.requireAuthorizedCaseAssignment) {
