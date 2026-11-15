@@ -2,6 +2,19 @@
 
 **Status: design waves 1–5, 2026-11-15. Not a Cursor implementation instruction.** The current owner requested a backend-first forensic architecture with permanent data provenance, operational telemetry, Admin investigation and player replay. The architecture recommendation is recorded in [the index](README.md). **No Change is selected**; [the Change standard](../../.agents/references/change-work-unit-standard.md) requires code-bearing, independently verifiable packets after product/technical acceptance and latest-source validation. The long-term Fxx outcomes remain a candidate roadmap. **Current implementation truth (main@18158402):** OBS00-A/OBS01/OBS02/OBS02-H/OBS03/OBS05 Done, OBS00-B blocked, OBS04/OBS06/OBS07 Proposed, no active Change. See [current OBS06 decision handoff](handoff/obs06-support-investigator-2026-11-15.md).
 
+## Post-S0–S6 connected evaluation: code status and local live-path correction
+
+**Independent review after Cursor's executed run:** [source + evidence quality analysis](evidence/independent-connected-trial-review-2026-11-15.md). The original [S0–S6 report](evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) is committed at `main@b88356fe`. OBS06/OBS07 are **Done in synthetic/disposable scope**, not Proposed; real Support issuance remains missing. Two Chamber campaigns persisted, but both were scripted; the separate consequence G had OBS02/OBS03 real stage/sidecar and zero provider sends. F4 stale publication was a fixture; F5 accounting was simulated. The broad Storyteller suite is red on old fixture `simulation-gameSeconds` plus other assertions.
+
+**Key refinement:** OBS00-B missing from the ordinary worker does **not** mean every local provider path lacks authority. `tools/chamber/src/main.ts` supplies a startup-pinned local `dispatchAuthority` in Story mode, which is different from a genuinely current production entitlement resolver. This *could* permit local sends, so it requires its own guarded validation. The local funding startup also unconditionally resets `stopped=false` and `enabled=true` and uses $1/250 attempt default. These are actual source-level risks. **No live trial was run**.
+
+**Next Proposed work, one Change at a time, no authorization by docs:**
+- [OBS00-L local Story-mode stop/restart and database-enforced trial cap](../changes/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md).
+- [OBS00-C exact stored review vs configured mock HTTP body](../changes/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md).
+- [QA-SF01 restore actual Storyteller integration test/teardown](../changes/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md).
+
+[Cursor next-wave execution handoff](handoff/post-trial-next-cursor-wave-2026-11-15.md) and [checkpoint](evaluations/2026-11-15--post-trial-safety/CHECKPOINT.md) are **prepared, NOT RUN**. A new real model spend requires a **new explicitly approved owner cap**, independent of the completed S0–S6 grant. Production OBS00-B current policy, Support grant stewardship and OBS04 E0 full-state history remain distinct future owner decisions.
+
 ## OBS06: first human-usable incident read before a giant backend ledger
 
 **Recommendation (post main@18158402):** make [OBS06 case-scoped Support Situation → Why](../changes/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) the next implementation **candidate**. The real source is now sufficient for current hold/action/G/stage/publication status. [Source audit](evidence/obs06-support-situation-source-audit-2026-11-15.md) → [S1 query/security contract](technical/support-situation-and-why-v1.md) → [OBS06 code packet](../changes/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md), then [OBS07 minimal Support UI](../changes/2026-11-15--obs07-support-situation-ui/CHANGE.md).
