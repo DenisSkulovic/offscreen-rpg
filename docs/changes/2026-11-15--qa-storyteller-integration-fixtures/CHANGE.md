@@ -2,7 +2,7 @@
 
 **State: Proposed, NOT Ready.** One test-harness reliability outcome: **the existing connected Storyteller and story-resolution suites run against current validated contracts and can distinguish real engine regressions from invalid old fixtures or teardown order**. Test source/cleanup only unless a *separate* accepted runtime defect is actually proven. Provider-free, disposable `offscreen_auth_test` only.
 
-**Source evidence:** [Cursor forensic run log S0/S1](../../observability/evaluations/2026-11-15--connected-forensic-trial/RUN-LOG.md), [independent review](../../observability/evidence/independent-connected-trial-review-2026-11-15.md), [test runner safety](../../tools/api-integration/test/README.md).
+**Source evidence:** [Cursor forensic run log S0/S1](../../observability/evaluations/2026-11-15--connected-forensic-trial/RUN-LOG.md), [independent review](../../observability/evidence/independent-connected-trial-review-2026-11-15.md), [test runner safety](../../../tools/api-integration/test/README.md).
 
 ## Source-specific problems
 
