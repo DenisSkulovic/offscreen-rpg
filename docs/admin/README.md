@@ -10,6 +10,8 @@
 
 **OBS06/OBS07 next Support investigation design (2026-11-15):** [source and case-grant audit](../observability/evidence/obs06-support-situation-source-audit-2026-11-15.md) → [strict S1 Situation → Why read](../observability/technical/support-situation-and-why-v1.md) → [current handoff](../observability/handoff/obs06-support-investigator-2026-11-15.md). These two bounded Changes are **Proposed**, with an explicit case/campaign authorization decision before code. No staff package is automatically enlarged and no raw narrative access is authorized.
 
+**Post-trial reality (2026-11-15):** [OBS06](../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md) and [OBS07](../observability/evidence/obs07-support-situation-ui-2026-11-15.md) **implemented and tested in synthetic/disposable environment**, including real Nest/Next/Playwright permission/redaction checks. **Not yet operational for real Support** because no trusted production issuer of exact `support-investigator` case/campaign grant exists. [Independent trial review](../observability/evidence/independent-connected-trial-review-2026-11-15.md#5-support-is-real-in-test-but-blocked-by-governance). The older OBS06/OBS07 proposed design remains historical context, not today's implementation status.
+
 ## Choose the product question
 
 | Question | Product document |
