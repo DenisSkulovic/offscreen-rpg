@@ -10,6 +10,9 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [WIKI06 knowledge lifecycle](open/2026-11-16--wiki06-knowledge-lifecycle/CHANGE.md) | **Proposed (first)** | Ratification rule, source/status reconciliation, Change-close guard; no game source |
+| [WIKI07 heading retrieval](open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) | **Proposed (after WIKI06)** | Zero-model question→heading/section previews, context-bounded reads and cheap agent routing |
+| [WIKI08 content quality](open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) | **Proposed (after WIKI07)** | Content-risk metrics and named stale runbook/product/technical repair; ratification gates |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
