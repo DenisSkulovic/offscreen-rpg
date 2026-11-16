@@ -11,6 +11,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 | [prediction-fences/](open/prediction-fences/) | Proposed predictive-outcome study |
 | [canon-invention-policy/](open/canon-invention-policy/) | Owner-retained dormant design |
 | [product-open-questions.md](open/product-open-questions.md) | Index of the gates above |
+| [wiki-health/](open/wiki-health/README.md) | **Proposed measurement system**: zero-model wiki graph, lexical/Hopper navigation checks, isolated agent/code-fidelity trials; not selected |
 | [parked/](parked/) | Dormant studies and expired handoffs. Not a second contract |
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`.
