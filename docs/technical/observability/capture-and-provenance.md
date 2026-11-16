@@ -1,6 +1,6 @@
 # Committed transition capture V1 | One real mechanic, one atomic forensic source
 
-**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code/schema/test authorized**. Source: [writer closure](../../programs/observability/evidence/writer-closure-and-sequence-2026-11-15.md), [physical evidence storage](../../programs/observability/technical/physical-evidence-storage-v1.md), [transaction protocol](../../programs/observability/technical/capture-transaction-protocol.md), [historical reconstruction](../../programs/observability/technical/reconstruction-algorithm-v1.md). This design intentionally does **not** require full event sourcing or a global collection of function-level logs.
+**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code/schema/test authorized**. Source: [writer closure](../../../evidence/runs/observability-program-2026-11-15/writer-closure-and-sequence-2026-11-15.md), [physical evidence storage](../../programs/observability/technical/physical-evidence-storage-v1.md), [transaction protocol](../../programs/observability/technical/capture-transaction-protocol.md), [historical reconstruction](../../programs/observability/technical/reconstruction-algorithm-v1.md). This design intentionally does **not** require full event sourcing or a global collection of function-level logs.
 
 ## 1. Pilot before universal rollout
 

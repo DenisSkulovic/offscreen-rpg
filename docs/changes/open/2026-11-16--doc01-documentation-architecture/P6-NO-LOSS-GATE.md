@@ -25,7 +25,7 @@
 | Gate | Why blocked | Exit criterion |
 | --- | --- | --- |
 | G1 Inbound path fanout | Residual non-docs hits (~programs evidence, history/initiatives, engineering audits/targets stubs, intentional soft-retire mentions) | Live loaders + package/.agents **mandatory** maps = 0 hits on paths that will be deleted; remaining = provenance-only or owner-waived |
-| G2 Claim-level certification | Most program atoms still `[heading stub]`; dual-authority merges incomplete for Admin/OBS deep essays | Domain-by-domain `resolved=true` or explicit DROP with Git pointer |
+| G2 Claim-level certification | Priority Storyteller/Experience/Engine+OBS **maps** certified ([G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md)); Admin + OBS deep essays + atom bulk still open | Remaining domains `resolved=true` or DROP with Git pointer; no silent mass resolve |
 | G3 Change packet move | Packets + archiver still rooted at `docs/changes`; only selection/ledger dual-rooted | Tooling dual-root or full move to `work/changes` with green dry-run |
 | G4 History minutes / legal | Minutes not fully promoted; legal attribution must not vanish with `history/` | NOTICE/legal home + sessions promotion rule applied (writers → `work/sessions/`; content promotion still open) |
 | G5 Playthroughs / research | `docs/technical/playthroughs` + engineering manuals not fully historicized to evidence/research | Explicit example/research owners + stub routers |

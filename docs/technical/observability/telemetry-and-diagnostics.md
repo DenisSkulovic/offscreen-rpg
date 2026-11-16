@@ -1,6 +1,6 @@
 # Runtime telemetry and operational reliability | OpenTelemetry + pragmatic Grafana stack
 
-**Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement. Source-first [audit](../../programs/observability/evidence/current-source-inventory-2026-11-15.md); research [references](../../programs/observability/references.md). No monitoring service deployment or paid observability account authorized.
+**Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement. Source-first [audit](../../../evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md); research [references](../../programs/observability/references.md). No monitoring service deployment or paid observability account authorized.
 
 ## 1. Platform choice
 
