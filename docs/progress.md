@@ -11,13 +11,13 @@
 **Current development priority:**
 1. Keep [work/changes/README.md](../work/changes/README.md) as the selection owner. **Current change:** [DOC01 documentation architecture](../work/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md) (**Selected**, P2/P3 product+technical owners landing). QA-SF01 remains **Blocked** open (fixture remainders / runtime defects — not current).
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
-3. Permanent hubs were reconciled 2026-11-15 — see [documentation convergence ledger](engineering/evidence/documentation-convergence-2026-11-15.md). Do not treat stale “Proposed / no code” banners as truth.
+3. Permanent hubs were reconciled 2026-11-15 — see [documentation convergence ledger](../evidence/inspections/doc01-legacy-snapshot/engineering/evidence/documentation-convergence-2026-11-15.md). Do not treat stale “Proposed / no code” banners as truth.
 
 Gameplay dossiers such as [S3a continuity](../work/changes/open/2026-11-11--s3a-continuity-report/CHANGE.md) remain deferred, not cancelled.
 
 ## Evidence and limits
 
-The [connected proof](engineering/connected-poc-proof.md#latest-evidence--2026-09-24) owns the dated Sep/Oct run identity. Forensic connected evaluation: [S0–S6 FINAL-HANDOFF](programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) (0 paid). Post-trial safety: [FINAL-HANDOFF](programs/observability/evaluations/2026-11-15--post-trial-safety/FINAL-HANDOFF.md) (OBS00-L/C Done; QA-SF01 Blocked).
+The [connected proof](../research/legacy-engineering/connected-poc-proof.md#latest-evidence--2026-09-24) owns the dated Sep/Oct run identity. Forensic connected evaluation: [S0–S6 FINAL-HANDOFF](../evidence/inspections/doc01-legacy-snapshot/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) (0 paid). Post-trial safety: [FINAL-HANDOFF](../evidence/inspections/doc01-legacy-snapshot/programs/observability/evaluations/2026-11-15--post-trial-safety/FINAL-HANDOFF.md) (OBS00-L/C Done; QA-SF01 Blocked).
 
 **Lifecycle:** Pre-POC, solo development on `main`, disposable local data. Checks under [verification](../.agents/rules/verification.md). Inference under [spending](../.agents/rules/spending.md).
 
@@ -25,8 +25,8 @@ The [connected proof](engineering/connected-poc-proof.md#latest-evidence--2026-0
 
 | Area | Exists now | Important limit |
 | --- | --- | --- |
-| Workspace | Next/Nest/Temporal/Postgres; shared packages; Chamber | Maps in [code navigation](engineering/code-navigation.md) |
-| Frontend engineering | **W01–W11, W13–W22 Done**; TanStack Query SSR | F1–F15 remain the **target** contract ([react-next](engineering/targets/react-next.md)) |
+| Workspace | Next/Nest/Temporal/Postgres; shared packages; Chamber | Maps in [code navigation](../evidence/inspections/doc01-legacy-snapshot/engineering/code-navigation.md) |
+| Frontend engineering | **W01–W11, W13–W22 Done**; TanStack Query SSR | F1–F15 remain the **target** contract ([react-next](../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)) |
 | Player UX / presentation | **UX01–UX12, PX01–PX07, PF01–PF05 Done** | Human UX comprehension not validated |
 | Engine | **ENG01/02/04/05/06/08/09 Done**; ENG03 **partial**; ENG07 Cancelled | Full short-lock refactor still Proposed |
 | Admin | **AD01–AD08 Done**; `/api/admin` + `/control` | No production Support grant issuer |
@@ -38,8 +38,8 @@ The [connected proof](engineering/connected-poc-proof.md#latest-evidence--2026-0
 
 ## Where to go next
 
-Start at [changes queue](../work/changes/README.md) and [documentation map](README.md). Convergence program closed hubs vs code; remaining items are **implementation deviations** and **governance** — listed in the [ledger](engineering/evidence/documentation-convergence-2026-11-15.md) and [ChatGPT handoff](engineering/evidence/documentation-convergence-chatgpt-handoff-2026-11-15.md).
+Start at [changes queue](../work/changes/README.md) and [documentation map](README.md). Convergence program closed hubs vs code; remaining items are **implementation deviations** and **governance** — listed in the [ledger](../evidence/inspections/doc01-legacy-snapshot/engineering/evidence/documentation-convergence-2026-11-15.md) and [ChatGPT handoff](../evidence/inspections/doc01-legacy-snapshot/engineering/evidence/documentation-convergence-chatgpt-handoff-2026-11-15.md).
 
 ## What can be tried
 
-[Development](operations/development.md). `pnpm chamber` offline; `pnpm story:local` with separately authorized live generation. `/demo` is browser-only prototype. Green fixtures ≠ meaningful agency or owner enjoyment.
+[Development](../docs/runbooks/local-development.md). `pnpm chamber` offline; `pnpm story:local` with separately authorized live generation. `/demo` is browser-only prototype. Green fixtures ≠ meaningful agency or owner enjoyment.

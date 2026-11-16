@@ -1,6 +1,6 @@
 # Change CH03 | Minimal valid state specimens and semantic overlays
 
-> **Cursor start:** [fixture/source map](../../../../../../packages/application/src/developer-tools/README.md) → `chamber-fixtures.ts`, `campaign/fixtures/mechanical-content.ts` and actual story/campaign contracts. **Target:** [C02/C03/C04/C09](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 3](../../../../../../docs/technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation); [audit H01/H12](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
+> **Cursor start:** [fixture/source map](../../../../../../packages/application/src/developer-tools/README.md) → `chamber-fixtures.ts`, `campaign/fixtures/mechanical-content.ts` and actual story/campaign contracts. **Target:** [C02/C03/C04/C09](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 3](../../../../../../docs/technical/chamber-lab-protocol.md#3-semantic-fixtures-and-isolation); [audit H01/H12](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH02. **Depends on:** CH01 (Done).
 

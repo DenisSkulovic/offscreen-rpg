@@ -59,6 +59,6 @@ Shared task instructions own authority/evidence/output invariants. Tone, pace, i
 
 [Policy](src/tasks/policy.ts) prices a conservative request reservation including applicable cache-write premiums. [Resources](src/tasks/resources.ts) defines the captured cumulative envelope; application budget/window accounting enforces it across attempts. Do not mistake this package's request-size check for the whole spending system.
 
-Live transport requires explicit opt-in, resolved authority and [spending-rule](../../.agents/rules/spending.md) reconciliation. Deliberate local live runs have occurred; ordinary tests/CI remain provider-free. The [connected proof](../../docs/engineering/connected-poc-proof.md#latest-evidence--2026-09-24) (routing to [evidence/](../../evidence/README.md)) owns their evidence and limits, not this guide.
+Live transport requires explicit opt-in, resolved authority and [spending-rule](../../.agents/rules/spending.md) reconciliation. Deliberate local live runs have occurred; ordinary tests/CI remain provider-free. The [connected proof](../../research/legacy-engineering/connected-poc-proof.md#latest-evidence--2026-09-24) (routing to [evidence/](../../evidence/README.md)) owns their evidence and limits, not this guide.
 
 Tests under `test/` use compiled output and injected fake providers. Read [verification policy](../../.agents/rules/verification.md) before selecting checks; package commands/exports are in [package.json](package.json).

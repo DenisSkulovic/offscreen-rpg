@@ -1,14 +1,14 @@
 # Change W18: Storybook deterministic engineering-state catalogue for React screens
 
-> **Cursor first look (current source ≠ selected target):** [Play state-fixture map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../docs/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
+> **Cursor first look (current source ≠ selected target):** [Play state-fixture map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
 > **Pre-investigated trap:** Storybook is provider-free behavioral state evidence, not a visual redesign or replacement for real Nest/DB tests.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W13. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W13 `main` (`ed13c9f`). Storybook 10.6.7 + `@storybook/nextjs-vite` + MSW addon + a11y; static build is provider-free.
+**State: Done.** Owner authorized via continue after W13. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W13 `main` (`ed13c9f`). Storybook 10.6.7 + `@storybook/nextjs-vite` + MSW addon + a11y; static build is provider-free.
 
 **Depends on:** W01 W15 W06 W08 W11; W07 accessibility semantics useful before final story review.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F7 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G29 G24**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F7 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G29 G24**.
 
 ## Code outcome and owners
 

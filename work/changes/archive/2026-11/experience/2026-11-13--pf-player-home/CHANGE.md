@@ -1,12 +1,12 @@
 # PF04 | Authenticated Stories becomes the player's real home
 
-**State: Done (2026-11-13).** Authenticated `/stories` is a truthful Your-stories home: modest chrome, inviting verified empty, neutral featured kicker, Continue creating drafts, empty ≠ read failure. Parent: [entry program](../../../../../../docs/programs/experience/platform-entry-implementation-program.md).
+**State: Done (2026-11-13).** Authenticated `/stories` is a truthful Your-stories home: modest chrome, inviting verified empty, neutral featured kicker, Continue creating drafts, empty ≠ read failure. Parent: [entry program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Goal:** use existing authenticated /stories as a compelling but truthful personal home, with deliberate zero/one/many/draft/read-failure layouts, stable navigation into Now and creation, and no fabricated “needs you” or earned progress.
 >
-> **Authority:** [player home blueprint](../../../../../../docs/programs/experience/spaces/player-home-blueprint.md), [existing Stories design](../../../../../../docs/programs/experience/spaces/stories-library.md), [platform states](../../../../../../docs/programs/experience/platform-journeys-and-states.md#orthogonal-state-axes-not-one-platformstatus-mega-enum), [React/Next target](../../../../../../docs/engineering/targets/react-next.md).
+> **Authority:** [player home blueprint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/player-home-blueprint.md), [existing Stories design](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/stories-library.md), [platform states](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-journeys-and-states.md#orthogonal-state-axes-not-one-platformstatus-mega-enum), [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 >
 > **Sources:** `apps/web/app/(authenticated)/stories/page.tsx`, `apps/web/src/features/stories/live-story-list.tsx`, `draft-list.tsx`, `stories-library.css`, `apps/web/src/features/stories/README.md`; review current list DTO before showing attention status.
 >

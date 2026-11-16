@@ -159,9 +159,9 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 | `work/changes/README.md` | 3390 | REWRITE | work/changes/README.md |
 | `docs/engineering/agentic-systems-field-manual.md` | 40759 | CURATE | research/storyteller/ |
 | `docs/engineering/ai-development-system.md` | 13665 | PROMOTE |  .agents/{rules,skills,references}/ |
-| `docs/engineering/audits/chamber-gap-2026-11-12.md` | 21079 | EXTRACT | evidence/inspections/ |
+| `research/legacy-audits/chamber-gap-2026-11-12.md` | 21079 | EXTRACT | evidence/inspections/ |
 | `docs/engineering/audits/react-next-gap-2026-11-11.md` | 18696 | EXTRACT | evidence/inspections/ |
-| `docs/engineering/audits/react-next-gap-2026-11-12.md` | 32234 | EXTRACT | evidence/inspections/ |
+| `research/legacy-audits/react-next-gap-2026-11-12.md` | 32234 | EXTRACT | evidence/inspections/ |
 | `docs/engineering/audits/README.md` | 1445 | EXTRACT | evidence/inspections/ |
 | `docs/engineering/chamber-program.md` | 10818 | SUMMARIZE | work/changes/ledger + docs/technical/lab/ |
 | `docs/engineering/code-navigation.md` | 8921 | REWRITE | package source-adjacent README or evidence/inspections/ |
@@ -169,27 +169,27 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 | `docs/engineering/coding-agent-evaluation.md` | 16092 | PROMOTE |  .agents/{rules,skills,references}/ |
 | `docs/engineering/coding-agent-knowledge.md` | 8140 | PROMOTE |  .agents/{rules,skills,references}/ |
 | `docs/engineering/coding-agent-target-standard.md` | 9772 | PROMOTE |  .agents/{rules,skills,references}/ |
-| `docs/engineering/connected-poc-proof.md` | 32534 | SPLIT | evidence/runs/ + docs/product/gameplay/acceptance-scenarios.md + docs/runbooks/ |
+| `research/legacy-engineering/connected-poc-proof.md` | 32534 | SPLIT | evidence/runs/ + docs/product/gameplay/acceptance-scenarios.md + docs/runbooks/ |
 | `docs/engineering/engine-model.md` | 16168 | REWRITE | package source-adjacent README or evidence/inspections/ |
 | `docs/engineering/evidence/documentation-convergence-2026-11-15.md` | 5700 | EXTRACT | evidence/inspections/ |
 | `docs/engineering/evidence/documentation-convergence-chatgpt-handoff-2026-11-15.md` | 1662 | EXTRACT | evidence/inspections/ |
-| `docs/engineering/frontend-execution-playbook.md` | 23707 | PROMOTE |  .agents/{rules,skills,references}/ |
+| `research/legacy-engineering/frontend-execution-playbook.md` | 23707 | PROMOTE |  .agents/{rules,skills,references}/ |
 | `docs/engineering/long-story-memory-and-retrieval.md` | 31102 | CURATE | research/storyteller/ |
 | `docs/engineering/offline-poc-acceptance.md` | 11209 | SPLIT | evidence/runs/ + docs/product/gameplay/acceptance-scenarios.md + docs/runbooks/ |
 | `docs/engineering/qa-journeys.md` | 34429 | SPLIT | evidence/runs/ + docs/product/gameplay/acceptance-scenarios.md + docs/runbooks/ |
-| `docs/engineering/README.md` | 6045 | REVIEW | docs/runbooks/ or .agents/ or research/ |
+| `research/engineering-manuals.md` | 6045 | REVIEW | docs/runbooks/ or .agents/ or research/ |
 | `docs/engineering/storyteller-tuning.md` | 11313 | CURATE | research/storyteller/ |
 | `docs/engineering/targets/chamber-laboratory.md` | 23791 | PROMOTE | docs/technical/{client,lab,engine}/ |
 | `docs/engineering/targets/react-next.md` | 35112 | PROMOTE | docs/technical/{client,lab,engine}/ |
 | `docs/engineering/targets/README.md` | 2116 | PROMOTE | docs/technical/{client,lab,engine}/ |
 | `docs/history/initiatives/2026-09-24--01-30--canon-invention-policy/FEATURE.md` | 6742 | PRESERVE/DRAFT | work/designs/open/canon-invention-policy + product/gameplay |
 | `docs/history/initiatives/2026-09-24--01-30--canon-invention-policy/PLAN.md` | 6311 | PRESERVE/DRAFT | work/designs/open/canon-invention-policy + product/gameplay |
-| `docs/history/initiatives/AUDIT-2026-11-11.md` | 11505 | HISTORICIZE | work/changes/ledger + Git history |
+| `work/designs/open/legacy-initiatives-index/AUDIT-2026-11-11.md` | 11505 | HISTORICIZE | work/changes/ledger + Git history |
 | `docs/history/initiatives/PARKED-2026-11-15.md` | 7922 | HISTORICIZE | work/changes/ledger + Git history |
 | `docs/history/initiatives/README.md` | 2100 | HISTORICIZE | work/changes/ledger + Git history |
 | `docs/history/initiatives/RETIRED-2026-11-11.md` | 7383 | HISTORICIZE | work/changes/ledger + Git history |
 | `docs/history/legal/rules-attribution.md` | 665 | PROMOTE | NOTICE.md |
-| `docs/history/minutes/2026-11-11.md` | 26215 | EXTRACT/EXPIRE | work/sessions + docs/decisions + docs/product or technical |
+| `work/sessions/README.md` | 26215 | EXTRACT/EXPIRE | work/sessions + docs/decisions + docs/product or technical |
 | `docs/history/minutes/2026-11-12.md` | 71042 | EXTRACT/EXPIRE | work/sessions + docs/decisions + docs/product or technical |
 | `docs/history/minutes/2026-11-13.md` | 6614 | EXTRACT/EXPIRE | work/sessions + docs/decisions + docs/product or technical |
 | `docs/history/minutes/2026-11-14.md` | 11707 | EXTRACT/EXPIRE | work/sessions + docs/decisions + docs/product or technical |

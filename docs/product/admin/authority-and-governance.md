@@ -1,8 +1,8 @@
 # Admin authority and governance
 
 **Owner (DOC01 P2):** what staff authority means to operators.  
-**Status:** Core direction accepted with AD access/audit slices; deeper operating policy still **proposed** in places ([authority-operating-policy](../../programs/admin/authority-operating-policy.md)).  
-**Sources:** [authority-and-delegation](../../programs/admin/authority-and-delegation.md), [access-and-governance-product](../../programs/admin/access-and-governance-product.md).
+**Status:** Core direction accepted with AD access/audit slices; deeper operating policy still **proposed** in places ([authority-operating-policy](../../../evidence/inspections/admin-program-essays-2026-11/authority-operating-policy.md)).  
+**Sources:** [authority-and-delegation](../../../evidence/inspections/admin-program-essays-2026-11/authority-and-delegation.md), [access-and-governance-product](../../../evidence/inspections/admin-program-essays-2026-11/access-and-governance-product.md).
 
 ## Product promise
 

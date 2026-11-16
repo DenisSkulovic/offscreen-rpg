@@ -1,6 +1,6 @@
 # PW01 | Wire published optional appearance into live Play, without generation
 
-**State: Done (2026-11-14).** Optional published `current.appearance` projects into live Play through the existing PX resolver. **Authority:** [live published-scene contract](../../../../../../docs/programs/experience/system/live-presentation-projection.md), [V1 presentation grammar](../../../../../../docs/programs/experience/system/presentation-language.md), [media/asset isolation](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md), existing [React/Next Query](../../../../../../docs/engineering/targets/react-next.md).
+**State: Done (2026-11-14).** Optional published `current.appearance` projects into live Play through the existing PX resolver. **Authority:** [live published-scene contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/live-presentation-projection.md), [V1 presentation grammar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md), [media/asset isolation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md), existing [React/Next Query](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 
 ## Cursor first-screen
 

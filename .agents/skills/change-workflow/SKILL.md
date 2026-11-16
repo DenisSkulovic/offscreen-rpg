@@ -53,4 +53,4 @@ Record what landed, tests/inspection actually run, affected revision, remaining 
 
 A completed Change leaves the **hot** route (`open/`); `archive/` retains the execution packet. Don't preserve a duplicate living implementation history when its decisions have a durable owner.
 
-Owner-retained and dormant legacy dossiers require explicit preservation. Before deleting/moving any old folder, inspect its unique decisions, inbound links and approval boundaries. See the [dated legacy audit](../../../docs/history/initiatives/AUDIT-2026-11-11.md).
+Owner-retained and dormant legacy dossiers require explicit preservation. Before deleting/moving any old folder, inspect its unique decisions, inbound links and approval boundaries. See the [dated legacy audit](../../../work/designs/open/legacy-initiatives-index/AUDIT-2026-11-11.md).

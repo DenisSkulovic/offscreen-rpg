@@ -2,12 +2,12 @@
 
 **State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence; Cursor landed UX04.  
 **Kind:** player-facing status/progress/hold behavior + focused tests; potential **separate** public-projection request if gaps discovered.  
-**Parent:** [Program](../../../../../../docs/programs/experience/implementation-program.md) M1. **Dependencies:** UX02, UX03 (Done).
+**Parent:** [Program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md) M1. **Dependencies:** UX02, UX03 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play source map](../../../../../../apps/web/src/features/play/README.md), `ui/campaign-activity.tsx`, `ui/campaign-status.tsx`, `ui/campaign-records.tsx`, `model/campaign-projections.ts`, `view.tsx`; inspect `packages/contracts/src/campaign.ts` only for public DTO fields.  
-> **Governing target:** [time and truth](../../../../../../docs/programs/experience/patterns/time-and-truth.md#keep-four-clocksconditions-conceptually-separate), [Now state compositions](../../../../../../docs/programs/experience/spaces/now.md#now-state-compositions).  
+> **Governing target:** [time and truth](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/time-and-truth.md#keep-four-clocksconditions-conceptually-separate), [Now state compositions](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/now.md#now-state-compositions).  
 > **Known trap:** elapsed fictional time is NOT productivity; an expired client countdown is NOT a settled reward; paused/suspended work doesn't silently advance.  
 > **Scope/permission:** **Authorized for UX04.** Rendering/refactoring supported states, **no new scheduling logic** and no provider calls.
 
@@ -30,7 +30,7 @@ On the Now stage:
 ## Authority and baseline
 
 - Game [time and autonomy](../../../../../../docs/product/journeys/time-and-autonomy.md), [activity mechanics](../../../../../../docs/product/foundations/game-rules.md#first-rules-subset), [receipt/hold semantics](../../../../../../docs/technical/committed-time.md).
-- UX [time truth](../../../../../../docs/programs/experience/patterns/time-and-truth.md), [autonomy](../../../../../../docs/programs/experience/patterns/autonomy-and-absence.md).
+- UX [time truth](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/time-and-truth.md), [autonomy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/autonomy-and-absence.md).
 - Existing `CampaignView` has `activity` with `progress.kind = contribution|wait`, `actionExecution`, `holds` and public `worldTime`; `StorySnapshot` has `waiting`, `resolution`, `decision`. Those are **inspected schemas**, not a guarantee that all desired view states are returned at runtime.
 - GitHub main baseline `8c91618` inspected 2026-11-13; revalidate after concurrent W-series work.
 

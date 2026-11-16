@@ -1,13 +1,13 @@
 # Change W20: Fast local frontend feedback and correct Turbo task caching
 
-> **Cursor first look (current source ≠ selected target):** [Package/testing route](../../../../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../docs/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
+> **Cursor first look (current source ≠ selected target):** [Package/testing route](../../../../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
 > **Pre-investigated trap:** Create separate `test:fast` graph; preserve old dist-dependent `test` semantics.  
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
 **Status:** Done (2026-11-12). **Purpose:** reduce real workstation and Cursor iteration cost without weakening important proof. **Dependency:** W01 Done. Evidence in minutes §27: dry-run excludes `@offscreen/web#build`; warm `pnpm test:fast` was FULL TURBO.
 
-**Target:** F10, F14, F15 in [React/Next target](../../../../../../docs/engineering/targets/react-next.md); [execution economics playbook](../../../../../../docs/engineering/frontend-execution-playbook.md#3-local-toolchain-facts-already-investigated-source-inspected-only). **Observed sources:** `turbo.json`, root and `apps/web/package.json`, `packages/{game,application,documents}/package.json`, `apps/web/tsconfig.json`.
+**Target:** F10, F14, F15 in [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md); [execution economics playbook](../../../../../../research/legacy-engineering/frontend-execution-playbook.md#3-local-toolchain-facts-already-investigated-source-inspected-only). **Observed sources:** `turbo.json`, root and `apps/web/package.json`, `packages/{game,application,documents}/package.json`, `apps/web/tsconfig.json`.
 
 ## Source-grounded problem
 
@@ -29,4 +29,4 @@
 - **Negative case:** changing a contracts package invalidates relevant builds; an unrelated React test edit does not rebuild Next; legacy dist tests do not use stale emitted JavaScript.
 - **Evidence:** compare dry-run task graph and actual cold/warm timings/cache hits; record unrun status honestly. No provider work, destructive DB reset, Docker startup or CI billing.
 
-**Cursor handoff:** use exact paths above and the [fast command cookbook](../../../../../../docs/engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). One measured local task graph correction, no general monorepo migration or source-format churn.
+**Cursor handoff:** use exact paths above and the [fast command cookbook](../../../../../../research/legacy-engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). One measured local task graph correction, no general monorepo migration or source-format churn.

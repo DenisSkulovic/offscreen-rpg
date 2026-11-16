@@ -3,7 +3,7 @@
 > **DOC01 P3 canonical technical owner.** Promoted from `docs/programs/admin/technical/control-plane-boundaries.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
 
 
-**Status:** Selected design target, 2026-11-14; requires technical consistency review before any Change is Ready. Product authority: [accepted Admin target](../../programs/admin/product-acceptance-and-scope.md). Source evidence: [baseline](../../programs/admin/technical/source-baseline-2026-11-14.md).
+**Status:** Selected design target, 2026-11-14; requires technical consistency review before any Change is Ready. Product authority: [accepted Admin target](../../../evidence/inspections/admin-program-essays-2026-11/product-acceptance-and-scope.md). Source evidence: [baseline](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/source-baseline-2026-11-14.md).
 
 ## 1. The architecture choice
 
@@ -96,7 +96,7 @@ These are **suggested ownership boundaries**; specific code file names may be ad
 5. A minimal case anchor and safe cross-links only once assignment authority is established.
 6. Basic audit/incident exposure, with operational stop **only after** a validated spend-enforcement seam exists.
 
-No live write assistance, raw narrative export, financial actions, arbitrary world repairs or general LiveOps editing in this first delivery boundary. Those future extensions must satisfy [decision gates](../../programs/admin/technical/architecture-decisions.md).
+No live write assistance, raw narrative export, financial actions, arbitrary world repairs or general LiveOps editing in this first delivery boundary. Those future extensions must satisfy [decision gates](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/architecture-decisions.md).
 
 ## 7. Dependency and trade-off rationale
 

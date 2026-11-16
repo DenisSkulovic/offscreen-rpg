@@ -6,7 +6,7 @@
 
 > **Goal:** Storybook is a trustworthy *interactive design laboratory*: changing actual V1 input fields drives parser → resolver → real component display; full legacy/campaign option treatments are matched using their genuine current identity. It can prove a variety of scenes without post-resolver decorations, with coherent example fiction and browser/a11y evidence.
 >
-> **Authority:** [laboratory truth](../../../../../../docs/programs/experience/presentation-calibration-program.md#laboratory-truth), [exact-choice matching](../../../../../../docs/programs/experience/system/presentation-language.md#required-scope-context), [PX04 original workbench intent](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-presentation-lab/CHANGE.md), [choice-surface semantics](../../../../../../docs/programs/experience/patterns/choice-surface-decision-rules.md).
+> **Authority:** [laboratory truth](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-calibration-program.md#laboratory-truth), [exact-choice matching](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md#required-scope-context), [PX04 original workbench intent](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-presentation-lab/CHANGE.md), [choice-surface semantics](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/choice-surface-decision-rules.md).
 >
 > **Source start:** `apps/web/src/stories/presentation.stories.tsx`, `presentation/fixtures.ts`, `presentation/resolve.ts`, `ui/story-frame.tsx`, `ui/campaign-offer.tsx`, current Storybook decorators/MSW/test setup and source-adjacent Play map.
 >

@@ -1,6 +1,6 @@
 # Change CH05 | Controllable time and seeded entropy at real policy seams
 
-> **Cursor start:** [story operations](../../../../../../packages/application/src/stories/README.md) → `stories/persistence.ts:readDatabaseClockMs` and `campaign/clock.ts`; [developer tooling map](../../../../../../packages/application/src/developer-tools/README.md). [Target C03/C05](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 4](../../../../../../docs/technical/chamber-lab-protocol.md#4-time-and-randomness), [audit H06](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
+> **Cursor start:** [story operations](../../../../../../packages/application/src/stories/README.md) → `stories/persistence.ts:readDatabaseClockMs` and `campaign/clock.ts`; [developer tooling map](../../../../../../packages/application/src/developer-tools/README.md). [Target C03/C05](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 4](../../../../../../docs/technical/chamber-lab-protocol.md#4-time-and-randomness), [audit H06](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH04. **Depends on:** CH02 and CH04 (Done).
 

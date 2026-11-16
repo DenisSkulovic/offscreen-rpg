@@ -1,11 +1,11 @@
 # GM04 | A failed reassurance changes the next meaningful option
 
-**State: Done (2026-11-15).** Evidence: [gm04-failed-approach-2026-11-15](../../../../../../docs/programs/experience/evidence/gm04-failed-approach-2026-11-15.md). **2026-11-15 content policy:** [failed reassurance durable-approach contract](../../../../../../docs/programs/experience/decisions/gm04-failed-approach-v1.md). **Kind:** one narrowly bounded fixture/game-content change + tests. **Parent:** [mechanics program](../../../../../../docs/programs/experience/mechanics-evolution-program.md).
+**State: Done (2026-11-15).** Evidence: [gm04-failed-approach-2026-11-15](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/gm04-failed-approach-2026-11-15.md). **2026-11-15 content policy:** [failed reassurance durable-approach contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/decisions/gm04-failed-approach-v1.md). **Kind:** one narrowly bounded fixture/game-content change + tests. **Parent:** [mechanics program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/mechanics-evolution-program.md).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [scripted SpongeBob benchmark](../../../../../../docs/technical/playthroughs/spongebob.md#sb-02-a-failed-reassurance--current-gm04), [application mechanical source map](../../../../../../packages/application/README.md#mechanical-selection-and-consequence); inspect authored fixture §packages/application/src/campaign/fixtures/content/mechanical-openings.json§ and scripted output source §packages/storyteller/src/fixtures/mechanical.ts§.
-> **Primary target:** [Storyteller choice distinctness](../../../../../../docs/programs/experience/foundations/storyteller-experience-quality.md#2-distinct-plausible-agency), [failure response](../../../../../../docs/programs/experience/foundations/storyteller-experience-quality.md#one-worked-red-team-example-repeated-persuasion).
+> **Primary target:** [Storyteller choice distinctness](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/storyteller-experience-quality.md#2-distinct-plausible-agency), [failure response](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/storyteller-experience-quality.md#one-worked-red-team-example-repeated-persuasion).
 > **Known trap:** changing only option text does not prevent reroll spam; inventing an unadmitted “trust loss” to justify different dialogue violates canon.
 > **Scope:** proposed only. One fixture's failed check and next authored options; no global Storyteller novelty algorithm.
 
@@ -27,7 +27,7 @@ Alternative: allow repeat attempts at a real time/resource cost when fiction log
 
 ## Authority and inspected baseline
 
-[Gameplay rules](../../../../../../docs/product/foundations/game-rules.md#authority), [SpongeBob case study](../../../../../../docs/technical/playthroughs/spongebob.md), [Storyteller quality bar](../../../../../../docs/programs/experience/foundations/storyteller-experience-quality.md), [offer admission](../../../../../../docs/technical/rules-and-activities.md#content-and-authority).
+[Gameplay rules](../../../../../../docs/product/foundations/game-rules.md#authority), [SpongeBob case study](../../../../../../docs/technical/playthroughs/spongebob.md), [Storyteller quality bar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/storyteller-experience-quality.md), [offer admission](../../../../../../docs/technical/rules-and-activities.md#content-and-authority).
 
 The technical atlas explicitly marks repeated reassurance as a design gap. Confirm this still reproduces in **current source** before moving Ready. If already corrected by Cursor, mark **Superseded/Cancelled**, not an excuse to add a duplicate fix.
 

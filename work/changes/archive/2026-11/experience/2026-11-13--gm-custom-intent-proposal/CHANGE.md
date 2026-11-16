@@ -1,11 +1,11 @@
 # GM01 | Interpret a bounded custom intention without changing the world
 
-**State: Done (2026-11-15).** Evidence: [gm01-custom-intent-2026-11-15](../../../../../../docs/programs/experience/evidence/gm01-custom-intent-2026-11-15.md). **Policy:** [template-first, $0 model interpretation](../../../../../../docs/programs/experience/decisions/gm01-custom-intent-policy-v1.md). **Kind:** new game contract + application path + validation tests. **Parent:** [mechanics evolution](../../../../../../docs/programs/experience/mechanics-evolution-program.md). Provider spend: zero. GM02 admission is a separate Change.
+**State: Done (2026-11-15).** Evidence: [gm01-custom-intent-2026-11-15](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/gm01-custom-intent-2026-11-15.md). **Policy:** [template-first, $0 model interpretation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/decisions/gm01-custom-intent-policy-v1.md). **Kind:** new game contract + application path + validation tests. **Parent:** [mechanics evolution](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/mechanics-evolution-program.md). Provider spend: zero. GM02 admission is a separate Change.
 
 ## Cursor first-screen brief
 
 > **Source map:** [application entry](../../../../../../packages/application/README.md), [Storyteller tasks](../../../../../../docs/technical/storyteller-runtime.md#profile-and-task-contracts), current [rules/admission](../../../../../../docs/technical/rules-and-activities.md#content-and-authority); inspect §packages/storyteller/src/tasks/playable-proposal.ts§ and §packages/contracts/src/interactions.ts§ before designing any new schema.
-> **Target:** [custom intentions](../../../../../../docs/programs/experience/patterns/free-intent-future.md#one-safe-conceptual-pipeline), [game authority](../../../../../../docs/product/foundations/game-rules.md#authority).
+> **Target:** [custom intentions](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/free-intent-future.md#one-safe-conceptual-pipeline), [game authority](../../../../../../docs/product/foundations/game-rules.md#authority).
 > **Known trap:** raw player words can request impossible outcomes, invent canon, leak private facts or act as prompt injection. A proposal costs provider resources but must **not** commit fictional time/effects.
 > **Scope:** **NO CODE PERMISSION**. Plan one safe read/interpret/reject/review lifecycle, no action execution.
 
@@ -27,7 +27,7 @@ The request must never mutate HP/items/facts/position/time, create an active act
 
 ## Source/baseline
 
-- Product [agency challenge](../../../../../../docs/programs/experience/foundations/mechanics-reassessment.md#challenge-1-does-a-menu-only-player-have-enough-agency).
+- Product [agency challenge](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/mechanics-reassessment.md#challenge-1-does-a-menu-only-player-have-enough-agency).
 - Technical [storyteller task admission](../../../../../../docs/technical/storyteller-runtime.md) and [usage policy](../../../../../../docs/technical/usage-policy.md).
 - Current generated plans are bounded, private and validated; existing user input does **not** own effects. Main at 3be49cc (2026-11-13) as inspection reference, not a verified implementation approach. Recheck packages/source before Ready.
 

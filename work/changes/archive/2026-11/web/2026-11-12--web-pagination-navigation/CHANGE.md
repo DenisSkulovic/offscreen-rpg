@@ -1,14 +1,14 @@
 # Change W10: Viewer-scoped useInfiniteQuery for stories, drafts and chronology
 
-> **Cursor first look (current source ≠ selected target):** [List owner map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F12](../../../../../../docs/engineering/targets/react-next.md#f12-list-history-and-navigation-consistency).  
+> **Cursor first look (current source ≠ selected target):** [List owner map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F12](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f12-list-history-and-navigation-consistency).  
 > **Pre-investigated trap:** Story list uses UUID `before`, drafts opaque `cursor`, history numeric `before`; do not normalize them into one cursor type.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W17. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W17 `main` (`94c58c7`).
+**State: Done.** Owner authorized via continue after W17. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W17 `main` (`94c58c7`).
 
 **Depends on:** W01 W02 W15; W03 for history viewer/resource identity.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F3 F11 F12**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G20 G27**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F3 F11 F12**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G20 G27**.
 
 ## Code outcome and owners
 

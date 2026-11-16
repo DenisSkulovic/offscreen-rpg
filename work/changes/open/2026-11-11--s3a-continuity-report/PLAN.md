@@ -2,13 +2,13 @@
 
 Change: [S3a continuity evidence report](../../../../work/changes/open/2026-11-11--s3a-continuity-report/CHANGE.md).
 Status: **Proposed, parked, not implementing**. The portfolio/engineering modernization roadmap takes priority over gameplay; this old S3a selection provides no current permission to edit code.
-Execution route: historical [Vvardenfell initiative](../../../../docs/history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
+Execution route: historical [Vvardenfell initiative](../../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
 
 ## Phases
 
 1. **Source revalidation (read-only):** confirm current report structure, local DB/API read behavior, exact note and document identity sources and what the final captured request contains. Re-check Git revision and test entrypoint. The source filename is `scripts/repo-tools/story-session-report.mjs`.
 2. **Small coding edit (future, separately authorized):** add only genuinely absent evidence fields, preserving existing format, source ownership and safe redaction. No new tracing system, side-effecting operation or semantic change.
-3. **Verification and convergence (future):** validate proposed-versus-published and catalogue-versus-packed negative cases, verify report stays read-only and record actual checks. Fold durable findings into [connected proof](../../../../docs/engineering/connected-poc-proof.md) rather than growing this plan.
+3. **Verification and convergence (future):** validate proposed-versus-published and catalogue-versus-packed negative cases, verify report stays read-only and record actual checks. Fold durable findings into [connected proof](../../../../research/legacy-engineering/connected-poc-proof.md) rather than growing this plan.
 
 ## Current checkpoint
 

@@ -1,12 +1,12 @@
 # SA05 | Trace exact evidence from source through final model packet and publication
 
-**State: Done (2026-11-14).** Evidence: [sa05 sample](../../../../../../docs/programs/storyteller/evidence/sa05-evidence-lineage-2026-11-14.md). Dependency SA01 done. Program [SA queue](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa05 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa05-evidence-lineage-2026-11-14.md). Dependency SA01 done. Program [SA queue](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** for a known old promise or gift, tests can distinguish *stored*, *eligible*, *discovered*, *exact loaded*, *in final provider request*, *cited/used in candidate*, and *published faithfully*. There is no “the model knew it” claim from a source that was pruned before final.
 >
-> **Authority:** [six-stage evidence pipeline](../../../../../../docs/programs/storyteller/context-and-retrieval.md#the-six-stage-retrieval-pipeline), [end-to-end proof](../../../../../../docs/programs/storyteller/context-and-retrieval.md#end-to-end-retrieval-contract-and-proof), [historical missed descriptive materialization](../../../../../../docs/engineering/connected-poc-proof.md).
+> **Authority:** [six-stage evidence pipeline](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#the-six-stage-retrieval-pipeline), [end-to-end proof](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#end-to-end-retrieval-contract-and-proof), [historical missed descriptive materialization](../../../../../../research/legacy-engineering/connected-poc-proof.md).
 >
 > **Source:** `packages/application/src/storyteller/context.ts::loadStorytellerContext`, `packages/storyteller/src/context/index.ts::boundStorytellerContext/contextRequestSections`, `application/storyteller/memory-exploration-controller.ts::runMemoryExploration`, `storyteller/src/tasks/memory-exploration.ts::memoryEvidenceUseSchema`, `application/storyteller/publication.ts`.
 

@@ -1,14 +1,14 @@
 # PX01 | Pure presentation resolver and stage styling foundation
 
-**State: Done (2026-11-13).** **Approval:** Owner asked to merge the presentation design and implement it. Cursor landed the pure V1 resolver, scoped stage tokens, and baseline-preserving StoryFrame prop. Parent: [presentation program](../../../../../../docs/programs/experience/presentation-implementation-program.md). Next: [PX02 expressive choices](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-expressive-choices/CHANGE.md) (landed in the same implementation).
+**State: Done (2026-11-13).** **Approval:** Owner asked to merge the presentation design and implement it. Cursor landed the pure V1 resolver, scoped stage tokens, and baseline-preserving StoryFrame prop. Parent: [presentation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-implementation-program.md). Next: [PX02 expressive choices](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-expressive-choices/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 
 > **Outcome:** a validated, optional, safe V1 presentation input can restyle the story *atmosphere and stage* through resolved tokens (including a distinctly different structured gradient) without changing JSX or game actions. Real Play with no directive stays equivalent to existing baseline.
 >
-> **Authority:** [runtime layers](../../../../../../docs/programs/experience/system/presentation-runtime.md#stable-architecture-and-dynamic-planes), [V1 language and resolution](../../../../../../docs/programs/experience/system/presentation-language.md#presentation-resolution-algorithm), [contrast](../../../../../../docs/programs/experience/system/presentation-language.md#foreground-and-text-contrast), [Living Stage](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md).
+> **Authority:** [runtime layers](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-runtime.md#stable-architecture-and-dynamic-planes), [V1 language and resolution](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md#presentation-resolution-algorithm), [contrast](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md#foreground-and-text-contrast), [Living Stage](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md).
 >
-> **Source entry:** [Play map](../../../../../../apps/web/src/features/play/README.md). Inspect `ui/story-frame.tsx`, `ui/story-frame.css`, `view.tsx`, `apps/web/app/style.css`, and one existing StoryFrame story/test. Preserve the selected [React/Next data boundary](../../../../../../docs/engineering/targets/react-next.md).
+> **Source entry:** [Play map](../../../../../../apps/web/src/features/play/README.md). Inspect `ui/story-frame.tsx`, `ui/story-frame.css`, `view.tsx`, `apps/web/app/style.css`, and one existing StoryFrame story/test. Preserve the selected [React/Next data boundary](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 >
 > **Exclude:** UI effects/illustrations/choice refactor (PX02/PX03), provider/contract changes, theme picker, global CSS migration, new data store or dependency shopping.
 

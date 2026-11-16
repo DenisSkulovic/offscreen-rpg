@@ -1,6 +1,6 @@
 # Change CH10 | QA journeys reconciled with executable mechanical scenarios
 
-> **Cursor first look:** [application developer map](../../../../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts:open/recordStage/finalize` and `qa-catalog/*`, [current UI](../../../../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C01/C10/C11/C15](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 9](../../../../../../docs/technical/chamber-lab-protocol.md#9-catalogue-evolution-and-handoff); [audit H02/H09/H12](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
+> **Cursor first look:** [application developer map](../../../../../../packages/application/src/developer-tools/README.md) → `qa-journeys.ts:open/recordStage/finalize` and `qa-catalog/*`, [current UI](../../../../../../apps/web/src/features/developer-tools/chamber/README.md). **Target:** [C01/C10/C11/C15](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 9](../../../../../../docs/technical/chamber-lab-protocol.md#9-catalogue-evolution-and-handoff); [audit H02/H09/H12](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps).
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH09. **Depends on:** CH01, CH06, CH09 (Done). QA journal schema/history untouched; curated stage bindings only.
 

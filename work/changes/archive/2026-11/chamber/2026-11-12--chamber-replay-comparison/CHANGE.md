@@ -1,6 +1,6 @@
 # Change CH16 | Replay, differential comparisons and laboratory proof
 
-> **Cursor first look:** [scenario-run protocol](../../../../../../docs/technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [application owner map](../../../../../../packages/application/src/developer-tools/README.md) and [target C03/C09/C10/C16](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16). **Source gap:** [H04/H08/H14](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** matching raw UUIDs, timestamps or Storyteller prose is not proof of mechanical correctness.
+> **Cursor first look:** [scenario-run protocol](../../../../../../docs/technical/chamber-lab-protocol.md#6-observations-assertions-and-reports), [application owner map](../../../../../../packages/application/src/developer-tools/README.md) and [target C03/C09/C10/C16](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16). **Source gap:** [H04/H08/H14](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** matching raw UUIDs, timestamps or Storyteller prose is not proof of mechanical correctness.
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH15. **Dependencies:** CH04/CH06/CH07/CH09/CH11/CH12/CH15 (Done); CH13 blocked for live connected claims. Provider spend none.
 
@@ -16,7 +16,7 @@ Make an observed Chamber failure **replayable** from a versioned scenario+fixtur
 - Compare stable domain outcomes (time earned, effect/reward count, revision, authorizations, receipts, public view and causal ordering). Show exactly which volatile IDs/timestamps were normalized. Keep raw authoritative values in original run evidence.
 - Matching outputs do not establish a pass unless their **named invariant** is satisfied. Human narrative/prose differences remain labeled subjective and excluded from mechanical equality.
 - Report actual services started, cold/warm elapsed time and evidence tier for Bench/Sandbox/Connected. No live provider call or destructive user DB operation.
-- At exit, map [C01–C16](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16) to demonstrated, blocked or design-only evidence, not decorative checkmarks.
+- At exit, map [C01–C16](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16) to demonstrated, blocked or design-only evidence, not decorative checkmarks.
 
 ## Proof and limits
 

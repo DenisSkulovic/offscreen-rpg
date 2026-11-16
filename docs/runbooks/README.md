@@ -7,4 +7,4 @@ Source-adjacent package procedures may remain beside code.
 | --- | --- |
 | [Local development](local-development.md) | How do I run and check the portfolio locally? |
 
-Legacy: [docs/operations/](../operations/README.md) until P5/P6.
+Legacy: [docs/operations/](../../docs/runbooks/local-development.md) until P5/P6.

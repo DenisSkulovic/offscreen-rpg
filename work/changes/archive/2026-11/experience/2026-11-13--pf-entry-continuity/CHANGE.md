@@ -1,12 +1,12 @@
 # PF03 | Preserve a safe entry purpose across authentication
 
-**State: Done (2026-11-13).** Safe allowlisted `next` through `/sign-in` and Better Auth `callbackURL`; `requireViewer` + middleware preserve path. No Nest identity change. Parent: [entry program](../../../../../../docs/programs/experience/platform-entry-implementation-program.md).
+**State: Done (2026-11-13).** Safe allowlisted `next` through `/sign-in` and Better Auth `callbackURL`; `requireViewer` + middleware preserve path. No Nest identity change. Parent: [entry program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Goal:** anonymous “Create a real story” and authorized story/deep-link navigation survive sign-in and return the user to their *intended safe destination*, not unconditionally to /stories, without open redirects or replaying charged actions.
 >
-> **Authority:** [preview-to-play handoff](../../../../../../docs/programs/experience/flows/preview-to-play.md#the-auth-handoff-keep-the-users-original-purpose), [platform journey J-P02](../../../../../../docs/programs/experience/platform-journeys-and-states.md#journey-j-p02-curious-visitor-wants-real-play), [client identity](../../../../../../docs/technical/client-and-identity.md#authentication-and-sessions), [React/Next auth boundary](../../../../../../docs/engineering/targets/react-next.md).
+> **Authority:** [preview-to-play handoff](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/preview-to-play.md#the-auth-handoff-keep-the-users-original-purpose), [platform journey J-P02](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-journeys-and-states.md#journey-j-p02-curious-visitor-wants-real-play), [client identity](../../../../../../docs/technical/client-and-identity.md#authentication-and-sessions), [React/Next auth boundary](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 >
 > **Sources:** `apps/web/src/features/session/sign-in-button.tsx`, `apps/web/app/sign-in/page.tsx`, `apps/web/src/server/viewer.ts`, `apps/web/app/(authenticated)/layout.tsx`, existing Better Auth client config and route tests; inspect only closest callers.
 >

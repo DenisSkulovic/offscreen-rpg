@@ -1,14 +1,14 @@
 # Change W15: TanStack Query v5 foundation, authenticated SSR hydration and query keys
 
-> **Cursor first look (current source ≠ selected target):** [Server/browser transport map](../../../../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../../../../../docs/engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
+> **Cursor first look (current source ≠ selected target):** [Server/browser transport map](../../../../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
 > **Pre-investigated trap:** Future Query provider not installed; per-request SSR QueryClient must never be global.  
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. Owner authorized Cursor execution on **2026-11-12** after W02. Verified with `pnpm test:fast` + `@offscreen/web` typecheck. Full production HTML/network proof remains **W14**; list/draft route migrations follow in later packets; TanStack ESLint wiring deferred to **W13**.
+**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. Owner authorized Cursor execution on **2026-11-12** after W02. Verified with `pnpm test:fast` + `@offscreen/web` typecheck. Full production HTML/network proof remains **W14**; list/draft route migrations follow in later packets; TanStack ESLint wiring deferred to **W13**.
 
 **Dependencies:** W01 + W02. **Required before W03–W12 feature migrations**.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F1 F2 F3 F4 F10 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G27 G16**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F1 F2 F3 F4 F10 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G27 G16**.
 
 ## Code-bearing outcome and ownership
 
@@ -17,7 +17,7 @@
 
 ## Binding implementation design
 
-**Install @tanstack/react-query v5 and @tanstack/eslint-plugin-query.** One client QueryClient per authenticated browser session, one *new* server QueryClient per private SSR request, no server-global cache. Use `prefetchQuery` for singular story/draft resources and **`prefetchInfiniteQuery` for paginated first pages**, then `dehydrate`/`HydrationBoundary` for SSR; match the browser `useQuery`/`useInfiniteQuery` key and cached data shape exactly. Server and browser query functions use **same validated DTO and key** with separate transport; keep the server-reader module `server-only`. Place Query provider only inside authenticated route group, not all public pages. Implement exact [selected target](../../../../../../docs/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract): viewer ID key prefix, `staleTime` 5s story / 15s draft+list / 30s history / 300s catalogue, `gcTime` 5min, no persistence, GET transient retry at most once, mutation retry=0/networkMode=always. Ensure Query devtools if enabled are dev-only; do not ship private payloads through telemetry.
+**Install @tanstack/react-query v5 and @tanstack/eslint-plugin-query.** One client QueryClient per authenticated browser session, one *new* server QueryClient per private SSR request, no server-global cache. Use `prefetchQuery` for singular story/draft resources and **`prefetchInfiniteQuery` for paginated first pages**, then `dehydrate`/`HydrationBoundary` for SSR; match the browser `useQuery`/`useInfiniteQuery` key and cached data shape exactly. Server and browser query functions use **same validated DTO and key** with separate transport; keep the server-reader module `server-only`. Place Query provider only inside authenticated route group, not all public pages. Implement exact [selected target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract): viewer ID key prefix, `staleTime` 5s story / 15s draft+list / 30s history / 300s catalogue, `gcTime` 5min, no persistence, GET transient retry at most once, mutation retry=0/networkMode=always. Ensure Query devtools if enabled are dev-only; do not ship private payloads through telemetry.
 
 ## Bounded implementation sequence
 

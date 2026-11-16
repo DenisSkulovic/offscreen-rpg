@@ -1,11 +1,11 @@
 # UX09 | Public demo: show the dream quickly, without faking persistence
 
-**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX09 (StoryFrame preview + honest reset label). **Kind:** public presentation and browser-only scripted demo + tests. **Parent:** [experience program](../../../../../../docs/programs/experience/implementation-program.md), M3. **Dependencies:** UX02/UX03 interaction grammar (Done).
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX09 (StoryFrame preview + honest reset label). **Kind:** public presentation and browser-only scripted demo + tests. **Parent:** [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M3. **Dependencies:** UX02/UX03 interaction grammar (Done).
 
 ## Cursor first-screen brief
 
 > **Source map:** [App Router](../../../../../../apps/web/app/README.md), inspect apps/web/app/demo/story-demo.tsx, scene-view.tsx, script.ts, content/script.json and demo/page.tsx.
-> **Primary target:** [first-run visitor path](../../../../../../docs/programs/experience/flows/creation-and-first-run.md#visitor-path-prove-the-fantasy-before-demanding-configuration), [portfolio](../../../../../../docs/programs/experience/foundations/experience-thesis.md#portfolio-criterion).
+> **Primary target:** [first-run visitor path](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/creation-and-first-run.md#visitor-path-prove-the-fantasy-before-demanding-configuration), [portfolio](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/experience-thesis.md#portfolio-criterion).
 > **Known trap:** /demo is already a **browser-only authored script that resets on refresh**. It is not authenticated persistent server play, a proof of model quality, or actual time-work execution. Never imply that it is.
 > **Scope:** **Authorized for UX09.** No paid providers, hosted write API, real story persistence or backend scheduling.
 
@@ -28,7 +28,7 @@ Alternative to test: the demo could focus on the **interruption/decision** (more
 
 ## Authority, baseline and scope
 
-[Game vision: portfolio link](../../../../../../docs/product/foundations/vision.md#why-build-it), [player experience prototype](../../../../../../docs/product/journeys/player-experience.md#arriving-and-returning), [UX first-run](../../../../../../docs/programs/experience/flows/creation-and-first-run.md), [navigation](../../../../../../docs/programs/experience/spaces/information-architecture.md).
+[Game vision: portfolio link](../../../../../../docs/product/foundations/vision.md#why-build-it), [player experience prototype](../../../../../../docs/product/journeys/player-experience.md#arriving-and-returning), [UX first-run](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/creation-and-first-run.md), [navigation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/information-architecture.md).
 
 Existing demo code exists under apps/web/app/demo and is separate from Story mode. Inspected main 8c91618 2026-11-13; no visual/browser playtest was run. Reinspect current script and decide whether to replace it **entirely** to reach target, not preserve it because Codex authored it.
 

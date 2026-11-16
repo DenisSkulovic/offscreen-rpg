@@ -1,12 +1,12 @@
 # AD05 | Permission-safe campaign and AI operation drilldown
 
-**State: Done (2026-11-14).** Evidence: [ad05](../../../../../../docs/programs/admin/evidence/ad05-game-ai-diagnostics-2026-11-14.md). Code-bearing redacted diagnostics. **Depends on:** AD01–AD04 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad05](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad05-game-ai-diagnostics-2026-11-14.md). Code-bearing redacted diagnostics. **Depends on:** AD01–AD04 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** permitted staff can follow Player 360 → legacy-owned campaign → actual generation/attempt/publication status, with meaningful source coverage, without receiving raw private narration, model prompts or noncommitted proposals.
 >
-> **Authority:** [Game forensics](../../../../../../docs/programs/admin/gameplay-worlds-product.md), [AI operations](../../../../../../docs/programs/admin/ai-engineering-operations-product.md), [V1 DTO](../../../../../../docs/programs/admin/technical/core-v1-contracts.md), [read/source policy](../../../../../../docs/programs/admin/technical/read-models-and-privacy.md).
+> **Authority:** [Game forensics](../../../../../../evidence/inspections/admin-program-essays-2026-11/gameplay-worlds-product.md), [AI operations](../../../../../../evidence/inspections/admin-program-essays-2026-11/ai-engineering-operations-product.md), [V1 DTO](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md), [read/source policy](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/read-models-and-privacy.md).
 >
 > **Start/revalidate:** `packages/db/src/schema/{stories,campaign,generations,storyteller}.ts`, `packages/application/src/stories/{reads,public-events}.ts`, `apps/api/src/modules/stories/controller.ts`, and AD03 Admin app/API. For UI use the AD04 Admin feature map, not ordinary player Play.
 >

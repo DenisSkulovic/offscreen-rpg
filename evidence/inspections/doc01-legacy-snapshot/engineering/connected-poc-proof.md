@@ -1,0 +1,185 @@
+# Connected generative POC proof
+
+The POC is not established by schemas, canonical storage, retrieval benchmarks or isolated provider responses. It is established when one ordinary campaign survives a short sequence of real generated Storyteller turns while deterministic application mechanics remain authoritative and the resulting story fulfills its selected Storyteller and campaign commitments well enough that the owner wants to continue that configured experience.
+
+This document owns that proof. The broader playthrough atlas supplies design pressure; feature plans own implementation slices; QA journeys own repeatable execution evidence.
+
+## Latest evidence — 2026-09-24
+
+The connected POC has **not passed**. The strongest recorded current-contract run is `storyteller.v16` story `0da94438-d05b-4c86-821c-0dc61405bb4c`. It contains six successful Sol generations and a separate deterministic completion passage. October 23 rediscovery inspected its saved headless trajectory and raw response artifacts; it did not rerun gameplay or recheck provider accounting. The memory reinspection below corrects the earlier summary.
+
+| Boundary | Observed result | What it establishes |
+| --- | --- | --- |
+| Opening → warehouse work | Authored warehouse commitment selected; completion at fictional second 1,800; six septims paid once | Connected generation, admitted mechanics and elapsed time for this scenario |
+| Three clerk exchanges | Published at seconds 1,875, 1,925 and 1,975 with coherent references to the disputed crate and slate | Short-term scene continuity, not durable memory |
+| Departure | Published at second 2,015; four new choices; saved trajectory ends here | A coherent exit, not a successful later return |
+| Memory proposals | Five consequence responses proposed no descriptive documents, but created and twice updated a clue note; departure restarted with no document recall cues | Materialization is unproved; this is not evidence that all memory was absent or lost |
+| Local accounting | Final story projection: USD 0.198915 settled, zero reserved | Historical story-scoped ledger observation; not today's external balance or the whole day's spend |
+
+The local trajectory is `data/story-agent/<storyId>.jsonl`; canonical objects live under the ignored `data/story-local-documents/` root, and selected provider diagnostics under `data/story-local-evidence/`. Full generation, attempt, publication and root identities are in the local database and inspection tooling described in [development](../operations/development.md). These private artifacts are not guaranteed in a fresh clone. Do not reset the local database to re-create evidence before preserving what an investigation needs.
+
+**When gameplay development resumes**, the parked [S3 continuity plan](../history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity) calls for provider-free evidence of retained state, selection and final request packing before implementing the dependency guarantee. That is a future **gameplay-evaluation sequence**, not the present [portfolio-engineering priority](../../TODO.md). Then prove a maintained Socucius interaction through unrelated play, departure and return before the sustained acceptance run. Earlier diagnostics below explain how authority and transport boundaries were discovered; their old task versions and measurements must not be presented as current regressions or fresh balances.
+
+### Historical Storyteller contract evolution — 2026-09-24
+
+The September 24 experiments were **narrow diagnostic runs**, not successful sustained-play acceptance. The table is a compact record of why successive task versions changed; it does not imply those older versions are currently active. The original detailed experiments, packet ceilings, model calls and competing explanations remain in the [archived plan at revision `05c60fb3`](https://github.com/DenisSkulovic/offscreen-rpg/blob/05c60fb334e2432bde02197dfe18ab4f4773eff0/docs/features/2026-09-19--00-26--storyteller-agency-and-taste/PLAN.md). Private provider payloads and player prose are not in Git.
+
+| Contract | Observed failure or correction | Narrow outcome and boundary |
+| --- | --- | --- |
+| v12 baseline | At a 2,048-token output ceiling a valid-looking consequence could be truncated; another plan deferred its promised explanation into future prose. A clue note reached 400 characters and ended mid-sentence. | Story mode gained explicit input/output caps and the v13 compact-note rewrite instruction. Increasing output limits is not proof of intention fulfillment. |
+| v13, three Sol generations | Under reviewed 16k-input/4,096-output limits, compact notes were complete at 193 and 220 characters and elapsed time/choices were coherent. Several success branches still promised unspecified future facts instead of freezing a result. | Semantic outcome incompleteness remained; the run stopped rather than spend on a repeat of the same finding. |
+| v14, three Sol generations | Finite action outcomes became concrete, but one process interval still said only “useful observation,” and updates cited old passages for facts first revealed in the new consequence. | v15 tightened process-result specificity and required `current`/arrival provenance for new facts. |
+| v15, two Sol generations | The inspected consequence included explicit recurring work outcomes, a six-septim completion and a complete 201-character note citing `current`. | Targeted authority and provenance checks passed. This did not establish long-term recall or general model quality. |
+| v16, six Sol generations | A prior run had copied the settled `+6 septims` reward into every unrelated next plan. The revised admission guard prevented that replay; a fresh warehouse shift earned six septims once in 1,800 fictional seconds. | Mechanic-replay check passed, but the clerk exchanges proposed no descriptive identity/relationship/thread documents. Later return/recall was not exercised. See [October memory correction](#memory-reinspection--2026-10-23). |
+
+**Recorded costs, not present balances:** v13 three-call experiment USD 0.103290; v14 USD 0.120856; v15 two calls USD 0.064658; fresh v16 six calls USD 0.198915. These are separate dated experiments, not a new total or current account authorization. Account reconciliation/budget history is preserved in the archived plan and prior evidence; no extra paid comparison is indicated before the S3 continuity handoff.
+
+Earlier Luna responses were uneven: Quiet Eerie Mystery maintained atmosphere better than Comedy or Driven Adventure; Sol's Character-Driven Drama was more grounded but sometimes overexplained dialogue. Some Luna responses devoted far more serialized bytes to private plan branches than the public scene. These observations motivate **controlled comparisons**, not a model ranking or a universal style mandate.
+
+### Memory reinspection — 2026-10-23
+
+The initial rediscovery repeated an incorrect checkpoint claim that the v16 story created no note and lost its recall context on departure. Reading the saved provider envelopes contradicted it. All five consequence responses have empty `documentChanges`; their `currentNotes` are **patches**, not snapshots:
+
+| Response received, 2026-09-24 UTC | Request SHA-256 prefix | Note patch | Active scene |
+| --- | --- | --- | --- |
+| 11:43:53.950 | `fc3e8045f063` | Create `warehouse-number-mismatch` | Continue |
+| 11:44:52.389 | `0f8144532700` | Update that note | Continue |
+| 11:45:57.965 | `08314ab6c3b4` | Update that note | Continue |
+| 11:46:51.389 | `74dc714ce6d8` | Empty: no mutation | Continue |
+| 11:49:10.150 | `566d91409383` | Empty: no mutation | Restart, no document recall cues |
+
+These identities are in the ignored `data/story-local-evidence/provider-response-gen-179025*.json` wrappers; the opening response precedes them at 11:43:07.902 UTC (`5f348f35a9a4`) and uses a different result envelope. No private prose needs to be copied into Git to reproduce this distinction.
+
+[Continuity patch application](../../packages/storyteller/src/context/continuity.ts) preserves existing notes unless explicitly retired. [Publication](../../packages/application/src/storyteller/publication.ts) applies notes in the same transaction as the passage/offer and separately changes the scene anchor. [Context loading](../../packages/application/src/storyteller/context.ts) carries retained notes and merges active-scene cues even for mechanical consequences. Therefore scene restart alone is not evidence that all useful memory disappeared.
+
+**Evidence limit:** the trajectory records published passages corresponding to these responses; raw envelopes prove their proposed patches. Docker was unavailable during this reinspection, so persisted note state, generation-to-publication linkage and the final successor request were not freshly queried from the database. There is no return turn in the saved trajectory. The source supports note retention on successful publication; actual later recall and progressive descriptive materialization remain unproved. The absence of descriptive proposals cannot be fixed solely by retrieving documents that were never created.
+
+### Evaluation harness and provider compatibility — September 2026
+
+These are dated **diagnostics, not proof of connected gameplay**. Exact packet hashes, ledger amounts and failure reproductions remain in [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/2026-09-18--17-27--conservative-live-model-evaluation/PLAN.md). The acceptance ladder is [P0–P4](#execution-ladder).
+
+| Finding | Historical observation | Retained engineering conclusion |
+| --- | --- | --- |
+| One request does not prove a campaign | Gate 1 could release one reviewed opening; early run plumbing had no demonstrated operator-selected opening → Start → continuation under a shared envelope. | Use ordinary authenticated APIs to prove a finite interactive session before another paid live run. |
+| Endpoint/accounting mismatch | A Sol endpoint charged cached input writes above ordinary input rates; held-manifest and runtime reservations disagreed, producing pre-transport budget stops. | Snapshot exact provider endpoint/tier and all ordinary/cache-write/cache-read/output prices. Manifest, admission and runtime need one conservative reservation rule. |
+| Structured JSON is insufficient | Mistral-Nemo and verified-free Nex-route samples produced single-letter options, malformed nesting, missing fields or incorrect arrays despite advertised structured output. | Local structural, semantic and basic human-readable field checks remain necessary. |
+| Provider contract vs persisted contract | A v6 prompt asked for stored-only note/document arrays even though the opening provider schema accepted only `version + scene`. | v7 aligned the example with the actual provider-facing schema; one pinned zero-price generation produced three readable paragraphs and four distinct options. |
+| Failure evidence and money | Invalid provider responses needed a bounded private raw-envelope artifact and content-free diagnostic stage/path; reported zero price alone did not establish settlement. | Never silently coerce output, auto-retry, suppress uncertain billability or treat a free label as a settled zero charge. |
+
+The v7 one-call result used 710 prompt / 398 completion tokens, zero reasoning and a reconciled zero charge **at the time of that run**. It was not a 10–15-turn POC, nor are past route prices/account balances new spending authority.
+
+## First proof session
+
+Use the maintained Seyda Neen start: the player arrives as a released prisoner in a pinned world/rules/start package. Scenario content may name Vvardenfell, local people, places and opportunities. Shared runtime code must not branch on Seyda Neen, employment, human biology, Earth time or a chosen plot.
+
+The POC is ready only when the owner can play a **legitimately enjoyable 10–15 committed Storyteller-turn story that matches its captured profile, direction, opening and established fiction**, counting the generated opening as turn one. Enjoyment here is not a hidden demand for excitement, speed or drama: a deliberately quiet, dull or chaotic configuration succeeds by realizing that intent coherently. A model round used for memory discovery is not another Storyteller turn; a quiet mechanical settlement without narration is not falsely counted as one. Mechanical correctness and valid prose are prerequisites, not substitutes for profile adherence or the owner's desire to continue the configured experience.
+
+Across the session, require:
+
+1. a coherent opening grounded in the pinned start/world/rules files;
+2. at least one conversational or observational choice with a generated continuation;
+3. at least one server-admitted mechanical action whose roll/effects come from code and whose generated consequence narrates the saved receipt;
+4. at least one meaningful elapsed-time path—an admitted activity, wait or travel process—not merely prose saying that time passed;
+5. at least one canonical change, such as a current character/item/place/thread/world record or typed engine state, visible to a later turn;
+6. a later callback to an earlier detail or changed fact, recovered from bounded current context or memory exploration rather than invented recollection;
+7. choices that remain meaningfully distinct, include a plausible quiet/non-escalating path when fiction permits it, and never trap the player behind a compulsory paid narration loop.
+8. at least one ordinary-life commitment with a substantial fictional duration—such as a warehouse shift—whose real wait is derived from the selected speed, whose progress remains visible for hundreds of one-second scheduler ticks when configured that way, and whose admitted completion produces a durable result such as earned coin.
+
+Remaining timing/profile acceptance is coordinated in S4 of the [parked Story continuity plan](../history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity): exercise timed work and continuation under a captured profile and a legitimate contrasting profile. The fixed-second implementation and one live warehouse result do not establish owner enjoyment, profile robustness or sustained recall. The retired timing plan's remaining acceptance is preserved here, not waived.
+
+The first session may use an authored start package and authored mechanical definitions. Arbitrary premise-to-mechanics generation, general travel graphs, full combat, polished UI, semantic search and a ten-thousand-turn history are not prerequisites. The proof is invalid if the harness patches generated output, writes state directly, selects fixture-only backdoors or adds scenario-name branches to shared policy.
+
+## Execution ladder
+
+### P0 — Connected scripted rehearsal
+
+Drive the exact session shape with the offline source through ordinary authenticated application commands. Confirm that opening, Start, selections, mechanics, activity/time, consequence publication, canonical documents and later context can connect without direct database mutation. This proves machinery, not model quality.
+
+### P1 — Held-packet rehearsal
+
+Run the same starting state with provider execution held before every dispatch. Inspect each exact packet's purpose, source revision, context/document manifest, request/schema size, model/provider route and cumulative operation allowance. The harness must support an explicit operator-selected option; repeatedly choosing array index zero is not a gameplay strategy.
+
+### P2 — Three-turn live smoke
+
+After all spending gates are clear, run one opening and two selected continuations with a currently verified route. Reconcile every attempt before releasing the next. Stop on invalid output, uncertainty, unsupported mechanics, incoherent authority or missing evidence. This is transport/prompt compatibility evidence, not the POC.
+
+### P3 — Five-turn diagnostic
+
+From one reviewed opening, complete five Storyteller turns as an intermediate diagnostic. The run has one finite captured allowance and no fallback, automatic retry, judge or background inference. Human selection between generated choices is allowed and preferred. A failed run remains evidence and may be debugged offline; it is never silently repaired into a pass. Passing this stage does not establish the POC.
+
+### P4 — Enjoyable 10–15-turn proof and fork pressure
+
+Only after P3 is repeatable, continue through 10–15 turns and fork one useful checkpoint to try a materially different choice. The owner judges separately whether the run honored its captured creative commitments and whether that configured experience was enjoyable and worth continuing. This also tests continuity, branch isolation and reuse of a good story position without requiring a giant history.
+
+## Compact evidence ledger
+
+Record one row per Storyteller turn rather than requiring a reviewer to reread raw traces:
+
+| Evidence | Required compact value |
+| --- | --- |
+| Position | story/branch, source revision, tick, current passage and interaction kind |
+| Player act | selected public label/intent identity and whether it is narrative, mechanical or process control |
+| Context | packet hash, total bytes, section byte counts, canonical roots, loaded/omitted handles and memory rounds/reads |
+| Generation | requested/reported model, duration, outcome/diagnostic, generated tokens and provider identity |
+| Authority | saved roll/receipt, admitted effects, elapsed ticks, publication status and hold/recovery state |
+| Change | concise canonical document and typed-state diff; no duplicated raw prose |
+| Economy | per-attempt and cumulative charge, reconciliation and remaining captured allowance |
+| Review | one short note for coherence, specificity, agency, continuity and desire to continue |
+
+Raw packets, responses and canonical objects remain separately inspectable by identity. The compact ledger links them and highlights deltas; it does not copy all content into another giant report.
+
+## Current readiness and blockers
+
+Implemented foundations include exact held packets, strict structured results, one opening plus one continuation in the live runner, deterministic mechanical receipts, activities/time, canonical start/world/rule/campaign documents, bounded context and memory exploration, persistent accounting and publication recovery.
+
+The proof is **not ready or passed**. Two historical Sol stories and their weaker Luna contrasts showed better prose, choice quality, continuity and process selection for Sol in those samples; that is not a general model ranking. Fresh v16 story `0da94438-d05b-4c86-821c-0dc61405bb4c` supplies the strongest current authority evidence: six successful Storyteller generations, an immutable 1,800-fictional-second warehouse process, one six-septim payment, one occurrence closure and no settled-effect replay in later plans. Three meaningful exchanges with the same clerk proposed no descriptive identity, relationship or thread records; a clue note did exist in the proposed continuity patches. Departure restarted the scene with no document recall cues. September inspection reported a manifest containing only the start identities and release thread; that manifest was not rechecked in October. This is a useful v16 checkpoint, not proof of either successful or failed later recall.
+
+Those runs used an opening task that received the authored prose, character and facts but not the executable plans, and asked the model to recreate them. The successful Sol opening therefore changed the maintained warehouse plan's action identity, capacity, condition policy and occurrence scope, omitted the effect that closes `warehouse-shift-available`, and added three no-op quantity effects. Luna instead admitted a full 1,800-second finite action followed by a separately invented contribution process that consumed another 2,100 seconds. Both outputs passed the structural validator. The provider-free fixture already used the exact authored plan, so its payment proof did not cover that live authority boundary.
+
+The persisted historical Sol state still says `warehouse-shift-available: true`; only its model-invented occurrence scope prevents the exact same plan from repeating. Opening admission now captures the fixture's authorized plans on the task. The provider sees a reference summary, and validation substitutes the immutable plan when the model selects its key. A fresh plan remains valid only for a commitment whose key and process action id are not already authorized. A reconstructed body for a supplied key is rejected. The fresh live opening selected both `work-warehouse-shift` and `ask-about-the-road`; warehouse completion reached game second 1,800, paid six septims once and closed availability. That authority boundary is now live-proved for this case.
+
+Other concrete blockers found in the preserved evidence:
+
+- The Luna story's final response passed provider JSON-schema decoding and stopped normally, then failed application policy because it added a proficiency modifier. Immediate-check schemas now transmit advantage and disadvantage as false and modifiers with a maximum of zero, matching the validator. Process checks can still carry their own modifiers.
+- A parseable, schema-complete Luna opening was discarded because the model padded its output and reported `finish_reason: length`. A length result is now accepted only when the content is complete JSON that passes task validation. Truncated JSON still fails.
+- Settled invalid output that was actually billed still consumes its one-shot envelope. The two observed Luna failures were the modifier mismatch and the padded length result, which the schema and length rules now prevent. A billed invalid candidate still needs an explicit repair round before another 10–15-turn run.
+- OpenRouter twice returned an HTTP-200 `provider_unavailable` envelope for Sol. That envelope is now a zero-charge unsent release, so the funding account stays open and the existing intention retry can dispatch again. Any other malformed HTTP-200 body remains uncertain.
+- Consequence packets are roughly 46 KB. About 22 KB is the general output schema; the model receives all prior unselected offer branches and a growing active-scene transcript, while normal turns receive no prompt-cache hit. The five successful Sol calls transmitted about 220 KB, consumed 38,276 prompt and 4,799 completion tokens, cost USD 0.125934 and averaged 22.9 seconds. Narrow capability-specific schemas and omit superseded branches before shrinking creative context.
+- Model packets now name the campaign coordinate `elapsedFictionalSeconds`, and the default elapsed calendar labels that coordinate as fictional seconds. Internal persistence fields still use `tick`. Player chrome uses the same fictional-second wording. A campaign whose stored calendar unit is still named tick keeps that stored label until its settings are recreated; the provider projection rewrites the word tick in the label it sends.
+- Contribution boundaries became seven repetitive story passages in the Luna history. Routine work evidence belongs in the activity ledger and a bounded completion/return summary unless a boundary creates an actual scene.
+- Darvyn's name survives in a current continuity note but no durable identity or relationship document was created. The run has not proved progressive materialization, later retrieval or a callback after leaving and returning.
+- The v16 clerk sequence leaves descriptive materialization and later recall unproved. Its clue note is a separate memory channel and empty later patches do not retire it. Mechanical action plans lack narrative choices' explicit document handoff, but active-scene cues and retained notes still feed their context. S3 must trace creation, publication, selection and final packing separately; a sidecar alone cannot establish materialization or guarantee request coverage.
+- The fresh consequence proposed a meaningless zero-delta quantity change beside a real departure effect. New proposal admission now rejects zero deltas, while the storage schema remains able to read already-persisted offers; the contract states that omission means no quantity change.
+- After selecting the tally inquiry, Sol produced grounded prose and useful choices but repeated that zero-delta pattern in one sibling road plan. The exact settled response was rejected with `invalid_output`, leaving the 60-second action committed and the story held. Prompt `storyteller.v10` named the rule but its schema still admitted zero. That historical one-shot task remains unrepairable, but newly captured policy-authorized tasks now have one explicit correction round under the original operation ceiling. Live story `23ea2420-d8e5-41a5-8c83-9346184e52fe` proves the opening repair case: the same zero-delta defect was retained, corrected without changing valid prose/plans, settled across exactly two attempts and published once. Its following 60-second consequence succeeded in one round. A first `storyteller.v11` probe decoded the compact mechanical-opening envelope and did not repeat the zero-delta defect, but semantic admission rejected a road plan that required one septim while the captured character had zero. The next revision indexed permitted prerequisites to captured state; its first transport check exposed an untyped empty array-item schema and OpenAI rejected it before inference at zero charge. After retaining typed items on closed arrays, a fresh one-shot v11 Sol opening passed strict transport and semantic admission with five plans, including the exact authorized warehouse process. Generation `76d3839b-271e-4e14-802c-9073765cc820` settled at 17,796 microusd with matched accounting, 3,591 prompt and 882 completion tokens, and zero reasoning. The opening follows the Quiet Eerie Mystery profile well. Its five-second directions plan was traced to authored fixture content rather than model estimation and is now 60 seconds; the related first road segment is now 900 seconds. The model's thirty-minute close inspection came from a packet without world-scale calibration beyond the warehouse shift, so Vvardenfell now owns bounded human-scale guidance rather than the engine acquiring a universal default. The fixed evaluation path now imports and attaches the same pinned start package as Story mode. Provider-free held generation `9eeaf3fe-d19c-4b1b-a5a4-5cfb0f6d7350` confirms that its 36,666-byte request contains both the world calibration and selected generic time rule, with zero provider attempts or spend. Departure without a typed location effect motivated `storyteller.v12`: fresh plans now declare branch-specific typed fact transitions and admission requires exact matching effects. Generation `7415d287-7c03-475f-ab8f-887c37c25799` passed strict transport and admission with five plans, 6,626 prompt and 673 completion tokens, zero reasoning and matched 23,294-microusd accounting. Its fresh plans used empty transition lists; the only nonempty transition came from an exact authorized directions reference, so a fresh model-authored transition remains unproved. The sample also exposed intention-resolution and durable-discovery questions for the short connected path. Sustained 10–15-turn play and later recall remain acceptance gaps.
+- Resetting the disposable local database exposed two stale raw-SQL field names in story listing and the session inspector. Both now use the fictional-second schema names; this was local tooling drift, not a provider or gameplay failure.
+
+The corrected Sol run is real provider evidence. Its passages reference settled OpenRouter generations; the warehouse completion passage is a deliberately deterministic engine result. No story output was patched or replaced. Two failed provider deliveries were manually reconciled only in the accounting state after independent provider checks.
+
+### Corrected Sol compact ledger
+
+| Turn | Position and player act | Provider evidence | Authority/change | Review |
+| --- | --- | --- | --- | --- |
+| 1 | Tick 0 opening; five choices | packet `1ea67b74`, 35,057 bytes, 26.3 s, $0.026331 | Live model recreated rather than referenced the warehouse plan | Strong grounded opening and agency; mechanical authority failed silently |
+| 2 | Select full warehouse shift; consequence at tick 1,800 | packet `ff7d50d0`, one confirmed-unsent overload then 17.6 s cached retry, $0.009029 | Six septims committed once; availability fact remained true | Strong concise closure; duplicated the factual completion passage |
+| 3 | Ask the laborer what a newcomer should know; tick 1,860 | packet `6aad5df6`, 46,825 bytes, 19.4 s, $0.029656 | Practical-advice note created | Specific, useful response; five distinct next intentions |
+| 4 | Offer to buy him a drink; tick 1,890 | packet `ad8b1419`, 46,965 bytes, 22.6 s, $0.029174 | No typed resource spend and no relationship record yet | Good boundary and reciprocity; final paragraph explains what dialogue already showed |
+| 5 | Ask his name; tick 1,920 | packet `09f91daf`, 46,605 bytes, 28.6 s, $0.031744 | Current note records Darvyn; no durable identity document | Strong continuity and six meaningful exits/continuations |
+
+Turn six selected “Ask Darvyn to choose a modest place” and advanced to tick 1,955, but its exact packet `ab33ded0` received a confirmed-unbilled provider-unavailable envelope. It is a committed player action with retryable narration, not a successful Storyteller turn.
+
+### Profile evidence
+
+The profiles did not fail uniformly. Luna's Quiet Eerie Mystery opening used the second stamp and record discrepancy to create restrained unease without forcing danger, while its Driven Adventure opening softened the available pressure until neither opportunity felt urgent. Three Absurd Action Comedy openings contained occasional jokes or comic comparisons but none delivered the profile's requested concrete disruption. Sol's Character-Driven Drama run consistently respected character boundaries, practical motives and grounded exits, although it often added an explanatory final paragraph after the dialogue had already carried the point.
+
+This pattern does not justify changing the shared Storyteller prompt. The comedy and adventure profiles already state their distinctive requirements, and the same Luna route followed the mystery profile more successfully. Treat route capability and instruction adherence as variables, preserve Sol's repeated explanatory endings as a narrow style hypothesis, and retest one profile-owned change at a time only after the authority and recovery defects are fixed.
+
+The next evidence tranche is provider-free S3 continuity work followed by the connected diagnostic:
+
+1. Authorized opening references are implemented and live-proved once. A selected key substituted the captured duration, effects, closure condition and occurrence identity through settlement.
+2. Immediate-check schemas now match the no-situational-modifier policy. Complete JSON with `finish_reason: length` is accepted. HTTP-200 `provider_unavailable` releases as unsent. A billed invalid candidate still needs one explicit repair round.
+3. Model and default player time say fictional seconds. Internal tick fields remain. Routine running activity boundaries now update activity state, roll history and the public projection without appending narrative passages; terminal completion, interruption and block passages remain meaningful history.
+4. establish the provider-free continuity trace and required-versus-optional packing contract, then carry bounded mechanical-choice document dependencies as application metadata from publication through acceptance to the final consequence request;
+5. use the maintained Socucius identity in a provider-free interaction → unrelated play → leave → return proof. Keep empty dependencies valid for worlds or scenes without social entities, and do not infer durable biographies from prose nouns;
+6. resume the 10–15-turn Sol acceptance campaign only after this handoff works, then evaluate narrow profile tuning. Preserve the current Sol tendency to end scenes with explanatory relational summaries as a hypothesis; do not hard-code a generic prose preference from one story.
+
+All latest live attempts are settled with zero reservation and no uncertain delivery. Further live comparisons remain deliberate experiments and follow the repository spending controls.

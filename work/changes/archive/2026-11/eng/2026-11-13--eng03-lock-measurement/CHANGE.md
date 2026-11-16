@@ -1,12 +1,12 @@
 # ENG03-M | Measure whether immutable DocumentStore I/O holds the story write lock
 
-**State: Done (2026-11-14).** Measured disposable LocalDocumentStore delay under `preparePendingActionNarration` story lock. **Evidence:** [eng03-lock-measurement-2026-11-14](../../../../../../docs/programs/engine/evidence/eng03-lock-measurement-2026-11-14.md). **Parent:** [ENG03 selected measurement/capture contract](../../../../../../docs/programs/engine/decisions/eng03-measurement-and-capture-contract.md). Full [ENG03](../../../../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) remains conditional; go/no-go from this run is `proceed-narrow-eng03-capture` (not auto-authorization of the full rewrite).
+**State: Done (2026-11-14).** Measured disposable LocalDocumentStore delay under `preparePendingActionNarration` story lock. **Evidence:** [eng03-lock-measurement-2026-11-14](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/eng03-lock-measurement-2026-11-14.md). **Parent:** [ENG03 selected measurement/capture contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-measurement-and-capture-contract.md). Full [ENG03](../../../../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) remains conditional; go/no-go from this run is `proceed-narrow-eng03-capture` (not auto-authorization of the full rewrite).
 
 ## Cursor first-screen
 
 > **Outcome:** provider-free, reproducible timing traces show whether 0/250/2000ms canonical object reads inside `preparePendingActionNarration` extend same-story `FOR UPDATE` hold and delay a *legitimate* concurrent writer, giving a documented go/no-go rather than premature refactor.
 >
-> **Authority:** [ENG03 measurement matrix and threshold](../../../../../../docs/programs/engine/decisions/eng03-measurement-and-capture-contract.md#a-measurement-design-is-fully-chosen), [existing measure-first strategy](../../../../../../docs/programs/engine/decisions/eng03-instrument-before-refactor.md).
+> **Authority:** [ENG03 measurement matrix and threshold](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-measurement-and-capture-contract.md#a-measurement-design-is-fully-chosen), [existing measure-first strategy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-instrument-before-refactor.md).
 >
 > **Read only:** `packages/application/src/campaign/actions.ts::createCampaignActions`; `campaign/narration.ts::preparePendingActionNarration`; `storyteller/context.ts::loadStorytellerContext`; `stories/persistence.ts::lockOwnedStory`; existing disposable application SQL test runner and DocumentStore test adapter.
 >

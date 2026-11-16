@@ -1,12 +1,12 @@
 # AD03 | Exact-reference player finder and permission-safe Player 360 API
 
-**State: Done (2026-11-14).** Code-bearing read model. **Depends on:** AD01 + AD02 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md). Evidence: [ad03-player-safe-reads](../../../../../../docs/programs/admin/evidence/ad03-player-safe-reads-2026-11-14.md).
+**State: Done (2026-11-14).** Code-bearing read model. **Depends on:** AD01 + AD02 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md). Evidence: [ad03-player-safe-reads](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad03-player-safe-reads-2026-11-14.md).
 
 ## Cursor first-screen
 
 > **Outcome:** authorized Admin users can look up a permitted player by **stable ID** and get a minimal source-backed, redacted summary; protected account existence and private narratives do not leak, and absent commercial data is reported as unsupported.
 >
-> **Authority:** [V1 endpoint/DTO contract](../../../../../../docs/programs/admin/technical/core-v1-contracts.md#3-read-only-resource-endpoints), [read policy](../../../../../../docs/programs/admin/technical/read-models-and-privacy.md), [Player 360](../../../../../../docs/programs/admin/player-360-service-blueprint.md).
+> **Authority:** [V1 endpoint/DTO contract](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md#3-read-only-resource-endpoints), [read policy](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/read-models-and-privacy.md), [Player 360](../../../../../../evidence/inspections/admin-program-essays-2026-11/player-360-service-blueprint.md).
 >
 > **Start/revalidate:** `packages/db/src/schema/auth.ts`, `packages/db/src/schema/stories.ts`, `apps/api/src/modules/auth/identity.ts`, `apps/api/src/app.ts`, `packages/application/src/stories/reads.ts`; current Postgres integration helpers.
 >

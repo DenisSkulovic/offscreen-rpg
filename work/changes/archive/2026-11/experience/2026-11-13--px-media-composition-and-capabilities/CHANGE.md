@@ -6,7 +6,7 @@
 
 > **Goal:** an accepted V1 presentation field has an intentional, bounded visual effect (or an explicit rejection/deprecation) and optional media uses a **deliberate scale/crop/composition**, not an unbounded full-width figure by accident.
 >
-> **Authority:** [capability honesty](../../../../../../docs/programs/experience/presentation-calibration-program.md#capability-honesty); [media design](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md); [V1 language](../../../../../../docs/programs/experience/system/presentation-language.md), [living stage](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md).
+> **Authority:** [capability honesty](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-calibration-program.md#capability-honesty); [media design](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md); [V1 language](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md), [living stage](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md).
 >
 > **Source start:** `presentation/types.ts`, `parse.ts`, `resolve.ts`, `assets.ts`, `ui/scene-media.tsx`, `ui/narrative-passage.tsx`, `ui/story-frame.css`. Inspect the fixture SVG sizes and existing tests, not the entire repo.
 >
@@ -49,7 +49,7 @@ Keep default/neutral field behavior quiet; effects must not be exaggerated merel
 - Missing/late image leaves readable prose and actions with no permanent empty poster area. Supplemental alt/description must remain approved/visible; decorative assets have no new fictional facts.
 - Keep figures in stable reading order. Correct actual image `object-fit`/crop, clipping and overflow. Avoid unduly large images or big blank boxes on narrow screens.
 
-If a new optional media sizing field is genuinely necessary, make a **frontend-only additive V1 grammar decision** and update the canonical [language](../../../../../../docs/programs/experience/system/presentation-language.md) and [media](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md) specs in this Change. No shared `@offscreen/contracts` field yet. V1 is not a deployed backend wire commitment.
+If a new optional media sizing field is genuinely necessary, make a **frontend-only additive V1 grammar decision** and update the canonical [language](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md) and [media](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md) specs in this Change. No shared `@offscreen/contracts` field yet. V1 is not a deployed backend wire commitment.
 
 ## Tests and discriminating cases
 

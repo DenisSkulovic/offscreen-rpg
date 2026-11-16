@@ -1,14 +1,14 @@
 # Change W03: Monotonic, viewer-scoped story snapshots in TanStack Query
 
-> **Cursor first look (current source ≠ selected target):** [Play state map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F4](../../../../../../docs/engineering/targets/react-next.md#f4-versioned-snapshot-reconciliation).  
+> **Cursor first look (current source ≠ selected target):** [Play state map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F4](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f4-versioned-snapshot-reconciliation).  
 > **Pre-investigated trap:** Existing `preferNewerSnapshot` compares version, not user/story identity; no second canonical Query store.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. Implemented after W15 on **2026-11-12**. Verified with pure reconcile negatives + `pnpm test:fast` + typecheck.
+**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. Implemented after W15 on **2026-11-12**. Verified with pure reconcile negatives + `pnpm test:fast` + typecheck.
 
 **Dependencies:** W01 + W15; prerequisite of W04 W05 W10 W12 W17.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F3 F4 F10**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G13 G17 G27**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F3 F4 F10**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G13 G17 G27**.
 
 ## Code-bearing outcome and ownership
 

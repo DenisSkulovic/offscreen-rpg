@@ -6,7 +6,7 @@
 
 > **Goal:** a Storyteller may ask one safe question about a known entity/relationship/contradictory source (or a pinned rule fragment) that cannot be efficiently answered by current ask_memory/read_memory, and get a small exact authorized answer. The application owns retrieval implementation and its work budget.
 >
-> **Authority:** [tool semantics](../../../../docs/programs/storyteller/prompt-tools-and-models.md#model-facing-tools-few-semantic-bounded), [source access and proof](../../../../docs/programs/storyteller/context-and-retrieval.md#tool-interface-for-model-facing-investigation), [constitution](../../../../docs/programs/storyteller/vision-and-quality-constitution.md).
+> **Authority:** [tool semantics](../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/prompt-tools-and-models.md#model-facing-tools-few-semantic-bounded), [source access and proof](../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#tool-interface-for-model-facing-investigation), [constitution](../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/vision-and-quality-constitution.md).
 >
 > **Source:** `packages/storyteller/src/tasks/memory-exploration.ts::memoryExplorationOperationSchema`, `packages/application/src/storyteller/memory-exploration.ts::createCanonicalMemoryExplorer`, `application/storyteller/canonical-search.ts`, `application/storyteller/lexical-story-index.ts`, `memory-exploration-controller.ts::runMemoryExploration`.
 

@@ -1,12 +1,12 @@
 # AD04 | Protected Next Admin shell, SSR privacy and isolated Query ownership
 
-**State: Done (2026-11-14).** Code-bearing UI/security. **Depends on:** AD01–AD03 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md). Evidence: [ad04-operator-shell](../../../../../../docs/programs/admin/evidence/ad04-operator-shell-2026-11-14.md).
+**State: Done (2026-11-14).** Code-bearing UI/security. **Depends on:** AD01–AD03 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md). Evidence: [ad04-operator-shell](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad04-operator-shell-2026-11-14.md).
 
 ## Cursor first-screen
 
 > **Outcome:** an authorized staff user can open `/control`, view the permitted Player 360 summary, and navigate without losing source truth or exposing Admin data to nonstaff, revoked actors or a different browser identity.
 >
-> **Authority:** [Admin frontend target](../../../../../../docs/programs/admin/technical/frontend-and-operator-experience.md), [V1 contracts](../../../../../../docs/programs/admin/technical/core-v1-contracts.md), [selected React/Next standard](../../../../../../docs/engineering/targets/react-next.md).
+> **Authority:** [Admin frontend target](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/frontend-and-operator-experience.md), [V1 contracts](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md), [selected React/Next standard](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 >
 > **Start/revalidate:** `apps/web/app/README.md`, `app/(authenticated)/layout.tsx`, `src/server/{viewer,nest-reader}.ts`, `src/features/session/authenticated-query-provider.tsx`, `src/shared/api/{README.md,query-keys.ts}`, [browser integration owner](../../../../../../tools/api-integration/README.md).
 >

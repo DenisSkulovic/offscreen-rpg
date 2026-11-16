@@ -1,14 +1,14 @@
 # Change W14: Production-like private SSR, route/cache/SSE and performance verification
 
-> **Cursor first look (current source ≠ selected target):** [Real browser/DB proof map](../../../../../../tools/api-integration/test/README.md) as the local example. **Primary contract:** [F15](../../../../../../docs/engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
+> **Cursor first look (current source ≠ selected target):** [Real browser/DB proof map](../../../../../../tools/api-integration/test/README.md) as the local example. **Primary contract:** [F15](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
 > **Pre-investigated trap:** `test:focus` rebuilds and drops only disposable `offscreen_auth_test`; never an inner-loop web test.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after green identity CI on `main`. Landed production-like private Play evidence under `tools/api-integration/test/private-route-evidence.integration.ts` (SSR `no-store` + scene HTML, hydrate without pre-heading snapshot GET, anonymous/other-owner denial, soft-nav retention, logout+history.back isolation, redacted metrics receipt). Verified with `pnpm test:focus -- private-route` (5/5). All technology, behavior and security decisions remain governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**.
+**State: Done.** Owner authorized via continue after green identity CI on `main`. Landed production-like private Play evidence under `tools/api-integration/test/private-route-evidence.integration.ts` (SSR `no-store` + scene HTML, hydrate without pre-heading snapshot GET, anonymous/other-owner denial, soft-nav retention, logout+history.back isolation, redacted metrics receipt). Verified with `pnpm test:focus -- private-route` (5/5). All technology, behavior and security decisions remain governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**.
 
 **Depends on:** W02 W15 W03 W04 W07 W17; W18 state workbench optional evidence input.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F1 F2 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G14 G25 G27 G30**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F1 F2 F9 F10 F15**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G14 G25 G27 G30**.
 
 ## Code outcome and owners
 

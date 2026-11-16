@@ -1,11 +1,11 @@
 # GM02 | Admit one reviewed custom attempt through existing game authority
 
-**State: Done (2026-11-15).** Evidence: [gm02-custom-intent-admit-2026-11-15](../../../../../../docs/programs/experience/evidence/gm02-custom-intent-admit-2026-11-15.md). **Policy:** [one server-declared inspect target](../../../../../../docs/programs/experience/decisions/gm01-custom-intent-policy-v1.md). **Kind:** domain action admission, immutable command/receipt and tests. **Parent:** [mechanics program](../../../../../../docs/programs/experience/mechanics-evolution-program.md). **Dependency:** GM01 Done. Provider spend: zero.
+**State: Done (2026-11-15).** Evidence: [gm02-custom-intent-admit-2026-11-15](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/gm02-custom-intent-admit-2026-11-15.md). **Policy:** [one server-declared inspect target](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/decisions/gm01-custom-intent-policy-v1.md). **Kind:** domain action admission, immutable command/receipt and tests. **Parent:** [mechanics program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/mechanics-evolution-program.md). **Dependency:** GM01 Done. Provider spend: zero.
 
 ## Cursor first-screen brief
 
 > **Source map:** [application mechanical selection](../../../../../../packages/application/README.md#mechanical-selection-and-consequence); inspect §packages/application/src/campaign/actions.ts§, §packages/application/src/stories/resolution.ts§ and §packages/contracts/src/interactions.ts§.
-> **Target:** [custom intent review/accept](../../../../../../docs/programs/experience/patterns/free-intent-future.md), [time authority](../../../../../../docs/technical/committed-time.md#permission-to-advance).
+> **Target:** [custom intent review/accept](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/free-intent-future.md), [time authority](../../../../../../docs/technical/committed-time.md#permission-to-advance).
 > **Known trap:** accepting a candidate after the world changed can execute stale or impossible mechanics; no custom text may set its own roll, DC, resource gain or actor. GET/refresh/retry must not reapply a result.
 > **Scope:** proposed only. **One** supported finite action family in an offline fixture, not generalized freeform gameplay.
 
@@ -26,7 +26,7 @@ The first slice should be intentionally narrow, e.g., a supported **inspect or s
 
 ## Authority/baseline
 
-[Rule adapters and effects](../../../../../../docs/product/foundations/game-rules.md#authority), [technical admitted actions](../../../../../../docs/technical/rules-and-activities.md#admitted-action-and-time), [command lifecycle](../../../../../../docs/engineering/targets/react-next.md#3-command-error-and-recovery-contract), [UX grammar](../../../../../../docs/programs/experience/patterns/interaction-grammar.md).
+[Rule adapters and effects](../../../../../../docs/product/foundations/game-rules.md#authority), [technical admitted actions](../../../../../../docs/technical/rules-and-activities.md#admitted-action-and-time), [command lifecycle](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#3-command-error-and-recovery-contract), [UX grammar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/interaction-grammar.md).
 
 Main 3be49cc baseline, 2026-11-13. Current offers already carry private plans and idempotent submitted commands, but a custom candidate acceptance contract has not been proven. Reinspect actual source and authorization paths before Ready.
 

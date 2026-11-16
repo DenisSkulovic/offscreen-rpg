@@ -4,7 +4,7 @@
 
 Current change: [DOC01 Rebuild the documentation knowledge architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md)
 
-**Current status:** DOC01 Selected — P6 soft-retire; hard delete gated by [no-loss gate](open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md). G3 packet root move **done**.
+**Current status:** DOC01 Selected — **P6 complete** ([no-loss gate](open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md)); P7 gardening/receipt remains.
 
 ## Open packets
 

@@ -15,15 +15,10 @@
 
 | Admin product + technical maps | program admin vs product/technical | `docs/product/admin/*`, `docs/technical/admin/*` | **resolved=true** for charter/workflows/topology maps; production Support grant steward remains **absent** (STATUS); deep workspace essays under `programs/admin/*` stay soft-retired sources until heading extract or DROP |
 
-## Still open (G2 remains yellow)
+## Closed for P6
 
-| Residual | Why |
-| --- | --- |
-| Admin deep workspace essays | Unique headings in `programs/admin/*` product essays not all extracted into `docs/product/admin/*` — **waive-for-delete requires** Git pointer DROP list or heading extract |
-| OBS deep forensic technical essays | `programs/observability/technical/*` still hold proposal depth beyond map owners — same waive rule |
-| Atom ledger `resolved=false` bulk | 4k+ inventory stubs; domain certify above is the authoritative shortcut for P6, not a fake mass `resolved=true` |
-| Engineering manuals (playbook, connected-poc, audits) | Soft-retired sources still hold unique headings; G5 |
+Deep Admin/OBS essays and engineering manuals: see [G2-DROP-REGISTER](G2-DROP-REGISTER.md) and [G5-MANUALS-WAIVE](G5-MANUALS-WAIVE.md). Live trees deleted; bodies retained under `evidence/inspections/doc01-legacy-snapshot/` (+ curated copies).
 
 ## Explicit DROP
 
-None this pass.
+Live `docs/programs|engineering|history|operations` after retain snapshot — **executed** with P6 delete.

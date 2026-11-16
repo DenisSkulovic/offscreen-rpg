@@ -1,6 +1,6 @@
 # Change CH11 | Interactive Chamber workbench and developer console
 
-> **Cursor first look:** [current Chamber React map](../../../../../../apps/web/src/features/developer-tools/chamber/README.md) → `view.tsx`, `use-chamber-play.ts`, `qa-workspace.tsx`, `inspector.tsx`. **Target:** [C01/C06/C11/C16](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 7](../../../../../../docs/technical/chamber-lab-protocol.md#7-client-api-and-workbench); [audit H10](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** do not polish old scripted scenes into a pretend laboratory or copy game rules into React.
+> **Cursor first look:** [current Chamber React map](../../../../../../apps/web/src/features/developer-tools/chamber/README.md) → `view.tsx`, `use-chamber-play.ts`, `qa-workspace.tsx`, `inspector.tsx`. **Target:** [C01/C06/C11/C16](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 7](../../../../../../docs/technical/chamber-lab-protocol.md#7-client-api-and-workbench); [audit H10](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** do not polish old scripted scenes into a pretend laboratory or copy game rules into React.
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH10. **Depends on:** CH01/CH06–CH10 and W15 (Done). Preserves developerTools Nest gate and legacy scene/QA.
 

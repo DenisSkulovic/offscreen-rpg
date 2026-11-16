@@ -1,14 +1,14 @@
 # Change W08: React Hook Form and Zod draft editing with revision-safe dirty state
 
-> **Cursor first look (current source ≠ selected target):** [Draft editing map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F8](../../../../../../docs/engineering/targets/react-next.md#f8-creationforms-and-editing-consistency).  
+> **Cursor first look (current source ≠ selected target):** [Draft editing map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F8](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f8-creationforms-and-editing-consistency).  
 > **Pre-investigated trap:** RHF future edit state must survive 409/background Query refresh; current draft code already preserves conflict text.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Closed 2026-11-12 after RTL/MSW 409 / late-response / Query-isolation proof. Architecture remains the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md). **Source baseline at selection:** post-W05 `main` (`ddfcdd5`).
+**State: Done.** Closed 2026-11-12 after RTL/MSW 409 / late-response / Query-isolation proof. Architecture remains the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md). **Source baseline at selection:** post-W05 `main` (`ddfcdd5`).
 
 **Dependencies:** W01 W02 W15. Can proceed independently of Play work.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F3 F8 F11 F12**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G19 G28**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F3 F8 F11 F12**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G19 G28**.
 
 ## Code-bearing outcome and ownership
 

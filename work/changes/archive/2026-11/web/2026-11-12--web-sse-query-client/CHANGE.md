@@ -1,14 +1,14 @@
 # Change W17: EventSource Query invalidation with reconnect and polling safety fallback
 
-> **Cursor first look (current source ≠ selected target):** [Play Query/SSE map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../docs/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
+> **Cursor first look (current source ≠ selected target):** [Play Query/SSE map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
 > **Pre-investigated trap:** SSE carries hints only; always validate a scoped GET snapshot and retain polling fallback for lost events.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W16. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W16 `main` (`f92846d`).
+**State: Done.** Owner authorized via continue after W16. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W16 `main` (`f92846d`).
 
 **Depends on:** W03 W05 W16. Uses existing W15 Query provider and typed read adapters.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F3 F4 F6 F10**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G18 G30**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F3 F4 F6 F10**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G18 G30**.
 
 ## Code outcome and owners
 

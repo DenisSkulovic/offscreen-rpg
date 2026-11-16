@@ -2,12 +2,12 @@
 
 **State:** Done (2026-11-13). **Approval and owner:** Owner authorized UX01; foundation landed; visual polish deferred by owner.  
 **Kind:** frontend behavior / layout refactor / focused component tests.  
-**Parent:** [Experience implementation program](../../../../../../docs/programs/experience/implementation-program.md), M1. **Dependency:** existing React/Next architecture intact; no UX packet required.
+**Parent:** [Experience implementation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M1. **Dependency:** existing React/Next architecture intact; no UX packet required.
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [App Router map](../../../../../../apps/web/app/README.md), [web owner route](../../../../../../apps/web/README.md); inspect `apps/web/app/style.css`, `app/(authenticated)/layout.tsx` and one Play route.  
-> **Governing target:** [selected Living Stage blueprint](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md#stage-anatomy-and-default-order), [mobile composition](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md#small-screen-deliberate-reflow-not-desktop-compression), [component strategy](../../../../../../docs/programs/experience/system/component-strategy.md#four-levels-of-implementation).  
+> **Governing target:** [selected Living Stage blueprint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md#stage-anatomy-and-default-order), [mobile composition](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md#small-screen-deliberate-reflow-not-desktop-compression), [component strategy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/component-strategy.md#four-levels-of-implementation).  
 > **Known trap:** The authenticated route-group layout owns the private session/Query provider **and wraps the Chamber and Stories**, so do not put player-only navigation chrome there by default. Existing global CSS also affects the public demo and Chamber. **A full Journal route is not yet guaranteed**; no dead navigation.  
 > **Scope/permission:** **Authorized for UX01 only.** Implement shared story-facing navigation/layout tokens and focused verification. No engine/provider/database work. No UX02 migration of full Play content.
 
@@ -29,9 +29,9 @@ Do not include reimplementation of Play commands, screens, Storyteller settings 
 
 ## Authority and current-source evidence
 
-- [Experience thesis](../../../../../../docs/programs/experience/foundations/experience-thesis.md#design-north-star-the-living-page).
-- [Information architecture](../../../../../../docs/programs/experience/spaces/information-architecture.md).
-- [Next/SSR security baseline](../../../../../../docs/engineering/targets/react-next.md#1-desired-data-and-rendering-topology).
+- [Experience thesis](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/foundations/experience-thesis.md#design-north-star-the-living-page).
+- [Information architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/information-architecture.md).
+- [Next/SSR security baseline](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#1-desired-data-and-rendering-topology).
 - GitHub main snapshot `8c91618aa44ac6a5aa800cf6b986c2bf596a9a0d`, 2026-11-13; **no screenshots or run verification**. Re-inspect actual source, recently landed W-series work, and tree/branch at execution. If a route's data boundary moved, stop and re-scope rather than following this outdated path.
 
 ## Code scope and exclusions
@@ -60,4 +60,4 @@ Expected owner candidates: `apps/web/app/style.css` (only **safe scoped CSS**), 
 
 ## Handoff and next action
 
-Owner authorized code 2026-11-13. Implementation landed a scoped `StoryFrame` fixture (not full Play migration). Evidence: `pnpm --filter @offscreen/web test:fast` **113/113**; Storybook `Experience/StoryFrame`; renders in [evidence/renders](../../../../../../docs/programs/experience/evidence/renders). **Pending:** design critique of screenshots before UX02. UX02 is **not** authorized.
+Owner authorized code 2026-11-13. Implementation landed a scoped `StoryFrame` fixture (not full Play migration). Evidence: `pnpm --filter @offscreen/web test:fast` **113/113**; Storybook `Experience/StoryFrame`; renders in [evidence/renders](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/renders). **Pending:** design critique of screenshots before UX02. UX02 is **not** authorized.

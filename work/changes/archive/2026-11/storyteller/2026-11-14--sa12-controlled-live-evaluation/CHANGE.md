@@ -1,12 +1,12 @@
 # SA12 | Owner-controlled live Storyteller comparison tooling and full POC evidence
 
-**State: Done for dry-run tooling (2026-11-14); one paid Gate-1 Luna shot authorized and recorded under a $0.05 hard cap (2026-11-14).** Dependencies SA11 provider-free baseline, SA01 trace, pinned route/cost policy. Evidence: [sa12 dry-run](../../../../../../docs/programs/storyteller/evidence/sa12-live-comparison-dry-run-2026-11-14.md), [paid Gate-1 Luna](../../../../../../docs/programs/storyteller/evidence/sa12-gate1-paid-luna-2026-11-14.md). Existing Gate-1 `live-evaluation` preflight retained. Two-variant paid comparison + multi-turn POC still separately gated.
+**State: Done for dry-run tooling (2026-11-14); one paid Gate-1 Luna shot authorized and recorded under a $0.05 hard cap (2026-11-14).** Dependencies SA11 provider-free baseline, SA01 trace, pinned route/cost policy. Evidence: [sa12 dry-run](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa12-live-comparison-dry-run-2026-11-14.md), [paid Gate-1 Luna](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa12-gate1-paid-luna-2026-11-14.md). Existing Gate-1 `live-evaluation` preflight retained. Two-variant paid comparison + multi-turn POC still separately gated.
 
 ## Cursor first-screen brief
 
 > **Outcome:** a small reusable evaluator can compare two versions of a frozen task/profile/prompt/retrieval policy under exactly one explicit model, source and funding envelope, report actual accepted output/evidence-use/cost/latency, and let the owner judge whether a real multi-turn campaign is worth continuing.
 >
-> **Authority:** [bounded live comparison](../../../../../../docs/programs/storyteller/evaluation-and-playability.md#b-small-live-provider-evaluation-only-after-owner-approves-spend), [spent vs inferred cost](../../../../../../docs/programs/storyteller/effort-cost-and-lifecycle.md), [historic connected POC](../../../../../../docs/engineering/connected-poc-proof.md).
+> **Authority:** [bounded live comparison](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evaluation-and-playability.md#b-small-live-provider-evaluation-only-after-owner-approves-spend), [spent vs inferred cost](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/effort-cost-and-lifecycle.md), [historic connected POC](../../../../../../research/legacy-engineering/connected-poc-proof.md).
 >
 > **Source:** `packages/application/test/live-evaluation.test.mjs`, `application/src/storyteller/execution.ts`, `packages/storyteller/src/providers/openrouter.ts`, existing `story:play` and `story:inspect` scripts and credential-free request audit.
 

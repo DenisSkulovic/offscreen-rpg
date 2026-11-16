@@ -1,14 +1,14 @@
 # Change W13: Next/React/TanStack ESLint and enforceable client/server boundaries
 
-> **Cursor first look (current source ≠ selected target):** [Server/client boundary map](../../../../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F14](../../../../../../docs/engineering/targets/react-next.md#f14-type-module-and-dependency-hygiene).  
+> **Cursor first look (current source ≠ selected target):** [Server/client boundary map](../../../../../../apps/web/src/lib/README.md) → the **one** owning symbol. **Primary contract:** [F14](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f14-type-module-and-dependency-hygiene).  
 > **Pre-investigated trap:** Existing strict TS/root ESLint already ban backend imports; add only missing React/Next/TanStack guards.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W11. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W11 `main` (`676f2e8`). CI web lint gate is `pnpm lint:web` (+ negatives); full-repo `pnpm lint` still carries unrelated script/tool debt.
+**State: Done.** Owner authorized via continue after W11. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W11 `main` (`676f2e8`). CI web lint gate is `pnpm lint:web` (+ negatives); full-repo `pnpm lint` still carries unrelated script/tool debt.
 
 **Depends on:** W02 W15 W06. W01 establishes test command.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F1 F7 F10 F14**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G26 G32 G21**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F1 F7 F10 F14**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G26 G32 G21**.
 
 ## Code outcome and owners
 

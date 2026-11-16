@@ -2,7 +2,7 @@
 
 **State: Done for A; B blocked.** **Severity:** P0 pre-live correctness and forensic integrity. **Scope:** provider composition contract + server-authority source validation + provider-disabled mock transport tests. **No actual paid dispatch, production funding, model prompts or game engine changes authorized.**
 
-**Source evidence:** [live-worker wiring preflight](../../../../docs/programs/observability/evidence/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../docs/programs/observability/evidence/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../docs/programs/observability/technical/storyteller-prompt-source-map-v1.md), [capture failure semantics](../../../../docs/programs/observability/technical/capture-transaction-protocol.md), [private storage](../../../../docs/programs/observability/technical/protected-artifact-store-v1.md).
+**Source evidence:** [live-worker wiring preflight](../../../../evidence/runs/observability-program-2026-11-15/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../evidence/runs/observability-program-2026-11-15/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../evidence/inspections/obs-technical-essays-2026-11/storyteller-prompt-source-map-v1.md), [capture failure semantics](../../../../evidence/inspections/obs-technical-essays-2026-11/capture-transaction-protocol.md), [private storage](../../../../evidence/inspections/obs-technical-essays-2026-11/protected-artifact-store-v1.md).
 
 ## Cursor first screen
 

@@ -1,12 +1,12 @@
 # PX04 | Scene presentation workbench and integrated regression evidence
 
-**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed the `Experience/Presentation` Storybook laboratory on the real resolver and `StoryFrame`. Parent: [presentation program](../../../../../../docs/programs/experience/presentation-implementation-program.md). This is a **code-bearing test/tooling Change**, not a documentation-only evaluation.
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed the `Experience/Presentation` Storybook laboratory on the real resolver and `StoryFrame`. Parent: [presentation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-implementation-program.md). This is a **code-bearing test/tooling Change**, not a documentation-only evaluation.
 
 ## Cursor first-screen brief
 
 > **Outcome:** a provider-free interactive Storybook laboratory exercises the *real frontend presentation schema and renderer* against divergent environments, option treatments, malformed data, scene changes and accessibility preferences; automated regressions protect behaviors. The entire seam can be reviewed without a game-engine integration.
 >
-> **Authority:** [end-state proof](../../../../../../docs/programs/experience/system/presentation-runtime.md#explicit-deferrals-and-decision-gates), [input/validation](../../../../../../docs/programs/experience/system/presentation-language.md), [media/motion acceptance](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md#verification-with-no-engine-integration), [program fixture matrix](../../../../../../docs/programs/experience/presentation-implementation-program.md#adversarial-fixture-matrix-incremental-complete-at-px04).
+> **Authority:** [end-state proof](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-runtime.md#explicit-deferrals-and-decision-gates), [input/validation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md), [media/motion acceptance](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md#verification-with-no-engine-integration), [program fixture matrix](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-implementation-program.md#adversarial-fixture-matrix-incremental-complete-at-px04).
 >
 > **Source entry:** `apps/web/src/stories/story-frame.stories.tsx`, existing Storybook MSW/Query decorators, PX01–PX03 presentation fixtures/components and current Play owner map. Read [web toolchain](../../../../../../apps/web/README.md) for the cheap command.
 >

@@ -1,12 +1,12 @@
 # PX02 | Semantic passage and expressive intention treatments
 
-**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed `IntentionChoice` and `NarrativePassage` for legacy and campaign options. Parent: [presentation program](../../../../../../docs/programs/experience/presentation-implementation-program.md). Next: [PX03 media/motion](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-atmospheric-media/CHANGE.md) (landed in the same implementation).
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed `IntentionChoice` and `NarrativePassage` for legacy and campaign options. Parent: [presentation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-implementation-program.md). Next: [PX03 media/motion](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-atmospheric-media/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 
 > **Outcome:** both existing live choice rendering paths share one accessible *presentation-aware* intention treatment primitive while retaining distinct authorized command controllers. Option appearance can vary by exact verified offer/path, without affecting what a click does. Narrative passage responsibilities are separated enough for future illustrated insertions.
 >
-> **Authority:** [component boundaries](../../../../../../docs/programs/experience/system/presentation-runtime.md#component-architecture); [exact choice scope](../../../../../../docs/programs/experience/system/presentation-language.md#required-scope-context); [choice grammar](../../../../../../docs/programs/experience/patterns/choice-surface-decision-rules.md); [Living Stage](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md).
+> **Authority:** [component boundaries](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-runtime.md#component-architecture); [exact choice scope](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md#required-scope-context); [choice grammar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/choice-surface-decision-rules.md); [Living Stage](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md).
 >
 > **Source entry:** [Play map](../../../../../../apps/web/src/features/play/README.md), then `ui/story-frame.tsx`, `ui/campaign-offer.tsx`, `ui/campaign-play.tsx`, `view.tsx` and existing offer-path tests. Check `model/use-offer-path.ts` only if needed.
 >

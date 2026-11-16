@@ -1,11 +1,11 @@
 # UX10 | Game-feel motion tied to true events
 
-**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX10 (CSS-first + reduced-motion). **Kind:** UI motion/feedback + accessibility/performance tests. **Parent:** [experience program](../../../../../../docs/programs/experience/implementation-program.md), M3. **Dependencies:** UX02, UX03, UX04 (Done).
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX10 (CSS-first + reduced-motion). **Kind:** UI motion/feedback + accessibility/performance tests. **Parent:** [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M3. **Dependencies:** UX02, UX03, UX04 (Done).
 
 ## Cursor first-screen brief
 
 > **Source map:** [Play owner](../../../../../../apps/web/src/features/play/README.md), Storybook fixture catalogue and app CSS. Inspect source of passage, choice, work and saved roll receipt.
-> **Primary target:** [motion grammar](../../../../../../docs/programs/experience/system/motion.md#motion-grammar-recommended) and [meaningful animation](../../../../../../docs/programs/experience/system/motion.md#animation-identity-and-lifecycle).
+> **Primary target:** [motion grammar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/motion.md#motion-grammar-recommended) and [meaningful animation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/motion.md#animation-identity-and-lifecycle).
 > **Known trap:** SSE invalidation/refetch and React remounting can replay entry animations; a frontend-rendered countdown can look complete before backend settlement. Dice must be **already committed** and their public details authorized before any flourish.
 > **Scope:** **Authorized for UX10.** Add no general-purpose animated state machine, paid animation service or fake progress engine.
 
@@ -27,7 +27,7 @@ Alternative: continuous animated particles, simulated travel maps, elaborate typ
 
 ## Authority and baseline
 
-[Now](../../../../../../docs/programs/experience/spaces/now.md), [time authority](../../../../../../docs/programs/experience/patterns/time-and-truth.md), [Motion spec](../../../../../../docs/programs/experience/system/motion.md), [accessibility](../../../../../../docs/programs/experience/system/accessibility-and-voice.md), [React Query source](../../../../../../docs/engineering/targets/react-next.md).
+[Now](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/now.md), [time authority](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/time-and-truth.md), [Motion spec](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/motion.md), [accessibility](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/accessibility-and-voice.md), [React Query source](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md).
 
 Stable Motion for React supports useReducedMotion and AnimatePresence (see linked research); Radix supports keyboard/focus primitives. Current app manifest inspected 2026-11-13 lacks a motion dependency. Main baseline 8c91618, no rendered animation or FPS measurement. Check source and package versions when Ready.
 

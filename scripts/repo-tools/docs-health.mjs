@@ -193,10 +193,12 @@ if (
       }
     }
   }
-  const strictTaxonomy = process.env.DOC01_TAXONOMY_STRICT === '1';
+  // After DOC01 P6 delete, default strict: forbidden namespaces must stay absent.
+  // Set DOC01_TAXONOMY_STRICT=0 to force advisory-only (migration debugging).
+  const strictTaxonomy = process.env.DOC01_TAXONOMY_STRICT !== '0';
   console.log(
     'DOC01 taxonomy (' +
-      (strictTaxonomy ? 'STRICT' : 'advisory during migration; hard gate after P6') +
+      (strictTaxonomy ? 'STRICT' : 'advisory') +
       '):',
   );
   if (!legacy.length) {

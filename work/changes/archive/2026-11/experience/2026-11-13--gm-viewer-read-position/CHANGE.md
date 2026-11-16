@@ -1,11 +1,11 @@
 # GM06 | A truthful per-viewer story return baseline
 
-**State: Done (2026-11-15).** Evidence: [gm06-visit-checkpoint-2026-11-15](../../../../../../docs/programs/experience/evidence/gm06-visit-checkpoint-2026-11-15.md). **Policy:** [per-viewer foreground opening checkpoint](../../../../../../docs/programs/experience/decisions/gm06-viewer-open-baseline-v1.md). **Kind:** authenticated visit read/ack + client ACK gate. Play Journal composition of the digest UI is a follow-up.
+**State: Done (2026-11-15).** Evidence: [gm06-visit-checkpoint-2026-11-15](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/gm06-visit-checkpoint-2026-11-15.md). **Policy:** [per-viewer foreground opening checkpoint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/decisions/gm06-viewer-open-baseline-v1.md). **Kind:** authenticated visit read/ack + client ACK gate. Play Journal composition of the digest UI is a follow-up.
 
 ## Cursor first-screen brief
 
-> **Current-source map:** [application read/identity](../../../../../../packages/application/src/stories/README.md), [React Query story identity](../../../../../../docs/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract), [session/client](../../../../../../docs/technical/client-and-identity.md). Inspect only actual read/ack paths when designing.
-> **UX target:** [reliable since-last-visit](../../../../../../docs/programs/experience/flows/return-and-memory.md#reliable-since-last-visit) and [copy contract](../../../../../../docs/programs/experience/system/interaction-copy.md#return-digest-labels).
+> **Current-source map:** [application read/identity](../../../../../../packages/application/src/stories/README.md), [React Query story identity](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract), [session/client](../../../../../../docs/technical/client-and-identity.md). Inspect only actual read/ack paths when designing.
+> **UX target:** [reliable since-last-visit](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/return-and-memory.md#reliable-since-last-visit) and [copy contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/interaction-copy.md#return-digest-labels).
 > **Known trap:** a server timestamp recording **page request, SSE delivery, background prefetch or hidden tab** is not proof the player viewed any passage. Cross-device acknowledgment and retroactive recaps require separate semantics.
 > **Scope:** proposed only; one viewer-specific acknowledged **seen baseline**, not reading-comprehension telemetry.
 
@@ -37,7 +37,7 @@ We should avoid pretending to know whether someone genuinely read a line of pros
 
 ## Source/baseline
 
-[Current story lifecycle](../../../../../../docs/technical/story-lifecycle.md), [public event/chronology target](../../../../../../docs/programs/experience/flows/return-and-memory.md), [client and identity](../../../../../../docs/technical/client-and-identity.md).
+[Current story lifecycle](../../../../../../docs/technical/story-lifecycle.md), [public event/chronology target](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/return-and-memory.md), [client and identity](../../../../../../docs/technical/client-and-identity.md).
 
 Main 3be49cc, 2026-11-13; a complete viewer-seen cursor is not proven by the initial source audit. Reinspect actual latest source and decide whether a new table or use of existing membership metadata is justified. Do not overload story revision or mark a fetched page automatically read.
 

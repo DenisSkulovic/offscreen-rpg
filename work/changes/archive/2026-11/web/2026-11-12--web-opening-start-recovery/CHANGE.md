@@ -1,14 +1,14 @@
 # Change W09: Query-driven preview generation and immutable Start story intent
 
-> **Cursor first look (current source ≠ selected target):** [Opening/Start map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../../../../../docs/engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
+> **Cursor first look (current source ≠ selected target):** [Opening/Start map](../../../../../../apps/web/src/features/stories/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
 > **Pre-investigated trap:** `storyId.current` survives retry but Start body is reconstructed; freeze full body/ID, GET-by-story before replay.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W08. Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Source baseline:** post-W08 `main` (`370bf3f`).
+**State: Done.** Owner authorized via continue after W08. Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Source baseline:** post-W08 `main` (`370bf3f`).
 
 **Dependencies:** W01 W02 W15. W19 is not needed for Start's GET-by-story recovery.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F3 F5 F8 F11**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G11 G19 G28**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F3 F5 F8 F11**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G11 G19 G28**.
 
 ## Code-bearing outcome and ownership
 

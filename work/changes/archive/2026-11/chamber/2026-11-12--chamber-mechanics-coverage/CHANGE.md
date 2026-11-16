@@ -1,6 +1,6 @@
 # Change CH15 | Mechanics coverage catalogue and truthful availability
 
-> **Cursor first look:** [developer-tooling source map](../../../../../../packages/application/src/developer-tools/README.md), [QA catalogue](../../../../../../packages/application/src/developer-tools/qa-catalog.ts) and [target 8](../../../../../../docs/engineering/targets/chamber-laboratory.md#8-mechanics-catalogue-and-evolution). **Source gap:** [H12/H14](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a listed or manually assessed case is not automatically an executable, successful scenario.
+> **Cursor first look:** [developer-tooling source map](../../../../../../packages/application/src/developer-tools/README.md), [QA catalogue](../../../../../../packages/application/src/developer-tools/qa-catalog.ts) and [target 8](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#8-mechanics-catalogue-and-evolution). **Source gap:** [H12/H14](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** a listed or manually assessed case is not automatically an executable, successful scenario.
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH14. **Dependencies:** CH01–CH03, CH06, CH09, CH10 (Done). No combat/unsupported mechanics added.
 

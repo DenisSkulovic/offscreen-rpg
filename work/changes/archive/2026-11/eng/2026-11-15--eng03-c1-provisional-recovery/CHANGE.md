@@ -1,12 +1,12 @@
 # ENG03-C1-R | Prevent provisional retry and recover exhausted capture on same G
 
-**State: Done (2026-11-15).** Evidence: [eng03-c1r-provisional-recovery-2026-11-15](../../../../../../docs/programs/engine/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). **Kind:** bounded read/recovery code, additive audit migration and provider-free proof. **Design authority:** [provisional status and same-G rearm V1](../../../../../../docs/programs/engine/decisions/eng03-provisional-recovery-v1.md). **Dependency:** ENG03-narrow and ENG03-C1 core Done. **No provider spend or Admin UI.**
+**State: Done (2026-11-15).** Evidence: [eng03-c1r-provisional-recovery-2026-11-15](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/eng03-c1r-provisional-recovery-2026-11-15.md). **Kind:** bounded read/recovery code, additive audit migration and provider-free proof. **Design authority:** [provisional status and same-G rearm V1](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-provisional-recovery-v1.md). **Dependency:** ENG03-narrow and ENG03-C1 core Done. **No provider spend or Admin UI.**
 
 ## Cursor first screen
 
 > **Outcome:** a player is never offered an ordinary Storyteller retry for provisional capture G; an explicitly authorized operator can rearm the same frozen G once after three transient CAS failures. The accepted action, hold, root, receipt and G never change.
 >
-> **Read only first:** [read policy](../../../../../../docs/programs/engine/decisions/eng03-provisional-recovery-v1.md#2-read-and-retry-policy), [rearm transaction](../../../../../../docs/programs/engine/decisions/eng03-provisional-recovery-v1.md#3-explicit-operator-rearm-contract), then current `stories/reads.ts::publicResolutionBlocker`, `storyteller/recovery.ts::retryStoryteller`, `storyteller/capture-materialization.ts::claimCaptureLease` / `releaseCaptureFailure` / `promoteCapture`, `db/schema/storyteller.ts::storytellerContextCapture`. Check the actual branch before editing.
+> **Read only first:** [read policy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-provisional-recovery-v1.md#2-read-and-retry-policy), [rearm transaction](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-provisional-recovery-v1.md#3-explicit-operator-rearm-contract), then current `stories/reads.ts::publicResolutionBlocker`, `storyteller/recovery.ts::retryStoryteller`, `storyteller/capture-materialization.ts::claimCaptureLease` / `releaseCaptureFailure` / `promoteCapture`, `db/schema/storyteller.ts::storytellerContextCapture`. Check the actual branch before editing.
 
 ## Bounded execution outcome
 

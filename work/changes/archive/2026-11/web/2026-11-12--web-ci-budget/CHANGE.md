@@ -1,11 +1,11 @@
 # Change W21: Cost-aware GitHub Actions gates and efficient CI cache
 
-> **Cursor first look (current source ≠ selected target):** [Integration cost map](../../../../../../tools/api-integration/test/README.md) → the **one** owning symbol. **Primary contract:** [F15](../../../../../../docs/engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
+> **Cursor first look (current source ≠ selected target):** [Integration cost map](../../../../../../tools/api-integration/test/README.md) → the **one** owning symbol. **Primary contract:** [F15](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f15-performance-diagnostics-and-delivery-fitness).  
 > **Pre-investigated trap:** Docs-only should skip heavy CI; required status checks must not become permanently pending.  
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**Status:** Done (2026-11-12). **Goal:** avoid broad GitHub Actions jobs after every tiny frontend or Markdown push while retaining real, reproducible integration proof. **Dependencies:** W01 and W20 (Done). **Authority:** [frontend execution playbook](../../../../../../docs/engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke); target F10/F15; [verification rule](../../../../../../.agents/rules/verification.md). Implemented via always-on `scope` + `ci_gate` sentinel and conditional heavy jobs; classifier fixtures in `scripts/repo-tools/ci-change-scope.test.mjs`.
+**Status:** Done (2026-11-12). **Goal:** avoid broad GitHub Actions jobs after every tiny frontend or Markdown push while retaining real, reproducible integration proof. **Dependencies:** W01 and W20 (Done). **Authority:** [frontend execution playbook](../../../../../../research/legacy-engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke); target F10/F15; [verification rule](../../../../../../.agents/rules/verification.md). Implemented via always-on `scope` + `ci_gate` sentinel and conditional heavy jobs; classifier fixtures in `scripts/repo-tools/ci-change-scope.test.mjs`.
 
 ## Observed problem
 

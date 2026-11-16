@@ -1,12 +1,12 @@
 # SA09 | A significant fictional relationship survives creation, retrieval and return
 
-**State: Done (2026-11-14).** Evidence: [sa09 sample](../../../../../../docs/programs/storyteller/evidence/sa09-continuity-materialization-2026-11-14.md). Provider-free. Depends SA05; may use SA04. Not a universal entity database.
+**State: Done (2026-11-14).** Evidence: [sa09 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa09-continuity-materialization-2026-11-14.md). Provider-free. Depends SA05; may use SA04. Not a universal entity database.
 
 ## Cursor first-screen
 
 > **Goal:** when a published consequence establishes a named relationship/favor/gift with future relevance, the model's descriptive source patch can be validated, persisted and later retrieved at the correct revision, and an unrelated later scene can recall it without inventing or changing mechanical ownership.
 >
-> **Authority:** [vision memory promises](../../../../../../docs/programs/storyteller/vision-and-quality-constitution.md), [durable memory discipline](../../../../../../docs/programs/storyteller/context-and-retrieval.md#recall-across-months-and-content-types), [historical POC observed absence of descriptive records](../../../../../../docs/engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
+> **Authority:** [vision memory promises](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/vision-and-quality-constitution.md), [durable memory discipline](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#recall-across-months-and-content-types), [historical POC observed absence of descriptive records](../../../../../../research/legacy-engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 >
 > **Source:** `packages/storyteller/src/tasks/index.ts::documentChangeRules`, `packages/storyteller/src/tasks/result-validation.ts::validateStorytellerResult`, `packages/application/src/storyteller/publication.ts::publishStorytellerResult`, `application/storyteller/canonical-knowledge.ts::loadCanonicalKnowledge`, current descriptive-document/continuity note tests.
 

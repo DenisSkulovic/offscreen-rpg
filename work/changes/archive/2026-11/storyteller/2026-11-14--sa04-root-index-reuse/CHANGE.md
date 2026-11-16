@@ -1,12 +1,12 @@
 # SA04 | Reuse a versioned lexical story index instead of rebuilding every exploration
 
-**State: Done (2026-11-14).** Evidence: [sa04 sample](../../../../../../docs/programs/storyteller/evidence/sa04-root-index-reuse-2026-11-14.md). Program [SA queue](../../../../../../docs/programs/storyteller/implementation-program.md). SA03 deferred for ENG03.
+**State: Done (2026-11-14).** Evidence: [sa04 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa04-root-index-reuse-2026-11-14.md). Program [SA queue](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md). SA03 deferred for ENG03.
 
 ## Cursor first-screen brief
 
 > **Goal:** a second memory-investigation task on the same immutable canonical root uses an existing validated index (or rebuilds only when needed) instead of rereading all source passages/Markdown. A new root, fork or privacy scope cannot accidentally use the old index.
 >
-> **Authority:** [retrieval/index design](../../../../../../docs/programs/storyteller/context-and-retrieval.md#sql-and-cas-efficiency), [long-memory evaluation](../../../../../../docs/engineering/long-story-memory-and-retrieval.md), [source facts](../../../../../../docs/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-e-what-the-engine-calls-an-agentic-loop).
+> **Authority:** [retrieval/index design](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#sql-and-cas-efficiency), [long-memory evaluation](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/long-story-memory-and-retrieval.md), [source facts](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-e-what-the-engine-calls-an-agentic-loop).
 >
 > **Source:** `packages/application/src/storyteller/lexical-story-index.ts::buildLexicalStoryIndex/restoreLexicalStoryIndex`, `application/storyteller/execution.ts::createStorytellerExecution`, current `memory-index-benchmark` script, `docs/technical/canonical-files.md` and existing memory oracle tests.
 

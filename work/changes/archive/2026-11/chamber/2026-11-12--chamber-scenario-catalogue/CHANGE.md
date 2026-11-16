@@ -1,6 +1,6 @@
 # Change CH01 | Typed, versioned mechanics-scenario catalogue
 
-> **Cursor first look:** [current developer-tooling owners](../../../../../../packages/application/src/developer-tools/README.md) → `contracts/src/{chamber,qa}.ts` and `developer-tools/qa-catalog.ts`. **Target:** [Chamber C01/C11/C15](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 1](../../../../../../docs/technical/chamber-lab-protocol.md#1-contract-and-command-semantics); [audit H02/H12](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Critical trap:** an existing QA driver label is not a runnable scenario.
+> **Cursor first look:** [current developer-tooling owners](../../../../../../packages/application/src/developer-tools/README.md) → `contracts/src/{chamber,qa}.ts` and `developer-tools/qa-catalog.ts`. **Target:** [Chamber C01/C11/C15](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16); [protocol 1](../../../../../../docs/technical/chamber-lab-protocol.md#1-contract-and-command-semantics); [audit H02/H12](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Critical trap:** an existing QA driver label is not a runnable scenario.
 
 **State: Done** (2026-11-13). Owner authorized Chamber work after W-series completion. **Dependencies:** none.
 

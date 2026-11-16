@@ -1,6 +1,6 @@
 # ENG02 | A nonhuman actor can play without invented HP, body or inventory
 
-**State:** Done (pure envelope + compatibility bridge; no DB migration). Owner authorized the design gate on 2026-11-13 after ENG01. **Kind:** versioned pure actor/rules representation with application/reader compatibility and a genuinely nonhuman game fixture. **Authority:** [world kernel](../../../../../../docs/programs/engine/decisions/world-capability-kernel.md), [legacy compatibility](../../../../../../docs/programs/engine/decisions/canon-compatibility-and-migration.md), [identity](../../../../../../docs/programs/engine/decisions/actor-identity-and-ownership.md).
+**State:** Done (pure envelope + compatibility bridge; no DB migration). Owner authorized the design gate on 2026-11-13 after ENG01. **Kind:** versioned pure actor/rules representation with application/reader compatibility and a genuinely nonhuman game fixture. **Authority:** [world kernel](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/world-capability-kernel.md), [legacy compatibility](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/canon-compatibility-and-migration.md), [identity](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/actor-identity-and-ownership.md).
 
 ## Settled design (executable)
 

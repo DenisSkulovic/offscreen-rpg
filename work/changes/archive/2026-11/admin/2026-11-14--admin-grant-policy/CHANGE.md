@@ -1,12 +1,12 @@
 # AD02 | Scoped capability packages and deny-by-default Admin policy
 
-**State: Done (2026-11-14).** Code-bearing authorization. **Depends on:** AD01 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md). Evidence: [ad02-grant-policy](../../../../../../docs/programs/admin/evidence/ad02-grant-policy-2026-11-14.md).
+**State: Done (2026-11-14).** Code-bearing authorization. **Depends on:** AD01 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md). Evidence: [ad02-grant-policy](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad02-grant-policy-2026-11-14.md).
 
 ## Cursor first-screen
 
 > **Outcome:** every Admin request evaluates one complete scoped grant against a typed resource/action and current staff actor; overlapping job packages do not create cross-product permissions or allow a player into Admin.
 >
-> **Authority:** [bounded policy](../../../../../../docs/programs/admin/technical/staff-identity-and-policy.md#2-capability-registry-and-bounded-grants), [accepted default safeguards](../../../../../../docs/programs/admin/product-acceptance-and-scope.md), [case-assignment abuse](../../../../../../docs/programs/admin/product-adversarial-review.md#pr-01-case-ownership-becomes-privilege-escalation).
+> **Authority:** [bounded policy](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/staff-identity-and-policy.md#2-capability-registry-and-bounded-grants), [accepted default safeguards](../../../../../../evidence/inspections/admin-program-essays-2026-11/product-acceptance-and-scope.md), [case-assignment abuse](../../../../../../evidence/inspections/admin-program-essays-2026-11/product-adversarial-review.md#pr-01-case-ownership-becomes-privilege-escalation).
 >
 > **Start/revalidate:** AD01 modules, `apps/api/src/app.ts`, existing user ownership handling `apps/api/src/modules/stories/controller.ts` and `packages/application/src/stories/reads.ts`. No source owner should be imported just to bypass its player boundary.
 >

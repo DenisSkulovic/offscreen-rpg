@@ -1,12 +1,12 @@
 # SA02 | A profile-faithful task prompt without universal taste defaults
 
-**State: Done (2026-11-14).** Evidence: [sa02 sample](../../../../../../docs/programs/storyteller/evidence/sa02-prompt-constitution-2026-11-14.md). [SA program](../../../../../../docs/programs/storyteller/implementation-program.md). Focused compiler/validator change, **not** an engine rules expansion.
+**State: Done (2026-11-14).** Evidence: [sa02 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa02-prompt-constitution-2026-11-14.md). [SA program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md). Focused compiler/validator change, **not** an engine rules expansion.
 
 ## Cursor first-screen brief
 
 > **Outcome:** task-specific prompts preserve selected creative profile and captured mechanical authority without hardcoded “2–5 exciting options”, immortal characters, or irrelevant schema/instructions in report tasks; old `storyteller.v16` tasks still decode and publish.
 >
-> **Authority:** [constitution](../../../../../../docs/programs/storyteller/vision-and-quality-constitution.md), [prompt layers and tensions](../../../../../../docs/programs/storyteller/prompt-tools-and-models.md#prompt-errors-to-remove-from-common-authority), [versioned task source](../../../../../../docs/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-d-actual-storyteller-task-construction-and-what-the-model-sees).
+> **Authority:** [constitution](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/vision-and-quality-constitution.md), [prompt layers and tensions](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/prompt-tools-and-models.md#prompt-errors-to-remove-from-common-authority), [versioned task source](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-d-actual-storyteller-task-construction-and-what-the-model-sees).
 >
 > **Source:** `packages/storyteller/src/tasks/index.ts::requestFor/prepareStorytellerTask`, `packages/storyteller/src/tasks/result-validation.ts::validateStorytellerResult`, `packages/storyteller/src/profiles/index.ts`, `packages/storyteller/src/tasks/task-contracts.ts`, existing `packages/storyteller/test/storyteller.test.ts`.
 

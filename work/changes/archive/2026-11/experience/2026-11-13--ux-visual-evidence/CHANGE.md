@@ -1,11 +1,11 @@
 # UX11 | Browser/Storybook evidence for an actually good game interface
 
-**State: Done (2026-11-13).** Provider-free UX evidence for shipped surfaces: Storybook catalogue, Vitest/axe, portal/demo browser captures, deliberate failure≠empty counterexample. Parent: [experience program](../../../../../../docs/programs/experience/implementation-program.md), M4. Evidence: [ux11-visual-evidence-2026-11-13](../../../../../../docs/programs/experience/evidence/ux11-visual-evidence-2026-11-13.md).
+**State: Done (2026-11-13).** Provider-free UX evidence for shipped surfaces: Storybook catalogue, Vitest/axe, portal/demo browser captures, deliberate failure≠empty counterexample. Parent: [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M4. Evidence: [ux11-visual-evidence-2026-11-13](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/ux11-visual-evidence-2026-11-13.md).
 
 ## Cursor first-screen brief
 
 > **Source map:** [web owner](../../../../../../apps/web/README.md), existing src/stories/, app demo, Play test files and [test source map](../../../../../../tools/api-integration/test/README.md).
-> **Primary target:** [experience validation plan](../../../../../../docs/programs/experience/evidence/validation-plan.md#ux-acceptance-checklist-for-each-change), [accessibility](../../../../../../docs/programs/experience/system/accessibility-and-voice.md#accessibility-sign-off-tasks).
+> **Primary target:** [experience validation plan](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/validation-plan.md#ux-acceptance-checklist-for-each-change), [accessibility](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/accessibility-and-voice.md#accessibility-sign-off-tasks).
 > **Known trap:** mocked Storybook and a green DOM test are not proof of persistent gameplay or of beautiful, comprehensible UX; **Chamber CH01–CH16 are recorded Done, but individual scenario lanes may remain planned or blocked**. Existing full integration lanes may reset a disposable test database.
 > **Scope:** Proposed only. Code-bearing fixtures/tests are allowed *only when authorized*. No paid providers, unapproved DB reset, deployment or GitHub Actions sprawl.
 

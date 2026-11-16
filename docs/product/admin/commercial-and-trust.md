@@ -2,7 +2,7 @@
 
 **Owner (DOC01 P2):** offerings, entitlements, grants, usage, refunds, cost economics, privacy and abuse.  
 **Status:** **Conditional / largely proposed for production powers.** Usage exposure landed in limited form (AD06); refunds, production grant stewardship and many privacy workflows remain gated.  
-**Sources:** [commercial-operations-product](../../programs/admin/commercial-operations-product.md), [trust-and-privacy-product](../../programs/admin/trust-and-privacy-product.md).
+**Sources:** [commercial-operations-product](../../../evidence/inspections/admin-program-essays-2026-11/commercial-operations-product.md), [trust-and-privacy-product](../../../evidence/inspections/admin-program-essays-2026-11/trust-and-privacy-product.md).
 
 ## Hard rule for DOC01
 

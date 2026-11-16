@@ -1,6 +1,6 @@
 # GM05 | Commit-ordered, source-backed public event feed for return and Journal
 
-**State: Done (2026-11-14).** Additive `story_public_event` projection + owner `GET /api/stories/:id/events`. **Authority:** [selected event taxonomy, ordering and privacy](../../../../../../docs/programs/experience/patterns/committed-event-feed.md). **Parent:** [mechanics program](../../../../../../docs/programs/experience/mechanics-evolution-program.md). GM06 read cursor follows later.
+**State: Done (2026-11-14).** Additive `story_public_event` projection + owner `GET /api/stories/:id/events`. **Authority:** [selected event taxonomy, ordering and privacy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/committed-event-feed.md). **Parent:** [mechanics program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/mechanics-evolution-program.md). GM06 read cursor follows later.
 
 ## Cursor first-screen
 
@@ -8,7 +8,7 @@
 >
 > **Start:** `packages/db/src/schema/campaign.ts` (source event ordinals), `packages/db/src/schema/stories.ts` (published passage), `packages/application/src/campaign/action-executions.ts::recordActionExecutionEvent`, `campaign/persistence.ts::recordActivityEvent`, `stories/continuation.ts` / `stories/reads.ts::readHistory`. Inspect owner-scoped Nest story route and `@offscreen/contracts/stories` only as needed.
 >
-> **Authority exact:** [V1 taxonomy](../../../../../../docs/programs/experience/patterns/committed-event-feed.md#v1-public-taxonomy-small-and-deliberately-meaningful), [per-story sequence](../../../../../../docs/programs/experience/patterns/committed-event-feed.md#ordering-decision-per-story-commit-sequence-independent-of-fictional-time), [read endpoint](../../../../../../docs/programs/experience/patterns/committed-event-feed.md#read-endpoint--identity), [legacy policy](../../../../../../docs/programs/experience/patterns/committed-event-feed.md#older-stories--migration-policy).
+> **Authority exact:** [V1 taxonomy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/committed-event-feed.md#v1-public-taxonomy-small-and-deliberately-meaningful), [per-story sequence](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/committed-event-feed.md#ordering-decision-per-story-commit-sequence-independent-of-fictional-time), [read endpoint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/committed-event-feed.md#read-endpoint--identity), [legacy policy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/committed-event-feed.md#older-stories--migration-policy).
 >
 > **Never:** merge heterogeneous source arrays by local timestamps as a fake global cursor, emit hidden plans, make GET acknowledge seen, invoke LLM, or add a general bus.
 

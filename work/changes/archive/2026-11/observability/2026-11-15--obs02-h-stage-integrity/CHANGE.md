@@ -1,14 +1,14 @@
 # OBS02-H | Same-G rearm/lease stage integrity, without phantom receipts
 
-**State: Done (2026-11-15).** **Code-bearing:** source-local SQL stage receipt hardening + provider-disabled disposable DB tests. **OBS02 original pilot remains Done**; this residual integrity Change is separately verified. **Evidence:** [obs02-h](../../../../../../docs/programs/observability/evidence/obs02-h-stage-integrity-2026-11-15.md).
+**State: Done (2026-11-15).** **Code-bearing:** source-local SQL stage receipt hardening + provider-disabled disposable DB tests. **OBS02 original pilot remains Done**; this residual integrity Change is separately verified. **Evidence:** [obs02-h](../../../../../../evidence/runs/observability-program-2026-11-15/obs02-h-stage-integrity-2026-11-15.md).
 
-**Authority:** [post-OBS02 source review](../../../../../../docs/programs/observability/evidence/obs02-stage-integrity-review-2026-11-15.md), [claim-quality contract](../../../../../../docs/programs/observability/technical/evidence-claims-and-quality-v1.md), [capture crash fences](../../../../../../docs/programs/observability/technical/capture-transaction-protocol.md).
+**Authority:** [post-OBS02 source review](../../../../../../evidence/runs/observability-program-2026-11-15/obs02-stage-integrity-review-2026-11-15.md), [claim-quality contract](../../../../../../evidence/inspections/obs-technical-essays-2026-11/evidence-claims-and-quality-v1.md), [capture crash fences](../../../../../../evidence/inspections/obs-technical-essays-2026-11/capture-transaction-protocol.md).
 
 ## Cursor first screen
 
 > **One outcome:** every real context-materialization attempt across **original epoch 0 and operator rearm epoch 1** is distinguishable. A losing worker cannot write a terminal stage when its capture lease CAS did not apply. A repeated stage key with *different source facts* is reported as integrity conflict, not silently discarded.
 >
-> **Exact owners:** `packages/application/src/storyteller/{capture-rearm,capture-materialization,execution-stages}.ts`, `packages/db/src/schema/storyteller.ts::{storytellerContextCapture,storytellerContextCaptureRearm,storytellerExecutionStage}`, [OBS02 actual evidence](../../../../../../docs/programs/observability/evidence/obs02-execution-stages-2026-11-15.md), [ENG03-C1-R](../../../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md).
+> **Exact owners:** `packages/application/src/storyteller/{capture-rearm,capture-materialization,execution-stages}.ts`, `packages/db/src/schema/storyteller.ts::{storytellerContextCapture,storytellerContextCaptureRearm,storytellerExecutionStage}`, [OBS02 actual evidence](../../../../../../evidence/runs/observability-program-2026-11-15/obs02-execution-stages-2026-11-15.md), [ENG03-C1-R](../../../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md).
 
 ## Landed delta
 

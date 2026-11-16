@@ -2,12 +2,12 @@
 
 **State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence; Cursor landed UX03.  
 **Kind:** player interaction refactor + state/behavior tests.  
-**Parent:** [Program](../../../../../../docs/programs/experience/implementation-program.md) M1. **Dependency:** UX01, UX02 (Done).
+**Parent:** [Program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md) M1. **Dependency:** UX01, UX02 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play source map](../../../../../../apps/web/src/features/play/README.md), particularly `ui/campaign-offer.tsx`, `model/use-offer-path.ts`, `use-resolution-command.ts` and `api/use-campaign-command.ts`.  
-> **Governing target:** [Four control meanings](../../../../../../docs/programs/experience/patterns/interaction-grammar.md#four-different-things-a-control-can-do), [scene action area](../../../../../../docs/programs/experience/patterns/interaction-grammar.md#scene-action-area) and [confirmations](../../../../../../docs/programs/experience/patterns/interaction-grammar.md#confirmations-only-where-stakes-warrant-them).  
+> **Governing target:** [Four control meanings](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/interaction-grammar.md#four-different-things-a-control-can-do), [scene action area](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/interaction-grammar.md#scene-action-area) and [confirmations](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/interaction-grammar.md#confirmations-only-where-stakes-warrant-them).  
 > **Known trap:** a menu choice, accepted action, ongoing work and a paid retry cannot share one “Continue” button. Captured offer identity and frozen submission must not be silently regenerated after an SSE update.  
 > **Scope/permission:** **Authorized for UX03.** Only **currently admitted pre-generated options** are in scope. **Do not implement free-text gameplay** under this packet.
 
@@ -20,8 +20,8 @@ This is not a set of three equal-sized “Choose option” form buttons. Layout 
 ## Source-bound behavior and technical authority
 
 - Product: [range of available actions](../../../../../../docs/product/foundations/game-rules.md#the-range-of-available-actions), [prepared local life](../../../../../../docs/product/foundations/gameplay.md#prepared-local-life-while-the-storyteller-is-dormant).
-- Design: [interaction grammar](../../../../../../docs/programs/experience/patterns/interaction-grammar.md), [future custom intents explicitly excluded](../../../../../../docs/programs/experience/patterns/free-intent-future.md).
-- Engine and frontend: [Play command lifecycle](../../../../../../docs/engineering/targets/react-next.md#3-command-error-and-recovery-contract); [Play source map](../../../../../../apps/web/src/features/play/README.md).
+- Design: [interaction grammar](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/interaction-grammar.md), [future custom intents explicitly excluded](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/free-intent-future.md).
+- Engine and frontend: [Play command lifecycle](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#3-command-error-and-recovery-contract); [Play source map](../../../../../../apps/web/src/features/play/README.md).
 - Baseline: GitHub main `8c91618` (2026-11-13) with `useResolutionCommand` immutable payload, retry 0, `sessionStorage` durable identity, GET receipt before replay. Treat current source as a reinspection requirement, not proof of UI comprehension.
 
 ## Complete code result

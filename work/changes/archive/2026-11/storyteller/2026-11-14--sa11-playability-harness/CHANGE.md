@@ -1,12 +1,12 @@
 # SA11 | Reproducible provider-free Storyteller life and quality evaluation harness
 
-**State: Done (2026-11-14).** Evidence: [sa11 sample](../../../../../../docs/programs/storyteller/evidence/sa11-playability-harness-2026-11-14.md). Provider-free; no paid/DB. [SA program](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa11 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa11-playability-harness-2026-11-14.md). Provider-free; no paid/DB. [SA program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Outcome:** an executable provider-free story trajectory tests 10–15 meaningful moments across work, interruption, source-backed gift/relationship recall, quiet waiting, alternative creative profiles and nonhuman circumstances, with truthful source/proposal/publication checkpoints. Human prose quality is explicitly unobserved.
 >
-> **Authority:** [evaluation corpus and stages](../../../../../../docs/programs/storyteller/evaluation-and-playability.md), [constitution](../../../../../../docs/programs/storyteller/vision-and-quality-constitution.md), [historical POC limits](../../../../../../docs/engineering/connected-poc-proof.md).
+> **Authority:** [evaluation corpus and stages](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evaluation-and-playability.md), [constitution](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/vision-and-quality-constitution.md), [historical POC limits](../../../../../../research/legacy-engineering/connected-poc-proof.md).
 >
 > **Source:** `packages/application/test/live-evaluation.test.mjs`, `long-story-memory-evaluation.test.mjs`, `packages/application/src/storyteller/execution.ts`, `packages/storyteller/src/tasks/result-validation.ts`, `scripts/repo-tools/storyteller-request-audit.mjs`.
 

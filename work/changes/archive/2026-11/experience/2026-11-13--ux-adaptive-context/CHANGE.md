@@ -1,11 +1,11 @@
 # UX08 | World and You, only when the story actually has them
 
-**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX08 (conditional You/World; no empty fantasy sheet). **Kind:** conditional player context UI and tests. **Parent:** [experience program](../../../../../../docs/programs/experience/implementation-program.md), M2. **Dependencies:** UX02 and UX07 (Done), verified public data projection.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX08 (conditional You/World; no empty fantasy sheet). **Kind:** conditional player context UI and tests. **Parent:** [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M2. **Dependencies:** UX02 and UX07 (Done), verified public data projection.
 
 ## Cursor first-screen brief
 
 > **Source map:** [Play ownership](../../../../../../apps/web/src/features/play/README.md), ui/campaign-status.tsx, ui/campaign-records.tsx; read public packages/contracts/src/campaign.ts and stories.ts types only for displayed state.
-> **Primary target:** [World](../../../../../../docs/programs/experience/spaces/journal-world-you.md#world-what-the-character-knows), [You](../../../../../../docs/programs/experience/spaces/journal-world-you.md#you-the-current-form-and-its-consequences), [context shelf](../../../../../../docs/programs/experience/spaces/journal-world-you.md#context-shelf-selection-rules).
+> **Primary target:** [World](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/journal-world-you.md#world-what-the-character-knows), [You](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/journal-world-you.md#you-the-current-form-and-its-consequences), [context shelf](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/journal-world-you.md#context-shelf-selection-rules).
 > **Known trap:** character, location, bodily ability, inventory, currency and map are all optional concepts in this game; private canonical documents cannot be exposed as public world knowledge.
 > **Scope:** **Authorized for UX08**; present verified public facts, do not write a new world knowledge engine.
 
@@ -26,7 +26,7 @@ A universal fantasy RPG HUD is the competing proposal. It is familiar, but a par
 
 ## Authority and baseline
 
-[World-neutral game vision](../../../../../../docs/product/foundations/vision.md), [applicability of abilities](../../../../../../docs/product/foundations/game-rules.md#world-independent-foundation), [progressive people and entities](../../../../../../docs/product/journeys/story-creation.md#progressive-people-and-other-entities), [UX supporting spaces](../../../../../../docs/programs/experience/spaces/journal-world-you.md), [client/identity](../../../../../../docs/technical/client-and-identity.md).
+[World-neutral game vision](../../../../../../docs/product/foundations/vision.md), [applicability of abilities](../../../../../../docs/product/foundations/game-rules.md#world-independent-foundation), [progressive people and entities](../../../../../../docs/product/journeys/story-creation.md#progressive-people-and-other-entities), [UX supporting spaces](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/journal-world-you.md), [client/identity](../../../../../../docs/technical/client-and-identity.md).
 
 CampaignView contains nullable character and location, storyFacts, activity and world time; StorySnapshot contains items. A complete safe known-entity World index is **not verified**. Inspected main 8c91618 on 2026-11-13, no browser or provider proof. Reinspect exact public wire shapes.
 

@@ -1,6 +1,6 @@
 # ENG07 | A remembered promise reaches the actual final Storyteller request
 
-**State:** Cancelled / superseded on 2026-11-13 after source review. **Kind:** evidence-use diagnostics/test harness (not required). **Authority:** [Storyteller and memory](../../../../../../docs/programs/engine/storyteller-and-memory.md), [verification strategy](../../../../../../docs/programs/engine/evidence/verification-strategy.md).
+**State:** Cancelled / superseded on 2026-11-13 after source review. **Kind:** evidence-use diagnostics/test harness (not required). **Authority:** [Storyteller and memory](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/storyteller-and-memory.md), [verification strategy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/verification-strategy.md).
 
 ## Why cancelled
 

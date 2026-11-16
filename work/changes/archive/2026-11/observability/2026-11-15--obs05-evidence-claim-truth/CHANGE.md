@@ -1,6 +1,6 @@
 # OBS05 | Stop reporting unproven model ignorance as forensic fact
 
-**State: Done (2026-11-15).** **Scope:** bounded Storyteller SA05/SA01 diagnostic-label correctness and versioned provenance-only read adapter, provider-disabled tests. **Evidence:** [obs05](../../../../../../docs/programs/observability/evidence/obs05-evidence-claim-truth-2026-11-15.md). Authority: [claim semantics](../../../../../../docs/programs/observability/technical/evidence-claims-and-quality-v1.md), [source context](../../../../../../docs/programs/observability/technical/context-provenance.md) and [the read-only Turn Capsule](../../../../../../docs/programs/observability/technical/forensic-turn-capsule-v1.md).
+**State: Done (2026-11-15).** **Scope:** bounded Storyteller SA05/SA01 diagnostic-label correctness and versioned provenance-only read adapter, provider-disabled tests. **Evidence:** [obs05](../../../../../../evidence/runs/observability-program-2026-11-15/obs05-evidence-claim-truth-2026-11-15.md). Authority: [claim semantics](../../../../../../evidence/inspections/obs-technical-essays-2026-11/evidence-claims-and-quality-v1.md), [source context](../../../../../../evidence/inspections/obs-technical-essays-2026-11/context-provenance.md) and [the read-only Turn Capsule](../../../../../../evidence/inspections/obs-technical-essays-2026-11/forensic-turn-capsule-v1.md).
 
 ## Why this is a real source issue
 

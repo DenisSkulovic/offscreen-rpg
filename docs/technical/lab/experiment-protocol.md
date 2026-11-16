@@ -3,7 +3,7 @@
 > **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/chamber-lab-protocol.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
 
 
-**Status:** Selected **internal developer-tooling technical design**, 2026-11-12; code remains unchanged. **Why this exists:** the [Chamber target](../../engineering/targets/chamber-laboratory.md) defines developer outcomes C01–C16; the [source audit](../../engineering/audits/chamber-gap-2026-11-12.md) identifies current gaps. This document chooses shared wire/data/driver boundaries **so cheap Cursor implementers do not design separate incompatible systems**. Browser UI layout, exact class names and general player mechanics are not owned here.
+**Status:** Selected **internal developer-tooling technical design**, 2026-11-12; code remains unchanged. **Why this exists:** the [Chamber target](../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md) defines developer outcomes C01–C16; the [source audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) identifies current gaps. This document chooses shared wire/data/driver boundaries **so cheap Cursor implementers do not design separate incompatible systems**. Browser UI layout, exact class names and general player mechanics are not owned here.
 
 ## Cheap reading route
 

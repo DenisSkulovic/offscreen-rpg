@@ -1,12 +1,12 @@
 # AD01 | Explicit staff principal, Admin session and bootstrap audit
 
-**State: Done (2026-11-14).** Code-bearing security foundation. **Depends on:** none. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md). Evidence: [ad01-staff-session](../../../../../../docs/programs/admin/evidence/ad01-staff-session-2026-11-14.md).
+**State: Done (2026-11-14).** Code-bearing security foundation. **Depends on:** none. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md). Evidence: [ad01-staff-session](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad01-staff-session-2026-11-14.md).
 
 ## Cursor first-screen
 
 > **Outcome:** verified signed-in staff can deliberately enter and exit a short-lived, revocable Admin-purpose session; nonstaff and player-only cookies cannot. A one-time out-of-band bootstrap creates the first minimally scoped staff principal and audit record without public self-registration.
 >
-> **Authority:** [accepted staff-only product](../../../../../../docs/programs/admin/product-acceptance-and-scope.md); [identity/session target](../../../../../../docs/programs/admin/technical/staff-identity-and-policy.md), [chosen V1 adapter](../../../../../../docs/programs/admin/technical/first-wave-design-decisions.md) and [V1 endpoints](../../../../../../docs/programs/admin/technical/core-v1-contracts.md).
+> **Authority:** [accepted staff-only product](../../../../../../evidence/inspections/admin-program-essays-2026-11/product-acceptance-and-scope.md); [identity/session target](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/staff-identity-and-policy.md), [chosen V1 adapter](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/first-wave-design-decisions.md) and [V1 endpoints](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md).
 >
 > **Start/revalidate:** `apps/api/src/modules/auth/{auth,identity}.ts`, `apps/api/src/app.ts`, `packages/db/src/schema/auth.ts`, `packages/db/src/migrate.ts`, migrations and [integration auth tests](../../../../../../tools/api-integration/README.md). Existing `/api/me` is player identity only.
 >

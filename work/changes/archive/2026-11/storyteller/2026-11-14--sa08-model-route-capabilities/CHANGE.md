@@ -1,12 +1,12 @@
 # SA08 | Make model route limits, caching, reasoning and billing claims explicit
 
-**State: Done (2026-11-14).** Evidence: [sa08 sample](../../../../../../docs/programs/storyteller/evidence/sa08-model-route-capabilities-2026-11-14.md). Provider-free only; no paid cold/warm. Program [SA queue](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa08 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa08-model-route-capabilities-2026-11-14.md). Provider-free only; no paid cold/warm. Program [SA queue](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Goal:** an admitted provider route accurately declares and enforces its JSON protocol, token/reasoning ceilings, cache billing categories, output/stream behavior and failure handling; request audit reports **actual** cache usage when provider supplies it, never assumes discounts from shared bytes.
 >
-> **Authority:** [route capabilities / caching](../../../../../../docs/programs/storyteller/prompt-tools-and-models.md#model-route-capability-manifest), [cost policy](../../../../../../docs/programs/storyteller/effort-cost-and-lifecycle.md), existing [usage-policy authority](../../../../../../docs/technical/usage-policy.md).
+> **Authority:** [route capabilities / caching](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/prompt-tools-and-models.md#model-route-capability-manifest), [cost policy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/effort-cost-and-lifecycle.md), existing [usage-policy authority](../../../../../../docs/technical/usage-policy.md).
 >
 > **Source:** `packages/storyteller/src/providers/openrouter.ts::buildOpenRouterRequest/inspectOpenRouterRequest/compareOpenRouterRequests`, `packages/storyteller/src/tasks/policy.ts`, `packages/application/src/storyteller/budget.ts::createStorytellerBudget`, `application/storyteller/memory-provider-runtime.ts::createMemoryProviderRoundRuntime`, current `provider-pricing` and packet-audit tests.
 

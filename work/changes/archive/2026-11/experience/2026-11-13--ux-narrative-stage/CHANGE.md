@@ -2,12 +2,12 @@
 
 **State:** Done (2026-11-13). **Approval and owner:** Owner authorized continuing the UX sequence after UX01; Play recomposed onto StoryFrame.  
 **Kind:** frontend behavior and composition refactor + tests.  
-**Parent:** [Experience program](../../../../../../docs/programs/experience/implementation-program.md), M1. **Dependency:** UX01 shell (Done).
+**Parent:** [Experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M1. **Dependency:** UX01 shell (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play ownership map](../../../../../../apps/web/src/features/play/README.md), inspect `view.tsx`, `ui/campaign-play.tsx`, `ui/campaign-status.tsx` and currently used Storybook fixtures.  
-> **Governing target:** [selected Living Stage](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md#target-desktop-layout-current-scene-with-decision), [narrative/action threshold](../../../../../../docs/programs/experience/patterns/narrative-presentation.md#the-narrativeaction-boundary), [attention hierarchy](../../../../../../docs/programs/experience/patterns/state-and-attention.md#attention-priority-whowhat-deserves-the-stage).  
+> **Governing target:** [selected Living Stage](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md#target-desktop-layout-current-scene-with-decision), [narrative/action threshold](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/narrative-presentation.md#the-narrativeaction-boundary), [attention hierarchy](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/state-and-attention.md#attention-priority-whowhat-deserves-the-stage).  
 > **Known trap:** SSE/Query can publish a newer passage while the user reads: never steal scroll/focus or resurrect stale choices. The current Play sidebar mounts **History, Settings, and Technical IDs**. Moving those out of the main stage must preserve functional access, and opening/closing a settings drawer must not discard dirty React Hook Form edits.  
 > **Scope/permission:** **Authorized for UX02.** Recompose the present scene and status visually. Keep Play Query/command source ownership and game mechanics intact. UX03 owns the action grammar.
 
@@ -31,8 +31,8 @@ Recompose the present Play stage and adapt it to **true view states** without ch
 ## Authority and baseline
 
 - Product contract [present experience](../../../../../../docs/product/journeys/player-experience.md#inside-a-story), [scene vocabulary](../../../../../../docs/product/foundations/concepts.md#player-and-world-concepts).
-- Design [Now](../../../../../../docs/programs/experience/spaces/now.md), [accessibility](../../../../../../docs/programs/experience/system/accessibility-and-voice.md).
-- Engineering [React Query ownership](../../../../../../docs/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
+- Design [Now](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/now.md), [accessibility](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/accessibility-and-voice.md).
+- Engineering [React Query ownership](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
 - Source: current `PlayScene` reads one viewer/story-keyed snapshot; the source map says `useStoryLiveUpdates` invalidates Query and `view.tsx` renders current. Baseline GitHub main `8c91618` inspected 2026-11-13; **not browser-tested**, recheck after Cursor's other work.
 
 ## Scope
@@ -63,4 +63,4 @@ Expected `apps/web/src/features/play/view.tsx`, `ui/campaign-play.tsx`, plus exi
 
 ## Handoff
 
-Recheck current source and scope before marking Ready. Treat the [Living Stage blueprint](../../../../../../docs/programs/experience/spaces/living-stage-blueprint.md) as the chosen screen anatomy and collect real wide/narrow browser evidence. The owner explicitly authorizes code; a Proposed dossier isn't automatic execution permission. UX03 will supply precise intention behavior; UX04 owns time/holds. If UI labels require unavailable server fields, split data contract rather than concealing it. Cursor returns source proof, render screenshots and unknown states.
+Recheck current source and scope before marking Ready. Treat the [Living Stage blueprint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md) as the chosen screen anatomy and collect real wide/narrow browser evidence. The owner explicitly authorizes code; a Proposed dossier isn't automatic execution permission. UX03 will supply precise intention behavior; UX04 owns time/holds. If UI labels require unavailable server fields, split data contract rather than concealing it. Cursor returns source proof, render screenshots and unknown states.

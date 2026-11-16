@@ -58,8 +58,8 @@ const programRewrites = {
   "../../../engineering/targets/react-next.md": "docs/technical/client/architecture.md",
   "presentation-media-and-motion.md": "docs/programs/experience/system/presentation-media-and-motion.md",
   // engineering audits
-  "../audits/react-next-gap-2026-11-12.md": "docs/engineering/audits/react-next-gap-2026-11-12.md",
-  "../audits/chamber-gap-2026-11-12.md": "docs/engineering/audits/chamber-gap-2026-11-12.md",
+  "../audits/react-next-gap-2026-11-12.md": "research/legacy-audits/react-next-gap-2026-11-12.md",
+  "../audits/chamber-gap-2026-11-12.md": "research/legacy-audits/chamber-gap-2026-11-12.md",
 };
 
 function walk(dir) {

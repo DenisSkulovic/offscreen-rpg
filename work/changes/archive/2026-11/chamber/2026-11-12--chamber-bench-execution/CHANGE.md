@@ -1,6 +1,6 @@
 # Change CH02 | Instant Bench lane using real pure rules
 
-> **Cursor first look:** [developer tool source map](../../../../../../packages/application/src/developer-tools/README.md) and actual `@offscreen/game` pure policy exports. **Target:** [C03/C04/C12/C16](../../../../../../docs/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2](../../../../../../docs/technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H14](../../../../../../docs/engineering/audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** never write a Chamber-only imitation of the game resolver.
+> **Cursor first look:** [developer tool source map](../../../../../../packages/application/src/developer-tools/README.md) and actual `@offscreen/game` pure policy exports. **Target:** [C03/C04/C12/C16](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/chamber-laboratory.md#11-verifiable-acceptance-c01c16), [protocol 2](../../../../../../docs/technical/chamber-lab-protocol.md#2-architecture-and-drivers), [audit H03/H14](../../../../../../research/legacy-audits/chamber-gap-2026-11-12.md#4-ranked-gaps). **Trap:** never write a Chamber-only imitation of the game resolver.
 
 **State: Done** (2026-11-13). Owner authorized via continue after CH01. **Depends on:** CH01 (Done).
 

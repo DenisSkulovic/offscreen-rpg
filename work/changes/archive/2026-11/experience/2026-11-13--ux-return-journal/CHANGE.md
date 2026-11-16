@@ -1,11 +1,11 @@
 # UX07 | Returning to a life and reading its actual history
 
-**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX07 (narrow truthful Journal; no “since you left”). **Kind:** frontend return/chronology behavior + tests. **Parent:** [experience program](../../../../../../docs/programs/experience/implementation-program.md) M2. **Dependencies:** UX02 and UX04 (Done); verified public history data.
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX07 (narrow truthful Journal; no “since you left”). **Kind:** frontend return/chronology behavior + tests. **Parent:** [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md) M2. **Dependencies:** UX02 and UX04 (Done); verified public history data.
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Play owner](../../../../../../apps/web/src/features/play/README.md); inspect history.tsx, ui/campaign-history.tsx, ui/campaign-records.tsx and shared/api/story-history-query.ts.
-> **Primary target:** [return journey](../../../../../../docs/programs/experience/flows/return-and-memory.md#return-is-a-distinct-flow-not-a-permanent-modal) and [Journal architecture](../../../../../../docs/programs/experience/flows/return-and-memory.md#journal-information-architecture).
+> **Primary target:** [return journey](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/return-and-memory.md#return-is-a-distinct-flow-not-a-permanent-modal) and [Journal architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/return-and-memory.md#journal-information-architecture).
 > **Known trap:** paged published passages are not necessarily a full event ledger or a reliable “last seen” record. A friendly LLM recap must not claim uncommitted facts.
 > **Scope:** **Authorized for UX07.** Start with sourced Journal and honest “Recent developments.” “Since you left” needs a viewer-seen projection contract if not already supported — do not invent it.
 
@@ -26,7 +26,7 @@ Alternative rejected for the main stage: an unfiltered full chronology beneath t
 
 ## Authority and baseline
 
-[Reading a long life](../../../../../../docs/product/journeys/player-experience.md#reading-a-long-life), [passage/summary vocabulary](../../../../../../docs/product/foundations/concepts.md#execution-and-storage-concepts), [UX return](../../../../../../docs/programs/experience/flows/return-and-memory.md), [React Query history semantics](../../../../../../docs/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
+[Reading a long life](../../../../../../docs/product/journeys/player-experience.md#reading-a-long-life), [passage/summary vocabulary](../../../../../../docs/product/foundations/concepts.md#execution-and-storage-concepts), [UX return](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/return-and-memory.md), [React Query history semantics](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
 
 Current storyHistorySchema exposes paged {id,sequence,content} and nextBefore, with some campaign reports/events separately in CampaignView. This does not establish a complete read cursor or reliable relationship index. Main baseline 8c91618 inspected 2026-11-13; re-check source and DTO before Ready.
 

@@ -1,6 +1,6 @@
 # Governed Admin actions, approvals, durable receipts and audit
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Intervention workflows](../../programs/admin/operations-and-workflows.md), [Authority](../../programs/admin/authority-operating-policy.md), [Governance](../../programs/admin/access-and-governance-product.md), [Adversarial review](../../programs/admin/product-adversarial-review.md). Initial read-only delivery requires **audit and safe action contracts**, not immediate implementation of money-moving or world-editing actions.
+**Status:** Selected technical target, 2026-11-14. Product owners: [Intervention workflows](../../../evidence/inspections/admin-program-essays-2026-11/operations-and-workflows.md), [Authority](../../../evidence/inspections/admin-program-essays-2026-11/authority-operating-policy.md), [Governance](../../../evidence/inspections/admin-program-essays-2026-11/access-and-governance-product.md), [Adversarial review](../../../evidence/inspections/admin-program-essays-2026-11/product-adversarial-review.md). Initial read-only delivery requires **audit and safe action contracts**, not immediate implementation of money-moving or world-editing actions.
 
 ## 1. Operational intent is not a raw CRUD mutation
 

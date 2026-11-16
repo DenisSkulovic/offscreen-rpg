@@ -58,18 +58,18 @@ Read detailed phase exit gates in [MIGRATION.md](../../../../work/changes/open/2
 
 ## Reconciliation ledger
 
-**Not yet completed: Proposed.** Cursor must fill before marking Done:
+**In progress — P6 complete; P7 receipt pending.** Do not mark Done until P7 gardening + terminal ledger row land.
 
 | Authority / consumer | Source review | Target destination | Disposition and why | Proof / status |
 | --- | --- | --- | --- | --- |
-| Product foundations, gameplay, journeys, storytelling, experience and Admin | In progress (P2) | `docs/product/{foundations,gameplay,experience,storyteller,admin}/` | Gameplay + core experience/storyteller owners landed; legacy stubs; admin deferred | Partial — stubs until P5 |
-| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | In progress (P3) | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Core contracts promoted; skeletons + stubs; claim merges ongoing | Partial — flat/program paths until P5 |
-| Approved decisions and unresolved business policy | In progress (P4) | `docs/decisions/` + `work/designs/open/` | Scaffold + canon-invention preserved; ADRs not mass-invented | Partial |
-| Historical source audits / trials / screenshots / legal attribution | In progress (P4) | `evidence/`, test snapshots, `NOTICE.md` | evidence/ scaffold; assets still in programs until writer retarget | Partial |
-| Root roadmap/status + .agents/harness/tool loader | In progress (P5) | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | STATUS/ROADMAP/AGENTS + brief/docs-health/writers updated; full queue move pending | Partial |
-| All 483+ individual paths | Partial (P6 gated) | See registers + ledger | File-router dispositions done; claim certify + deletion blocked by P6-NO-LOSS-GATE | Soft-retire only |
+| Product foundations, gameplay, journeys, storytelling, experience and Admin | P2 + G2 | `docs/product/{foundations,gameplay,experience,storyteller,admin}/` | Canonical maps; deep Admin essays DROP→snapshot | **Met** (maps); deep essays retained in snapshot |
+| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | P3 + G2 | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Canonical maps; OBS technical DROP→snapshot | **Met** (maps) |
+| Approved decisions and unresolved business policy | P4 | `docs/decisions/` + `work/designs/open/` | Canon-invention preserved; ADRs not mass-invented | **Met** for preservation |
+| Historical source audits / trials / screenshots / legal attribution | P4–P6 | `evidence/`, `NOTICE.md`, snapshot | OBS evidence + full tree snapshot retained | **Met** |
+| Root roadmap/status + .agents/harness/tool loader | P5–G3 | `ROADMAP.md`, `STATUS.md`, `.agents/`, `work/changes` | Brief/docs-health/archiver on work/changes; taxonomy STRICT | **Met** |
+| All 483+ individual paths | P6 | registers + [doc01-legacy-snapshot](../../../../evidence/inspections/doc01-legacy-snapshot/MANIFEST.md) | Live programs/engineering/history/operations **deleted** after G1–G6 | **Met** (P6); P7 receipt open |
 
-**Execution receipt:** No code migration, link cutover, provider calls, runtime testing, deletion or docs-health result is claimed by this design-only packet. The design artifacts were written through the connected GitHub repository; Cursor must rerun actual local checks on its checkout.
+**Execution receipt (partial):** `check_docs` 0; `DOC01_TAXONOMY_STRICT` ok; `pnpm repo:brief` → this CHANGE; no paid providers. P7 still owns cold-reader note + Done.
 
 ## Cursor handoff request (for owner to send)
 

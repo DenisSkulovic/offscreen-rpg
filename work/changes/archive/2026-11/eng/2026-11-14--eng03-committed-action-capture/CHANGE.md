@@ -1,8 +1,8 @@
 # ENG03-C1 | Capture committed finite-action narration off-lock
 
-**State: Done for core path (2026-11-14); residual design-tightening still open.** Evidence: [eng03-c1-committed-capture-2026-11-14](../../../../../../docs/programs/engine/evidence/eng03-c1-committed-capture-2026-11-14.md). **Parent full ENG03:** remains Proposed. **Scope:** settled `gameActionReceipt.generationId` initially null only. Pending-consequence Done path unchanged.
+**State: Done for core path (2026-11-14); residual design-tightening still open.** Evidence: [eng03-c1-committed-capture-2026-11-14](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/eng03-c1-committed-capture-2026-11-14.md). **Parent full ENG03:** remains Proposed. **Scope:** settled `gameActionReceipt.generationId` initially null only. Pending-consequence Done path unchanged.
 
-**Authority:** [strict committed-action capture DTO and source table](../../../../../../docs/programs/engine/decisions/eng03-committed-action-capture-v1.md); [full purpose migration sequence](../../../../../../docs/programs/engine/decisions/eng03-capture-migration-sequence.md); [ENG03-M measured pending lock amplification](../../../../../../docs/programs/engine/evidence/eng03-lock-measurement-2026-11-14.md).
+**Authority:** [strict committed-action capture DTO and source table](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-committed-action-capture-v1.md); [full purpose migration sequence](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-capture-migration-sequence.md); [ENG03-M measured pending lock amplification](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/eng03-lock-measurement-2026-11-14.md).
 
 ## What shipped
 

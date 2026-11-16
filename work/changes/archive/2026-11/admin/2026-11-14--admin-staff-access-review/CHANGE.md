@@ -1,12 +1,12 @@
 # AD07 | Staff access inspector and sanitized administrative audit view
 
-**State: Done (2026-11-14).** Evidence: [ad07](../../../../../../docs/programs/admin/evidence/ad07-staff-access-audit-2026-11-14.md). Code-bearing governance visibility. **Depends on:** AD01–AD06 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad07](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad07-staff-access-audit-2026-11-14.md). Code-bearing governance visibility. **Depends on:** AD01–AD06 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** authorized staff-governance reviewers can inspect actual staff status, bounded package assignments, effective permission reasoning and existing bootstrap/session/access audit, without obtaining power to grant privilege or expose private player content.
 >
-> **Authority:** [Governance product](../../../../../../docs/programs/admin/access-and-governance-product.md), [identity/policy](../../../../../../docs/programs/admin/technical/staff-identity-and-policy.md), [audit contract](../../../../../../docs/programs/admin/technical/action-approval-and-audit.md), [V1 API](../../../../../../docs/programs/admin/technical/core-v1-contracts.md).
+> **Authority:** [Governance product](../../../../../../evidence/inspections/admin-program-essays-2026-11/access-and-governance-product.md), [identity/policy](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/staff-identity-and-policy.md), [audit contract](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/action-approval-and-audit.md), [V1 API](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md).
 >
 > **Start/revalidate:** AD01 staff/audit schema and actor resolver, AD02 policy registry, Nest Admin controller, AD04 `/control` shell; existing auth/DB integration proof route.
 >

@@ -1,12 +1,12 @@
 # SA10 | Bounded Storyteller loop never loses gameplay or spends twice on failure
 
-**State: Done (2026-11-14).** Evidence: [sa10 sample](../../../../../../docs/programs/storyteller/evidence/sa10-loop-failure-lifecycle-2026-11-14.md). Provider-free retry/charge gates; no paid/DB. Depends SA01 trace. [SA program](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa10 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa10-loop-failure-lifecycle-2026-11-14.md). Provider-free retry/charge gates; no paid/DB. Depends SA01 trace. [SA program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Outcome:** one Storyteller operation facing delayed provider, repair, round exhaustion, uncertain charge, stale source or worker restart ends with exactly one truthful terminal/held/final state and never grants fictional time or extra charged attempts.
 >
-> **Authority:** [time/cost failure matrix](../../../../../../docs/programs/storyteller/effort-cost-and-lifecycle.md#failure-and-budget-exhaustion-matrix), [outer loop](../../../../../../docs/programs/storyteller/target-operating-model.md#the-two-interacting-loops-not-one-infinite-chat), [usage policy](../../../../../../docs/technical/usage-policy.md).
+> **Authority:** [time/cost failure matrix](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/effort-cost-and-lifecycle.md#failure-and-budget-exhaustion-matrix), [outer loop](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/target-operating-model.md#the-two-interacting-loops-not-one-infinite-chat), [usage policy](../../../../../../docs/technical/usage-policy.md).
 >
 > **Source:** `packages/application/src/storyteller/execution.ts::createStorytellerExecution`, `storyteller/memory-exploration-controller.ts::runMemoryExploration`, `storyteller/memory-provider-runtime.ts`, `storyteller/budget.ts::createStorytellerBudget`, `storyteller/recovery.ts::retryStoryteller`.
 

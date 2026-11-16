@@ -4,7 +4,7 @@
 
 **Explore by question:** [local requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
 
-The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [progress](../progress.md) for demonstrated coverage and [the engine model](../engineering/engine-model.md) for current mechanics, time and memory limits; general inventory/combat and shared play remain unfinished.
+The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [progress](../progress.md) for demonstrated coverage and [the engine model](../../evidence/inspections/doc01-legacy-snapshot/engineering/engine-model.md) for current mechanics, time and memory limits; general inventory/combat and shared play remain unfinished.
 
 ## Requirements and startup
 
@@ -43,7 +43,7 @@ The worker uses `TEMPORAL_ADDRESS` (default `127.0.0.1:7233`), `TEMPORAL_NAMESPA
 
 ## Fast frontend workflow
 
-For React/Next portfolio work with inexpensive Cursor models, use the [chosen frontend execution playbook](../engineering/frontend-execution-playbook.md) **by heading** and the **one** selected Change. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
+For React/Next portfolio work with inexpensive Cursor models, use the [chosen frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md) **by heading** and the **one** selected Change. Full `pnpm dev` starts several watchers/services; it is not needed for a pure selector, Query/RHF component, Vitest or Storybook state.
 
 Existing direct commands after dependency setup (use only when relevant):
 
@@ -96,7 +96,7 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
-Checks are optional under the [verification policy](../../.agents/rules/verification.md); choose a focused command when it answers a concrete question. `@offscreen/storyteller/tasks` prepares and validates opening, continuation, consequence and report tasks. Provider-free fixtures and real-provider execution are separate paths. Hosted structured-output and mechanical play have historical live evidence in the [connected proof](../engineering/connected-poc-proof.md); that does not establish every schema, scenario or recovery path. Ordinary checks must keep live inference disabled.
+Checks are optional under the [verification policy](../../.agents/rules/verification.md); choose a focused command when it answers a concrete question. `@offscreen/storyteller/tasks` prepares and validates opening, continuation, consequence and report tasks. Provider-free fixtures and real-provider execution are separate paths. Hosted structured-output and mechanical play have historical live evidence in the [connected proof](../../research/legacy-engineering/connected-poc-proof.md); that does not establish every schema, scenario or recovery path. Ordinary checks must keep live inference disabled.
 
 ```sh
 pnpm format:check

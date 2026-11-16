@@ -1,6 +1,6 @@
 # Admin frontend, navigation and interaction contracts
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Command Center](../../programs/admin/command-center-product.md), [Personas](../../programs/admin/personas-and-workspaces.md), [Player 360](../../programs/admin/player-360-service-blueprint.md), [Authority](../../programs/admin/authority-operating-policy.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](../../programs/admin/technical/source-baseline-2026-11-14.md).
+**Status:** Selected technical target, 2026-11-14. Product owners: [Command Center](../../../evidence/inspections/admin-program-essays-2026-11/command-center-product.md), [Personas](../../../evidence/inspections/admin-program-essays-2026-11/personas-and-workspaces.md), [Player 360](../../../evidence/inspections/admin-program-essays-2026-11/player-360-service-blueprint.md), [Authority](../../../evidence/inspections/admin-program-essays-2026-11/authority-operating-policy.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/source-baseline-2026-11-14.md).
 
 ## 1. One staff shell with isolated authentication and data
 

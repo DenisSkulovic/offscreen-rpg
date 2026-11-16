@@ -1,8 +1,8 @@
 # Admin charter and personas
 
 **Owner (DOC01 P2):** why Offscreen Control exists and who uses it.  
-**Status:** Long-term product direction accepted (2026-11-14) subject to [conditional capability gates](../../programs/admin/product-acceptance-and-scope.md). AD01–AD08 first-wave landed in synthetic/local scope; **no production Support grant issuer**.  
-**Source detail:** [product-charter](../../programs/admin/product-charter.md), [personas-and-workspaces](../../programs/admin/personas-and-workspaces.md).
+**Status:** Long-term product direction accepted (2026-11-14) subject to [conditional capability gates](../../../evidence/inspections/admin-program-essays-2026-11/product-acceptance-and-scope.md). AD01–AD08 first-wave landed in synthetic/local scope; **no production Support grant issuer**.  
+**Source detail:** [product-charter](../../../evidence/inspections/admin-program-essays-2026-11/product-charter.md), [personas-and-workspaces](../../../evidence/inspections/admin-program-essays-2026-11/personas-and-workspaces.md).
 
 ## Product
 

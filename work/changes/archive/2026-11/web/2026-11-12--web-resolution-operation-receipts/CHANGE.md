@@ -1,14 +1,14 @@
 # Change W19: Read-only Nest receipt endpoint for durable resolution intent recovery
 
-> **Cursor first look (current source ≠ selected target):** [Resolution DB map](../../../../../../packages/application/src/stories/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../../../../../docs/engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
+> **Cursor first look (current source ≠ selected target):** [Resolution DB map](../../../../../../packages/application/src/stories/README.md) → the **one** owning symbol. **Primary contract:** [F5](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f5-one-recoverable-mutation-model).  
 > **Pre-investigated trap:** GET receipt must be owner-scoped and **read-only**, never enqueue a previously ambiguous paid operation.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Closed 2026-11-12 after focused disposable-DB Nest proof. Architecture remains the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md). **Implementation revision:** `7a654af` (+ closure commit).
+**State: Done.** Closed 2026-11-12 after focused disposable-DB Nest proof. Architecture remains the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md). **Implementation revision:** `7a654af` (+ closure commit).
 
 **Dependencies:** W02; must be completed before W04 claims cross-reload resolution recovery.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F2 F5 F11**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G31 G12**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F2 F5 F11**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G31 G12**.
 
 ## Code-bearing outcome and ownership
 

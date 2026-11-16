@@ -1,14 +1,14 @@
 # Change W02: Authenticated Next route group and typed server-side Nest reader
 
-> **Cursor first look (current source ≠ selected target):** [App Router map](../../../../../../apps/web/app/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../../../../../docs/engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
+> **Cursor first look (current source ≠ selected target):** [App Router map](../../../../../../apps/web/app/README.md) → the **one** owning symbol. **Primary contract:** [F1](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f1-serverclient-rendering-boundary).  
 > **Pre-investigated trap:** `requireViewer` is server-side; current browser rewrite loopback differs from configurable SSR origin.  
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. Owner authorized Cursor execution on **2026-11-12** after W01/W20/W21. Implemented and verified the same day (unit/status negatives + `pnpm test:fast` + `@offscreen/web` typecheck). Full production-like proxy/HTML privacy remains **W14**.
+**State: Done.** Architecture and library choices are **DECIDED by the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. Owner authorized Cursor execution on **2026-11-12** after W01/W20/W21. Implemented and verified the same day (unit/status negatives + `pnpm test:fast` + `@offscreen/web` typecheck). Full production-like proxy/HTML privacy remains **W14**.
 
 **Dependencies:** W01 recommended. Must precede W15 and W19.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F1 F2 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G14 G16 G25**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F1 F2 F11 F14**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G14 G16 G25**.
 
 ## Code-bearing outcome and ownership
 

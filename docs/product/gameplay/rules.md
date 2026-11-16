@@ -8,7 +8,7 @@
 
 D&D-style character abilities, skill checks, dice and recorded consequences are fundamental across work, fishing, travel and combat—not optional narrative decoration. The Storyteller fills the dungeon master’s role for interpretation and narration; **code** validates challenges, rolls dice, determines results and applies supported effects.
 
-The initial product uses a small, explicitly versioned D&D-style rules subset. It must not claim full compatibility with a particular edition. Owner-delegated edition baseline: revised fifth edition, pinned to [SRD 5.2.1](https://www.dndbeyond.com/srd). Full combat, character advancement and long-running progress remain separate scope. Attribution: [rules attribution](../../history/legal/rules-attribution.md) and `/rules`.
+The initial product uses a small, explicitly versioned D&D-style rules subset. It must not claim full compatibility with a particular edition. Owner-delegated edition baseline: revised fifth edition, pinned to [SRD 5.2.1](https://www.dndbeyond.com/srd). Full combat, character advancement and long-running progress remain separate scope. Attribution: [rules attribution](../../../NOTICE.md) and `/rules`.
 
 **Negative:** a model cannot choose a die face, reroll a failure, award an unsupported resource, or narrate away a committed result. The player’s character, resources and completed history survive Storyteller changes.
 

@@ -1,12 +1,12 @@
 # UX05 | Stories library that feels like returning to lives
 
 **State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX05.
-**Kind:** frontend composition and behavior plus tests. **Parent:** [experience implementation program](../../../../../../docs/programs/experience/implementation-program.md), M2. **Dependency:** UX01 shell (Done).
+**Kind:** frontend composition and behavior plus tests. **Parent:** [experience implementation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M2. **Dependency:** UX01 shell (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Stories owner map](../../../../../../apps/web/src/features/stories/README.md) and [App Router map](../../../../../../apps/web/app/README.md). Inspect the live story list, draft list and authenticated stories page.
-> **Primary target:** [Stories library](../../../../../../docs/programs/experience/spaces/stories-library.md#core-question).
+> **Primary target:** [Stories library](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/stories-library.md#core-question).
 > **Known trap:** the current story list schema exposes id/title/storyteller/status, not necessarily pending decisions, active work, or latest committed situation. Do not infer “Continuing” from elapsed time.
 > **Permission:** **Authorized for UX05.** No provider or gameplay code, no assumption that rich attention projections already exist beyond the current list `status` string.
 
@@ -27,7 +27,7 @@ Alternative to challenge: a uniform filterable card grid. Useful for many storie
 
 ## Authority, source and excluded work
 
-Product [arriving/returning](../../../../../../docs/product/journeys/player-experience.md#arriving-and-returning); UX [Stories](../../../../../../docs/programs/experience/spaces/stories-library.md); engineering [Query identity](../../../../../../docs/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
+Product [arriving/returning](../../../../../../docs/product/journeys/player-experience.md#arriving-and-returning); UX [Stories](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/stories-library.md); engineering [Query identity](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#2-tanstack-query-architecture-exact-operating-contract).
 
 Likely owners: apps/web/src/features/stories/live-story-list.tsx, draft-list.tsx, app/(authenticated)/stories/page.tsx, and relevant Storybook/tests. Current infinite Query/SSR hydration and pagination must remain. Baseline main 8c91618 inspected on 2026-11-13; re-inspect the evolving code before Ready.
 

@@ -1,12 +1,12 @@
 # SA03 | Bound context I/O to relevant live state and selected canonical evidence
 
-**State: Done (2026-11-14).** Evidence: [sa03 sample](../../../../../../docs/programs/storyteller/evidence/sa03-context-efficiency-2026-11-14.md). Did not implement ENG03 lock move. [SA program](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa03 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa03-context-efficiency-2026-11-14.md). Did not implement ENG03 lock move. [SA program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Outcome:** assembling a Storyteller task for a story with 2,000 archived activities does **not** scan/materialize all terminal activities or every eligible descriptive document; all required active/accepted truth and source handles remain in the final valid packet.
 >
-> **Authority:** [context authority](../../../../../../docs/programs/storyteller/context-and-retrieval.md), [current I/O observation](../../../../../../docs/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#source-dependent-risks-found), [ENG03 owner](../../../../../../docs/programs/engine/decisions/eng03-instrument-before-refactor.md).
+> **Authority:** [context authority](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md), [current I/O observation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#source-dependent-risks-found), [ENG03 owner](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng03-instrument-before-refactor.md).
 >
 > **Source:** `packages/application/src/storyteller/context.ts::loadStorytellerContext`, `storyteller/canonical-knowledge.ts::loadCanonicalKnowledge`, `packages/storyteller/src/context/index.ts::boundStorytellerContext`, `packages/db/src/schema/campaign.ts::gameActivity`, existing long-story memory fixture/tests.
 

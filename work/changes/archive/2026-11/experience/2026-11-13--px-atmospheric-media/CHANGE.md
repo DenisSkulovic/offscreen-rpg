@@ -1,12 +1,12 @@
 # PX03 | Trusted scene art, narrative slots and truthful presentation motion
 
-**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed trusted fixture assets, anchored figures, and passage-id arrival motion. Parent: [presentation program](../../../../../../docs/programs/experience/presentation-implementation-program.md). Next: [PX04 workbench](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-presentation-lab/CHANGE.md) (landed in the same implementation).
+**State: Done (2026-11-13).** **Approval:** Owner asked to implement the presentation design. Cursor landed trusted fixture assets, anchored figures, and passage-id arrival motion. Parent: [presentation program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-implementation-program.md). Next: [PX04 workbench](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--px-presentation-lab/CHANGE.md) (landed in the same implementation).
 
 ## Cursor first-screen brief
 
 > **Outcome:** one current, verified passage can carry optional fixture-backed environmental background and up to two anchored illustrations, plus bounded atmospheric/entrance motion, while prose/actions remain fully usable without any art or motion.
 >
-> **Authority:** [media layering and placement](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md#layering-and-interaction-order), [asset trust/lifecycle](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md#asset-boundary-references-not-generated-urls), [motion identity](../../../../../../docs/programs/experience/system/presentation-media-and-motion.md#event-identity-and-lifecycle), [V1 media contract](../../../../../../docs/programs/experience/system/presentation-language.md#mediaplacement-v1).
+> **Authority:** [media layering and placement](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md#layering-and-interaction-order), [asset trust/lifecycle](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md#asset-boundary-references-not-generated-urls), [motion identity](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md#event-identity-and-lifecycle), [V1 media contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md#mediaplacement-v1).
 >
 > **Source entry:** [Play owner map](../../../../../../apps/web/src/features/play/README.md); `ui/story-frame.tsx`/scoped CSS; PX02's `NarrativePassage` and `IntentionChoice`; `view.tsx` for current passage identity; existing Storybook and media facilities. Check `app/style.css` only for actual layer collisions.
 >

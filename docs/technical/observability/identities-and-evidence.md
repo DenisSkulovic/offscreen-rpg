@@ -3,7 +3,7 @@
 > **DOC01 P3 canonical technical owner.** Promoted from `docs/programs/observability/technical/evidence-model.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
 
 
-**Status: technical target proposal, 2026-11-15.** Product [forensic journeys](../../programs/observability/product-vision.md), actual [source inventory](../../../evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md), ownership [Engine](../../programs/engine/README.md), [Storyteller](../../programs/storyteller/README.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
+**Status: technical target proposal, 2026-11-15.** Product [forensic journeys](../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/product-vision.md), actual [source inventory](../../../evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md), ownership [Engine](../../../docs/technical/engine/authority-and-transitions.md), [Storyteller](../../../docs/product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
 
 ## 1. Decision: no mega-GameData blob, no telemetry-as-history
 

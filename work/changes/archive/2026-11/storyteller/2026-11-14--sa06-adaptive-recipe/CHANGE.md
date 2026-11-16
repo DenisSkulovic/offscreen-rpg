@@ -1,12 +1,12 @@
 # SA06 | Select an investigative recipe from actual task need and effective policy
 
-**State: Done (2026-11-14).** Evidence: [sa06 sample](../../../../../../docs/programs/storyteller/evidence/sa06-adaptive-recipe-2026-11-14.md). Depends on SA01/SA05 baseline. **First intentional adaptive-agent product behavior change.** Program [SA queue](../../../../../../docs/programs/storyteller/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [sa06 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa06-adaptive-recipe-2026-11-14.md). Depends on SA01/SA05 baseline. **First intentional adaptive-agent product behavior change.** Program [SA queue](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** simple grounded dialogue remains a one-shot task with zero memory rounds; a task that explicitly needs an older known source selects an **already supported** bounded `memory-exploration.v1` recipe *only when* account/route/payer/operation policy authorizes it. Unknown mandatory source or insufficient money fails closed.
 >
-> **Authority:** [adaptive decision rules](../../../../../../docs/programs/storyteller/target-operating-model.md#adaptive-decision-protocol-and-stopping-rules), [effort intersection](../../../../../../docs/programs/storyteller/effort-cost-and-lifecycle.md#dont-encode-intelligence-as-plan-a-10000-tokens), [resource recipe baseline](../../../../../../docs/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-e-what-the-engine-calls-an-agentic-loop).
+> **Authority:** [adaptive decision rules](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/target-operating-model.md#adaptive-decision-protocol-and-stopping-rules), [effort intersection](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/effort-cost-and-lifecycle.md#dont-encode-intelligence-as-plan-a-10000-tokens), [resource recipe baseline](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/current-flow-audit-2026-11-14.md#trace-e-what-the-engine-calls-an-agentic-loop).
 >
 > **Source:** `packages/application/src/storyteller/task-admission.ts::prepareAdmittedStorytellerTask/resourcesForEffectiveUsagePolicy`, `application/storyteller/creative-exploration-recipes.ts`, `storyteller/src/tasks/resources.ts`, `application/storyteller/execution.ts::createStorytellerExecution`, and current usage/recipe tests. Inspect actual call sites and captured story profile before editing.
 

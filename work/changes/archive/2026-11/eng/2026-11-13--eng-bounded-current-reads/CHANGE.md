@@ -1,6 +1,6 @@
 # ENG04 | Current gameplay reads do not load every historical activity
 
-**State:** Done. Owner authorized on 2026-11-13. `readCampaign` loads only the active activity (by id) plus nonterminal commitments; terminal history stays out of the current projection. No index added (query correctness proven on disposable SQL with 1,000 completed rows; no speculative index). **Kind:** bounded query/projection behavior and tests. **Authority:** [read-growth investigation](../../../../../../docs/programs/engine/evidence/read-growth-and-availability.md), [causal authority](../../../../../../docs/programs/engine/domain-authority.md).
+**State:** Done. Owner authorized on 2026-11-13. `readCampaign` loads only the active activity (by id) plus nonterminal commitments; terminal history stays out of the current projection. No index added (query correctness proven on disposable SQL with 1,000 completed rows; no speculative index). **Kind:** bounded query/projection behavior and tests. **Authority:** [read-growth investigation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/read-growth-and-availability.md), [causal authority](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/domain-authority.md).
 
 ## Cursor first-screen brief
 

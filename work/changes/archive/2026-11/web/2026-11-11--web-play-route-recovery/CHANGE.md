@@ -1,14 +1,14 @@
 # Change W07: Next route, Query boundary, keyboard and accessible failure recovery
 
-> **Cursor first look (current source ≠ selected target):** [App Router error map](../../../../../../apps/web/app/README.md) → the **one** owning symbol. **Primary contract:** [F9](../../../../../../docs/engineering/targets/react-next.md#f9-accessible-resilient-interaction).  
+> **Cursor first look (current source ≠ selected target):** [App Router error map](../../../../../../apps/web/app/README.md) → the **one** owning symbol. **Primary contract:** [F9](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f9-accessible-resilient-interaction).  
 > **Pre-investigated trap:** 401/404/503, pending/uncertain are distinct. Do not catch Next `redirect`/`notFound` as generic errors.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W10. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W10 `main` (`9d66cc3`). Full Playwright+@axe-core/playwright browser suite remains W14.
+**State: Done.** Owner authorized via continue after W10. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W10 `main` (`9d66cc3`). Full Playwright+@axe-core/playwright browser suite remains W14.
 
 **Depends on:** W01 W02 W15 W03 W04; W17 is optional only for final streaming-specific states.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F1 F2 F9 F10**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G24 G32**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F1 F2 F9 F10**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G24 G32**.
 
 ## Code outcome and owners
 

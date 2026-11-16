@@ -1,12 +1,12 @@
 # PF01 | Public homepage becomes a playable invitation
 
-**State: Done (2026-11-13).** Scoped `PublicPortal` on `/` with preview-first CTA hierarchy, editorial glimpse, how-it-works journey, honest mode split and GitHub proof. Parent: [entry program](../../../../../../docs/programs/experience/platform-entry-implementation-program.md). PF02 can proceed separately; coordinate shared public CSS.
+**State: Done (2026-11-13).** Scoped `PublicPortal` on `/` with preview-first CTA hierarchy, editorial glimpse, how-it-works journey, honest mode split and GitHub proof. Parent: [entry program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-entry-implementation-program.md). PF02 can proceed separately; coordinate shared public CSS.
 
 ## Cursor first-screen brief
 
 > **Goal:** replace the skeletal public / page with an original, SSR-accessible editorial portal whose first action leads to the free scripted preview, while the real-story path and genuine GitHub evidence remain clear.
 >
-> **Authority:** [public blueprint](../../../../../../docs/programs/experience/spaces/public-portal-blueprint.md), [platform ecosystem](../../../../../../docs/programs/experience/platform-ecosystem.md), [portfolio first contact](../../../../../../docs/programs/experience/flows/portfolio-first-contact.md), [accessibility](../../../../../../docs/programs/experience/system/accessibility-and-voice.md).
+> **Authority:** [public blueprint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/public-portal-blueprint.md), [platform ecosystem](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-ecosystem.md), [portfolio first contact](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/portfolio-first-contact.md), [accessibility](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/accessibility-and-voice.md).
 >
 > **Source:** `apps/web/app/page.tsx`, `apps/web/app/style.css`, `apps/web/app/layout.tsx`, existing `/demo` and `/sign-in` route owners, then one closest web page test/Storybook pattern. Do not scan/rebuild the game.
 >

@@ -1,14 +1,14 @@
 # Change W11: RHF/Zod campaign settings, presets and versioned edit sessions
 
-> **Cursor first look (current source ≠ selected target):** [Settings owner map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F8](../../../../../../docs/engineering/targets/react-next.md#f8-creationforms-and-editing-consistency).  
+> **Cursor first look (current source ≠ selected target):** [Settings owner map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F8](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f8-creationforms-and-editing-consistency).  
 > **Pre-investigated trap:** Current parent `key={settings.revision}` may discard unsaved creative settings; future RHF edit session keyed by story.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W07. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W07 `main` (`631f788`).
+**State: Done.** Owner authorized via continue after W07. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W07 `main` (`631f788`).
 
 **Depends on:** W01 W15 W04; W08 RHF conventions can be reused, no independent form framework.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F3 F5 F8 F11**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G22 G28 G16**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F3 F5 F8 F11**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G22 G28 G16**.
 
 ## Code outcome and owners
 

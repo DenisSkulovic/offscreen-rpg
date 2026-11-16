@@ -2,7 +2,7 @@
 
 **Owner (DOC01 P2):** investigating a player/campaign/case together and running support workflows.  
 **Status:** Player-safe reads and case anchors landed in first wave (AD); Situation UI synthetic (OBS06/07). Full Turn Capsule / raw-evidence disclosure **not** implemented.  
-**Sources:** [player-360-and-entities](../../programs/admin/player-360-and-entities.md), [support-and-customer-success-product](../../programs/admin/support-and-customer-success-product.md), [operations-and-workflows](../../programs/admin/operations-and-workflows.md).
+**Sources:** [player-360-and-entities](../../../evidence/inspections/admin-program-essays-2026-11/player-360-and-entities.md), [support-and-customer-success-product](../../../evidence/inspections/admin-program-essays-2026-11/support-and-customer-success-product.md), [operations-and-workflows](../../../evidence/inspections/admin-program-essays-2026-11/operations-and-workflows.md).
 
 ## Promise
 

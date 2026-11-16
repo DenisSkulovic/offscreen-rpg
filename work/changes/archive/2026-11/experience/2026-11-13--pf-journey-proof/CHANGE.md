@@ -1,12 +1,12 @@
 # PF05 | Prove public-entry to player-home journeys without backend fiction
 
-**State: Done (2026-11-13).** Provider-free journey suite + Storybook Platform/Entry journeys covering PF01–PF04 surfaces. Parent: [entry program](../../../../../../docs/programs/experience/platform-entry-implementation-program.md). Evidence: [platform-entry-journey-proof-2026-11-13](../../../../../../docs/programs/experience/evidence/platform-entry-journey-proof-2026-11-13.md).
+**State: Done (2026-11-13).** Provider-free journey suite + Storybook Platform/Entry journeys covering PF01–PF04 surfaces. Parent: [entry program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-entry-implementation-program.md). Evidence: [platform-entry-journey-proof-2026-11-13](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/platform-entry-journey-proof-2026-11-13.md).
 
 ## Cursor first-screen brief
 
 > **Goal:** executable deterministic tests and browser evidence confirm that public discovery, scripted preview, safe sign-in return and personal Stories navigation form a coherent, accessible, truthful experience across success, failure and identity changes.
 >
-> **Authority:** [platform journey atlas](../../../../../../docs/programs/experience/platform-journeys-and-states.md), [public blueprint](../../../../../../docs/programs/experience/spaces/public-portal-blueprint.md), [preview-to-play](../../../../../../docs/programs/experience/flows/preview-to-play.md), [player home](../../../../../../docs/programs/experience/spaces/player-home-blueprint.md), [experience validation](../../../../../../docs/programs/experience/evidence/validation-plan.md).
+> **Authority:** [platform journey atlas](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-journeys-and-states.md), [public blueprint](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/public-portal-blueprint.md), [preview-to-play](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/preview-to-play.md), [player home](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/player-home-blueprint.md), [experience validation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/validation-plan.md).
 >
 > **Start:** actual post-PF01–PF04 routes plus `apps/web/app/README.md`, existing Vitest/RTL/MSW/Storybook and Playwright/integration source map; do not open all product docs and current test files blindly.
 >

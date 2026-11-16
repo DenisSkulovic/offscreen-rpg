@@ -1,12 +1,12 @@
 # PF02 | The no-cost preview demonstrates intention, earned time and return
 
-**State: Done (2026-11-13).** Greywake scripted `/demo` with immediate decision, notice-gated memory option, simulated jump/return digest, and provider-free proofs. Parent: [entry program](../../../../../../docs/programs/experience/platform-entry-implementation-program.md).
+**State: Done (2026-11-13).** Greywake scripted `/demo` with immediate decision, notice-gated memory option, simulated jump/return digest, and provider-free proofs. Parent: [entry program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/platform-entry-implementation-program.md).
 
 ## Cursor first-screen brief
 
 > **Goal:** make /demo an original, coherent, no-account scripted showcase where the first meaningful decision is available immediately, earlier choices affect subsequent facts/options, simulated waiting is explicitly marked and the final return digest points to real story creation or source.
 >
-> **Authority:** [preview-to-play](../../../../../../docs/programs/experience/flows/preview-to-play.md), [original Greywake editorial script](../../../../../../docs/programs/experience/prototypes/public-demo-script.md), [choice UX](../../../../../../docs/programs/experience/patterns/choice-surface-decision-rules.md), [portfolio first contact](../../../../../../docs/programs/experience/flows/portfolio-first-contact.md).
+> **Authority:** [preview-to-play](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/preview-to-play.md), [original Greywake editorial script](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/prototypes/public-demo-script.md), [choice UX](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/patterns/choice-surface-decision-rules.md), [portfolio first contact](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/portfolio-first-contact.md).
 >
 > **Start:** `apps/web/app/demo/story-demo.tsx`, `scene-view.tsx`, `script.ts`, `content/script.json`, existing StoryFrame and closest scripted-demo tests. No Nest, no direct paid provider.
 >

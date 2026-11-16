@@ -1,14 +1,14 @@
 # Change W05: TanStack Query pending-state refetch, visibility and fallback
 
-> **Cursor first look (current source ≠ selected target):** [Play refresh map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../docs/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
+> **Cursor first look (current source ≠ selected target):** [Play refresh map](../../../../../../apps/web/src/features/play/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
 > **Pre-investigated trap:** Current Play uses an ad hoc 2-second `setTimeout` loop; Query is the future, and GET must never issue paid work.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Closed 2026-11-12 after RTL/MSW visibility/settlement/503 proof. Architecture remains the owner-authorized [React/Next target](../../../../../../docs/engineering/targets/react-next.md). **Source baseline at selection:** post-W04 `main` (`cdf8dce`).
+**State: Done.** Closed 2026-11-12 after RTL/MSW visibility/settlement/503 proof. Architecture remains the owner-authorized [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md). **Source baseline at selection:** post-W04 `main` (`cdf8dce`).
 
 **Dependencies:** W15 W03 W04; groundwork for SSE client W17.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F3 F4 F6 F9**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G18 G27 G30**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F3 F4 F6 F9**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G18 G27 G30**.
 
 ## Code-bearing outcome and ownership
 

@@ -1,12 +1,12 @@
 # ENG09 | Item-holder invalidation must produce one recoverable controlling consequence
 
-**State: Done (2026-11-14).** Owner-authorized implementation of the selected `action-interrupted` consequence. **Decision owner:** [interrupted-action contract](../../../../../../docs/programs/engine/decisions/eng09-interrupted-action-consequence.md). **Evidence:** [confirmed dead-end probe](../../../../../../docs/programs/engine/evidence/eng09-interruption-playability-probe-2026-11-13.md); disposable SQL mid-flight fixture in `packages/application/test/eng01-item-transfer.live.test.mjs`. **Parent:** [engine program](../../../../../../docs/programs/engine/implementation-program.md).
+**State: Done (2026-11-14).** Owner-authorized implementation of the selected `action-interrupted` consequence. **Decision owner:** [interrupted-action contract](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng09-interrupted-action-consequence.md). **Evidence:** [confirmed dead-end probe](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/evidence/eng09-interruption-playability-probe-2026-11-13.md); disposable SQL mid-flight fixture in `packages/application/test/eng01-item-transfer.live.test.mjs`. **Parent:** [engine program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/implementation-program.md).
 
 ## Cursor first-screen handoff
 
 > **GOAL:** An admitted `item.transfer.v1` whose required item holder changes before its due boundary commits one factual interruption and gets one *normal controlling consequence follow-up*, not an abandoned campaign with null offer and empty holds.
 >
-> **AUTHORITY:** [selected exact ENG09 transition](../../../../../../docs/programs/engine/decisions/eng09-interrupted-action-consequence.md#authoritative-transition), [idempotency / cost and hold rules](../../../../../../docs/programs/engine/decisions/eng09-interrupted-action-consequence.md#cost-hold-failure-and-recovery-rules); existing time/hold/game authority.
+> **AUTHORITY:** [selected exact ENG09 transition](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng09-interrupted-action-consequence.md#authoritative-transition), [idempotency / cost and hold rules](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/engine/decisions/eng09-interrupted-action-consequence.md#cost-hold-failure-and-recovery-rules); existing time/hold/game authority.
 >
 > **SOURCE ENTRY:** `packages/application/src/campaign/action-executions.ts::settleActionExecution`; `campaign/narration.ts::consequenceReceiptSchema/createConsequenceNarration`; `campaign/holds.ts::holdCampaignForStorytellerIntent`; `storyteller/publication.ts::publishStorytellerResult`; `test/eng01-item-transfer.live.test.mjs`. Inspect `campaign/follow-up-intents.ts` and public reads only if actual execution scope requires.
 >

@@ -1,12 +1,12 @@
 # AD08 | Minimal internal Support cases and governed assignment provenance
 
-**State: Done (2026-11-14).** Evidence: [ad08](../../../../../../docs/programs/admin/evidence/ad08-support-case-anchors-2026-11-14.md). Code-bearing case/workflow foundation. **Depends on:** AD01–AD07 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad08](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad08-support-case-anchors-2026-11-14.md). Code-bearing case/workflow foundation. **Depends on:** AD01–AD07 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** an authorized Support operator can create a minimal case, link a permitted player/campaign/operation reference, assign it under a separately scoped `case.assign` authority and track state/ownership without manufacturing new access to private records.
 >
-> **Authority:** [Support product](../../../../../../docs/programs/admin/support-and-customer-success-product.md), [case lifecycle](../../../../../../docs/programs/admin/operations-and-workflows.md), [case assignment risk PR-01](../../../../../../docs/programs/admin/product-adversarial-review.md#pr-01-case-ownership-becomes-privilege-escalation), [action/audit contract](../../../../../../docs/programs/admin/technical/action-approval-and-audit.md).
+> **Authority:** [Support product](../../../../../../evidence/inspections/admin-program-essays-2026-11/support-and-customer-success-product.md), [case lifecycle](../../../../../../evidence/inspections/admin-program-essays-2026-11/operations-and-workflows.md), [case assignment risk PR-01](../../../../../../evidence/inspections/admin-program-essays-2026-11/product-adversarial-review.md#pr-01-case-ownership-becomes-privilege-escalation), [action/audit contract](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/action-approval-and-audit.md).
 >
 > **Start/revalidate:** AD02 capability evaluator and grant assignment, AD03 safe reference lookup, AD07 audit visibility, `packages/db/src/schema` migration owner, Admin Nest modules and Next `/control` pages. Do not reuse private player story methods via synthetic owner.
 >

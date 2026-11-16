@@ -1,12 +1,12 @@
 # SA01 | One redacted Storyteller operation trace from cause to publication
 
-**State: Done (2026-11-14).** Evidence: [sa01 sample](../../../../../../docs/programs/storyteller/evidence/sa01-operation-trace-sample-2026-11-14.md). **Program:** [SA queue](../../../../../../docs/programs/storyteller/implementation-program.md). Owner authorized merge + SA01 only; stop for critique before SA02.
+**State: Done (2026-11-14).** Evidence: [sa01 sample](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa01-operation-trace-sample-2026-11-14.md). **Program:** [SA queue](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md). Owner authorized merge + SA01 only; stop for critique before SA02.
 
 ## Cursor first-screen brief
 
 > **Outcome:** a provider-free test/run can emit **one redacted, versioned, source-linked trace** from admitted game cause to captured task, actual final provider packet, optional tool rounds, validator, publication and funding/latency state, with explicit absent/not-run fields.
 >
-> **Authority:** [code trace](../../../../../../docs/programs/storyteller/evidence/current-flow-audit-2026-11-14.md), [evidence pipeline](../../../../../../docs/programs/storyteller/context-and-retrieval.md#end-to-end-retrieval-contract-and-proof), [evaluation levels](../../../../../../docs/programs/storyteller/evaluation-and-playability.md).
+> **Authority:** [code trace](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/current-flow-audit-2026-11-14.md), [evidence pipeline](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/context-and-retrieval.md#end-to-end-retrieval-contract-and-proof), [evaluation levels](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evaluation-and-playability.md).
 >
 > **Source:** `packages/application/src/storyteller/execution.ts::createStorytellerExecution`, `memory-exploration-controller.ts::runMemoryExploration`, `packages/storyteller/src/providers/openrouter.ts::inspectOpenRouterRequest`, `application/storyteller/publication.ts::publishStorytellerResult`, existing `scripts/repo-tools/storyteller-request-audit.mjs` and nearest `packet-lab` tests. Read current source before editing.
 

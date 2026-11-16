@@ -1,14 +1,14 @@
 # Change W01: Vitest + React Testing Library + MSW frontend verification
 
-> **Cursor first look (current source ≠ selected target):** [Web test seam](../../../../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../docs/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
+> **Cursor first look (current source ≠ selected target):** [Web test seam](../../../../../../apps/web/README.md) → the **one** owning symbol. **Primary contract:** [F10](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f10-evidence-and-maintainability).  
 > **Pre-investigated trap:** Current Turbo `test` builds the same package; run direct Vitest first, not Next production build.  
 > **Context rule:** this packet is the complete implementation authority; read its remaining scope/negative test, **not** the entire audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done (2026-11-12).** Vitest/RTL/MSW foundation landed; see receipt in minutes §26. Architecture choices remain governed by the [React/Next target](../../../../../../docs/engineering/targets/react-next.md). **Source baseline at start:** `470a5df`; execution used the then-current `main` worktree.
+**State: Done (2026-11-12).** Vitest/RTL/MSW foundation landed; see receipt in minutes §26. Architecture choices remain governed by the [React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md). **Source baseline at start:** `470a5df`; execution used the then-current `main` worktree.
 
 **Dependencies:** None. **First implementation packet**.  
-**Target:** [F1–F15 selected end state](../../../../../../docs/engineering/targets/react-next.md) **F3 F4 F5 F8 F10**. **Audit evidence:** [Nov 12 gap register](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md) **G15 G32**.
+**Target:** [F1–F15 selected end state](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) **F3 F4 F5 F8 F10**. **Audit evidence:** [Nov 12 gap register](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md) **G15 G32**.
 
 ## Code-bearing outcome and ownership
 

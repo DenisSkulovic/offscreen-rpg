@@ -1,12 +1,12 @@
 # AD06 | Honest technical usage and exposure view (not subscriptions)
 
-**State: Done (2026-11-14).** Evidence: [ad06](../../../../../../docs/programs/admin/evidence/ad06-usage-exposure-2026-11-14.md). Code-bearing source-backed metering read. **Depends on:** AD03–AD05 Done. **Parent:** [Admin program](../../../../../../docs/programs/admin/implementation-program.md).
+**State: Done (2026-11-14).** Evidence: [ad06](../../../../../../evidence/inspections/admin-program-essays-2026-11/evidence/ad06-usage-exposure-2026-11-14.md). Code-bearing source-backed metering read. **Depends on:** AD03–AD05 Done. **Parent:** [Admin program](../../../../../../evidence/inspections/admin-program-essays-2026-11/implementation-program.md).
 
 ## Cursor first-screen
 
 > **Outcome:** an authorized operator sees the actually recorded technical funding window/attempt statuses, including reserved, dispatched, settled and uncertain exposure, and can distinguish company provider activity from a hypothetical customer plan.
 >
-> **Authority:** [Commercial/AI separation](../../../../../../docs/programs/admin/commercial-operations-product.md), [source-backed operations contract](../../../../../../docs/programs/admin/technical/operations-economics-and-releases.md), [redacted read rules](../../../../../../docs/programs/admin/technical/read-models-and-privacy.md), [V1 endpoints](../../../../../../docs/programs/admin/technical/core-v1-contracts.md).
+> **Authority:** [Commercial/AI separation](../../../../../../evidence/inspections/admin-program-essays-2026-11/commercial-operations-product.md), [source-backed operations contract](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/operations-economics-and-releases.md), [redacted read rules](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/read-models-and-privacy.md), [V1 endpoints](../../../../../../evidence/inspections/admin-program-essays-2026-11/technical/core-v1-contracts.md).
 >
 > **Start/revalidate:** `packages/application/src/storyteller/{window-accounting,dispatch-authority,usage-policy}.ts`, `packages/db/src/schema/storyteller.ts`, `packages/contracts/src/usage-policy.ts` and existing Admin API/policy. Avoid broad scans of unrelated engine code.
 >

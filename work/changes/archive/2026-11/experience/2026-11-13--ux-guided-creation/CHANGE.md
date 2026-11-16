@@ -1,11 +1,11 @@
 # UX06 | Guided imagination, not a creation form
 
-**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX06 (presentation + explicit Generate/Start separation on existing guided steps). **Kind:** frontend flow/refactor and tests. **Parent:** [experience program](../../../../../../docs/programs/experience/implementation-program.md), M2. **Dependency:** UX01 (Done).
+**State:** Done (2026-11-13). **Approval:** Owner authorized continuing the UX sequence; Cursor landed UX06 (presentation + explicit Generate/Start separation on existing guided steps). **Kind:** frontend flow/refactor and tests. **Parent:** [experience program](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md), M2. **Dependency:** UX01 (Done).
 
 ## Cursor first-screen brief
 
 > **Current-source map:** [Stories owner](../../../../../../apps/web/src/features/stories/README.md); inspect draft-editor.tsx, draft-content.ts, opening-preview.tsx, storyteller-select.tsx and current draft routes.
-> **Primary target:** [guided creation](../../../../../../docs/programs/experience/flows/creation-and-first-run.md#the-creation-pattern-guided-imagination-not-a-form).
+> **Primary target:** [guided creation](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/creation-and-first-run.md#the-creation-pattern-guided-imagination-not-a-form).
 > **Known trap:** Draft RHF fields can be dirty while Query has newer server values; a 409 cannot wipe the player's work. Opening generation and Start are separate captured, possibly costly durable commands.
 > **Scope:** **Authorized for UX06.** No paid model invocation, automatic generation, broad backend mechanics or destructive tests.
 
@@ -29,7 +29,7 @@ Do not render a fake fully configurable risk or multiplayer option if the backen
 
 ## Authority and baseline
 
-[Product story creation](../../../../../../docs/product/journeys/story-creation.md), [Storyteller settings](../../../../../../docs/product/storytelling/storyteller-settings.md), [cost policy](../../../../../../docs/technical/usage-policy.md), [UX flow](../../../../../../docs/programs/experience/flows/creation-and-first-run.md), [selected React form and command architecture](../../../../../../docs/engineering/targets/react-next.md#5-forms-components-and-accessibility).
+[Product story creation](../../../../../../docs/product/journeys/story-creation.md), [Storyteller settings](../../../../../../docs/product/storytelling/storyteller-settings.md), [cost policy](../../../../../../docs/technical/usage-policy.md), [UX flow](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/flows/creation-and-first-run.md), [selected React form and command architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#5-forms-components-and-accessibility).
 
 Expected code: apps/web/src/features/stories/draft-editor.tsx, opening-preview.tsx, storyteller-select.tsx, source-local components, Storybook/tests, existing route surfaces. Main baseline 8c91618 inspected 2026-11-13: RHF/Zod, expectedRevision save, frozen generation/Start intent, GET-first Start recovery. Reinspect current source before Ready.
 

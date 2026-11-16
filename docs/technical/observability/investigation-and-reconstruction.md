@@ -1,6 +1,6 @@
 # Forensic access and read contract V1 | Role-specific truth without a universal data leak
 
-**Status: proposed security/read architecture, 2026-11-15. No new staff grants/endpoints implemented or authorized.** Product [Admin investigation](../../programs/observability/admin-investigation-experience.md), existing [staff policy](../../programs/admin/technical/staff-identity-and-policy.md), [selected Admin read boundaries](../admin/investigation-and-privacy.md), [audit policy](../admin/commands-and-audit.md), [evidence physical model](../../programs/observability/technical/physical-evidence-storage-v1.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context access.
+**Status: proposed security/read architecture, 2026-11-15. No new staff grants/endpoints implemented or authorized.** Product [Admin investigation](../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/admin-investigation-experience.md), existing [staff policy](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/staff-identity-and-policy.md), [selected Admin read boundaries](../admin/investigation-and-privacy.md), [audit policy](../admin/commands-and-audit.md), [evidence physical model](../../../evidence/inspections/obs-technical-essays-2026-11/physical-evidence-storage-v1.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context access.
 
 ## 1. Five increasingly sensitive disclosures
 
@@ -18,7 +18,7 @@ The same evidence graph can produce several projections, but it must not send an
 
 ## 2. Capability taxonomy, proposed separate from existing AD01–AD08
 
-Use closed, versioned intact grants consistent with [Admin authority](../../programs/admin/technical/staff-identity-and-policy.md). Illustrative grant keys:
+Use closed, versioned intact grants consistent with [Admin authority](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/staff-identity-and-policy.md). Illustrative grant keys:
 
 ~~~text
 forensics.campaign.status.read
@@ -113,7 +113,7 @@ Recommended contract split:
 
 Each protected artifact needs retention class, subject/purpose owner, expiry and deletion/hold status. Authorization must check **both** current viewer scope **and** current source retention. An Admin may still see a safe tombstone such as “source existed; raw body expired” if lawful; the raw content must not be recoverable from some other SQL JSONB, object-store copy, cached SSR data, backup outside policy or old diagnostic zip.
 
-The current schema's `generation.input`, `generation.output`, `storyteller_dispatch_review.packet` and `storyteller_memory_exploration.snapshot` may retain the full private content. The [retention conflict](../../programs/observability/technical/physical-evidence-storage-v1.md#6-retention-conflict-in-the-current-schema-an-implementation-blocker) is a **launch blocker** for any promised raw-content TTL. Do not ship a privacy dashboard claiming 30-day erasure until the actual storage owners and backup/derived copy retention agree.
+The current schema's `generation.input`, `generation.output`, `storyteller_dispatch_review.packet` and `storyteller_memory_exploration.snapshot` may retain the full private content. The [retention conflict](../../../evidence/inspections/obs-technical-essays-2026-11/physical-evidence-storage-v1.md#6-retention-conflict-in-the-current-schema-an-implementation-blocker) is a **launch blocker** for any promised raw-content TTL. Do not ship a privacy dashboard claiming 30-day erasure until the actual storage owners and backup/derived copy retention agree.
 
 For future shared stories, an account owner, participant, narrative subject and payer may differ. Access to one participant's published passage does not confer another participant's private character information or raw prompt configuration. Build authorization from actual published visibility/participation evidence, not `story.ownerId` as a permanent global policy.
 

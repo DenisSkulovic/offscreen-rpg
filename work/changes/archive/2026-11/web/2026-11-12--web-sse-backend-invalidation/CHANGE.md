@@ -1,14 +1,14 @@
 # Change W16: Authenticated Nest SSE committed-version hints and PostgreSQL notifier
 
-> **Cursor first look (current source ≠ selected target):** [Story commit/version map](../../../../../../packages/application/src/stories/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../docs/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
+> **Cursor first look (current source ≠ selected target):** [Story commit/version map](../../../../../../packages/application/src/stories/README.md) → the **one** owning symbol. **Primary contract:** [F6](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md#f6-revalidation-and-live-update-strategy).  
 > **Pre-investigated trap:** Worker and campaign paths also increment `viewVersion`; notifier only in HTTP controller misses commits.  
 > **Context rule:** read remaining scope/negative test in this packet; **not** the full audit, target, old minutes or adjacent Change folders.
 
 
-**State: Done.** Owner authorized via continue after W06. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../docs/engineering/targets/react-next.md)**. **Audited source:** post-W06 `main` (`005984f`).
+**State: Done.** Owner authorized via continue after W06. All technology, behavior and security decisions are governed by the **[selected React/Next target](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md)**. **Audited source:** post-W06 `main` (`005984f`).
 
 **Depends on:** W02; W17 consumes its immutable public hint contract.  
-**Destination:** [F1–F15 selected architecture](../../../../../../docs/engineering/targets/react-next.md), **F2 F6 F11**. **Source evidence:** [November 12 target-to-code audit](../../../../../../docs/engineering/audits/react-next-gap-2026-11-12.md), **G30**.
+**Destination:** [F1–F15 selected architecture](../../../../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md), **F2 F6 F11**. **Source evidence:** [November 12 target-to-code audit](../../../../../../research/legacy-audits/react-next-gap-2026-11-12.md), **G30**.
 
 ## Code outcome and owners
 

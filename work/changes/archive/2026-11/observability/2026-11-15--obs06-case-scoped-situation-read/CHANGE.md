@@ -1,8 +1,8 @@
 # OBS06 | Case-scoped Support Situation → Why read service
 
-**State: Done (2026-11-15, synthetic/disposable scope; production grant issuer unsupported). Evidence: [obs06 receipt](../../../../../../docs/programs/observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md).** Original design state: technical design specified. Code-bearing scope: one new **S1 metadata-only** Admin application read service, strict Zod DTO, guarded Nest GET endpoint, narrowly scoped role/case authorization, focused provider-disabled disposable SQL/policy tests. **No React work** in this packet (OBS07 owns the visible UI). **No raw prompt access, new telemetry fleet, model calls, story mutation or E0 replay schema.**
+**State: Done (2026-11-15, synthetic/disposable scope; production grant issuer unsupported). Evidence: [obs06 receipt](../../../../../../evidence/runs/observability-program-2026-11-15/obs06-case-scoped-situation-read-2026-11-15.md).** Original design state: technical design specified. Code-bearing scope: one new **S1 metadata-only** Admin application read service, strict Zod DTO, guarded Nest GET endpoint, narrowly scoped role/case authorization, focused provider-disabled disposable SQL/policy tests. **No React work** in this packet (OBS07 owns the visible UI). **No raw prompt access, new telemetry fleet, model calls, story mutation or E0 replay schema.**
 
-**Authority:** [source-specific audit](../../../../../../docs/programs/observability/evidence/obs06-support-situation-source-audit-2026-11-15.md) → [exact S1 read/permission contract](../../../../../../docs/programs/observability/technical/support-situation-and-why-v1.md) → [original Support workbench vision](../../../../../../docs/programs/observability/admin-investigator-interactions-v1.md) → [forensic evidence truth](../../../../../../docs/programs/observability/technical/evidence-claims-and-quality-v1.md). Source `main@18158402`. Review accepted Admin [staff authority](../../../../../../docs/programs/admin/authority-operating-policy.md) before authorizing any new grant.
+**Authority:** [source-specific audit](../../../../../../evidence/runs/observability-program-2026-11-15/obs06-support-situation-source-audit-2026-11-15.md) → [exact S1 read/permission contract](../../../../../../evidence/inspections/obs-technical-essays-2026-11/support-situation-and-why-v1.md) → [original Support workbench vision](../../../../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/admin-investigator-interactions-v1.md) → [forensic evidence truth](../../../../../../evidence/inspections/obs-technical-essays-2026-11/evidence-claims-and-quality-v1.md). Source `main@18158402`. Review accepted Admin [staff authority](../../../../../../evidence/inspections/admin-program-essays-2026-11/authority-operating-policy.md) before authorizing any new grant.
 
 ## Cursor first screen
 
@@ -29,7 +29,7 @@ No grant for raw `generation.input`, `storyteller_prompt_provenance.manifest`, S
 
 ## 2. One strict body-free response
 
-Implement an explicitly bounded `SupportSituationV1` per [technical schema](../../../../../../docs/programs/observability/technical/support-situation-and-why-v1.md), not `Record<string,unknown>`:
+Implement an explicitly bounded `SupportSituationV1` per [technical schema](../../../../../../evidence/inspections/obs-technical-essays-2026-11/support-situation-and-why-v1.md), not `Record<string,unknown>`:
 - case/campaign identifiers, observedAt, `story.revision/viewVersion`, last published passage **identity**;
 - current `campaign.gameSecond`, parsed **hold kind/reference** and actual active action/activity IDs/status where appropriate;
 - **current controlling G** only when linked from actual hold or current controlling resolution; no “latest updated G means current” shortcut;
