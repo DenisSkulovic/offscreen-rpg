@@ -14,7 +14,9 @@ Pin supported runtime/dependency versions, the package manager and container ima
 
 ## Scripted testing chamber
 
-The Chamber is a local scenario laboratory for exercising real Offscreen RPG persistence and execution. Developers select authored scenarios by name and purpose; stored source IDs remain versioned `chamber.vN` keys. A read-only inspector shows committed story identity, the current passage, timing/decision fields, items, bounded recent history and generation provenance when present. Inspection is developer-only observability: it must not implement gameplay, mutate committed state, or appear on ordinary production `createApp(...)` unless an explicit local `developerTools` option is set. Fake storyteller injection, time acceleration and fault controls are not connected yet.
+**Lab owner:** [chamber and fixtures](../lab/chamber-and-fixtures.md). Source-observed CH01–CH16 includes the bench, fault cut points, disposable Postgres, the connected rig and the workbench. This page does not keep a second laboratory design, and it does not say those controls are absent.
+
+The Chamber is local development equipment, not a production game mode. Inspection must not implement gameplay, mutate committed state, or appear on ordinary production `createApp(...)` unless an explicit local `developerTools` option is set. Never add a public login bypass to make the chamber easier to open.
 
 The existing chamber exercises short, persistent solo scenarios with authored content and real application behavior. It remains development equipment while the actual creation and continuation lifecycle is connected. This is a development fixture, not a new game mode or a commitment to the final mechanics. It must use the application's story storage, command admission, transition validation, Temporal execution and browser reads. The existing in-memory `/demo` can remain a presentation example; it is not the chamber's source of authoritative state.
 

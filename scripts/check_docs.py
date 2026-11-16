@@ -59,6 +59,16 @@ def iter_markdown_files(root: Path) -> list[Path]:
             if any(part in SKIP_DIR_NAMES for part in path.parts):
                 continue
             files.append(path)
+    open_designs = root / "work" / "designs" / "open"
+    if open_designs.exists():
+        for path in open_designs.rglob("*.md"):
+            if any(part in SKIP_DIR_NAMES for part in path.parts):
+                continue
+            if path.is_file():
+                files.append(path)
+    designs_index = root / "work" / "designs" / "README.md"
+    if designs_index.is_file():
+        files.append(designs_index)
     return sorted({path.resolve() for path in files})
 
 
@@ -280,6 +290,34 @@ def self_test() -> int:
         )
         expect_clean("encoded local path", encoded)
 
+        open_design = root / "open_design"
+        _write(
+            open_design / "work" / "designs" / "open" / "product-open-questions.md",
+            "# Questions\n\n"
+            "[time](../../docs/product/gameplay/time-and-autonomy.md).\n"
+            "[gm07](../changes/open/2026-11-13--gm-delegated-decision/CHANGE.md).\n"
+            "[gm03](../changes/open/2026-11-13--gm-standing-life/CHANGE.md).\n"
+            "Custom [thread](thread:the-warning).\n",
+        )
+        expect_problem(
+            "three broken open-design links",
+            open_design,
+            "broken local link ../../docs/product/gameplay/time-and-autonomy.md",
+        )
+        joined_open = ""
+        errors: list[str] = []
+        for path in iter_markdown_files(open_design):
+            errors.extend(check_file(path, open_design))
+        joined_open = "\n".join(errors)
+        for needle in (
+            "../changes/open/2026-11-13--gm-delegated-decision/CHANGE.md",
+            "../changes/open/2026-11-13--gm-standing-life/CHANGE.md",
+        ):
+            if needle not in joined_open:
+                failures.append(f"open-design fixture missed {needle}")
+        if "thread:the-warning" in joined_open:
+            failures.append("open-design fixture flagged a thread: reference")
+
     if failures:
         print("SELF-TEST FAILURES:")
         for item in failures:
@@ -287,7 +325,7 @@ def self_test() -> int:
         return 1
     print(
         "Self-test passed: nested path, heading, duplicate heading, em-dash "
-        "anchor, route-group path, backtick, encoded path."
+        "anchor, route-group path, backtick, encoded path, open-design links."
     )
     return 0
 

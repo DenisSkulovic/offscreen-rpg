@@ -4,7 +4,7 @@
 
 ## After absence
 
-Returning after a long absence should offer a **focused recap** and then make any current decision clear. It should not require reading every quiet interval. The chronology contains admitted results. An autonomous choice appears there only when that decision was specifically pre-authorized. A prepared narration or pending event is not yet a committed outcome. The recap helps someone understand how they reached the current situation.
+Returning after a long absence should offer a **focused recap** and then make any current decision clear. It should not require reading every quiet interval. A push notification is not proof the new passage was read, and opening the story list does not mark every story read. A recap that needs inference must not delay a decision that is already available. If the story moves while the recap is prepared, label what the recap covers and show the newer entries. The chronology contains admitted results. An autonomous choice appears there only when that decision was specifically pre-authorized. A prepared narration or pending event is not yet a committed outcome. The recap helps someone understand how they reached the current situation.
 
 ## Reading a long life
 

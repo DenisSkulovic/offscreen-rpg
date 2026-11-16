@@ -1,6 +1,6 @@
 # Original vision vs UX reset | preserve the dream, not the accidental POC
 
-**Status:** product reconciliation, 2026-11-13. **Authority:** [original vision](../../../../docs/product/foundations/vision.md) and [player experience](../../../product/journeys/player-experience.md), both inspected on `main` at `4a6b7077ed92dd04b74b37092e2c5bc867681801`. Design proposals here do **not** replace engine contracts or authorize code.
+**Status:** product reconciliation, 2026-11-13. **Authority:** [original vision](../../../../docs/product/foundations/vision.md) and [player experience](../../../../docs/product/experience/principles.md). The old journey page was inspected on `main` at `4a6b7077ed92dd04b74b37092e2c5bc867681801` and is not a current path. Design proposals here do **not** replace engine contracts or authorize code.
 
 ## Why this document exists
 
@@ -21,17 +21,17 @@ The original vision includes:
 
 | Vision promise | Inspected current boundary | Desired product/UX end state | Planned owner / status |
 | --- | --- | --- | --- |
-| Be present in a situation, choose an intention | Published passages + authored contextual offers; mechanical variants | A single **living situation stage** with player-language choices | [Now](../../parked/experience-studies/spaces/now.md), UX01–UX04 |
+| Be present in a situation, choose an intention | Published passages + authored contextual offers; mechanical variants | A single **living situation stage** with player-language choices | [Play](../../../../docs/product/experience/play-and-decisions.md), UX01–UX04 |
 | Earn effort over meaningful real time | Accepted finite actions, contribution/wait, holds and receipts | Precise earned progress, forecast vs actual, change-course semantics | [Time truth](./time-and-truth.md), UX04 |
 | Leave without babysitting a long task | Bounded admitted work and accepted finite itinerary | Clear **what will continue** with no browser open | [Offscreen handoff](./offscreen-handoff.md), UX12 |
 | A character may act according to personality after nonresponse | First solo proof holds choices indefinitely; timed/default behavior is separate | **Explicitly bounded autonomous decision delegation** with visible policy/deadline/result | [Decision delegation](./decision-delegation.md), proposed GM07 |
 | An ordinary standing life over multiple days | Finite plan, no free idle advance; reusable opportunities still developing | Optional **bounded standing routine**, not global autoplay | [Three time models](./temporal-philosophy.md), GM03 (future) |
 | Return to meaningful changes | Paged passages, some bounded public activity records | Honest **Recent developments** then source-backed since-viewed chronology | UX07, GM05/GM06 |
 | Invite friend, each owns their character | General shared actor/time authority not proven | Small common storyline with per-person intent, readiness and pause policy | [Shared story](../shared-play/shared-story-collaboration.md), future shared-play engineering program |
-| One notification channel in first playable | User channel not selected or proven end-to-end | Important verified decision/results with safe deep link to Now | [Notifications](../../parked/experience-studies/flows/notifications-and-reentry.md), future delivery program |
-| Flexible worlds | Nonhuman fixture, versioned rules; broader adaptation unproved | No forced map/body/money, contextual World/You | [World-shape stress tests](../../parked/experience-studies/prototypes/world-shape-tests.md), UX08 |
+| One notification channel in first playable | User channel not selected or proven end-to-end | Important verified decision/results with safe deep link to Now | [Return](../../../../docs/product/experience/return-and-journal.md), future delivery program |
+| Flexible worlds | Nonhuman fixture, versioned rules; broader adaptation unproved | No forced map/body/money, contextual World/You | [Worlds](../../../../docs/product/gameplay/worlds-and-characters.md), UX08 |
 | True AI DM creative freedom | Bounded generated options; no freeform gameplay action | Hybrid curated options plus **interpreted/reviewed** custom attempts | [Custom intent](../free-intent/free-intent-future.md), GM01→GM02 |
-| Hosted demo on CV | Scripted /demo; no default paid public guest | Original honest scripted preview now, eventual bounded **real** trial | [Portfolio first contact](../../parked/experience-studies/flows/portfolio-first-contact.md), UX09; provider trial separate |
+| Hosted demo on CV | Scripted /demo; no default paid public guest | Original honest scripted preview now, eventual bounded **real** trial | [Entry](../../../../docs/product/experience/entry-and-onboarding.md), UX09; provider trial separate |
 
 **A status in the table is not a release promise.** Future mechanics need exact approved contracts and evidence before UI may advertise them.
 

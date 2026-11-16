@@ -104,3 +104,11 @@ Finished stories remain readable; presentation-only work such as a recap or fina
 Deleting first removes access and fences writes in PostgreSQL, then reliably requests workflow shutdown and cleanup. Generation/media Activities recheck the deletion fence before attaching artifacts; orphaned objects are cleaned up. Keep a minimal deletion marker/operation identity long enough to prevent delayed work from recreating removed data. Do not delete the only record needed to reconcile an outstanding external charge.
 
 The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain product decisions in [open questions](../../../work/designs/open/product-open-questions.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.
+
+## Workflow replay compatibility
+
+A sleeping, travelling or working character can outlive a code upgrade. Temporal replays the earlier command history, so a worker that changes that command sequence is non-deterministic even when TypeScript builds. A workflow name ending in `V1` is not a deployment pin.
+
+**Selected first proof:** keep new workflow code backward compatible and replay real recorded histories from a disposable local Temporal service, including a still-sleeping workflow and a completed one. `patched()` is allowed only with an explicit unique patch id and a replay proof, not on every edit. Worker Deployment version pinning is a later hosted target, after the local Temporal server and SDK are shown to support it. Continue-As-New waits on a measured history length. Restart a separate worker during one accepted sleep and complete it under the same SQL operation identity: pure replay does not prove the SQL or outbox result.
+
+**Negatives:** do not store account secrets, provider bodies, private narrative or production histories in the replay corpus. A green suite that cannot fail a deliberate incompatible fixture is not the proof. Do not build production build-id routing before that replay proof.

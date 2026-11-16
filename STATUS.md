@@ -4,14 +4,14 @@
 
 ## Orientation
 
-**Status (reconciled 2026-11-16):** Local pre-POC **engineering portfolio**. Nov 12–15 waves landed substantial code (React W, Chamber CH, UX/PX/PF, ENG postwave, Admin AD, Storyteller SA, forensic OBS, GM slices). **DOC01**, **DOC02**, and **DOC03** are Done and archived. Duplicate Admin and Observability essay copies are gone, and the DOC01 snapshot is no longer a product or technical source (Git `cda7444e` recovers it). An independent fresh-chat retrieval study passed for DOC03, including the adversarial sentences. Sustained 10–15-turn live creative quality and production Support grants remain **unproved / absent**. Full ENG03 short-lock refactor is **not** finished; C1 and C2 narrow slices are the proved subset ([concurrency](docs/technical/engine/concurrency-and-recovery.md)).
+**Status (reconciled 2026-11-16):** Local pre-POC **engineering portfolio**. Nov 12–15 waves landed substantial code (React W, Chamber CH, UX/PX/PF, ENG postwave, Admin AD, Storyteller SA, forensic OBS, GM slices). **DOC01**, **DOC02**, **DOC03**, and **DOC04** are Done and archived. The generic parked studies and expired handoffs are off HEAD; recover them at Git `69ac3c56`. Duplicate Admin and Observability essay copies are gone, and the DOC01 snapshot is no longer a product or technical source (Git `cda7444e` recovers it). Independent fresh-chat retrieval studies passed for DOC03 and DOC04. Sustained 10–15-turn live creative quality and production Support grants remain **unproved / absent**. Full ENG03 short-lock refactor is **not** finished; C1 and C2 narrow slices are the proved subset ([concurrency](docs/technical/engine/concurrency-and-recovery.md)).
 
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 
 **Current development priority:**
 1. Selection owner: [work/changes/README.md](work/changes/README.md). **Current change:** none. QA-SF01 remains **Blocked** open (not auto-selected).
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
-3. Prefer new product/technical subject owners. Coverage for what the source actually contains is the matrix below. Do not treat a parked study or an archived packet as implementation permission.
+3. Prefer new product/technical subject owners. Coverage for what the source actually contains is the matrix below. Do not treat a retired study or an archived packet as implementation permission.
 
 ## Capability coverage
 

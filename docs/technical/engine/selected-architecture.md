@@ -115,6 +115,20 @@ A capability family is a versioned pure handler: applicability, explicit reads, 
 
 **Negative:** absent HP is not infinite HP. Changing form invalidates stale prepared actions and does not rewrite the prior receipt. Do not add a second inventory beside an existing item-transfer effect. One new family at a time; a plugin framework is not the first slice. The reversal test is in the study history: if fact and quantity effects already carry durable agency, the new family can wait; if every creative action needs a special-case validator, the kernel is too thin.
 
+## Sparse identities
+
+**Target semantics, not an Actor service and not a universal world simulation.** Keep five identities distinct:
+
+- **Viewer:** an authenticated account with read access.
+- **Controller:** the actor-authorized user or an approved automated policy that may submit an intention.
+- **Actor:** a person, creature, process or mind with agency. It may have no body, HP or inventory.
+- **Holder:** a story-scoped thing that can contain something without being able to act.
+- **Mention:** a noun in narration. Prose does not automatically create a durable actor or item.
+
+A name can change without changing identity. The same label can be different people. A player owns their character's decisions, not every holder in the world.
+
+**Negatives:** a scarce object has one current holder, or an explicit destroyed or unclaimed state. Do not infer the viewer from a prose holder key. A transfer checks the holder at the effective fictional time, not only when a draft was proposed. Containment is not an item-holder string. Private items are not visible merely because SQL contains them. Storyteller speech does not change the ledger. Do not census every passing mention. A transfer to a holder the current rule context has not admitted is unsupported.
+
 ## What stays open
 
 - The first generalized world and actor capability vocabulary needs contrasting fixtures before a public generic schema is frozen.

@@ -1,9 +1,8 @@
 # DOC04 | Retire shadow knowledge and converge real authority
 
-**Status:** Proposed. **Audit and bounded design prepared; NOT selected or implemented.**  
-**Audited HEAD:** `main@6a555604155f3765c843d57b0a2b6a7aa9a34cec`, 2026-11-16.  
+**Status:** Done (2026-11-16).
+**Audited HEAD:** `main@6a555604155f3765c843d57b0a2b6a7aa9a34cec`, 2026-11-16. Execution branch started at `69ac3c5682007d647dac2eae24eb43f6afe14930`.
 **Kind:** documentation and knowledge-health repair, not product or runtime development.  
-**Owner decision still required:** whether to execute DOC04 as the selected Change; no other Change is selected.  
 **Protected:** the **complete `work/changes/archive/`** with all original paths/bytes, including DOC01–DOC03.
 
 ## Decision, in one screen
@@ -41,7 +40,7 @@ Read [AUDIT.md](AUDIT.md) for independent evidence and counts, then [VERIFICATIO
 - Do not delete any unique accepted design claim, real experiment needed for reproducing a failure, attribution/legal notice, owner-protected dormant canon-invention, source-proven pending Change, or the terminal Change archive.
 - Do not keep a known redundant 50 KB essay or expired Cursor handoff just because it feels safer. Git version history is the normal archive for abandoned preimplementation artifacts. The owner deliberately protects **completed Change packets**, not every intermediate historical document.
 - Do not silently alter old archived Change content to repair its references; those are dated records at their original commit.
-- Work on an isolated branch; do not override another Cursor session. Keep `work/changes/README.md` Current change = none until owner selects DOC04.
+- Work on an isolated branch; do not override another Cursor session. The owner selected DOC04 on 2026-11-16. Do not close it in the same pass as the deletion.
 
 ## Why this is not DOC01–DOC03 all over again
 
@@ -52,3 +51,21 @@ If complete claim reconciliation cannot be demonstrated, keep DOC04 **Blocked**,
 ## Copyable Cursor handoff after owner approval
 
 > Implement DOC04 from `work/changes/open/2026-11-16--doc04-shadow-knowledge-retirement/CHANGE.md` against fresh `main`. This is **not another documentation rearrangement**. Preserve all completed Change packets. Reconcile unique selected clauses and negative cases before deleting redundant parked Engine/Experience/Storyteller studies and old handoffs from HEAD. Repair the 10 broken links in active designs, eliminate the evidence-as-binding React target, clean outdated research/legacy and session material, and correct genuinely mixed normative owners without mechanical splits. Add active work/designs link verification and adversarial fresh-reader answers. No runtime code, provider, deploy or unapproved policy changes. Do not close DOC04 unless the old shadow bible is substantively retired, not moved again.
+
+## Reconciliation ledger
+
+| Authority | Result | What changed |
+| --- | --- | --- |
+| Product time, return, presentation, play | updated | Choice honesty, return-read limits, and late-image honesty landed on the experience owners. GM03, GM07, and shared play stay proposed. Vision was not given a new absence rule. |
+| Product Storyteller profiles | updated | The parked SA program link is gone. Landed packets stay archived. Quality stays unproved. |
+| Engine architecture, persistence, lifecycle | updated | Sparse identities, one mutable owner per scarce fact, and workflow-replay compatibility are on the canonical pages. Full ENG03 stays proposed. |
+| Client architecture and identity | updated | F1–F15 binding owner is `docs/technical/client/architecture.md`. Identity and access owns sessions and membership. The stale “no Change is active” handoff sentence is gone. |
+| Lab protocol and deployment | updated | Fake `§` delimiters are Markdown. The chamber section points at the lab owner and no longer says fault controls are absent. The deployment page was not split into new files. |
+| Storyteller controller, memory, cost | updated | The memory page points at the controller for the loop. The cost page no longer links a parked SA program. Those pages were not mechanically split. |
+| Open designs | updated | Ten broken links repaired. The delegation study no longer quotes a vision sentence the vision page does not contain. |
+| Parked studies and expired handoffs | updated | Removed from HEAD after the disposition ledger. Recover at `69ac3c5682007d647dac2eae24eb43f6afe14930`. No replacement parked tree. |
+| Research routers and legacy manuals | updated | They no longer say `docs/engineering/` survives until a later delete. Manual bodies remain classified research, not authority. |
+| Evidence observations | unchanged | Run artifacts and `NOTICE.md` stay. The retained-observations tree is still a source-era layout. Its README no longer calls handoffs current evidence. Dated evidence bodies were not rewritten. |
+| Sessions | updated | 2026-11-11 through 2026-11-15 minutes left HEAD. The session index says how to recover them. |
+| `work/changes/archive/` at baseline | unchanged | Pre-existing terminal packets were not edited. This packet joins the archive only at close. |
+| Fresh reader | updated | Q01–Q12 and A1–A4 passed on the dirty tree without opening this packet. See [CLOSE.md](CLOSE.md). |

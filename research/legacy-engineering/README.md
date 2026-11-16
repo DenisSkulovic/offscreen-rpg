@@ -1,8 +1,10 @@
-# Legacy engineering manuals (RETAIN copy)
+# Legacy engineering manuals
 
-DOC01 G5 retain copies of soft-retired `docs/engineering/*` manuals needed for inbound anchors. Prefer [engineering-manuals map](../engineering-manuals.md) and canonical product/technical owners for new work.
+**Not product or technical authority.** `docs/engineering/` is gone. These files are classified research copies, not a retain-until-P6 mirror.
 
-| File | Prefer |
+| File | Class |
 | --- | --- |
-| [frontend-execution-playbook.md](frontend-execution-playbook.md) | `.agents/skills/frontend-engineering` + `docs/technical/client` |
-| [connected-poc-proof.md](connected-poc-proof.md) | `evidence/` + `STATUS.md` |
+| [frontend-execution-playbook.md](frontend-execution-playbook.md) | Reusable procedure. Prefer the frontend-engineering skill and [client architecture](../../docs/technical/client/architecture.md) |
+| [connected-poc-proof.md](connected-poc-proof.md) | Dated proof note. Prefer [evidence](../../evidence/README.md) and [STATUS](../../STATUS.md) |
+| [qa-journeys.md](qa-journeys.md) | Historical journeys. Prefer [acceptance scenarios](../../docs/product/gameplay/acceptance-scenarios.md) |
+| [long-story-memory-and-retrieval.md](long-story-memory-and-retrieval.md) | Research duplicate of [context and memory](../../docs/technical/storyteller/context-and-memory.md) |

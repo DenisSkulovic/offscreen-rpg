@@ -7,4 +7,5 @@ Short-lived continuity for coding-agent handoffs. Promote durable decisions to p
 | Date | Focus |
 | --- | --- |
 | [2026-11-16](2026-11-16.md) | DOC01 P6 G1–G3 / G2 partial |
-| Legacy | [2026-11-11](legacy-minutes/2026-11-11.md) through [2026-11-15](legacy-minutes/2026-11-15.md). Dated conversation notes, not product law |
+
+Minutes for 2026-11-11 through 2026-11-15 were conversation notes. They left HEAD on 2026-11-16. Recover one with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/sessions/legacy-minutes/<date>.md`. They are not product law.

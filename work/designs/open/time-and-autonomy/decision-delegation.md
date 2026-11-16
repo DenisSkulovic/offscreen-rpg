@@ -1,6 +1,6 @@
 # Decision delegation | personality with permission, not unsupervised AI control
 
-**Status: future gameplay + UX design, NOT APPROVED FOR IMPLEMENTATION.** Source of product intent: [vision](../../../../docs/product/foundations/vision.md) (“unanswered choices normally lead to an autonomous response”). Current authority: [time/absence](../../../../docs/product/gameplay/time-and-autonomy.md#response-windows-and-absence) (first solo slice holds decisions indefinitely, timed defaults separate); [character control](../../../product/journeys/player-experience.md#playing-with-friends). Do not confuse desired future behavior with current runtime.
+**Status: future gameplay + UX design, NOT APPROVED FOR IMPLEMENTATION.** Source of product intent: [vision](../../../../docs/product/foundations/vision.md) treats overnight action from personality as a long-term aspiration, and only after that specific consent exists. It does not make an unanswered choice into an automatic response. Current authority: [time/absence](../../../../docs/product/gameplay/time-and-autonomy.md#response-windows-and-absence) (first solo slice holds decisions indefinitely, timed defaults separate); [character control](../../../../docs/product/experience/principles.md). Shared campaigns stay [proposed](../shared-play/README.md). Do not confuse desired future behavior with current runtime.
 
 ## What the player is asking the game to do
 

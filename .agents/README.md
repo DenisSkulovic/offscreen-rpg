@@ -2,7 +2,7 @@
 
 Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
 
-Permanent product and technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from an expired handoff or a parked study.
+Permanent product and technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from an expired handoff or a retired study. Git history is not current authority.
 
 ## Put knowledge in the correct place
 
@@ -15,8 +15,7 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional manuals | One relevant domain when warranted |
 | `docs/product`, `docs/technical` | Product bible and technical guarantees | Read the relevant owner/section |
 | `work/changes/…/CHANGE.md` | Bounded code-bearing outcome | Only when selected; `none` is valid |
-| `work/designs`, `evidence`, `research` | Drafts, proof, nonbinding studies | On demand; never silent product authority |
-| `work/designs/parked` | Dormant studies and expired program notes | Not product law and not a Change |
+| `work/designs/open`, `evidence`, `research` | Named proposals, proof, nonbinding studies | On demand; never silent product authority |
 | Tests, fixtures, scripts | Executable evidence | Run selectively |
 
 **Working-session continuity:** [daily minutes rule](rules/session-minutes.md); prefer promoting decisions to permanent owners. Rolling notes live under [work/sessions](../work/sessions/README.md).

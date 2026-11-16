@@ -1,6 +1,6 @@
 # Player Story Replay V1 | Reanimate recorded gameplay, not a video or another game run
 
-**Status:** Proposed player product and technical target, wave 5 (2026-11-15). **No code/UI or game authority change authorized.** Related [replay modes and retention](../../../../docs/technical/observability/retention-and-access.md), [historical reconstruction](../../../../docs/technical/observability/investigation-and-reconstruction.md), [temporal coverage](../../../../docs/technical/observability/investigation-and-reconstruction.md), [Turn Evidence Capsule](../../../../docs/technical/observability/identities-and-evidence.md), [Living Stage/Player UX](../experience/README.md) and [GM05 player event feed](../../parked/experience-studies/patterns/committed-event-feed.md).
+**Status:** Proposed player product and technical target, wave 5 (2026-11-15). **No code/UI or game authority change authorized.** Related [replay modes and retention](../../../../docs/technical/observability/retention-and-access.md), [historical reconstruction](../../../../docs/technical/observability/investigation-and-reconstruction.md), [temporal coverage](../../../../docs/technical/observability/investigation-and-reconstruction.md), [Turn Evidence Capsule](../../../../docs/technical/observability/identities-and-evidence.md), [play](../../../../docs/product/experience/play-and-decisions.md) and the archived [GM05 projection](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md).
 
 ## 1. What exactly is the player watching?
 

@@ -73,7 +73,7 @@ Player sees before accepting:
 
 **Do not confuse the 10-minute fictional interval with 10 real minutes.** Show calculated real-time estimate using the story's selected pace and acknowledge it may change if pause/pace policies allow. No daily recurrence, no jobs queue extending after 30 fictional minutes, no fictional time while uncommitted.
 
-On return, read ledger and describe exactly: "Two watches completed. The routine stopped when a new decision required you." If the third never started, don't report it as completed or charge resources. If no events occurred, state that nothing else advanced. [GM05](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) projects only meaningful committed events, not one UI event per clock tick. [GM06](../../parked/experience-studies/decisions/gm06-viewer-open-baseline-v1.md) may later label the window since opening, but isn't a GM03 dependency.
+On return, read ledger and describe exactly: "Two watches completed. The routine stopped when a new decision required you." If the third never started, don't report it as completed or charge resources. If no events occurred, state that nothing else advanced. [GM05](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) projects only meaningful committed events, not one UI event per clock tick. A viewer-open baseline is not a current contract and is not a GM03 dependency.
 
 ## 4. Falsifiable test ladder
 

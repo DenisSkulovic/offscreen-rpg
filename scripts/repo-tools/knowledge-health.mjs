@@ -31,6 +31,7 @@ const FORBIDDEN_PATHS = [
   'docs/technical/playthroughs',
   'work/designs/open/doc01-unpromoted-design',
   'work/designs/open/doc01-migration',
+  'work/designs/parked',
 ];
 
 const LIVE_STATUS = [
@@ -48,6 +49,10 @@ const LIVE_STATUS = [
   'docs/technical/lab/chamber-and-fixtures.md',
   'docs/technical/lab/experiment-protocol.md',
   'packages/application/src/developer-tools/README.md',
+  'research/README.md',
+  'research/engineering-manuals.md',
+  'research/legacy-engineering/README.md',
+  'research/storyteller/tuning-and-memory.md',
 ];
 
 const LIVE_BANNED = [
@@ -85,10 +90,26 @@ export function violationsInText(rel, text) {
   return found;
 }
 
+const LINK_RE = /\[([^\]]*)\]\(((?:[^()]|\([^()]*\))+)\)/g;
+
+export function resolvedLocalLink(fromRel, href) {
+  const raw = href.trim();
+  if (!raw || raw.startsWith('#') || raw.startsWith('//')) return null;
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw)) return null;
+  const pathPart = decodeURIComponent(raw.split('#')[0]);
+  if (!pathPart) return null;
+  const fromDir = path.posix.dirname(fromRel.replaceAll('\\', '/'));
+  return path.posix.normalize(path.posix.join(fromDir, pathPart));
+}
+
+export function falseEvidenceAuthority(text) {
+  return /binding implementation design/i.test(text) && /evidence\/inspections\//.test(text);
+}
+
 function linkTarget(fromRel, href) {
-  const pathPart = href.split('#')[0];
-  if (!pathPart || /^(https?:|mailto:)/.test(href)) return null;
-  return path.relative(root, path.resolve(path.dirname(path.join(root, fromRel)), pathPart)).replaceAll('\\', '/');
+  const resolved = resolvedLocalLink(fromRel, href);
+  if (!resolved || resolved.startsWith('..')) return resolved;
+  return resolved;
 }
 
 function walkAll(dir, out = []) {
@@ -157,6 +178,34 @@ export function collectKnowledgeViolations(repo = root) {
       if (target === rel && (alias || guarded)) failures.push(`${rel}: self-link`);
     }
   }
+  const activeLinks = [
+    ...walkFiles(path.join(repo, 'work', 'designs', 'open')),
+    path.join(repo, 'work', 'designs', 'README.md'),
+    path.join(repo, 'research', 'README.md'),
+    path.join(repo, 'research', 'engineering-manuals.md'),
+    path.join(repo, 'research', 'legacy-engineering', 'README.md'),
+    path.join(repo, 'research', 'storyteller', 'tuning-and-memory.md'),
+  ];
+  for (const abs of activeLinks) {
+    if (!existsSync(abs) || !statSync(abs).isFile()) continue;
+    const rel = path.relative(repo, abs).replaceAll('\\', '/');
+    const text = readFileSync(abs, 'utf8');
+    for (const match of text.matchAll(LINK_RE)) {
+      const href = match[2].trim();
+      const target = resolvedLocalLink(rel, href);
+      if (!target) continue;
+      const absTarget = path.resolve(repo, target);
+      if (!existsSync(absTarget)) failures.push(`${rel}: broken local link ${href}`);
+    }
+  }
+  if (existsSync(technical)) {
+    for (const abs of walkFiles(technical)) {
+      const rel = path.relative(repo, abs).replaceAll('\\', '/');
+      if (falseEvidenceAuthority(readFileSync(abs, 'utf8'))) {
+        failures.push(`${rel}: evidence path declared as binding implementation design`);
+      }
+    }
+  }
   const evidence = path.join(repo, 'evidence');
   const evidenceHashes = new Map();
   for (const abs of walkAll(evidence)) {
@@ -185,6 +234,23 @@ function selfTest() {
     if (rel === 'docs/progress.md') {
       if (FORBIDDEN_PATHS.includes(rel) === false) failures.push('self-test missed progress alias policy');
     } else if (hit.length === 0) failures.push(`self-test missed ${rel}`);
+  }
+  const broken = [
+    ['work/designs/open/product-open-questions.md', '../../docs/product/gameplay/time-and-autonomy.md', 'work/docs/product/gameplay/time-and-autonomy.md'],
+    ['work/designs/open/product-open-questions.md', '../changes/open/2026-11-13--gm-delegated-decision/CHANGE.md', 'work/designs/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md'],
+    ['work/designs/open/product-open-questions.md', '../changes/open/2026-11-13--gm-standing-life/CHANGE.md', 'work/designs/changes/open/2026-11-13--gm-standing-life/CHANGE.md'],
+  ];
+  for (const [from, href, expected] of broken) {
+    if (resolvedLocalLink(from, href) !== expected) failures.push(`self-test link ${href} -> ${resolvedLocalLink(from, href)}`);
+  }
+  if (resolvedLocalLink('docs/technical/storyteller/context-and-memory.md', 'thread:the-warning') !== null) {
+    failures.push('self-test treated thread: as a file');
+  }
+  if (!falseEvidenceAuthority('The [React/Next target F1–F15](../../../evidence/inspections/doc01-retained-observations/engineering/targets/react-next.md) is the binding implementation design.')) {
+    failures.push('self-test missed evidence-as-binding declaration');
+  }
+  if (falseEvidenceAuthority('See [client architecture](../client/architecture.md). A dated file under evidence is not the contract.')) {
+    failures.push('self-test flagged a non-binding evidence mention');
   }
   const ok = violationsInText(
     'docs/technical/engine/selected-architecture.md',

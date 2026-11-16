@@ -7,7 +7,8 @@
 
 - The browser is a visual, atmospheric place to inhabit the current scene.
 - An illustration can establish atmosphere; it need not regenerate for every sentence or choice.
-- A delayed image must not block play.
+- A delayed image must not block play, and it must not replace the scene the player is in now. It may attach only to the passage it was made for.
+- Private story media is not a permanent public URL. A failed image leaves a readable text scene.
 - Quiet moments do not need artificial activity to fill the screen.
 - Cinematic presentation (shot, lighting, palette) guides prose/illustration generation but does not independently change game state ([continuity](../gameplay/continuity.md)).
 

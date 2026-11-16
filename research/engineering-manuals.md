@@ -1,6 +1,6 @@
 # Engineering manuals (research routers)
 
-**Not product/technical authority.** Soft-retired sources remain under `docs/engineering/` until P6 hard delete. Prefer the canonical column for new work.
+**Not product/technical authority.** `docs/engineering/` was removed in DOC01. There is no P6 hold. Prefer the canonical column. A body that is still under `research/legacy-engineering/` is a research copy, recoverable from Git if removed, and it does not override product or technical docs.
 
 | Manual (legacy path) | Prefer |
 | --- | --- |
@@ -12,6 +12,6 @@
 | `storyteller-tuning.md` / long-memory | [research/storyteller](storyteller/tuning-and-memory.md) |
 | `coding-agent-*` / `ai-development-system.md` | [.agents/HARNESS](../.agents/HARNESS.md) |
 | `chamber-program.md` / targets | [technical/lab](../docs/technical/lab/chamber-and-fixtures.md) |
-| Audits under `docs/engineering/audits/` | [evidence/inspections](../evidence/inspections/README.md) (Git retains audit bodies) |
+| Audits formerly under `docs/engineering/audits/` | [evidence/inspections](../evidence/inspections/README.md) (Git retains audit bodies) |
 
-Unique headings not yet copied here are recoverable from Git at the legacy path until owner-waived DROP.
+Unique headings that were never copied are recoverable from Git at the old `docs/engineering/` path. They are not current authority.

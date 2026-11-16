@@ -169,6 +169,8 @@ A generated condition is enforceable only when it maps to a supported applicatio
 
 ## Quantities and ownership
 
+**One mutable authority per scarce fact.** Documents may describe SQL mechanics. They cannot move an item, a clock or a score by rewriting prose. A derived summary or search index is never a second mechanical ledger. Old settled receipts stay valid when a new effect family is added; a new effect must be applied explicitly and must not be silently ignored inside an older character-only effect function.
+
 Use typed changes for consequential state: transfer a particular item, adjust a counted resource, apply or remove a condition, establish a fact, move an entity's narrative location. Do not let the model submit arbitrary SQL or unrestricted JSON patches.
 
 For counted resources, specify units and precision. Use integer minor units or PostgreSQL numeric values, not floating-point money. Financial usage amounts require explicit conversion at JSON boundaries because JavaScript numbers cannot safely represent arbitrary database integers. Inventory currency remains distinct from the service's real-money inference budget.

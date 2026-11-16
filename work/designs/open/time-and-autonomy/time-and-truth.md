@@ -1,6 +1,6 @@
 # Time, autonomy and holds | visible truth contract
 
-**Status:** UX destination and a source of *requirements for future public projections*. Authority for clock and activity rules remains [time-and-autonomy](../../../../docs/product/gameplay/time-and-autonomy.md), [committed time](../../../../content/rules/srd-5.2.1-subset/time/committed-time.md) and [rules/activities](../../../technical/rules-and-activities.md).
+**Status:** UX destination and a source of *requirements for future public projections*. Authority for clock and activity rules remains [time-and-autonomy](../../../../docs/product/gameplay/time-and-autonomy.md), [committed time](../../../../content/rules/srd-5.2.1-subset/time/committed-time.md) and [rules/activities](../../../../docs/technical/engine/chronology-and-activities.md).
 
 The game has a rare product promise: **effort takes time, even when nobody is looking**. The interface must not squander that trust by treating a clock animation as a simulated fact.
 

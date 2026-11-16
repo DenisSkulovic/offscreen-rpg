@@ -113,7 +113,7 @@ Finite actions and activities may share lifecycle facts and follow-up intent del
 | Edit, generate, review and start | [Story lifecycle](../engine/lifecycle-and-compatibility.md): draft/candidate revisions and one live initialization. |
 | Choose, wait, interrupt, pause or resume | [Execution](./execution-and-delivery.md): command admission, timers, resolution and commit fences. |
 | Interpret a choice and prepare what follows | [Storyteller runtime](../storyteller/operation-and-controller.md): proposal boundaries and conditional publication. |
-| Leave and return on another device | [Client and identity](./identities-and-access.md): current snapshot, read progress and recap. |
+| Leave and return on another device | [Return and journal](../../product/experience/return-and-journal.md) for the player promise; [client architecture](../client/architecture.md) for the snapshot read. |
 | Hear about a decision away from the browser | [Notifications](./notifications.md): subscription ownership, delivery and expiry. |
 | Reach a limit, lose a participant or finish | [Story lifecycle](../engine/lifecycle-and-compatibility.md): holds, access changes and terminal states. |
 | Keep memories and spending coherent | [Data](./data-and-persistence.md) and [context and cost](../storyteller/request-context-and-cost.md). |
@@ -133,7 +133,7 @@ Before claiming capacity, run a scripted workload with many idle stories, a burs
 - [Data](./data-and-persistence.md): durable records, constraints and flexible content.
 - [Story lifecycle](../engine/lifecycle-and-compatibility.md): draft, preview, start, holds, membership and completion.
 - [Execution](./execution-and-delivery.md): time, scheduling, races and recovery.
-- [Client and identity](./identities-and-access.md): frontend, auth, transport and shared play.
+- [Identity and access](./identities-and-access.md): sessions, invitations and membership. Frontend and transport: [client architecture](../client/architecture.md). Shared play stays [proposed](../../../work/designs/open/shared-play/README.md).
 - [Storyteller runtime](../storyteller/operation-and-controller.md): model routing, tools and bounded workflows.
 - [Context and cost](../storyteller/request-context-and-cost.md): memory, caching, prompts and spending.
 - [Notifications](./notifications.md): reaching the player away from the page.

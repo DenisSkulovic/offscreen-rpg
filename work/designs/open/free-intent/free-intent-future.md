@@ -75,6 +75,6 @@ Measure false admissions, confusing refusals, cost per attempted action, time to
 
 ## Product-contract changes that will be required
 
-The current [player experience](../../../product/journeys/player-experience.md) and [gameplay](../../../product/foundations/gameplay.md) explicitly say the POC has no free-text action. This document does **not** overwrite them. An accepted future design must update those source owners and add a typed request/proposal/review/acceptance contract with negative tests before Cursor builds the interface.
+The current [player experience](../../../../docs/product/experience/play-and-decisions.md) and [gameplay](../../../../docs/product/gameplay/actions-and-commitments.md) explicitly say the POC has no free-text action. This document does **not** overwrite them. An accepted future design must update those source owners and add a typed request/proposal/review/acceptance contract with negative tests before Cursor builds the interface.
 
 **Do not start with a textbox Change.** Start with admitted intent grammar and proof of safety, then grow the interaction surface.
