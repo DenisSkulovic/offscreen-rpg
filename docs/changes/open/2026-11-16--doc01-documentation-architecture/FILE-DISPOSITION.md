@@ -301,11 +301,11 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 | `docs/programs/engine/target-engine.md` | 11549 | PROMOTE | docs/technical/engine/ |
 | `docs/programs/engine/time-and-execution.md` | 10110 | PROMOTE | docs/technical/engine/ |
 | `docs/programs/engine/world-and-rules.md` | 9344 | PROMOTE | docs/technical/engine/ |
-| `docs/programs/experience/decisions/gm01-custom-intent-policy-v1.md` | 13742 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ |
-| `docs/programs/experience/decisions/gm03-bounded-routine-v1.md` | 9665 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ |
-| `docs/programs/experience/decisions/gm04-failed-approach-v1.md` | 7255 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ |
-| `docs/programs/experience/decisions/gm06-viewer-open-baseline-v1.md` | 13646 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ |
-| `docs/programs/experience/decisions/gm07-consented-default-v1.md` | 10808 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ |
+| `docs/programs/experience/decisions/gm01-custom-intent-policy-v1.md` | 13742 | RECONCILE/ADR | docs/product/{experience,gameplay}/ + docs/technical/engine/ + docs/decisions/ |
+| `docs/programs/experience/decisions/gm03-bounded-routine-v1.md` | 9665 | RETAIN PROPOSAL | work/designs/open/ + docs/product/gameplay/ (only approved aspects) |
+| `docs/programs/experience/decisions/gm04-failed-approach-v1.md` | 7255 | RECONCILE/ADR | docs/product/experience/ + docs/technical/engine/ + docs/decisions/ |
+| `docs/programs/experience/decisions/gm06-viewer-open-baseline-v1.md` | 13646 | RECONCILE/ADR | docs/product/experience/ + docs/technical/client/ + docs/decisions/ |
+| `docs/programs/experience/decisions/gm07-consented-default-v1.md` | 10808 | RETAIN PROPOSAL | work/designs/open/ + docs/product/gameplay/ (only approved aspects) |
 | `docs/programs/experience/evidence/chamber-ux-validation-bridge.md` | 10490 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ |
 | `docs/programs/experience/evidence/comparative-game-research.md` | 11716 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ |
 | `docs/programs/experience/evidence/current-ui-source-audit.md` | 11034 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ |
