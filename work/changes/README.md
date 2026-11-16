@@ -10,6 +10,9 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [WIKI01 wiki graph health](open/2026-11-16--wiki01-markdown-graph-health/CHANGE.md) | **Ready for owner selection** | Zero-model Markdown graph, links, anchors, reachability, link-density and integrity tests |
+| [WIKI02 static retrieval](open/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md) | **Ready after WIKI01** | 30 reviewed gold questions, BFS, lexical search, seeded Wiki Hopper, mutation metrics |
+| [WIKI03 isolated agent benchmark harness](open/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md) | **Ready after WIKI02** | Fresh-session host traces, private oracle, scripted fake tests and dry run; no model use authorized |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
