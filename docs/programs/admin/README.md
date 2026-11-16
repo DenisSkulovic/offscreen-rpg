@@ -2,9 +2,11 @@
 
 **Status (reconciled 2026-11-15):** Product direction accepted; **AD01–AD08 Done** (first-wave staff session, grants, Player 360 reads, `/control` shell, diagnostics, usage, access/audit, case anchors). See [implementation program](implementation-program.md), [technical index](technical/README.md), and [post-AD source baseline appendix](technical/source-baseline-2026-11-14.md#post-ad-implementation-baseline--2026-11-15). Sensitive/commercial capabilities remain conditional. **No production Support grant issuer** — OBS06/07 Situation UI works only in synthetic/disposable grant fixtures.
 
-**Owns:** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, engine mechanics authority, or the Change selection queue ([docs/changes/README.md](../../changes/README.md)).
+**DOC01 soft-retire:** prefer [docs/product/admin](../../product/admin/README.md) and [docs/technical/admin](../../technical/admin/topology-and-authorization.md). This tree is historical program design until P6 delete.
 
-**Forensic Support slice (OBS01 + OBS06/07):** OBS01 S1 operation coverage is in Admin diagnostics reads. [OBS06](../observability/evidence/obs06-case-scoped-situation-read-2026-11-15.md) / [OBS07](../observability/evidence/obs07-support-situation-ui-2026-11-15.md) are **Done in synthetic scope** (Nest/Next/Playwright permission + redaction). Trusted production `support-investigator` case/campaign grant issuance is **absent** ([trial review](../observability/evidence/independent-connected-trial-review-2026-11-15.md#5-support-is-real-in-test-but-blocked-by-governance)). Full Turn Capsule workbench and raw-evidence disclosure remain **not** implemented.
+**Owns (historical):** the internal administration and operations product for Offscreen RPG. **Does not own:** player gameplay UX, in-game Storyteller decisions, engine mechanics authority, or the Change selection queue ([work/changes](../../../work/changes/README.md)).
+
+**Forensic Support slice (OBS01 + OBS06/07):** OBS01 S1 operation coverage is in Admin diagnostics reads. [OBS06](../../../evidence/runs/observability-program-2026-11-15/obs06-case-scoped-situation-read-2026-11-15.md) / [OBS07](../../../evidence/runs/observability-program-2026-11-15/obs07-support-situation-ui-2026-11-15.md) are **Done in synthetic scope**. Trusted production `support-investigator` grant issuance is **absent** ([trial review](../../../evidence/runs/observability-program-2026-11-15/independent-connected-trial-review-2026-11-15.md)). Full Turn Capsule workbench and raw-evidence disclosure remain **not** implemented.
 
 ## Choose the product question
 

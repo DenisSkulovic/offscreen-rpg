@@ -13,12 +13,14 @@
 | OBS technical map (C7 subset) | ENGINE-OBS OBS table | `docs/technical/observability/*` | **resolved=true** for owner *map* (identities, capture, investigation, retention, telemetry); deep essay atoms in `programs/observability/technical/*` still evidence/draft until per-heading promote |
 | OBS program evidence bulk | technical/storyteller + observability inbound | `evidence/runs/observability-program-2026-11-15/` (+ obs06/qa-sf01 run dirs) | **RETAIN** copies + MANIFEST; inbound technical links rewritten; legacy programs paths remain until hard delete |
 
+| Admin product + technical maps | program admin vs product/technical | `docs/product/admin/*`, `docs/technical/admin/*` | **resolved=true** for charter/workflows/topology maps; production Support grant steward remains **absent** (STATUS); deep workspace essays under `programs/admin/*` stay soft-retired sources until heading extract or DROP |
+
 ## Still open (G2 remains yellow)
 
 | Residual | Why |
 | --- | --- |
-| Admin deep essays / capability gates | Program technical + product admin dual text not fully claim-certified |
-| OBS deep forensic essays | Heading-level promote incomplete; copies of remaining evidence files not bulk-moved |
+| Admin deep workspace essays | Unique headings in `programs/admin/*` product essays not all extracted into `docs/product/admin/*` |
+| OBS deep forensic technical essays | `programs/observability/technical/*` still hold proposal depth beyond map owners |
 | Atom ledger `resolved=false` bulk | 4k+ inventory stubs; domain certify above is the authoritative shortcut for P6, not a fake mass `resolved=true` |
 | Engineering manuals (playbook, connected-poc, audits) | Soft-retired sources still hold unique headings; G5 |
 

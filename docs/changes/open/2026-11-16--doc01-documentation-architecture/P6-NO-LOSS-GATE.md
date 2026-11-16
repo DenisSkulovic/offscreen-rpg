@@ -28,7 +28,7 @@
 | --- | --- | --- |
 | G1 Inbound path fanout | Residual non-docs hits (~programs evidence, history/initiatives, engineering audits/targets stubs, intentional soft-retire mentions) | Live loaders + package/.agents **mandatory** maps = 0 hits on paths that will be deleted; remaining = provenance-only or owner-waived |
 | G2 Claim-level certification | Priority Storyteller/Experience/Engine+OBS **maps** certified ([G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md)); Admin + OBS deep essays + atom bulk still open | Remaining domains `resolved=true` or DROP with Git pointer; no silent mass resolve |
-| G3 Change packet move | Packets + archiver still rooted at `docs/changes`; only selection/ledger dual-rooted | Tooling dual-root or full move to `work/changes` with green dry-run |
+| G3 Change packet move | Selection/ledger dual-rooted; physical packets still under `docs/changes` ([G3-PACKET-MOVE](G3-PACKET-MOVE.md)) | Scripted move + relative-link rewrite + archiver root flip; dry-run green |
 | G4 History minutes content | Writers + NOTICE done; dated 2026-11-11…15 bodies still only under `docs/history/minutes/` | Promote nontrivial decisions or accept Git recovery + stub routers before delete |
 | G5 Playthroughs / research | Playthroughs soft-retire router + `research/storyteller/tuning-and-memory.md` entry; manuals still under engineering | Move or waive unique example/manual headings; stub routers only is not enough for delete |
 | G6 Taxonomy hard gate | `docs-health` taxonomy is **advisory** (LEGACY lines) | Flip to fail after deletions; negative fixture test passes |
