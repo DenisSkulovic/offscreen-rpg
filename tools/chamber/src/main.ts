@@ -1460,9 +1460,8 @@ try {
           .waitFor();
         const evidenceDirectory = join(
           workspaceRoot,
-          'docs',
-          'observability',
-          'evaluations',
+          'evidence',
+          'runs',
           '2026-11-15--connected-forensic-trial',
         );
         await mkdir(evidenceDirectory, { recursive: true });

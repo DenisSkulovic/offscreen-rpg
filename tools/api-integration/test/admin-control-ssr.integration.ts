@@ -524,9 +524,9 @@ test(
 
           const shotDir = path.join(
             process.cwd(),
-            'docs',
-            'observability',
             'evidence',
+            'runs',
+            'obs07-support-situation',
             'assets',
           );
           mkdirSync(shotDir, { recursive: true });

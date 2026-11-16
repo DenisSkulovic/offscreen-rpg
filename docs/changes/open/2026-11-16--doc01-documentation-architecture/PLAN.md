@@ -1,10 +1,10 @@
 # DOC01 | Current checkpoint
 
-**State:** Selected on `docs/doc01-architecture`. **P3 deepen + P4 scaffolding in progress.**
+**State:** Selected on `docs/doc01-architecture`. **P5 loader cutover in progress.**
 
 ## Current checkpoint
 
-- **P3 deepen:** C1/C2/C3 status hygiene closed; chronology stubs; context-and-cost promoted to storyteller; OBS/Admin technical bodies promoted; `check_docs` 0 problems after link repair.
-- **P4 started:** `work/{changes,designs,sessions}`, `evidence/`, `research/`, `docs/decisions/`, `docs/runbooks/` scaffolded; `.gitignore` updated to track work queue; canon-invention preserved under `work/designs/open/`; local-development runbook promoted.
-- **Next:** P4 continue — seed ledger stub, move/copy retained evidence assets with manifests, draft first ADRs only with proof; then **P5** loader cutover (`repo:brief`, archive-changes, AGENTS, tool writers). Still no P6 deletion of `programs/`.
-- No paid providers / runtime refactors.
+- P1–P4 committed (`d0db63c7`).
+- **P5:** `STATUS.md` / `ROADMAP.md` / rewritten `AGENTS.md`; `repo:brief` reads STATUS; `docs-health` taxonomy advisory; chamber + OBS07 writers → `evidence/`; retained assets copied with manifests.
+- **Next:** update `.agents` documentation rule pointers; dual-read work/changes when ready; keep legacy `docs/programs|changes` until no-loss P6. Still no mass deletion.
+- No paid providers.

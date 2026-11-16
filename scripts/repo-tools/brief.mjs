@@ -27,11 +27,11 @@ function section(document, heading, source) {
 
 // An intentionally empty implementation queue is valid. Never select a parked
 // gameplay Change merely to make the brief happy.
-function currentChange(route) {
+function currentChange(route, changesDirRelative = 'docs/changes') {
   const declarations = [...route.matchAll(/^Current change: (.+?)\s*$/gm)];
   if (declarations.length !== 1) {
     throw new Error(
-      'docs/changes/README.md: expected exactly one Current change declaration.',
+      `${changesDirRelative}/README.md: expected exactly one Current change declaration.`,
     );
   }
   const selected = declarations[0][1].trim();
@@ -42,7 +42,7 @@ function currentChange(route) {
       'Current change must be none or a relative CHANGE.md link.',
     );
   }
-  const changeRoot = path.join(root, 'docs', 'changes');
+  const changeRoot = path.join(root, ...changesDirRelative.split('/'));
   const absolute = path.resolve(changeRoot, match[1]);
   const relative = path.relative(changeRoot, absolute);
   if (
@@ -51,7 +51,7 @@ function currentChange(route) {
     path.basename(absolute) !== 'CHANGE.md'
   ) {
     throw new Error(
-      'Current change must point to CHANGE.md inside docs/changes.',
+      `Current change must point to CHANGE.md inside ${changesDirRelative}.`,
     );
   }
   return path.relative(root, absolute).split(path.sep).join('/');
@@ -70,12 +70,29 @@ try {
         'Unknown argument. Usage: pnpm repo:brief [--checkpoint]',
       );
     }
+    const statusPath = existsSync(path.join(root, 'STATUS.md'))
+      ? 'STATUS.md'
+      : 'docs/progress.md';
     const orientation = section(
-      read('docs/progress.md'),
+      read(statusPath),
       '## Orientation',
-      'docs/progress.md',
+      statusPath,
     );
-    const change = currentChange(read('docs/changes/README.md'));
+    // DOC01: prefer work/changes when it declares Current change; else docs/changes.
+    const workChanges = path.join(root, 'work', 'changes', 'README.md');
+    let changeRoute = 'docs/changes/README.md';
+    let changeDoc = read(changeRoute);
+    if (existsSync(workChanges)) {
+      const workDoc = readFileSync(workChanges, 'utf8');
+      if (/^Current change: /m.test(workDoc) && !/^Current change: see /im.test(workDoc)) {
+        changeRoute = 'work/changes/README.md';
+        changeDoc = workDoc;
+      }
+    }
+    const change = currentChange(
+      changeDoc,
+      changeRoute.replace(/\/README\.md$/, ''),
+    );
     let checkpoint = null;
     if (change && args.includes('--checkpoint')) {
       const plan = path.posix.join(path.posix.dirname(change), 'PLAN.md');
@@ -94,7 +111,7 @@ try {
     );
     console.log('\n## Recent commits');
     console.log(run('git', ['log', '-3', '--oneline'], { capture: true }));
-    console.log(`\n## Orientation (docs/progress.md)\n${orientation}`);
+    console.log(`\n## Orientation (${statusPath})\n${orientation}`);
     console.log(`\n## Current Change\n${change ?? 'None selected (valid).'}`);
     if (args.includes('--checkpoint')) {
       console.log(
@@ -102,12 +119,11 @@ try {
       );
     }
     console.log('\n## Read next');
-    console.log('TODO.md — current engineering-portfolio priority');
-    console.log('docs/changes/README.md — Change queue and execution contract');
-    console.log('docs/README.md — choose a question and depth');
-    console.log(
-      'docs/engineering/code-navigation.md — find the implemented owner',
-    );
+    console.log('STATUS.md — demonstrated boundary');
+    console.log('ROADMAP.md — owner strategy (see also TODO.md)');
+    console.log(`${changeRoute} — Change queue and execution contract`);
+    console.log('docs/product/README.md — product bible map');
+    console.log('docs/technical/README.md — technical owner map');
     console.log(
       '.agents/README.md — conditional rules and repository commands',
     );

@@ -66,7 +66,7 @@ Read detailed phase exit gates in [MIGRATION.md](MIGRATION.md). Avoid shotgun ed
 | Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | In progress (P3) | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Core contracts promoted; skeletons + stubs; claim merges ongoing | Partial — flat/program paths until P5 |
 | Approved decisions and unresolved business policy | In progress (P4) | `docs/decisions/` + `work/designs/open/` | Scaffold + canon-invention preserved; ADRs not mass-invented | Partial |
 | Historical source audits / trials / screenshots / legal attribution | In progress (P4) | `evidence/`, test snapshots, `NOTICE.md` | evidence/ scaffold; assets still in programs until writer retarget | Partial |
-| Root roadmap/status + .agents/harness/tool loader | Pending (P5) | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | work/changes mirror only so far | Not performed |
+| Root roadmap/status + .agents/harness/tool loader | In progress (P5) | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | STATUS/ROADMAP/AGENTS + brief/docs-health/writers updated; full queue move pending | Partial |
 | All 483+ individual paths | Pending | See full registers | Pending atom ledger | Not performed |
 
 **Execution receipt:** No code migration, link cutover, provider calls, runtime testing, deletion or docs-health result is claimed by this design-only packet. The design artifacts were written through the connected GitHub repository; Cursor must rerun actual local checks on its checkout.

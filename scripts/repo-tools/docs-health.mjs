@@ -169,4 +169,36 @@ if (
   console.log(
     'Review flags are not failure gates. Move durable evidence to its owner and keep checkpoints actionable.',
   );
+
+  // DOC01 taxonomy: forbidden transient classes inside canonical docs/ (advisory while migration open).
+  const forbiddenTop = new Set([
+    'programs',
+    'engineering',
+    'history',
+    'changes',
+    'operations',
+    'handoff',
+    'evidence',
+    'evaluations',
+    'minutes',
+    'archive',
+    'audits',
+  ]);
+  const docsRoot = path.join(root, 'docs');
+  const legacy = [];
+  if (existsSync(docsRoot)) {
+    for (const entry of readdirSync(docsRoot, { withFileTypes: true })) {
+      if (entry.isDirectory() && forbiddenTop.has(entry.name)) {
+        legacy.push('docs/' + entry.name);
+      }
+    }
+  }
+  console.log('DOC01 taxonomy (advisory during migration; hard gate after P6):');
+  if (!legacy.length) {
+    console.log('ok | no forbidden top-level docs/ namespaces');
+  } else {
+    for (const name of legacy.sort()) {
+      console.log('LEGACY | ' + name + ' (retire after DOC01 no-loss proof)');
+    }
+  }
 }

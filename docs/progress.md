@@ -1,5 +1,7 @@
 # Implementation overview
 
+> **DOC01 compatibility stub.** Canonical orientation: [STATUS.md](../STATUS.md). Prefer editing STATUS for current demonstrated state.
+
 ## Orientation
 
 **Status (reconciled 2026-11-15):** Local pre-POC **engineering portfolio**. Nov 12–15 waves landed substantial code (React W, Chamber CH, UX/PX/PF, ENG postwave, Admin AD, Storyteller SA, forensic OBS, GM slices). Sustained 10–15-turn live creative quality and production Support grants remain **unproved / absent**.
