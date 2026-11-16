@@ -1,51 +1,11 @@
-# Gameplay execution atlas
+# Gameplay execution atlas *(DOC01 soft-retire)*
 
-Status: maintained design and regression reference. Each trace labels current, target and fixture behavior; authored examples are not recorded sessions or proof of model quality. No model was called to write or evaluate them.
+**Do not author new permanent norms here.**  
 
-The [product playthroughs](../../product/journeys/playthroughs.md) describe the feeling. This atlas follows particular choices all the way through time, rules, state, model requests and recovery. Its purpose is to make “is this the game we mean?” answerable before more subsystems are built.
+| Need | Canonical home |
+| --- | --- |
+| Product feeling / acceptance | [docs/product/gameplay/acceptance-scenarios.md](../../product/gameplay/acceptance-scenarios.md) |
+| Connected proof / dated runs | [evidence/](../../../evidence/README.md) |
+| Engine authority | [docs/technical/engine/](../engine/authority-and-transitions.md) |
 
-The center of the game is a **life with persistent consequences**, not a stream of generated paragraphs and not a job scheduler with decorative prose. The player alternates between consequential decisions and delegated, time-distributed intentions. The simulation earns changes; the Storyteller makes situations legible and interesting within that authority. Neither mode must force a transition to the other on every step.
-
-## Read in this order
-
-For a future **gameplay** handoff, start with the [gold harbor session](harbor-session.md) and [connected solo contract](../solo-gameplay-contract.md), then select a bounded [Change](../../changes/README.md). The older [initiative dossiers](../../history/initiatives/README.md) explain historical phase decisions, not today's coding order. The individual benchmark traces below remain contrasting constraints, not a demand to implement all worlds before playing.
-
-1. [Execution language](execution-language.md): what a scene, offer, activity, roll and pause actually mean in these traces.
-2. [SpongeBob](spongebob.md): a minute-by-minute active session, including a failed check, different options and proposed quiet work. Closest look at what the player actually reads.
-3. [Beacon](beacon.md): exact dice, contributions, interruption, B then A, and the chronology defect that must be fixed.
-4. [Storyteller requests and cost](storyteller.md): concrete input/output, discovery tools, limits, validation and illustrative token ledgers.
-5. [Greywake memory exploration](greywake-memory.md): the provider-free current retrieval/exploration path, its exact authority boundaries and the still-missing final composition round.
-6. [POC selection and acceptance](poc.md): the small connected experience to implement, what would invalidate it, and where the larger examples fit.
-
-Then use the contrasts when designing a change:
-
-| Product benchmark | Technical companion | What it puts under pressure |
-| --- | --- | --- |
-| Wizard, goblin, apple and companion | [Wizard](wizard.md) | Instant transformation versus prolonged waiting; containment, changing capabilities, another actor changing your situation |
-| Vvardenfell continuing life | [Vvardenfell](vvardenfell.md) | Labor, real waiting, interrupted travel, inventory/relationships and recall over days |
-| Seyda Neen while the Storyteller is dormant | [Prepared local opportunities](local-opportunities.md) | Fresh player-selected/repeated activities without inference; story-dependent eligibility and wake conditions |
-| Seyda Neen → Red Mountain itinerary | [Activity chain](red-mountain.md) | Selected narration, quiet completion, dependent starts, cancellation and late reports |
-| Batman asleep, then patrolling | [Batman](batman.md) | Bounded unattended permission, zero-inference routine, event candidacy and unresolved scenes |
-| Space cargo journey | [Cargo](cargo.md) | Vehicle/crew/beneficiary are different; costs and movement cannot be undone by cancelling |
-| Microbe and abstract consciousness | [Nonhuman worlds](nonhuman.md) | No required wallet, limbs, human clock, geometry or universal skill applicability |
-
-## How to read a claim
-
-- **Current:** directly grounded in the linked implementation. A worked roll is still illustrative, not an observed random result.
-- **Target:** specified/proposed behavior not established by the current runtime. Implementation status is owned by [progress](../../progress.md).
-- **Fixture:** exact numbers, prose, names, policies and dice chosen to make this example reproducible. Not global defaults or additional requirements.
-- **Open:** a product choice that must be resolved before its dependent behavior is implemented. See [questions](../../questions.md).
-
-Step IDs such as `BC-04` are stable acceptance references, not API names or database IDs. New documents should reference a step instead of copying its story. If implementation disagrees, either repair it or explicitly revise the intended experience; do not quietly relabel the mismatch as a successful proof.
-
-Every target chain uses a finite list of accepted intentions, not generated executable code. Every “roll of 12” means a server-recorded fixture draw, not a number the model may choose. Every cost ledger counts only its named branch. Prose samples are authored design examples, not evidence of AI taste.
-
-## Ownership and limits
-
-This atlas owns **worked examples and their observable acceptance**. [Rules and activities](../rules-and-activities.md), [time](../ticks-and-tags.md), [context/cost](../context-and-cost.md) and permanent product/technical owners define reusable contracts; a selected Change only scopes an implementation. When a trace reveals a missing contract, link it to that owner; do not grow a second specification here.
-
-Maintain this atlas as a living regression map for product assumptions. When shared behavior changes, update affected traces without removing the pressure they were designed to apply. When a proposed story cannot be explained by an existing trace without hand-waving, add a focused benchmark or contrast and identify the new assumption explicitly. Keep unsupported target behavior visible, keep source-grounded status honest, and prefer extending an existing trace over creating near-duplicate examples. Examples challenge the architecture; they do not become hardcoded runtime branches or mandatory mechanics merely by being documented.
-
-The [activity foundation](../../history/initiatives/PARKED-2026-11-15.md#activities-participation-and-progress) and [bounded autonomy](../../history/initiatives/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) remain unfinished. Their design checkpoints use this atlas; writing the examples does not complete those features or authorize their entire implementation. Multiplayer, general combat, transformation and traversal remain design probes, not prerequisites for demonstrating the next solo slice. Long-life memory now has provider-free corpus, evaluation, indexed retrieval and bounded exploration infrastructure, but a fresh Storyteller turn that uses the recovered evidence remains an unproved product target.
-
-The atlas deliberately does not settle combat rounds, world geography, notification channels, model selection or commercial pricing. It does make failures visible: free narrated travel, unexplained lost progress, repeated identical choices, silently stalled overnight plans, and invented memories all violate the intended experience even when the JSON is valid.
+Nested example traces (`harbor-session`, `spongebob`, `beacon`, …) remain readable as **authored design examples**, not live model proof, until the [P6 no-loss gate](../../changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) clears deletion or G5 historicizes them under `evidence/` / `research/`.

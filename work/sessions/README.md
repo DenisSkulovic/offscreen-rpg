@@ -4,4 +4,7 @@ Short-lived continuity for coding-agent handoffs. Promote durable decisions to p
 
 **Write here:** `work/sessions/YYYY-MM-DD.md` (see [.agents/rules/session-minutes.md](../../.agents/rules/session-minutes.md)).
 
-**Legacy minutes** (readable until G4 extraction): [docs/history/minutes/](../../docs/history/minutes/README.md).
+| Date | Focus |
+| --- | --- |
+| [2026-11-16](2026-11-16.md) | DOC01 P6 G1–G3 / G2 partial |
+| Legacy | [docs/history/minutes/](../../docs/history/minutes/README.md) through 2026-11-15 |

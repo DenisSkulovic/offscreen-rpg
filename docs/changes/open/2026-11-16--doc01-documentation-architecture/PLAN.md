@@ -8,4 +8,5 @@
 - **G1/G3 partial:** high-traffic inbound rewritten via `work/designs/open/doc01-migration/rewrite-inbound-canonical.mjs`; `work/changes` owns Current change; `brief.mjs` dual-root; `archive-changes.mjs` ledger append; session writers → `work/sessions/`.
 - **G2 partial:** C5/C6 + engine/OBS maps certified ([G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md)); OBS06 + QA-SF01 copied under `evidence/runs/`. Admin/OBS deep essays remain.
 - Residual G1 hits = history/initiatives provenance, engineering audits, intentional soft-retire mentions.
-- **Next:** finish Admin/OBS deep G2; G3 packet root move; G4 sessions promotion; G5 manuals; G6 taxonomy flip. No paid providers. No tree deletion.
+- G4/G5 partial: sessions writer + NOTICE; playthroughs soft-retire; research storyteller router.
+- **Next:** Admin deep G2; G3 packet root move; finish G4/G5 content moves; G6 taxonomy flip. No paid providers. No tree deletion.

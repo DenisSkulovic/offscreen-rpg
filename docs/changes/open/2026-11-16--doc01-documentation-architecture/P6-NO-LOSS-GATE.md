@@ -17,8 +17,10 @@
 | Archive compact index | `work/changes/ledger/2026-11.md` (109 packets) |
 | File-router dispositions | 0 PENDING in local inventory (heading stubs ≠ full claim certify) |
 | `check_docs` | 0 problems on current tree |
-| G1 high-traffic inbound (partial) | `rewrite-inbound-canonical.mjs` + selection/session rules retargeted; remaining hits are soft-retire provenance, audits, initiatives, OBS evidence not yet copied |
-| G3 selection dual-root (partial) | `work/changes/README.md` owns Current change; `brief.mjs` prefers it; `docs/changes/README.md` defers; `archive-changes.mjs` appends ledger on `--apply`. Packets still physically under `docs/changes/` |
+| G1 high-traffic inbound (partial) | Rewrite script + maps retargeted; residuals = audits/initiatives/soft-retire provenance |
+| G2 priority domains (partial) | [G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md); OBS evidence retain under `evidence/runs/observability-program-2026-11-15/` |
+| G3 selection dual-root (partial) | `work/changes` owns Current change; brief dual-root; archiver ledger append. Packets still under `docs/changes/` |
+| G4 writers + legal (partial) | New sessions → `work/sessions/`; `NOTICE.md` legal home; legacy minutes readable via stub index |
 
 ## Blocked — keep legacy trees
 
@@ -27,8 +29,8 @@
 | G1 Inbound path fanout | Residual non-docs hits (~programs evidence, history/initiatives, engineering audits/targets stubs, intentional soft-retire mentions) | Live loaders + package/.agents **mandatory** maps = 0 hits on paths that will be deleted; remaining = provenance-only or owner-waived |
 | G2 Claim-level certification | Priority Storyteller/Experience/Engine+OBS **maps** certified ([G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md)); Admin + OBS deep essays + atom bulk still open | Remaining domains `resolved=true` or DROP with Git pointer; no silent mass resolve |
 | G3 Change packet move | Packets + archiver still rooted at `docs/changes`; only selection/ledger dual-rooted | Tooling dual-root or full move to `work/changes` with green dry-run |
-| G4 History minutes / legal | Minutes not fully promoted; legal attribution must not vanish with `history/` | NOTICE/legal home + sessions promotion rule applied (writers → `work/sessions/`; content promotion still open) |
-| G5 Playthroughs / research | `docs/technical/playthroughs` + engineering manuals not fully historicized to evidence/research | Explicit example/research owners + stub routers |
+| G4 History minutes content | Writers + NOTICE done; dated 2026-11-11…15 bodies still only under `docs/history/minutes/` | Promote nontrivial decisions or accept Git recovery + stub routers before delete |
+| G5 Playthroughs / research | Playthroughs soft-retire router + `research/storyteller/tuning-and-memory.md` entry; manuals still under engineering | Move or waive unique example/manual headings; stub routers only is not enough for delete |
 | G6 Taxonomy hard gate | `docs-health` taxonomy is **advisory** (LEGACY lines) | Flip to fail after deletions; negative fixture test passes |
 
 ## Allowed now (soft retirement)
