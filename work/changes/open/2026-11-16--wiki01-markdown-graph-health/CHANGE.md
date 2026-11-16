@@ -29,7 +29,7 @@ Version the outputs as `wiki.graph.v1` and `wiki.health.v1`. Include actual Git 
 ## B. Diagnostic metrics and classification
 
 **Hard errors (after verified correct parsing):**
-- Broken maintained internal file/directory path or heading fragment in `docs/**`, `work/designs/open/**`, or the enumerated root/source index scope.
+- Broken maintained internal file/directory path or heading fragment in `docs/**`, `work/designs/open/**`, `work/changes/open/**`, or the enumerated root/source index scope.
 - Canonical page unreachable via directed links from `docs/README.md` without an explicitly reviewed exception.
 - Root/subject router routing a reader to an archived/parked/deleted page **as normative owner**; a legitimate historic or evidence citation is not an error.
 - Broken test fixtures, invalid graph schema or a code regression in parse/resolve.
