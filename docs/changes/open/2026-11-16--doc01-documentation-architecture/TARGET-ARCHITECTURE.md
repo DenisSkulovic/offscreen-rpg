@@ -239,4 +239,4 @@ When existing docs disagree, use an explicit conflict record: statement A + SHA/
 
 DOC01 does **not** change gameplay policy, accept proposed architecture, rewrite the actual runtime, call LLM providers, modify a live DB, or declare previously untested features validated. The target directory topology is a means to protect knowledge; deleting text for a prettier tree is not success.
 
-**Cross-check:** [audit](AUDIT-BASELINE.md), [file/dir inventory](INVENTORY.md), [migration](MIGRATION.md), [verification](VERIFICATION.md), [execution packet](CHANGE.md).
+**Cross-check:** [audit](AUDIT-BASELINE.md), [directory census](DIRECTORY-REGISTER.md) and [file dispositions](FILE-DISPOSITION.md), [migration](MIGRATION.md), [verification](VERIFICATION.md), [execution packet](CHANGE.md).
