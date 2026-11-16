@@ -8,7 +8,7 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 
 | Baseline directory | Direct files | Total descendants | Candidate disposition | Destination | Reason |
 | --- | ---: | ---: | --- | --- | --- |
-| `docs/changes/` | 1 | 121 | REVIEW | unknown | manual authority check |
+| `docs/changes/` | 1 | 121 | REPLACE WORKSPACE | work/changes/ | current Change queue is active work, not permanent product knowledge |
 | `docs/changes/archive/` | 1 | 111 | SUMMARIZE/RETIRE | work/changes/ledger/YYYY-MM.md + Git history | terminal packet is not a maintained specification |
 | `docs/changes/archive/2026-11/` | 1 | 110 | SUMMARIZE/RETIRE | work/changes/ledger/YYYY-MM.md + Git history | terminal packet is not a maintained specification |
 | `docs/changes/archive/2026-11/admin/` | 0 | 8 | SUMMARIZE/RETIRE | work/changes/ledger/YYYY-MM.md + Git history | terminal packet is not a maintained specification |
@@ -137,11 +137,11 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 | `docs/changes/open/2026-11-15--obs00-live-provider-custody/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `docs/changes/open/2026-11-15--obs04-finite-action-transition-evidence/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
 | `docs/changes/open/2026-11-15--qa-storyteller-integration-fixtures/` | 1 | 1 | MOVE | work/changes/open/<same-id>/ | nonterminal executable scope |
-| `docs/engineering/` | 16 | 25 | REVIEW | docs/runbooks/ or .agents/ or research/ | split engineering process from technology decisions |
+| `docs/engineering/` | 16 | 25 | DISSOLVE | docs/technical/ + docs/runbooks/ + .agents/ + research/ + evidence/ | mixed process, targets, research and dated proof have no single authority |
 | `docs/engineering/audits/` | 4 | 4 | EXTRACT | evidence/inspections/ | dated source gap review not permanent contract |
 | `docs/engineering/evidence/` | 2 | 2 | EXTRACT | evidence/inspections/ | dated source gap review not permanent contract |
 | `docs/engineering/targets/` | 3 | 3 | PROMOTE | docs/technical/{client,lab,engine}/ | engineering destination is a technical target |
-| `docs/history/` | 1 | 14 | REVIEW | unknown | manual authority check |
+| `docs/history/` | 1 | 14 | DISPERSE/RETIRE | work/sessions/ + docs/decisions/ + NOTICE.md + Git | historical sessions, legal attribution and dormant initiatives have different lifecycles |
 | `docs/history/initiatives/` | 4 | 6 | HISTORICIZE | work/changes/ledger + Git history | legacy dossier or retrospective |
 | `docs/history/initiatives/2026-09-24--01-30--canon-invention-policy/` | 2 | 2 | PRESERVE/DRAFT | work/designs/open/canon-invention-policy + product/gameplay | explicitly owner-retained dormant work |
 | `docs/history/legal/` | 1 | 1 | PROMOTE | NOTICE.md | legal attribution, not chronological history |
@@ -151,7 +151,7 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 | `docs/product/foundations/` | 4 | 4 | RECONCILE | docs/product/{foundations,gameplay,experience,storyteller}/ | permanent product intent; reorganize by subject |
 | `docs/product/journeys/` | 4 | 4 | RECONCILE | docs/product/{foundations,gameplay,experience,storyteller}/ | permanent product intent; reorganize by subject |
 | `docs/product/storytelling/` | 3 | 3 | RECONCILE | docs/product/{foundations,gameplay,experience,storyteller}/ | permanent product intent; reorganize by subject |
-| `docs/programs/` | 1 | 270 | REVIEW | docs/product/ or docs/technical/ | subject ownership to determine |
+| `docs/programs/` | 1 | 270 | DISSOLVE | docs/product/ + docs/technical/ + docs/decisions/ + evidence/ + work/ | a design wave is not a stable cross-authority knowledge owner |
 | `docs/programs/admin/` | 25 | 47 | PROMOTE | docs/product/admin/ | internal staff product intent |
 | `docs/programs/admin/evidence/` | 8 | 8 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ | observational, fixture, visual or research provenance |
 | `docs/programs/admin/handoff/` | 1 | 1 | EXTRACT/RETIRE | work/changes ledger + Git history | expired executor relay |
@@ -161,7 +161,7 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 | `docs/programs/engine/evidence/` | 13 | 13 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ | observational, fixture, visual or research provenance |
 | `docs/programs/engine/handoff/` | 4 | 4 | EXTRACT/RETIRE | work/changes ledger + Git history | expired executor relay |
 | `docs/programs/experience/` | 8 | 79 | PROMOTE | docs/product/experience/ | player-facing UX design |
-| `docs/programs/experience/decisions/` | 5 | 5 | RECONCILE/ADR | docs/technical/engine/ + docs/decisions/ | selected invariant and rationale must be separated |
+| `docs/programs/experience/decisions/` | 5 | 5 | SPLIT BY APPROVAL | docs/product/{experience,gameplay}/ + docs/technical/{engine,client}/ + docs/decisions/ or work/designs/ | GM interaction policy crosses product and technology; GM03/GM07 remain proposed |
 | `docs/programs/experience/evidence/` | 16 | 18 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ | observational, fixture, visual or research provenance |
 | `docs/programs/experience/evidence/renders/` | 2 | 2 | EXTRACT | evidence/{inspections,runs}/ or tests/snapshots/ | observational, fixture, visual or research provenance |
 | `docs/programs/experience/flows/` | 10 | 10 | PROMOTE | docs/product/experience/ | player-facing UX design |
