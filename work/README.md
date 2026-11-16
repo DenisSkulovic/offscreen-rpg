@@ -9,4 +9,4 @@
 | [designs/](designs/README.md) | What designs are open / owner-retained drafts? |
 | [sessions/](sessions/README.md) | Short rolling continuity (not a second bible) |
 
-Until P5 cutover, the live Change queue remains mirrored under `docs/changes/` for loader compatibility.
+Until P5 cutover, the live Change queue remains mirrored under `work/changes/` for loader compatibility.

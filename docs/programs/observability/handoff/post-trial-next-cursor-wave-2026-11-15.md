@@ -14,7 +14,7 @@
 
 ## 1. Cursor session 1 | OBS00-L local trial guard (ONE Change)
 
-**Do not run paid transport.** Start by reading only [OBS00-L Change](../../../changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) plus `tools/chamber/src/main.ts` relevant ranges (startup credits/prices, funding UPSERT, runtime provider) and `storyteller/budget.ts` relevant reserve/dispatch/uncertainty. Verify current HEAD and exact test DB. If kickoff explicitly selects this packet, set `Current change` to OBS00-L and implement its narrow fail-closed outcome.
+**Do not run paid transport.** Start by reading only [OBS00-L Change](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) plus `tools/chamber/src/main.ts` relevant ranges (startup credits/prices, funding UPSERT, runtime provider) and `storyteller/budget.ts` relevant reserve/dispatch/uncertainty. Verify current HEAD and exact test DB. If kickoff explicitly selects this packet, set `Current change` to OBS00-L and implement its narrow fail-closed outcome.
 
 **Actually execute in disposable local SQL + fake transport:**
 1. New explicit lab-only run, max **250,000 microusd**, **4 total provider attempts**, per-op ≤ **10,000 microusd** (or stricter account cap); test first valid reserved attempt.
@@ -30,7 +30,7 @@ Commit/push code and a focused evidence receipt only after tests. Mark OBS00-L D
 
 ## 2. Cursor session 2 | OBS00-C exact reviewed→HTTP packet (ONE Change)
 
-Read [OBS00-C Change](../../../changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) then `openrouter.ts::{inspectOpenRouterRequest,buildOpenRouterRequest,createOpenRouterProvider}`, `dispatch-review.ts` and actual `execution/memory-provider-runtime` round creation. **No live network, use injected `transport` fake.**
+Read [OBS00-C Change](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) then `openrouter.ts::{inspectOpenRouterRequest,buildOpenRouterRequest,createOpenRouterProvider}`, `dispatch-review.ts` and actual `execution/memory-provider-runtime` round creation. **No live network, use injected `transport` fake.**
 
 **Actually execute**:
 1. Create one **real persisted disposable** G/attempt/review row, capture `packetSha256` and byte count. Intercept `RequestInit.body` at the configured mock HTTP edge; SHA must match the **same attempt**.
@@ -43,7 +43,7 @@ Save hashed/size-only packet metadata; no raw request/prompt/auth header in Git.
 
 ## 3. Cursor session 3 | QA-SF01 integration fixture debt (separate Change)
 
-Read [QA-SF01](../../../changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) and `tools/api-integration/test/storyteller.integration.ts` around `time.id:'simulation-gameSeconds'`. **Provider-free, disposable `offscreen_auth_test` only.**
+Read [QA-SF01](../../../../work/changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) and `tools/api-integration/test/storyteller.integration.ts` around `time.id:'simulation-gameSeconds'`. **Provider-free, disposable `offscreen_auth_test` only.**
 
 - Fix old fixture slug **in test source** (capital `S` violates current lowercase identifier schema); don't relax production validation.
 - Rerun **full** `pnpm test:focus -- storyteller`. Initial report: 6 pass/27 fail. Determine whether custom-calendar 0 vs 55 is a genuine mechanic failure after fixture repair. Don't weaken the 55-day expectation without source proof.

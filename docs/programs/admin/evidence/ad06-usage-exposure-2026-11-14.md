@@ -1,6 +1,6 @@
 # AD06 technical usage exposure evidence | 2026-11-14
 
-**Change:** [AD06](../../../changes/archive/2026-11/admin/2026-11-14--admin-usage-exposure/CHANGE.md). Provider spend: none. Disposable DB only.
+**Change:** [AD06](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-usage-exposure/CHANGE.md). Provider spend: none. Disposable DB only.
 
 ## Commands run
 

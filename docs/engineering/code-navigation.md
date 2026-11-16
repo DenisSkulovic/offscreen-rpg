@@ -10,7 +10,7 @@ For research-backed options around context selection, retrieval, memory, tools, 
 
 For long histories specifically, [Long-story memory, navigation and synthesis](long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
 
-For a new code implementation, check the [Change index](../changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../history/initiatives/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+For a new code implementation, check the [Change index](../../work/changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../history/initiatives/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner
 

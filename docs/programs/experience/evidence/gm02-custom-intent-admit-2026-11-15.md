@@ -1,6 +1,6 @@
 # GM02 | Admit one reviewable inspect candidate (2026-11-15)
 
-**Change:** [GM02](../../../changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md)  
+**Change:** [GM02](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md)  
 **Policy:** [custom intent policy V1](../decisions/gm01-custom-intent-policy-v1.md)  
 **Provider spend:** zero.
 

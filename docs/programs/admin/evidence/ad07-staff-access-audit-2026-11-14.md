@@ -1,6 +1,6 @@
 # AD07 staff access / audit evidence | 2026-11-14
 
-**Change:** [AD07](../../../changes/archive/2026-11/admin/2026-11-14--admin-staff-access-review/CHANGE.md). Provider spend: none. Disposable DB only.
+**Change:** [AD07](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-staff-access-review/CHANGE.md). Provider spend: none. Disposable DB only.
 
 ## Commands run
 

@@ -31,7 +31,7 @@ function classify(path) {
       note: "DOC01 execution packet",
     };
   }
-  if (path.startsWith("docs/changes/archive/")) {
+  if (path.startsWith("work/changes/archive/")) {
     return {
       disposition: "SUMMARIZE/RETIRE",
       kind: "transient",
@@ -39,7 +39,7 @@ function classify(path) {
       note: "terminal Change archive",
     };
   }
-  if (path.startsWith("docs/changes/open/") || path === "docs/changes/README.md") {
+  if (path.startsWith("work/changes/open/") || path === "work/changes/README.md") {
     return {
       disposition: "MOVE",
       kind: "transient",

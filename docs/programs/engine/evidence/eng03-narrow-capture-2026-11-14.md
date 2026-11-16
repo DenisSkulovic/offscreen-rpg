@@ -1,6 +1,6 @@
 # ENG03-narrow | Provider-free proof (2026-11-14)
 
-**Change:** [ENG03-narrow pending capture](../../../changes/archive/2026-11/eng/2026-11-14--eng03-narrow-pending-capture/CHANGE.md)  
+**Change:** [ENG03-narrow pending capture](../../../../work/changes/archive/2026-11/eng/2026-11-14--eng03-narrow-pending-capture/CHANGE.md)  
 **Provider spend:** zero (scripted offline execution; no model calls).
 
 ## What landed

@@ -1,6 +1,6 @@
 # GM01 | Template-first custom intent interpretation (2026-11-15)
 
-**Change:** [GM01](../../../changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md)  
+**Change:** [GM01](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md)  
 **Policy:** [custom intent policy V1](../decisions/gm01-custom-intent-policy-v1.md)  
 **Provider spend:** zero (`interpreter:'template.v1'`).
 

@@ -74,7 +74,7 @@ At a role change, pass **decisions and evidence identifiers**, not the transcrip
 
 ## Frontend Cursor efficiency route
 
-The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../docs/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../docs/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
+The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../work/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../work/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
 
 ## First real-client proof, before buying more tools
 

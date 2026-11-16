@@ -10,7 +10,7 @@ It **does not prove** an end-to-end player campaign whose real external model re
 
 The strongest *new source contradiction* is in S5: the **ordinary worker** has no `dispatchAuthority`, but `tools/chamber/src/main.ts`, when `storyMode=true`, explicitly passes `dispatchAuthority: () => storyAuthority.usagePolicy` along with `createOpenRouterProvider` to `startRuntime`. Thus “OBS00-B missing from config.ts means all local Story-mode live calls are blocked” **does not follow**. The local route is potentially dispatch-capable. However its policy is **computed at startup and reused**, not independently refreshed against evolving entitlement at each send, so **the intended production OBS00-B safety property is still unproven**.
 
-Also, the local launcher currently upserts `storyteller_funding` with `ON CONFLICT (...) DO UPDATE SET stopped=false` and `storyteller_run` with `enabled=true`. Restart can thus clear a prior operator stop/disable without a named authorized recovery procedure. This is a **source-level safety regression**, not an observed charge or evidence of a live incident. [Local trial safety change](../../../changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md).
+Also, the local launcher currently upserts `storyteller_funding` with `ON CONFLICT (...) DO UPDATE SET stopped=false` and `storyteller_run` with `enabled=true`. Restart can thus clear a prior operator stop/disable without a named authorized recovery procedure. This is a **source-level safety regression**, not an observed charge or evidence of a live incident. [Local trial safety change](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md).
 
 ## 2. Evidence-quality table
 
@@ -52,7 +52,7 @@ This is **not** the same as default worker `config.ts`. Since the returned polic
 4. **If an application-local pre-send safety check fails after `budget.dispatch` marked “possibly sent”**, the accountant may record uncertainty despite no HTTP bytes. Design the guard **before** liability transition or preserve truthful stage distinctions; do not call a pre-send local failure a free retry under an uncertain state.
 5. **Pricing and model availability** are external live facts. Current startup checks endpoint existence and route price. It may fail if configured model/price route is stale; no code should hardcode current provider pricing from this review.
 
-**Disposition:** two small, provider-free code Changes in order: [OBS00-L local trial safety](../../../changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) and [OBS00-C wire equality](../../../changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md). After both are proven, propose a **fresh one-operation explicit owner-approved paid trial** using the local dev lane. **Do not relabel OBS00-B Done.**
+**Disposition:** two small, provider-free code Changes in order: [OBS00-L local trial safety](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) and [OBS00-C wire equality](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md). After both are proven, propose a **fresh one-operation explicit owner-approved paid trial** using the local dev lane. **Do not relabel OBS00-B Done.**
 
 ## 4. Test reliability is a separate problem
 
@@ -60,7 +60,7 @@ The full `pnpm test:focus -- storyteller` was **6 pass / 27 fail** in Cursor's r
 
 `pnpm test:focus -- story-resolution` was 7/8 with a cleanup FK on `storyteller_execution_stage_generation_id_fk`; likely test teardown ordering after new OBS02 table. The base game behavior assertion apparently passed. Neither failure should be silently ignored, nor should production runtime constraints be loosened to satisfy old fixtures.
 
-[QA narrow repair packet](../../../changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md): fix test contract IDs under the **current** source schema and clean up dependent stage rows in test-only teardown, then rerun full focused suites. No weakening expected 55-game-second winter behavior or bypassing FK in production.
+[QA narrow repair packet](../../../../work/changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md): fix test contract IDs under the **current** source schema and clean up dependent stage rows in test-only teardown, then rerun full focused suites. No weakening expected 55-game-second winter behavior or bypassing FK in production.
 
 ## 5. Support is real in test but blocked by governance
 

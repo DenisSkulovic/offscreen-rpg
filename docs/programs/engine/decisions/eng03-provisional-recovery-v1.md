@@ -2,7 +2,7 @@
 
 **Decision:** selected design for review, 2026-11-15. **Runtime status:** not implemented by this document. **Applies to:** already-shipped pending-consequence and committed-action context captures. **No general Storyteller retry, new generation or paid provider attempt is authorized.**
 
-This narrows the two residuals recorded in [ENG03-C1](../../../changes/archive/2026-11/eng/2026-11-14--eng03-committed-action-capture/CHANGE.md). Existing code on main (8b7157f, 2026-11-14) has `storyteller_context_capture.state`, a three-claim ceiling, non-dispatchable provisional `generation.kind=storyteller.context-capture.v1`, and promotion in place to `storyteller.profiled.v1`. It does **not** yet have a safe exhausted-capture operator rearm. The public snapshot presently joins `generation` but does not explicitly discriminate that provisional kind before deriving `canRetry`.
+This narrows the two residuals recorded in [ENG03-C1](../../../../work/changes/archive/2026-11/eng/2026-11-14--eng03-committed-action-capture/CHANGE.md). Existing code on main (8b7157f, 2026-11-14) has `storyteller_context_capture.state`, a three-claim ceiling, non-dispatchable provisional `generation.kind=storyteller.context-capture.v1`, and promotion in place to `storyteller.profiled.v1`. It does **not** yet have a safe exhausted-capture operator rearm. The public snapshot presently joins `generation` but does not explicitly discriminate that provisional kind before deriving `canRetry`.
 
 ## 1. Two retry systems, two authorities
 
@@ -71,4 +71,4 @@ Use provider-disabled deterministic fixtures and disposable DB only when separat
 
 **Stop and return to design owner if:** operator grant/audit reuse cannot be established without privileged scope expansion, the actual provisional row could already have a provider attempt, the capture hash cannot be verified, or the current SQL row/lease semantics differ. A small residual must not grow into an operator console redesign.
 
-**Ready gate:** latest-source recheck and explicit owner code authorization; [bounded Change](../../../changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md). No code has been changed here.
+**Ready gate:** latest-source recheck and explicit owner code authorization; [bounded Change](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md). No code has been changed here.

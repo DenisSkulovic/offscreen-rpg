@@ -49,7 +49,7 @@ The current `apps/web/src/features/play/presentation/assets.ts` exports `FIXTURE
 
 **Assessment:** named SVGs are normal and desirable **as tests/examples**, but the dependency from production presentation parser/resolver to specific fixture content is the wrong direction. The current system has no true generic asset boundary yet. This would inhibit a future authenticated asset manifest and risks accidental shipping of example assets with the app. It is a **prototype architectural leak**, not evidence that arbitrary caves/harbors are being hardcoded into the game rules.
 
-**Target:** keep named scenarios under Storybook/test ownership; pass a small trusted asset catalog into a generic resolution API; use bounded opaque IDs without a special `fixture:` prefix; preserve URL/content trust and fallbacks. This is assigned to [PX06](../../../changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md), before any engine/public contract. Do not introduce complex asset infrastructure or image generation as part of the correction.
+**Target:** keep named scenarios under Storybook/test ownership; pass a small trusted asset catalog into a generic resolution API; use bounded opaque IDs without a special `fixture:` prefix; preserve URL/content trust and fallbacks. This is assigned to [PX06](../../../../work/changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md), before any engine/public contract. Do not introduce complex asset infrastructure or image generation as part of the correction.
 
 ### P1. Accepted grammar fields are silently inert
 
@@ -91,9 +91,9 @@ The next verification must include **browser-rendered computed style/contrast** 
 
 ## Next decisions and sequence
 
-1. **[PX05 visual-surface correctness](../../../changes/archive/2026-11/experience/2026-11-13--px-surface-contrast-and-viewport/CHANGE.md)**: P0 defects first; guarantee legibility and viewport/overflow. Must be accepted before any further engine/public contract.
-2. **[PX06 media and vocabulary fidelity](../../../changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md)**: make image treatment intentional, eliminate silent no-op fields, keep expressive controls bounded. Depends PX05.
-3. **[PX07 honest interactive laboratory](../../../changes/archive/2026-11/experience/2026-11-13--px-workbench-fidelity/CHANGE.md)**: authentic legacy/campaign fixture data, editable V1 controls, Storybook/browser/a11y proof without bypass. Depends PX05/PX06.
+1. **[PX05 visual-surface correctness](../../../../work/changes/archive/2026-11/experience/2026-11-13--px-surface-contrast-and-viewport/CHANGE.md)**: P0 defects first; guarantee legibility and viewport/overflow. Must be accepted before any further engine/public contract.
+2. **[PX06 media and vocabulary fidelity](../../../../work/changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md)**: make image treatment intentional, eliminate silent no-op fields, keep expressive controls bounded. Depends PX05.
+3. **[PX07 honest interactive laboratory](../../../../work/changes/archive/2026-11/experience/2026-11-13--px-workbench-fidelity/CHANGE.md)**: authentic legacy/campaign fixture data, editable V1 controls, Storybook/browser/a11y proof without bypass. Depends PX05/PX06.
 
 Each is a proposed bounded code-bearing Change. This review itself is **not** a Change: it is evaluation/design evidence. The [calibration program](../presentation-calibration-program.md) is the implementation route. Do not authorize an engine presentation contract until frontend renderer + actual fixture proof are accepted in a separate owner review.
 

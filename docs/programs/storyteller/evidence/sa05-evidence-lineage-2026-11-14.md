@@ -1,6 +1,6 @@
 # SA05 evidence | stored→final-packet→cited lineage
 
-**Date:** 2026-11-14. **Change:** [SA05](../../../changes/archive/2026-11/storyteller/2026-11-14--sa05-evidence-lineage/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-14. **Change:** [SA05](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa05-evidence-lineage/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

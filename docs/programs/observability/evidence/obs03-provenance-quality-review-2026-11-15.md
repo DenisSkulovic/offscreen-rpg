@@ -60,6 +60,6 @@ For source/flag variations, no general experiment service was established by ins
 
 ## 6. Disposition
 
-**OBS03 remains Done for its documented first pilot.** The broader exact packet/source/editor/config provenance destination is **not** Done; implement additional producer-stage evidence only in later independently approved scope. [OBS05](../../../changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md) can prevent the existing fixture diagnostic overclaim now. [OBS02-H](../../../changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) addresses separate real stage accuracy issues; OBS00-B still blocks normal paid transport authority.
+**OBS03 remains Done for its documented first pilot.** The broader exact packet/source/editor/config provenance destination is **not** Done; implement additional producer-stage evidence only in later independently approved scope. [OBS05](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md) can prevent the existing fixture diagnostic overclaim now. [OBS02-H](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) addresses separate real stage accuracy issues; OBS00-B still blocks normal paid transport authority.
 
 Do **not** turn this review into unscoped “fix all prompts” code. It is an evidence-quality checklist for future source-specific Changes and the developer Context Inspector.

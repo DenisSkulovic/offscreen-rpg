@@ -104,7 +104,7 @@ test('relative link depth from flat to archive', () => {
 
 test('inbound leaf path rewrite', () => {
   const leaf = '2026-11-15--obs00-c-provider-wire-equality';
-  const src = `See [OBS00-C](../changes/${leaf}/CHANGE.md) and docs/changes/${leaf}/PLAN.md`;
+  const src = `See [OBS00-C](../changes/${leaf}/CHANGE.md) and work/changes/${leaf}/PLAN.md and docs/changes/${leaf}/NOTES.md`;
   const out = rewriteInboundLeafPaths(
     src,
     leaf,
@@ -116,7 +116,11 @@ test('inbound leaf path rewrite', () => {
   );
   assert.match(
     out,
-    /docs\/changes\/archive\/2026-11\/observability\/2026-11-15--obs00-c-provider-wire-equality\/PLAN\.md/,
+    /work\/changes\/archive\/2026-11\/observability\/2026-11-15--obs00-c-provider-wire-equality\/PLAN\.md/,
+  );
+  assert.match(
+    out,
+    /work\/changes\/archive\/2026-11\/observability\/2026-11-15--obs00-c-provider-wire-equality\/NOTES\.md/,
   );
 });
 

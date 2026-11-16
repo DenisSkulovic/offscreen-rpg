@@ -127,7 +127,7 @@ User-requested “same GameData/TurnData/ContextData objects” should be interp
 | Mechanics | `gameActionReceipt`, `gameRoll`, `gameActivityEvent`, `worldObligationEvent` | No universally complete historical before/after deltas |
 | Story/scene | `storyPassage`, `storyDocumentCommit`, canonical `DocumentStore` root | Old full actor/items/holds may be overwritten; hidden sources need classified access |
 | Context | `generation.input`, `storyteller_context_capture`, `contextManifest` | Specific candidate/omission/source transforms not all persisted |
-| Dispatch | `storytellerDispatchReview.packet/packetSha256`, `storytellerAttempt` | [OBS00](../../../changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) default worker wrapper/authority may make reviewed packet ≠ executed request |
+| Dispatch | `storytellerDispatchReview.packet/packetSha256`, `storytellerAttempt` | [OBS00](../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) default worker wrapper/authority may make reviewed packet ≠ executed request |
 | Agent/memory | `storytellerMemoryExploration.snapshot`, pending request/output and tool observations | Not one stage/round source graph; some fields may expire |
 | Validation | `generation.output`, `repairCandidate`/diagnostic, model output schema | Not every actual validator reason emitted durably at boundary |
 | Publication | `storytellerPublication`, published passage/root and hold | Can be stale/blocked despite output success; history needs actual publication fence decision |

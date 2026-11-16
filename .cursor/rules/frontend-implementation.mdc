@@ -1,6 +1,6 @@
 ---
 description: Cheap Cursor execution of one authorized Offscreen RPG React/Next code-bearing Change
-globs: apps/web/**, docs/changes/*--web-*/CHANGE.md
+globs: apps/web/**, work/changes/*--web-*/CHANGE.md
 alwaysApply: false
 ---
 

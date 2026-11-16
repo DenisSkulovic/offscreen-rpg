@@ -1,6 +1,6 @@
 # Decision E-D01 | First engine code must make another consequence real
 
-**Status:** selected design direction; code not authorized. **First recommended slice:** [ENG01](../../../changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md). **Next major product proof:** [ENG02](../../../changes/archive/2026-11/eng/2026-11-13--eng-optional-actor-capabilities/CHANGE.md). Source baseline main a313d0aa, Nov 13 2026.
+**Status:** selected design direction; code not authorized. **First recommended slice:** [ENG01](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md). **Next major product proof:** [ENG02](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-optional-actor-capabilities/CHANGE.md). Source baseline main a313d0aa, Nov 13 2026.
 
 ## Start with a player's life, not package names
 

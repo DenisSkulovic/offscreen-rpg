@@ -1,6 +1,6 @@
 # SA02 evidence | prompt constitution v17
 
-**Date:** 2026-11-14. **Change:** [SA02](../../../changes/archive/2026-11/storyteller/2026-11-14--sa02-prompt-constitution/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-14. **Change:** [SA02](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa02-prompt-constitution/CHANGE.md). **Provider spend:** none.
 
 ## Prompt delta (common authority)
 

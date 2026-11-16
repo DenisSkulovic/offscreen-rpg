@@ -1,6 +1,6 @@
 # OBS02 | Runtime Storyteller stage receipts (2026-11-15)
 
-**Change:** [OBS02](../../../changes/archive/2026-11/observability/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md)  
+**Change:** [OBS02](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-runtime-storyteller-evidence/CHANGE.md)  
 **Provider spend:** zero. Scripted / provider-disabled disposable SQL only.
 
 ## What landed

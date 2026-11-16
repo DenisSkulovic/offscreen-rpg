@@ -1,6 +1,6 @@
 # GM06 evidence | per-viewer visit opening checkpoint
 
-**Date:** 2026-11-15. **Change:** [GM06](../../../changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-15. **Change:** [GM06](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

@@ -1,6 +1,6 @@
 # Documentation map
 
-**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → [decisions](decisions/README.md) / [runbooks](runbooks/README.md) → design **programs** (migrating) → [execution Changes](changes/README.md) (→ `work/changes/` after DOC01 P5). Code is an artifact of product and technical documentation.
+**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → [decisions](decisions/README.md) / [runbooks](runbooks/README.md) → design **programs** (migrating) → [execution Changes](../work/changes/README.md) (→ `work/changes/` after DOC01 P5). Code is an artifact of product and technical documentation.
 
 **DOC01 in flight:** prefer new subject owners under `product/{gameplay,experience,storyteller,admin}` and `technical/{platform,engine,storyteller,client,admin,observability,lab}`. Temporary work/evidence/research live at repo root (`work/`, `evidence/`, `research/`).
 
@@ -17,7 +17,7 @@
 | Discussion continuity | [Session minutes](history/minutes/README.md) | Owner intent across chats; history, not authority |
 | Technical contract | [Technical owner index](technical/README.md) | Authority, transitions, failure/retry |
 | Engine understanding | [Engine model](engineering/engine-model.md) | How pieces cooperate today |
-| Execution route | [Change queue](changes/README.md) (`open/` + `archive/`) | One code-bearing outcome or empty queue |
+| Execution route | [Change queue](../work/changes/README.md) (`open/` + `archive/`) | One code-bearing outcome or empty queue |
 | Design programs | [Programs index](programs/README.md) | UX / Admin / Engine / Storyteller / Observability |
 | Player UX program | [Experience design](programs/experience/README.md) | Replacement UX destination; human validation separate |
 | Engine design program | [Engine architecture](programs/engine/README.md) | Product-derived engine target and ENG packets |
@@ -46,9 +46,9 @@ Technical specifications can include unbuilt design. When product, technical, an
 | Did it actually work? | [Benchmark stories](product/journeys/playthroughs.md) | [Execution atlas](technical/playthroughs/README.md) | [Live POC proof](engineering/connected-poc-proof.md), [QA](engineering/qa-journeys.md) |
 | How do I run or maintain it? | [Progress](progress.md) | [Development](operations/development.md), [code quality](engineering/code-quality.md) | [Agent rules](../.agents/README.md), [verification](../.agents/rules/verification.md) |
 | Chamber / rare mechanics lab? | [Chamber target](engineering/targets/chamber-laboratory.md) | [Protocol](technical/chamber-lab-protocol.md) | [Chamber program](engineering/chamber-program.md) |
-| React/Next destination? | [Portfolio roadmap](../TODO.md) | [React/Next F1–F15](engineering/targets/react-next.md) | [Change queue](changes/README.md) |
-| Staff Admin at scale? | [Admin](programs/admin/README.md) | [Admin technical](programs/admin/technical/README.md) | [Changes](changes/README.md); Support grants still governance-gated |
-| What is still undecided? | [Open questions](questions.md) | Relevant contract's proposed boundary | [Changes](changes/README.md); legacy disposition in [initiatives audit](history/initiatives/AUDIT-2026-11-11.md) |
+| React/Next destination? | [Portfolio roadmap](../TODO.md) | [React/Next F1–F15](engineering/targets/react-next.md) | [Change queue](../work/changes/README.md) |
+| Staff Admin at scale? | [Admin](programs/admin/README.md) | [Admin technical](programs/admin/technical/README.md) | [Changes](../work/changes/README.md); Support grants still governance-gated |
+| What is still undecided? | [Open questions](questions.md) | Relevant contract's proposed boundary | [Changes](../work/changes/README.md); legacy disposition in [initiatives audit](history/initiatives/AUDIT-2026-11-11.md) |
 
 ## Read with a question, stop with an answer
 

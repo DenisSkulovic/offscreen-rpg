@@ -56,7 +56,7 @@ const replacements = [
   ["docs/engineering/code-quality.md", ".agents/rules/verification.md"],
   ["docs/engineering/offline-poc-acceptance.md", "docs/product/gameplay/acceptance-scenarios.md"],
   ["docs/history/minutes/README.md", "work/sessions/README.md"],
-  ["docs/changes/README.md", "work/changes/README.md"],
+  ["work/changes/README.md", "work/changes/README.md"],
 ];
 
 const scopes = [

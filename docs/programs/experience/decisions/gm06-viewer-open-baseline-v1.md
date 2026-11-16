@@ -1,6 +1,6 @@
 # GM06 | Truthful “since last opened” checkpoint V1
 
-**Status (reconciled 2026-11-15):** contract **accepted and implemented** for the bounded visit open/ACK slice. Evidence: [gm06-visit-checkpoint-2026-11-15](../evidence/gm06-visit-checkpoint-2026-11-15.md). Packet: [GM06](../../../changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md) **Done**. Dependency: [GM05](../../../changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) public events. This doc remains the product/technical meaning of “since last opened”; it is not authorization for device-local cursors, mind-reading “read” claims, or replay ACK side-effects.
+**Status (reconciled 2026-11-15):** contract **accepted and implemented** for the bounded visit open/ACK slice. Evidence: [gm06-visit-checkpoint-2026-11-15](../evidence/gm06-visit-checkpoint-2026-11-15.md). Packet: [GM06](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md) **Done**. Dependency: [GM05](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) public events. This doc remains the product/technical meaning of “since last opened”; it is not authorization for device-local cursors, mind-reading “read” claims, or replay ACK side-effects.
 
 ## 1. Decide what we claim: an opening checkpoint, not mind-reading
 
@@ -110,4 +110,4 @@ The ACK idempotency evidence can be a separate compact `story_viewer_visit_ack` 
 
 **Stop before Ready** if it is impossible to obtain a single consistent authorized `previous+frontier` read without corrupting event privacy, or if the existing React visibility model cannot safely distinguish a viewed route from prefetch. In that case ship **Recent developments** and postpone ACK, rather than turning a background GET into an automatic "read" flag.
 
-**One bounded Change:** [GM06](../../../changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md). Implementation requires explicit owner permission for the additive migration, API, browser effect and disposable-DB tests. No paid calls or migrations authorized by this Markdown.
+**One bounded Change:** [GM06](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md). Implementation requires explicit owner permission for the additive migration, API, browser effect and disposable-DB tests. No paid calls or migrations authorized by this Markdown.

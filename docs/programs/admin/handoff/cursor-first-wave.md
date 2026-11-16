@@ -1,18 +1,18 @@
 # Offscreen Control | Cursor first-wave handoff
 
-**Status:** AD01–AD04 **Done** 2026-11-14 ([ad01](../evidence/ad01-staff-session-2026-11-14.md), [ad02](../evidence/ad02-grant-policy-2026-11-14.md), [ad03](../evidence/ad03-player-safe-reads-2026-11-14.md), [ad04](../evidence/ad04-operator-shell-2026-11-14.md)). Remaining AD05–AD08 stay **Proposed**. `docs/changes/README.md` is `Current change: none`.
+**Status:** AD01–AD04 **Done** 2026-11-14 ([ad01](../evidence/ad01-staff-session-2026-11-14.md), [ad02](../evidence/ad02-grant-policy-2026-11-14.md), [ad03](../evidence/ad03-player-safe-reads-2026-11-14.md), [ad04](../evidence/ad04-operator-shell-2026-11-14.md)). Remaining AD05–AD08 stay **Proposed**. `work/changes/README.md` is `Current change: none`.
 
 ## Do not paste the entire Admin corpus into Cursor's context
 
 **Entry:** [implementation program](../implementation-program.md) → **one selected** `CHANGE.md` → its exact technical headings → current source-adjacent maps → only the relevant implementation files and tests.
 
-Proposed opening packet: [AD01 Staff principal, explicit Admin session and bootstrap](../../../changes/archive/2026-11/admin/2026-11-14--admin-staff-session/CHANGE.md). It is a security foundation with zero customer-data Admin surfaces. AD02 provides the first actual bounded policy/guard, and AD03+AD04 give the first usable safe Player 360 frontend.
+Proposed opening packet: [AD01 Staff principal, explicit Admin session and bootstrap](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-staff-session/CHANGE.md). It is a security foundation with zero customer-data Admin surfaces. AD02 provides the first actual bounded policy/guard, and AD03+AD04 give the first usable safe Player 360 frontend.
 
 ## Required owner handoff / execution trigger
 
 When the owner wants Cursor to implement:
 1. Inspect latest committed `main` and Cursor's local worktree. **Do not overwrite uncommitted engine/frontend work.** Treat all Admin source anchors as pinned to a Nov 14 snapshot.
-2. Bring **documentation-only** Admin architecture + the selected Change into the implementation workspace without blindly overwriting newer `docs/changes/README.md` or unrelated files.
+2. Bring **documentation-only** Admin architecture + the selected Change into the implementation workspace without blindly overwriting newer `work/changes/README.md` or unrelated files.
 3. Confirm the selected packet's source owners, dependencies, scoped normal/negative proof and allowed test environment.
 4. **Explicitly select and authorize one packet**; only then mark it Ready and point `Current change` to that one `CHANGE.md`.
 5. Implement the code/test/migration diff under that packet and return actual evidence, not a generic "done."

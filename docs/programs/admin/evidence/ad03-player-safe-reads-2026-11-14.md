@@ -1,6 +1,6 @@
 # AD03 player safe reads evidence | 2026-11-14
 
-**Change:** [AD03](../../../changes/archive/2026-11/admin/2026-11-14--admin-player-safe-reads/CHANGE.md). Provider spend: none. Disposable DB: `offscreen_auth_test`.
+**Change:** [AD03](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-player-safe-reads/CHANGE.md). Provider spend: none. Disposable DB: `offscreen_auth_test`.
 
 ## Commands run
 

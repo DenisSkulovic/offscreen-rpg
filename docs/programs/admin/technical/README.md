@@ -52,6 +52,6 @@ Browser (/control)  -> Next server-only Admin BFF/SSR + isolated Query cache
 2. Technical architecture: **these documents** (designed vs implemented called out in the [post-AD appendix](source-baseline-2026-11-14.md#post-ad-implementation-baseline--2026-11-15)).
 3. Bounded implementation: [AD01–AD08](../implementation-program.md) **Done** with evidence under `docs/programs/admin/evidence/`.
 4. Forensic Support Situation: OBS06/07 **Done synthetic**; production grant stewardship still open ([observability](../../observability/README.md)).
-5. Further work: only via [changes queue](../../../changes/README.md); disposable-DB proof before any live/security claim.
+5. Further work: only via [changes queue](../../../../work/changes/README.md); disposable-DB proof before any live/security claim.
 
 Do not treat design prose as runtime evidence. Pre-code audit remains historical; post-AD appendix is the current source baseline.

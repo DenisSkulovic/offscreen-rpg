@@ -4,7 +4,7 @@
 
 **DOC01 migration (2026-11-16):** taxonomy is moving to subject owners below. Old `journeys/` and `storytelling/` paths remain as **compatibility stubs** until P5 cutover. Prefer the new owners when editing.
 
-**Does not own:** Nest/SQL/Temporal invariants ([technical](../technical/README.md)), coding-agent harness (`.agents/`), unfinished designs (`work/designs/` after cutover), dated evidence (`evidence/`), or the execution queue ([changes](../changes/README.md) → `work/changes/` after cutover).
+**Does not own:** Nest/SQL/Temporal invariants ([technical](../technical/README.md)), coding-agent harness (`.agents/`), unfinished designs (`work/designs/` after cutover), dated evidence (`evidence/`), or the execution queue ([changes](../../work/changes/README.md) → `work/changes/` after cutover).
 
 ## Foundations
 

@@ -29,7 +29,7 @@ Read [SA01–SA12 program](../implementation-program.md) **only to choose one Ch
 7. **SA11**: repeatable provider-free 10–15-step corpus, with human taste unobserved until reviewed.
 8. **SA12**: guarded live comparison tooling. Actual provider/model spending requires explicit separate consent for exact budget/route and source environment.
 
-**All SA packets are Proposed.** A design-complete packet is not “Ready” for code until owner explicitly selects it and authorizes that scope. The repository keeps `docs/changes/README.md` `Current change: none`. Do not self-issue blanket authorization to execute twelve packets.
+**All SA packets are Proposed.** A design-complete packet is not “Ready” for code until owner explicitly selects it and authorizes that scope. The repository keeps `work/changes/README.md` `Current change: none`. Do not self-issue blanket authorization to execute twelve packets.
 
 ## What Cursor must not do
 

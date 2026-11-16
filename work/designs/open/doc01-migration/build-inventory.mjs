@@ -33,7 +33,7 @@ function classifyPath(path) {
   if (path.startsWith("docs/technical/")) return "technical";
   if (path.startsWith("docs/programs/")) return "program";
   if (path.startsWith("docs/engineering/")) return "engineering";
-  if (path.startsWith("docs/changes/")) return "change";
+  if (path.startsWith("work/changes/")) return "change";
   if (path.startsWith("docs/history/")) return "history";
   if (path.startsWith("docs/operations/")) return "procedure";
   if (path === "docs/progress.md" || path === "docs/questions.md" || path === "docs/README.md") {

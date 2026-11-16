@@ -1,10 +1,10 @@
 # Offscreen RPG | player-experience destination
 
-**Status (reconciled 2026-11-15):** experience **target** remains authoritative for design intent; **UX01–UX12, PX01–PX07, PF01–PF05 Done** in `apps/web` (portfolio / fixture proof). **Human UX comprehension is not claimed validated.** New UI work only via [docs/changes/README.md](../../changes/README.md).
+**Status (reconciled 2026-11-15):** experience **target** remains authoritative for design intent; **UX01–UX12, PX01–PX07, PF01–PF05 Done** in `apps/web` (portfolio / fixture proof). **Human UX comprehension is not claimed validated.** New UI work only via [work/changes/README.md](../../../work/changes/README.md).
 
 This folder is a **replacement product-experience specification**, not a transcription of every current screen. Landed UX/PX/PF packets are evidence of implementation; they do not freeze design forever or prove fun.
 
-**Mechanics (GM):** [GM01/02/04/05/06 Done](mechanics-evolution-program.md); **GM03/GM07 remain Proposed** (conditional). GM06 visit checkpoint: [decision](decisions/gm06-viewer-open-baseline-v1.md) + [evidence](evidence/gm06-visit-checkpoint-2026-11-15.md). Live Play still may omit full presentation projection ([PW01](../../changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md) status in changes queue).
+**Mechanics (GM):** [GM01/02/04/05/06 Done](mechanics-evolution-program.md); **GM03/GM07 remain Proposed** (conditional). GM06 visit checkpoint: [decision](decisions/gm06-viewer-open-baseline-v1.md) + [evidence](evidence/gm06-visit-checkpoint-2026-11-15.md). Live Play still may omit full presentation projection ([PW01](../../../work/changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md) status in changes queue).
 
 **Replay product (observability):** [Story Replay V1](../observability/player-replay-experience-v1.md) remains **proposed** — not a finished player feature.
 
@@ -46,7 +46,7 @@ Read [product vision](../../product/foundations/vision.md) and [domain vocabular
 
 1. Design here; criticize it against realistic stories and unfamiliar players.
 2. Resolve product-contract changes with an explicit decision and, where necessary, a new rule design. Visual work cannot secretly change game authority.
-3. Author a narrowly bounded **code-bearing** Change in `docs/changes/`, status **Proposed**. No change is active by default.
+3. Author a narrowly bounded **code-bearing** Change in `work/changes/`, status **Proposed**. No change is active by default.
 4. Owner authorizes one implementation slice; Cursor implements it on current source, with fixtures and measured browser evidence.
 5. Return screenshots, recordings or test evidence for a design review. A passing test or approved Markdown is **not** proof of compelling UX.
 

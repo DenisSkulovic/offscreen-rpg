@@ -1,6 +1,6 @@
 # ENG03-C2 | Interrupted finite-action context capture V1
 
-**Status:** implemented 2026-11-15 ([ENG03-C2](../../../changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md); evidence [eng03-c2](../evidence/eng03-c2-interrupted-capture-2026-11-15.md)). **Scope:** only the `action-interrupted` consequence caused by `required-item-holder-changed`, **not** a controlling world-obligation interruption. **Prerequisite:** retain ENG03-narrow/C1 one-generation capture mechanism and close/verify [C1 recovery policy](eng03-provisional-recovery-v1.md) independently.
+**Status:** implemented 2026-11-15 ([ENG03-C2](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md); evidence [eng03-c2](../evidence/eng03-c2-interrupted-capture-2026-11-15.md)). **Scope:** only the `action-interrupted` consequence caused by `required-item-holder-changed`, **not** a controlling world-obligation interruption. **Prerequisite:** retain ENG03-narrow/C1 one-generation capture mechanism and close/verify [C1 recovery policy](eng03-provisional-recovery-v1.md) independently.
 
 ## 1. Why this purpose is different
 
@@ -124,4 +124,4 @@ Extend the existing `publication.ts` capture companion fence for `task='conseque
 
 No C1 redesign, no speculative pending consequence, activity/world-obligation/report/continuation/opening migration, no new Temporal workflow, new scheduler/LLM tool, universal interrupt taxonomy, mechanics or time rule alteration, provider spend, production deployment or schema-breaking backfill.
 
-**Next bounded execution packet:** [ENG03-C2](../../../changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md). **Gate:** owner chooses this packet, source is rechecked, C1 provisional recovery either closed or its interactions explicitly tested, and the C2 lock measurement confirms there is a real problem worth migrating.
+**Next bounded execution packet:** [ENG03-C2](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md). **Gate:** owner chooses this packet, source is rechecked, C1 provisional recovery either closed or its interactions explicitly tested, and the C2 lock measurement confirms there is a real problem worth migrating.

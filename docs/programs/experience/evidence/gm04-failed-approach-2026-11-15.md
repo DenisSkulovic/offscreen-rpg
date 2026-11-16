@@ -1,6 +1,6 @@
 # GM04 evidence | failed reassurance changes next approach
 
-**Date:** 2026-11-15. **Change:** [GM04](../../../changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-15. **Change:** [GM04](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

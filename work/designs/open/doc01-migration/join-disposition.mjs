@@ -8,7 +8,7 @@ const dir = resolve(fileURLToPath(new URL(".", import.meta.url)));
 const repoRoot = resolve(dir, "../../../..");
 const dispositionPath = join(
   repoRoot,
-  "docs/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
+  "work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
 );
 const md = readFileSync(dispositionPath, "utf8");
 const map = new Map();

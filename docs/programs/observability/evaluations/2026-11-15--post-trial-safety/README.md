@@ -2,7 +2,7 @@
 
 **Status: PREPARED, NOT EXECUTED.** The old [connected trial](../2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) is complete; **do not overwrite or rerun its evidence as though new**. The next program is small and source-specific.
 
-**Start:** [post-trial next Cursor wave](../../handoff/post-trial-next-cursor-wave-2026-11-15.md) and one [selected Change](../../../../changes/README.md).
+**Start:** [post-trial next Cursor wave](../../handoff/post-trial-next-cursor-wave-2026-11-15.md) and one [selected Change](../../../../../work/changes/README.md).
 
 | Session | Scope | Permission |
 | --- | --- | --- |

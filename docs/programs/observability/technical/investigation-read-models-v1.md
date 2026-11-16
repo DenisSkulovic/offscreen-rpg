@@ -8,7 +8,7 @@ Existing AD05 already supports safe player/campaign/operation status, with close
 - `adminQueryKeys` keys by staff principal + access epoch; `AdminQueryProvider` clears caches on exit/revocation; preserve that.
 - `AdminController` checks `assertLegacyCampaignVisible` and `ai.operation.read` for campaign operation listings/details, returning safe redacted DTOs; preserve these guards.
 - `AdminPlayerLookup` queries current Player Summary → campaigns → operation list/detail; a useful base but not a forensic explorer.
-- `listCampaignOperations` starts from `storytellerAttempt`, omitting capture/held G that never attempted a provider send; [OBS01](../../../changes/archive/2026-11/observability/2026-11-15--obs01-operation-coverage/CHANGE.md) fixes the first discovery gap.
+- `listCampaignOperations` starts from `storytellerAttempt`, omitting capture/held G that never attempted a provider send; [OBS01](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs01-operation-coverage/CHANGE.md) fixes the first discovery gap.
 
 **What is missing:** a bounded, time-pinned, source-rich **causal view** of an incident, a complete historical game transition view, exact prompt source component provenance and an administrative narrative projection that can safely be used by different roles without reading the same unrestricted raw JSON.
 

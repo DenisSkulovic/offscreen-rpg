@@ -51,7 +51,7 @@ The intended users include Support, Customer Success, Engineering, Game Design/L
 
 1. **Product direction: accepted (2026-11-14):** end-state outcomes and default safeguards selected; conditional commercial, legal, sensitive-access and multiplayer specifics remain explicitly gated under [acceptance](product-acceptance-and-scope.md).
 2. **Technical design: selected and desk-reviewed for the bounded core.** The [technical index](technical/README.md) maps actors, policy, audit, data, UI, operations and verification. Current code was inspected but the POC does not constrain the target. Advanced/unsafe capabilities remain separately gated.
-3. **Implementation program: AD01–AD08 Done** (2026-11-14). See [AD01–AD08](implementation-program.md) and evidence under `docs/programs/admin/evidence/`. Further Admin work is selected only via [docs/changes/README.md](../../changes/README.md) — not by re-reading these design docs as authorization.
+3. **Implementation program: AD01–AD08 Done** (2026-11-14). See [AD01–AD08](implementation-program.md) and evidence under `docs/programs/admin/evidence/`. Further Admin work is selected only via [work/changes/README.md](../../../work/changes/README.md) — not by re-reading these design docs as authorization.
 
 **Still open (not Done):** production Support grant stewardship; commercial/refund/repair/LiveOps writes; raw narrative export; broad Trust execution.
 

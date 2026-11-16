@@ -1,6 +1,6 @@
 # QA-SF01 | Honest focused Storyteller / story-resolution integration checks (2026-11-15)
 
-**Change:** [QA-SF01](../../../changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md)
+**Change:** [QA-SF01](../../../../work/changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md)
 **Source base:** `e28f53e4` (OBS00-C). **Provider spend / external HTTP: $0 / 0** (provider-free env of `pnpm test:focus`; every fake provider is local; no `.env.openrouter`, no paid call).
 **DB:** disposable `offscreen_auth_test`, destroyed/recreated by every `pnpm test:focus` invocation; suites never overlapped.
 

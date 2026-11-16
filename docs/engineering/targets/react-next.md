@@ -9,10 +9,10 @@
 | Layer | Status | Where |
 | --- | --- | --- |
 | F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
-| W01–W11, W13–W22 | **Done** | [changes queue](../../changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
+| W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
 | UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../programs/experience/implementation-program.md) |
 | Admin `/control` | **Done** (AD04+) | [admin](../../programs/admin/README.md) |
-| New frontend Changes | Only via [docs/changes/README.md](../../changes/README.md) | Not authorized by this target alone |
+| New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
 
 **Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution](../../technical/execution.md), [player experience](../../product/journeys/player-experience.md).
 
@@ -248,7 +248,7 @@ Measure initial HTML, client JS, hydration, request waterfalls, polling/SSE traf
 
 ## 9. Convergence, status and handoff
 
-The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
+The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../../work/changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
 
 **Owner direction resolved:** adopt TanStack Query, professional support stack, end-to-end quality and correctness rather than optimizing for smallest source diff or minimal dependency count. **The architect has chosen the remaining decisions above.** This contract is **selected for implementation planning**, but no Change is active and no code execution is authorized by today's Markdown pass. Cursor follows only the selected, authorized Change packet, not the whole area program in one uncontrolled diff.
 

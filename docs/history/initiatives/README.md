@@ -3,9 +3,9 @@
 **Historical / design context only — NOT an implementation queue.**  
 **Location:** `docs/history/initiatives/` (formerly `docs/features/`). Parent: [history index](../README.md).
 
-Older `FEATURE.md` / `PLAN.md` pairs from before the bounded [Change system](../../changes/README.md). Their approvals and “implementing” language are **dated evidence**, never standing authorization for code, model spend, or deploy.
+Older `FEATURE.md` / `PLAN.md` pairs from before the bounded [Change system](../../../work/changes/README.md). Their approvals and “implementing” language are **dated evidence**, never standing authorization for code, model spend, or deploy.
 
-- **Current execution:** [`docs/changes/`](../../changes/README.md) (`open/` + `archive/`).
+- **Current execution:** [`work/changes/`](../../../work/changes/README.md) (`open/` + `archive/`).
 - **Current priorities:** [TODO.md](../../../TODO.md).
 - **Product bible:** [docs/product/](../../product/README.md).
 - **Disposition audit:** [AUDIT-2026-11-11.md](AUDIT-2026-11-11.md) (historical classification).
@@ -15,7 +15,7 @@ Older `FEATURE.md` / `PLAN.md` pairs from before the bounded [Change system](../
 
 ## Coding route
 
-Use [Changes](../../changes/README.md). S3a continuity remains **parked** ([open packet](../../changes/open/2026-11-11--s3a-continuity-report/CHANGE.md)); parent Vvardenfell context is in the [parked register](PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
+Use [Changes](../../../work/changes/README.md). S3a continuity remains **parked** ([open packet](../../../work/changes/open/2026-11-11--s3a-continuity-report/CHANGE.md)); parent Vvardenfell context is in the [parked register](PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
 
 ## What remains in the live tree
 
@@ -26,4 +26,4 @@ Use [Changes](../../changes/README.md). S3a continuity remains **parked** ([open
 | [Retired register](RETIRED-2026-11-11.md) | Four earlier retirements |
 | [Audit](AUDIT-2026-11-11.md) | Pre-collapse dossier classification |
 
-**Different kinds of work live in different places:** initiative goals → product/technical owners; engineering priorities → [TODO](../../../TODO.md); evidence → QA/engineering; **only implementation outcomes** → `docs/changes/`.
+**Different kinds of work live in different places:** initiative goals → product/technical owners; engineering priorities → [TODO](../../../TODO.md); evidence → QA/engineering; **only implementation outcomes** → `work/changes/`.

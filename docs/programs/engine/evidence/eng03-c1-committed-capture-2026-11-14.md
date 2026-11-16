@@ -1,6 +1,6 @@
 # ENG03-C1 | Committed finite-action capture (2026-11-14)
 
-**Change:** [ENG03-C1](../../../changes/archive/2026-11/eng/2026-11-14--eng03-committed-action-capture/CHANGE.md)  
+**Change:** [ENG03-C1](../../../../work/changes/archive/2026-11/eng/2026-11-14--eng03-committed-action-capture/CHANGE.md)  
 **Design:** [committed-action capture V1](../decisions/eng03-committed-action-capture-v1.md)  
 **Provider spend:** zero.
 

@@ -10,9 +10,9 @@ The core renderer stays. No mass React rewrite. Three constrained code-bearing c
 
 | Order | Change | Independent outcome | Evidence gate |
 | --- | --- | --- | --- |
-| 1 | [PX05: semantic surfaces and viewport](../../changes/archive/2026-11/experience/2026-11-13--px-surface-contrast-and-viewport/CHANGE.md) | Every valid dark/light/gradient atmosphere retains readable shell, passage, controls, with full scoped canvas and no horizontal overflow | Sterile, Harbor, Cave normal+negative browser samples |
-| 2 | [PX06: media composition and capability integrity](../../changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md) | Media slots have meaningful bounded scale/fit; every **advertised V1 field** has an observable supported meaning or is explicitly excluded | Short/long prose with images; capabilities matrix and contrast/perf |
-| 3 | [PX07: truthful workbench and scenario proof](../../changes/archive/2026-11/experience/2026-11-13--px-workbench-fidelity/CHANGE.md) | Storybook controls feed *actual untrusted V1 documents* and exact real option identities; fixtures and browser evidence prove multi-world coherence, no bypass | Authentic legacy+campaign views, real controls, 320/375/high zoom + a11y |
+| 1 | [PX05: semantic surfaces and viewport](../../../work/changes/archive/2026-11/experience/2026-11-13--px-surface-contrast-and-viewport/CHANGE.md) | Every valid dark/light/gradient atmosphere retains readable shell, passage, controls, with full scoped canvas and no horizontal overflow | Sterile, Harbor, Cave normal+negative browser samples |
+| 2 | [PX06: media composition and capability integrity](../../../work/changes/archive/2026-11/experience/2026-11-13--px-media-composition-and-capabilities/CHANGE.md) | Media slots have meaningful bounded scale/fit; every **advertised V1 field** has an observable supported meaning or is explicitly excluded | Short/long prose with images; capabilities matrix and contrast/perf |
+| 3 | [PX07: truthful workbench and scenario proof](../../../work/changes/archive/2026-11/experience/2026-11-13--px-workbench-fidelity/CHANGE.md) | Storybook controls feed *actual untrusted V1 documents* and exact real option identities; fixtures and browser evidence prove multi-world coherence, no bypass | Authentic legacy+campaign views, real controls, 320/375/high zoom + a11y |
 
 Dependency: **PX05 → PX06 → PX07**. One active code-bearing Change at a time. PX05's narrow tests and rendered critique must be performed before PX06; don't defer all evidence to PX07. PX07 is an actual test/workbench code change; the human evaluation itself remains a review, not a fake code ticket.
 
@@ -84,7 +84,7 @@ A green `test:fast` suite is expected but **insufficient** for rendered UX. Revi
 
 Start with [Play source map](../../../apps/web/src/features/play/README.md) and matching PX packet only. Main source reviewed 2026-11-13: `presentation/resolve.ts`, `contrast.ts`, `parse.ts`, `types.ts`, `fixtures.ts`, `ui/story-frame.tsx`, `story-frame.css`, `ui/intention-choice.tsx`, `ui/scene-media.tsx`, and `src/stories/presentation.stories.tsx`.
 
-**Documentation-only branch convention:** this program and Change dossiers being committed does not select or authorize code. Keep `Current change: none` in `docs/changes/README.md`. Cursor should be explicitly instructed to select/execute one PX packet later, against revalidated current source; no immediate implementation.
+**Documentation-only branch convention:** this program and Change dossiers being committed does not select or authorize code. Keep `Current change: none` in `work/changes/README.md`. Cursor should be explicitly instructed to select/execute one PX packet later, against revalidated current source; no immediate implementation.
 
 ## What not to confuse with this initiative
 

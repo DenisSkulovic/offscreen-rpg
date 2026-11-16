@@ -1,6 +1,6 @@
 # Cursor first-wave handoff | implement one approved UX result at a time
 
-**Status: DESIGN HANDOFF PREPARED, NOT CODE-AUTHORIZED.** 2026-11-13. First candidate **UX01**, followed by **UX02** only after an actual rendered critique. Permanent [experience index](../README.md) → [selected Living Stage anatomy](../spaces/living-stage-blueprint.md) → [UX01 Change](../../../changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md). Current change remains **none** until owner selects/authorizes code.
+**Status: DESIGN HANDOFF PREPARED, NOT CODE-AUTHORIZED.** 2026-11-13. First candidate **UX01**, followed by **UX02** only after an actual rendered critique. Permanent [experience index](../README.md) → [selected Living Stage anatomy](../spaces/living-stage-blueprint.md) → [UX01 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md). Current change remains **none** until owner selects/authorizes code.
 
 ## One paragraph for the owner
 
@@ -24,7 +24,7 @@ PRODUCT AUTHORITY:
 - docs/programs/experience/spaces/information-architecture.md
 
 CHANGE:
-- docs/changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md
+- work/changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md
   Read full first-screen brief, acceptance and exclusions.
 
 ENGINEERING AUTHORITY:
@@ -122,7 +122,7 @@ If UX01 fails any major dimension, adjust the frame *within UX01* before accepti
 - handle incoming SSE, pending/uncertain commands and old passage scroll;
 - make clear current scene/action separation while leaving UX03's full choice language for the next slice.
 
-Use [UX02 dossier](../../../changes/archive/2026-11/experience/2026-11-13--ux-narrative-stage/CHANGE.md) only after UX01 has a reviewed render. Then keep UX03/UX04/UX12/UX09 as later bounded outcomes.
+Use [UX02 dossier](../../../../work/changes/archive/2026-11/experience/2026-11-13--ux-narrative-stage/CHANGE.md) only after UX01 has a reviewed render. Then keep UX03/UX04/UX12/UX09 as later bounded outcomes.
 
 ## Source branch and write-safety policy
 

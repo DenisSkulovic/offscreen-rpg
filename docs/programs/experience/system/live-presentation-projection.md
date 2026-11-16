@@ -1,6 +1,6 @@
 # Live Play presentation projection | atomic published scene, not client-generated art direction
 
-**Status: selected cross-boundary design proposal, 2026-11-13; not implemented or code-authorized.** Frontend PX01–PX07 is complete as a fixture-fed validated renderer. This contract specifies its **first possible live input** without authorizing image/model generation. Separate [wire-up Change](../../../changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md), [presentation vocabulary](presentation-language.md), [media boundary](presentation-media-and-motion.md) and existing [Next/Query truth](../../../engineering/targets/react-next.md) remain authoritative.
+**Status: selected cross-boundary design proposal, 2026-11-13; not implemented or code-authorized.** Frontend PX01–PX07 is complete as a fixture-fed validated renderer. This contract specifies its **first possible live input** without authorizing image/model generation. Separate [wire-up Change](../../../../work/changes/archive/2026-11/other/2026-11-13--live-scene-presentation-wire/CHANGE.md), [presentation vocabulary](presentation-language.md), [media boundary](presentation-media-and-motion.md) and existing [Next/Query truth](../../../engineering/targets/react-next.md) remain authoritative.
 
 ## Decision
 

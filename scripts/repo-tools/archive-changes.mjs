@@ -18,8 +18,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { root } from './process.mjs';
 
-export const changesRoot = path.join(root, 'docs', 'changes');
-/** DOC01 compact ledger (selection/index); packets still under docs/changes until G3 move. */
+/** DOC01 G3: packets live under work/changes. */
+export const changesRoot = path.join(root, 'work', 'changes');
 export const workChangesLedgerRoot = path.join(root, 'work', 'changes', 'ledger');
 
 const SKIP_DIR_NAMES = new Set(['open', 'archive']);
@@ -88,7 +88,7 @@ export function classifyChangeText(text) {
 }
 
 /**
- * Depth of packet dir under docs/changes (number of path segments after changes/).
+ * Depth of packet dir under work/changes (number of path segments after changes/).
  * flat leaf → 1; open/leaf → 2; archive/YYYY-MM/program/leaf → 4
  * @param {string} relFromChanges
  */
@@ -158,7 +158,7 @@ export function rewriteMarkdownLinksInText(
 }
 
 /**
- * Replace inbound path references to a leaf with its new location under docs/changes.
+ * Replace inbound path references to a leaf with its new location under work/changes.
  * @param {string} content
  * @param {string} leaf
  * @param {string} newRelFromChanges posix path
@@ -166,17 +166,18 @@ export function rewriteMarkdownLinksInText(
 export function rewriteInboundLeafPaths(content, leaf, newRelFromChanges) {
   const escaped = leaf.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   let out = content;
-  // docs/changes/LEAF → docs/changes/open/LEAF (or archive/…)
+  out = out.replace(
+    new RegExp(`work/changes/${escaped}(?=/|[)\\s#"'\`])`, 'g'),
+    `work/changes/${newRelFromChanges}`,
+  );
   out = out.replace(
     new RegExp(`docs/changes/${escaped}(?=/|[)\\s#"'\`])`, 'g'),
-    `docs/changes/${newRelFromChanges}`,
+    `work/changes/${newRelFromChanges}`,
   );
-  // changes/LEAF (relative from docs/* or parenthesized Markdown)
   out = out.replace(
     new RegExp(`(?<=[/\\"\\(])changes/${escaped}(?=/|[)\\s#"'\`])`, 'g'),
     `changes/${newRelFromChanges}`,
   );
-  // Bare leaf links from docs/changes/README.md: ](LEAF/ or ](./LEAF/
   out = out.replace(
     new RegExp(`(\\[[^\\]]*\\]\\()(?:\\./)?${escaped}/`, 'g'),
     `$1${newRelFromChanges}/`,
@@ -351,7 +352,7 @@ export function runMigration(options = {}) {
       const rows = monthMoves
         .map((m) => {
           const program = programForLeaf(m.leaf);
-          return `| \`${m.leaf}\` | ${program} | archived | [packet](../../../docs/changes/${m.toRel}/CHANGE.md) |`;
+          return `| \`${m.leaf}\` | ${program} | archived | [packet](../${m.toRel}/CHANGE.md) |`;
         })
         .join('\n');
       if (!existsSync(ledgerPath)) {

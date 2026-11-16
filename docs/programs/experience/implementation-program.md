@@ -1,6 +1,6 @@
 # Experience reset | implementation program and owner decision gates
 
-**Status (reconciled 2026-11-15):** **UX01–UX12 Done** (code + fixture/browser proof). This remains the **design program owner** for what those packets were meant to achieve — not a claim that human playtests validated the fantasy. Further UX work requires a new selected Change in [docs/changes/README.md](../../changes/README.md). Historical handoff: [first Cursor wave](handoff/first-cursor-wave.md).
+**Status (reconciled 2026-11-15):** **UX01–UX12 Done** (code + fixture/browser proof). This remains the **design program owner** for what those packets were meant to achieve — not a claim that human playtests validated the fantasy. Further UX work requires a new selected Change in [work/changes/README.md](../../../work/changes/README.md). Historical handoff: [first Cursor wave](handoff/first-cursor-wave.md).
 
 **Presentation:** [PX01–PX07](presentation-calibration-program.md) **Done** in `apps/web`. Live Play may still omit a full presentation document depending on PW01 wiring. PX does not reinterpret game authority or authorize image-provider spend.
 
@@ -29,18 +29,18 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 
 | Packet | Outcome | Status | Milestone |
 | --- | --- | --- | --- |
-| [UX01 shell](../../changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md) | Scene-first frame, tokens, accessible controls | **Done** | Foundation |
-| [UX02 narrative stage](../../changes/archive/2026-11/experience/2026-11-13--ux-narrative-stage/CHANGE.md) | Current scene + transitions | **Done** | Presence |
-| [UX03 intentions](../../changes/archive/2026-11/experience/2026-11-13--ux-intention-actions/CHANGE.md) | Offered actions / commit semantics | **Done** | Agency |
-| [UX04 commitment](../../changes/archive/2026-11/experience/2026-11-13--ux-commitment-truth/CHANGE.md) | Work/time/interruption truth | **Done** | Earned time |
-| [UX12 planner](../../changes/archive/2026-11/experience/2026-11-13--ux-offscreen-planner/CHANGE.md) | Bounded Plan ahead | **Done** | Offscreen handoff |
-| [UX05 library](../../changes/archive/2026-11/experience/2026-11-13--ux-story-library/CHANGE.md) | Stories/drafts list | **Done** | Re-entry |
-| [UX06 creation](../../changes/archive/2026-11/experience/2026-11-13--ux-guided-creation/CHANGE.md) | Guided start flow | **Done** | First-run |
-| [UX07 journal](../../changes/archive/2026-11/experience/2026-11-13--ux-return-journal/CHANGE.md) | Return / history | **Done** | Continuity |
-| [UX08 context](../../changes/archive/2026-11/experience/2026-11-13--ux-adaptive-context/CHANGE.md) | Conditional World/You | **Done** | Depth |
-| [UX09 demo](../../changes/archive/2026-11/experience/2026-11-13--ux-public-demo/CHANGE.md) | Scripted public sample | **Done** | Portfolio |
-| [UX10 motion](../../changes/archive/2026-11/experience/2026-11-13--ux-motion-feedback/CHANGE.md) | State transitions | **Done** | Feel |
-| [UX11 evidence](../../changes/archive/2026-11/experience/2026-11-13--ux-visual-evidence/CHANGE.md) | Storybook/axe/captures | **Done** | Proof |
+| [UX01 shell](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-story-shell/CHANGE.md) | Scene-first frame, tokens, accessible controls | **Done** | Foundation |
+| [UX02 narrative stage](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-narrative-stage/CHANGE.md) | Current scene + transitions | **Done** | Presence |
+| [UX03 intentions](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-intention-actions/CHANGE.md) | Offered actions / commit semantics | **Done** | Agency |
+| [UX04 commitment](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-commitment-truth/CHANGE.md) | Work/time/interruption truth | **Done** | Earned time |
+| [UX12 planner](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-offscreen-planner/CHANGE.md) | Bounded Plan ahead | **Done** | Offscreen handoff |
+| [UX05 library](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-story-library/CHANGE.md) | Stories/drafts list | **Done** | Re-entry |
+| [UX06 creation](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-guided-creation/CHANGE.md) | Guided start flow | **Done** | First-run |
+| [UX07 journal](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-return-journal/CHANGE.md) | Return / history | **Done** | Continuity |
+| [UX08 context](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-adaptive-context/CHANGE.md) | Conditional World/You | **Done** | Depth |
+| [UX09 demo](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-public-demo/CHANGE.md) | Scripted public sample | **Done** | Portfolio |
+| [UX10 motion](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-motion-feedback/CHANGE.md) | State transitions | **Done** | Feel |
+| [UX11 evidence](../../../work/changes/archive/2026-11/experience/2026-11-13--ux-visual-evidence/CHANGE.md) | Storybook/axe/captures | **Done** | Proof |
 
 **No mandatory numerical sequence beyond dependencies.** UX05/UX06 and UX09 may proceed alongside UX03/04 when source owners do not conflict. One active Change at a time by default. Split cross-cutting data-projection requirements into a *separate* contract Change if a frontend packet would otherwise pretend the browser has authoritative fields it does not have.
 
@@ -51,7 +51,7 @@ This program is not a “big bang redesign” and does not prescribe literal JSX
 - [Mechanics reassessment](foundations/mechanics-reassessment.md) and [temporal alternatives](foundations/temporal-philosophy.md): bounded standing life vs current strict commitment time, social investment, job repetition, form-dependent abilities and meaningful offscreen presence.
 - Maps, multiplayer, imagery, elaborate sound, and stronger generative autonomy require new decision packets before code.
 
-Do not let UX01–UX12 mutate these mechanics as an unrequested side effect. UX12 replaces the **presentation of existing accepted finite plans**; it does not implement [GM03 bounded standing life](../../changes/open/2026-11-13--gm-standing-life/CHANGE.md).
+Do not let UX01–UX12 mutate these mechanics as an unrequested side effect. UX12 replaces the **presentation of existing accepted finite plans**; it does not implement [GM03 bounded standing life](../../../work/changes/open/2026-11-13--gm-standing-life/CHANGE.md).
 
 ## Updated validation infrastructure (2026-11-13)
 

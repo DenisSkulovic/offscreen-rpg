@@ -38,7 +38,7 @@
 
 ## 3. What the next Support slice will actually deliver
 
-[Source audit](../evidence/obs06-support-situation-source-audit-2026-11-15.md) → [strict technical/authorization contract](../technical/support-situation-and-why-v1.md) → [OBS06 Change](../../../changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) → [OBS07 UI](../../../changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) after OBS06 verified.
+[Source audit](../evidence/obs06-support-situation-source-audit-2026-11-15.md) → [strict technical/authorization contract](../technical/support-situation-and-why-v1.md) → [OBS06 Change](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) → [OBS07 UI](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) after OBS06 verified.
 
 **OBS06:** one body-free, bounded case-bound Admin GET. It returns **current hold/commitment**, controlling G when source-linked, last published passage ID, recent typed GM05 developments, stage/publication status and a few deterministic **Why** claims with original source IDs and explicit gaps. No speculative model narrative, raw prompt or player prose.
 

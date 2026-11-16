@@ -1,10 +1,10 @@
 # React/Next execution playbook | cheap Cursor, fast workstation, correct engineering
 
-**State:** Owner direction + architect decisions, 2026-11-12. **Purpose:** convert the [selected F1–F15 React/Next architecture](targets/react-next.md) and [W01–W21 code Changes](../changes/README.md) into a predictable, economical implementation process. **Not:** a second architecture spec, a generic rule to preload, permission to execute code, or permission to reset databases/spend/deploy. This document owns *execution economics and source investigation*. Selected Change `CHANGE.md` owns its code scope and negative acceptance.
+**State:** Owner direction + architect decisions, 2026-11-12. **Purpose:** convert the [selected F1–F15 React/Next architecture](targets/react-next.md) and [W01–W21 code Changes](../../work/changes/README.md) into a predictable, economical implementation process. **Not:** a second architecture spec, a generic rule to preload, permission to execute code, or permission to reset databases/spend/deploy. This document owns *execution economics and source investigation*. Selected Change `CHANGE.md` owns its code scope and negative acceptance.
 
 ## Quick route for an executor (do not load this entire document by habit)
 
-- **Am I supposed to code?** [Change index](../changes/README.md) must show a selected, authorized Change, or the owner has explicitly supplied a scoped task. A prepared folder alone means nothing.
+- **Am I supposed to code?** [Change index](../../work/changes/README.md) must show a selected, authorized Change, or the owner has explicitly supplied a scoped task. A prepared folder alone means nothing.
 - **What do I implement?** Read only the selected Change's first-screen brief and its [nearest source README](../../apps/web/README.md); read its full acceptance/target heading only if the quick map is insufficient. The [source atlas](#6-source-atlas-for-w01w21) now routes to **short owner maps**, not duplicated code archaeology. Do not load all 21 packets, the audit or this entire playbook.
 - **What command now?** [Verification ladder](#4-verification-ladder-stop-checking-every-keystroke), then [commands](#5-command-and-cache-cookbook).
 - **What if the spec clashes with source?** Return a terse evidence packet to ChatGPT/owner; don't bill Cursor tokens designing a replacement.

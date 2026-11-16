@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './process.mjs';
 
-const changesRoot = path.join(root, 'docs', 'changes');
+const changesRoot = path.join(root, 'work', 'changes');
 const limit = 300; // Advisory review trigger; not a hard gate.
 
 /** @returns {{ rel: string, absDir: string }[]} packet dirs that contain CHANGE.md */

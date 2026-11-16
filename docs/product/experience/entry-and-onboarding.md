@@ -1,6 +1,6 @@
 # Entry and onboarding
 
-**Owner (DOC01 P2):** arriving, signing in, creating a life. Reconciles `journeys/player-experience.md`, `journeys/story-creation.md`, and experience portal/PF design ([compare](../../changes/open/2026-11-16--doc01-documentation-architecture/EXPERIENCE-CLAIM-COMPARE.md)).  
+**Owner (DOC01 P2):** arriving, signing in, creating a life. Reconciles `journeys/player-experience.md`, `journeys/story-creation.md`, and experience portal/PF design ([compare](../../../work/changes/open/2026-11-16--doc01-documentation-architecture/EXPERIENCE-CLAIM-COMPARE.md)).  
 **Unsettled:** full platform-ecosystem umbrella remains proposed—do not treat as silently accepted.
 
 ## First contact

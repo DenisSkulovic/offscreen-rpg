@@ -148,6 +148,6 @@ Future movement/event animations must be driven by **persisted data**. Text “T
 
 Start with a **narrow player-visible published-scene playback** sourced from actual `story_passage` + GM05 and recorded response. Keep it separate from the developer forensic capsule and current live Play API. Human-test its usefulness before assuming a full R2 mechanical replay system must ship on day one.
 
-Then broaden to real R2 event stepping only after [OBS04](../../changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) and **all other material mutation writers** are captured with a verified historical frontier/checkpoints. Don't make every text animation depend on paid Storyteller calls or an unnecessary universal event-sourcing rewrite.
+Then broaden to real R2 event stepping only after [OBS04](../../../work/changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) and **all other material mutation writers** are captured with a verified historical frontier/checkpoints. Don't make every text animation depend on paid Storyteller calls or an unnecessary universal event-sourcing rewrite.
 
 **Owner decisions remaining:** player-facing replay as a product promise, retention of published narrative/media, old shared-story visibility rights and whether “fork from here” is a distinct future feature. This Markdown does not authorize implementation.

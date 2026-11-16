@@ -1,6 +1,6 @@
 # Storyteller architecture renewal | a creative mind anchored to earned life
 
-**Design initiative, 2026-11-14.** **Status (reconciled 2026-11-15):** analysis + target selected; **SA01–SA12 code packets Done** for scoped implementation (SA07 conditional; SA12 dry-run tooling — paid live still needs explicit $ cap). **Gameplay quality / sustained 10–15-turn creative proof remains unproved.** New Storyteller work only via [docs/changes/README.md](../../changes/README.md). **The original [game vision](../../product/foundations/vision.md) is the constitution**; landed SA packets do not declare the dream achieved. Companion authority: [engine](../engine/product-derived-requirements.md), [concepts](../../product/foundations/concepts.md), [settings](../../product/storytelling/storyteller-settings.md), [context/cost](../../technical/context-and-cost.md).
+**Design initiative, 2026-11-14.** **Status (reconciled 2026-11-15):** analysis + target selected; **SA01–SA12 code packets Done** for scoped implementation (SA07 conditional; SA12 dry-run tooling — paid live still needs explicit $ cap). **Gameplay quality / sustained 10–15-turn creative proof remains unproved.** New Storyteller work only via [work/changes/README.md](../../../work/changes/README.md). **The original [game vision](../../product/foundations/vision.md) is the constitution**; landed SA packets do not declare the dream achieved. Companion authority: [engine](../engine/product-derived-requirements.md), [concepts](../../product/foundations/concepts.md), [settings](../../product/storytelling/storyteller-settings.md), [context/cost](../../technical/context-and-cost.md).
 
 ## The fundamental question
 
@@ -25,7 +25,7 @@ This initiative reopens product-level Storyteller **capabilities** and their qua
 | Why not replace it with permanent chat, one agent per NPC or recursive subagents? | [Architectural alternatives and explicit rejection criteria](architecture-alternatives.md) |
 | Which SA packets landed, and what quality remains unproved? | **[SA01–SA12 implementation program](implementation-program.md)** (packets **Done**; quality unproved) → historical [first handoff](handoff/cursor-first-wave-2026-11-14.md) |
 
-Permanent targets own architecture; dated evidence owns inspected source; Change packets + evidence own landed deltas. Selection for new work: [changes queue](../../changes/README.md).
+Permanent targets own architecture; dated evidence owns inspected source; Change packets + evidence own landed deltas. Selection for new work: [changes queue](../../../work/changes/README.md).
 
 ## Immediate executive verdict
 

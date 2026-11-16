@@ -2,7 +2,7 @@
 
 **Status:** architectural strategy selected, **full ENG03 remains NOT Ready**. We can define a small prerequisite measurement with the current code and a disposable DB, but **cannot safely replace task admission with a new async pipeline** without first determining the exact captured context and in-flight task semantics.
 
-**Concrete measurement and conditional DTO (2026-11-13):** [selected ENG03-M measurement](eng03-measurement-and-capture-contract.md) gives an exact 0/250/2000ms test matrix, source/lock spans, proportional go/no-go threshold and a conditional captured-source V1 semantic envelope. [ENG03-M code-bearing packet](../../../changes/archive/2026-11/eng/2026-11-13--eng03-lock-measurement/CHANGE.md) is independently executable after explicit owner/disposable-DB authorization. This does not mark the full transaction rewrite Ready.
+**Concrete measurement and conditional DTO (2026-11-13):** [selected ENG03-M measurement](eng03-measurement-and-capture-contract.md) gives an exact 0/250/2000ms test matrix, source/lock spans, proportional go/no-go threshold and a conditional captured-source V1 semantic envelope. [ENG03-M code-bearing packet](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng03-lock-measurement/CHANGE.md) is independently executable after explicit owner/disposable-DB authorization. This does not mark the full transaction rewrite Ready.
 
 ## Source-grounded problem and exact first scope
 

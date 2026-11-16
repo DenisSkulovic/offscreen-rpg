@@ -2,7 +2,7 @@
 
 Status: proposed selection and acceptance reference, not a new claim of implementation or owner approval. Runtime coverage remains in [progress](../../progress.md). This document chooses a small connected proof from the larger examples; it does not replace the owning feature phases.
 
-The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../solo-gameplay-contract.md) for selected timing, publication, hold and authority defaults, and the [Change queue](../../changes/README.md) for any future authorized implementation. The old [initiative dossiers](../../history/initiatives/README.md) are historical context.
+The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../solo-gameplay-contract.md) for selected timing, publication, hold and authority defaults, and the [Change queue](../../../work/changes/README.md) for any future authorized implementation. The old [initiative dossiers](../../history/initiatives/README.md) are historical context.
 
 ## The player-facing promise
 

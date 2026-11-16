@@ -3,10 +3,10 @@
 **Status: technical target with landed custody subset, reconciled 2026-11-15.** This is about the *actual* input used by a real Storyteller operation, not a synthetic explanation reconstructed from the latest settings. Context and prompt policy remain owned by [Storyteller](../../storyteller/prompt-tools-and-models.md); [data capture authority](evidence-model.md) defines storage and links.
 
 **Landed (bounded, not production entitlement):**
-- [OBS00-A](../../../changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) — provider forwarding / review custody path for the authorized slice.
-- [OBS00-C](../../../changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) — reviewed `packet_sha256` must equal `prepareWire` bytes before reserve/dispatch; mismatch refuses without HTTP ([provider-dispatch-review](../../../technical/provider-dispatch-review.md)).
-- [OBS00-L](../../../changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) — local Story-mode stop/restart + DB-enforced trial caps (not OBS00-B).
-- [OBS03](../../../changes/archive/2026-11/observability/2026-11-15--obs03-prompt-provenance/CHANGE.md) — first redacted consequence prompt sidecar / G metadata chain (final transport lineage still partial; see [OBS03 quality review](../evidence/obs03-provenance-quality-review-2026-11-15.md)).
+- [OBS00-A](../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) — provider forwarding / review custody path for the authorized slice.
+- [OBS00-C](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md) — reviewed `packet_sha256` must equal `prepareWire` bytes before reserve/dispatch; mismatch refuses without HTTP ([provider-dispatch-review](../../../technical/provider-dispatch-review.md)).
+- [OBS00-L](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md) — local Story-mode stop/restart + DB-enforced trial caps (not OBS00-B).
+- [OBS03](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs03-prompt-provenance/CHANGE.md) — first redacted consequence prompt sidecar / G metadata chain (final transport lineage still partial; see [OBS03 quality review](../evidence/obs03-provenance-quality-review-2026-11-15.md)).
 
 **Still blocked / not claimed:**
 - **OBS00-B** — default-worker / production current usage-authority resolver ([dispatch preflight](../evidence/live-worker-dispatch-preflight-2026-11-15.md)).

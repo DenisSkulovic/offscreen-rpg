@@ -28,14 +28,14 @@ AD01 Staff principal, session + audit bootstrap
 
 | ID | Code-bearing outcome | Dependencies | Packet |
 | --- | --- | --- | --- |
-| **AD01** | **Done:** Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None | [Staff session](../../changes/archive/2026-11/admin/2026-11-14--admin-staff-session/CHANGE.md) |
-| **AD02** | **Done:** Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../../changes/archive/2026-11/admin/2026-11-14--admin-grant-policy/CHANGE.md) |
-| **AD03** | **Done:** Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../../changes/archive/2026-11/admin/2026-11-14--admin-player-safe-reads/CHANGE.md) |
-| **AD04** | **Done:** Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../../changes/archive/2026-11/admin/2026-11-14--admin-operator-shell/CHANGE.md) |
-| **AD05** | **Done:** Safe campaign metadata -> generation status drilldown; no raw prompts/narrative | AD03, AD04 for UI | [Game/AI diagnostics](../../changes/archive/2026-11/admin/2026-11-14--admin-game-ai-diagnostics/CHANGE.md) |
-| **AD06** | **Done:** Technical-only funded usage/status views, reservations/uncertainty/freshness | AD03, AD04; coordinate AD05 source owners | [Usage exposure](../../changes/archive/2026-11/admin/2026-11-14--admin-usage-exposure/CHANGE.md) |
-| **AD07** | **Done:** Staff effective access, safe audit review, no privilege-changing UI | AD01–AD04 | [Access and audit review](../../changes/archive/2026-11/admin/2026-11-14--admin-staff-access-review/CHANGE.md) |
-| **AD08** | **Done:** Native minimal support case anchors and governed assignment, no authority laundering | AD02, AD03, AD07 | [Case anchors](../../changes/archive/2026-11/admin/2026-11-14--admin-support-case-anchors/CHANGE.md) |
+| **AD01** | **Done:** Explicit staff principal, revocable Admin-purpose session, inert bootstrap package assignment and audited out-of-band bootstrap; no customer permissions before AD02 | None | [Staff session](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-staff-session/CHANGE.md) |
+| **AD02** | **Done:** Typed scoped complete-grant evaluator, deny-by-default Nest Admin guard | AD01 | [Grant policy](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-grant-policy/CHANGE.md) |
+| **AD03** | **Done:** Secure exact-ref player search and redacted Player 360 read API | AD02 | [Player safe reads](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-player-safe-reads/CHANGE.md) |
+| **AD04** | **Done:** Dedicated Next `/control` SSR shell, isolated Query and revoked-session behavior | AD01–AD03 | [Operator shell](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-operator-shell/CHANGE.md) |
+| **AD05** | **Done:** Safe campaign metadata -> generation status drilldown; no raw prompts/narrative | AD03, AD04 for UI | [Game/AI diagnostics](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-game-ai-diagnostics/CHANGE.md) |
+| **AD06** | **Done:** Technical-only funded usage/status views, reservations/uncertainty/freshness | AD03, AD04; coordinate AD05 source owners | [Usage exposure](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-usage-exposure/CHANGE.md) |
+| **AD07** | **Done:** Staff effective access, safe audit review, no privilege-changing UI | AD01–AD04 | [Access and audit review](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-staff-access-review/CHANGE.md) |
+| **AD08** | **Done:** Native minimal support case anchors and governed assignment, no authority laundering | AD02, AD03, AD07 | [Case anchors](../../../work/changes/archive/2026-11/admin/2026-11-14--admin-support-case-anchors/CHANGE.md) |
 
 ## Milestone acceptance
 
@@ -62,8 +62,8 @@ Those are not AD09 automatically. Each needs specific accepted policy, source/ar
 
 Before Cursor:
 1. Fetch latest `main`, re-inspect touched modules because Cursor may be working locally; inspect both the design branch and any new engine/frontend changes.
-2. Import only Admin documentation and **the chosen** Change packet; avoid overwriting `docs/changes/README.md` or unrelated working tree.
-3. Confirm one selected packet is source-valid, change its state to **Ready** with explicit owner instruction, and update the single current Change pointer in `docs/changes/README.md`.
+2. Import only Admin documentation and **the chosen** Change packet; avoid overwriting `work/changes/README.md` or unrelated working tree.
+3. Confirm one selected packet is source-valid, change its state to **Ready** with explicit owner instruction, and update the single current Change pointer in `work/changes/README.md`.
 4. Run safe focused proof; disposable `offscreen_auth_test` reset only with explicit permission. No real LLM/billing, deployment, destructive non-test data or broad CI spend.
 5. Review actual delta/evidence, mark Done/Blocked, clear current Change and select next dependency-ready unit.
 

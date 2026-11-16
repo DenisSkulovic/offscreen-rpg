@@ -1,6 +1,6 @@
 # ENG03-C2 | Interrupted-action capture (2026-11-15)
 
-**Change:** [ENG03-C2](../../../changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md)  
+**Change:** [ENG03-C2](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c2-interrupted-action-capture/CHANGE.md)  
 **Design:** [interrupted-action capture V1](../decisions/eng03-interrupted-action-capture-v1.md)  
 **Provider spend:** zero.
 

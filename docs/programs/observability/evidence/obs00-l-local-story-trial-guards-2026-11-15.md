@@ -1,6 +1,6 @@
 # OBS00-L | Local Story-mode stop, restart and finite-trial guard (2026-11-15)
 
-**Change:** [OBS00-L](../../../changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md)  
+**Change:** [OBS00-L](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md)  
 **Source base:** `52a3c6d8a50c365e731ca0dc7507d5baeb65e9e4` (this receipt ships in the OBS00-L commit)  
 **Provider spend / external HTTP:** **$0 / 0.** Counting fake provider only; `globalThis.fetch` replaced by a thrower for the whole suite and asserted at 0 calls in `test.after`. No `.env.openrouter` read, no credential used.  
 **DB:** one fresh disposable `offscreen_chamber_run_<uuid>` per case (guarded by the Sandbox URL guard, destroyed in `finally`). The owner's `offscreen_story_local` was **not** touched. Synthetic IDs: account `00000000-0000-4000-8000-000000000010`, default run `…0011`, trial run `…0012`.

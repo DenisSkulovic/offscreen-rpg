@@ -1,6 +1,6 @@
 # SA12 | Dry-run live comparison tooling (2026-11-14)
 
-**Change:** [SA12 controlled live evaluation](../../../changes/archive/2026-11/storyteller/2026-11-14--sa12-controlled-live-evaluation/CHANGE.md)  
+**Change:** [SA12 controlled live evaluation](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa12-controlled-live-evaluation/CHANGE.md)  
 **Provider spend:** zero.
 
 ## What landed

@@ -9,4 +9,4 @@
 | Legal / SRD attribution | [legal/rules-attribution.md](legal/rules-attribution.md) | also [NOTICE.md](../../NOTICE.md) |
 | Session minutes | [minutes/](minutes/README.md) | `work/sessions/` + promote decisions |
 
-See [P6 no-loss gate](../changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md). History is **not** execution permission.
+See [P6 no-loss gate](../../work/changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md). History is **not** execution permission.

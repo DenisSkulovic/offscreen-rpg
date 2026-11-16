@@ -14,7 +14,7 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [S
 | `.agents/skills/<name>/SKILL.md` | Repeatable procedure | Discover description; load body on demand |
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional manuals | One relevant domain when warranted |
 | `docs/product`, `docs/technical` | Product bible and technical guarantees | Read the relevant owner/section |
-| `docs/changes/…/CHANGE.md` | Bounded code-bearing outcome | Only when selected; `none` is valid |
+| `work/changes/…/CHANGE.md` | Bounded code-bearing outcome | Only when selected; `none` is valid |
 | `work/designs`, `evidence`, `research` | Drafts, proof, nonbinding studies | On demand; never silent product authority |
 | `docs/programs`, `docs/engineering` | **Legacy** migration sources | Read only to reconcile; do not author new norms |
 | Tests, fixtures, scripts | Executable evidence | Run selectively |

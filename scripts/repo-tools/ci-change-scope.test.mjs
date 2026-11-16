@@ -10,7 +10,7 @@ test('docs-only markdown and agent maps skip code and integration on push', () =
   const scope = classifyChangeScope(
     [
       'docs/minutes/2026-11-12.md',
-      'docs/changes/README.md',
+      'work/changes/README.md',
       'AGENTS.md',
       'apps/web/README.md',
       '.agents/rules/verification.md',
@@ -60,7 +60,7 @@ test('pull_request and workflow_dispatch always run code and integration', () =>
 
 test('mixed docs and web source is not docs-only', () => {
   const scope = classifyChangeScope(
-    ['docs/changes/README.md', 'apps/web/vitest.config.ts'],
+    ['work/changes/README.md', 'apps/web/vitest.config.ts'],
     { eventName: 'push' },
   );
   assert.equal(scope.docsOnly, false);

@@ -1,6 +1,6 @@
 # OBS01 | Campaign operation coverage before first attempt (2026-11-15)
 
-**Change:** [OBS01](../../../changes/archive/2026-11/observability/2026-11-15--obs01-operation-coverage/CHANGE.md)  
+**Change:** [OBS01](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs01-operation-coverage/CHANGE.md)  
 **Provider spend:** zero.
 
 ## What landed

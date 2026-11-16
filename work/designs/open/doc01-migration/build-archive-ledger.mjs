@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Build compact monthly ledger rows from docs/changes/archive CHANGE.md packets. */
+/** Build compact monthly ledger rows from work/changes/archive CHANGE.md packets. */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -11,7 +11,7 @@ function git(args) {
   return execFileSync("git", args, { cwd: repoRoot, encoding: "utf8" }).trim();
 }
 
-const files = git(["ls-files", "docs/changes/archive"]).split(/\r?\n/).filter((p) =>
+const files = git(["ls-files", "work/changes/archive"]).split(/\r?\n/).filter((p) =>
   p.endsWith("/CHANGE.md"),
 );
 
@@ -27,7 +27,7 @@ for (const file of files) {
       .trim()
       .slice(0, 80);
   const parts = file.split("/");
-  // docs/changes/archive/YYYY-MM/program/leaf/CHANGE.md
+  // work/changes/archive/YYYY-MM/program/leaf/CHANGE.md
   const month = parts[3] || "";
   const program = parts[4] || "";
   const leaf = parts[5] || "";

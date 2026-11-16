@@ -3,14 +3,14 @@
   "files_matched": 483,
   "files_unmatched": 8,
   "missing_from_disposition": [
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/PLAN.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md",
-    "docs/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md"
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/PLAN.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md",
+    "work/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md"
   ],
   "disposition_paths_absent_from_tree": []
 }

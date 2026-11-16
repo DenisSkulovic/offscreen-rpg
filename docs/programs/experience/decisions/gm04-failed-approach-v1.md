@@ -1,6 +1,6 @@
 # GM04 | A failed approach changes what is possible next
 
-**Status:** selected **product/content design recommendation** for 2026-11-15; code not yet authorized. The target is **one Pineapple scripted fixture** and reproducible proof, not a universal social cooldown. See [GM04 Change](../../../changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md) and [current SpongeBob sequence](../../../technical/playthroughs/spongebob.md#sb-02-a-failed-reassurance--current-gm04).
+**Status:** selected **product/content design recommendation** for 2026-11-15; code not yet authorized. The target is **one Pineapple scripted fixture** and reproducible proof, not a universal social cooldown. See [GM04 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md) and [current SpongeBob sequence](../../../technical/playthroughs/spongebob.md#sb-02-a-failed-reassurance--current-gm04).
 
 ## Decision: a failed attempt is history, not a free re-roll token
 
@@ -43,4 +43,4 @@ No paid model call, universal prompt change, new global social stat, forced comb
 
 ## Acceptance / authority
 
-This document selects **one credible method** for an authored fixture; it does not claim every failed check must prohibit trying again. Once owner authorizes [GM04](../../../changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md) and Cursor verifies the baseline, the Change can move to Ready. A changed label without durable supported fact is **not Done**.
+This document selects **one credible method** for an authored fixture; it does not claim every failed check must prohibit trying again. Once owner authorizes [GM04](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-offer-distinctness/CHANGE.md) and Cursor verifies the baseline, the Change can move to Ready. A changed label without durable supported fact is **not Done**.

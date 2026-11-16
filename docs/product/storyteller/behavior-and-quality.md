@@ -1,6 +1,6 @@
 # Storyteller behavior and quality
 
-**Owner (DOC01 P2):** narrative behavior the product owes players. Reconciles `storytelling/storytelling.md` with `programs/storyteller/vision-and-quality-constitution.md` per [claim compare](../../changes/open/2026-11-16--doc01-documentation-architecture/STORYTELLER-CLAIM-COMPARE.md).  
+**Owner (DOC01 P2):** narrative behavior the product owes players. Reconciles `storytelling/storytelling.md` with `programs/storyteller/vision-and-quality-constitution.md` per [claim compare](../../../work/changes/open/2026-11-16--doc01-documentation-architecture/STORYTELLER-CLAIM-COMPARE.md).  
 **Technical:** [storyteller runtime](../../technical/storyteller-runtime.md).  
 **Approval honesty:** constitution table rows that exceed shipped capability remain **selected targets**, not live proof. Sustained multi-turn creative quality remains unproved in STATUS.
 

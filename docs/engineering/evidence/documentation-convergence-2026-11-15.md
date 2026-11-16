@@ -2,7 +2,7 @@
 
 **Program:** permanent-authority reconciliation after Nov 12–15 implementation waves.  
 **Method:** [documentation-reconciliation](../../../.agents/skills/documentation-reconciliation/SKILL.md).  
-**Ground truth for landed slices during this pass:** [docs/changes/README.md](../../changes/README.md).  
+**Ground truth for landed slices during this pass:** [work/changes/README.md](../../../work/changes/README.md).  
 **Process gate:** Change-close **Reconciliation ledger** now mandatory (harness updated same day).  
 **ChatGPT residuals:** [handoff](documentation-convergence-chatgpt-handoff-2026-11-15.md).  
 **Minutes:** [2026-11-15](../../history/minutes/2026-11-15.md).

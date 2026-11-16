@@ -2,7 +2,7 @@
 
 **Status:** end-state experience. This page is a modest entryway, not the game itself or an operations console.
 
-**Product-shell companion (proposed):** [player home blueprint](player-home-blueprint.md) defines how this Stories library fits into signed-in re-entry and 0/1/many/draft variants; it does not supersede the story-status truth below. [PF04 Change](../../../changes/archive/2026-11/experience/2026-11-13--pf-player-home/CHANGE.md) is Proposed, not active.
+**Product-shell companion (proposed):** [player home blueprint](player-home-blueprint.md) defines how this Stories library fits into signed-in re-entry and 0/1/many/draft variants; it does not supersede the story-status truth below. [PF04 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--pf-player-home/CHANGE.md) is Proposed, not active.
 
 ## Core question
 

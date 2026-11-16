@@ -135,6 +135,6 @@ A field-level provenance explorer must let developers inspect alternate places t
 
 ## 8. Suggested bounded code correction
 
-The immediate code-bearing candidate is [OBS05](../../../changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md): refine SA05/SA01 diagnostic classification and production-facing adapters **without changing game rules, prompt content or model calls**. Genuine retrieval stage observation must still be implemented with OBS02/OBS03; an offline analysis function cannot conjure missing history.
+The immediate code-bearing candidate is [OBS05](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md): refine SA05/SA01 diagnostic classification and production-facing adapters **without changing game rules, prompt content or model calls**. Genuine retrieval stage observation must still be implemented with OBS02/OBS03; an offline analysis function cannot conjure missing history.
 
 **Release gate:** no “model ignored / used / knew / published this source” assertion in a Support/Developer production read unless the exact evidence proof above exists. Source facts may still be missing; the viewer must tell the truth about that.

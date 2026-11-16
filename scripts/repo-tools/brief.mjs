@@ -48,12 +48,12 @@ function currentChange(route, changesDirRelative = 'docs/changes') {
   if (
     path.basename(absolute) !== 'CHANGE.md' ||
     !(
-      relativeToRoot.startsWith('docs/changes/') ||
+      relativeToRoot.startsWith('work/changes/') ||
       relativeToRoot.startsWith('work/changes/')
     )
   ) {
     throw new Error(
-      'Current change must point to CHANGE.md under docs/changes/ or work/changes/.',
+      'Current change must point to CHANGE.md under work/changes/ or work/changes/.',
     );
   }
   return relativeToRoot;
@@ -82,7 +82,7 @@ try {
     );
     // DOC01: prefer work/changes when it declares Current change; else docs/changes.
     const workChanges = path.join(root, 'work', 'changes', 'README.md');
-    let changeRoute = 'docs/changes/README.md';
+    let changeRoute = 'work/changes/README.md';
     let changeDoc = read(changeRoute);
     if (existsSync(workChanges)) {
       const workDoc = readFileSync(workChanges, 'utf8');

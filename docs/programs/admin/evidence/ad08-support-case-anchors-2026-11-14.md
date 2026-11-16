@@ -1,6 +1,6 @@
 # AD08 support case anchors evidence | 2026-11-14
 
-**Change:** [AD08](../../../changes/archive/2026-11/admin/2026-11-14--admin-support-case-anchors/CHANGE.md). Provider spend: none. Disposable DB only.
+**Change:** [AD08](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-support-case-anchors/CHANGE.md). Provider spend: none. Disposable DB only.
 
 ## Commands run
 

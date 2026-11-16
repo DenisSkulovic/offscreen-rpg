@@ -10,6 +10,6 @@
 | Strategy | [ROADMAP.md](../../ROADMAP.md) / [TODO.md](../../TODO.md) |
 | Status | [STATUS.md](../../STATUS.md) |
 | Evidence | [evidence/](../../evidence/README.md) |
-| Research manuals | [research/](../../research/README.md) (curate before move) |
+| Research manuals | [research/engineering-manuals.md](../../research/engineering-manuals.md) |
 
-Nested targets/audits/playbooks remain readable until the [P6 no-loss gate](../changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) clears deletion.
+Nested targets/audits/playbooks remain readable until the [P6 no-loss gate](../../work/changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) clears deletion. Prefer the research map before treating a nested file as current authority.

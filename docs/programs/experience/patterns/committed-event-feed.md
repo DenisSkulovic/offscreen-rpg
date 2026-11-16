@@ -1,6 +1,6 @@
 # GM05 selected product policy | source-backed public events, not a generated recap
 
-**Status: selected V1 design, 2026-11-13; owner authorization required for implementation.** Parent [return and memory](../flows/return-and-memory.md), [mechanics program](../mechanics-evolution-program.md), [GM05 Change](../../../changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md). **No code, billing, model or database migration approved by this Markdown.**
+**Status: selected V1 design, 2026-11-13; owner authorization required for implementation.** Parent [return and memory](../flows/return-and-memory.md), [mechanics program](../mechanics-evolution-program.md), [GM05 Change](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md). **No code, billing, model or database migration approved by this Markdown.**
 
 ## Decision and boundaries
 

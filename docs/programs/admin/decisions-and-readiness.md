@@ -188,7 +188,7 @@ Review each target against source evidence, but do not lower the desired guarant
 
 ## Change dossier gate (future)
 
-After technical design, produce **bounded, code-bearing** Changes in [docs/changes](../../changes/README.md), with one owner-approved active packet at a time. Each packet must have:
+After technical design, produce **bounded, code-bearing** Changes in [docs/changes](../../../work/changes/README.md), with one owner-approved active packet at a time. Each packet must have:
 - specific user/operational outcome;
 - exact product and technical headings;
 - affected source owners and dependencies discovered from current source;

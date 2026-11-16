@@ -33,9 +33,9 @@
 
 | Packet | Scope | Recommended order |
 | --- | --- | --- |
-| [OBS02-H](../../../changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) | Include rearm epoch in source stage IDs; co-commit start/terminal capture receipts with their actual DB state; detect divergent identical keys | **High for trustworthy cross-rearm forensic timeline** |
-| [OBS05](../../../changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md) | Versioned SA05/SA01 evidence-quality projection: uncited != ignored; no inferred source stage promoted into observed fact | **High for truthful future Developer Context Inspector** |
-| [OBS04](../../../changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | One true atomic finite-action before/after mechanic witness | After owner accepts SQL/codec/lock proof |
+| [OBS02-H](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) | Include rearm epoch in source stage IDs; co-commit start/terminal capture receipts with their actual DB state; detect divergent identical keys | **High for trustworthy cross-rearm forensic timeline** |
+| [OBS05](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md) | Versioned SA05/SA01 evidence-quality projection: uncited != ignored; no inferred source stage promoted into observed fact | **High for truthful future Developer Context Inspector** |
+| [OBS04](../../../../work/changes/open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | One true atomic finite-action before/after mechanic witness | After owner accepts SQL/codec/lock proof |
 | **OBS00-B** | Current independent usage-entitlement resolver for paid dispatch, source-verified | **Must precede real paid provider launch**, not a forensics permissions shortcut |
 | **S1 Situation read / later S3 Context Explorer** | Compose existing OBS01–03 source with [Turn Capsule](../technical/forensic-turn-capsule-v1.md), separate classified data | Only after source-linked query and permission proof; don't create big UI first |
 | **Player published-scene Replay V1** | Separate read-only original history; full mechanics later | Owner product acceptance, cross-perspective/privacy tests |

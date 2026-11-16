@@ -5,7 +5,7 @@
 ## 1. Establish existing Admin behavior first
 
 Read only:
-- [OBS06 Change](../../../../changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) first screen and [source audit](../../evidence/obs06-support-situation-source-audit-2026-11-15.md).
+- [OBS06 Change](../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) first screen and [source audit](../../evidence/obs06-support-situation-source-audit-2026-11-15.md).
 - `packages/application/src/admin/{registry,policy,access,case-writes,diagnostics-reads}.ts` and `apps/api/src/modules/admin/controller.ts`; use narrow symbol search, not whole files.
 - Existing test `tools/api-integration/test/admin-{policy,cases,diagnostics}.integration.ts`, and `apps/web/src/features/admin/{case-queue,player-lookup}.tsx` only when UI starts.
 
@@ -22,8 +22,8 @@ pnpm test:focus -- admin-diagnostics
 ## 2. OBS06: make exactly one source-based S1 endpoint
 
 Only if kickoff explicitly authorizes this code Change and current source/policy gates pass:
-1. Update `docs/changes/README.md` single `Current change:` to OBS06, mark its Change **Ready/Implementing** at proper stages. **One active Change only**.
-2. Implement the strict `SupportSituationV1` read projection and case-bound Nest GET from [OBS06 Change](../../../../changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md), reusing existing Admin controller/contract/service architecture. **Do not** rewrite current game read or import raw task context.
+1. Update `work/changes/README.md` single `Current change:` to OBS06, mark its Change **Ready/Implementing** at proper stages. **One active Change only**.
+2. Implement the strict `SupportSituationV1` read projection and case-bound Nest GET from [OBS06 Change](../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md), reusing existing Admin controller/contract/service architecture. **Do not** rewrite current game read or import raw task context.
 3. Add the **closed, separately assigned** `forensics.campaign.situation.read` capability and `support-investigator-v1` package exactly as designed. **Do not silently grant it** to existing `support-operator-v1` or all staff.
 4. Enforce **the same trusted assignment** binding exact active assigned `caseId + campaignId`, environment, scope and grant provenance. A case-creator's arbitrary `admin_case_link` is **not** permission. No case auto-assignment, no self-approval, no cross-grant Cartesian product.
 5. For disposable tests only, use a synthetic legitimate test principal/staff session and **explicit fixture-issued grant** from a trusted test/steward setup. **Do not** add an automatic production grant issuer merely to make the green test easier. If no real source-backed authorized case/campaign binding can be defined, stop OBS06 as **Blocked** with a negative test and precise unimplemented grant-steward prerequisite, then continue evaluation-only S5/S6.
@@ -38,7 +38,7 @@ Only if normal+negative tests and row/SQL-cost proof pass: set OBS06 **Done**, w
 ## 3. OBS07: build a small actual Support screen
 
 Once OBS06 is Done **and** kickoff explicitly authorizes OBS07:
-1. Set exactly OBS07 active; read [its Change](../../../../changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) plus `apps/web/src/features/admin/{case-queue,admin-query-keys,admin-query-provider}.tsx/ts` and `apps/web/src/lib/admin-transport`.
+1. Set exactly OBS07 active; read [its Change](../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) plus `apps/web/src/features/admin/{case-queue,admin-query-keys,admin-query-provider}.tsx/ts` and `apps/web/src/lib/admin-transport`.
 2. Render **Situation**, **Last confirmed developments**, **Why?**, **evidence coverage** and safe source refs on an **actually assigned and authorized campaign case**. No new pages for unscoped global browsing. Don't redesign entire Admin nav or add generic raw JSON.
 3. Use TanStack Query keyed `staffPrincipalId+accessEpoch+caseId+campaignId+projectionVersion` and AbortSignal; no hidden raw prefetch or stale cross-user cache; old-case links don't authorize a new campaign.
 4. Show real current hold/control facts; don't project dueAt as settled reward. Show deliberate **Unknown** when source missing and **Attempt not recorded** instead of “model definitely not called”.

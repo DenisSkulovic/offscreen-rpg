@@ -10,11 +10,11 @@ A `Proposed / NOT Ready` Change is not a failed build or an unresolved Cursor ex
 
 | Position | Change | Readiness | Justification |
 | --- | --- | --- | --- |
-| **1** | [ENG08 deny unauthorized provider-origin item effects](../../../changes/archive/2026-11/eng/2026-11-13--eng-provider-world-effect-gate/CHANGE.md) | **Design-ready; owner authorization still required** | Prevent the newly introduced world effect from bypassing actor/item permission through a model-authored plan |
-| **1b** | [ENG09 item-interruption reentry](../../../changes/archive/2026-11/eng/2026-11-13--eng-item-interruption-reentry/CHANGE.md) | **Needs one source-backed negative fixture and selected consequence lifecycle** | Current mid-flight holder-change may leave no new playable offer; prove before redesign |
-| **2** | [ENG05 shared S3-compatible CAS adapter](../../../changes/archive/2026-11/eng/2026-11-13--eng-shared-cas-store/CHANGE.md) | **Design-ready; owner authorization still required** | One remote immutable store for independent API/worker replicas, with no production/cloud spend |
-| **3** | [ENG06 local Temporal replay-compatibility proof](../../../changes/archive/2026-11/eng/2026-11-13--eng-workflow-versioning/CHANGE.md) | **Design-ready for first test/replay slice only** | Protect old accepted timers/activities before future workflow refactors |
-| **4** | [ENG03 short-lock context capture](../../../changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) | **NOT Ready for full refactor; measurement plan settled** | First measure object I/O under write lock, then choose minimal source-capture operation; avoid a second unproven orchestration system |
+| **1** | [ENG08 deny unauthorized provider-origin item effects](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-provider-world-effect-gate/CHANGE.md) | **Design-ready; owner authorization still required** | Prevent the newly introduced world effect from bypassing actor/item permission through a model-authored plan |
+| **1b** | [ENG09 item-interruption reentry](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-item-interruption-reentry/CHANGE.md) | **Needs one source-backed negative fixture and selected consequence lifecycle** | Current mid-flight holder-change may leave no new playable offer; prove before redesign |
+| **2** | [ENG05 shared S3-compatible CAS adapter](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-shared-cas-store/CHANGE.md) | **Design-ready; owner authorization still required** | One remote immutable store for independent API/worker replicas, with no production/cloud spend |
+| **3** | [ENG06 local Temporal replay-compatibility proof](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-workflow-versioning/CHANGE.md) | **Design-ready for first test/replay slice only** | Protect old accepted timers/activities before future workflow refactors |
+| **4** | [ENG03 short-lock context capture](../../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) | **NOT Ready for full refactor; measurement plan settled** | First measure object I/O under write lock, then choose minimal source-capture operation; avoid a second unproven orchestration system |
 
 **No broad ENG02 continuation now** merely because an actor-envelope helper exists. A complete nonhuman campaign and form-change validity need separate source/migration plans. Do not merge UX/GM or presentation code into ENG08/ENG05.
 
@@ -28,7 +28,7 @@ plan reference. Keep existing scripted ENG01 transfer fixtures valid.
 
 AUTHORITY:
 docs/programs/engine/evidence/postwave-implementation-review.md
-docs/changes/archive/2026-11/eng/2026-11-13--eng-provider-world-effect-gate/CHANGE.md
+work/changes/archive/2026-11/eng/2026-11-13--eng-provider-world-effect-gate/CHANGE.md
 
 READ CURRENT SOURCE:
 - packages/game/src/immediate-actions.ts::validateImmediateActionProposal
@@ -71,11 +71,11 @@ Stop if reference-vs-new-proposal source identity is ambiguous.
 
 ## Then ENG09 as separate review
 
-Before implementation, add assertions to the existing disposable mid-flight test: is there a current `offer`, `decision hold`, `generation` or safe recovery control after holder invalidation? A no-offer idle state confirms the suspected product dead end. Select one idempotent, sourced interruption follow-up, **not** a frontend button that grants free time/retries. [ENG09](../../../changes/archive/2026-11/eng/2026-11-13--eng-item-interruption-reentry/CHANGE.md) retains its NOT Ready state until this contract is chosen.
+Before implementation, add assertions to the existing disposable mid-flight test: is there a current `offer`, `decision hold`, `generation` or safe recovery control after holder invalidation? A no-offer idle state confirms the suspected product dead end. Select one idempotent, sourced interruption follow-up, **not** a frontend button that grants free time/retries. [ENG09](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-item-interruption-reentry/CHANGE.md) retains its NOT Ready state until this contract is chosen.
 
 ## Then ENG05, whose design choices are now settled
 
-Read [selected S3 adapter contract](../decisions/eng05-shared-cas-contract.md) and [ENG05](../../../changes/archive/2026-11/eng/2026-11-13--eng-shared-cas-store/CHANGE.md). Implement one private object backend behind `DocumentStore`, preserve existing local defaults and canonical JSON/hash, and test with a disposable local S3-compatible service and separate processes. **No cloud credentials, production cutover, automatic GC or migration of legacy local files.** Return exact cross-process byte/hash evidence and failure cases before any live rollout.
+Read [selected S3 adapter contract](../decisions/eng05-shared-cas-contract.md) and [ENG05](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-shared-cas-store/CHANGE.md). Implement one private object backend behind `DocumentStore`, preserve existing local defaults and canonical JSON/hash, and test with a disposable local S3-compatible service and separate processes. **No cloud credentials, production cutover, automatic GC or migration of legacy local files.** Return exact cross-process byte/hash evidence and failure cases before any live rollout.
 
 ## ENG06: replay-first, not cloud infrastructure
 

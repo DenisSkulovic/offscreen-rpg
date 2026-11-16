@@ -1,6 +1,6 @@
 # Change: specific code-bearing outcome
 
-**Create under:** `docs/changes/open/YYYY-MM-DD--slug/` (never flat under `docs/changes/`). On **Done** or **Cancelled**, after the Reconciliation ledger, `git mv` to `docs/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/` and repair inbound links.
+**Create under:** `work/changes/open/YYYY-MM-DD--slug/` (never flat under `work/changes/`). On **Done** or **Cancelled**, after the Reconciliation ledger, `git mv` to `work/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/` and repair inbound links.
 
 **State:** Proposed / Ready / Implementing / Verifying / Blocked / Done / Cancelled.
 **Approval and owner:** [who approved actual code implementation, when, and who executes it; no automatic authority from historical notes].

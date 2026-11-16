@@ -1,6 +1,6 @@
 # OBS07 | Support Situation UI (2026-11-15)
 
-**Change:** [OBS07](../../../changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) · **Contract:** [support-situation-and-why-v1](../technical/support-situation-and-why-v1.md) · **Depends on:** [OBS06 receipt](obs06-case-scoped-situation-read-2026-11-15.md) (Done, `26f4d322`) · **Provider spend:** zero (no model/network provider call; disposable `offscreen_auth_test` only).
+**Change:** [OBS07](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs07-support-situation-ui/CHANGE.md) · **Contract:** [support-situation-and-why-v1](../technical/support-situation-and-why-v1.md) · **Depends on:** [OBS06 receipt](obs06-case-scoped-situation-read-2026-11-15.md) (Done, `26f4d322`) · **Provider spend:** zero (no model/network provider call; disposable `offscreen_auth_test` only).
 
 **Outcome: Done in synthetic/disposable scope.** Web-only. No backend, schema, grant, `support-operator` or Admin-nav change. **No production grant issuer exists**; the Playwright proof mints the steward binding by direct SQL fixture, exactly as OBS06 tests do.
 

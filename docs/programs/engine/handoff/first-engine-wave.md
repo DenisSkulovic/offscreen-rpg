@@ -1,6 +1,6 @@
 # Cursor engine handoff | implement ONE lawful gameplay effect, not an engine rewrite
 
-**Status: PREPARED FOR OWNER AUTHORIZATION, NOT YET CODE-AUTHORIZED.** 2026-11-13. **First packet:** [ENG01 authoritative item transfer](../../../changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md). **Permanent authority:** [first-gameplay-slice decision](../decisions/first-gameplay-slice.md), [actor/holder identity](../decisions/actor-identity-and-ownership.md), [compatibility](../decisions/canon-compatibility-and-migration.md). [Final readiness](../evidence/final-readiness-review.md) and [implementation queue](../implementation-program.md) explain why *other* engine Changes remain unselected.
+**Status: PREPARED FOR OWNER AUTHORIZATION, NOT YET CODE-AUTHORIZED.** 2026-11-13. **First packet:** [ENG01 authoritative item transfer](../../../../work/changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md). **Permanent authority:** [first-gameplay-slice decision](../decisions/first-gameplay-slice.md), [actor/holder identity](../decisions/actor-identity-and-ownership.md), [compatibility](../decisions/canon-compatibility-and-migration.md). [Final readiness](../evidence/final-readiness-review.md) and [implementation queue](../implementation-program.md) explain why *other* engine Changes remain unselected.
 
 ## Executive intent
 
@@ -23,7 +23,7 @@ PRODUCT/ARCHITECTURE AUTHORITY:
 - docs/programs/engine/decisions/first-gameplay-slice.md
 - docs/programs/engine/decisions/actor-identity-and-ownership.md
 - docs/programs/engine/decisions/canon-compatibility-and-migration.md
-CHANGE: docs/changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md
+CHANGE: work/changes/archive/2026-11/eng/2026-11-13--eng-authoritative-item-transfer/CHANGE.md
 
 START WITH CURRENT SOURCE (RECHECK IT):
 1. packages/game/src/effects.ts and immediate-actions.ts
@@ -105,7 +105,7 @@ The second possible outcome, optional actor capabilities (ENG02), affects old `C
 
 The engine docs currently live on `design/engine-architecture-reset-2026-11-13`, based on `main@a313d0aa`. Cursor's frontend work may have updated main/worktree meanwhile. When the user authorizes code:
 
-1. Read the current root `docs/changes/README.md` and confirm no different active Change/source owner is being edited.
+1. Read the current root `work/changes/README.md` and confirm no different active Change/source owner is being edited.
 2. Start from the latest *real code* branch, not a stale engine-design snapshot; bring only required Markdown specs/Change into it (without overwriting completed UX indexes).
 3. Reinspect actual source/tests and identify changed assumptions before edits.
 4. Owner explicitly chooses whether Cursor may create a branch, commit/push or use a disposable integration database. No destructive or paid tests from this Markdown alone.

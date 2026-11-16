@@ -1,6 +1,6 @@
 # OBS00-A | Worker dispatch forward (2026-11-15)
 
-**Change:** [OBS00](../../../changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) part A only  
+**Change:** [OBS00](../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md) part A only  
 **Provider spend:** zero. No network transport; mock underlying provider only.
 
 ## What landed
