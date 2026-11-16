@@ -10,6 +10,7 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [DOC04 shadow knowledge retirement](open/2026-11-16--doc04-shadow-knowledge-retirement/CHANGE.md) | **Proposed (audit only, not selected)** | Retire parked pseudo-bibles and expired handoffs after semantic preservation; repair active design links and evidence-as-authority; preserve full terminal archive |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
