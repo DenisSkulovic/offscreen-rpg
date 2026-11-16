@@ -10,6 +10,7 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [DOC02 canonical knowledge reconstruction](open/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md) | **Proposed (independent audit/design; not selected)** | Repair duplicate authority, legacy snapshots, skeletal contracts and ChatGPT retrieval; **keep completed Change archive** |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
