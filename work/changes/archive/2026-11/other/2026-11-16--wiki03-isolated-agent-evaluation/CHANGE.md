@@ -1,8 +1,8 @@
 # WIKI03 | Isolated fresh-agent evaluation harness
 
-**State: Ready for owner selection, not selected.** Code-bearing benchmark harness. **Depends on WIKI01 and WIKI02 Done.** This packet authorizes implementation and **provider-free fake-adapter tests only**. **It does not authorize real model/CLI invocations or API spend.** A first real pilot requires a separate explicit owner choice specifying CLI/model, number of trials, cap and local sandbox scope.
+**State: Done (2026-11-16).** Fake harness only. No live agent benchmark was executed. Code-bearing benchmark harness. **Depends on WIKI01 and WIKI02 Done.** This packet authorizes implementation and **provider-free fake-adapter tests only**. **It does not authorize real model/CLI invocations or API spend.** A first real pilot requires a separate explicit owner choice specifying CLI/model, number of trials, cap and local sandbox scope.
 
-**Design:** [Agent benchmark specification](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md) and [Implementation design](../../../designs/open/wiki-health/IMPLEMENTATION.md).
+**Design:** [Agent benchmark specification](../../../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md) and [Implementation design](../../../../../designs/open/wiki-health/IMPLEMENTATION.md).
 
 ## Objective
 
@@ -69,14 +69,21 @@ Under gitignored `out/wiki-health/<sha>/<run-id>/` write redacted `trial.json`, 
 
 **Forbidden:** game runtime edits, paid/test provider invocation under this packet, extra GitHub Actions, production deployment, unapproved owner policy, opening unrelated filesystem, overwriting DOC04 or full completed Change archive.
 
+## Measured result
+
+`pnpm wiki:bench:agent --self-test` passed. `pnpm wiki:bench:agent --dry-run` exited 0 and refused a launch: model null, CLI not probed, cap null. `pnpm wiki:bench:agent --approve-model-usage --case P02` exited 2 and did not start a process. Evidence class on every fixture is `fake-harness-only`. No model, provider, Docker, or database call.
+
+This proves the harness, not that an agent can use the wiki.
+
 ## Reconciliation ledger
 
 | Boundary | Completion | State |
 | --- | --- | --- |
-| Host and sandbox | Separate run/process + hidden-oracle canary rejection | Pending |
-| Fake adapter | Structured normal/errors/leak/unknown-usage test suite | Pending |
-| Real CLI adapter | Correct installed-CLI version/stream mapping; no real invocation | Pending |
-| Scoring | Independent rubric, tier/authority false-claim failures | Pending |
-| Reporting and safety | Dry-run output, zero provider, redacted result schema | Pending |
+| Host and sandbox | Separate run/process + hidden-oracle canary rejection | updated `scripts/repo-tools/wiki-core/agent-harness.mjs`. Snapshot manifest excludes gold and these packets. Canary read throws |
+| Fake adapter | Structured normal/errors/leak/unknown-usage test suite | updated `scripts/repo-tools/wiki-core/agent-trace.mjs` and `agent-self-test.mjs` |
+| Real CLI adapter | Correct installed-CLI version/stream mapping; no real invocation | no CLI was probed or launched. Dry-run records `cliProbed: false` |
+| Scoring | Independent rubric, tier/authority false-claim failures | updated `scripts/repo-tools/wiki-core/agent-score.mjs` |
+| Reporting and safety | Dry-run output, zero provider, redacted result schema | `wiki.agent-dry-run.v1` and `wiki.agent-trial.v1`. Tokens stay null |
+| Product pages | No canon edits to help a future agent | unchanged |
 
 **See [verification](VERIFICATION.md).** No “agent trial passed” claim based on a simulated JSONL trace. A scripted fake proves the **harness**, not the wiki's usefulness to models.

@@ -38,3 +38,6 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 - `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`)
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
 - `python scripts/check_docs.py` — Markdown link check
+- `pnpm wiki:health` — maintained wiki graph (`docs/`, open designs, open Changes, source READMEs). Exit 1 on broken paths, broken anchors, or a docs page with no directed route from `docs/README.md`. `pnpm wiki:graph` writes JSON and DOT under gitignored `out/wiki-health/`. Neither command calls a model, and neither score is a quality grade.
+- `pnpm wiki:bench:static` — zero-model routes, Wiki Hopper, and lexical Recall/MRR/nDCG for the frozen 30-question set. A graph hard error marks the run blocked. It is not an agent trial.
+- `pnpm wiki:bench:agent` — fake-trace harness and dry-run. It refuses a model launch. A self-test does not measure agent quality.

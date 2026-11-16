@@ -14,7 +14,7 @@
 
 | Change                                        | Default evidence                                                             | Expand only if needed                                                         |
 | --------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Documentation, rules, skills                  | Readability/ownership review, check affected links when changed              | `python scripts/check_docs.py` when links/routes moved                        |
+| Documentation, rules, skills                  | Readability/ownership review, check affected links when changed              | `python scripts/check_docs.py` when links/routes moved. `pnpm wiki:health --self-test` when the wiki graph tool changes |
 | One local pure function or schema             | Focused local test and/or targeted typecheck                                 | Adjacent package test if its public contract changed                          |
 | Frontend interaction                          | Targeted typecheck plus manual visual/interaction check of the changed flow  | Browser E2E for user-visible regressions with a reliable harness              |
 | API/application state transition              | Targeted tests including rejection, duplicate/retry and persistence boundary | Focused integration suite after verifying test DB and build state             |

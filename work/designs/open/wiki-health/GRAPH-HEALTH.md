@@ -1,6 +1,6 @@
 # Wiki graph and mechanical health specification
 
-**Status:** proposed; no script is implemented by this file. Intended owner: `scripts/repo-tools/wiki-graph.mjs` with a small shared Markdown parser/index and local test fixtures. No LLM, browser, external network, GitHub Actions or provider required.
+**Status:** metric definition. WIKI01 implements `pnpm wiki:health` and `pnpm wiki:graph` in `scripts/repo-tools/wiki-health.mjs`. The first measured baseline is on that Change, including pages that are still unreachable. This file does not invent a health score. No LLM, browser, external network, GitHub Actions, or provider is required.
 
 ## A. Define the graph before counting links
 

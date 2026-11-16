@@ -1,6 +1,6 @@
 # Wiki retrieval and agent benchmarks
 
-**State:** proposed. The retrieval scripts described here do not exist yet. Static/index tests are zero-provider. Agent runs are **opt-in with explicit resource/paid-provider authorization**; do not run them as an implicit part of DOC04 or a git hook.
+**State:** WIKI02 implements the zero-provider static bench (`pnpm wiki:bench:static`). Its first run is blocked by remaining graph hard errors and does not meet the pilot Recall/MRR/Hopper figures; those figures are not gates. Agent runs are **opt-in with explicit resource/paid-provider authorization** and are not part of this design.
 
 ## 1. Three independent retrieval tests
 

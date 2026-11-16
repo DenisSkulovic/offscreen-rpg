@@ -54,7 +54,7 @@ For task-oriented tutorials, explanation, reference and how-to, adapt [Diátaxis
 - Existing bug: inspect the spec before debugging code; preserve already-correct product intent. Document only genuine design changes or newly discovered invariants.
 - Navigation-only cleanup: preserve all approved content, update routes/headings/links and document current limitations. Do **not** silently change feature claims.
 - On deprecation: inspect incoming links and unique decisions before deleting or moving text. Git retains history, but active canonical knowledge must stay findable.
-- Validate repository links using the existing `python scripts/check_docs.py` rather than building another checker. Passing links does not establish semantic correctness.
+- Validate repository links with `python scripts/check_docs.py`. Use `pnpm wiki:health` for the maintained-page graph: broken paths, anchors, and directed reachability from `docs/README.md`. A passing link check is not semantic proof, and a graph metric is not a quality score.
 - Measure with fresh-agent questions: documents read, wrong detours, authoritative answer correctness, duplicate reads, human interventions and actual reported model tokens **if available**. No invented savings percentages.
 
 ## 2026-11-12: explicit layered retrieval contract for cheap coding agents

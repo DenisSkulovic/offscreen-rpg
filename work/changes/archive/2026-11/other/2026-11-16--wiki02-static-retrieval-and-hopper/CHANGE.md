@@ -1,7 +1,7 @@
 # WIKI02 | Reproducible zero-LLM wiki retrieval benchmark
 
-**State: Ready for owner selection, not selected.** Code-bearing documentation tooling. **Depends on WIKI01 Done**, using its actual parser/graph APIs. No paid providers, LLMs, embeddings, web, databases or external search services.
-**Primary designs:** [retrieval benchmark](../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md) and [graph Hopper](../../../designs/open/wiki-health/GRAPH-HEALTH.md#d2-the-wiki-hopper-model-free-simulated-navigation).
+**State: Done (2026-11-16).** Code-bearing documentation tooling. **Depends on WIKI01 Done**, using its actual parser/graph APIs. No paid providers, LLMs, embeddings, web, databases or external search services.
+**Primary designs:** [retrieval benchmark](../../../../../designs/open/wiki-health/RETRIEVAL-BENCHMARK.md) and [graph Hopper](../../../../../designs/open/wiki-health/GRAPH-HEALTH.md#d2-the-wiki-hopper-model-free-simulated-navigation).
 
 ## Outcome
 
@@ -61,12 +61,32 @@ Implement mutation tests showing the scores respond in the right direction when 
 
 **No model calls allowed, even optional.** WIKI03 is a distinct Change with its own safety authorization.
 
+## Measured baseline
+
+Dirty worktree on `0694760d159e331f1628c89931b7921f841df6c2`, Windows, seed `20261116`, 100 stochastic trials and 100 random trials per question. Final `pnpm wiki:bench:static --seed 20261116` exit **1** because WIKI01 still reports 5 unreachable docs pages. Status: `blocked-by-graph-integrity`. This is not a successful retrieval claim. Dataset `wiki-static-v1`, 30/30 headings found, `independentReview: false` (implementer-checked, not a separate human study). Semantic SHA-256 `686c871c42edb076949694180def24bf4c422b17114f7a3abb7354b938c895ef`. Elapsed about 7.9 s. Provider spend: no call.
+
+| Measure | Result | Denominator |
+| --- | --- | --- |
+| Mandatory route success | 96.7% (29/30) | A06 fails because `AGENTS.md` has no directed path from `docs/README.md` |
+| Mandatory hop median / p95 | 1 / 3 | reachable mandatory owners only |
+| Recall@5 | 50% | a case scores 1 only when every mandatory owner is in the top 5 |
+| MRR | 0.311 | 0 when any mandatory owner is outside the top 5 |
+| nDCG@5 | 0.480 | grades 3 mandatory, 2 companion |
+| Wrong-authority@5 | 0% | archive and evidence are not in the answer index |
+| Hopper greedy hit | 33.3% | one navigation target per case |
+| Hopper stochastic hit@3 / hit@6 | 32.3% / 33.2% | 100 seeded trials |
+| Random hit@6 | 10.2% | same budget, uniform choice |
+
+Category Recall@5: P 0.86, T 0.86, S 0.33, D 0.00, A 0.17. Pending and adversarial cases miss because the accepted page and the proposal must both appear. Pilot targets Recall@5 ≥ 0.85, MRR ≥ 0.70 and Hopper hit@3 ≥ 0.80 are **not adopted**. The search index excludes this packet, the WIKI03 packet, `work/designs/open/wiki-health/`, and `scripts/repo-tools/wiki-benchmarks/` so the question text does not rank itself.
+
 ## Reconciliation ledger
 
 | Deliverable | Gate | State |
 | --- | --- | --- |
-| 30 gold cases | Real owners/negative cases validated at actual SHA | Pending |
-| W0 graph routes | BFS path and heading success with honest denominators | Pending |
-| W0b Hopper | No target-peeking, seeded reproducibility and random baseline | Pending |
-| W1 lexical | MRR/Recall/nDCG with roles correctly filtered | Pending |
-| Proof and safe output | Falsification tests, zero provider, valid reports | Pending |
+| 30 gold cases | Real owners/negative cases validated at actual SHA | updated `scripts/repo-tools/wiki-benchmarks/static-v1.mjs`. Implementer-checked headings. Not an independent review |
+| W0 graph routes | BFS path and heading success with honest denominators | updated `scripts/repo-tools/wiki-core/bench.mjs`. 29/30 |
+| W0b Hopper | No target-peeking, seeded reproducibility and random baseline | updated `scripts/repo-tools/wiki-core/hopper.mjs` |
+| W1 lexical | MRR/Recall/nDCG with roles correctly filtered | updated `scripts/repo-tools/wiki-core/search.mjs`. Recall@5 0.50, MRR 0.311 |
+| Proof and safe output | Falsification tests, zero provider, valid reports | `pnpm wiki:bench:static --self-test` passed. No model call |
+| Product pages | Do not edit canon to raise scores | unchanged |
+| Agent command | One maintenance reference | updated `.agents/README.md` |

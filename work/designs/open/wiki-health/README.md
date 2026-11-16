@@ -1,6 +1,6 @@
 # Wiki Health | measurable knowledge-system design
 
-**State:** **Proposed design only**, 2026-11-16. **Not a selected Change; no code authorization.** DOC04 is Done and archived. This folder does not reopen it, and it does not modify `docs/`, `STATUS.md`, the Change queue, or game/runtime source.
+**State:** Design, 2026-11-16. WIKI01 has implemented the graph command. WIKI02 and WIKI03 are separate Changes. This folder does not reopen DOC04. The first graph run is a measurement, not a cleaned score: see the WIKI01 baseline. Do not add links only to raise reachability.
 
 ## Goal
 
@@ -16,11 +16,11 @@ A good graph is necessary but not sufficient. A good answer is necessary but may
 
 | Work unit | Implementation result | Permitted test boundary |
 | --- | --- | --- |
-| **[WIKI01 graph and health](../../../changes/open/2026-11-16--wiki01-markdown-graph-health/CHANGE.md)** | Markdown AST parser, typed directed graph, link/anchor validation, orphan/hop metrics, DOT/JSON output | **All provider-free**; baseline and negative parser fixtures |
-| **[WIKI02 static retrieval](../../../changes/open/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md)** | 30 reviewed gold questions, BFS, seeded Wiki Hopper, lexical BM25-style retrieval, Recall/MRR/nDCG reports | **All provider-free**; no LLM calls at all |
-| **[WIKI03 isolated agent harness](../../../changes/open/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md)** | Host-traced fresh-session trials, redacted JSONL event adapter, external oracle and rubric, real CLI adapter behind permission | **Fake-adapter and dry-run tests only** until explicit owner-approved model, cap and sandbox |
+| **[WIKI01 graph and health](../../../changes/archive/2026-11/other/2026-11-16--wiki01-markdown-graph-health/CHANGE.md)** | Markdown AST parser, typed directed graph, link/anchor validation, orphan/hop metrics, DOT/JSON output | **Done.** Provider-free. First baseline recorded; five docs pages remain unreachable |
+| **[WIKI02 static retrieval](../../../changes/archive/2026-11/other/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md)** | 30 reviewed gold questions, BFS, seeded Wiki Hopper, lexical BM25-style retrieval, Recall/MRR/nDCG reports | **Done.** Provider-free. First run blocked by graph errors; Recall@5 0.50 |
+| **[WIKI03 isolated agent harness](../../../changes/archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md)** | Host-traced fresh-session trials, redacted JSONL event adapter, external oracle and rubric | **Done as a fake harness.** No live agent benchmark |
 
-**Order:** WIKI01 Done → WIKI02 Done → WIKI03 Done. Each is a **code-bearing Change**, not a documentation-only exercise. The owner may ask Cursor to select WIKI01 and implement in that order; current selection is still `none`. Do not implement all three as one enormous unsupervised rewrite.
+**Order:** WIKI01, WIKI02, and WIKI03 are Done. The owner authorized that sequence on 2026-11-16. Do not treat reachability misses or the static scores as permission to spam links. WIKI03 did not run a live agent.
 
 The detailed target contracts below remain the design source; implementation receipts must not turn their hypothetical threshold examples into fake measured results.
 
@@ -38,4 +38,4 @@ The detailed target contracts below remain the design source; implementation rec
 
 When asked “Does an unattended character advance time?”, a fresh agent can locate the *accepted* gameplay rule and the GM07 proposed boundary, without mistaking Chamber's timed fixture for general policy. When asked “Is SSE implemented?”, it locates the selected client contract, source symbol and current proof tier, without trusting an old `research/legacy-` assertion. Both should be faster and less error-prone than navigating the raw repo.
 
-**Implementation gate:** once DOC04 settles, have an independent owner select a bounded wiki-health Change. No dashboard or scores may be claimed from this proposal before the scripts and trials actually execute.
+**Implementation gate:** WIKI01 has executed `pnpm wiki:health`. Hypothetical thresholds in this folder are not measured results. Retrieval and agent figures stay unknown until those Changes run.
