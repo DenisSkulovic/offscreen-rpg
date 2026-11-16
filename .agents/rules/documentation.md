@@ -52,7 +52,7 @@ Before finishing a slice, ask whether a fresh reader can find its purpose, curre
 
 ## Keep the entry cheap
 
-The root README should explain the project in roughly one page. Progress begins with a short `## Orientation`: status, demonstrated evidence and current owner priority. The [owner roadmap](../../TODO.md) explains the engineering-portfolio sequence; it is **not** an implementation queue.
+The root README should explain the project in roughly one page. [STATUS.md](../../STATUS.md) begins with `## Orientation`: status, demonstrated evidence and current owner priority. The [owner roadmap](../../ROADMAP.md) explains the engineering-portfolio sequence; it is **not** an implementation queue.
 
 The [Change index](../../work/changes/README.md) must contain **exactly one** declaration of `Current change: none` or one linked packet under `open/` (or archived path if documenting history). Non-terminal packets live in `work/changes/open/`; Done/Cancelled under `work/changes/archive/YYYY-MM/<program>/`. A deliberate **none** is valid during planning, design, evaluation and documentation work. `pnpm repo:brief` consumes progress orientation and this declaration. With a selected Change, `--checkpoint` reports the matching `PLAN.md` checkpoint if present, otherwise its `CHANGE.md` handoff section. The helper is read-only and does not authorize implementation or provider calls.
 

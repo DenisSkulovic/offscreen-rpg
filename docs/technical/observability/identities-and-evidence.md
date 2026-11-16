@@ -1,9 +1,6 @@
 # Evidence graph | Typed, durable, historically faithful data
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/programs/observability/technical/evidence-model.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
-**Status: technical target proposal, 2026-11-15.** Product [forensic journeys](../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/product-vision.md), actual [source inventory](../../../evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md), ownership [Engine](../../../docs/technical/engine/authority-and-transitions.md), [Storyteller](../../../docs/product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
+**Status: technical target proposal, 2026-11-15. Not implemented** except where a landed read is named on [the forensic contract](investigation-and-reconstruction.md). Product journeys are [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Source inventory is the 2026-11-15 observability run. Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
 
 ## 1. Decision: no mega-GameData blob, no telemetry-as-history
 
@@ -14,6 +11,32 @@ Use **three cooperating contracts**, each with its own reliability and retention
 3. **OpenTelemetry spans / process logs / metrics:** timings, health and troubleshooting signals, linked by operation/generation/artifact IDs. Traces may be sampled and retained briefly; the durable evidence graph must not depend on their existence.
 
 The envelope may point to zero, one or many artifacts. Every edge has an explicit relationship, timestamp/source and recorded coverage. **The same data type that code consumes can be serialized and rehydrated** when versioned stable codecs exist; no production object containing sockets, closures, secrets or nonportable handles should be archived blindly.
+
+## Turn Evidence Capsule
+
+**Status: proposed read contract, 2026-11-15. No table, API or code is authorized by this section.** It is the investigation shape a staff reader should expect. It is not a second game database.
+
+A forensic turn is not one language-model call. One accepted action can include fictional time, several activity boundaries, an interruption, a consequence, memory rounds, a rejected output, a resumed generation, a historical report and a published passage. Some of those steps have no provider call.
+
+A **Turn Evidence Capsule** is a read-only composed view of one causal episode, normally anchored by an accepted operation, a selected generation, or a published passage. It is not a mutable table that replaces `campaign`, `story_passage`, `generation`, `storyteller_attempt` or canonical document source. Its identity is deterministic and scoped. It is never a fresh random id on each GET.
+
+The capsule navigates:
+
+- admission, actual mechanics and state delta, with before and after digests when recorded
+- source scene and the exact historical root and configuration
+- provisional capture, materialization and hold
+- prompt assembly and which sources were chosen
+- the actual prepared and sent provider packet and the visible rounds
+- validation, charges and uncertainty
+- publication and the committed result
+- the subsequent player-visible scene
+- every missing, expired or redacted item marked as such
+
+The capsule references original validated source objects by stable id, hash, version, access class and field pointer. It does not flatten them into generic diagnostics and it does not embed raw content. Each protected artifact is fetched separately after its own authorization. When an original object was never archived, the capsule says `not-recorded` or `unknown`. It does not reconstruct that object from today's game state. When a packet has legally expired, metadata and the `expired` state remain. The body does not survive under another name.
+
+Do not persist the entire assembled capsule on every turn. Indexable relationships and genuinely missing immutable source decisions are persistent. The readable capsule is a composable read model.
+
+**Negative:** a staff worker cannot treat this contract as permission to read any player's complete raw prompt. Access tiers and production grants are separate, and production Support grants are absent. See [retention and access](retention-and-access.md) and [admin authority](../../product/admin/authority-and-governance.md). A synthetic OBS07 Situation screenshot is not this capsule and is not a production grant.
 
 ## 2. Core identity graph
 
@@ -220,6 +243,19 @@ Reconstruction output must show:
 - `evidence`: unique source IDs and schema/build revision; no “likely” inference disguised as source.
 
 **Forbidden:** interpreting a log line as authority; re-running dice to fill missing receipts; using current profile `latest` to explain an older task; treating provider request hash as proof the provider was billed; exposing contents from a different story just because a CAS hash matches; letting a sampled trace make an otherwise complete operation appear to never exist.
+
+## Folded invariants from the 2026-11 essays
+
+**Proposed, not landed.** These clauses used to live only in the essay folder.
+
+- A statement is a **recorded observation**, a **validated derivation**, or a **hypothesis**. A dashboard must not put a fake confidence number on a recorded fact, and a hypothesis must not be rendered as a receipt.
+- The seek key for instrumented mechanical history is `(storyId, storyTransitionSeq)`. Wall-clock `created_at` only finds a nearby frontier and must say when that match is ambiguous. Passage sequence, fictional `gameSecond`, provider attempt time and trace ids are different axes.
+- An upcaster is a read adapter. It verifies the original hash, decodes the pinned schema, and may project a current read DTO. It does not re-run effects, dice, prompts or providers. A missing old codec is `legacy-codec-unavailable`, not today's schema. A semantic change is described, not silently rewritten. Decoder errors do not echo private JSON to Support or to telemetry.
+- A task admitted under build B may still be in flight under B+1. Keep the captured packet parseable. Do not recompile it with a newer compiler and send different text under the old attempt id. Retention must not delete raw bytes still required for that recovery.
+- Prompt text that lives in code is not copied into a second prompt registry. Provenance names the compiler build. Capture eligible, selected, loaded, pruned and included sources only where the code enumerated those candidates. "Not selected" is not provable for a source nobody listed.
+- Effective configuration is what this turn used. An edit history is not that configuration. Experiment assignment is future-only until a product experiment exists.
+- Byte identity of a provider request is the hash at the last serialization boundary, checked before send. Authorization headers are never archived. `dispatched` means the app attempted a send. It does not prove the provider received or charged it.
+- Hidden model chain-of-thought that the API did not return cannot be reconstructed. A later self-explanation is not that hidden computation. The honest label is "recorded decision path and available evidence."
 
 ## 8. Open technical decisions before execution
 

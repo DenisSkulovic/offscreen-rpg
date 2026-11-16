@@ -1,8 +1,5 @@
 # Frontend, identity and shared play
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/client-and-identity.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **Quick section route:** [Next SSR boundary](#react-and-nextjs) · [selected Query/RHF state ownership](#ui-tools-and-ownership-of-state) · [Better Auth/session](#authentication-and-sessions) · [HTTP idempotency and SSE](#http-commands-and-sse-updates) · [returning/history](#returning-and-reading-the-story). This describes **behavioral/technical intent**, not today's installed client code; see [source owner map](../../../apps/web/README.md) to find what is currently implemented. Cursor reads only the heading required by its Change.
 
 ## React and Next.js
@@ -17,7 +14,7 @@ Never use a public or cross-user cache for authenticated story responses. Set ex
 
 ## UI tools and ownership of state
 
-**Selected frontend engineering stack (owner decision, 2026-11-12):** [React/Next target F1–F15](../../../evidence/inspections/doc01-legacy-snapshot/engineering/targets/react-next.md) is the binding implementation design. Use **TanStack Query v5** for viewer-scoped browser server state and Next request-scoped SSR prefetch/dehydrate/hydration; **React Hook Form v7 + Zod resolver** for editable draft/settings/preset forms; **typed Zod contracts** for all HTTP boundaries; **TanStack useMutation with explicit immutable command/receipt lifecycle** for nontrivial writes; **authenticated SSE invalidation + authoritative GET/fallback** for story updates; Vitest/RTL/MSW/Playwright/axe and Storybook for provider-free professional evidence. These are *selected*, not optional recommendations or code already present.
+**Selected frontend engineering stack (owner decision, 2026-11-12):** [React/Next target F1–F15](../../../evidence/inspections/doc01-retained-observations/engineering/targets/react-next.md) is the binding implementation design. Use **TanStack Query v5** for viewer-scoped browser server state and Next request-scoped SSR prefetch/dehydrate/hydration; **React Hook Form v7 + Zod resolver** for editable draft/settings/preset forms; **typed Zod contracts** for all HTTP boundaries; **TanStack useMutation with explicit immutable command/receipt lifecycle** for nontrivial writes; **authenticated SSE invalidation + authoritative GET/fallback** for story updates; Vitest/RTL/MSW/Playwright/axe and Storybook for provider-free professional evidence. These are *selected*, not optional recommendations or code already present.
 
 **Visual UI choices are separate:** the earlier Tailwind/shadcn suggestion is superseded for this engineering campaign. Do not install a styling toolkit, replace existing layouts or redesign UI/UX during the internal React/Next wiring work. Keep existing native semantic controls and add accessible primitives only where needed. A later owner-approved art-direction target can select styling/control libraries.
 

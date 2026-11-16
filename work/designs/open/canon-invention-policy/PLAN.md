@@ -42,7 +42,7 @@ Implementation owner: Cursor by default for implementation; Codex for design/rev
 
 ## Current checkpoint
 
-- Current phase and exact next action: owner-retained dossier, dormant before I1. Follow [the selected gameplay route](../README.md#coding-route); activate I1 before sustained 30–50-turn private-world play. Earlier typed-outcome work has reached a checkpoint and is not a separate active folder.
+- Current phase and exact next action: owner-retained dossier, dormant before I1. Follow [the selected gameplay route](README.md); activate I1 before sustained 30–50-turn private-world play. Earlier typed-outcome work has reached a checkpoint and is not a separate active folder.
 - Base/reviewed Git revision and relevant uncommitted changes: designed from `f4fad57`; this dossier and its index/progress links are the only planned working changes.
 - Actual checks/results for this revision; checks not run: documentation-only preparation; no implementation checks are needed. Existing runtime still has no canon-invention field or enforcement.
 - Unresolved findings/blockers: prose-level truth cannot be mechanically proven, so acceptance deliberately combines structural admission with exact traces and contrasting evaluation. This does not block I1.

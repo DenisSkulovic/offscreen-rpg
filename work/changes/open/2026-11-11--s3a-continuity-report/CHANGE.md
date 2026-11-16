@@ -2,8 +2,8 @@
 
 **Type:** Code-bearing implementation Change (developer diagnostic tool, not a new product capability).
 **Status:** Proposed; **scheduling: Parked (gameplay track)**. Not the next implementation Change under the November 11 engineering-portfolio priority; no coding is authorized. Revalidate the source and obtain the owner's go-ahead when returning to coding.
-**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
-**Technical authority:** [Canonical files and mechanical dependencies](../../../../docs/technical/canonical-files.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../../../research/legacy-engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
+**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../../designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
+**Technical authority:** [Canonical files and mechanical dependencies](../../../../docs/technical/storyteller/context-and-memory.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../../../research/legacy-engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 
 ## One bounded code outcome
 

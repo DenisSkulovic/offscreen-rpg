@@ -1,9 +1,6 @@
 # Technical architecture
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/architecture.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
-This is the implementation design; the [implementation overview](../../progress.md) tracks coverage and current priorities, while the [development guide](../../../docs/runbooks/local-development.md) explains how to run and test existing code. The design supports the [product walkthrough](../../product/journeys/playthroughs.md). Product choices still open in [questions](../../questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
+This is the implementation design; the [implementation overview](../../../STATUS.md) tracks coverage and current priorities, while the [development guide](../../../docs/runbooks/local-development.md) explains how to run and test existing code. The design supports the [product walkthrough](../../product/gameplay/acceptance-scenarios.md). Product choices still open in [questions](../../../work/designs/open/product-open-questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
 
 ## Recommendation
 
@@ -51,7 +48,7 @@ There is no service per faction, inventory, storyteller or notification type. Ex
 
 ## Code organization
 
-For actual entry points, current coupling and task-oriented reading routes, use [Code navigation](../../../evidence/inspections/doc01-legacy-snapshot/engineering/code-navigation.md). The application and Storyteller package guides linked there describe implemented flows; this document owns the architectural design.
+For actual entry points, current coupling and task-oriented reading routes, use [Code navigation](../../../evidence/inspections/doc01-retained-observations/engineering/code-navigation.md). The application and Storyteller package guides linked there describe implemented flows; this document owns the architectural design.
 
 Target layout. Create each package when its first implementation needs it:
 
@@ -85,7 +82,7 @@ PostgreSQL fits memberships, ownership, deadlines, ordered chronology and atomic
 
 Drizzle is recommended because this design needs visible SQL, constraints and locking. Prisma is a viable alternative if its development experience is preferred; neither removes the need to understand transactions. Use generated SQL migrations that are reviewed before application, not automatic schema pushing in production. [Drizzle transactions](https://orm.drizzle.team/docs/transactions), [migrations](https://orm.drizzle.team/docs/migrations).
 
-Redis is optional for measured read-cache, distributed rate-limit or live fan-out needs. It is never application authority and is not part of the minimum execution stack. Cacheable projections use the owner-scoped, version-addressed cache-aside contract in [Persistence and caching](../persistence-and-caching.md); commands and transactional workers always recheck PostgreSQL. Kafka and separate document, graph or vector databases have no demonstrated first-version requirement.
+Redis is optional for measured read-cache, distributed rate-limit or live fan-out needs. It is never application authority and is not part of the minimum execution stack. Cacheable projections use the owner-scoped, version-addressed cache-aside contract in [Persistence and caching](./persistence-and-caching.md); commands and transactional workers always recheck PostgreSQL. Kafka and separate document, graph or vector databases have no demonstrated first-version requirement.
 
 ## What handles events and background work
 
@@ -117,9 +114,9 @@ Finite actions and activities may share lifecycle facts and follow-up intent del
 | Choose, wait, interrupt, pause or resume | [Execution](./execution-and-delivery.md): command admission, timers, resolution and commit fences. |
 | Interpret a choice and prepare what follows | [Storyteller runtime](../storyteller/operation-and-controller.md): proposal boundaries and conditional publication. |
 | Leave and return on another device | [Client and identity](./identities-and-access.md): current snapshot, read progress and recap. |
-| Hear about a decision away from the browser | [Notifications](../notifications.md): subscription ownership, delivery and expiry. |
+| Hear about a decision away from the browser | [Notifications](./notifications.md): subscription ownership, delivery and expiry. |
 | Reach a limit, lose a participant or finish | [Story lifecycle](../engine/lifecycle-and-compatibility.md): holds, access changes and terminal states. |
-| Keep memories and spending coherent | [Data](./data-and-persistence.md) and [context and cost](../context-and-cost.md). |
+| Keep memories and spending coherent | [Data](./data-and-persistence.md) and [context and cost](../storyteller/request-context-and-cost.md). |
 
 These contracts are enough to build the first integrated slice. They are not proof of implementation correctness or evidence that open play policies have been decided. Group input, autonomy, pace and funding choices must be selected before implementing the affected resolution rules.
 
@@ -138,6 +135,6 @@ Before claiming capacity, run a scripted workload with many idle stories, a burs
 - [Execution](./execution-and-delivery.md): time, scheduling, races and recovery.
 - [Client and identity](./identities-and-access.md): frontend, auth, transport and shared play.
 - [Storyteller runtime](../storyteller/operation-and-controller.md): model routing, tools and bounded workflows.
-- [Context and cost](../context-and-cost.md): memory, caching, prompts and spending.
-- [Notifications](../notifications.md): reaching the player away from the page.
+- [Context and cost](../storyteller/request-context-and-cost.md): memory, caching, prompts and spending.
+- [Notifications](./notifications.md): reaching the player away from the page.
 - [Delivery and validation](./deployment-and-compatibility.md): deployment, tests, telemetry and build sequence.

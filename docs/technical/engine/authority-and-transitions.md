@@ -1,11 +1,8 @@
 # Connected solo gameplay: implementation contract
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/solo-gameplay-contract.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 Status: maintained implementation contract. Campaign clock arithmetic, authored quiet reuse, historical reports, bounded accepted chains and explicit post-scene re-entry are implemented. The owner's deliberate-time clarification requires a further [execution-permission and short-action correction](./chronology-and-activities.md), prepared but not implemented. Broader chain editing, world preparation and delegated decisions remain separate. No live inference, deployment or multiplayer behavior is authorized here.
 
-Read the [gold session](../playthroughs/harbor-session.md) alongside this contract. [Rules and activities](./mechanics-and-capabilities.md) owns action/choice authority; [ticks](../ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
+Read the [gold session](../../../research/authored-scenarios/harbor-session.md) alongside this contract. [Rules and activities](./mechanics-and-capabilities.md) owns action/choice authority; [ticks](./ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.
 
 ## What is decided for the first proof
 
@@ -132,4 +129,4 @@ Scope validity may explicitly cover an authored itinerary, but a new controlling
 
 Use the gold session's identities and ordered expected state as the primary acceptance oracle, with BC-04, LO-04 and NH-03 as targeted contrasts. Avoid implementing unsupported travel, combat or anatomy merely to mirror their nouns. Tests are optional under repository policy; when useful, use injected deterministic draws and real application transactions, never production scenario switches or direct database completion/offer restoration.
 
-The original gameplay handoff began from [activity phase 1](../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#activities-participation-and-progress). That legacy initiative is no longer the active work queue; a future implementation must be selected through [Changes](../../../work/changes/README.md) after source revalidation and owner authorization. Finishing a documentation phase proves neither running behavior nor enjoyable generated writing.
+The original gameplay handoff began from [activity phase 1](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#activities-participation-and-progress). That legacy initiative is no longer the active work queue; a future implementation must be selected through [Changes](../../../work/changes/README.md) after source revalidation and owner authorization. Finishing a documentation phase proves neither running behavior nor enjoyable generated writing.

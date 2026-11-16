@@ -1,8 +1,5 @@
 # Provider dispatch review and dry-run analysis
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/provider-dispatch-review.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 Status: implemented for the offline POC, with **OBS00-C wire-equality** and **OBS00-L local Story trial guards** landed (2026-11-15). Exact packet construction, attempt-owned durable breakpoint/decisions and developer-only owner-scoped inspection/release/rejection endpoints exist. `pnpm chamber:packet` creates and exports a held opening without a browser or provider attempt. `pnpm chamber:memory-packet` materializes the maintained Greywake long-story corpus and captures the ordinary memory controller's exact first-round packet at the same zero-spend boundary. Rebuilding means admitting a fresh immutable generation. Pure packet comparison covers every implemented request purpose plus bounded human/nonhuman active-scene sequences and reports exact byte overlap without inferring cache savings. **OBS00-B** (production/default-worker current entitlement) remains blocked. Live paid release still requires a separate spending and evaluation preflight with a **fresh** owner cap.
 
 ## Product contract

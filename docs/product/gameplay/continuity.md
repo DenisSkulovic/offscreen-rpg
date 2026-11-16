@@ -1,6 +1,6 @@
 # Continuity and consequences
 
-**Owner (DOC01 P2):** canonical product home for sparse-world continuity and lasting consequence. Promoted from `storytelling/continuity-and-consequences.md` (compatibility stub remains until P5). Storyteller memory/retrieval craft lives under [memory and continuity](../storyteller/memory-and-continuity.md) once that owner is filled.  
+**Owns:** sparse-world continuity and lasting consequence. Storyteller retrieval craft lives in [memory and continuity](../storyteller/memory-and-continuity.md).  
 **Explore by question:** [when to materialize a person or place](#sparse-world-progressive-materialization) · [what happened versus what is true](#what-happened-what-is-true-what-might-happen) · [maps and movement](#space-movement-and-maps) · [identities and relationships](#people-objects-and-capabilities) · [possessions/exchanges](#possessions-and-exchanges) · [knowledge/perspective](#knowledge-and-perspective).
 
 The world can be sparsely described without being forgetful. Record enough to make player choices and later consequences believable; do not simulate a population merely to justify something the storyteller can introduce.
@@ -99,7 +99,7 @@ Keep modest identity and episode references for encountered people when later re
 
 The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original passages, source-bounded summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without that conversation. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
 
-The [canonical-file implementation contract](../../technical/canonical-files.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. The store and retrieval loop are not implemented yet.
+The [canonical-file implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. The store and retrieval loop are not implemented yet.
 
 As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request. Durable facts and quantities should not depend exclusively on a lossy summary. A small context can still preserve the spear's owner or the promise made at the mill.
 

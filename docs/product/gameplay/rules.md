@@ -1,7 +1,7 @@
 # Gameplay rules | D&D foundation and mechanical promises
 
 **Owner (DOC01 P2):** player-facing mechanical promises. Reconciles former `foundations/game-rules.md` + mechanical sections of `foundations/gameplay.md`.  
-**Technical companion:** [rules and activities](../../technical/rules-and-activities.md).  
+**Technical companion:** [rules and activities](../../technical/engine/mechanics-and-capabilities.md).  
 **Does not own:** Storyteller creative taste ([behavior](../storyteller/behavior-and-quality.md)), UI choice chrome ([experience](../experience/play-and-decisions.md)), or staff investigation.
 
 ## Foundation
@@ -53,3 +53,25 @@ Choice breadth follows actual opportunity (time, proximity, mobility, equipment,
 Opening mechanical rehearsal (pineapple/microbe/beacon) proves the boundary with deterministic fixtures—not general model quality. Immediate actions and ability checks share the receipt path. Explicit abandonment, full combat, study/level progression and live-model evaluation remain outside this subset where not separately landed. Existing narrative stories are not silently assigned character sheets.
 
 See also: [actions and commitments](actions-and-commitments.md), [time and autonomy](time-and-autonomy.md), [continuity](continuity.md).
+
+## Executable library shape
+
+The rules library is a compact game-master reference, not one giant prompt attachment. A small orientation identifies the executable adapter, important topics and navigation handles. Each rule page and heading carries deterministic topic metadata such as `ability-check`, `advantage`, `time` or `contribution`. A task recipe selects mandatory sections from its known mechanics without a routing-model call. The Storyteller receives the compact applicable rules and may inspect another exact section under the same bounded operation allowance. The whole rulebook is never injected merely because it exists.
+
+Editing prose can change interpretation, examples and campaign rulings. Changing a formula, supported effect or state transition requires a supported adapter or schema change. Low-cost recipes include the mechanical kernel and the exact sections needed for the current operation. Richer recipes may add examples and edge cases, but they use the same pinned sources and executable authority. Storage stays complete across tiers; only the bounded working set changes. Imported rule material must be licensed for the product or privately supplied by an authorized user, with source and license provenance retained.
+
+Certain ordinary actions can succeed without a check. Impossible actions cannot become possible through a lucky roll. Uncertainty with consequences warrants a check. An uneventful road is not evidence that the character failed to travel.
+
+Advantage and disadvantage roll two d20s and select the higher or lower. Opposing sources cancel. Repeated sources do not stack.
+
+## Resumption, hidden rolls and private fact transitions
+
+Later resumption of unfinished work must reference the same commitment, preserve earned progress, recheck current prerequisites and reacquire its named capacity. The generic lifecycle must not invent abandonment, decay or lost progress. The current runtime retains work; it does not yet enforce capacity or the complete activity lifecycle.
+
+The public roll log shows permitted completed checks and redacts secret DCs or modifiers where they would disclose unknown facts. The full record stays private. Repeated quiet checks may be grouped for presentation while their individual records remain. Completed activities stay inspectable after they leave the active commitments view.
+
+On an opening preview, review exposes public labels while the generated result retains private intentions, prerequisites, checks, DCs, process rules and outcome branches. Start copies those exact reviewed plans into the story. The browser later submits only the offer identity and selected path.
+
+Newly generated finite plans identify every intended write to an existing typed character fact by outcome branch. Admission requires the declaration and `fact.set.v1` effect to agree in both directions and rejects targets absent from the captured character state. Empty declarations are valid and do not make a state change compulsory. This metadata is private mechanical coherence. It is not a parser that derives rules from narrative prose.
+
+**Negative:** prose that says an item changed hands does not create or transfer it. A reload, a narration retry or a pace change does not roll again. An approaching interruption may offer resumption of the same saved repair; it must not restart that repair at zero progress.

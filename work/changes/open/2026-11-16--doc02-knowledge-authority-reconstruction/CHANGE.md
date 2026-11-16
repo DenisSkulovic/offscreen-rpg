@@ -1,6 +1,6 @@
 # DOC02 | Reconstruct canonical knowledge authority after DOC01
 
-**State:** **Proposed / design and audit prepared. NOT selected, NOT implemented.**  
+**State:** **Selected / implementation in progress.** Owner authorized work on 2026-11-16. Not Done until the verification gates in [VERIFICATION.md](VERIFICATION.md) pass without a snapshot waiver.  
 **Baseline inspected:** `main@cda7444e7bb8910e228164cb97a17b504f7c2415` on 2026-11-16.  
 **Owner:** repository owner.  
 **Type:** bounded documentation + documentation-tool/code navigation change; **no game runtime change**.  
@@ -48,6 +48,20 @@ Start with:
 
 If any selected design needs further owner approval, keep its detailed proposed text in topic-owned `work/designs/open/`; mark the gap instead of moving it to an empty page or silently approving it.
 
+## Implementation progress (not a completion claim)
+
+Landed on branch `docs/doc02-knowledge-authority`, not archived:
+
+- Selected engine architecture, Storyteller two-loop controller, task recipes, publication fence, ENG03 C1/C2 versus full-ENG03 honesty, Turn Capsule, client boundary contracts, and the proposed Admin authority / Player 360 / LiveOps policies now live in canonical owners. Proposed shared play and player replay live under `work/designs/open/`, not as product skeletons.
+- Near-duplicate flat technical contracts and the full product journey/storytelling copies were removed after the owning pages kept the clauses. Authored playthrough traces moved to `research/authored-scenarios/`. `TODO.md`, `docs/progress.md` and `docs/questions.md` are gone. `ROADMAP.md` and `STATUS.md` are the strategy and status owners. Terminal `work/changes/archive/` was not rewritten or deleted.
+- `knowledge-health` fails compatibility stubs, skeleton banners, first-hop snapshot links, flat technical leftovers, and duplicate docs blobs.
+- Admin charter, commercial and trust, AI investigation, command center, and operator workflows now carry the proposed policy, including the conditional gates. Observability owners carry the capture, read, reconstruction, retention, and telemetry invariants that were only in the essays. Essay folders `admin-program-essays-2026-11` and `obs-technical-essays-2026-11` are removed. The snapshot directory is a manifest. Unique observations moved to `evidence/inspections/doc01-retained-observations/`. Unpromoted design moved to `work/designs/open/doc01-unpromoted-design/`. The section ledger is [PROMOTION-LEDGER.md](PROMOTION-LEDGER.md). The author-written Q01–Q18 sheet is [RETRIEVAL-SELF-CHECK.md](RETRIEVAL-SELF-CHECK.md). It is not an independent study.
+
+Still open, so this Change stays **Selected** and is not Done:
+
+- An independent fresh-chat retrieval study of Q01–Q18 has not been run. The author of the pages cannot score that study.
+- Paragraph-level certification of every baseline file is not claimed. Unpromoted design remains under `work/designs/open/`, labeled as design rather than law.
+
 ## Initial design-only receipt
 
 **Performed in this ChatGPT audit:** read current GitHub tree and selected product/technical documents, previous target contracts, old snapshots, workflows, code navigation and DOC01 receipt. Measured current file/size/duplicate-blob patterns and sample broken links. Wrote DOC02 design/audit files under `work/changes/open/`.
@@ -65,7 +79,7 @@ If any selected design needs further owner approval, keep its detailed proposed 
 | Root routers, .agents and scripts | Remove stubs, stale “after cutover” language and duplicate loaders | Link test, negative checks and new-reader study |
 | Work/changes/archive | **Retain all** | Full path and content inventory, before/after |
 
-**Owner selection:** DOC02 remains **Proposed**. Do not change `Current change: none` without explicit owner authorization.
+**Owner selection:** selected by the owner on 2026-11-16. Do not mark Done while the open items above remain.
 
 ## Copyable Cursor handoff (only after owner approves)
 

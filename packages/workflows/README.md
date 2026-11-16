@@ -14,4 +14,4 @@
 
 [Outbox dispatch](../../apps/worker/src/outbox/dispatch.ts) maps committed notices to workflow starts/signals. The [worker Activity adapter](../../apps/worker/src/activities/index.ts) delegates real work to application operations; business idempotency must survive duplicate wake-ups and worker restarts. Workflow code itself must stay replay-safe and deterministic.
 
-The package manifest offers `build` and `typecheck`, with **no package-local test script**. A successful compilation is not proof of crash recovery; use a representative [technical execution trace](../../docs/technical/playthroughs/README.md) and application/integration evidence when needed.
+The package manifest offers `build` and `typecheck`, with **no package-local test script**. A successful compilation is not proof of crash recovery; use a representative [technical execution trace](../../research/authored-scenarios/README.md) and application/integration evidence when needed.

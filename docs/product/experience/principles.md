@@ -1,7 +1,7 @@
 ﻿# Experience principles | player-facing non-negotiables
 
 **Owner (DOC01 P2):** what the browser experience must never compromise. Reconciles `journeys/player-experience.md` lead + `programs/experience` README non-negotiables ([compare](../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/EXPERIENCE-CLAIM-COMPARE.md)).  
-**Does not own:** React/presentation runtime ([technical client](../../technical/client-and-identity.md) / React target), game rules, or staff Admin UX.
+**Does not own:** React and presentation runtime ([client boundary](../../technical/client/state-and-server-boundary.md)), game rules, or staff Admin UX. Shared campaigns are an [open design](../../../work/designs/open/shared-play/README.md), not a principle on this page.
 
 ## Core promise
 

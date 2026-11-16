@@ -1,10 +1,10 @@
 # Acceptance scenarios | product playthrough benchmarks
 
-**Owner (DOC01 P2):** living product acceptance texture. Promoted from `journeys/playthroughs.md` (compatibility stub remains until P5). Technical traces stay under `docs/technical/playthroughs/` (examples/evidence—not technical authority by path alone).
+**Owns:** living product acceptance texture. Authored scenario traces live in [research/authored-scenarios](../../../research/authored-scenarios/README.md). They are examples, not technical law and not recorded live sessions.
 
 This walkthrough makes the intended experience tangible. Characters, wording, durations and outcomes are illustrative. They do not require goblin mechanics, apple mechanics or separate software concepts called nodes and events. Unsettled behavior is identified where it affects the experience.
 
-The [gameplay execution atlas](../../technical/playthroughs/README.md) is the technical companion: concrete scenes/options, exact worked dice and timing, activity interruptions/chains, Storyteller context/tools and illustrative token ledgers for every benchmark below, plus SpongeBob and the beacon fixtures. Read these high-level examples for the feeling, then the corresponding trace to examine authority and implementation gaps. The [proposed connected POC](../../technical/playthroughs/poc.md) selects a small proof without making every example a release requirement.
+The [gameplay execution atlas](../../../research/authored-scenarios/README.md) is the technical companion: concrete scenes/options, exact worked dice and timing, activity interruptions/chains, Storyteller context/tools and illustrative token ledgers for every benchmark below, plus SpongeBob and the beacon fixtures. Read these high-level examples for the feeling, then the corresponding trace to examine authority and implementation gaps. The [proposed connected POC](../../../research/authored-scenarios/poc.md) selects a small proof without making every example a release requirement.
 
 These playthroughs are a living product reference, not disposable scaffolding for the current implementation. Preserve and maintain them as behavior evolves. Add or extend a benchmark when a new story, world, kind of character, chronology or social arrangement puts a genuinely different assumption under pressure. A benchmark may remain deliberately ahead of the runtime; its gap should stay visible and link to the owning contract rather than being erased or rewritten as though the limitation were intended.
 

@@ -1,8 +1,5 @@
 # React / Next.js engineering target | DECIDED architecture
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/engineering/targets/react-next.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **State: ARCHITECTURE SELECTED (2026-11-12) + W-program implemented (reconciled 2026-11-15).** This contract owns the **frontend engineering target** (F1–F15). TanStack Query is mandatory. **Architecture selected ≠ “code not implemented.”**
 
 ### Implementation status (W-program)
@@ -11,11 +8,11 @@
 | --- | --- | --- |
 | F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
 | W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
-| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/implementation-program.md) |
-| Admin `/control` | **Done** (AD04+) | [admin](../../../evidence/inspections/admin-program-essays-2026-11/README.md) |
+| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../work/designs/open/doc01-unpromoted-design/programs/experience/implementation-program.md) |
+| Admin `/control` | **Done** (AD04+) | [admin](../../product/admin/README.md) |
 | New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
 
-**Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../platform/identities-and-access.md), [story lifecycle](../engine/lifecycle-and-compatibility.md), [execution](../platform/execution-and-delivery.md), [player experience](../../product/journeys/player-experience.md).
+**Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../platform/identities-and-access.md), [story lifecycle](../engine/lifecycle-and-compatibility.md), [execution](../platform/execution-and-delivery.md), [player experience](../../product/experience/principles.md).
 
 **Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../apps/web/README.md). A selected Change should link only its relevant heading.
 

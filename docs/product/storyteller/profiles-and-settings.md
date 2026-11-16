@@ -1,13 +1,13 @@
 # Storyteller profiles and settings
 
-**Owner (DOC01 P2):** creative controls players may set. Promoted from `storytelling/storyteller-settings.md` (compatibility stub remains until P5).  
-**Companions:** [behavior and quality](behavior-and-quality.md), [story settings technical](../../technical/story-settings.md), [usage policy](../../technical/usage-policy.md).
+**Owns:** creative controls a player may set. The former settings essay's unique clauses live in this file.  
+**Companions:** [behavior and quality](behavior-and-quality.md), [story settings technical](../../technical/storyteller/versioned-settings.md), [usage policy](../../technical/platform/spending-and-entitlements.md).
 
 Implemented for profiled solo stories, with offline rehearsal limits described below. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
 
 Shared application behavior is creatively neutral. It provides the same bounded narrative and mechanical capabilities to radically different profiles but does not supply a fallback taste for excitement, restraint, humor, option density or pace. Effective creative direction is the resolved combination of the selected profile, campaign direction, opening and established fiction. Evaluation must first ask whether a result fulfilled those captured commitments; reviewer enjoyment is a separate observation and cannot silently redefine the engine's defaults.
 
-**Narrative-agent end-state companion (2026-11-14):** [Storyteller constitution](../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/vision-and-quality-constitution.md) and [adaptive bounded operating model](../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/target-operating-model.md) preserve creative profiles as choices about fictional tone and initiative, **separate** from effective model-route/effort/funding policy. [SA program](../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/implementation-program.md) is proposed, not automatically in source. This document continues to own creative settings and consent semantics.
+**Narrative-agent end-state companion (2026-11-14):** [Storyteller constitution](./behavior-and-quality.md) and [adaptive bounded operating model](../../technical/storyteller/operation-and-controller.md) preserve creative profiles as choices about fictional tone and initiative, **separate** from effective model-route/effort/funding policy. [SA program](../../../work/designs/open/doc01-unpromoted-design/programs/storyteller/implementation-program.md) is proposed, not automatically in source. This document continues to own creative settings and consent semantics.
 
 ## Settings with distinct meanings
 
@@ -26,7 +26,7 @@ Not every control is a number. Expose a small understandable editor first, with 
 
 Narrative initiative is not another name for surprise frequency. A rare meteor can be part of deliberate long-range direction rather than a random incident, while a high-surprise slice-of-life campaign may contain many small disruptions and no central arc. Initiative grants the Storyteller permission to cultivate pressure; it does not make an uncommitted possibility true or choose the player's response. Explicit campaign choice—including “no grand narrative”—overrides a preset default.
 
-Resource controls are separate from creative presets. [Account usage policy](../../technical/usage-policy.md) defines allowed models, context/output sizes, exploration effort, optional narration/maintenance allocations, spending windows and recovery settings. Players may lower their limits; creative guidance or a dramatic-rhythm setting cannot enlarge account authority. Keep a few understandable presets backed by independently bounded controls, not a single “eagerness” slider that secretly increases every kind of spending. This resource-policy layer is prepared, not yet implemented in the editor.
+Resource controls are separate from creative presets. [Account usage policy](../../technical/platform/spending-and-entitlements.md) defines allowed models, context/output sizes, exploration effort, optional narration/maintenance allocations, spending windows and recovery settings. Players may lower their limits; creative guidance or a dramatic-rhythm setting cannot enlarge account authority. Keep a few understandable presets backed by independently bounded controls, not a single “eagerness” slider that secretly increases every kind of spending. This resource-policy layer is prepared, not yet implemented in the editor.
 
 ## Canon invention policy
 
@@ -80,7 +80,7 @@ At creation, distinguish editable play from a campaign whose declared settings a
 
 Ironman may eventually bundle permadeath and other commitments; do not equate a settings lock with that entire mode. For the initial feature, label it **Locked settings**, with a visible summary before Start.
 
-See [game rules](../gameplay/rules.md) and [settings execution](../../technical/story-settings.md).
+See [game rules](../gameplay/rules.md) and [settings execution](../../technical/storyteller/versioned-settings.md).
 
 ## Current implementation boundary
 

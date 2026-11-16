@@ -1,6 +1,6 @@
 # Runtime telemetry and operational reliability | OpenTelemetry + pragmatic Grafana stack
 
-**Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement. Source-first [audit](../../../evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md); research [references](../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/references.md). No monitoring service deployment or paid observability account authorized.
+**Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement. The 2026-11-15 source inventory is an evidence run, not this contract. No monitoring service and no paid observability account are authorized.
 
 ## 1. Platform choice
 
@@ -31,7 +31,7 @@ flowchart LR
 
 Inspected `compose.yaml` on main: Postgres, Temporal and supporting local services, **not** the proposed Prometheus/Grafana/Loki/Tempo/Collector stack. `apps/api/package.json` / `apps/worker/package.json` do not declare current OTel/Prometheus instrumentation. `packages/application/src/runtime-logging/index.ts` writes a bounded JSON record to stderr with `level,event,message,service,timestamp,correlation,errorKind`; `apps/api/src/main.ts` and `apps/worker/src/bootstrap/main.ts` call it for selected startup/adapter/relay problems. Nest is configured with a standard error/warn/log logger. This is a good cautious baseline, **not** distributed tracing or production retention.
 
-A dedicated `storyteller-operation-trace.v1` builder exists under `packages/storyteller/src/providers/operation-trace.ts`, but [SA01 evidence](../../../evidence/inspections/doc01-legacy-snapshot/programs/storyteller/evidence/sa01-operation-trace-sample-2026-11-14.md) states that live execution/publication does **not** emit it yet. Do not claim zero observability; do not mistake fixture/lab reports for live end-to-end spans either.
+A dedicated `storyteller-operation-trace.v1` builder exists under `packages/storyteller/src/providers/operation-trace.ts`. The SA01 sample of 2026-11-14, retained as historical evidence, states that live execution and publication did **not** emit it yet. Do not claim zero observability. Do not mistake fixture or lab reports for live end-to-end spans.
 
 ## 3. Telemetry is three cheap signals plus one durable evidence spine
 
@@ -139,3 +139,12 @@ Use log events for **unexpected exceptions, retry exhaustion, incident transitio
 **Choose OTel + Prometheus + Grafana**, and use Tempo/Loki when actual tracing/log search demand merits operating them. Do **not** force all local dev processes and CI to boot a heavy observability fleet on every `pnpm test:fast`. Start with an optional local observability profile, one test-connected trace and a small operational dashboard.
 
 **Do not choose a specialized LLM dashboard as the history owner.** Langfuse-style linked prompt versions, evaluations and model metrics can be useful later, but its retained traces are neither the game ledger nor a substitute for Offscreen Control’s permissioned source graph. If integrated, outbound events must exclude or deliberately consent/govern sensitive content, and the native evidence spine must still reconstruct the old task without that vendor.
+
+## Folded invariants from the 2026-11 essays
+
+**Proposed, not installed.**
+
+- OpenTelemetry, Prometheus and Grafana are the operational complement. For this portfolio, a local optional monolithic trace stack is the candidate. Do not add Kafka, ClickHouse or a microservice tracing fleet in order to inspect traces.
+- Raw prompts and generation bodies do not go to a generic OTel exporter or a hosted third party. GenAI message fields are sensitive. The protected evidence store is the only place those bodies belong.
+- Metric labels stay bounded. No story text, no raw identifiers that explode cardinality, no secrets.
+- A missing or sampled trace does not mean the operation did not happen. The forensic spine is the business record. Support's basic answer must not depend on Loki or Tempo being up.

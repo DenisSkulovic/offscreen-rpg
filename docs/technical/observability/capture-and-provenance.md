@@ -1,6 +1,6 @@
 # Committed transition capture V1 | One real mechanic, one atomic forensic source
 
-**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code/schema/test authorized**. Source: [writer closure](../../../evidence/runs/observability-program-2026-11-15/writer-closure-and-sequence-2026-11-15.md), [physical evidence storage](../../../evidence/inspections/obs-technical-essays-2026-11/physical-evidence-storage-v1.md), [transaction protocol](../../../evidence/inspections/obs-technical-essays-2026-11/capture-transaction-protocol.md), [historical reconstruction](../../../evidence/inspections/obs-technical-essays-2026-11/reconstruction-algorithm-v1.md). This design intentionally does **not** require full event sourcing or a global collection of function-level logs.
+**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code, schema or test is authorized by this page.** The writer-closure note in the 2026-11-15 observability run is the source inventory. This design does **not** require full event sourcing or a function-level log. Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
 
 ## 1. Pilot before universal rollout
 
@@ -156,3 +156,13 @@ Do not enable a new E0 contract globally until:
 **If it adds latency without enough missing information**, choose a narrower scoped before/after snapshot approach at selected boundary. Do not pursue event-sourcing elegance for its own sake. The purpose is **real production forensic value per byte and per DB lock millisecond**.
 
 **Next code-bearing packet candidate:** OBS04 finite-action evidence pilot, after owner explicitly selects and approves this typed contract/measurement. This document alone is not Ready.
+
+## Folded invariants from the 2026-11 essays
+
+**Proposed, not landed.** The pilot named above is a contract, not a shipped writer.
+
+- The forensic ledger is not a second game authority. Live commands still use current SQL and the pure rules. A digest mismatch is an incident. It is not permission to overwrite authoritative rows from the ledger.
+- Do not put remote object-store I/O under the story lock. A worker that reads today's campaign later cannot call that row a checkpoint of last week's transition.
+- Capture semantic committed changes and accepted causal edges. Do not capture a function call, a renderer update, or every real-second tick. A batch of checks in one transaction is one outer commit with ordered inner steps. Those inner steps are explanation. They are not separately published frontiers.
+- If evidence capture is required for a complete-replay promise, a failed evidence write rolls the mechanic back. Do not drop the delta and still claim complete history. Optional prompt provenance must not be a critical write on the settlement path.
+- "Keep every raw packet forever" is rejected. Cost includes backups, indexes, key custody, deletion and who can read the store. Raw bodies are protected finite-retention artifacts. See [retention](retention-and-access.md).

@@ -1,11 +1,8 @@
 # Presentation runtime | a living, declarative visual environment
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/programs/experience/system/presentation-runtime.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **Status:** selected frontend design target (2026-11-13). **PX portfolio seams landed**; not yet visually/behaviorally accepted for engine integration. (C3: removed stale “no implementation authorized” present-tense banner.)  
 **Product presentation promises:** [product experience presentation](../../product/experience/presentation.md).  
-**Legacy program detail:** [presentation language](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-language.md), [media and motion](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md), [post-PX review](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/evidence/presentation-post-px-review-2026-11-13.md), [calibration program](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/presentation-calibration-program.md).
+**Legacy program detail:** [presentation language](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/presentation-language.md), [media and motion](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/presentation-media-and-motion.md), [post-PX review](../../../evidence/inspections/doc01-retained-observations/programs/experience/evidence/presentation-post-px-review-2026-11-13.md), [calibration program](../../../work/designs/open/doc01-unpromoted-design/programs/experience/presentation-calibration-program.md).
 
 ## Product promise
 
@@ -25,7 +22,7 @@ Offscreen RPG is a world-neutral, scene-first, text-led game. A quiet apartment,
 6. **Extensibility through registries and bounded values.** New visual treatments are frontend capabilities with tests. Data selects capabilities and supplies normalized values, never CSS selectors, arbitrary properties, raw URL expressions or executable markup.
 7. **No speculative component cemetery.** Build only semantic elements needed by actual consumers; reuse behavioral primitives, not indiscriminate card abstractions.
 
-See also [Living Stage](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/spaces/living-stage-blueprint.md), [visual direction and tokens](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/visual-direction-and-tokens.md), [component strategy](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/component-strategy.md), [motion grammar](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/motion.md), [accessibility](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/accessibility-and-voice.md) and [React/Next target](../platform/topology.md).
+See also [Living Stage](../../../work/designs/open/doc01-unpromoted-design/programs/experience/spaces/living-stage-blueprint.md), [visual direction and tokens](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/visual-direction-and-tokens.md), [component strategy](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/component-strategy.md), [motion grammar](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/motion.md), [accessibility](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/accessibility-and-voice.md) and [React/Next target](../platform/topology.md).
 
 ## Stable architecture and dynamic planes
 
@@ -107,7 +104,7 @@ The current source contains two *real* option renderers: legacy `StoryFrame` int
 - Text contrast at least WCAG AA (4.5:1 normal, 3:1 large where applicable); non-text critical outlines/focus at least 3:1. Background imagery/gradient measurements alone are not proof. A reliable reading plate/scrim and computed foreground roles remain authoritative. Forced-colors and reduced-motion override decorative instructions.
 - The parser accepts bounded structured colors, gradients, references and enum treatments. Whitelist formats and clamp numeric fields. Construct CSS from validated normalized values. Reject raw CSS, `url(...)`, external font declarations, SVG/HTML injection and arbitrary selectors. Unknown versions fall back as a whole; malformed optional fields fall back *locally* without hiding story content. Surface safe developer diagnostics, not story/player content logs.
 - Effects should be opt-in and lightweight: CSS by default; a dedicated animation library only after demonstrating the need. No infinite flashing, typewriter blocking, layout jank, fake progress or model-call-driven visual mutations.
-- Asset loading is best-effort, identity-bound and budgeted. Decorative backgrounds do not block interactivity; media failures never unmount action controls. See [media/motion contract](../../../evidence/inspections/doc01-legacy-snapshot/programs/experience/system/presentation-media-and-motion.md).
+- Asset loading is best-effort, identity-bound and budgeted. Decorative backgrounds do not block interactivity; media failures never unmount action controls. See [media/motion contract](../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/presentation-media-and-motion.md).
 - No global theme effect may restyle a protected session/permission/recovery control into illegibility. The initial scope is the **player's Now/story stage**, not unrelated authenticated navigation, creation wizard, developer Chamber or public demo. Sharing abstractions with them is a later, separately justified choice.
 
 ## Source-grounded baseline (inspection 2026-11-13; revalidate before PX01)

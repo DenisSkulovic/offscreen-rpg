@@ -1,7 +1,7 @@
 ﻿# Storyteller behavior and quality
 
 **Owner (DOC01 P2):** narrative behavior the product owes players. Reconciles `storytelling/storytelling.md` with `programs/storyteller/vision-and-quality-constitution.md` per [claim compare](../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/STORYTELLER-CLAIM-COMPARE.md).  
-**Technical:** [storyteller runtime](../../technical/storyteller-runtime.md).  
+**Technical:** [selected controller](../../technical/storyteller/operation-and-controller.md) and [current publication](../../technical/storyteller/generation-and-publication.md).  
 **Approval honesty:** constitution table rows that exceed shipped capability remain **selected targets**, not live proof. Sustained multi-turn creative quality remains unproved in STATUS.
 
 ## Role
@@ -42,3 +42,33 @@ Caring for a character over several real days can be the main experience. Quiet 
 | Cost and reliability | Explicit policy bounds every model round | Secret double spend or incoherent depleted-tier fiction |
 
 Lethal risk expansion and free-intent paths remain **policy-gated**; current `nonlethal` (where present) is a capability limitation, not an eternal “never kill” prompt dogma.
+
+## Narrative initiative
+
+The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it may maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins or a meteor approaches. The Storyteller may make that pressure real through admitted world changes. It cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
+
+A grand narrative is optional. A campaign may explicitly prefer observation, ordinary life or a farming rhythm with no cultivated arc. In that case the Storyteller must not invent a looming destiny merely to create momentum.
+
+Narrative direction is distinct from a Storyteller profile. The profile supplies voice, taste, rhythm and initiative defaults. The campaign owns any current direction, open threads and scheduled developments. Changing profile mid-story does not erase established threats or turn possibilities into facts.
+
+Private narrative intent is not executable future state. A possible invasion remains noncanonical guidance until introduced. A development that must become due at a supported time uses an admitted world obligation. Evocative planning prose cannot schedule itself.
+
+Player availability, notifications and spending limits are operational constraints, not measures of how much misfortune a character deserves.
+
+## Developments, choices and endings
+
+The Storyteller can compress an uneventful afternoon or stay close to a conversation that needs immediate responses. Choices express different intentions, not different wording for a predetermined outcome. An inactive response such as waiting is still a meaningful choice. It does not require a special waiting subsystem.
+
+A choice may privately identify a few exact sources the next turn will need. Those hints are invisible, bounded, and used only when that choice is selected. They are not a reason to invent a calendar or dramatic machinery for a world that has none.
+
+Invention authority is captured by domain. Permission to invent descriptive lore never grants permission to invent executable rules or bypass state admission. In shared play, do not let the fastest player dictate every other character's behavior. The method of collecting conflicting intentions is **not accepted** until an owner chooses it; see open designs rather than this page.
+
+Continuing life is a target experience: a character can remain in the same world for real months, with minimal dramatic intervention and no compulsory ending. Individual adventures can resolve without ending the playable life. A deliberately finished story remains readable and does not keep scheduling new developments. The creation controls that choose finite adventures versus continuing life are still to be designed.
+
+## Selected solo proof boundary
+
+The approved solo proof selects a versioned profile before opening generation. Opening and continuation are separate bounded tasks. The narrative rehearsal uses 2–5 distinct offered intentions. Mechanical openings and consequences use zero to four admitted plans: zero is a visible held state, one is valid when the situation is genuinely constrained, and larger sets must differ in intended approach rather than wording. Public plans communicate the attempted commitment and apparent risk without revealing DCs or unused outcomes. There are no free-text gameplay actions and no automatic life endings. Inactivity admits no new generation. An accepted prepared interval may finish once.
+
+Multiple autonomous agents are a possible implementation technique, not a product requirement and not a reason to add extra model calls.
+
+**Negative:** a conditional encounter planned further along an abandoned path must be reconsidered if the party turns back. It is not presented as if nothing changed. Model prose cannot spend the same coins twice or apply an already resolved action again.

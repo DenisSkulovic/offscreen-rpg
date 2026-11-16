@@ -2,7 +2,7 @@
 
 **Owner (DOC01 P2):** how player intentions become accepted work and what may continue without fresh inference. Reconciles progression sections of former `foundations/gameplay.md`.  
 **Companions:** [rules](rules.md), [time and autonomy](time-and-autonomy.md), [concepts](../foundations/concepts.md).  
-**Technical:** [solo gameplay](../../technical/solo-gameplay-contract.md), [rules and activities](../../technical/rules-and-activities.md#prepared-local-opportunities).
+**Technical:** [solo gameplay](../../technical/engine/authority-and-transitions.md), [rules and activities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities).
 
 ## One generic progression flow
 

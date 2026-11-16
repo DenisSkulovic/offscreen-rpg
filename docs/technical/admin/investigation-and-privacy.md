@@ -1,9 +1,6 @@
 # Admin read projections, search, provenance and privacy boundaries
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/programs/admin/technical/read-models-and-privacy.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
-**Status:** Selected technical target, 2026-11-14; **first-wave projections implemented** (AD03/05/06/08 + OBS01/OBS06 synthetic). Product owners: [Player 360](../../../evidence/inspections/admin-program-essays-2026-11/player-360-service-blueprint.md), [Gameplay](../../../evidence/inspections/admin-program-essays-2026-11/gameplay-worlds-product.md), [AI Operations](../../../evidence/inspections/admin-program-essays-2026-11/ai-engineering-operations-product.md), [Trust & Privacy](../../../evidence/inspections/admin-program-essays-2026-11/trust-and-privacy-product.md). Source reality: [baseline + post-AD appendix](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/source-baseline-2026-11-14.md). Wire shapes: [core-v1-contracts](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/core-v1-contracts.md). Raw narrative / full capsule remain gated.
+**Status:** Selected technical target, 2026-11-14; **first-wave projections implemented** (AD03/05/06/08 + OBS01/OBS06 synthetic). Product owners: [Player 360](../../product/admin/player-360-and-support.md), [Gameplay](../../product/admin/gameplay-and-liveops.md), [AI Operations](../../product/admin/ai-engineering-and-investigation.md), [Trust & Privacy](../../product/admin/commercial-and-trust.md). Source reality: [baseline + post-AD appendix](./investigation-and-privacy.md). Wire shapes: [core-v1-contracts](./topology-and-authorization.md). Raw narrative / full capsule remain gated.
 
 ## 1. The problem to solve
 

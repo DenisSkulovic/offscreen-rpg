@@ -244,3 +244,14 @@ if (
     }
   }
 }
+
+import { collectKnowledgeViolations } from './knowledge-health.mjs';
+
+const knowledgeFailures = collectKnowledgeViolations();
+if (!knowledgeFailures.length) {
+  console.log('knowledge-health: ok');
+} else {
+  for (const item of knowledgeFailures) console.error(item);
+  console.error(`knowledge-health: ${knowledgeFailures.length} violation(s)`);
+  process.exitCode = 1;
+}

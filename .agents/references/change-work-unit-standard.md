@@ -70,7 +70,7 @@ The selected route is `work/changes/README.md` (hot queue). Create new packets u
 - **`work/changes/` is canonical** for bounded code-bearing packets: **`open/`** = non-terminal only; **`archive/YYYY-MM/<program>/`** = Done/Cancelled history. The index declares exactly one `Current change:` value: `none` or a relative link to a selected `CHANGE.md` under `open/` (or briefly under `archive/` only if documenting a Blocked reopen—prefer moving back to `open/` when resuming). The empty selection is deliberate and legitimate during design, evaluation and documentation work.
 - **`docs/history/initiatives/` is frozen legacy initiative/history context.** Its old `FEATURE.md` and `PLAN.md` documents, including previous permissions, must never be treated as ready implementation Changes. The explicitly owner-retained canon policy remains intact.
 - **No active Change** means no default executor task. `pnpm repo:brief` reports `none` and `--checkpoint` reports no active checkpoint. A selected `CHANGE.md` may optionally have `PLAN.md`; when absent, the brief uses the Change's handoff section.
-- The [owner's engineering portfolio roadmap](../../TODO.md) supersedes historical product-build sequence as the near-term development priority. Actual implementation permission is still task-specific; an index link isn't authorization.
+- The [owner's engineering portfolio roadmap](../../ROADMAP.md) supersedes historical product-build sequence as the near-term development priority. Actual implementation permission is still task-specific; an index link isn't authorization.
 - `pnpm repo:docs-health` reviews only existing Change PLAN checkpoints. The old feature dossiers are intentionally excluded from the active checkpoint queue.
 
 ## Independent industry references

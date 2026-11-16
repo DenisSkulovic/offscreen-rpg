@@ -72,15 +72,12 @@ try {
         'Unknown argument. Usage: pnpm repo:brief [--checkpoint]',
       );
     }
-    const statusPath = existsSync(path.join(root, 'STATUS.md'))
-      ? 'STATUS.md'
-      : 'docs/progress.md';
+    const statusPath = 'STATUS.md';
     const orientation = section(
       read(statusPath),
       '## Orientation',
       statusPath,
     );
-    // DOC01: prefer work/changes when it declares Current change; else docs/changes.
     const workChanges = path.join(root, 'work', 'changes', 'README.md');
     let changeRoute = 'work/changes/README.md';
     let changeDoc = read(changeRoute);
@@ -122,7 +119,7 @@ try {
     }
     console.log('\n## Read next');
     console.log('STATUS.md — demonstrated boundary');
-    console.log('ROADMAP.md — owner strategy (see also TODO.md)');
+    console.log('ROADMAP.md — owner strategy');
     console.log(`${changeRoute} — Change queue and execution contract`);
     console.log('docs/product/README.md — product bible map');
     console.log('docs/technical/README.md — technical owner map');

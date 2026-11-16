@@ -1,29 +1,70 @@
-# Admin charter and personas
+# Charter and personas
 
-**Owner (DOC01 P2):** why Offscreen Control exists and who uses it.  
-**Status:** Long-term product direction accepted (2026-11-14) subject to [conditional capability gates](../../../evidence/inspections/admin-program-essays-2026-11/product-acceptance-and-scope.md). AD01–AD08 first-wave landed in synthetic/local scope; **no production Support grant issuer**.  
-**Source detail:** [product-charter](../../../evidence/inspections/admin-program-essays-2026-11/product-charter.md), [personas-and-workspaces](../../../evidence/inspections/admin-program-essays-2026-11/personas-and-workspaces.md).
+**Owns:** why Offscreen Control exists, the jobs it must make possible, and the workspace map staff use to find those jobs.  
+**Status: accepted long-term direction, 2026-11-14, with every powerful action still conditional.** Persona names are jobs, not security roles. A workspace does not grant a capability. Production Support, refund, raw-prompt and emergency-edit powers remain absent until a named grant exists.
 
-## Product
+## What the console is for
 
-Offscreen Control is the operating environment through which the organization understands, supports, governs, improves and protects its live player experience and the business providing it. One company operates one set of player accounts, campaigns, executions, subscriptions, support cases and incidents.
+Offscreen Control is how the organization understands, supports, governs, improves and protects the live player experience and the business that provides it. One company has one set of accounts, campaigns, executions, subscriptions, cases and incidents. Employees should not need a shadow database to answer a basic question.
 
-**One platform does not mean** one giant screen, one security role, or one homegrown replacement for every specialized third-party service.
+One platform does not mean one giant screen, one security role, or a homemade replacement for payments, email, monitoring or analytics. Those services may stay specialized. Admin owns the operator experience and the business consequence of the integration, including stale and failed states.
 
-## Jobs
+| Job | The operator must be able to |
+| --- | --- |
+| Locate a subject | Find a player, campaign, transaction, execution, case, incident or release and follow grounded links |
+| Explain an outcome | Separate an account restriction, exhausted allowance, delayed operation, model failure, game-rule decision and display bug |
+| Help without corrupting | Preview the player's effective experience, open an investigation, and execute only a bounded permitted remedy |
+| Operate the live game | See which rules and Storyteller configuration affect which campaigns, and detect a regression |
+| Control commercial exposure | Understand feature access, subscriptions, usage grants, provider cost and refund state |
+| Steward trust | Bound private-data access, abuse reports and privacy requests, and recover from a staff mistake |
+| Learn | Connect activation, retention, quality, reliability and economics without treating every metric as real-time or causal |
 
-1. Locate and understand a subject (player, campaign, transaction, execution, case, incident, release).
-2. Explain an outcome (restriction vs allowance vs delay vs model failure vs rule decision vs display bug).
-3. Help without corrupting (preview, investigate, propose bounded remedy, execute only where permitted).
-4. Operate the live game (config impact, regressions, rollouts, emergencies).
-5. Control commercial exposure (access, subscriptions, grants, provider cost, refunds, margin)—**many capabilities remain conditional**.
-6. Steward trust (private data, abuse, privacy requests, privileged-action review).
-7. Learn as a product organization without pretending every metric is real-time or causal.
+## Principles that survive a mixed role
 
-## Enduring principles (summary)
+- Capability, not job title. One person may hold Support, Engineering and Commercial packages and still lack an unrelated power.
+- Staff identity is not player identity. View as Player, Assist as Player and Investigate in Sandbox are explicit modes. The operator does not become a stronger player.
+- Inspect before modifying. Most diagnoses do not need a production write or unfiltered story text.
+- One action, one understandable effect: subject, planned effect, cost or risk, prerequisites, outcome, and the reversal or remedy if one exists.
+- Purpose-bound access. Seeing an account does not include a bulk export or a raw prompt.
+- Honest states. A request is not success. A queued intervention is not a completed repair. An estimate is not an invoice.
+- Fictional time, commercial allowance and provider spend are different counters even when they are all numbers.
 
-Capability-based not title-based; separate staff and player identity; inspect before modifying; context follows the object; one operator action → one understandable effect; proportionate friction; explainable authority; purpose-bound access; honest operational states.
+**Outside Admin:** the player's ordinary play UI, ad-hoc SQL against live data, acting as the payment processor, unbounded infrastructure root, and inventing gameplay truth the engine has not committed.
 
-## Personas / workspaces
+## Personas and workspaces
 
-Staff may combine Support, Engineering and Commercial abilities without receiving unrelated authority. Workspace detail stays in the program personas doc until fully folded; navigation must not imply universal access.
+A persona is a responsibility pattern. Authority is a separate capability package. Do not invent compound roles in advance.
+
+| Persona | Everyday question | Must not receive by the job name alone |
+| --- | --- | --- |
+| Customer Support | What is wrong for this account, and what low-risk remedy is allowed? | Private narrative, raw prompts, major refunds |
+| Customer Success | Where is this relationship stuck? | Enforcement files |
+| Engineering | What did this operation actually do? | Trust sanctions, ledger rewrites |
+| Game Design / LiveOps | Which behavior is live, for whom? | Unreviewed production prompt edits |
+| Product | How do people arrive and leave? | Private story text |
+| Finance / Revenue | What is owed, charged and exposed? | Game-state edits |
+| Marketing / Growth | Who may be offered what? | Individual narratives as a targeting list |
+| Trust & Safety | Is this a fair, evidenced restriction? | Commercial refunds, universal story browsing |
+| Security / Staff admin | Who can do what, and who did it? | Self-erasure of the audit |
+| Leadership | Is the service and the business healthy? | An implicit superuser |
+
+| Workspace | Question it answers | It must not become |
+| --- | --- | --- |
+| Command Center | What needs *my* attention? | Every department's chart wall |
+| Players & Accounts | Who is this, and what is effective now? | The billing or story owner |
+| Support & Cases | Who owns the response, and is it resolved? | Notes with no evidence |
+| Gameplay & Worlds | What happened in this story, and why? | An unbounded world editor |
+| AI & Engineering | What did the model work do, and where did it fail? | An infrastructure root console |
+| Live Operations | Which behavior is active, and what can change safely? | An unreviewed prompt editor |
+| Commercial | What is owed, granted, consumed and charged? | A payment processor |
+| Growth & Insights | How do players arrive, activate and stay? | A private-story browser |
+| Trust & Privacy | Is a report or data request handled fairly? | Universal secret access |
+| Access & Governance | Who can do what, and who did it? | A standing superadmin |
+
+Workspaces share subjects, identifiers and status words. A deep link does not grant permission. Global search must not leak a record the operator cannot open, including by suggestion or count.
+
+## Normal case and negative
+
+**Normal.** A founding engineer holds diagnostics, a small support toolkit and aggregate business metrics. The Command Center shows those three sections. A failed turn opens for Support as player impact and for Engineering as operation evidence. Private story text stays behind its own grant.
+
+**Negative.** Two capability packages do not silently widen to every account. A pending high-value adjustment does not execute because the requester left. A diagnostic experiment does not alter the live story while the player resumes. An urgent incident does not unlock an all-powerful shortcut. Success targets (faster explanation, fewer unsafe writes, bounded access) are not frozen SLA percentages.

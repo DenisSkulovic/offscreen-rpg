@@ -62,9 +62,9 @@ No product decision blocks the first implementation slice. Exact player-facing e
 
 ## Owning specifications
 
-- [Storyteller presets and customization](../../../product/storytelling/storyteller-settings.md#canon-invention-policy)
-- [Story creation](../../../product/journeys/story-creation.md#storytelling-direction)
-- [Storytelling authority](../../../product/storytelling/storytelling.md#authority-and-limits)
-- [Versioned story settings](../../../technical/story-settings.md#canon-invention-policy)
-- [Canonical campaign files](../../../technical/canonical-files.md#reusable-world-libraries-and-campaign-overlays)
+- [Storyteller presets and customization](../../../../docs/product/storyteller/profiles-and-settings.md#canon-invention-policy)
+- [Story creation](../../../../docs/product/experience/entry-and-onboarding.md#initiative-invention-ceilings-and-progressive-entities)
+- [Storytelling authority](../../../../docs/product/storyteller/behavior-and-quality.md#narrative-initiative)
+- [Versioned story settings](../../../../docs/technical/storyteller/versioned-settings.md#canon-invention-policy)
+- [Canonical campaign files](../../../../docs/technical/storyteller/context-and-memory.md#reusable-world-libraries-and-campaign-overlays)
 

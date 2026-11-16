@@ -1,14 +1,14 @@
 # Time and autonomy
 
-**Owner (DOC01 P2):** canonical product home for fictional-time advance and absence. Promoted from `journeys/time-and-autonomy.md` (compatibility stub remains until P5).  
-**Technical:** [committed time](../../technical/committed-time.md), [ticks and tags](../../technical/ticks-and-tags.md), [calendars](../../technical/calendars-and-world-time.md).  
+**Owns:** when fictional time advances and what absence means.  
+**Technical:** [committed time](../../technical/engine/chronology-and-activities.md), [ticks and tags](../../technical/engine/ticks-and-tags.md), [calendars](../../technical/engine/calendars-and-world-time.md).  
 **Explore by question:** [pace and clock](#pace) · [calendars and deadlines](#calendars-seasons-and-story-deadlines) · [travel duration](#travel-duration-and-progress) · [absence and routine work](#response-windows-and-absence) · [pause/resume](#pause-and-resume) · [reliability/notifications](#notifications-and-reliability).
 
 One scheduler step is always one real second. Speed determines how many fictional seconds an eligible step advances; scheduler length is not a player setting. The Storyteller estimates an action in fictional time, and the engine derives its real wait from the selected speed. Canonical state, durations, checks, horizons and deadlines use explicit fictional seconds. A world without calendars still has elapsed in-game seconds; human days, months and named dates remain optional content projections.
 
 Every offered in-world action declares its time semantics. Conversation, observation and combat attempts consume their admitted fictional duration even when the presentation is a rapid sequence of choices. Extended activities declare supported progress rules and cadences; productive attempts can earn points, while a literal wait needs no contribution check. Different checks can be due at different boundaries. The runtime may batch quiet fictional time or wake at the next meaningful boundary, preserving ordered consequences and interruptions. A check is not required every real second.
 
-The owner clarified deliberate time investment on 2026-09-19. This is the maintained target. Campaign-clock projection now requires the identity of the accepted activity, so empty time cannot accrue merely because no hold exists or become a head start for newly selected work. Terminal/horizon clamping and intent-owned preparation holds remain in T1; short timed actions remain T2. The [committed-time contract](../../technical/committed-time.md) and its active feature own the correction.
+The owner clarified deliberate time investment on 2026-09-19. This is the maintained target. Campaign-clock projection now requires the identity of the accepted activity, so empty time cannot accrue merely because no hold exists or become a head start for newly selected work. Terminal/horizon clamping and intent-owned preparation holds remain in T1; short timed actions remain T2. The [committed-time contract](../../technical/engine/chronology-and-activities.md) and its active feature own the correction.
 
 ## Pace
 
@@ -18,7 +18,7 @@ During an accepted quiet interval, fictional time continues without fresh narrat
 
 Give the player understandable expectations for an action's fictional duration and real wait. Estimates are conditional on the situation remaining unchanged. An interruption replaces the old expectation with the new situation.
 
-A selected pace guides waiting. An option exposes its fictional duration or work estimate and corresponding real wait before acceptance; an atomic short exchange is not automatically free in fictional time. Calendar-based presets require an explicit mapping supplied by content. Pace changes waiting, not how many checks belong to the same fictional interval. Instant play still commits the declared fictional duration and ordered consequences. The [clock contract](../../technical/story-settings.md) defines rescheduling and locked settings; response deadlines are separate real-time allowances.
+A selected pace guides waiting. An option exposes its fictional duration or work estimate and corresponding real wait before acceptance; an atomic short exchange is not automatically free in fictional time. Calendar-based presets require an explicit mapping supplied by content. Pace changes waiting, not how many checks belong to the same fictional interval. Instant play still commits the declared fictional duration and ordered consequences. The [clock contract](../../technical/storyteller/versioned-settings.md) defines rescheduling and locked settings; response deadlines are separate real-time allowances.
 
 For contribution processes, pacing advances only the exact clock position. At a productive boundary, a separately captured D&D check decides how much contribution is earned and whether the completion predicate has been satisfied. A failed, check-only or interrupted boundary may therefore consume fictional time without increasing productive progress, and changing pace cannot manufacture a reward. Any displayed completion time is recalculated from current progress and expected future check results; it is not a deadline or promise.
 
@@ -50,7 +50,7 @@ A firm promise such as “the invasion begins in two months” needs a recorded 
 
 These deadlines follow deliberate time. Reading, manual pause and model latency do not consume the preparation period; accepted dialogue, travel and training do. Finishing a long activity cannot jump over a due event. A future date alone never starts the world clock or chooses a waiting activity for the player. Real-world expiring events are a distinct policy outside the current solo design.
 
-The [calendar and scheduled-world contract](../../technical/calendars-and-world-time.md) implements ordinal or simple custom dates plus consequential scheduled boundaries. Complex astronomy, arbitrary calendar programs and a full climate simulation remain unnecessary for this POC.
+The [calendar and scheduled-world contract](../../technical/engine/calendars-and-world-time.md) implements ordinal or simple custom dates plus consequential scheduled boundaries. Complex astronomy, arbitrary calendar programs and a full climate simulation remain unnecessary for this POC.
 
 ## Travel duration and progress
 
@@ -74,7 +74,7 @@ Before handing off, commit resolved effort/costs and stop incompatible progress 
 
 The proposed queue is a small sequence of intentions over supported activities, with an explicit horizon or terminal condition and risk/resource limits. Entries are conditional instructions, not promises that future prerequisites will hold. Admission of each next entry rechecks the then-current actor, location, resources, capacity and unresolved decisions. Waiting entries claim no future resources by default. Unsupported or blocked entries stop with a reason unless the player explicitly chose a supported skip/fallback.
 
-An interactive event suspends incompatible queued transitions; the next activity cannot start behind an unresolved fight. After resolution, revalidate remaining intentions and resume only when captured policy permits. A report-only narrated milestone may accompany continued work; it records the earlier boundary if delivered late. Queue completion follows its accepted policy, stopping with no active commitment, entering an admitted next routine or presenting an interaction. It cannot silently invent a new agenda or begin an idle-time allowance. Maximum unattended horizon, reporting, response and spending permissions are separate. Detailed chain admission belongs to the [autonomy plan](../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry).
+An interactive event suspends incompatible queued transitions; the next activity cannot start behind an unresolved fight. After resolution, revalidate remaining intentions and resume only when captured policy permits. A report-only narrated milestone may accompany continued work; it records the earlier boundary if delivered late. Queue completion follows its accepted policy, stopping with no active commitment, entering an admitted next routine or presenting an interaction. It cannot silently invent a new agenda or begin an idle-time allowance. Maximum unattended horizon, reporting, response and spending permissions are separate. Detailed chain admission belongs to the [autonomy plan](../../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry).
 
 A development can request a response by a visible deadline under a supported policy. That countdown begins when valid options are published, never when generation begins. Fiction remains held during deliberation in the solo design. Expiry may select only a pre-authorized default and then execute its ordinary time/cost contract once; it cannot grant the action's result retroactively. Without an eligible default, retain the hold. The first POC uses indefinite decisions; timed default selection remains a separate autonomy phase.
 
@@ -108,4 +108,4 @@ The legacy narrative-only rehearsal maps a proposed interval to twenty real seco
 
 ## Mechanical activities
 
-Five game hours of work can produce five hourly checks and earned outcomes; twenty game hours of travel can produce twenty encounter checks, all quiet. These checks run in code without hourly inference. Activity cadence is a rule/content choice, not a universal tick for conversation or combat. See [game rules](rules.md) and [segment execution](../../technical/rules-and-activities.md). Faster or instant play preserves costs, dice and decision boundaries.
+Five game hours of work can produce five hourly checks and earned outcomes; twenty game hours of travel can produce twenty encounter checks, all quiet. These checks run in code without hourly inference. Activity cadence is a rule/content choice, not a universal tick for conversation or combat. See [game rules](rules.md) and [segment execution](../../technical/engine/mechanics-and-capabilities.md). Faster or instant play preserves costs, dice and decision boundaries.

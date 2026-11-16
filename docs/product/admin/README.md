@@ -1,19 +1,18 @@
-# Admin product | Offscreen Control
+# Admin product
 
-**Owns:** staff-facing product intent for understanding, supporting, governing and protecting the live service.  
-**Does not own:** player gameplay UX, in-game Storyteller decisions, engine mechanical authority, or Change selection.
+Staff-facing intent. Player experience and in-game Storyteller behavior are other product owners. Engine authority is technical.
 
-**DOC01 note:** owners below are the canonical product homes. Deeper program essays remain under `docs/programs/admin/` until P5/P6; **conditional commercial/Support production gates stay labeled**—never silently accepted.
+Several pages below are **proposed operating policy**. They are written here so the proposal has one owner. They are not production grants and not a silent acceptance of refunds, raw-prompt access, or emergency world edits.
 
-| Document | Question |
-| --- | --- |
-| [Charter and personas](charter-and-personas.md) | Why Admin exists; who uses it |
-| [Authority and governance](authority-and-governance.md) | What staff authority means |
-| [Player 360 and support](player-360-and-support.md) | Investigate and help a subject |
-| [Commercial and trust](commercial-and-trust.md) | Money, grants, privacy *(conditional)* |
-| [Gameplay and liveops](gameplay-and-liveops.md) | Worlds, rollouts, emergencies |
-| [AI engineering and investigation](ai-engineering-and-investigation.md) | Model-round investigation |
-| [Command center and insights](command-center-and-insights.md) | Landing + honest analytics |
-| [Operator workflows](operator-workflows.md) | Critical journey contracts |
+| Question | Owner | Status |
+| --- | --- | --- |
+| Why does Admin exist, and who is it for? | [Charter and personas](charter-and-personas.md) | Direction, with conditional powers named in that file |
+| What is a staff grant, and what are view, assist and sandbox? | [Authority and governance](authority-and-governance.md) | Proposed catalog |
+| What if payer, participant and character differ? | [Player 360 and support](player-360-and-support.md) | Proposed model; production grants absent |
+| What money and privacy actions are allowed? | [Commercial and trust](commercial-and-trust.md) | Conditional |
+| How may future behavior change without rewriting history? | [Gameplay and liveops](gameplay-and-liveops.md) | Proposed |
+| What may an investigator see of a model round? | [AI engineering and investigation](ai-engineering-and-investigation.md) | Conditional on access tiers |
+| What does the landing view claim? | [Command center and insights](command-center-and-insights.md) | Direction |
+| Which operator journeys are contracts? | [Operator workflows](operator-workflows.md) | Direction |
 
-Technical staff contracts → `docs/technical/admin/` (P3). Evidence → `evidence/` after cutover.
+Technical companions: [admin technical](../../technical/admin/topology-and-authorization.md).

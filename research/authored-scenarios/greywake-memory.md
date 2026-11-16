@@ -1,0 +1,95 @@
+# Greywake long-story memory exploration
+
+Status: mixed current/target regression trace. Private exploration rounds, durable snapshot storage, reserved final-candidate acceptance/replay and ordinary generation/publication transfer are implemented. A connected deterministic fake-provider return uses retrieved current evidence and publishes through the real campaign path. Cheap/free-model comprehension and quality remain target evidence.
+
+This trace answers a narrow but product-critical question: after roughly 200 scenes, can a turn recover an old favor and its original exchange without dumping the entire history into model context or confusing an obsolete/private decoy for canon?
+
+Greywake is a fixture, not a mandatory fantasy setting. The same contracts must support the abstract corpus, which deliberately has no tavern, wages, humanoid anatomy, map or conventional quest structure.
+
+## GW-00 — fixed authority and budget — current
+
+The evaluator materializes the versioned Greywake corpus into the real canonical document store. The task captures one exact campaign root. That root distinguishes current documents from superseded revisions and player-visible material from developer-private possibilities.
+
+The chosen retrieval recipe is explicit. Minimal, balanced and rich postures may vary search breadth, source participation, lexical effort, read count and retained bytes. Intersecting a recipe with a stricter operation envelope can only reduce optional work; it cannot weaken story, branch, visibility or current-root isolation.
+
+Acceptance:
+
+- corpus and oracle identities are reproducible;
+- the captured root cannot drift during exploration;
+- a larger working set is measured, not presumed superior;
+- no provider call is required for this trace.
+
+## GW-01 — compact discovery batch — current
+
+The scripted private result requests two independent operations in one round:
+
+1. `ask_memory` an evidence question about the old Greywake favor;
+2. `ask_memory` an evidence question identifying the relevant established person.
+
+The application searches the captured root/index and returns compact candidates through task-local `m#` handles; linked canonical sources use `x#` handles. Evidence packet `s#` values are provenance citations rather than readable handles. Exact handle ordinals are task-local implementation details and are not acceptance fixtures. The trace records query reasons, coverage, candidates, retained bytes and read usage.
+
+No narration, choices, effects or state changes are publishable from this round. A candidate is a lead, not truth. A lexical hit containing “without humanoid anatomy” remains a truthful negating snippet; neither the evaluator nor a later model may turn the matched word into evidence that humanoids exist.
+
+Acceptance:
+
+- the current favor is discoverable without carrying it in the initial prompt;
+- superseded and developer-private decoys do not become eligible bodies;
+- no-match remains a valid result and permits conservative uncertainty;
+- unknown names do not create world entities.
+
+## GW-02 — restart and exact evidence follow-up — current
+
+The private exploration state is serialized and restored before the next batch. The scripted follow-up:
+
+1. inspects the discovered favor handle to obtain the exact current document body;
+2. reads the authorized source handle for the original promise passage.
+
+Every body read rechecks that its stable identity still belongs to the captured manifest. The focused path consumes four reads across the two exploration rounds and stays inside the rich recipe's retained-byte ceiling. Provenance authorizes only the discovered source; it is not permission to load arbitrary history.
+
+Acceptance:
+
+- task-local handles survive serialization and restoration;
+- the current favor and original promise are both available for composition;
+- the result distinguishes current state from historical evidence;
+- nothing has yet been published to the player.
+
+The normalized context request and its SHA-256 identity are stored before its reads begin. Recovery executes that request before asking for another Storyteller decision. The resulting snapshot is accepted atomically, so a crash may repeat the same read-only lookup but cannot double-count it. A completed final candidate is stored in the same generation-owned private artifact and replayed without another scripted decision.
+
+## GW-03 — packed evidence and bounded final candidate — current mechanics, target composition
+
+The restored Greywake snapshot now deterministically adapts admitted evidence into the common packer without another read or model call. Search and registry hits remain optional leads. The explicitly inspected current favor is a required card; the explicitly read historical passage is required exact evidence. Both cite the captured canonical document/revision/hash, and malformed persisted rounds fail closed instead of silently dropping context. The tested 12 KiB pack contains the current “still owes” state and original “promised” wording while excluding the destroyed-fork and developer decoys.
+
+A scripted round controller now reserves the final round, rejects a late `needs_context` request, validates the final candidate under the captured task and stores it separately from publication. Re-entry returns that candidate without rerunning scripted inference or reads.
+
+Every fresh controller decision now receives a captured provider-facing request containing the factored evidence packet as a named `memoryExploration` user section. It reports exact captured bytes plus the repository's conservative 1 KiB reservation overhead. Packet bytes share the task's existing `maxSerializedRequestBytes` envelope and the recipe's retained-read ceiling; they are not extra capacity. Exploration-capable rounds accept either one bounded context request or a final private wrapper; the reserved final round accepts only that wrapper. The wrapper contains the ordinary task result once plus item/source IDs the model claims it used. Unknown or incomplete packet references fail; valid references and required-but-uncited items persist beside the final candidate and replay unchanged, while only the ordinary task result can proceed toward publication. If required evidence cannot fit, the controller durably records `context-limit` instead of truncating canon or calling the round source. A crash-replayed accepted read request bypasses recomposition and executes first.
+
+A pure OpenRouter preview serializes that exact captured request through the same body builder used by live one-shot transport. Its compact inspection exposes body/message/section/schema byte counts and SHA-256 identities, reports transport as false and charge as zero, and can reveal the exact packet only through the existing bounded section-selection style. It cannot access credentials or dispatch. Normal execution now uses the same persisted multi-round request/settlement boundary when an admitted task carries the memory recipe.
+
+The conventional-start integration now drives one admitted Greywake return through durable multi-round accounting and ordinary publication. Its first deterministic provider response asks what changed after the road warning; the canonical lexical route returns the revised collapsed-road/cliff-stairs thread rather than its obsolete wording; the second response declares the supplied evidence and publishes a passage choosing the cliff stairs. The trace records two model rounds, one retrieval round, positive serialized request sizes, at least one packed evidence item and zero reported microusd. This proves the connected mechanics and authority fence, not model comprehension: the deterministic provider was authored to use the evidence. Self-citation remains structural evidence rather than semantic proof.
+
+The same current Greywake root now receives the literal locality query under minimal and balanced recipes. Balanced returns additional optional leads, while its shared ordered prefix preserves the same paths, authority and visibility as minimal; neither posture admits the developer-private decoy. This is a deliberately small structural breadth check, not a claim that more results improve narrative quality.
+
+The contrasting gradient-life start includes one canonical membrane adaptation and no social setting. Its admitted pending-consequence task runs through the same normal multi-round executor: the deterministic provider asks in ordinary language what happens when the iron gradient steepens, receives the authored slowing-exchange evidence, cites it and produces a membrane-only result. The stored output is checked against person, tavern, wage, calendar and quest defaults. Because the workflow owns the real preparation generation, this probe executes an isolated copy of the admitted task rather than racing or rewriting that live record; Greywake remains the publication proof.
+
+The same persisted request boundary now accepts an ordinary-language `ask_memory` possibilities question. In the provider-free controller fixture, a question about how the old promise could matter is durably accepted before execution, survives the injected crash, runs through the internal broad-discovery route, returns through the canonical memory handle path and becomes a packet lead. The final private response records a concise selected direction that cites that packet item, declares it used and preserves the player's ability to ignore the promise. The direction set is stored and replayed with the final candidate but is not player-visible or canonical. Rejected alternatives use the same bounded artifact rather than storing hidden reasoning. This demonstrates orchestration and provenance only; the fixture did not creatively discover the direction.
+
+The controller must reserve capacity for this final answer, validate it under the ordinary task authority, and publish only if the captured story/root fence is still current. Exploration and any invalid-final repair share the same total round, token, money and deadline budget.
+
+Snapshot-to-pack adaptation, final-candidate control/replay, one evidence-aware connected publication, same-root budget contrast and a nonhuman connected execution are implemented. These deterministic cases prove bounded retrieval, authority and execution mechanics, not live-model comprehension or narrative quality.
+
+## Failure matrix and ownership
+
+| Condition | Required outcome | Status |
+| --- | --- | --- |
+| No matching memory | Return explicit no-match/coverage; final prose admits uncertainty | Search behavior current; connected no-match composition target |
+| Invalid or undiscovered handle | Reject the read without leaking body content | Current protocol/dispatcher boundary |
+| Private or superseded decoy | Exclude it from eligible canonical evidence | Current retrieval boundary |
+| Captured root becomes stale | Refuse mixed-era read/publication | Read and ordinary publication fences current |
+| Read or retained-byte ceiling exhausted | Stop optional exploration while preserving final reserve | Limits and connected final reserve current |
+| Required final packet exceeds the shared serialized request envelope | Persist `context-limit`; do not truncate required evidence or invoke another decision | Current controller boundary |
+| Crash after request acceptance | Replay the hashed request without another Storyteller decision; accept its counters once | Current controller recovery |
+| Crash after reads but before snapshot commit | The same read-only lookup may repeat; accepted counters and handles advance once | Current controller recovery |
+| Stale root, invalid handle or read/round exhaustion | Persist a classified terminal failure; re-entry returns it without another decision | Current controller recovery |
+| Valid retrieval, ignored evidence | Required-but-uncited IDs are preserved; retrieval/assembly pass and generation-use fails | Current structural reporting and evaluator attribution |
+
+The executable acceptance stages live in `reusable-start-package` version 17: `retrieval-oracle`, `lexical-discovery`, `retrieval-cost-postures` and `scripted-memory-exploration`. [QA journeys](../legacy-engineering/qa-journeys.md#long-story-memory-checklist) explains how evidence is recorded. [Storyteller requests and cost](storyteller.md#discovery-before-composition-current-mechanics-and-missing-connection) owns the model-side budget and round distinction. The [exploration feature](../../evidence/inspections/doc01-retained-observations/history/initiatives/RETIRED-2026-11-11.md#bounded-memory-exploration) owns implementation status.

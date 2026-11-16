@@ -1,8 +1,5 @@
 # Chamber | reproducible developer laboratory target
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/engineering/targets/chamber-laboratory.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **Status:** Selected **engineering design for future implementation** (owner's 2026-11-12 Chamber request). **Method:** declare the desired destination *independently of existing Chamber code*, then audit actual source and define code Changes. **Not implemented or authorized for source edits.** **Scope:** developer tooling across pure game rules, application/DB, workers, Nest, the local workbench and held Storyteller packets. **Not:** player visual/UX redesign, gameplay feature development, a literal room, or live-provider permission.
 
 **Promise:** A developer specifies a meaningful game situation, instantly or quickly obtains the **smallest valid state** that makes it possible, drives the **real** corresponding rule or application operation under controlled time/input/failures, inspects causal before/after evidence, asserts expected results, and can reproduce or compare the experiment **without playing a whole campaign to reach the state**.

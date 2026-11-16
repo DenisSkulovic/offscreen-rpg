@@ -18,4 +18,4 @@ There are no chapters or chapter boundaries in the experience. A continuous conv
 
 ## Separation from staff forensics and replay product
 
-Player journal/return is not staff forensic investigation. Proposed Story Replay V1 (observability program) remains **proposed**—not a finished player feature—and belongs under [replay](replay.md) when filled, not as a silent claim here.
+Player journal/return is not staff forensic investigation. Proposed Story Replay V1 (observability program) remains **proposed**—not a finished player feature—and belongs under [replay](../../../work/designs/open/player-replay/README.md) when filled, not as a silent claim here.

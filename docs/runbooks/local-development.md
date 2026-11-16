@@ -1,10 +1,8 @@
 # Local development
 
-> **DOC01 P4 runbook owner.** Promoted from `docs/operations/development.md` (stub remains until P5).
-
 **Explore by question:** [local requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
 
-The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [progress](../progress.md) for demonstrated coverage and [the engine model](../../evidence/inspections/doc01-legacy-snapshot/engineering/engine-model.md) for current mechanics, time and memory limits; general inventory/combat and shared play remain unfinished.
+The TypeScript workspace runs a Next.js web application, NestJS API, Temporal workers and PostgreSQL, with Better Auth sessions and optional GitHub OAuth. Ordinary Story mode supports persistent creation/opening review, generated choices, timed mechanical commitments and saved consequences. The local Story launcher supplies a loopback development identity; provider execution is a separate explicit configuration and spending decision. Chamber supplies authored rehearsal and inspection through ordinary application operations. `/demo` is a separate browser-only presentation prototype. Keep the worker running when exercising background progression. See [STATUS](../../STATUS.md) for demonstrated coverage. Mechanics, time and memory limits are [chronology](../technical/engine/chronology-and-activities.md) and [selected architecture](../technical/engine/selected-architecture.md). General inventory, combat and shared play remain unfinished.
 
 ## Requirements and startup
 
@@ -156,7 +154,7 @@ Sessions live in PostgreSQL for seven days and are eligible for renewal after on
 
 Auth rate limits use the database. A server-written client-IP header prevents callers supplying their own rate-limit key; behind the current local Next proxy, requests share the proxy's address. Before public hosting, configure trusted ingress/client-IP forwarding, request size/time limits and an operational log destination. Library error logging remains disabled to avoid leaking credentials. API/worker lifecycle incidents use stable JSON events with curated error classification; retryable outbox failures also carry notice, operation and topic correlation. Arbitrary exception messages, SQL, provider payloads and player prose are deliberately excluded. Invitations, SSE authorization and story membership are not implemented by this identity slice.
 
-Use [implementation overview](../progress.md) for the next slice rather than inferring priority from this setup guide. Decisions listed in [open questions](../questions.md) remain open until the affected behavior needs them.
+Use [implementation overview](../../STATUS.md) for the next slice rather than inferring priority from this setup guide. Decisions listed in [open questions](../../work/designs/open/product-open-questions.md) remain open until the affected behavior needs them.
 
 ## Local live Story mode without OAuth
 
@@ -283,7 +281,7 @@ Run `pnpm chamber` for the authenticated local launcher, then navigate to `/stor
 
 Migration `0014_eminent_dagger.sql` adds nullable profile/execution/notes fields and private publication/accounting records. The launcher applies migrations to its dedicated local database. It creates no live funding allowance and does not enable provider execution.
 
-After a fresh affected build, `pnpm --filter @offscreen/api-integration test:storyteller` runs the focused PostgreSQL/Temporal/browser suite with `DATABASE_TEST_URL` targeting `offscreen_auth_test`. Run it sequentially with other integration suites because they share ports. Storyteller package tests inject fake HTTP transports; the integration suite uses local scripted/fake providers. No saved provider credentials are read. Production live flags and execution policy are documented in [runtime](../technical/storyteller-runtime.md); their presence does not supersede the spending rule.
+After a fresh affected build, `pnpm --filter @offscreen/api-integration test:storyteller` runs the focused PostgreSQL/Temporal/browser suite with `DATABASE_TEST_URL` targeting `offscreen_auth_test`. Run it sequentially with other integration suites because they share ports. Storyteller package tests inject fake HTTP transports; the integration suite uses local scripted/fake providers. No saved provider credentials are read. Production live flags and execution policy are documented in [runtime](../technical/storyteller/operation-and-controller.md); their presence does not supersede the spending rule.
 
 ## Mechanical rehearsal
 

@@ -1,8 +1,5 @@
 # Story creation, control and completion
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/story-lifecycle.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **Find the section:** [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
 
 ## Forked continuities
@@ -106,4 +103,4 @@ Finished stories remain readable; presentation-only work such as a recap or fina
 
 Deleting first removes access and fences writes in PostgreSQL, then reliably requests workflow shutdown and cleanup. Generation/media Activities recheck the deletion fence before attaching artifacts; orphaned objects are cleaned up. Keep a minimal deletion marker/operation identity long enough to prevent delayed work from recreating removed data. Do not delete the only record needed to reconcile an outstanding external charge.
 
-The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain product decisions in [open questions](../../questions.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.
+The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain product decisions in [open questions](../../../work/designs/open/product-open-questions.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.

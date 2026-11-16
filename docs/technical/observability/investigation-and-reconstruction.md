@@ -1,6 +1,6 @@
 # Forensic access and read contract V1 | Role-specific truth without a universal data leak
 
-**Status: proposed security/read architecture, 2026-11-15. No new staff grants/endpoints implemented or authorized.** Product [Admin investigation](../../../evidence/inspections/doc01-legacy-snapshot/programs/observability/admin-investigation-experience.md), existing [staff policy](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/staff-identity-and-policy.md), [selected Admin read boundaries](../admin/investigation-and-privacy.md), [audit policy](../admin/commands-and-audit.md), [evidence physical model](../../../evidence/inspections/obs-technical-essays-2026-11/physical-evidence-storage-v1.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context access.
+**Status: proposed security/read architecture, 2026-11-15. No new staff grants or endpoints are implemented or authorized.** Product intent is [AI investigation](../../product/admin/ai-engineering-and-investigation.md). Staff grants that already exist are [Admin authority](../admin/topology-and-authorization.md) and [investigation boundaries](../admin/investigation-and-privacy.md). Audit is [commands and audit](../admin/commands-and-audit.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context and not S3 raw prompts. Production Support grants are absent. OBS06/07 Situation UI is synthetic.
 
 ## 1. Five increasingly sensitive disclosures
 
@@ -18,7 +18,7 @@ The same evidence graph can produce several projections, but it must not send an
 
 ## 2. Capability taxonomy, proposed separate from existing AD01–AD08
 
-Use closed, versioned intact grants consistent with [Admin authority](../../../evidence/inspections/doc01-legacy-snapshot/programs/admin/technical/staff-identity-and-policy.md). Illustrative grant keys:
+Use closed, versioned intact grants consistent with [Admin authority](../admin/topology-and-authorization.md). Illustrative grant keys:
 
 ~~~text
 forensics.campaign.status.read
@@ -113,7 +113,7 @@ Recommended contract split:
 
 Each protected artifact needs retention class, subject/purpose owner, expiry and deletion/hold status. Authorization must check **both** current viewer scope **and** current source retention. An Admin may still see a safe tombstone such as “source existed; raw body expired” if lawful; the raw content must not be recoverable from some other SQL JSONB, object-store copy, cached SSR data, backup outside policy or old diagnostic zip.
 
-The current schema's `generation.input`, `generation.output`, `storyteller_dispatch_review.packet` and `storyteller_memory_exploration.snapshot` may retain the full private content. The [retention conflict](../../../evidence/inspections/obs-technical-essays-2026-11/physical-evidence-storage-v1.md#6-retention-conflict-in-the-current-schema-an-implementation-blocker) is a **launch blocker** for any promised raw-content TTL. Do not ship a privacy dashboard claiming 30-day erasure until the actual storage owners and backup/derived copy retention agree.
+The current schema's `generation.input`, `generation.output`, `storyteller_dispatch_review.packet` and `storyteller_memory_exploration.snapshot` may retain the full private content. That conflict is a **launch blocker** for any promised raw-content TTL. Do not ship a privacy dashboard claiming erasure until those existing columns, backups and derived copies are covered. A tombstone that says the body expired while the same bytes remain in SQL is a failed policy, not a success. See [retention](retention-and-access.md).
 
 For future shared stories, an account owner, participant, narrative subject and payer may differ. Access to one participant's published passage does not confer another participant's private character information or raw prompt configuration. Build authorization from actual published visibility/participation evidence, not `story.ownerId` as a permanent global policy.
 
@@ -136,3 +136,36 @@ For future shared stories, an account owner, participant, narrative subject and 
 15. Independent export/retention-hold permission needed even if a developer can view one raw packet.
 
 **Ready gate:** owner/security review of role/purpose/retention policy; existing Admin grant registry and audit source inspected; first S1 projections implemented and tested before exceptional raw body access. No access-changing Change is authorized by this document.
+
+## Reconstruction steps
+
+**Proposed, not landed.** The S0–S4 contract above is the access rule. This section is how a read would rebuild a moment after capture exists. It does not add a grant.
+
+An operator must name which truth they asked for:
+
+| View | What it is | What it is not |
+| --- | --- | --- |
+| Committed frontier N | State after a completed SQL story transition | A projected future completion |
+| Projected near future | An estimate from clock pace and a valid activity | A historic fact |
+| Published narrative | What a permitted viewer could see | Every private mechanic or model thought |
+| AI candidate | A frozen task, packet or pending output | Proof the story accepted it |
+
+`readHistoricalState(storyId, targetTransitionSeq, viewerPurpose)`:
+
+1. Authorize the viewer, the purpose and the field projection.
+2. Require a real committed transition at or after the earliest complete instrumented frontier.
+3. Take the newest verified checkpoint at or before the target. Reject a mismatched schema, owner, codec or checksum.
+4. Read the ordered transitions after that checkpoint through the target, including ordinal steps inside one commit.
+5. For each step, check the next sequence or a recorded gap, the typed delta, immutable source refs, and the before and after digests. Apply the **recorded** values only.
+6. Project the authorized perspective. Return state, as-of, coverage, source refs, integrity and what is unavailable.
+7. Do not write the game, call the Storyteller, draw randomness, advance time, admit work, signal Temporal, or touch the outbox.
+
+The applicator reuses recorded values and validation. It does not call the live command functions. Those functions may roll dice, read the clock, or contact other services. If the design becomes a generic JSON Patch interpreter, reject it.
+
+A missing historical root is a gap. Do not fill it from today's `story.documentRootHash`. A checkpoint built by reading the live campaign later is not a checkpoint of the old frontier.
+
+Substeps inside one SQL commit explain the batch. The only public frontier is the commit's final digest. Label intermediates "within one atomic transition."
+
+Sorting only by `gameSecond` can show a report before it was published. Sorting only by passage can hide mechanical progress that did not change the scene. Both axes stay visible. Coverage is several facts at once: published scenes through a revision, mechanical reconstruction from a transition onward, and whether a raw packet is still retained. One green badge is not allowed.
+
+**Landed limit.** C1 and C2 proved narrow recovery and an interrupted-action receipt. They are not this reader. No production reconstruction endpoint exists.

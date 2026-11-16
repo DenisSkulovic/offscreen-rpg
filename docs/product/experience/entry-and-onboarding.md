@@ -42,4 +42,30 @@ Do not show a one-option world picker inside the prepared route, call developer 
 
 A private creation draft owns incomplete choices. Explicit Save keeps an incomplete idea without generating prose or starting time. The stories page lists drafts separately from playable stories.
 
-See [acceptance scenarios](../gameplay/acceptance-scenarios.md) and the legacy [story creation stub](../journeys/story-creation.md) until that stub is retired in P5.
+See [acceptance scenarios](../gameplay/acceptance-scenarios.md).
+
+## Premise, stale previews and captured openings
+
+Editing a foundation, role or Storyteller choice makes an older generated opening visibly stale. Starting uses exactly the opening the player reviewed. It never silently regenerates it. If another tab changes a draft, keep the player's unsaved text and offer comparison with the saved version. A failed save or expired session must leave the text available to retry. Drafts are not shared merely because the eventual story may support several players.
+
+Examples demonstrate variety rather than hard-code supported professions: a wizard on a journey, a creature in a tank, a crew member aboard a ship. The generated beginning establishes the character, immediate surroundings, a few relevant connections and a reason for something to happen next. Distant places and incidental people develop when the story needs them.
+
+World setup is broader than terrain generation. An apartment, an underwater town, a star system and an abstract realm need meaningful places and ways to reach them. They need not share geography or physical scale. Do not ask the player to select a terrain generator before describing the story. A familiar name generated from model memory is an interpretation, not a promise of canonical accuracy.
+
+Creating an opening and starting its real-time progression are different actions. The story must not begin consuming response windows while the creator is still reviewing setup. Show useful progress during generation and allow recovery from failure without duplicate stories or duplicate spending.
+
+**Negative:** a recognizable place name does not authorize the model to fill missing lore from memory. An authored start is grounded in its pinned package. Anything outside that coverage follows the captured invention policy.
+
+## Initiative, invention ceilings and progressive entities
+
+Creation establishes how much narrative initiative the Storyteller has, independently of incident frequency and danger. The player may ask for a cultivated direction, occasional proactive developments, or an emergent ordinary life with no grand narrative. “No grand narrative” can still contain consequences. “Directed” does not promise a railroad or a particular ending.
+
+A prepared world declares ceilings for characters, places, groups, world elements and deep lore. The story may choose stricter values and cannot exceed them. Simple presets come first. This setting governs factual authorship, not prose quality: a canon-bound Storyteller may be highly proactive using supplied material, while an open-world Storyteller may remain quiet.
+
+When a start contains a hoped-for arc, antagonist move or reveal, preserve it as Storyteller-private noncanonical direction. Only scheduled facts that really must become due are admitted as executable obligations. The opening must not present a future possibility as already true.
+
+Creation seeds stable records for the player and for immediate places and people whose participation is part of the selected start. Incidental mentions may remain prose until the player interacts meaningfully, a later turn depends on them, or a supported mechanic needs current state. A spoken name alone does not invent combat statistics. A nonhuman story may register organisms, signals, collectives, or nothing analogous.
+
+Generating a playable candidate requires a selected profile. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story. Later catalogue edits do not alter it.
+
+Shared-story invitations, readiness and who may start remain an explicit open design. There is no requirement for public matchmaking, and those rules are not accepted by this page.

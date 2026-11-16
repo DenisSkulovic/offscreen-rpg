@@ -18,7 +18,7 @@ This package prepares bounded tasks, projects provider requests and validates re
 
 | Publish | Application [publication.ts](../application/src/storyteller/publication.ts) | Independent state fence and atomic commit |
 
-Internal `contextInputSchema` and provider `contextRequestSections` are different projections. Narrative evidence uses task-local handles; some resolution data deliberately retains internal receipt identity. Inspect the exact packet before claiming which IDs or evidence the model sees. The [worked request trace](../../docs/technical/playthroughs/storyteller.md) illustrates the boundary.
+Internal `contextInputSchema` and provider `contextRequestSections` are different projections. Narrative evidence uses task-local handles; some resolution data deliberately retains internal receipt identity. Inspect the exact packet before claiming which IDs or evidence the model sees. The [worked request trace](../../research/authored-scenarios/storyteller.md) illustrates the boundary.
 
 ## Implemented tasks and limits
 

@@ -1,13 +1,38 @@
 # Engine concurrency and recovery
 
-**Owner (DOC01 P3):** story locks, outbox, Temporal wake coordination, capture races, recovery.  
-**Status:** skeleton + pointers — fold ENG03 capture race matrix, execution.md durable delivery, and engine program concurrency claims here without inventing full ENG03 Done.
+**Owns:** how a story lock, a capture, an outbox wake and a retry interact so one accepted action has one effect.  
+**Selected target:** short capture under the lock, materialization and provider work outside the lock, then a fenced publication. See [selected architecture](selected-architecture.md).  
+**Landed subset:** ENG03-C1 provisional recovery and ENG03-C2 interrupted-action capture. **Full ENG03 is not finished.** The open packet [ENG03 short-lock context](../../../work/changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) remains Proposed.  
+**Does not own:** fictional time rules ([chronology](chronology-and-activities.md)) or provider settlement math ([spending](../platform/spending-and-entitlements.md)).
 
-## Start here until fold completes
+## What C1 and C2 actually proved
 
-- [Execution and delivery](../platform/execution-and-delivery.md)
-- [Chronology and activities](chronology-and-activities.md)
-- Engine decisions: `docs/programs/engine/decisions/eng03-*.md` (C1/C2: correct stale “not executed” banners on promote)
-- Full ENG03 short-lock remains **Proposed** Change
+ENG03-C1-R (2026-11-15, no provider spend) made public snapshots join `generation.kind` with `storyteller_context_capture.state`. A provisional `storyteller.context-capture.v1` always projects `canRetry: false`. A held exhausted provisional projects a safe blocker `{ kind: 'generation', recovery: 'operator' }` with `reason: null`. Migration `0006_eng03_c1r_provisional_recovery` adds `rearm_epoch` and an audit table. Application-private `rearmContextCapture` resets attempts once (epoch 1), enqueues the original `campaign.consequence.v1` wake, and preserves the generation and capture SHA. There is no Admin UI for that rearm.
 
-**Negatives to preserve:** settlement races, provisional capture promotion, interrupted-action capture, no second speculative generation for the same accepted action identity.
+ENG03-C2 (2026-11-15, no provider spend) added interrupted-action capture beside that path:
+
+1. **Stage 1, under the story lock.** SQL-only freeze. Provisional capture G. Link `campaignConsequence.generationId`. Hold the transfer. Durable wake. No document store under the lock. No `gameActionReceipt` yet.
+2. **Stage 2, off the lock.** Materialize an ordinary `task=consequence` with one factual interrupted receipt (`offer: null`, no roll, no effects). Promote the same G.
+3. **Stage 3.** Publication fence for the interrupted companion: execution interrupted, event match, absent success receipt, post-interrupt digest.
+
+An injected document-store delay showed Stage 1 hold time does not scale with that delay. Duplicate prepare yields one G and no success receipt.
+
+Evidence: [C1 provisional recovery](../../../evidence/inspections/doc01-retained-observations/programs/engine/evidence/eng03-c1r-provisional-recovery-2026-11-15.md) and [C2 interrupted capture](../../../evidence/inspections/doc01-retained-observations/programs/engine/evidence/eng03-c2-interrupted-capture-2026-11-15.md), plus the archived Changes those notes cite. Those notes are observations. This page is the contract for what they proved.
+
+## Negatives that are already enforced in those slices
+
+- A non-exhausted capture denies rearm (`rearm_ineligible_state`).
+- A live lease denies rearm (`lease_live`).
+- A duplicate `rearmId` is idempotent. A second distinct epoch after promote conflicts.
+- C1 and C2 tests do not call a model provider.
+- There is no second speculative success receipt for the same interrupted action identity.
+
+## What is still not done
+
+ENG03 priorities beyond C1 and C2 — activity, world, reports, continuation and opening capture — are not authorized as finished. An Admin-granted operator rearm endpoint and Control UI are out of scope of C1-R. Holding a SQL row lock across a remote provider call remains forbidden by the selected target and is not cleared by these two slices.
+
+**Negative:** do not describe full short-lock refactor as Done because C1 and C2 passed. Do not describe a synthetic disposable grant or a local Chamber race as production Support authority. A retry of an uncertain provider attempt must reconcile the existing receipt. It must not pay again or advance fictional time because the model was slow.
+
+## Recovery the player can see
+
+Commands, delivery and visible recovery for the solo prototype stay in [authority and transitions](authority-and-transitions.md). This page adds only the capture race: settlement and narration are different fences; an interrupted action can have a factual companion passage without a success receipt; provisional capture is not a retryable player button.

@@ -2,7 +2,7 @@
 
 Change: [S3a continuity evidence report](../../../../work/changes/open/2026-11-11--s3a-continuity-report/CHANGE.md).
 Status: **Proposed, parked, not implementing**. The portfolio/engineering modernization roadmap takes priority over gameplay; this old S3a selection provides no current permission to edit code.
-Execution route: historical [Vvardenfell initiative](../../../../evidence/inspections/doc01-legacy-snapshot/history/initiatives/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
+Execution route: historical [Vvardenfell initiative](../../../designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
 
 ## Phases
 

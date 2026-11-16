@@ -1,8 +1,5 @@
 # Delivery, operations and validation
 
-> **DOC01 P3 canonical technical owner.** Promoted from `docs/technical/delivery-and-validation.md`. Legacy path remains until P5 cutover. Reconcile program decisions (engine/OBS/Admin) claim-by-claim—do not invent acceptance.
-
-
 **Find the section:** [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
 
 The portfolio should demonstrate a coherent system operating under failure, not merely a list of technologies. A visitor should be able to run a local demo, experience a short story and inspect evidence of correct scheduling, state handling and measured AI use.
@@ -37,7 +34,7 @@ Keep inspection modest and separate from the story presentation. The Chamber ins
 
 Local access is part of the delivery task. Use configured GitHub sign-in for the normal application, or the `tools/chamber` workspace, which composes the built API, web and worker while seeding a disposable test user/story and authenticated browser session through existing test utilities. Cross-process PostgreSQL, Temporal and browser suites live in `tools/api-integration`, outside deployable package graphs. Never add a public login bypass or weaken owner checks to make the chamber easier to open. The documented launch path must not require LLM credentials.
 
-Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See the [remaining implementation slices](../../progress.md#where-to-go-next) for current status.
+Success means the short story is playable and inspectable across refresh and worker interruption, with exactly one committed outcome for a repeated choice or competing deadline. It does not demonstrate realistic geography, arbitrary model-generated mechanics, multiplayer resolution, notification delivery or narrative quality. Those need later fixtures and product decisions. See [STATUS](../../../STATUS.md) for current demonstrated coverage.
 
 ## First live-story POC: what the run must mean
 
@@ -136,7 +133,7 @@ CI should run formatting/linting, type checks, contract/policy tests, relevant i
 
 ## Implementation order
 
-Use the [implementation overview](../../progress.md) to identify the current checkpoint and missing components. It owns status; this section defines the delivery approach.
+Use the [implementation overview](../../../STATUS.md) to identify the current checkpoint and missing components. It owns status; this section defines the delivery approach.
 
 1. **Connect the existing foundation:** draft editing, scripted opening generation, persisted processing and preview display/reopen. Add the worker/outbox and read/update interfaces needed to connect the flow. Prove failures and restart behavior without paid calls.
 2. **Build a playable scripted story:** settle the affected product rules, then implement start once, current scene, choices, chronology, waiting, pause/resume and reconnect. Test individual components and their interaction. Do not mistake an opening-text generator for the game.

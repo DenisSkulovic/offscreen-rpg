@@ -30,7 +30,7 @@ Don't write credentials, tokens, private provider payloads, unredacted personal 
 
 ## Access and fresh-session behavior
 
-- **At a fresh substantial repository session:** read the [sessions index](../../work/sessions/README.md), the **latest relevant date** and the current [roadmap](../../TODO.md) / [Change queue](../../work/changes/README.md) as needed. For a focused known task, use the current owner/Change and read minutes only when earlier intent or rationale matters. Do **not** preload the entire archive by default.
+- **At a fresh substantial repository session:** read the [sessions index](../../work/sessions/README.md), the **latest relevant date** and the current [roadmap](../../ROADMAP.md) / [Change queue](../../work/changes/README.md) as needed. For a focused known task, use the current owner/Change and read minutes only when earlier intent or rationale matters. Do **not** preload the entire archive by default.
 - **During work:** append the active day's entries when repository documentation edits and Git writes are authorized. Keep the index's newest-date link current. Do not silently push an unrelated change or override an uncommitted file.
 - **When read-only or without write access:** supply a concrete proposed minutes entry in the handoff and state clearly it was **not persisted**; the next authorized agent should apply it. A rule cannot grant missing tool permissions.
 - **Before changing chat/agent:** ensure the important owner directions, decisions, unresolved items and artifact links reached the day's minutes, or explicitly tell the owner what remains unrecorded.

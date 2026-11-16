@@ -1,6 +1,6 @@
 # Gameplay and Storyteller concepts
 
-This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. These definitions do not require a new table or class for every term. See [progress](../../progress.md) for implemented coverage and [execution language](../../technical/playthroughs/execution-language.md) for runtime notation.
+This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. These definitions do not require a new table or class for every term. See [progress](../../../STATUS.md) for implemented coverage and [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation.
 
 ## The answer to “what does the Storyteller do?”
 
@@ -12,7 +12,7 @@ The next player decision can lead to another Storyteller turn. Several turns can
 
 ## Player and world concepts
 
-The Storyteller is a product identity realized by purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. [Active-scene continuity](../../technical/context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) defines its bounded request policy.
+The Storyteller is a product identity realized by purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. [Active-scene continuity](../../technical/storyteller/request-context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) defines its bounded request policy.
 
 | Term | Meaning | Boundary |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ At fictional second 600 a stranger arrives while Mara repairs the beacon. The ac
 3. The player inspects the badge for its admitted 90 fictional seconds. The engine records the supported D20 result once and commits the outcome at second 750. T3 describes that result and offers P3/D3. It cannot reroll to obtain a more convenient story.
 4. The player resolves the confrontation. T4 publishes the explicit activity handoff. The player selects authorized work or continues another available interaction.
 
-This illustrates the [committed-time contract](../../technical/committed-time.md), not a recorded live run. Finite automatic/check actions now have positive admitted durations and settle at their target fictional second; this complete beacon interaction remains a design example. The interrupted beacon earns no labor from the conversation, even though the world advances through it. Player deliberation and excess model latency add no fictional time. Durations belong to these illustrative offers, not universal conversation defaults. This is one contextual scene with several turns, passages and decisions, without a larger literary structure.
+This illustrates the [committed-time contract](../../technical/engine/chronology-and-activities.md), not a recorded live run. Finite automatic/check actions now have positive admitted durations and settle at their target fictional second; this complete beacon interaction remains a design example. The interrupted beacon earns no labor from the conversation, even though the world advances through it. Player deliberation and excess model latency add no fictional time. Durations belong to these illustrative offers, not universal conversation defaults. This is one contextual scene with several turns, passages and decisions, without a larger literary structure.
 
 In another run, a wait finishes quietly: receipt, updated state, and perhaps the next authorized activity, with no Storyteller turn. A report can arrive later without opening a decision. A microbe sensing a changed environment uses the same distinctions without a conversation, town or human identity.
 

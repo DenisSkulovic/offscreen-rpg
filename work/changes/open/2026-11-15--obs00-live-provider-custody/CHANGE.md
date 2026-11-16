@@ -2,7 +2,7 @@
 
 **State: Done for A; B blocked.** **Severity:** P0 pre-live correctness and forensic integrity. **Scope:** provider composition contract + server-authority source validation + provider-disabled mock transport tests. **No actual paid dispatch, production funding, model prompts or game engine changes authorized.**
 
-**Source evidence:** [live-worker wiring preflight](../../../../evidence/runs/observability-program-2026-11-15/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../evidence/runs/observability-program-2026-11-15/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../evidence/inspections/obs-technical-essays-2026-11/storyteller-prompt-source-map-v1.md), [capture failure semantics](../../../../evidence/inspections/obs-technical-essays-2026-11/capture-transaction-protocol.md), [private storage](../../../../evidence/inspections/obs-technical-essays-2026-11/protected-artifact-store-v1.md).
+**Source evidence:** [live-worker wiring preflight](../../../../evidence/runs/observability-program-2026-11-15/live-worker-dispatch-preflight-2026-11-15.md). **A proof:** [obs00-a](../../../../evidence/runs/observability-program-2026-11-15/obs00-a-dispatch-forward-2026-11-15.md). **Related contracts:** [prompt exactness](../../../../docs/technical/observability/identities-and-evidence.md), [capture failure semantics](../../../../docs/technical/observability/capture-and-provenance.md), [private storage](../../../../docs/technical/observability/retention-and-access.md).
 
 ## Cursor first screen
 
