@@ -57,10 +57,13 @@ export function parseMarkdownDocument(markdown) {
   }
 
   function contextOf(parents) {
-    const parent = [...parents]
-      .reverse()
-      .find((node) => node.type === 'paragraph' || node.type === 'tableCell' || node.type === 'heading');
-    return plain(parent).replace(/\s+/g, ' ').trim().slice(0, 400);
+    const row = [...parents].reverse().find((node) => node.type === 'tableRow');
+    const parent =
+      row ??
+      [...parents]
+        .reverse()
+        .find((node) => node.type === 'paragraph' || node.type === 'tableCell' || node.type === 'heading');
+    return plain(parent).replace(/\s+/g, ' ').trim().slice(0, 500);
   }
 
   function record(node, parents, kind) {

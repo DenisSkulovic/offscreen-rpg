@@ -136,6 +136,31 @@ export function runAgentSelfTest() {
     assert.equal(readFileSync(path.join(dir, 'docs', 'README.md'), 'utf8'), before);
   });
 
+  check('negation, rejected archive, and an unopened citation are not false authority', () => {
+    const negated = scoreAnswer('It is false that The proposal is accepted.', {
+      prohibited: ['The proposal is accepted'],
+    });
+    assert.equal(negated.passed, true);
+    assert.equal(negated.semanticCertification, false);
+    const rejected = scoreAnswer(
+      'See work/changes/archive/old/CHANGE.md as stale evidence. That archived packet is not permission to implement.',
+      {},
+    );
+    assert.equal(rejected.passed, true);
+    assert.equal(rejected.notes.includes('archive-mentioned-as-non-authority'), true);
+    const relied = scoreAnswer('The current normative proof is work/changes/archive/old/CHANGE.md.', {});
+    assert.equal(relied.critical, true);
+    const unread = scoreAnswer('See docs/product/gameplay/time-and-autonomy.md.', {
+      requiredPaths: ['docs/product/gameplay/time-and-autonomy.md'],
+    }, { openedPaths: [] });
+    assert.equal(unread.passed, true);
+    assert.deepEqual(unread.unverifiedCitations, ['docs/product/gameplay/time-and-autonomy.md']);
+    assert.equal(unread.semanticCertification, false);
+    const uncited = scoreAnswer('The absence rule is the product page.', {});
+    assert.equal(uncited.passed, true);
+    assert.equal(uncited.semanticCertification, false);
+  });
+
   check('dry run and unapproved launch do not start a model', () => {
     const report = dryRunReport();
     assert.equal(report.realLaunch, 'refused');
@@ -153,7 +178,7 @@ export function runAgentSelfTest() {
     return 1;
   }
   console.log(
-    'Agent harness self-test passed: fake traces, null usage, archive rejection, snapshot canary, refused launch. No model was called.',
+    'Agent harness self-test passed: fake traces, null usage, negation and archive rejection, unverified citation, snapshot canary, refused launch. No model was called.',
   );
   return 0;
 }

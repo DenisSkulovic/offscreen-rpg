@@ -139,7 +139,7 @@ For future shared stories, an account owner, participant, narrative subject and 
 
 ## Reconstruction steps
 
-**Proposed, not landed.** The S0–S4 contract above is the access rule. This section is how a read would rebuild a moment after capture exists. It does not add a grant.
+**Proposed, not landed.** The S0–S4 contract above is the access rule. This section is how a read would rebuild a moment after capture exists. It does not add a grant. The writer that would record those transitions is [proposed transition capture](capture-and-provenance.md). That page is not a landed writer and it does not authorize a Change.
 
 An operator must name which truth they asked for:
 

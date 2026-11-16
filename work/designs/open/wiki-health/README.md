@@ -1,6 +1,6 @@
 # Wiki Health | measurable knowledge-system design
 
-**State:** Design, 2026-11-16. WIKI01 has implemented the graph command. WIKI02 and WIKI03 are separate Changes. This folder does not reopen DOC04. The first graph run is a measurement, not a cleaned score: see the WIKI01 baseline. Do not add links only to raise reachability.
+**State:** Design, 2026-11-17. WIKI01–WIKI05 are Done. This folder does not reopen DOC04. Reachability and v2 retrieval are separate measurements. Do not add links or rename metrics to chase a score.
 
 ## Goal
 
@@ -16,11 +16,13 @@ A good graph is necessary but not sufficient. A good answer is necessary but may
 
 | Work unit | Implementation result | Permitted test boundary |
 | --- | --- | --- |
-| **[WIKI01 graph and health](../../../changes/archive/2026-11/other/2026-11-16--wiki01-markdown-graph-health/CHANGE.md)** | Markdown AST parser, typed directed graph, link/anchor validation, orphan/hop metrics, DOT/JSON output | **Done.** Provider-free. First baseline recorded; five docs pages remain unreachable |
-| **[WIKI02 static retrieval](../../../changes/archive/2026-11/other/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md)** | 30 reviewed gold questions, BFS, seeded Wiki Hopper, lexical BM25-style retrieval, Recall/MRR/nDCG reports | **Done.** Provider-free. First run blocked by graph errors; Recall@5 0.50 |
+| **[WIKI01 graph and health](../../../changes/archive/2026-11/other/2026-11-16--wiki01-markdown-graph-health/CHANGE.md)** | Markdown AST parser, typed directed graph, link/anchor validation, orphan/hop metrics, DOT/JSON output | **Done.** Provider-free. First baseline was 69/74 |
+| **[WIKI02 static retrieval](../../../changes/archive/2026-11/other/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md)** | 30 reviewed gold questions, BFS, seeded Wiki Hopper, lexical BM25-style retrieval | **Done.** The v1 names `Recall@5` and `MRR` are not the standard definitions. Preserve that report |
 | **[WIKI03 isolated agent harness](../../../changes/archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md)** | Host-traced fresh-session trials, redacted JSONL event adapter, external oracle and rubric | **Done as a fake harness.** No live agent benchmark |
+| **[WIKI04 navigation](../../../changes/archive/2026-11/other/2026-11-16--wiki04-navigation-and-authority/CHANGE.md)** | Five real routes, with capture and telemetry kept as proposals | **Done.** 74/74 canonical pages reachable |
+| **[WIKI05 benchmark validity](../../../changes/archive/2026-11/other/2026-11-16--wiki05-benchmark-validity/CHANGE.md)** | Standard owner recall, MRR and page nDCG, plus CompleteAnswer@k; row-aware Hopper click cost; fake-grader false positives | **Done.** v2 is not comparable with v1. No live agent |
 
-**Order:** WIKI01, WIKI02, and WIKI03 are Done. The owner authorized that sequence on 2026-11-16. Do not treat reachability misses or the static scores as permission to spam links. WIKI03 did not run a live agent.
+**Order:** WIKI01 through WIKI05 are Done. Do not treat a v2 number as proof the wiki got better. WIKI03 did not run a live agent. Ten implementer paraphrases are not an independent held-out set.
 
 The detailed target contracts below remain the design source; implementation receipts must not turn their hypothetical threshold examples into fake measured results.
 

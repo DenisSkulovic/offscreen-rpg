@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation protocol and authority
 
-**Status:** Selected internal developer-tooling contract. Inspected 2026-11-16: LabRun, chamber lab contracts and `apps/api/src/modules/stories/chamber-lab-controller.ts` exist. The November 12 draft described this protocol before that code landed. Fake-adapter, disposable-database, connected-worker and paid-provider lanes are different proofs; see [STATUS](../../../STATUS.md#capability-coverage). This document chooses shared wire/data/driver boundaries. Browser UI layout, exact class names and general player mechanics are not owned here. The [2026-11-12 gap audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) is a dated observation, not the current absence claim.
+**Status:** Selected internal developer-tooling contract. Inspected 2026-11-16: LabRun, chamber lab contracts and `apps/api/src/modules/stories/chamber-lab-controller.ts` exist. The November 12 draft described this protocol before that code landed. Fake-adapter, disposable-database, connected-worker and paid-provider lanes are different proofs; see [STATUS](../../../STATUS.md#capability-coverage). This document chooses shared wire/data/driver boundaries. Browser UI layout, exact class names and general player mechanics are not owned here. The laboratory promise and lane model are [Chamber and fixtures](chamber-and-fixtures.md). The [2026-11-12 gap audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) is a dated observation, not the current absence claim.
 
 ## Cheap reading route
 

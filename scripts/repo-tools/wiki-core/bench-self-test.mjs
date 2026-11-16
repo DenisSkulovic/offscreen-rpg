@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { runStaticBenchmark, validateCases } from './bench.mjs';
-import { summarizeHopper } from './hopper.mjs';
+import { pageNdcgAt, retrievalMetrics, runStaticBenchmark, runStaticBenchmarkV2, validateCases } from './bench.mjs';
+import { scoreVisibleChoice, summarizeHopper, summarizeHopperV2, walkHopperV2 } from './hopper.mjs';
 import { rankPages } from './search.mjs';
 
 function write(root, rel, text) {
@@ -177,6 +177,187 @@ export function runBenchSelfTest() {
     assert.ok(errors.some((error) => error.includes('heading not found')));
   });
 
+  check('complete answer, owner recall and standard MRR stay distinct', () => {
+    const owners = [
+      { path: 'docs/a.md', role: 'mandatory', grade: 3 },
+      { path: 'docs/b.md', role: 'mandatory', grade: 2 },
+    ];
+    const missing = retrievalMetrics(['docs/a.md', 'docs/c.md'], owners);
+    assert.equal(missing.completeAnswerAt5, 0);
+    assert.equal(missing.ownerRecallAt5, 0.5);
+    assert.equal(missing.mrr, 1);
+    const both = retrievalMetrics(['docs/a.md', 'docs/c.md', 'docs/d.md', 'docs/b.md'], owners);
+    assert.equal(both.completeAnswerAt5, 1);
+    assert.equal(both.ownerRecallAt5, 1);
+    assert.equal(both.mrr, 1);
+    const absent = retrievalMetrics(['docs/c.md', 'docs/d.md'], owners);
+    assert.equal(absent.mrr, 0);
+    assert.equal(absent.ownerRecallAt5, 0);
+    assert.equal(absent.completeAnswerAt5, 0);
+  });
+
+  check('two headings on one page are one ideal document', () => {
+    const owners = [
+      { path: 'docs/story.md', role: 'mandatory', grade: 3 },
+      { path: 'docs/story.md', role: 'companion', grade: 2 },
+    ];
+    const metrics = retrievalMetrics(['docs/story.md'], owners);
+    assert.equal(metrics.pageGrades.length, 1);
+    assert.equal(metrics.pageGrades[0].grade, 3);
+    assert.equal(metrics.ndcgAt5, 1);
+    assert.equal(pageNdcgAt([3], [3, 2], 5) === 1, false);
+  });
+
+  check('normative authority risk is not a measured zero', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-v2-auth-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\n[Time](product/time.md)\n\nHistorical [old packet](../work/changes/archive/old/CHANGE.md) is not the current contract.\n',
+    );
+    write(root, 'docs/product/time.md', '# Time\n\n## Response windows and absence\n\nFictional time.\n');
+    write(root, 'work/changes/archive/old/CHANGE.md', '# Old\n\n' + 'fictional time advance accepted action '.repeat(30));
+    const report = runStaticBenchmarkV2(root, [baseCase()], { repoSha: 'fixture', dirty: false, seed: 1, trials: 2 });
+    assert.equal(report.rows[0].authority.normative.evaluated, false);
+    assert.equal(report.rows[0].authority.adversarial.evaluated, true);
+    assert.equal(report.rows[0].authority.adversarial.historicInTop5, true);
+  });
+
+  check('a proposal can support a question without becoming the gameplay owner', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-v2-prop-'));
+    write(root, 'docs/README.md', '# Docs\n\n[Time](product/time.md)\n[Proposed standing life](../work/designs/open/standing.md)\n');
+    write(root, 'docs/product/time.md', '# Time\n\n## Response windows and absence\n\nAccepted absence rule.\n');
+    write(
+      root,
+      'work/designs/open/standing.md',
+      '# Standing\n\n## Proposal\n\nstanding life fictional time advance accepted action proposal only\n',
+    );
+    const item = baseCase({
+      question: 'standing life fictional time advance accepted action',
+      owners: [
+        { path: 'docs/product/time.md', headingText: 'Response windows and absence', role: 'mandatory', grade: 3, hopper: true },
+        { path: 'work/designs/open/standing.md', headingText: 'Proposal', role: 'companion', grade: 1 },
+      ],
+    });
+    const report = runStaticBenchmarkV2(root, [item], { repoSha: 'fixture', dirty: false, seed: 1, trials: 2 });
+    assert.equal(report.rows[0].corpus, 'proposal-aware');
+    assert.equal(report.rows[0].proposedIsMandatoryOwner.includes('work/designs/open/standing.md'), false);
+    assert.equal(report.rows[0].primaryRecallAt5, 1);
+  });
+
+  check('question table row chooses the link the label cannot', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-row-'));
+    write(
+      root,
+      'docs/README.md',
+      [
+        '# Docs',
+        '',
+        '| Question | Owner |',
+        '| --- | --- |',
+        '| What is the game, in one place? | [Vision](vision.md) |',
+        '| Who may change dice, items and commitments? | [Rules](rules.md) |',
+        '',
+      ].join('\n'),
+    );
+    write(root, 'docs/vision.md', '# Vision\n\n## Earned life\n\nA world.\n');
+    write(root, 'docs/rules.md', '# Rules\n\n## Dice\n\nDice.\n');
+    const item = baseCase({
+      question: 'What is the game, in one place?',
+      owners: [{ path: 'docs/vision.md', headingText: 'Earned life', role: 'mandatory', grade: 3, hopper: true }],
+    });
+    const report = runStaticBenchmarkV2(root, [item], { repoSha: 'fixture', dirty: false, seed: 1, trials: 2 });
+    assert.equal(report.rows[0].hopperRow.greedyHit, true);
+    assert.equal(report.rows[0].hopperLabel.greedyHit, false);
+    assert.equal(report.rows[0].hopperLabel.stopped, 'no-candidate');
+  });
+
+  check('backtracked clicks count against hit@3', () => {
+    const edges = [
+      { from: 'start', to: 'bad1', label: 'time autonomy extra', kind: 'canonical-navigation', context: '' },
+      { from: 'bad1', to: 'bad2', label: 'time autonomy extra', kind: 'canonical-navigation', context: '' },
+      { from: 'bad2', to: 'bad3', label: 'time autonomy extra', kind: 'canonical-navigation', context: '' },
+      { from: 'bad2', to: 'start', label: 'time autonomy extra', kind: 'canonical-navigation', context: '' },
+      { from: 'bad3', to: 'bad4', label: 'time autonomy extra', kind: 'canonical-navigation', context: '' },
+      { from: 'start', to: 'mid', label: 'time notes', kind: 'canonical-navigation', context: '' },
+      { from: 'mid', to: 'goal', label: 'time notes', kind: 'canonical-navigation', context: '' },
+    ];
+    const walk = walkHopperV2({
+      start: 'start',
+      edges,
+      headingText: new Map(),
+      question: 'time autonomy',
+      policy: 'greedy',
+      random: () => 0,
+      target: 'goal',
+      contextMode: 'label',
+      hopCap: 8,
+    });
+    assert.equal(walk.hit, true);
+    assert.ok(walk.hitForwardOpens > 3);
+    assert.equal(walk.routeEdges, 2);
+    assert.equal(walk.hit && walk.hitForwardOpens <= 3, false);
+    assert.ok(walk.backtracks >= 2);
+    assert.ok(walk.preventedRevisits > 0);
+    assert.equal(walk.events.some((event) => event.type === 'loop-prevention'), true);
+    assert.equal(walk.events.some((event) => event.type === 'backtrack'), true);
+  });
+
+  check('no visible match stops instead of counting as success', () => {
+    const walk = walkHopperV2({
+      start: 'start',
+      edges: [{ from: 'start', to: 'other', label: 'mail', kind: 'canonical-navigation', context: 'weather' }],
+      headingText: new Map(),
+      question: 'xylophonequartz ceremony',
+      policy: 'greedy',
+      random: () => 0,
+      target: 'other',
+      contextMode: 'row',
+    });
+    assert.equal(walk.hit, false);
+    assert.equal(walk.stopped, 'no-candidate');
+  });
+
+  check('destination body is not a ranking feature', () => {
+    const tokens = ['game', 'place'];
+    const wrong = scoreVisibleChoice(tokens, {
+      label: 'Vision',
+      headingText: '',
+      rowContext: '',
+      to: 'docs/vision.md',
+      body: 'game place game place',
+    }, 'row');
+    const right = scoreVisibleChoice(tokens, {
+      label: 'Vision',
+      headingText: '',
+      rowContext: 'What is the game, in one place?',
+      to: 'docs/vision.md',
+      body: '',
+    }, 'row');
+    assert.equal(wrong, 0);
+    assert.ok(right > wrong);
+  });
+
+  check('row-aware hopper repeats for one seed', () => {
+    const edges = [
+      { from: 'docs/README.md', to: 'docs/a.md', label: 'Vision', context: 'What is the game', kind: 'canonical-navigation' },
+      { from: 'docs/README.md', to: 'docs/b.md', label: 'Rules', context: 'Who changes dice', kind: 'canonical-navigation' },
+    ];
+    const args = {
+      start: 'docs/README.md',
+      edges,
+      headingText: new Map(),
+      question: 'What is the game',
+      target: 'docs/a.md',
+      seed: 20261116,
+      trials: 20,
+      contextMode: 'row',
+    };
+    assert.deepEqual(summarizeHopperV2(args), summarizeHopperV2(args));
+    const other = summarizeHopperV2({ ...args, seed: 7 });
+    assert.equal(typeof other.stochastic.hitAt3, 'number');
+  });
+
   check('hopper seed repeats', () => {
     const edges = [
       { from: 'docs/README.md', to: 'docs/a.md', label: 'Time and autonomy', fromHeading: null, kind: 'canonical-navigation' },
@@ -211,7 +392,7 @@ export function runBenchSelfTest() {
     return 1;
   }
   console.log(
-    'Static bench self-test passed: route, vague label, disconnection, vocabulary gap, mandatory recall, historic bait, gold validation, seeded hopper.',
+    'Static bench self-test passed: v1 route and recall, v2 complete-answer/MRR/nDCG, authority lanes, table-row hopper, click cost, seeded walks.',
   );
   return 0;
 }

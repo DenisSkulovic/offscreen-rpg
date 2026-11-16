@@ -32,6 +32,7 @@ One owner per guarantee. Product intent is [product](../product/README.md). Thes
 | What visual runtime is selected? | [Presentation runtime](client/presentation-runtime.md) |
 | What accessibility and cost bars apply? | [Accessibility and performance](client/accessibility-and-performance.md) |
 | What may a staff grant do? | [Admin topology](admin/topology-and-authorization.md) |
+| How does the staff console navigate, render and isolate its data? | [Console and read models](admin/console-and-read-models.md) |
 | What may an investigation reveal? | [Investigation and privacy](admin/investigation-and-privacy.md) |
 | What is a forensic turn capsule? | [Identities and evidence](observability/identities-and-evidence.md#turn-evidence-capsule) |
 | How is a Chamber fixture not a gameplay proof? | [Chamber and fixtures](lab/chamber-and-fixtures.md) |

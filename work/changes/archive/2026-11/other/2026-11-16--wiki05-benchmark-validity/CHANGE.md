@@ -1,6 +1,6 @@
 # WIKI05 | Repair retrieval metrics, Hopper realism and agent rubric
 
-**State: Proposed, NOT selected.** Code-bearing benchmarking Change. Depends on a stable WIKI04 graph snapshot; keep the entire WIKI01–03 implementation and historical reports. **No live model run or provider use authorized.** Source-reviewed starting code SHA: `51b21588b4a115cf7e7690c13fdcd9dee906833f.
+**State: Done (2026-11-17).** Code-bearing benchmarking Change. WIKI04 graph was already 74/74. Historical v1 reports stay `wiki.static.v1`. **No live model run or provider use.** Starting code SHA: `51b21588b4a115cf7e7690c13fdcd9dee906833f`. Execution HEAD: `9fbeb8aa99a2d745c049f67c840157028c7e8b4d` plus this dirty tree.
 
 ## Why this is necessary
 
@@ -49,8 +49,23 @@ See [verification](VERIFICATION.md).
 
 | Measurement owner | Falsifiable output | State |
 | --- | --- | --- |
-| W1 ranking/metric math | standard + strict distinct metrics with unit tests | Pending |
-| Gold topology | agent/docs entrypoint correctness and role-aware scoring | Pending |
-| Hopper observable navigation | actual chronological click-cost + table-row context | Pending |
-| Adversarial authority index | real exposures and scored wrong-route cases | Pending |
-| WIKI03 scripted grader | false-positive/negative checks; no claimed live validity | Pending |
+| W1 ranking/metric math | CompleteAnswer@5 stays 0.50. Owner Recall@5 macro is 0.667 and micro is 0.622. Standard MRR is 0.492 on the pre-repair docs and 0.486 after WIKI04. Page nDCG@5 is about 0.48. v1 MRR near 0.31 is the old conditional rank, not this MRR | updated `scripts/repo-tools/wiki-core/bench.mjs` |
+| Gold topology | A06 from `docs/README.md` still fails and is excluded from the docs-route mean. The same owners from `AGENTS.md` succeed. No docs-root link was added | updated |
+| Hopper observable navigation | On the repaired wiki, label-only stochastic hit@3 is 0.285 and row-aware hit@3 is 0.357. A fixture with more than 3 forward opens and a final route of 2 edges fails hit@3. Table-row context is read; destination body is not | updated `hopper.mjs`, `markdown.mjs` |
+| Adversarial authority index | Normative lane is `evaluated: false`. Adversarial historic-in-top5 is 0.60 on both doc snapshots | updated |
+| WIKI03 scripted grader | Negated prohibited text and an archive cited as non-authority pass the substring check. Relying on an archive as current proof still fails. An unread path is unverified. `semanticCertification` is false | updated `agent-score.mjs` |
+| Product and technical contracts | No gameplay or technical guarantee was edited to move a score | unchanged |
+| Independent held-out questions | Not supplied. Ten paraphrases are implementer-drafted and labeled as such. CompleteAnswer@5 on those ten is 0.40 at 20 trials | unresolved |
+
+## Paired measurements
+
+Same 30 gold cases, seed `20261116`, 100 Hopper trials. v2 gain is `(2^grade - 1) / log2(rank + 1)` with one maximum grade per page.
+
+| Snapshot | Graph | v1 Recall@5 | v1 MRR | v2 CompleteAnswer@5 | v2 owner Recall@5 macro | v2 MRR | v2 row hit@3 | v2 label hit@3 | Adversarial historic@5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Clean `9fbeb8aa` docs, rescored with this scorer | blocked, 5 hard errors | 0.500 | 0.311 | 0.500 | 0.667 | 0.492 | 0.351 | 0.286 | 0.600 |
+| Dirty tree after WIKI04 routes and these metric fixes | measured, 74/74 | 0.500 | 0.306 | 0.500 | 0.667 | 0.486 | 0.357 | 0.285 | 0.600 |
+
+The MRR jump from about 0.31 to about 0.49 is the definition change. The wiki repair did not move CompleteAnswer@5. Row-aware hit@3 beats label-only on both snapshots, so that gap is the instrument reading question tables. v2 semantic SHA on the dirty tree: `61edbf00fce69bf2591cbe5866211cb451bde574308b524a7d59c90a064b2cb2`.
+
+Commands: `pnpm wiki:health --self-test`, `pnpm wiki:bench:static --self-test`, `pnpm wiki:bench:static --seed 20261116`, `pnpm wiki:bench:agent --self-test`, `pnpm wiki:health`, `python scripts/check_docs.py`, `git diff --check`. The pre-repair rescore imported this scorer and pointed it at a detached worktree of `9fbeb8aa`, then removed that worktree. No model call and no game runtime edit.

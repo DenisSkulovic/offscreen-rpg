@@ -1,6 +1,6 @@
 # WIKI05 | Execution checkpoint
 
-**State:** Proposed; not selected. **Dependency:** WIKI04 graph stable or an explicit frozen canonical revision. WIKI03 must remain fake-only unless a separate owner-authorized model pilot is selected.
+**State:** Done (2026-11-17). WIKI04 was archived first. WIKI03 stayed fake-only. No model pilot was run.
 
 1. P0: Freeze a baseline revision with WIKI02 v1 outputs and the original 30 case/gold owner set. Review metric semantics and source.
 2. P1: Implement correct standard page-level Recall@k, MRR and nDCG plus separately named CompleteAnswer@k and proposal/STATUS compound success. Version schema v2; preserve v1 reports.

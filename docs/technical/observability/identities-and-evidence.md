@@ -10,6 +10,11 @@ Use **three cooperating contracts**, each with its own reliability and retention
 2. **Versioned evidence envelope + artifact graph:** small SQL-indexed envelopes tell us what work happened and reference immutable, typed CAS artifacts containing the **actual frozen application-level values** consumed/produced. Capture only at meaningful boundaries. This is an append-only *forensic sidecar*, **not** a second command bus or alternate source of game authority.
 3. **OpenTelemetry spans / process logs / metrics:** timings, health and troubleshooting signals, linked by operation/generation/artifact IDs. Traces may be sampled and retained briefly; the durable evidence graph must not depend on their existence.
 
+The numbered shape above is the indexed evidence target. Two siblings stay in this folder because the documentation architecture names them here. They are **proposals**, not selected contracts and not installed systems:
+
+- [Proposed transition capture](capture-and-provenance.md) describes one finite-action writer. That page authorizes no code, schema or test.
+- [Proposed runtime telemetry](telemetry-and-diagnostics.md) recommends OpenTelemetry and Grafana. That stack is not deployed, and losing a trace is not missing game evidence.
+
 The envelope may point to zero, one or many artifacts. Every edge has an explicit relationship, timestamp/source and recorded coverage. **The same data type that code consumes can be serialized and rehydrated** when versioned stable codecs exist; no production object containing sockets, closures, secrets or nonportable handles should be archived blindly.
 
 ## Turn Evidence Capsule

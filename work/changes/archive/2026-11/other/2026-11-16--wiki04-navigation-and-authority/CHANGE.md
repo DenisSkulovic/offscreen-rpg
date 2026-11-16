@@ -1,10 +1,10 @@
 # WIKI04 | Repair real wiki navigation without link farming
 
-**Status: Proposed, NOT selected.** Code-bearing wiki-maintenance change (navigation documents + regression fixtures). Authoritative baseline for review: `51b21588b4a115cf7e7690c13fdcd9dee906833f, 2026-11-16. Reinspect current HEAD and any local user work before execution.
+**State: Done (2026-11-17).** Code-bearing wiki-maintenance change (navigation documents + regression fixtures). Authoritative pre-change docs matched `51b21588b4a115cf7e7690c13fdcd9dee906833f`; execution HEAD was `9fbeb8aa99a2d745c049f67c840157028c7e8b4d` (planning commit only; no doc or scorer delta versus that baseline).
 
 ## Independent audit and actual baseline
 
-WIKI01 reports zero broken maintained paths and anchors but only 69/74 canonical docs reachable from `docs/README.md (five unreachable; median reachable hops 2, p95 3). WIKI02 has a blocked 30-case run because the graph is not fully connected. Its source code is now on GitHub, and its first benchmark is implementer-validated, not independently reviewed. Re-run the actual graph on a **clean revision** at the start, storing baseline reports; do not mistake a prior dirty-worktree run for a newly executed benchmark.
+WIKI01 reports zero broken maintained paths and anchors but only 69/74 canonical docs reachable from `docs/README.md` (five unreachable; median reachable hops 2, p95 3). WIKI02 has a blocked 30-case run because the graph is not fully connected. Its source code is now on GitHub, and its first benchmark is implementer-validated, not independently reviewed. Re-run the actual graph on a **clean revision** at the start, storing baseline reports; do not mistake a prior dirty-worktree run for a newly executed benchmark.
 
 The five presently unreachable documents and their status:
 
@@ -42,7 +42,27 @@ Do not improve canonical reachability by silently excluding a previously canonic
 
 | Responsible change | Actual result | Evidence | State |
 | --- | --- | --- | --- |
-| Runbooks, Admin and Lab wiki routes | before/after links and path audit | CLI+diff | Pending |
-| OBS proposal authority review | explicit selection/deferral, no invented grants | owner headings | Pending |
-| Graph integrity and classification fixtures | real tests, actual reachable count | test logs | Pending |
-| Old benchmark re-run | honest observed scores, still v1 | JSON report | Pending |
+| Runbooks, Admin and Lab wiki routes | Runbooks from `docs/README.md`; console from the technical index and Admin topology; Chamber protocol linked both ways from the overview | `pnpm wiki:health` on the dirty tree: canonical 74, reachable 74, orphans 0, weak components 1. Shortest paths below | updated |
+| OBS proposal authority review | Capture and telemetry stay at their DOC01 paths. They were not moved and not ratified as selected or installed. Inbound routes say **proposed** / not deployed | Status lines in the two pages plus the evidence-graph and reconstruction links | updated |
+| Graph integrity and classification fixtures | Unlink keeps the denominator and fails reachability. A “current implemented design” label on an open proposal is `authority-route`. A move fixture emits `reclassification-receipt` and drops the canonical count by one | `pnpm wiki:health --self-test` passed. `python scripts/check_docs.py --self-test` passed, including missing heading fragments | updated |
+| Old benchmark re-run | Same v1 scorer. Clean baseline was blocked at 69/74. After the links, status is `measured` because hard graph errors are gone. v1 Recall@5 53.3%, MRR 0.317, nDCG@5 0.484, Hopper hit@3 32.1%. Those names are still the WIKI02 definitions. The small numeric drift is new link text under the old scorer, not a quality grade | `pnpm wiki:bench:static --seed 20261116` exit 0. Semantic `c27b4f55ef2a210b8c539762d2d21818bee9dbeef0330635cb0272a1016221bd` | updated |
+| Product behavior and technical guarantees | Navigation and proposal labels only. No rule, grant, capture writer or telemetry stack was selected | Product pages not edited for this outcome | unchanged |
+| WIKI02 scoring | Parser context and metric names were not changed | `scripts/repo-tools/wiki-core/bench.mjs` untouched | unchanged |
+
+## Measured routes
+
+Baseline at clean `9fbeb8aa` (docs bytes identical to `51b21588`): canonical 74, reachable 69, ratio 0.9324, hop median 2, p95 3, orphans 4, weak components 2, broken paths 0, broken anchors 0. v1 bench status `blocked-by-graph-integrity`, Recall@5 50.0%, MRR 0.311, nDCG@5 0.479, Hopper stochastic hit@3 32.3%. Exit code 1. Semantic `3c2d33ec3a4ad7d01196ea5b2bb495dc1f6a06ca49e9a8d00ffbe31ec47abae8`.
+
+After the links, still on `9fbeb8aa` with a dirty tree: canonical 74, reachable 74, ratio 1, hop median 2, p95 3, max 3, orphans 0, dead ends 3 (unchanged pre-existing pages), weak components 1. Pages reclassified out of `docs/`: 0.
+
+| Page | Shortest canonical path | Authority recorded |
+| --- | --- | --- |
+| `docs/runbooks/README.md` | `docs/README.md` → runbooks index | Operations index. Local-development shortcut kept |
+| `docs/technical/admin/console-and-read-models.md` | `docs/README.md` → technical index → console. Also linked from Admin topology | Already a selected frontend target |
+| `docs/technical/lab/experiment-protocol.md` | `docs/README.md` → chamber overview → protocol, and the protocol links back | Already a selected Chamber contract. Isolated component removed |
+| `docs/technical/observability/capture-and-provenance.md` | `docs/README.md` → technical index → evidence graph → capture | Proposal only. No code authorization. Not moved, because DOC01 names this path and OBS04 still cites it |
+| `docs/technical/observability/telemetry-and-diagnostics.md` | `docs/README.md` → technical index → evidence graph → telemetry | Recommendation, not installed. Not a deployed monitoring stack |
+
+Pre-existing dead ends left alone: `docs/product/admin/charter-and-personas.md`, `docs/technical/platform/notifications.md`, `docs/technical/platform/persistence-and-caching.md`.
+
+Commands actually run: `pnpm wiki:health`, `pnpm wiki:health --self-test`, `pnpm wiki:graph`, `pnpm wiki:bench:static --self-test`, `pnpm wiki:bench:static --seed 20261116`, `python scripts/check_docs.py`, `python scripts/check_docs.py --self-test`, `git diff --check`. No model call, no game runtime edit. `out/` reports are local and gitignored.

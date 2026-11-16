@@ -1,6 +1,6 @@
 # Admin frontend, navigation and interaction contracts
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Command Center](../../product/admin/command-center-and-insights.md), [Personas](../../product/admin/charter-and-personas.md), [Player 360](../../product/admin/player-360-and-support.md), [Authority](../../product/admin/authority-and-governance.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](./investigation-and-privacy.md).
+**Status:** Selected technical target, 2026-11-14. Product owners: [Command Center](../../product/admin/command-center-and-insights.md), [Personas](../../product/admin/charter-and-personas.md), [Player 360](../../product/admin/player-360-and-support.md), [Authority](../../product/admin/authority-and-governance.md). Control-plane topology and grants: [topology and authorization](topology-and-authorization.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](./investigation-and-privacy.md).
 
 ## 1. One staff shell with isolated authentication and data
 

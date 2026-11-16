@@ -10,7 +10,7 @@
 | --- | --- |
 | Which testing mode, and why? | [Operating model](#1-operating-model) |
 | “Teleport” to a precise state | [Specimens and checkpoints](#2-state-specimens-and-checkpoints) |
-| Scenario schema/commands | [Scenario protocol](#3-scenario-protocol-and-api) |
+| Scenario schema, drivers and contracts | [Scenario protocol](#3-scenario-protocol-and-api) · [experiment protocol](experiment-protocol.md) |
 | Clocks, draws and asynchronous work | [Determinism](#4-time-entropy-and-delivery-control) |
 | Fault injection | [Failure and concurrency](#5-controlled-failure-and-concurrency) |
 | Developer experience | [Workbench](#6-interactive-workbench) |
@@ -53,6 +53,8 @@ Search this *situation* → choose a minimal valid specimen → adjust semantic 
 - A pure test may use an in-memory typed specimen; a persisted scenario must prove the actual repository/transaction boundary. Fresh database-per-case is optional and justified by measured cost; a dedicated isolated run DB/template/namespace is selected by correctness and speed, never by convenience alone.
 
 ## 3. Scenario protocol and API
+
+Scenario identity, driver split and fixture contracts are specified in the [Chamber experiment protocol](experiment-protocol.md). This section keeps the laboratory overview.
 
 One **declarative typed scenario contract** with separate arrange, act, observe and assert stages. Versioned Zod/TypeScript descriptors, explicit drivers, stable IDs and deterministic seeds. Browser cannot submit arbitrary JavaScript, shell commands or SQL.
 

@@ -9,7 +9,7 @@
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 
 **Current development priority:**
-1. Selection owner: [work/changes/README.md](work/changes/README.md). **Current change:** none. WIKI01, WIKI02, and WIKI03 are Done. WIKI03 did not run a live agent. QA-SF01 remains **Blocked** open (not auto-selected).
+1. Selection owner: [work/changes/README.md](work/changes/README.md). **Current change:** none. WIKI04 is Done: 74/74 canonical docs pages are reachable from `docs/README.md`. Capture and telemetry stay proposal-status technical pages, not selected or installed systems. WIKI05 is Done: `wiki.static.v2` reports standard retrieval metrics beside the preserved v1 report. No live agent was run. WIKI01, WIKI02, and WIKI03 are Done. QA-SF01 remains **Blocked** open (not auto-selected).
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
 3. Prefer new product/technical subject owners. Coverage for what the source actually contains is the matrix below. Do not treat a retired study or an archived packet as implementation permission.
 

@@ -1,6 +1,6 @@
 # WIKI04 | Execution checkpoint
 
-**State:** Proposed; not selected. **Dependency:** post-WIKI03 graph scripts present. Execution requires explicit owner selection. No provider calls or game code edits.
+**State:** Done (2026-11-17). Checkpoints P0–P5 were executed on `9fbeb8aa`. No provider calls or game code edits. WIKI05 owns metric math.
 
 1. P0: Pin actual clean HEAD, inspect local edits, freeze WIKI01 and WIKI02 v1 reports and original five unreachable paths.
 2. P1: Inspect the observability proposals and decide selected-future versus genuinely unaccepted before moving/linking them. Record source-level authority, not “no code authorized” as proof a target is unselected.

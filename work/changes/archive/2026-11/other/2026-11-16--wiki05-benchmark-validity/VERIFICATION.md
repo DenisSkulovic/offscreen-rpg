@@ -1,6 +1,6 @@
 # WIKI05 | Benchmark correctness and non-gaming tests
 
-**This verification plan is not evidence of execution.** All required tests must use a fixed real Git SHA and simulated documents where needed. No live model calls.
+**Executed 2026-11-17** against dirty `9fbeb8aa99a2d745c049f67c840157028c7e8b4d` and, for the paired rescore, a detached worktree of that clean SHA. Self-tests cover the mathematical fixtures, the table-row hopper, the backtrack click-cost case, negation, and archive rejection. The ten paraphrases are not independently approved. No live model calls.
 
 ## Mathematical truth fixtures
 

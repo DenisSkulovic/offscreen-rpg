@@ -17,8 +17,9 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | What is a forensic turn, and what was the model shown? | [Turn capsule](technical/observability/identities-and-evidence.md#turn-evidence-capsule) |
 | Where do hydration, cache and commands live? | [State and server boundary](technical/client/state-and-server-boundary.md) |
 | How do I run a Chamber test without paying a model? | [Chamber fixtures](technical/lab/chamber-and-fixtures.md) · [local development](runbooks/local-development.md) |
+| How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
 | What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [change selection](../work/changes/README.md) |
 
-Subject maps: [product](product/README.md), [technical](technical/README.md). Open policy that is not accepted lives under [work/designs](../work/designs/README.md). Dated observations live under [evidence](../evidence/README.md). Coding-agent rules live under `.agents/`, separate from in-game provider cost ([spending](technical/platform/spending-and-entitlements.md)).
+Subject maps: [product](product/README.md), [technical](technical/README.md), [runbooks](runbooks/README.md). Open policy that is not accepted lives under [work/designs](../work/designs/README.md). Dated observations live under [evidence](../evidence/README.md). Coding-agent rules live under `.agents/`, separate from in-game provider cost ([spending](technical/platform/spending-and-entitlements.md)).
 
 Historical Change dossiers stay in `work/changes/archive/`. They are not the first place to read the current contract.

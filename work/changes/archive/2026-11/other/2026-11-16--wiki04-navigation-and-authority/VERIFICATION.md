@@ -1,6 +1,6 @@
 # WIKI04 | Wiki navigation verification
 
-**Required for closure, not yet performed.** Freeze actual pre-change SHA, exact WIKI01/WIKI02 parser+dataset versions and baseline reports first.
+**Executed 2026-11-17** on `9fbeb8aa99a2d745c049f67c840157028c7e8b4d` with a dirty worktree after the navigation edits. Pre-change freeze was that same SHA, clean, docs identical to `51b21588`. Dataset remained `wiki-static-v1`. Scorer files were not edited. Result: 74/74 canonical pages reachable, 0 broken maintained paths or anchors, 0 pages reclassified. v1 bench moved from `blocked-by-graph-integrity` to `measured` solely because those five hard errors cleared. See the CHANGE ledger for the paired numbers. Do not read the v1 Recall/MRR/Hopper figures as a documentation grade.
 
 ## Five surgical repairs
 

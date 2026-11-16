@@ -98,7 +98,7 @@ For each frozen question with a gold canonical owner heading:
 2. At each visible page, consider only actual outbound links. Score their descriptive labels, destination titles and optionally one-line adjacent context against the question using a small fixed lexical function; **never consult the gold owner when choosing**.
 3. Follow the highest-scored link for a deterministic greedy run. Repeat with a seeded stochastic top-3 choice policy (for example 100 trials/question), a 6-hop cap and an explicit backtrack option. Do not grant teleportation to a known file path.
 4. Stop when the page or heading matches the withheld gold, or when max hops/no useful links/loop is reached. Record whether a historical, parked or proposed page was mistaken for the accepted answer.
-5. Report `Hopper hit@3`, `hit@6`, mean/median hops when successful, loop frequency, backtracks, and wrong-authority detour rate. Compare the Hopper's path with the oracle BFS shortest path.
+5. Report `Hopper hit@3` and `hit@6` by **forward page opens**, not by the length of the stack left after backtracking. Count backtracks and prevented revisits separately. A question-table row is visible context; the destination body is not. Compare the final route with the oracle BFS shortest path.
 
 This is **zero-LLM experimental navigation**, not a substitute for agent understanding. It will reveal weak link labels such as “technical details” or dead-ended intermediate pages even when every page is technically reachable. Because the scoring policy can be gamed with keyword-filled labels, use at least two policies (greedy and stochastic) and check real-agent outcomes before optimizing the wiki to the simulator.
 

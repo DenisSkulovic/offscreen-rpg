@@ -1,6 +1,6 @@
 # Committed transition capture V1 | One real mechanic, one atomic forensic source
 
-**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code, schema or test is authorized by this page.** The writer-closure note in the 2026-11-15 observability run is the source inventory. This design does **not** require full event sourcing or a function-level log. Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
+**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code, schema or test is authorized by this page.** It remains under `docs/technical` because the documentation architecture names this path. That placement does not select the writer. The indexed route is the [evidence graph](identities-and-evidence.md), which labels this page as a proposal. The writer-closure note in the 2026-11-15 observability run is the source inventory. This design does **not** require full event sourcing or a function-level log. Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
 
 ## 1. Pilot before universal rollout
 

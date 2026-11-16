@@ -23,6 +23,10 @@ const CITATION =
 const NORMATIVE =
   /\b(owners?|specification|specs?|contract|binding|normative|current rule|product truth|implementation design|replacement)\b/i;
 const VAGUE_LABEL = /^(here|more|read|link|this|click here)$/i;
+const IMPLEMENTED_CLAIM =
+  /\b(current implemented design|implemented design|already deployed|selected normative|production monitoring stack|this is the current contract)\b/i;
+const PROPOSAL_DISCLOSURE =
+  /propos|not selected|not accepted|unaccepted|recommendation|not installed|not authorized|not landed|\bdraft\b|open design/i;
 
 function walk(absDir, relDir, out, predicate) {
   let entries;
@@ -96,6 +100,14 @@ function authorityViolation(sourceKind, destKind, requested, ref) {
   return NORMATIVE.test(blob);
 }
 
+function proposalPresentedAsCurrent(sourceKind, destKind, ref) {
+  if (destKind !== 'open-design' && destKind !== 'open-change') return false;
+  if (!isCanonicalKind(sourceKind) && sourceKind !== 'root-index') return false;
+  const blob = `${ref.headingText ?? ''}\n${ref.context ?? ''}\n${ref.label ?? ''}`;
+  if (PROPOSAL_DISCLOSURE.test(blob)) return false;
+  return IMPLEMENTED_CLAIM.test(blob);
+}
+
 /**
  * @param {string} root
  * @param {{ repoSha?: string | null, dirty?: boolean | null }} [meta]
@@ -153,6 +165,7 @@ export function buildWikiModel(root, meta = {}) {
     const prior = edges.get(key);
     if (prior) {
       prior.occurrences += 1;
+      if ((edge.context?.length ?? 0) > (prior.context?.length ?? 0)) prior.context = edge.context;
       return;
     }
     edges.set(key, { ...edge, occurrences: 1 });
@@ -267,6 +280,18 @@ export function buildWikiModel(root, meta = {}) {
           ),
         );
       }
+      if (ref.kind === 'link' && proposalPresentedAsCurrent(doc.kind, destinationKind, ref)) {
+        issues.push(
+          issue(
+            'error',
+            'authority-route',
+            doc.rel,
+            ref.line,
+            ref.href,
+            'Canonical page presents an open proposal as current implemented design',
+          ),
+        );
+      }
       if (VAGUE_LABEL.test(ref.label) && doc.kind === 'canonical-router') {
         issues.push(
           issue('warning', 'vague-label', doc.rel, ref.line, ref.href, 'Router link label does not name its topic'),
@@ -279,6 +304,7 @@ export function buildWikiModel(root, meta = {}) {
         fromHeading: ref.headingId,
         toAnchor: resolved.fragment,
         label: ref.label,
+        context: ref.context ?? '',
         kind: ref.kind === 'image' ? 'image' : kind,
         line: ref.line,
       });
@@ -506,6 +532,7 @@ export function buildWikiModel(root, meta = {}) {
       fromHeading: edge.fromHeading,
       toAnchor: edge.toAnchor,
       label: edge.label,
+      context: edge.context ?? '',
       kind: edge.kind,
       line: edge.line,
       occurrences: edge.occurrences,

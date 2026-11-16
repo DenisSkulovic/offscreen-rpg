@@ -1,6 +1,6 @@
 # Wiki retrieval and agent benchmarks
 
-**State:** WIKI02 implements the zero-provider static bench (`pnpm wiki:bench:static`). Its first run is blocked by remaining graph hard errors and does not meet the pilot Recall/MRR/Hopper figures; those figures are not gates. Agent runs are **opt-in with explicit resource/paid-provider authorization** and are not part of this design.
+**State:** WIKI02 published `wiki.static.v1`. WIKI05 publishes `wiki.static.v2` beside it. v1 `Recall@5` was complete-answer success, and v1 `MRR` was zero unless every mandatory page was in the top five. v2 reports CompleteAnswer@k, owner Recall@k, standard MRR and one grade per page. Normative search still excludes historic pages, so that lane does not measure authority exposure; the adversarial lane does. The graph no longer blocks the bench. These figures are not gates. Agent runs remain opt-in and were not run.
 
 ## 1. Three independent retrieval tests
 

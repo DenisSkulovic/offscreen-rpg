@@ -254,6 +254,126 @@ export function runSelfTest() {
     assert.ok(model.issues.some((item) => item.code === 'orphan-canonical' && item.path === 'docs/technical/solo.md'));
   });
 
+  check('deleting one canonical inbound link fails reachability without shrinking the denominator', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-unlink-'));
+    write(root, 'docs/README.md', '# Docs\n\n[Product](product/README.md)\n');
+    write(root, 'docs/product/README.md', '# Product\n\n[Secret](secret.md)\n');
+    write(root, 'docs/product/secret.md', '# Secret\n');
+    const linked = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.equal(linked.distance.has('docs/product/secret.md'), true);
+    const denominator = linked.health.denominators.canonicalPages;
+    write(root, 'docs/product/README.md', '# Product\n');
+    const dropped = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.equal(dropped.health.denominators.canonicalPages, denominator);
+    const found = dropped.issues.find(
+      (item) => item.code === 'unreachable-canonical' && item.path === 'docs/product/secret.md',
+    );
+    assert.ok(found, JSON.stringify(dropped.issues, null, 2));
+  });
+
+  check('proposal labeled as current implemented design', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-proposal-claim-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\nThe [current implemented design](../work/designs/open/capture.md) owns this rule.\n',
+    );
+    write(root, 'work/designs/open/capture.md', '# Capture\n');
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    const found = model.issues.find((item) => item.code === 'authority-route' && item.path === 'docs/README.md');
+    assert.ok(found, JSON.stringify(model.issues, null, 2));
+    assert.match(found.message, /open proposal/);
+    assert.equal(
+      model.health.denominators.canonicalPages,
+      model.graph.nodes.filter((node) => String(node.kind).startsWith('canonical')).length,
+    );
+    assert.equal(model.graph.nodes.some((node) => node.id === 'work/designs/open/capture.md' && node.kind === 'open-design'), true);
+  });
+
+  check('disclosed proposal is navigable and not canonical', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-proposal-ok-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\n[Proposed capture](../work/designs/open/capture.md) is not a selected contract.\n',
+    );
+    write(root, 'work/designs/open/capture.md', '# Capture\n\n[Docs](../../docs/README.md)\n');
+    const model = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.equal(model.issues.some((item) => item.code === 'authority-route'), false);
+    assert.equal(
+      model.graph.nodes.find((node) => node.id === 'work/designs/open/capture.md')?.kind,
+      'open-design',
+    );
+    const edge = model.graph.edges.find((item) => item.to === 'work/designs/open/capture.md');
+    assert.equal(edge?.kind, 'proposal-navigation');
+    assert.equal(model.distance.has('work/designs/open/capture.md'), false);
+    assert.equal(model.health.denominators.canonicalPages, 1);
+  });
+
+  check('moving an unaccepted proposal emits a reclassification receipt', () => {
+    const beforeRoot = mkdtempSync(path.join(tmpdir(), 'wiki-reclass-before-'));
+    write(beforeRoot, 'docs/README.md', '# Docs\n\n[Capture](technical/observability/capture.md)\n');
+    write(beforeRoot, 'docs/technical/observability/capture.md', '# Capture\n\nProposal only.\n');
+    const before = buildWikiModel(beforeRoot, { repoSha: 'fixture', dirty: false });
+    const afterRoot = mkdtempSync(path.join(tmpdir(), 'wiki-reclass-after-'));
+    write(
+      afterRoot,
+      'docs/README.md',
+      '# Docs\n\n[Proposed capture](../work/designs/open/capture-proposal/README.md) is not selected.\n',
+    );
+    write(afterRoot, 'work/designs/open/capture-proposal/README.md', '# Capture\n\nProposal only.\n\n[Docs](../../../docs/README.md)\n');
+    const after = buildWikiModel(afterRoot, { repoSha: 'fixture', dirty: false });
+    const reclassificationReceipt = {
+      name: 'reclassification-receipt',
+      before: {
+        path: 'docs/technical/observability/capture.md',
+        kind: before.graph.nodes.find((node) => node.id === 'docs/technical/observability/capture.md')?.kind,
+        canonicalPages: before.health.denominators.canonicalPages,
+        reachableCanonical: before.health.denominators.reachableCanonical,
+      },
+      after: {
+        path: 'work/designs/open/capture-proposal/README.md',
+        kind: after.graph.nodes.find((node) => node.id === 'work/designs/open/capture-proposal/README.md')?.kind,
+        canonicalPages: after.health.denominators.canonicalPages,
+        reachableCanonical: after.health.denominators.reachableCanonical,
+        proposalEdge: after.graph.edges.some(
+          (edge) => edge.to === 'work/designs/open/capture-proposal/README.md' && edge.kind === 'proposal-navigation',
+        ),
+      },
+    };
+    assert.equal(reclassificationReceipt.before.kind, 'canonical-technical');
+    assert.equal(reclassificationReceipt.before.canonicalPages, 2);
+    assert.equal(reclassificationReceipt.before.reachableCanonical, 2);
+    assert.equal(reclassificationReceipt.after.kind, 'open-design');
+    assert.equal(reclassificationReceipt.after.canonicalPages, 1);
+    assert.equal(reclassificationReceipt.after.reachableCanonical, 1);
+    assert.equal(reclassificationReceipt.after.proposalEdge, true);
+    assert.equal(after.distance.has('work/designs/open/capture-proposal/README.md'), false);
+    assert.equal(after.issues.some((item) => item.code === 'unreachable-canonical'), false);
+  });
+
+  check('a historic Change link does not become current canonical proof', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wiki-historic-proof-'));
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\nHistorical [archived Change](../work/changes/archive/old/CHANGE.md) is not the current contract.\n',
+    );
+    write(root, 'work/changes/archive/old/CHANGE.md', '# Old\n\nDone packet.\n');
+    const cited = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.equal(cited.issues.some((item) => item.code === 'authority-route'), false);
+    assert.equal(cited.distance.has('work/changes/archive/old/CHANGE.md'), false);
+    assert.equal(cited.health.denominators.canonicalPages, 1);
+    write(
+      root,
+      'docs/README.md',
+      '# Docs\n\nThe [replacement specification](../work/changes/archive/old/CHANGE.md) owns this rule.\n',
+    );
+    const claimed = buildWikiModel(root, { repoSha: 'fixture', dirty: false });
+    assert.ok(claimed.issues.some((item) => item.code === 'authority-route' && item.path === 'docs/README.md'));
+    assert.equal(claimed.distance.has('work/changes/archive/old/CHANGE.md'), false);
+  });
+
   check('normative archive route', () => {
     const root = mkdtempSync(path.join(tmpdir(), 'wiki-authority-'));
     write(
@@ -275,7 +395,7 @@ export function runSelfTest() {
     return 1;
   }
   console.log(
-    'Self-test passed: GFM links, anchors, Unicode, parentheses, archive exemption, case mismatch, unreachable page, authority route, duplicate edge.',
+    'Self-test passed: GFM links, anchors, Unicode, parentheses, archive exemption, case mismatch, unreachable page, authority route, proposal classification, reclassification receipt, duplicate edge.',
   );
   return 0;
 }

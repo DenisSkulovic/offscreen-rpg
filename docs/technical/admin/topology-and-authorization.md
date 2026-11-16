@@ -1,6 +1,6 @@
 # Admin control-plane architecture | selected long-term technical topology
 
-**Status:** Selected design target, 2026-11-14; requires technical consistency review before any Change is Ready. Product authority: [accepted Admin target](../../product/admin/README.md). Source evidence: [baseline](./investigation-and-privacy.md).
+**Status:** Selected design target, 2026-11-14; requires technical consistency review before any Change is Ready. Product authority: [accepted Admin target](../../product/admin/README.md). Source evidence: [baseline](./investigation-and-privacy.md). Staff-console navigation, rendering and cache isolation are the [console and read models](console-and-read-models.md) contract. This page owns control-plane topology and authorization.
 
 ## 1. The architecture choice
 
