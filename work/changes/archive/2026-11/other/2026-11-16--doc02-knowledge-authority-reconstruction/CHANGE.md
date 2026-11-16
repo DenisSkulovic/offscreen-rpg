@@ -1,6 +1,6 @@
 # DOC02 | Reconstruct canonical knowledge authority after DOC01
 
-**State:** **Selected / implementation in progress.** Owner authorized work on 2026-11-16. Not Done until the verification gates in [VERIFICATION.md](VERIFICATION.md) pass without a snapshot waiver.  
+**State:** **Done (2026-11-16).** Owner authorized the close after an independent fresh-chat retrieval study passed. The snapshot was not waived. Receipt: [CLOSE.md](CLOSE.md).  
 **Baseline inspected:** `main@cda7444e7bb8910e228164cb97a17b504f7c2415` on 2026-11-16.  
 **Owner:** repository owner.  
 **Type:** bounded documentation + documentation-tool/code navigation change; **no game runtime change**.  
@@ -50,17 +50,14 @@ If any selected design needs further owner approval, keep its detailed proposed 
 
 ## Implementation progress (not a completion claim)
 
-Landed on branch `docs/doc02-knowledge-authority`, not archived:
+Landed on branch `docs/doc02-knowledge-authority`, then archived:
 
 - Selected engine architecture, Storyteller two-loop controller, task recipes, publication fence, ENG03 C1/C2 versus full-ENG03 honesty, Turn Capsule, client boundary contracts, and the proposed Admin authority / Player 360 / LiveOps policies now live in canonical owners. Proposed shared play and player replay live under `work/designs/open/`, not as product skeletons.
 - Near-duplicate flat technical contracts and the full product journey/storytelling copies were removed after the owning pages kept the clauses. Authored playthrough traces moved to `research/authored-scenarios/`. `TODO.md`, `docs/progress.md` and `docs/questions.md` are gone. `ROADMAP.md` and `STATUS.md` are the strategy and status owners. Terminal `work/changes/archive/` was not rewritten or deleted.
 - `knowledge-health` fails compatibility stubs, skeleton banners, first-hop snapshot links, flat technical leftovers, and duplicate docs blobs.
 - Admin charter, commercial and trust, AI investigation, command center, and operator workflows now carry the proposed policy, including the conditional gates. Observability owners carry the capture, read, reconstruction, retention, and telemetry invariants that were only in the essays. Essay folders `admin-program-essays-2026-11` and `obs-technical-essays-2026-11` are removed. The snapshot directory is a manifest. Unique observations moved to `evidence/inspections/doc01-retained-observations/`. Unpromoted design moved to `work/designs/open/doc01-unpromoted-design/`. The section ledger is [PROMOTION-LEDGER.md](PROMOTION-LEDGER.md). The author-written Q01–Q18 sheet is [RETRIEVAL-SELF-CHECK.md](RETRIEVAL-SELF-CHECK.md). It is not an independent study.
 
-Still open, so this Change stays **Selected** and is not Done:
-
-- An independent fresh-chat retrieval study of Q01–Q18 has not been run. The author of the pages cannot score that study.
-- Paragraph-level certification of every baseline file is not claimed. Unpromoted design remains under `work/designs/open/`, labeled as design rather than law.
+Closed 2026-11-16. The independent study passed the authority questions. Unpromoted design remains under `work/designs/open/`, labeled as design rather than law. No baseline fresh-chat run exists, so this close does not claim a measured before/after improvement. Paragraph-level recertification of every historical sentence is not claimed; file disposition is [PROMOTION-LEDGER.md](PROMOTION-LEDGER.md) plus [CURRENT-DISPOSITION.md](CURRENT-DISPOSITION.md).
 
 ## Initial design-only receipt
 
@@ -70,17 +67,17 @@ Still open, so this Change stays **Selected** and is not Done:
 
 ## Reconciliation ledger (must be completed by Cursor before Done)
 
-| Owner | Pending change | Required proof |
+| Owner | Result | Proof |
 | --- | --- | --- |
-| Product gameplay, Storyteller, UX and Admin | Promote accepted selected concepts + negative cases, retire double bibles | Section ledger and independent review |
-| Technical Engine, Storyteller, Admin, OBS, client/platform/lab | Merge accepted future design and old runtime contracts, separate current-state evidence | Exact owner heading and counterexample |
-| Open designs and decision rationale | Preserve unresolved gates, avoid invented acceptance | Owner decision pointer |
-| Evidence and research | De-duplicate full historical snapshots and research/graveyard material without loss | Reproducibility + Git SHA/asset hash |
-| Root routers, .agents and scripts | Remove stubs, stale “after cutover” language and duplicate loaders | Link test, negative checks and new-reader study |
-| Work/changes/archive | **Retain all** | Full path and content inventory, before/after |
+| Product gameplay, Storyteller, UX and Admin | updated | Canonical pages hold the rules and the negatives. Proposed refunds, raw prompts, and production grants stayed proposed. Independent Q01–Q08 agree. |
+| Technical Engine, Storyteller, Admin, OBS, client/platform/lab | updated | Selected architecture, two loops, client SSR ownership, Turn Capsule, and C1/C2 versus full ENG03 are in the technical owners. |
+| Open designs and decision rationale | updated | Shared play, player replay, and unpromoted DOC01 design stay under `work/designs/open/`. They were not accepted. |
+| Evidence and research | updated | Essay folders removed. Snapshot is a manifest. Unique observations are under `evidence/inspections/doc01-retained-observations/`. Recover the old tree at `cda7444e7bb8910e228164cb97a17b504f7c2415`. |
+| Root routers, .agents and scripts | updated | STATUS, ROADMAP, and `knowledge-health` match this close. `check_docs.py` reported 0 problems on the implementation commit. The fresh-chat study passed. |
+| Work/changes/archive | unchanged | The reconstruction did not edit or delete terminal packets. This close only adds DOC02 beside them. |
 
-**Owner selection:** selected by the owner on 2026-11-16. Do not mark Done while the open items above remain.
+**Owner selection:** selected by the owner on 2026-11-16. Closed by the owner on 2026-11-16 after the retrieval study.
 
 ## Copyable Cursor handoff (only after owner approves)
 
-> Implement DOC02 from `work/changes/open/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md`. This is a semantic knowledge reconstruction, not a rename/formatting job. Begin with the pinned independent AUDIT and TARGET, classify all current docs plus prior selected program designs, rebuild accepted product then technical owner contracts in full, preserve all unresolved product choices as open designs, eliminate old copies and empty canonical skeletons after promotion, update links/scripts/agent routes, and pass the independent fresh-reader acceptance. **Leave the entire `work/changes/archive/` intact**. Work on a branch with phase gates; no paid providers, game-code refactors, live DBs or invented approvals.
+> Historical handoff, completed. The packet now lives at `work/changes/archive/2026-11/other/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md`.
