@@ -170,8 +170,8 @@ if (
     'Review flags are not failure gates. Move durable evidence to its owner and keep checkpoints actionable.',
   );
 
-  // DOC01 taxonomy: forbidden transient classes inside canonical docs/ (advisory while migration open).
-  const forbiddenTop = new Set([
+  // DOC01 P7 gardening: forbidden transient path classes under docs/ (names, not prose).
+  const forbiddenDirNames = new Set([
     'programs',
     'engineering',
     'history',
@@ -184,32 +184,61 @@ if (
     'archive',
     'audits',
   ]);
+  const allowedTopDirs = new Set([
+    'product',
+    'technical',
+    'decisions',
+    'runbooks',
+  ]);
   const docsRoot = path.join(root, 'docs');
+  /** @type {string[]} */
   const legacy = [];
-  if (existsSync(docsRoot)) {
-    for (const entry of readdirSync(docsRoot, { withFileTypes: true })) {
-      if (entry.isDirectory() && forbiddenTop.has(entry.name)) {
-        legacy.push('docs/' + entry.name);
+  /** @type {string[]} */
+  const unexpectedTop = [];
+  function walkForbidden(dir, relBase) {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const rel = relBase + '/' + entry.name;
+      if (forbiddenDirNames.has(entry.name)) {
+        legacy.push(rel);
+        continue; // do not descend into flagged trees
       }
+      walkForbidden(path.join(dir, entry.name), rel);
     }
   }
-  // After DOC01 P6 delete, default strict: forbidden namespaces must stay absent.
-  // Set DOC01_TAXONOMY_STRICT=0 to force advisory-only (migration debugging).
+  if (existsSync(docsRoot)) {
+    for (const entry of readdirSync(docsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (forbiddenDirNames.has(entry.name)) {
+        legacy.push('docs/' + entry.name);
+        continue;
+      }
+      if (!allowedTopDirs.has(entry.name)) {
+        unexpectedTop.push('docs/' + entry.name);
+      }
+      walkForbidden(path.join(docsRoot, entry.name), 'docs/' + entry.name);
+    }
+  }
+  // Default strict after P6. Set DOC01_TAXONOMY_STRICT=0 for advisory-only.
   const strictTaxonomy = process.env.DOC01_TAXONOMY_STRICT !== '0';
   console.log(
     'DOC01 taxonomy (' +
       (strictTaxonomy ? 'STRICT' : 'advisory') +
       '):',
   );
-  if (!legacy.length) {
-    console.log('ok | no forbidden top-level docs/ namespaces');
+  if (!legacy.length && !unexpectedTop.length) {
+    console.log('ok | docs/ namespaces within product|technical|decisions|runbooks');
   } else {
     for (const name of legacy.sort()) {
-      console.log('LEGACY | ' + name + ' (retire after DOC01 no-loss proof)');
+      console.log('FORBIDDEN | ' + name);
     }
-    if (strictTaxonomy) {
+    for (const name of unexpectedTop.sort()) {
+      console.log('UNEXPECTED | ' + name + ' (needs owner rationale or relocate)');
+    }
+    if (strictTaxonomy && legacy.length) {
       console.error(
-        'DOC01_TAXONOMY_STRICT=1: forbidden docs/ namespaces still present.',
+        'DOC01 taxonomy STRICT: forbidden docs/ path classes present.',
       );
       process.exitCode = 1;
     }

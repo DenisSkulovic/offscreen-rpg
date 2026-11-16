@@ -1,6 +1,6 @@
 # DOC01 | Rebuild the documentation knowledge architecture
 
-**State:** **Selected / implementing.** 2026-11-16. **Owner:** repository owner. **Work type:** bounded code/config/docs migration with substantive semantic consolidation; this packet is a one-off bootstrap in the existing `work/changes/open/` convention. After DOC01 cutover, active Changes will live in `work/changes/open/`.
+**State:** **Done (2026-11-16).** **Owner:** repository owner. **Work type:** bounded docs/config migration with semantic consolidation. Packets live under `work/changes/`.
 
 **Permission:** Owner selected DOC01 for Cursor implementation in this chat (2026-11-16). Authorized: documentation rewrite/relocation, minimum loader/agent-routing updates, P0–P7 per [MIGRATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md). Still forbidden: paid providers, deploy, live/non-disposable DB, gameplay/runtime refactors, silent product-approval invention, deletion before no-loss proof. QA-SF01 stays open/Blocked but is no longer Current.
 
@@ -58,18 +58,18 @@ Read detailed phase exit gates in [MIGRATION.md](../../../../work/changes/open/2
 
 ## Reconciliation ledger
 
-**In progress — P6 complete; P7 receipt pending.** Do not mark Done until P7 gardening + terminal ledger row land.
+**Complete.** See [P7-TERMINAL-RECEIPT.md](P7-TERMINAL-RECEIPT.md) and [P7-COLD-READER.md](P7-COLD-READER.md).
 
 | Authority / consumer | Source review | Target destination | Disposition and why | Proof / status |
 | --- | --- | --- | --- | --- |
-| Product foundations, gameplay, journeys, storytelling, experience and Admin | P2 + G2 | `docs/product/{foundations,gameplay,experience,storyteller,admin}/` | Canonical maps; deep Admin essays DROP→snapshot | **Met** (maps); deep essays retained in snapshot |
-| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | P3 + G2 | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Canonical maps; OBS technical DROP→snapshot | **Met** (maps) |
-| Approved decisions and unresolved business policy | P4 | `docs/decisions/` + `work/designs/open/` | Canon-invention preserved; ADRs not mass-invented | **Met** for preservation |
+| Product foundations, gameplay, journeys, storytelling, experience and Admin | P2 + G2 | `docs/product/{foundations,gameplay,experience,storyteller,admin}/` | Canonical maps; deep Admin essays DROP→snapshot | **Met** |
+| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | P3 + G2 | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Canonical maps; OBS technical DROP→snapshot | **Met** |
+| Approved decisions and unresolved business policy | P4 | `docs/decisions/` + `work/designs/open/` | Canon-invention preserved; open questions basket | **Met** |
 | Historical source audits / trials / screenshots / legal attribution | P4–P6 | `evidence/`, `NOTICE.md`, snapshot | OBS evidence + full tree snapshot retained | **Met** |
-| Root roadmap/status + .agents/harness/tool loader | P5–G3 | `ROADMAP.md`, `STATUS.md`, `.agents/`, `work/changes` | Brief/docs-health/archiver on work/changes; taxonomy STRICT | **Met** |
-| All 483+ individual paths | P6 | registers + [doc01-legacy-snapshot](../../../../evidence/inspections/doc01-legacy-snapshot/MANIFEST.md) | Live programs/engineering/history/operations **deleted** after G1–G6 | **Met** (P6); P7 receipt open |
+| Root roadmap/status + .agents/harness/tool loader | P5–G3 + P7 | `ROADMAP.md`, `STATUS.md`, `.agents/`, `work/changes` | Brief/docs-health STRICT gardening | **Met** |
+| All 483+ individual paths | P6–P7 | registers + [doc01-legacy-snapshot](../../../../evidence/inspections/doc01-legacy-snapshot/MANIFEST.md) | Live legacy trees deleted; retain snapshot | **Met** |
 
-**Execution receipt (partial):** `check_docs` 0; `DOC01_TAXONOMY_STRICT` ok; `pnpm repo:brief` → this CHANGE; no paid providers. P7 still owns cold-reader note + Done.
+**Execution receipt:** [P7-TERMINAL-RECEIPT.md](P7-TERMINAL-RECEIPT.md). **Paid providers:** none.
 
 ## Cursor handoff request (for owner to send)
 

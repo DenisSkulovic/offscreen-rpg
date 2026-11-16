@@ -1,9 +1,8 @@
 # DOC01 | Current checkpoint
 
-**State:** Selected on `docs/doc01-architecture`. **P6 hard-delete complete; P7 remains.**
+**State:** Done (2026-11-16).
 
 ## Current checkpoint
 
-- **P6 no-loss gate green:** [P6-NO-LOSS-GATE.md](P6-NO-LOSS-GATE.md). Legacy `docs/programs|engineering|history|operations` deleted; retain under `evidence/inspections/doc01-legacy-snapshot/` (+ curated research/evidence copies).
-- **G1–G6:** inbound waive, claim DROP register, packet move, minutes waive, manuals waive, taxonomy strict clean.
-- **Next (P7):** gardening checks, cold-reader note, fill CHANGE Reconciliation ledger, terminal receipt in `work/changes/ledger`. No paid providers.
+- P0–P7 complete. Terminal receipt: [P7-TERMINAL-RECEIPT.md](P7-TERMINAL-RECEIPT.md).
+- Archive this packet under `work/changes/archive/2026-11/other/` after ledger append; set Current change to `none` unless owner selects another packet.
