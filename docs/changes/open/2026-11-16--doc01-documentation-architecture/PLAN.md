@@ -1,10 +1,9 @@
 # DOC01 | Current checkpoint
 
-**State:** Selected on `docs/doc01-architecture`. **P5 loader cutover in progress.**
+**State:** Selected on `docs/doc01-architecture`. **P6 soft-retirement; hard delete gated.**
 
 ## Current checkpoint
 
-- P1–P4 committed (`d0db63c7`).
-- **P5:** `STATUS.md` / `ROADMAP.md` / rewritten `AGENTS.md`; `repo:brief` reads STATUS; `docs-health` taxonomy advisory; chamber + OBS07 writers → `evidence/`; retained assets copied with manifests.
-- **Next:** update `.agents` documentation rule pointers; dual-read work/changes when ready; keep legacy `docs/programs|changes` until no-loss P6. Still no mass deletion.
-- No paid providers.
+- P1–P5 committed. P6 **no-loss gate** open: [P6-NO-LOSS-GATE.md](P6-NO-LOSS-GATE.md) — G1–G6 still block `rm` of programs/engineering/history/changes/operations.
+- Soft-retired routers: `docs/programs`, `docs/engineering`, `docs/history` indexes; `NOTICE.md` legal home; archive ledger `work/changes/ledger/2026-11.md` (109 packets); `DOC01_TAXONOMY_STRICT=1` available on docs-health.
+- **Next:** clear G1–G3 (inbound rewrite, claim certify, work/changes tool move) before any tree deletion; then P7 gardening + Done receipt. No paid providers.

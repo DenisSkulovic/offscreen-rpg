@@ -67,7 +67,7 @@ Read detailed phase exit gates in [MIGRATION.md](MIGRATION.md). Avoid shotgun ed
 | Approved decisions and unresolved business policy | In progress (P4) | `docs/decisions/` + `work/designs/open/` | Scaffold + canon-invention preserved; ADRs not mass-invented | Partial |
 | Historical source audits / trials / screenshots / legal attribution | In progress (P4) | `evidence/`, test snapshots, `NOTICE.md` | evidence/ scaffold; assets still in programs until writer retarget | Partial |
 | Root roadmap/status + .agents/harness/tool loader | In progress (P5) | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | STATUS/ROADMAP/AGENTS + brief/docs-health/writers updated; full queue move pending | Partial |
-| All 483+ individual paths | Pending | See full registers | Pending atom ledger | Not performed |
+| All 483+ individual paths | Partial (P6 gated) | See registers + ledger | File-router dispositions done; claim certify + deletion blocked by P6-NO-LOSS-GATE | Soft-retire only |
 
 **Execution receipt:** No code migration, link cutover, provider calls, runtime testing, deletion or docs-health result is claimed by this design-only packet. The design artifacts were written through the connected GitHub repository; Cursor must rerun actual local checks on its checkout.
 

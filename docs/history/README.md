@@ -1,13 +1,12 @@
-# Documentation history
+# Documentation history *(DOC01 legacy)*
 
-**Owns:** dated session minutes pointers, retired/parked **initiative dossiers**, and legal attribution that is not product gameplay authority.
+**Owns until P6:** dated minutes, retired initiative dossiers, and legal attribution.  
+**Does not own:** Current change, product bible, or technical contracts.
 
-**Does not own:** current Change selection ([changes](../changes/README.md)), durable product bible ([product](../product/README.md)), or technical contracts ([technical](../technical/README.md)).
+| Area | Path | After P6 |
+| --- | --- | --- |
+| Initiative dossiers | [initiatives/](initiatives/README.md) | `work/designs/` or Git-only |
+| Legal / SRD attribution | [legal/rules-attribution.md](legal/rules-attribution.md) | also [NOTICE.md](../../NOTICE.md) |
+| Session minutes | [minutes/](minutes/README.md) | `work/sessions/` + promote decisions |
 
-| Area | Path |
-| --- | --- |
-| Sept 2026 initiative dossiers (frozen) | [initiatives/](initiatives/README.md) |
-| Legal / SRD attribution | [legal/rules-attribution.md](legal/rules-attribution.md) |
-| Session minutes | [minutes/](minutes/README.md) |
-
-History explains *what was tried or decided*; it is **not** execution permission.
+See [P6 no-loss gate](../changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md). History is **not** execution permission.

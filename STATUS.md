@@ -4,7 +4,7 @@
 
 ## Orientation
 
-**Status (reconciled 2026-11-16):** Local pre-POC **engineering portfolio**. Nov 12–15 waves landed substantial code (React W, Chamber CH, UX/PX/PF, ENG postwave, Admin AD, Storyteller SA, forensic OBS, GM slices). **DOC01** documentation architecture is **Selected** on branch `docs/doc01-architecture` (product/technical subject owners landing; loader cutover in P5). Sustained 10–15-turn live creative quality and production Support grants remain **unproved / absent**.
+**Status (reconciled 2026-11-16):** Local pre-POC **engineering portfolio**. Nov 12–15 waves landed substantial code (React W, Chamber CH, UX/PX/PF, ENG postwave, Admin AD, Storyteller SA, forensic OBS, GM slices). **DOC01** is **Selected** on `docs/doc01-architecture`: product/technical owners + STATUS/AGENTS/evidence cutover landed; **P6 deletion blocked** by [no-loss gate](docs/changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) (legacy `docs/programs|engineering|…` soft-retired only). Sustained 10–15-turn live creative quality and production Support grants remain **unproved / absent**.
 
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 

@@ -193,12 +193,23 @@ if (
       }
     }
   }
-  console.log('DOC01 taxonomy (advisory during migration; hard gate after P6):');
+  const strictTaxonomy = process.env.DOC01_TAXONOMY_STRICT === '1';
+  console.log(
+    'DOC01 taxonomy (' +
+      (strictTaxonomy ? 'STRICT' : 'advisory during migration; hard gate after P6') +
+      '):',
+  );
   if (!legacy.length) {
     console.log('ok | no forbidden top-level docs/ namespaces');
   } else {
     for (const name of legacy.sort()) {
       console.log('LEGACY | ' + name + ' (retire after DOC01 no-loss proof)');
+    }
+    if (strictTaxonomy) {
+      console.error(
+        'DOC01_TAXONOMY_STRICT=1: forbidden docs/ namespaces still present.',
+      );
+      process.exitCode = 1;
     }
   }
 }

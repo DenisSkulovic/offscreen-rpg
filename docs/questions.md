@@ -1,6 +1,8 @@
 # What we need to decide next
 
-The first offline implementation tranche has explicit defaults in the [solo integration contract](technical/solo-gameplay-contract.md) and a [coding route](history/initiatives/README.md). The broader choices below remain open for their affected features; they do not all block that bounded proof. Do not silently settle them by choosing a database schema or scheduling library.
+> **DOC01 compatibility stub.** Open-question basket: [work/designs/open/product-open-questions.md](../work/designs/open/product-open-questions.md). Prefer settling into [docs/product](product/README.md) or [docs/decisions](decisions/README.md)—do not treat this file as the product bible.
+
+The first offline implementation tranche has explicit defaults in the [solo integration contract](technical/engine/authority-and-transitions.md) and a [coding route](history/initiatives/README.md). The broader choices below remain open for their affected features; they do not all block that bounded proof. Do not silently settle them by choosing a database schema or scheduling library.
 
 The [technical design](technical/architecture.md) now supplies implementation recommendations. In particular, [shared decisions](technical/client-and-identity.md), [timing](technical/execution.md) and [notifications](technical/notifications.md) contain concrete proposals for discussion, not assumed answers to the product choices below.
 
