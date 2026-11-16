@@ -21,7 +21,8 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 | PROMOTE | 113 | 1399382 |
 | PROMOTE/SPLIT | 5 | 76040 |
 | RECONCILE | 33 | 624144 |
-| RECONCILE/ADR | 21 | 244096 |
+| RECONCILE/ADR | 19 | 223623 |
+| RETAIN PROPOSAL | 2 | 20473 |
 | RETIRE | 1 | 703 |
 | REVIEW | 2 | 24032 |
 | REWRITE | 6 | 75615 |
