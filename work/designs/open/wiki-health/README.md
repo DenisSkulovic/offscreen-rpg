@@ -12,6 +12,18 @@ A good graph is necessary but not sufficient. A good answer is necessary but may
 2. [RETRIEVAL-BENCHMARK.md](RETRIEVAL-BENCHMARK.md) — free keyword search baseline, isolated fresh-agent trials, source discrepancy verification, score and instrumentation.
 3. [IMPLEMENTATION.md](IMPLEMENTATION.md) — exact CLI/API deliverables, safe phases, baselines, false-positive controls and acceptance.
 
+## Implementation-ready Changes, in strict order
+
+| Work unit | Implementation result | Permitted test boundary |
+| --- | --- | --- |
+| **[WIKI01 graph and health](../../../changes/open/2026-11-16--wiki01-markdown-graph-health/CHANGE.md)** | Markdown AST parser, typed directed graph, link/anchor validation, orphan/hop metrics, DOT/JSON output | **All provider-free**; baseline and negative parser fixtures |
+| **[WIKI02 static retrieval](../../../changes/open/2026-11-16--wiki02-static-retrieval-and-hopper/CHANGE.md)** | 30 reviewed gold questions, BFS, seeded Wiki Hopper, lexical BM25-style retrieval, Recall/MRR/nDCG reports | **All provider-free**; no LLM calls at all |
+| **[WIKI03 isolated agent harness](../../../changes/open/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md)** | Host-traced fresh-session trials, redacted JSONL event adapter, external oracle and rubric, real CLI adapter behind permission | **Fake-adapter and dry-run tests only** until explicit owner-approved model, cap and sandbox |
+
+**Order:** WIKI01 Done → WIKI02 Done → WIKI03 Done. Each is a **code-bearing Change**, not a documentation-only exercise. The owner may ask Cursor to select WIKI01 and implement in that order; current selection is still `none`. Do not implement all three as one enormous unsupervised rewrite.
+
+The detailed target contracts below remain the design source; implementation receipts must not turn their hypothetical threshold examples into fake measured results.
+
 ## Principles worth defending
 
 - **No arbitrary “one health number.”** Show structural integrity, retrieval efficiency, answer correctness and source fidelity as a four-axis scorecard. Hard security/approval mistakes fail regardless of speed.
