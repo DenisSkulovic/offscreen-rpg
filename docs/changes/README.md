@@ -12,6 +12,7 @@ Current change: [QA-SF01 Restore honest focused Storyteller/story-resolution int
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [DOC01 documentation architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md) | **Proposed (design prepared; not selected)** | Rebuild canonical docs by subject/authority; separate work/evidence lifecycles; comprehensive 483-file / 176-directory audit |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** (Current) | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement — not local Story |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
