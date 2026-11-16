@@ -10,6 +10,8 @@ Current change: none
 
 | Packet | State | Outcome |
 | --- | --- | --- |
+| [WIKI04 wiki navigation and authority](open/2026-11-16--wiki04-navigation-and-authority/CHANGE.md) | **Proposed, not selected** | Repair five canonical routing gaps, resolve observability proposal classification and compare same-scoring graph metrics |
+| [WIKI05 benchmark validity](open/2026-11-16--wiki05-benchmark-validity/CHANGE.md) | **Proposed, after WIKI04** | Fix Recall/MRR/nDCG names, Hopper table-row context and actual click cost, and fake agent scoring failures |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
