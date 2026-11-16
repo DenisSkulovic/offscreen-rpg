@@ -11,5 +11,6 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 | [prediction-fences/](open/prediction-fences/) | Proposed predictive-outcome study |
 | [canon-invention-policy/](open/canon-invention-policy/) | Owner-retained dormant design |
 | [product-open-questions.md](open/product-open-questions.md) | Index of the gates above |
+| [wiki-health/](open/wiki-health/README.md) | **Proposed measurement system**: zero-model wiki graph, lexical/Hopper navigation checks, isolated agent/code-fidelity trials; not selected |
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`. The generic parked Engine, Experience, Storyteller and expired-handoff studies were removed from HEAD on 2026-11-16. Recover a body with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/designs/parked/<path>`. That history is not a contract. The content-unit ledger is the [DOC04 disposition](../changes/archive/2026-11/other/2026-11-16--doc04-shadow-knowledge-retirement/DISPOSITION.md).
