@@ -1,6 +1,6 @@
 # OBS02-H | Stage integrity across rearm/lease (2026-11-15)
 
-**Change:** [OBS02-H](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md)  
+**Change:** [OBS02-H](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md)
 **Provider spend:** zero.
 
 ## What landed

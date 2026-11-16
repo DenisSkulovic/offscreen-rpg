@@ -2,7 +2,7 @@
 
 **Owner:** `.agents/`, `AGENTS.md`, `CLAUDE.md`, `.cursor/` and the Claude adapters. **Audience:** tools that help developers design, investigate, implement and review Offscreen RPG. **Not:** the game's Storyteller agent, its prompts, inference budget or model behavior.
 
-This harness governs **how** coding agents navigate the three authority layers: product documentation (what and why), technical documentation (architecture, authority and invariants), generated code (implementation). It never turns code into the product specification. Our independent ideals are in [the coding-agent target standard](../.agents/HARNESS.md); evidence from external experts is in [industry practices](references/industry-practices.md); practical token hygiene is in [context economics](references/context-economics.md).
+This harness governs **how** coding agents navigate the three authority layers: product documentation (what and why), technical documentation (architecture, authority and invariants), generated code (implementation). It never turns code into the product specification. External practice notes are in [industry practices](references/industry-practices.md); practical token hygiene is in [context economics](references/context-economics.md).
 
 ## What loads, and when?
 
@@ -74,7 +74,7 @@ At a role change, pass **decisions and evidence identifiers**, not the transcrip
 
 ## Frontend Cursor efficiency route
 
-The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../work/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../work/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are future code-bearing tasks. This harness change does not run commands or claim measured savings.
+The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../work/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../work/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are archived Done changes. This page does not claim a new measured token saving.
 
 ## First real-client proof, before buying more tools
 

@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
 | W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
-| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../work/designs/open/doc01-unpromoted-design/programs/experience/implementation-program.md) |
+| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../work/designs/parked/experience-studies/implementation-program.md) |
 | Admin `/control` | **Done** (AD04+) | [admin](../../product/admin/README.md) |
 | New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
 
@@ -27,7 +27,7 @@
 | Forms | **React Hook Form v7 + `@hookform/resolvers/zod`**, with `useFieldArray` where appropriate | Creation draft, campaign settings, preset editing; dirty tracking, field errors, immutable save snapshots, controlled resets |
 | Mutations | **TanStack `useMutation` for transport lifecycle + explicit typed intent state machine for business protocol** | Mutation success can mean 202/admission, not final publication; stable UUID/payload, no automatic paid replay |
 | Local UI | **React state/reducers for ephemeral view state; URL for navigable identity** | Query is the only client cache for remote server state; no Redux/Zustand/XState or synchronized duplicate stores |
-| Ongoing updates | **Authenticated SSE invalidation + Query refetch, with bounded polling/resync fallback** | Existing future SSE contract becomes part of selected engineering destination; events are hints, not authority |
+| Ongoing updates | **Authenticated SSE invalidation + Query refetch, with bounded polling/resync fallback** | Source-observed client EventSource and Query invalidation (W16/W17). Events are hints, not authority. Production hosting is a separate proof |
 | Tests | **Vitest, React Testing Library, user-event, MSW; existing Playwright/Nest integration; axe-core/Playwright accessibility checks** | Pure -> component -> HTTP -> browser truth, deterministic races and no paid providers |
 | Component workbench | **Storybook with Next-compatible builder + MSW-backed deterministic states** | Independent review of normal, blocked, pending, uncertain, conflict and recovery contracts, *not* a visual redesign |
 | Static enforcement | **ESLint (React Hooks, Next, TanStack Query rules), TypeScript strict + enforceable import directions, Prettier and existing Turborepo/CI** | Errors and architecture boundaries checked mechanically, not a promise in an agent rule |
@@ -140,7 +140,7 @@ Use `useInfiniteQuery` for stories, drafts and chronology, with typed per-resour
 
 ## 4. End-to-end update transport (selected, not future conjecture)
 
-**Target:** authenticated SSE for committed story/version **invalidation hints**, plus HTTP GET reconciliation. Backend sends no private narrative in events. Use `EventSource` with same-origin cookie and server-side auth/object authorization, a bounded heartbeat, proper proxy streaming and disconnect cleanup. A server append/update emits a compact `{eventId,storyId,viewVersion,kind}` after commit. Use PostgreSQL transactional `LISTEN/NOTIFY` as the minimal cross-process hint source, per the existing [client technical contract](../platform/identities-and-access.md); this is not a durable replay or additional business queue.
+**Selected contract, with a source-observed client:** authenticated SSE for committed story/version **invalidation hints**, plus HTTP GET reconciliation. `apps/web/src/features/play/use-story-live-updates.ts` and `src/shared/api/story-update-stream.ts` implement the browser half. Do not describe that client path as future or absent. Hosting, missed-event drills and production fan-out remain unclaimed here. Backend sends no private narrative in events. Use `EventSource` with same-origin cookie and server-side auth/object authorization, a bounded heartbeat, proper proxy streaming and disconnect cleanup. A server append/update emits a compact `{eventId,storyId,viewVersion,kind}` after commit. Use PostgreSQL transactional `LISTEN/NOTIFY` as the minimal cross-process hint source, per the existing [client technical contract](../platform/identities-and-access.md); this is not a durable replay or additional business queue.
 
 **Client:** one SSE stream per actively viewed story; on opening/reconnect and newer hint invalidate the matching Query key, then fetch authoritative snapshot. Dedupe event/version hints and ignore wrong story/viewer; close on session/resource change. If stream unavailable, keep bounded, visibility-aware `2s` pending-status polling as a fallback; when SSE is healthy, use a slower **30s** reconciliation safety poll while pending, plus immediate focus/reconnect/visibility refresh. Backoff on repeated error, no query storm, no paid mutation from events. The final end-to-end suite must simulate a missed event and recover from GET. **No WebSockets, Redis Pub/Sub or RabbitMQ.** SSE is a frontend transport with a narrowly necessary Nest/DB notification addition, not gameplay implementation.
 

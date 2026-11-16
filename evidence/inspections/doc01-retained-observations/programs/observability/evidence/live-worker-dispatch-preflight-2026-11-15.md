@@ -1,6 +1,6 @@
 # Live worker dispatch preflight | Two source-proven wiring gaps
 
-**Status:** urgent **source-level defect hypothesis**, inspected on GitHub `main@7e15db38`, 2026-11-15. **No live provider attempt, worker start, test, paid call or runtime fix was performed.** These findings are more immediate than adding new observability tables. [Bounded design-only correction packet](../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md). Architectural context: [exact provenance](../../../../../../docs/technical/observability/identities-and-evidence.md), [capture contract](../../../../../../docs/technical/observability/capture-and-provenance.md).
+**Status:** urgent **source-level defect hypothesis**, inspected on GitHub `main@7e15db38`, 2026-11-15. **No live provider attempt, worker start, test, paid call or runtime fix was performed.** These findings are more immediate than adding new observability tables. [Bounded design-only correction packet](../../../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md). Architectural context: [exact provenance](../../../../../../docs/technical/observability/identities-and-evidence.md), [capture contract](../../../../../../docs/technical/observability/capture-and-provenance.md).
 
 ## 1. Source chain, not conjecture about a log message
 
@@ -68,7 +68,7 @@ Therefore default worker source does not prove **byte-exact rejected response-en
 
 ## 6. Scope and source ownership
 
-**Implementation candidate:** [OBS00](../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md). Preserve current funding/usage gates, all task schemas, ENG03-C1/C2 capture, engine mechanics, provider adapter behavior and memory explorer rules. Do not solve by returning the task’s captured policy as “current authority”: that bypasses the very fence protecting against stale grants.
+**Implementation candidate:** [OBS00](../../../../../../work/changes/open/2026-11-15--obs00-live-provider-custody/CHANGE.md). Preserve current funding/usage gates, all task schemas, ENG03-C1/C2 capture, engine mechanics, provider adapter behavior and memory explorer rules. Do not solve by returning the task’s captured policy as “current authority”: that bypasses the very fence protecting against stale grants.
 
 **Stop if:** the proper effective-policy read owner cannot be identified from existing account/story/settings/usage source without a larger authority redesign. In that case fix/pass-through safety separately while keeping paid sends denied; return a source-grounded proposal to owner instead of hardcoding “allow true”.
 

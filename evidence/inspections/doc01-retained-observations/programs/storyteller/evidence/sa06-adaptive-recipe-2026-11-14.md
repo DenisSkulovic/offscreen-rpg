@@ -1,6 +1,6 @@
 # SA06 evidence | need-aware recipe selection
 
-**Date:** 2026-11-14. **Change:** [SA06](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa06-adaptive-recipe/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-14. **Change:** [SA06](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa06-adaptive-recipe/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

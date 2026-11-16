@@ -1,6 +1,6 @@
 # SA04 evidence | root-keyed lexical index reuse
 
-**Date:** 2026-11-14. **Change:** [SA04](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa04-root-index-reuse/CHANGE.md). **Provider spend:** none. **SA03:** deferred (ENG03 coordination).
+**Date:** 2026-11-14. **Change:** [SA04](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa04-root-index-reuse/CHANGE.md). **Provider spend:** none. **SA03:** deferred (ENG03 coordination).
 
 ## What landed
 

@@ -1,16 +1,15 @@
 # Work changes | selection queue
 
-**DOC01 selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
+**Selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
 
 Current change: none
 
-**Current status:** No Change is selected. DOC02 is Done at [archive/2026-11/other/2026-11-16--doc02-knowledge-authority-reconstruction](archive/2026-11/other/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md). DOC01 remains Done at [archive/2026-11/other/2026-11-16--doc01-documentation-architecture](archive/2026-11/other/2026-11-16--doc01-documentation-architecture/CHANGE.md). Terminal Change archive stays intact.
+**Current status:** No Change is selected. DOC03 is Done at [archive/2026-11/other/2026-11-16--doc03-knowledgebase-truth-and-lifecycle](archive/2026-11/other/2026-11-16--doc03-knowledgebase-truth-and-lifecycle/CHANGE.md). DOC02 is Done at [archive/2026-11/other/2026-11-16--doc02-knowledge-authority-reconstruction](archive/2026-11/other/2026-11-16--doc02-knowledge-authority-reconstruction/CHANGE.md). DOC01 remains Done at [archive/2026-11/other/2026-11-16--doc01-documentation-architecture](archive/2026-11/other/2026-11-16--doc01-documentation-architecture/CHANGE.md). Terminal Change archive stays intact.
 
 ## Open packets
 
 | Packet | State | Outcome |
 | --- | --- | --- |
-| [DOC03 knowledgebase truth and lifecycle](open/2026-11-16--doc03-knowledgebase-truth-and-lifecycle/CHANGE.md) | **Proposed (audit/design prepared, not selected)** | Reconcile current SSE/Chamber/agent status, selected design vs DOC01 attic, evidence lifecycle; retain full Change archive |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |

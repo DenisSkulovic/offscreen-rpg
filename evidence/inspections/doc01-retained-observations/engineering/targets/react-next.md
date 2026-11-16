@@ -1,6 +1,6 @@
 # React / Next.js engineering target | DECIDED architecture
 
-> **DOC01 compatibility stub.** Canonical technical owner: [docs/technical/client/architecture.md](../../technical/client/architecture.md). Do not add new norms here.
+> **DOC01 compatibility stub.** Canonical technical owner: [docs/technical/client/architecture.md](../../../../../docs/technical/client/architecture.md). Do not add new norms here.
 
 **State: ARCHITECTURE SELECTED (2026-11-12) + W-program implemented (reconciled 2026-11-15).** This contract owns the **frontend engineering target** (F1–F15). TanStack Query is mandatory. **Architecture selected ≠ “code not implemented.”**
 
@@ -9,14 +9,14 @@
 | Layer | Status | Where |
 | --- | --- | --- |
 | F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
-| W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
-| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/implementation-program.md) |
+| W01–W11, W13–W22 | **Done** | [changes queue](../../../../../work/changes/README.md); source [apps/web/README.md](../../../../../apps/web/README.md) |
+| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [experience program](../../../../../work/designs/parked/experience-studies/implementation-program.md) |
 | Admin `/control` | **Done** (AD04+) | [admin](../../../../../docs/product/admin/README.md) |
-| New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
+| New frontend Changes | Only via [work/changes/README.md](../../../../../work/changes/README.md) | Not authorized by this target alone |
 
 **Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** [client/identity](../../technical/client-and-identity.md), [story lifecycle](../../technical/story-lifecycle.md), [execution](../../technical/execution.md), [player experience](../../product/journeys/player-experience.md).
 
-**Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../apps/web/README.md). A selected Change should link only its relevant heading.
+**Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../../../apps/web/README.md). A selected Change should link only its relevant heading.
 
 ## 0. Final stack decisions (these are instructions, not a library wishlist)
 
@@ -248,7 +248,7 @@ Measure initial HTML, client JS, hydration, request waterfalls, polling/SSE traf
 
 ## 9. Convergence, status and handoff
 
-The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../../work/changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
+The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../../../../work/changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
 
 **Owner direction resolved:** adopt TanStack Query, professional support stack, end-to-end quality and correctness rather than optimizing for smallest source diff or minimal dependency count. **The architect has chosen the remaining decisions above.** This contract is **selected for implementation planning**, but no Change is active and no code execution is authorized by today's Markdown pass. Cursor follows only the selected, authorized Change packet, not the whole area program in one uncontrolled diff.
 
@@ -256,6 +256,6 @@ The [Nov 12 audit](../audits/react-next-gap-2026-11-12.md) records the unchanged
 
 ## 10. Professional references
 
-Repository manuals actually applied: [frontend state and async](../../../.agents/knowledge/frontend-state-and-async.md), [architecture decision space](../../../.agents/knowledge/architecture-decision-space.md), [API/network](../../../.agents/knowledge/api-and-network-contracts.md), [security/trust](../../../.agents/knowledge/security-and-trust.md), [testing evidence](../../../.agents/knowledge/testing-and-quality-evidence.md), [caching/performance](../../../.agents/knowledge/caching-and-performance.md), [observability](../../../.agents/knowledge/observability-and-production-diagnostics.md), [release delivery](../../../.agents/knowledge/release-and-delivery-engineering.md). The [frontend engineering skill](../../../.agents/skills/frontend-engineering/SKILL.md), [independent design review](../../../.agents/skills/independent-design-review/SKILL.md) and [target-first rule](../../../.agents/rules/target-driven-renewal.md) govern how Changes are challenged and implemented.
+Repository manuals actually applied: [frontend state and async](../../../../../.agents/knowledge/frontend-state-and-async.md), [architecture decision space](../../../../../.agents/knowledge/architecture-decision-space.md), [API/network](../../../../../.agents/knowledge/api-and-network-contracts.md), [security/trust](../../../../../.agents/knowledge/security-and-trust.md), [testing evidence](../../../../../.agents/knowledge/testing-and-quality-evidence.md), [caching/performance](../../../../../.agents/knowledge/caching-and-performance.md), [observability](../../../../../.agents/knowledge/observability-and-production-diagnostics.md), [release delivery](../../../../../.agents/knowledge/release-and-delivery-engineering.md). The [frontend engineering skill](../../../../../.agents/skills/frontend-engineering/SKILL.md), [independent design review](../../../../../.agents/skills/independent-design-review/SKILL.md) and [target-first rule](../../../../../.agents/rules/target-driven-renewal.md) govern how Changes are challenged and implemented.
 
 Official guidance: [TanStack Query advanced SSR](https://tanstack.com/query/latest/docs/framework/react/guides/advanced-ssr), [Query important defaults](https://tanstack.com/query/latest/docs/framework/react/guides/important-defaults), [Query mutations](https://tanstack.com/query/latest/docs/framework/react/guides/mutations), [Query infinite lists](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries), [React Hook Form useForm](https://react-hook-form.com/docs/useform), [RHF reset](https://react-hook-form.com/docs/useform/reset), [Next Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Next data security](https://nextjs.org/docs/app/guides/data-security), [React Effects](https://react.dev/learn/you-might-not-need-an-effect), [Playwright](https://playwright.dev/docs/best-practices), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/). Framework behavior is version-specific: implementation must verify the installed Next 16 configuration and actual build before asserting runtime success.

@@ -1,6 +1,6 @@
 # Local development
 
-> **DOC01 compatibility stub.** Canonical owner: [runbooks/local-development.md](../runbooks/local-development.md).
+> **DOC01 compatibility stub.** Canonical owner: [runbooks/local-development.md](../../../../docs/runbooks/local-development.md).
 
 **Explore by question:** [local requirements and startup](#requirements-and-startup) · [fast frontend workflow](#fast-frontend-workflow) · [dependencies](#local-dependencies) · [checks and side effects](#checks-and-boundaries) · [database setup](#postgresql-component) · [live Story mode](#local-live-story-mode-without-oauth) · [developer rehearsal](#profiled-storyteller-rehearsal). Read the relevant section rather than loading this entire document.
 
@@ -96,7 +96,7 @@ Use host application processes and Compose dependencies first. Kubernetes comes 
 
 ## Checks and boundaries
 
-Checks are optional under the [verification policy](../../.agents/rules/verification.md); choose a focused command when it answers a concrete question. `@offscreen/storyteller/tasks` prepares and validates opening, continuation, consequence and report tasks. Provider-free fixtures and real-provider execution are separate paths. Hosted structured-output and mechanical play have historical live evidence in the [connected proof](../../../../research/legacy-engineering/connected-poc-proof.md); that does not establish every schema, scenario or recovery path. Ordinary checks must keep live inference disabled.
+Checks are optional under the [verification policy](../../../../.agents/rules/verification.md); choose a focused command when it answers a concrete question. `@offscreen/storyteller/tasks` prepares and validates opening, continuation, consequence and report tasks. Provider-free fixtures and real-provider execution are separate paths. Hosted structured-output and mechanical play have historical live evidence in the [connected proof](../../../../research/legacy-engineering/connected-poc-proof.md); that does not establish every schema, scenario or recovery path. Ordinary checks must keep live inference disabled.
 
 ```sh
 pnpm format:check

@@ -98,6 +98,23 @@ These are logical ownership lines. They are not an order to create seven top-lev
 
 Some current paths read canonical documents while an action's story lock remains held. The preferred evolution is a **short capture transaction, immutable evidence materialization outside the lock, then a fenced publication transaction**, with the exact captured authority. Early outcome generation stays selective for explicitly covered dependencies. It is not a universal future-action policy. The general capability engine remains a conceptual target until one new mechanic is demonstrated. It is not permission to build a plugin framework.
 
+## World-neutral capability kernel
+
+**Selected conceptual approach, not a finalized schema and not permission to refactor `Character`.** The dream includes ordinary life, a fantasy warrior, a microbe and a bodiless mind. The engine supports meaningful actions with consistent consequences. It keeps the D&D-style backbone where a world uses it, and it does not require every world to have HP, a backpack, currency or Euclidean travel.
+
+| Model | Verdict |
+| --- | --- |
+| One universal Character schema with optional flags | Reject as the permanent shape. It smuggles a humanoid into every form. |
+| Unstructured fact map plus LLM interpretation | Reject as the sole mechanics engine. It cannot enforce scarce items or conflicts. |
+| Fully generic ECS and dynamic world-rule scripts | Do not select as the base engine. A tactical world may later use ECS as one module. |
+| Small typed rule kernel plus statically registered optional capabilities | Preferred target. |
+
+The kernel owns story and actor identity, revision and accepted receipts, the fictional clock, deterministic outcomes and random evidence, typed effects and conflicts, ordered history, Storyteller candidate validation, and public versus private knowledge. It does not know a microbe's nutrients or a wizard's containment. Those are capabilities a world opts into.
+
+A capability family is a versioned pure handler: applicability, explicit reads, captured randomness, a compact receipt, a negative case, and no provider or SQL inside the policy. World documents may set known parameters. They may not supply new algorithms. LLM-authored rule code is forbidden.
+
+**Negative:** absent HP is not infinite HP. Changing form invalidates stale prepared actions and does not rewrite the prior receipt. Do not add a second inventory beside an existing item-transfer effect. One new family at a time; a plugin framework is not the first slice. The reversal test is in the study history: if fact and quantity effects already carry durable agency, the new family can wait; if every creative action needs a special-case validator, the kernel is too thin.
+
 ## What stays open
 
 - The first generalized world and actor capability vocabulary needs contrasting fixtures before a public generic schema is frozen.

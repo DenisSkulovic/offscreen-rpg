@@ -1,6 +1,6 @@
 # SA09 evidence | descriptive continuity materialization
 
-**Date:** 2026-11-14. **Change:** [SA09](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa09-continuity-materialization/CHANGE.md). **Provider spend:** none. **DB:** none.
+**Date:** 2026-11-14. **Change:** [SA09](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa09-continuity-materialization/CHANGE.md). **Provider spend:** none. **DB:** none.
 
 ## What landed
 

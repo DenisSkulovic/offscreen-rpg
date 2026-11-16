@@ -1,6 +1,6 @@
 # OBS06 | Case-scoped Support Situation → Why read (2026-11-15)
 
-**Change:** [OBS06](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) · **Contract:** [support-situation-and-why-v1](../../../../../../docs/technical/observability/investigation-and-reconstruction.md) · **Base source:** `main@7a7ee811` + working tree · **Provider spend:** zero (no model/network call; disposable `offscreen_auth_test` only).
+**Change:** [OBS06](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs06-case-scoped-situation-read/CHANGE.md) · **Contract:** [support-situation-and-why-v1](../../../../../../docs/technical/observability/investigation-and-reconstruction.md) · **Base source:** `main@7a7ee811` + working tree · **Provider spend:** zero (no model/network call; disposable `offscreen_auth_test` only).
 
 **Outcome: Done in synthetic/disposable scope. Production grant issuance remains unsupported** (see Honest limits). OBS07 not started.
 

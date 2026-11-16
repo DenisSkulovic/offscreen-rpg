@@ -65,7 +65,7 @@ The writing guidance recommends brevity for repeatable content and recognizes th
 
 **Lesson:** a wait can feel emotionally consequential if the fiction acknowledges it and offers curiosity during the interval. But `The Longing` advances a global clock even if the player does nothing. Our current contract does **not**: only accepted commitments move time.
 
-**Product tension:** the two models deliver different fantasies. One feels like a living world independent of the player; the other preserves agency and no silent danger. A hybrid standing-routine model may preserve the best of both but requires a serious rules and consent design. See [time/agency alternatives](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/foundations/temporal-philosophy.md).
+**Product tension:** the two models deliver different fantasies. One feels like a living world independent of the player; the other preserves agency and no silent danger. A hybrid standing-routine model may preserve the best of both but requires a serious rules and consent design. See [time/agency alternatives](../../../../../../work/designs/open/time-and-autonomy/temporal-philosophy.md).
 
 **Our design test:** compare idle story reentry versus explicit standing routine vs globally ticking time. Ask players to predict consequences after 48 hours and whether they would trust the game with their character.
 

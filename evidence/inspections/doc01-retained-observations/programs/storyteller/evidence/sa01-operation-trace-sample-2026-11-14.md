@@ -1,6 +1,6 @@
 # SA01 evidence sample | redacted operation trace
 
-**Date:** 2026-11-14. **Change:** [SA01](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa01-operation-trace/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-14. **Change:** [SA01](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa01-operation-trace/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

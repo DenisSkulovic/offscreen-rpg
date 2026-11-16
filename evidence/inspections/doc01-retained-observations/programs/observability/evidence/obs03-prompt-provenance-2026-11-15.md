@@ -1,6 +1,6 @@
 # OBS03 | Consequence prompt provenance sidecar (2026-11-15)
 
-**Change:** [OBS03](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs03-prompt-provenance/CHANGE.md)  
+**Change:** [OBS03](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs03-prompt-provenance/CHANGE.md)
 **Provider spend:** zero.
 
 ## What landed

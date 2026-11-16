@@ -1,6 +1,6 @@
 # SA08 evidence | model route capabilities
 
-**Date:** 2026-11-14. **Change:** [SA08](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa08-model-route-capabilities/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-14. **Change:** [SA08](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa08-model-route-capabilities/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

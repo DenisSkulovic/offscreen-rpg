@@ -33,7 +33,7 @@ For a comparable baseline, hold goal/acceptance and repository revision as close
 - When Claude Code is connected, check `/context all`, `/skills` and `/usage`; run `/doctor prompt-audit` where supported. Verify that the root import appears, conditional skills are callable and the cost model matches the installed plan.
 - Ask one read-only source question and record whether the agent found the correct product/technical owner without pre-reading unrelated docs. **Don't change game code just to validate harness discovery.**
 
-See [harness architecture](../../.agents/HARNESS.md) and [context reference](../../.agents/references/context-economics.md). Real-client discovery remains **unverified** until these checks are actually performed.
+See [harness architecture](../../../../.agents/HARNESS.md) and [context reference](../../../../.agents/references/context-economics.md). Real-client discovery remains **unverified** until these checks are actually performed.
 
 ## Cheap smoke test before buying another subscription
 
@@ -51,7 +51,7 @@ Use these **read-only** questions in a fresh coding-agent context; assess whethe
 
 | Fresh-agent question | Expected documentation route |
 | --- | --- |
-| When is fictional time allowed to advance after an action is accepted? | [Time and autonomy](../product/journeys/time-and-autonomy.md) → [committed time](../technical/committed-time.md#permission-to-advance); inspect code only to verify current implementation |
+| When is fictional time allowed to advance after an action is accepted? | [Time and autonomy](../../../../docs/product/gameplay/time-and-autonomy.md) → [committed time](../../../../content/rules/srd-5.2.1-subset/time/committed-time.md#permission-to-advance); inspect code only to verify current implementation |
 | What makes an NPC/relationship detail canonical and recallable? | [Continuity](../product/storytelling/continuity-and-consequences.md) → [canonical ownership](../technical/canonical-files.md#one-owner-per-kind-of-truth); retrieval research only when the question concerns discovery |
 | What happens if a provider times out after dispatch? | [Temporal/execution recovery](../technical/execution.md#retry-boundaries-and-uncertain-side-effects) → [usage holds](../technical/usage-policy.md#hold-and-recovery-semantics) |
 | Who owns a form's server state, and what should the player see? | [Player experience](../product/journeys/player-experience.md) → [client/identity](../technical/client-and-identity.md) → [code map](./code-navigation.md) |
@@ -80,11 +80,11 @@ A controlled read-only trial should ask the same model to recommend an architect
 - Does it identify correct authority and evidence, without inventing product requirements?
 - How many extra tokens/reads and human corrections did this deeper judgment cost?
 
-Use [scenario lab](../../.agents/knowledge/scenario-lab.md) as an adversarial source; it is **not** a benchmark result. No measured uplift in coding-agent design quality or usage efficiency is claimed yet.
+Use [scenario lab](../../../../.agents/knowledge/scenario-lab.md) as an adversarial source; it is **not** a benchmark result. No measured uplift in coding-agent design quality or usage efficiency is claimed yet.
 
 ## Security, API, test and observability knowledge trials
 
-To evaluate whether the new professional manuals improve **first-pass design judgment**, use the read-only [decision lab](../../.agents/knowledge/scenario-lab.md) scenarios G–J. For each, give a fresh agent a fixed brief *without* a manual, and an independent fresh context the same brief with its appropriate manual. Avoid letting the first answer leak into the second trial. Compare **quality per total context cost** rather than number of buzzwords.
+To evaluate whether the new professional manuals improve **first-pass design judgment**, use the read-only [decision lab](../../../../.agents/knowledge/scenario-lab.md) scenarios G–J. For each, give a fresh agent a fixed brief *without* a manual, and an independent fresh context the same brief with its appropriate manual. Avoid letting the first answer leak into the second trial. Compare **quality per total context cost** rather than number of buzzwords.
 
 | Trial | Initial-design signal worth measuring | Weak response it should defeat |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ Record actual file/section reads, model usage if visible, extra investigation, c
 
 ## Data, caching and release knowledge trials
 
-The [scenario lab](../../.agents/knowledge/scenario-lab.md) now has K–M for three new specialties. A knowledge-assisted **read-only** design answer should identify alternatives and criteria that materially alter its initial recommendation:
+The [scenario lab](../../../../.agents/knowledge/scenario-lab.md) now has K–M for three new specialties. A knowledge-assisted **read-only** design answer should identify alternatives and criteria that materially alter its initial recommendation:
 
 | Scenario | Knowledge that should change a strong first recommendation | Bad first answer |
 | --- | --- | --- |
@@ -117,7 +117,7 @@ Test with comparable independent contexts, with/without relevant manual, holding
 
 ## 2026-11-12 retrieval-economics smoke tests (not yet performed)
 
-**Why these exist:** 240 Markdown/rule files and ~2.1 MB of docs are useful only if small-context Cursor retrieves a few relevant paragraphs/symbols without reading everything. The [L0–L4 standard](../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent maps](../../apps/web/README.md) are **documents**, not proof of reduced token usage. Compare the same question/revision in fresh Cursor Ask/read-only contexts with and without an exact map route.
+**Why these exist:** 240 Markdown/rule files and ~2.1 MB of docs are useful only if small-context Cursor retrieves a few relevant paragraphs/symbols without reading everything. The [L0–L4 standard](../../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent maps](../../../../apps/web/README.md) are **documents**, not proof of reduced token usage. Compare the same question/revision in fresh Cursor Ask/read-only contexts with and without an exact map route.
 
 | Probe | Correct minimal route | Must conclude without broad search |
 | --- | --- | --- |

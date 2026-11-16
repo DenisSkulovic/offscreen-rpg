@@ -35,10 +35,10 @@ work/*
 !work/designs/**
 !work/sessions/
 !work/sessions/README.md
-work/designs/open/doc01-migration/*.jsonl
-work/designs/open/doc01-migration/*.grep.txt
 work/sessions/*
 !work/sessions/README.md
+!work/sessions/legacy-minutes/
+!work/sessions/legacy-minutes/**
 data/
 saves/
 *.log

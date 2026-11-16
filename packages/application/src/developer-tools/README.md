@@ -1,6 +1,6 @@
 # Application developer tooling | source map
 
-**Current (source-inspected 2026-11-12, code baseline `470a5df`):** `createChamber` uses **real** story application operations for five fixed `chamber.v1–v5` starts/responses; `createChamberInspector` loads a rich owned snapshot/SQL diagnosis; `createQaJourneys` stores **manual** QA stage evidence. They do **not** form a generic state materializer or scenario runner. **Future (not implemented):** [Chamber laboratory target](../../../../docs/technical/lab/chamber-and-fixtures.md) and [typed protocol](../../../../docs/technical/lab/experiment-protocol.md).
+**Current (source-inspected 2026-11-16):** `createChamber` still runs five fixed `chamber.v1–v5` scripts through real story operations. `createChamberInspector` reads a snapshot and SQL diagnosis. `createQaJourneys` stores manual stage evidence. Those three are not the generic Lab runner. The Lab runner is the CH01–CH16 table below (`lab/lab-run.ts` and siblings), and the contracts are [Chamber](../../../../docs/technical/lab/chamber-and-fixtures.md) and [experiment protocol](../../../../docs/technical/lab/experiment-protocol.md). Paid provider release stays separately gated.
 **Start here:** one owner below, not this entire directory. **No player/game authority is moved into Chamber** simply because a test needs to set up a state.
 
 | Need / scenario Change | Actual first source | Important existing property |

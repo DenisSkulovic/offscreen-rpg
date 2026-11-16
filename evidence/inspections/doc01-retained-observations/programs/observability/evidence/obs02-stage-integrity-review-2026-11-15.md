@@ -1,6 +1,6 @@
 # OBS02 stage-integrity review | Real receipts, but recovery can make them incomplete
 
-**Source evidence:** GitHub `main@770774935cf2`, 2026-11-15, after Cursor implemented OBS02. **No runtime test or production data examined in this design review**. The original [OBS02 implementation](./obs02-execution-stages-2026-11-15.md) is Done for its provider-disabled pilot; these are **additional source-based reliability findings**, not observed customer incidents. Proposed narrow hardening: [OBS02-H](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md).
+**Source evidence:** GitHub `main@770774935cf2`, 2026-11-15, after Cursor implemented OBS02. **No runtime test or production data examined in this design review**. The original [OBS02 implementation](./obs02-execution-stages-2026-11-15.md) is Done for its provider-disabled pilot; these are **additional source-based reliability findings**, not observed customer incidents. Proposed narrow hardening: [OBS02-H](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md).
 
 ## 1. What landed correctly
 
@@ -66,4 +66,4 @@ The stage row's `producerBuildId` defaults to `OFFSCREEN_BUILD_ID` or `local-dev
 | Full capture/lease path with 0/250/2000ms CAS injection | No new external work under story `FOR UPDATE`; model/provider disabled |
 | Raw player text in source | No raw body emitted into stage table, support DTO or process logs |
 
-**Disposition:** a narrow [OBS02-H](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) should precede claims that OBS02 gives **complete** forensic history across same-G rearm/lease races. It does not need a full new event store. Source checks are strong but runtime manifestations remain unproven until targeted tests.
+**Disposition:** a narrow [OBS02-H](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs02-h-stage-integrity/CHANGE.md) should precede claims that OBS02 gives **complete** forensic history across same-G rearm/lease races. It does not need a full new event store. Source checks are strong but runtime manifestations remain unproven until targeted tests.

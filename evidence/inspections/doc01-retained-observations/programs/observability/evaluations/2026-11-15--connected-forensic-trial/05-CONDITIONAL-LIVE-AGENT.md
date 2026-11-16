@@ -111,4 +111,4 @@ Mark `RUN-LOG.md` live mode `PASS/PARTIAL/BLOCKED` with total attempted external
 
 Push `CHECKPOINT.md` and sanitized evidence.
 
-**Next:** [S6 final comparison and handoff](./06-FINAL-FORENSIC-HANDOFF.md).
+**Next:** [S6 final comparison and handoff](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/06-FINAL-FORENSIC-HANDOFF.md).

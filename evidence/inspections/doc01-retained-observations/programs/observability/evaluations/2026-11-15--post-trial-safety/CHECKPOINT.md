@@ -6,8 +6,8 @@
 
 - Source baseline: OBS00-C built on `main@c887716a53698c2e1afe375b91b41342787f75c3` (OBS00-L); the OBS00-C commit SHA is in the Git log / return message
 - Active Change: none (cleared after OBS00-C)
-- Latest finished: [OBS00-C](../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md), receipt [obs00-c](../../evidence/obs00-c-provider-wire-equality-2026-11-15.md); before it [OBS00-L](../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md), receipt [obs00-l](../../evidence/obs00-l-local-story-trial-guards-2026-11-15.md)
-- Previous recommendation (now worked): [QA-SF01](../../../../../work/changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) (**not started**). It must also add `prepareWire` attestation to the plain fake providers in `tools/api-integration/test/{storyteller,start-package}.integration.ts` (see OBS00-C receipt finding 2).
+- Latest finished: [OBS00-C](../../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md), receipt [obs00-c](../../evidence/obs00-c-provider-wire-equality-2026-11-15.md); before it [OBS00-L](../../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md), receipt [obs00-l](../../evidence/obs00-l-local-story-trial-guards-2026-11-15.md)
+- Previous recommendation (now worked): [QA-SF01](../../../../../../../work/changes/open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) (**not started**). It must also add `prepareWire` attestation to the plain fake providers in `tools/api-integration/test/{storyteller,start-package}.integration.ts` (see OBS00-C receipt finding 2).
 - Paid local Story trial: **NOT AUTHORIZED** until the owner approves a new explicit cap; both OBS00-L and OBS00-C guards are now proven provider-free. Generic worker still denied (OBS00-B).
 - Total actual provider attempts this wave: 0 real (mock transport only)
 - Spend: $0; external HTTP: 0

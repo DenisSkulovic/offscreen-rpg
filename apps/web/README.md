@@ -4,7 +4,7 @@
 
 ## Find the owning surface in one hop
 
-**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These describe the **current code**, not TanStack/RHF/SSE as already implemented. The [selected architecture](../../docs/technical/client/architecture.md) is a different, future-state owner.
+**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These maps describe the **current code**. TanStack Query, React Hook Form and Play SSE invalidation are in that code (`useStoryLiveUpdates`, shared Query provider). The [selected architecture](../../docs/technical/client/architecture.md) remains the contract for behavior the source has not finished, including F1–F15 human acceptance. Inspected 2026-11-16.
 
 | Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |

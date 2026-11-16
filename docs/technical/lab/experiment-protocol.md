@@ -1,6 +1,6 @@
 # Chamber laboratory | implementation protocol and authority
 
-**Status:** Selected **internal developer-tooling technical design**, 2026-11-12; code remains unchanged. **Why this exists:** the [Chamber target](../../../evidence/inspections/doc01-retained-observations/engineering/targets/chamber-laboratory.md) defines developer outcomes C01–C16; the [source audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) identifies current gaps. This document chooses shared wire/data/driver boundaries **so cheap Cursor implementers do not design separate incompatible systems**. Browser UI layout, exact class names and general player mechanics are not owned here.
+**Status:** Selected internal developer-tooling contract. Inspected 2026-11-16: LabRun, chamber lab contracts and `apps/api/src/modules/stories/chamber-lab-controller.ts` exist. The November 12 draft described this protocol before that code landed. Fake-adapter, disposable-database, connected-worker and paid-provider lanes are different proofs; see [STATUS](../../../STATUS.md#capability-coverage). This document chooses shared wire/data/driver boundaries. Browser UI layout, exact class names and general player mechanics are not owned here. The [2026-11-12 gap audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) is a dated observation, not the current absence claim.
 
 ## Cheap reading route
 

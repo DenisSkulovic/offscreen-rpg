@@ -1,6 +1,6 @@
 # SA11 evidence | provider-free playability harness
 
-**Date:** 2026-11-14. **Change:** [SA11](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa11-playability-harness/CHANGE.md). **Provider spend:** none. **DB:** none.
+**Date:** 2026-11-14. **Change:** [SA11](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa11-playability-harness/CHANGE.md). **Provider spend:** none. **DB:** none.
 
 ## What landed
 

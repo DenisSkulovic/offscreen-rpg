@@ -1,6 +1,6 @@
 # Configurable canon invention policy
 
-> **DOC01 C8:** owner-retained dormant design also copied to [work/designs/open/canon-invention-policy/](../../../../work/designs/open/canon-invention-policy/README.md). Not silently accepted or discarded.
+> **DOC01 C8:** owner-retained dormant design also copied to [work/designs/open/canon-invention-policy/](../../../../../../work/designs/open/canon-invention-policy/README.md). Not silently accepted or discarded.
 
 Status: Agreed and deliberately dormant
 Approval: On 2026-09-24 the owner asked to preserve the multi-axis world/lore creativity idea as a prepared feature dossier, leave it dormant and continue the currently higher-priority implementation route.

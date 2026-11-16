@@ -1,6 +1,6 @@
 # Engine architecture verification | discriminate real correctness from impressive scaffolding
 
-**Status:** proposed test/evidence program, **nothing run as part of this architecture pass**. Sources: [testing knowledge](../../../../.agents/knowledge/testing-and-quality-evidence.md), [the Chamber program](../../../engineering/chamber-program.md), [product scenarios](../../../../../../work/designs/open/doc01-unpromoted-design/programs/engine/product-derived-requirements.md), [source audit](./source-audit.md). This is designed to be used with **explicit permission for side-effectful database/provider tests**.
+**Status:** proposed test/evidence program, **nothing run as part of this architecture pass**. Sources: [testing knowledge](../../../../../../.agents/knowledge/testing-and-quality-evidence.md), [the Chamber program](../../../engineering/chamber-program.md), [product scenarios](../../../../../../work/designs/parked/engine-studies/product-derived-requirements.md), [source audit](./source-audit.md). This is designed to be used with **explicit permission for side-effectful database/provider tests**.
 
 ## A test is only as valuable as the claim its boundary proves
 

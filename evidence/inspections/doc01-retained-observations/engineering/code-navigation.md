@@ -6,23 +6,23 @@ For a conceptual understanding before source navigation, use the [engine model](
 
 To understand the intended gameplay before following code, use the [execution atlas](../technical/playthroughs/README.md). Its worked traces distinguish current source behavior from proposed rules and connect acceptance steps to owning feature phases.
 
-For research-backed options around context selection, retrieval, memory, tools, agent loops, observability, cost and evaluation, consult the [agentic systems field manual](./agentic-systems-field-manual.md). Treat it as evolving engineering inspiration; product and technical specifications still own this repository's decisions.
+For research-backed options around context selection, retrieval, memory, tools, agent loops, observability, cost and evaluation, consult the [agentic systems field manual](../../../../research/agent-practice/agentic-systems-field-manual.md). Treat it as evolving engineering inspiration; product and technical specifications still own this repository's decisions.
 
 For long histories specifically, [Long-story memory, navigation and synthesis](../../../../research/legacy-engineering/long-story-memory-and-retrieval.md) maps exact, lexical, semantic, relational, temporal and global retrieval modes to the canonical-file authority boundary and the maintained memory benchmark.
 
-For a new code implementation, check the [Change index](../../work/changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../../../../work/designs/open/legacy-initiatives-index/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
+For a new code implementation, check the [Change index](../../../../work/changes/README.md), which may correctly report **none selected**. The older [feature dossiers](../../../../work/designs/open/legacy-initiatives-index/README.md) are historical initiatives, not a coding queue. Implementation checkpoints belong to the selected Change, not this navigation map. For product and technical questions, use the [documentation map](../README.md). The [solo integration contract](../technical/solo-gameplay-contract.md) documents clock/collision defaults and the distinction between narrative sequence, mechanical state, authored choice permission and historical reports.
 
 ## Find the owner
 
 | Question | Start here | Go deeper only when needed |
 | --- | --- | --- |
-| Where does a player request enter? | [API composition](../../apps/api/src/app.ts), then the relevant controller under `modules/` | [Application guide](../../packages/application/README.md) |
+| Where does a player request enter? | [API composition](../../../../apps/api/src/app.ts), then the relevant controller under `modules/` | [Application guide](../../../../packages/application/README.md) |
 | Where is a screen implemented? | `apps/web/app/` owns routes; `apps/web/src/features/` owns most interaction and rendering | `stories/opening-preview.tsx` for creation; `play/campaign-play.tsx` for mechanical options |
-| Who may roll or change a fact? | [Immediate-action policy](../../packages/game/src/immediate-actions.ts), [checks](../../packages/game/src/checks.ts), [effects](../../packages/game/src/effects.ts) | Application `campaign/actions.ts` and `campaign/activities.ts` own persistence and transaction boundaries |
-| What does the model actually receive? | [Storyteller guide](../../packages/storyteller/README.md) | Application `storyteller/context.ts` reads SQL story evidence; `storyteller/canonical-knowledge.ts` selects pinned documents; package `context/index.ts` bounds the entire request; `tasks/index.ts` captures the provider packet |
-| Why did background work not run? | [Outbox dispatch](../../apps/worker/src/outbox/dispatch.ts), then [Activity bindings](../../apps/worker/src/activities/index.ts) | `packages/workflows/src/` owns durable orchestration; application operations recheck database authority |
+| Who may roll or change a fact? | [Immediate-action policy](../../../../packages/game/src/immediate-actions.ts), [checks](../../../../packages/game/src/checks.ts), [effects](../../../../packages/game/src/effects.ts) | Application `campaign/actions.ts` and `campaign/activities.ts` own persistence and transaction boundaries |
+| What does the model actually receive? | [Storyteller guide](../../../../packages/storyteller/README.md) | Application `storyteller/context.ts` reads SQL story evidence; `storyteller/canonical-knowledge.ts` selects pinned documents; package `context/index.ts` bounds the entire request; `tasks/index.ts` captures the provider packet |
+| Why did background work not run? | [Outbox dispatch](../../../../apps/worker/src/outbox/dispatch.ts), then [Activity bindings](../../../../apps/worker/src/activities/index.ts) | `packages/workflows/src/` owns durable orchestration; application operations recheck database authority |
 | Where are records and constraints? | `packages/db/src/` schema files named after their domain | Application persistence modules show how rows participate in transactions |
-| Where do caching and invalidation belong? | [Persistence and caching](../technical/persistence-and-caching.md) | Application read projections own freshness identities; deployables own optional Redis adapters |
+| Where do caching and invalidation belong? | [Persistence and caching](../../../../docs/technical/platform/persistence-and-caching.md) | Application read projections own freshness identities; deployables own optional Redis adapters |
 | Is a field public or private? | `packages/contracts/src/` defines transport shapes | Follow the response projection; a shared type alone does not authorize disclosing a private plan |
 | Where do example worlds come from? | Application `campaign/fixtures/content/`, Storyteller `fixtures/content/`, web `app/demo/content/` | Content loaders validate data; fixtures do not demonstrate arbitrary-world generation |
 | How do I explore the running POC? | [Development guide](../operations/development.md), [manual QA workflow](../../../../research/legacy-engineering/qa-journeys.md) | `tools/chamber/` launches it; `tools/api-integration/` contains optional automated probes |
@@ -31,11 +31,11 @@ For a new code implementation, check the [Change index](../../work/changes/READM
 
 `packages/game` owns pure mechanical rules. `packages/contracts` owns transport validation and projections of game values. `packages/storyteller` owns profile data, bounded context, task contracts, result validation and the provider adapter. `packages/documents` owns immutable document objects/manifests; PostgreSQL selects the published root. `packages/application` composes these with `packages/db` to admit, persist and publish operations. API and Activity workers call application operations; neither should implement a second game resolver. `packages/workflows` is the deterministic Temporal bundle, separate from Activity implementations. `packages/cache` supplies the optional Redis projection-cache adapter; it has no authority over commands. `packages/config` holds shared configuration. Package manifests and exports are the authority for actual dependencies; this map does not duplicate every import.
 
-The [architecture specification](../technical/architecture.md) also describes intended infrastructure. Mention there does not imply an implemented integration.
+The [architecture specification](../../../../docs/technical/client/architecture.md) also describes intended infrastructure. Mention there does not imply an implemented integration.
 
 ## Terms that otherwise send readers to the wrong file
 
-[Concepts](../product/foundations/concepts.md) owns domain vocabulary. In particular, a Storyteller turn, contextual scene, publication passage and model round are different things. Existing `result.scene` is an output envelope, not proof of a scene lifecycle. The game has no chapter concept.
+[Concepts](../../../../docs/product/foundations/concepts.md) owns domain vocabulary. In particular, a Storyteller turn, contextual scene, publication passage and model round are different things. Existing `result.scene` is an output envelope, not proof of a scene lifecycle. The game has no chapter concept.
 
 | Term | Meaning here |
 | --- | --- |
@@ -53,19 +53,19 @@ The [architecture specification](../technical/architecture.md) also describes in
 
 For a change, locate its entry point, authoritative operation and output first. Then inspect only the policy, persistence and recovery branches it calls. Read tests as examples of an invariant, not as a substitute for tracing production wiring. Record a discovered cross-file invariant with its owner; leave a short link at a surprising caller. Significant proposed code fixes belong in a bounded Change when authorized; design-only findings belong in their technical owner. Don't write comments that imply an unimplemented proposal exists.
 
-Navigation maintenance follows [the documentation rule](../../.agents/rules/documentation.md). These package guides are deeper maps; add another only when repeated exploration demonstrates a need.
+Navigation maintenance follows [the documentation rule](../../../../.agents/rules/documentation.md). These package guides are deeper maps; add another only when repeated exploration demonstrates a need.
 
-- [Pure game policy](../../packages/game/README.md)
-- [Public/shared validated contracts](../../packages/contracts/README.md)
-- [SQL schemas and migrations](../../packages/db/README.md)
-- [Temporal workflow coordination](../../packages/workflows/README.md)
-- [Web routes and interactive screens](../../apps/web/README.md)
-- [API routes and authentication](../../apps/api/README.md)
-- [Worker outbox and Activities](../../apps/worker/README.md)
-- [Optional Redis cache](../../packages/cache/README.md)
-- [Shared TypeScript configuration](../../packages/config/README.md)
-- [Local Chamber launcher](../../tools/chamber/README.md)
-- [Full-stack integration suites](../../tools/api-integration/README.md)
-- [Application flows](../../packages/application/README.md)
-- [Storyteller responsibilities](../../packages/storyteller/README.md)
-- [Canonical document storage](../../packages/documents/README.md)
+- [Pure game policy](../../../../packages/game/README.md)
+- [Public/shared validated contracts](../../../../packages/contracts/README.md)
+- [SQL schemas and migrations](../../../../packages/db/README.md)
+- [Temporal workflow coordination](../../../../packages/workflows/README.md)
+- [Web routes and interactive screens](../../../../apps/web/README.md)
+- [API routes and authentication](../../../../apps/api/README.md)
+- [Worker outbox and Activities](../../../../apps/worker/README.md)
+- [Optional Redis cache](../../../../packages/cache/README.md)
+- [Shared TypeScript configuration](../../../../packages/config/README.md)
+- [Local Chamber launcher](../../../../tools/chamber/README.md)
+- [Full-stack integration suites](../../../../tools/api-integration/README.md)
+- [Application flows](../../../../packages/application/README.md)
+- [Storyteller responsibilities](../../../../packages/storyteller/README.md)
+- [Canonical document storage](../../../../packages/documents/README.md)

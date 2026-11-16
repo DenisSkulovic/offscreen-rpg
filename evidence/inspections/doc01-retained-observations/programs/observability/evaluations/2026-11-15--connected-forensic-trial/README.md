@@ -1,8 +1,8 @@
 # Connected forensic trial | Cursor-led evaluation and evidence return
 
-**Status: EXECUTED/CLOSED 2026-11-15; old preparation text below retained as historical setup.** Cursor's actual [FINAL-HANDOFF](./FINAL-HANDOFF.md) records provider-free S0–S4, S5 blocked and 0 paid calls. See [independent source/evidence review](../../evidence/independent-connected-trial-review-2026-11-15.md) and the [new guarded local trial handoff](../../handoff/post-trial-next-cursor-wave-2026-11-15.md). **Do not re-execute this old S0–S6 runbook or recycle its $0.25 trial authorization.** The user requested that Cursor itself launch local services, play real synthetic campaigns, inspect persisted observations, run fault trials and write a source-linked handoff back to ChatGPT. This is an **evaluation program**, not a new game feature or generic logging rewrite. Code-bearing changes remain separately bounded under the [Change queue](../../../../../work/changes/README.md).
+**Status: EXECUTED/CLOSED 2026-11-15; old preparation text below retained as historical setup.** Cursor's actual [FINAL-HANDOFF](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) records provider-free S0–S4, S5 blocked and 0 paid calls. See [independent source/evidence review](../../evidence/independent-connected-trial-review-2026-11-15.md) and the [new guarded local trial handoff](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/handoff/post-trial-next-cursor-wave-2026-11-15.md). **Do not re-execute this old S0–S6 runbook or recycle its $0.25 trial authorization.** The user requested that Cursor itself launch local services, play real synthetic campaigns, inspect persisted observations, run fault trials and write a source-linked handoff back to ChatGPT. This is an **evaluation program**, not a new game feature or generic logging rewrite. Code-bearing changes remain separately bounded under the [Change queue](../../../../../../../work/changes/README.md).
 
-**One entrypoint:** [CURSOR START HERE](../../handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md). Don't read all phases at once.
+**One entrypoint:** [CURSOR START HERE](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md). Don't read all phases at once.
 
 | Cursor session | Exact file | Goal |
 | --- | --- | --- |
@@ -12,9 +12,9 @@
 | S3 | [03 Faults and retries](./03-FAULTS-AND-RETRIES.md) | Real disposable failures: CAS, rearm, duplicate delivery, stale publication, uncertainty |
 | S4 | [04 OBS06/OBS07 Admin](./04-OBS06-OBS07-ADMIN.md) | Implement only when specifically authorized; prove permission and human usability |
 | S5 | [05 Conditional live model](./05-CONDITIONAL-LIVE-AGENT.md) | Preflight protected paid path; if safe and authorized, <$0.25 total; else precise blocker |
-| S6 | [06 Final handoff](./06-FINAL-FORENSIC-HANDOFF.md) | Reconcile source vs hypothesis, commit evidence and notify ChatGPT |
+| S6 | [06 Final handoff](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/06-FINAL-FORENSIC-HANDOFF.md) | Reconcile source vs hypothesis, commit evidence and notify ChatGPT |
 
-**State:** [CHECKPOINT.md](./CHECKPOINT.md) is the **single resumable session cursor**. [RUN-LOG.md](./RUN-LOG.md) contains actual observations only. [EVIDENCE-CONTRACT.md](./EVIDENCE-CONTRACT.md) specifies what to collect/redact. [FINAL-HANDOFF.md](./FINAL-HANDOFF.md) is a placeholder until the agent really executes.
+**State:** [CHECKPOINT.md](./CHECKPOINT.md) is the **single resumable session cursor**. [RUN-LOG.md](./RUN-LOG.md) contains actual observations only. [EVIDENCE-CONTRACT.md](./EVIDENCE-CONTRACT.md) specifies what to collect/redact. [FINAL-HANDOFF.md](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) is a placeholder until the agent really executes.
 
 **Local safety:** no production/remote DB or credentials in Git, no `offscreen_story_local`/`offscreen_chamber` reset without deliberate owner authorization, no paid provider until OBS00-B and packet integrity + explicit budget approval, no automatic rewrite beyond named OBS06/OBS07 Changes. Provider-free experiments may run independently and must not be blocked by paid-path incompleteness.
 

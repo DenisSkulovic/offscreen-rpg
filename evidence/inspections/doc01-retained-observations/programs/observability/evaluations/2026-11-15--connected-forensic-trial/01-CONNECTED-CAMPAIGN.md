@@ -1,6 +1,6 @@
 # S1 | Launch the real application and play persisted synthetic campaigns
 
-**Run this, not merely suggest it.** Context: [S0 checkpoint](./CHECKPOINT.md), [development Story/Chamber mode](../../../../operations/development.md#local-live-story-mode-without-oauth), [browser test owners](../../../../../tools/api-integration/test/stories-browser.integration.ts). **Provider-free**. Use loopback, real Nest API + Postgres + Temporal worker + Next browser + production application use cases; **not** the in-memory `/demo`.
+**Run this, not merely suggest it.** Context: [S0 checkpoint](./CHECKPOINT.md), [development Story/Chamber mode](../../../../operations/development.md#local-live-story-mode-without-oauth), [browser test owners](../../../../../../../tools/api-integration/test/stories-browser.integration.ts). **Provider-free**. Use loopback, real Nest API + Postgres + Temporal worker + Next browser + production application use cases; **not** the in-memory `/demo`.
 
 ## 1. Confirm connected rig actually starts
 

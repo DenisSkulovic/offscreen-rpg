@@ -1,6 +1,6 @@
 # SA03 evidence | context I/O efficiency
 
-**Date:** 2026-11-14. **Change:** [SA03](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa03-context-efficiency/CHANGE.md). **Provider spend:** none. **DB:** none (SQL filter unit + LocalDocumentStore).
+**Date:** 2026-11-14. **Change:** [SA03](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa03-context-efficiency/CHANGE.md). **Provider spend:** none. **DB:** none (SQL filter unit + LocalDocumentStore).
 
 ## What landed
 

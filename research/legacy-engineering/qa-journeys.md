@@ -26,7 +26,7 @@ The long-story memory evaluation foundation provides deterministic 200-scene con
 
 The stage-separated evaluator must preserve failure attribution. An empty/broken retriever fails retrieval; a complete retrieval whose evidence is assembled but ignored by scripted generation passes retrieval/assembly and fails generation use. The initial linear baseline is intentionally retained even when poor so later indexed, semantic or agentic routes cannot improve their headline by changing the oracle or hiding forbidden/noisy context.
 
-The [offline POC acceptance matrix](offline-poc-acceptance.md) covers context, mechanics, agent tools, recovery and end-to-end play. It distinguishes checks possible now from those blocked on the DM runner; it does not change catalogue availability or claim those checks have been performed.
+The [offline POC acceptance matrix](../../evidence/inspections/doc01-retained-observations/engineering/offline-poc-acceptance.md) covers context, mechanics, agent tools, recovery and end-to-end play. It distinguishes checks possible now from those blocked on the DM runner; it does not change catalogue availability or claim those checks have been performed.
 
 Cases are versioned TypeScript data validated by `@offscreen/contracts/qa`. A case declares its cost class, availability, prerequisites, supported driver modes, variants, ordered stages, evidence requirements, reset policy and limits. A stage separates the player-visible expectation from the authoritative saved-state expectation.
 
@@ -102,9 +102,9 @@ The catalogue contains:
 
 Availability is data, but the server also enforces the boundary. It opens only cases whose cost class is `offline` and whose state is `available`. A credential present in the process cannot turn an offline run into a provider call. The live case cannot be opened through this API.
 
-The [deliberate-time checklist](../technical/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. The available overlap journey adds rate/pause, worker-restart, late release, same-generation failure recovery and due-world-boundary fallback. Human pacing and prose quality remain separate judgments.
+The [deliberate-time checklist](../../content/rules/srd-5.2.1-subset/time/committed-time.md#worked-traces-and-acceptance-checklist) covers timed conversation, no idle drift, early/late narration, pause, restart and exact retry. The clock gate requires an accepted activity or finite-action identity, prevents idle wall time from becoming a head start, and holds a required turn under durable ownership. The version-5 mechanical loop proves finite admission, boundary settlement, exact receipt ownership and sequential narration across three rounds at instant real pace. The available overlap journey adds rate/pause, worker-restart, late release, same-generation failure recovery and due-world-boundary fallback. Human pacing and prose quality remain separate judgments.
 
-The [calendar/world-boundary checklist](../technical/calendars-and-world-time.md#qa-evidence-map) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. The versioned catalogue now exposes deterministic calendar projection, the `frost-road.v1` deadline journey and schedule-revision controls; these remain offline scripted evidence rather than a claim about arbitrary generated calendars or seasons.
+The [calendar/world-boundary checklist](../../docs/technical/engine/calendars-and-world-time.md#qa-evidence-map) additionally covers unequal months, ordinal-only worlds, exact deadline crossings, meaningful winter conditions, same-tick cutoffs and hidden/uncertain time knowledge. The versioned catalogue now exposes deterministic calendar projection, the `frost-road.v1` deadline journey and schedule-revision controls; these remain offline scripted evidence rather than a claim about arbitrary generated calendars or seasons.
 
 ### Reusable start-package checklist
 
@@ -150,7 +150,7 @@ Import and instantiation are exposed through the available `reusable-start-packa
 10. Require the final private response to cite packet item/source IDs without regenerating the task result in another format. Reject unknown items, sources not attached to cited items and omitted provenance for a cited item; preserve required-but-uncited IDs as a generation-use diagnostic.
 11. Confirm citations never enter player-visible narration or publication. Empty citations may be structurally honest and must remain observable; they do not pass a case whose expected evidence was required for the answer. Treat self-citation as an audit signal, not proof that prose is entailed by evidence.
 
-The worked [Greywake memory trace](../technical/playthroughs/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
+The worked [Greywake memory trace](../authored-scenarios/greywake-memory.md) owns the exact round-by-round interpretation. The executable catalogue owns run/version identity; the feature checkpoint owns implementation status.
 
 ### Creative-exploration checklist
 

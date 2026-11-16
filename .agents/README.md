@@ -1,8 +1,8 @@
 # Agent knowledge and operating model
 
-Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md) (migrating to [work/changes](../work/changes/README.md)). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
 
-**DOC01:** permanent product/technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from `docs/programs/**/handoff` or expired trial START-HERE files.
+Permanent product and technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from an expired handoff or a parked study.
 
 ## Put knowledge in the correct place
 
@@ -16,10 +16,10 @@ Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [S
 | `docs/product`, `docs/technical` | Product bible and technical guarantees | Read the relevant owner/section |
 | `work/changes/…/CHANGE.md` | Bounded code-bearing outcome | Only when selected; `none` is valid |
 | `work/designs`, `evidence`, `research` | Drafts, proof, nonbinding studies | On demand; never silent product authority |
-| `docs/programs`, `docs/engineering` | **Legacy** migration sources | Read only to reconcile; do not author new norms |
+| `work/designs/parked` | Dormant studies and expired program notes | Not product law and not a Change |
 | Tests, fixtures, scripts | Executable evidence | Run selectively |
 
-**Working-session continuity:** [daily minutes rule](rules/session-minutes.md); prefer promoting decisions to permanent owners. Rolling notes → [work/sessions](../work/sessions/README.md) after cutover; legacy minutes remain under `docs/history/minutes/` until P6.
+**Working-session continuity:** [daily minutes rule](rules/session-minutes.md); prefer promoting decisions to permanent owners. Rolling notes live under [work/sessions](../work/sessions/README.md).
 
 ## Roles and delegation
 
@@ -37,5 +37,5 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 ## Repository commands (read-only orientation)
 
 - `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`)
-- `pnpm repo:docs-health` — Change checkpoints + DOC01 taxonomy advisory
+- `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks
 - `python scripts/check_docs.py` — Markdown link check

@@ -6,4 +6,4 @@ Local development and repository operations runbooks.
 
 | Document | Owns |
 | --- | --- |
-| [Development](./development.md) | How to run the stack locally → [runbooks/local-development](../runbooks/local-development.md) |
+| [Development](./development.md) | How to run the stack locally → [runbooks/local-development](../../../../docs/runbooks/local-development.md) |

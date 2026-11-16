@@ -29,6 +29,34 @@ const FORBIDDEN_PATHS = [
   'docs/product/journeys',
   'docs/product/storytelling',
   'docs/technical/playthroughs',
+  'work/designs/open/doc01-unpromoted-design',
+  'work/designs/open/doc01-migration',
+];
+
+const LIVE_STATUS = [
+  'AGENTS.md',
+  'STATUS.md',
+  '.agents/README.md',
+  '.agents/HARNESS.md',
+  '.agents/rules/documentation.md',
+  '.agents/references/documentation-navigation-standard.md',
+  'apps/web/README.md',
+  'work/changes/README.md',
+  'work/designs/README.md',
+  'work/sessions/README.md',
+  'docs/technical/platform/identities-and-access.md',
+  'docs/technical/lab/chamber-and-fixtures.md',
+  'docs/technical/lab/experiment-protocol.md',
+  'packages/application/src/developer-tools/README.md',
+];
+
+const LIVE_BANNED = [
+  /after DOC01 cutover/i,
+  /until P6/i,
+  /not implemented yet/i,
+  /code remains unchanged/i,
+  /Not implemented or authorized for source edits/i,
+  /TanStack\/RHF\/SSE as already implemented/,
 ];
 
 export function violationsInText(rel, text) {
@@ -36,11 +64,12 @@ export function violationsInText(rel, text) {
   for (const pattern of BANNED) {
     if (pattern.test(text)) found.push(`${rel}: banned phrasing /${pattern.source}/`);
   }
-  if (
-    FIRST_HOP.includes(rel.replaceAll('\\', '/')) &&
-    text.includes('doc01-legacy-snapshot')
-  ) {
-    found.push(`${rel}: first-hop link to doc01-legacy-snapshot`);
+  if (FIRST_HOP.includes(rel.replaceAll('\\', '/')) && text.includes('doc01-legacy-snapshot')) {
+    const allowed = /doc01-legacy-snapshot\/MANIFEST\.md/;
+    const links = [...text.matchAll(/doc01-legacy-snapshot\/[^)\s]*/g)].map((match) => match[0]);
+    if (links.some((link) => !allowed.test(link))) {
+      found.push(`${rel}: first-hop link into the retired snapshot tree`);
+    }
   }
   if (
     FIRST_HOP.includes(rel.replaceAll('\\', '/')) &&
@@ -48,7 +77,29 @@ export function violationsInText(rel, text) {
   ) {
     found.push(`${rel}: first-hop link to docs/programs`);
   }
+  if (LIVE_STATUS.includes(rel.replaceAll('\\', '/'))) {
+    for (const pattern of LIVE_BANNED) {
+      if (pattern.test(text)) found.push(`${rel}: stale status /${pattern.source}/`);
+    }
+  }
   return found;
+}
+
+function linkTarget(fromRel, href) {
+  const pathPart = href.split('#')[0];
+  if (!pathPart || /^(https?:|mailto:)/.test(href)) return null;
+  return path.relative(root, path.resolve(path.dirname(path.join(root, fromRel)), pathPart)).replaceAll('\\', '/');
+}
+
+function walkAll(dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkAll(abs, out);
+    else if (entry.isFile()) out.push(abs);
+  }
+  return out;
 }
 
 function walkFiles(dir, out = []) {
@@ -90,6 +141,33 @@ export function collectKnowledgeViolations(repo = root) {
     const abs = path.join(repo, rel);
     if (!existsSync(abs) || !statSync(abs).isFile()) continue;
     failures.push(...violationsInText(rel, readFileSync(abs, 'utf8')));
+  }
+  const maintained = [
+    ...walkFiles(path.join(repo, 'docs')),
+    ...walkFiles(path.join(repo, 'work', 'designs')),
+    ...walkFiles(path.join(repo, '.agents')),
+  ];
+  for (const abs of maintained) {
+    const rel = path.relative(repo, abs).replaceAll('\\', '/');
+    const text = readFileSync(abs, 'utf8');
+    for (const match of text.matchAll(/\[([^\]]*)\]\(([^)\s]+)\)/g)) {
+      const target = linkTarget(rel, match[2]);
+      const alias = /question|compatibility stub|legacy body/i.test(match[1]);
+      const guarded = rel.endsWith('product-open-questions.md') || rel === 'work/sessions/README.md';
+      if (target === rel && (alias || guarded)) failures.push(`${rel}: self-link`);
+    }
+  }
+  const evidence = path.join(repo, 'evidence');
+  const evidenceHashes = new Map();
+  for (const abs of walkAll(evidence)) {
+    const rel = path.relative(repo, abs).replaceAll('\\', '/');
+    if (/\/handoff\//i.test(rel) || /HANDOFF|START-HERE/i.test(path.basename(rel))) {
+      failures.push(`${rel}: executor handoff stored as inspection evidence`);
+    }
+    const digest = createHash('sha256').update(readFileSync(abs)).digest('hex');
+    const prior = evidenceHashes.get(digest);
+    if (prior) failures.push(`duplicate evidence blob: ${prior} and ${rel}`);
+    else evidenceHashes.set(digest, rel);
   }
   return failures;
 }

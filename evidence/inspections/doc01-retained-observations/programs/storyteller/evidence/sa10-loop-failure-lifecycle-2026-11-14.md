@@ -1,6 +1,6 @@
 # SA10 evidence | loop failure lifecycle
 
-**Date:** 2026-11-14. **Change:** [SA10](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa10-loop-failure-lifecycle/CHANGE.md). **Provider spend:** none. **DB:** none.
+**Date:** 2026-11-14. **Change:** [SA10](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa10-loop-failure-lifecycle/CHANGE.md). **Provider spend:** none. **DB:** none.
 
 ## What landed
 

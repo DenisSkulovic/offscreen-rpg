@@ -1,8 +1,8 @@
 # OBS00-C | Reviewed packet equals actual transport body (2026-11-15)
 
-**Change:** [OBS00-C](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md)  
-**Source base:** `c887716a53698c2e1afe375b91b41342787f75c3` (OBS00-L); this receipt ships in the OBS00-C commit.  
-**Provider spend / external HTTP:** **$0 / 0.** Injected recording `transport` mock only; `globalThis.fetch` is a thrower for the whole suite (asserted 0 calls in `test.after`). It is swapped to the same recording mock only inside the one generic-worker composition case, then restored. No `.env.openrouter` read, no real key, no OpenRouter, no paid call.  
+**Change:** [OBS00-C](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md)
+**Source base:** `c887716a53698c2e1afe375b91b41342787f75c3` (OBS00-L); this receipt ships in the OBS00-C commit.
+**Provider spend / external HTTP:** **$0 / 0.** Injected recording `transport` mock only; `globalThis.fetch` is a thrower for the whole suite (asserted 0 calls in `test.after`). It is swapped to the same recording mock only inside the one generic-worker composition case, then restored. No `.env.openrouter` read, no real key, no OpenRouter, no paid call.
 **DB:** one fresh disposable `offscreen_chamber_run_<uuid>` per case (Sandbox URL guard, destroyed in `finally`). Owner `offscreen_story_local` untouched. Synthetic ids: account `00000000-0000-4000-8000-0000000000c0`, trial run `…c2`; route `fake:obs00-c`; API key is the literal synthetic marker `obs00-c-dummy-key-0123456789abcdef`.
 
 ## What the guarantee is (and is not)

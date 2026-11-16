@@ -7,4 +7,4 @@ Short-lived continuity for coding-agent handoffs. Promote durable decisions to p
 | Date | Focus |
 | --- | --- |
 | [2026-11-16](2026-11-16.md) | DOC01 P6 G1–G3 / G2 partial |
-| Legacy | [docs/history/minutes/](../../work/sessions/README.md) through 2026-11-15 |
+| Legacy | [2026-11-11](legacy-minutes/2026-11-11.md) through [2026-11-15](legacy-minutes/2026-11-15.md). Dated conversation notes, not product law |

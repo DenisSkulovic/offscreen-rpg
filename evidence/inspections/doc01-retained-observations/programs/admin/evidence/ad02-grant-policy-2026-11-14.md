@@ -1,6 +1,6 @@
 # AD02 grant policy evidence | 2026-11-14
 
-**Change:** [AD02](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-grant-policy/CHANGE.md). Provider spend: none. Disposable DB: `offscreen_auth_test`.
+**Change:** [AD02](../../../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-grant-policy/CHANGE.md). Provider spend: none. Disposable DB: `offscreen_auth_test`.
 
 ## Commands run
 

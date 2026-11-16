@@ -1,6 +1,6 @@
 # ENG03-C1-R evidence | provisional read policy + same-G rearm
 
-**Date:** 2026-11-15. **Change:** [ENG03-C1-R](../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md). **Provider spend:** none.
+**Date:** 2026-11-15. **Change:** [ENG03-C1-R](../../../../../../work/changes/archive/2026-11/eng/2026-11-15--eng03-c1-provisional-recovery/CHANGE.md). **Provider spend:** none.
 
 ## What landed
 

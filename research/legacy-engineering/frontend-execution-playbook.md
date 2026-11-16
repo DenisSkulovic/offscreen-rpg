@@ -1,6 +1,6 @@
 # React/Next execution playbook | cheap Cursor, fast workstation, correct engineering
 
-**State:** Owner direction + architect decisions, 2026-11-12. **Purpose:** convert the [selected F1–F15 React/Next architecture](targets/react-next.md) and [W01–W21 code Changes](../../work/changes/README.md) into a predictable, economical implementation process. **Not:** a second architecture spec, a generic rule to preload, permission to execute code, or permission to reset databases/spend/deploy. This document owns *execution economics and source investigation*. Selected Change `CHANGE.md` owns its code scope and negative acceptance.
+**State:** Owner direction + architect decisions, 2026-11-12. **Purpose:** convert the [selected F1–F15 React/Next architecture](../../evidence/inspections/doc01-retained-observations/engineering/targets/react-next.md) and [W01–W21 code Changes](../../work/changes/README.md) into a predictable, economical implementation process. **Not:** a second architecture spec, a generic rule to preload, permission to execute code, or permission to reset databases/spend/deploy. This document owns *execution economics and source investigation*. Selected Change `CHANGE.md` owns its code scope and negative acceptance.
 
 ## Quick route for an executor (do not load this entire document by habit)
 
@@ -82,7 +82,7 @@ Do **not** impose an arbitrary token/read cutoff that blocks a safety-relevant i
 - Verify `node --version` and `pnpm --version` only at first session or after environment change.
 - `pnpm install --frozen-lockfile` once for the checked-in lockfile; use `pnpm --filter @offscreen/web add -D <package> --save-exact` only when the selected Change installs a dependency, then commit the lockfile. Use project-approved `allowBuilds` for newly required native postinstall steps.
 - Reuse pnpm's shared content-addressable store, `node_modules`, `.turbo`, `dist`, `.next/dev`, and TypeScript incremental files. **No** `pnpm store prune`, wiping `node_modules`/`.next` or reinstalling all packages unless a reproduced cache/install corruption points there.
-- Local Windows checkout belongs on a native filesystem (not a slow Docker bind mount, remote network drive or WSL-mounted Windows directory through Docker). Run Node/Next on host, Docker only for PostgreSQL/Temporal when required. Existing Docker Desktop workaround is documented in [development](../operations/development.md); do not proactively run `infra:repair`.
+- Local Windows checkout belongs on a native filesystem (not a slow Docker bind mount, remote network drive or WSL-mounted Windows directory through Docker). Run Node/Next on host, Docker only for PostgreSQL/Temporal when required. Existing Docker Desktop workaround is documented in [development](../../evidence/inspections/doc01-retained-observations/operations/development.md); do not proactively run `infra:repair`.
 
 ### Cheap local React checks (after W01; exact scripts finalized there)
 

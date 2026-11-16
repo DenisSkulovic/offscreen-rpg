@@ -1,6 +1,6 @@
 # SA12 | Paid Gate-1 Seyda opening (Luna) — 2026-11-14
 
-**Change:** [SA12 controlled live evaluation](../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa12-controlled-live-evaluation/CHANGE.md)  
+**Change:** [SA12 controlled live evaluation](../../../../../../work/changes/archive/2026-11/storyteller/2026-11-14--sa12-controlled-live-evaluation/CHANGE.md)
 **Mode:** `chamber` `--evaluation-run` (existing Gate-1 path). Not the dry-run comparison CLI.
 
 ## Owner cash policy for this session

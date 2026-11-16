@@ -1,18 +1,18 @@
 # Documentation convergence ledger | 2026-11-15
 
-**Program:** permanent-authority reconciliation after Nov 12–15 implementation waves.  
-**Method:** [documentation-reconciliation](../../../.agents/skills/documentation-reconciliation/SKILL.md).  
-**Ground truth for landed slices during this pass:** [work/changes/README.md](../../../work/changes/README.md).  
-**Process gate:** Change-close **Reconciliation ledger** now mandatory (harness updated same day).  
-**ChatGPT residuals:** [handoff](./documentation-convergence-chatgpt-handoff-2026-11-15.md).  
-**Minutes:** [2026-11-15](../../history/minutes/2026-11-15.md).
+**Program:** permanent-authority reconciliation after Nov 12–15 implementation waves.
+**Method:** [documentation-reconciliation](../../../../../.agents/skills/documentation-reconciliation/SKILL.md).
+**Ground truth for landed slices during this pass:** [work/changes/README.md](../../../../../work/changes/README.md).
+**Process gate:** Change-close **Reconciliation ledger** now mandatory (harness updated same day).
+**ChatGPT residuals:** [handoff](../../../../../work/designs/parked/expired-handoffs/engineering/evidence/documentation-convergence-chatgpt-handoff-2026-11-15.md).
+**Minutes:** [2026-11-15](../../../../../work/sessions/legacy-minutes/2026-11-15.md).
 
 ## Classes
 
-1. `outdated status/navigation` — hub/program still says Proposed / not implemented  
-2. `missing technical contract` — landed slice not recorded on permanent technical owner  
-3. `implementation deviation` — code vs accepted authority (escalate; do not weaken authority)  
-4. `future-target-ok` — keep as target; clarify designed vs implemented  
+1. `outdated status/navigation` — hub/program still says Proposed / not implemented
+2. `missing technical contract` — landed slice not recorded on permanent technical owner
+3. `implementation deviation` — code vs accepted authority (escalate; do not weaken authority)
+4. `future-target-ok` — keep as target; clarify designed vs implemented
 
 ## Inventory
 

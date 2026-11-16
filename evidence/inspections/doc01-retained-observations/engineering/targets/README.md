@@ -1,6 +1,6 @@
 # Area-level engineering targets
 
-**Purpose:** stable, declarative engineering end-state contracts for portfolio modernization. They are separate from source audits and implementation permission. Follow [target-first renewal](../../../.agents/rules/target-driven-renewal.md): independently define target -> audit actual source -> propose bounded code Changes -> demonstrate convergence.
+**Purpose:** stable, declarative engineering end-state contracts for portfolio modernization. They are separate from source audits and implementation permission. Follow [target-first renewal](../../../../../.agents/rules/target-driven-renewal.md): independently define target -> audit actual source -> propose bounded code Changes -> demonstrate convergence.
 
 | Area | Destination contract | Status | Latest gap audit |
 | --- | --- | --- | --- |

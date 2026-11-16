@@ -4,7 +4,7 @@ Offscreen RPG is a story that unfolds over time. You create a character, become 
 
 The intended experience includes solo play and inviting friends into a shared story, each controlling their own character. The first playable target includes a small group in a common storyline. Shared decision and pause rules still need to be settled before implementing that behavior.
 
-Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave them to act according to their personality. While the campaign runs, unanswered choices normally lead to an autonomous response. Where the campaign permits pause, an authorized pause stops progression within its declared scope.
+Participation is on your terms. Watch a journey in the browser, give the character a general intention, respond briefly to a message, or leave during a quiet interval the player already accepted. Leaving the page does not authorize a new choice. The accepted rule is in [time and autonomy](../gameplay/time-and-autonomy.md): no accepted execution means no fictional time, and a timed fallback applies only to a decision the player pre-authorized. A general delegated-decision policy remains [proposed](../../../work/changes/open/2026-11-13--gm-delegated-decision/CHANGE.md), not accepted. A Chamber timed-default fixture is a developer test, not this player rule. Where a campaign has an authorized pause, that pause stops progression within its declared scope. A character who acts from personality overnight is a long-term aspiration, and only after that specific consent exists.
 
 ## The D&D foundation
 
@@ -34,7 +34,7 @@ A messaging service such as Slack could support brief updates and choices during
 
 ## First playable target
 
-Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone or with an invited friend. Follow a scene, choose an intention, leave during a quiet interval, receive a development and respond or let the character act. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring players back.
+Create an account, start a story from a premise, select basic storytelling and pace preferences, and play alone or with an invited friend. Follow a scene, choose an intention, leave during an already accepted quiet interval, receive a development and respond. Pause and return to a coherent chronology. The browser is the main interface, with one notification channel to bring players back. Shared-play rules for that invited friend are not settled; see [shared play](../../../work/designs/open/shared-play/README.md).
 
 This target needs a small relevant world and a reliable story, not a grid map, dedicated work/travel/trade systems or a simulated population. Richer imagery, saved custom storytellers and deeper messaging interaction can grow from the first experience. Separate party adventures and elaborate world simulation are outside this scope.
 

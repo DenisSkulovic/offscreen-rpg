@@ -4,7 +4,7 @@
 
 ## After absence
 
-Returning after a long absence should offer a **focused recap** and then make any current decision clear. It should not require reading every quiet interval. The chronology contains what happened, including autonomous choices, and helps someone understand how they reached the current situation.
+Returning after a long absence should offer a **focused recap** and then make any current decision clear. It should not require reading every quiet interval. The chronology contains admitted results. An autonomous choice appears there only when that decision was specifically pre-authorized. A prepared narration or pending event is not yet a committed outcome. The recap helps someone understand how they reached the current situation.
 
 ## Reading a long life
 

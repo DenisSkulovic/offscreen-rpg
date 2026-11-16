@@ -1,6 +1,6 @@
 # Post-trial safety run log
 
-Cursor appends only actual executed commands, source identities, synthetic DB/run IDs, results, negative cases, measurements and Git commits. Use [previous final report](../2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) for old baseline evidence without copying its PASS statements into this new run.
+Cursor appends only actual executed commands, source identities, synthetic DB/run IDs, results, negative cases, measurements and Git commits. Use [previous final report](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) for old baseline evidence without copying its PASS statements into this new run.
 
 ## Execution entries
 

@@ -1,6 +1,6 @@
 # Storyteller tuning manual
 
-Turn disappointing play into a bounded investigation and a discriminating experiment. The [Storyteller tuning discipline](../../.agents/rules/storyteller.md) owns mandatory layer separation; the [skill](../../.agents/rules/storyteller.md) applies it. The [agentic systems field manual](./agentic-systems-field-manual.md) supplies broader context and evaluation guidance. This is application tuning, not model weight training.
+Turn disappointing play into a bounded investigation and a discriminating experiment. The [Storyteller tuning discipline](../../../../.agents/rules/storyteller.md) owns mandatory layer separation; the [skill](../../../../.agents/rules/storyteller.md) applies it. The [agentic systems field manual](../../../../research/agent-practice/agentic-systems-field-manual.md) supplies broader context and evaluation guidance. This is application tuning, not model weight training.
 
 ## Research and application
 
@@ -95,6 +95,6 @@ At inspection on 2026-09-22, Story mode hard-codes `openai/gpt-5.6-luna` in `too
 
 A proposed capability reference is [GPT-5.6 Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol), the same family's flagship, initially with reasoning disabled and the existing packet/output cap fixed. This is a research candidate, not a live route change. Reasoning is a later independent variable needing explicit adapter and accounting support.
 
-The public [OpenRouter Sol page](https://openrouter.ai/openai/gpt-5.6-sol) displayed a temporary OpenAI-endpoint rate of USD 2/M input and 10/M output at inspection; official undiscounted prices were 4/M and 20/M. These are advisory quotes. At 12,000 input / 2,048 output tokens, undiscounted arithmetic including a 1.25x input cache-write allowance is USD 0.10096 per request. The current USD 0.01 operation ceiling therefore does not fit. Verify exact endpoint prices and premiums before admission; do not shrink context to disguise a different experiment or silently increase the cap. The [spending rule](../../.agents/rules/spending.md) owns authorization.
+The public [OpenRouter Sol page](https://openrouter.ai/openai/gpt-5.6-sol) displayed a temporary OpenAI-endpoint rate of USD 2/M input and 10/M output at inspection; official undiscounted prices were 4/M and 20/M. These are advisory quotes. At 12,000 input / 2,048 output tokens, undiscounted arithmetic including a 1.25x input cache-write allowance is USD 0.10096 per request. The current USD 0.01 operation ceiling therefore does not fit. Verify exact endpoint prices and premiums before admission; do not shrink context to disguise a different experiment or silently increase the cap. The [spending rule](../../../../.agents/rules/spending.md) owns authorization.
 
 Proposed first probe: one saved opening replay on Sol, conservative USD 0.11 ceiling, no retry/fallback/publication. A matched continuation is conditional on the first result and reconciled spend. This has not run. Funding and unresolved liability must be readable before paid work. Historical response charges cannot establish current available funds.

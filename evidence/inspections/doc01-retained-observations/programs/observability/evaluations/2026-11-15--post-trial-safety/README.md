@@ -1,8 +1,8 @@
 # Post-trial local live safety | Cursor execution receipts
 
-**Status: PREPARED, NOT EXECUTED.** The old [connected trial](../2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) is complete; **do not overwrite or rerun its evidence as though new**. The next program is small and source-specific.
+**Status: PREPARED, NOT EXECUTED.** The old [connected trial](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md) is complete; **do not overwrite or rerun its evidence as though new**. The next program is small and source-specific.
 
-**Start:** [post-trial next Cursor wave](../../handoff/post-trial-next-cursor-wave-2026-11-15.md) and one [selected Change](../../../../../work/changes/README.md).
+**Start:** [post-trial next Cursor wave](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/handoff/post-trial-next-cursor-wave-2026-11-15.md) and one [selected Change](../../../../../../../work/changes/README.md).
 
 | Session | Scope | Permission |
 | --- | --- | --- |
@@ -12,4 +12,4 @@
 | 4 | One actual local Story-mode external model call + at most one consequence | **NEW explicit owner-paid authorization** after all gates |
 | 5 | Final ChatGPT handoff | Evaluation reporting, no new code |
 
-[CHECKPOINT.md](./CHECKPOINT.md) is the only progress cursor; [RUN-LOG.md](./RUN-LOG.md) records executed evidence; [FINAL-HANDOFF.md](./FINAL-HANDOFF.md) is not an answer until actual commands/results are inserted and pushed. One active Change at a time; no automated code or paid work from these documents alone.
+[CHECKPOINT.md](./CHECKPOINT.md) is the only progress cursor; [RUN-LOG.md](./RUN-LOG.md) records executed evidence; [FINAL-HANDOFF.md](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--post-trial-safety/FINAL-HANDOFF.md) is not an answer until actual commands/results are inserted and pushed. One active Change at a time; no automated code or paid work from these documents alone.

@@ -1,6 +1,6 @@
 # AI-assisted development operating system
 
-**Design target:** [independent coding-agent standard](./coding-agent-target-standard.md). **Expert sources:** [coding-agent knowledge](./coding-agent-knowledge.md). **Measurement:** [evaluation protocol](./coding-agent-evaluation.md). All three address tools developing the game, not the in-game model.
+**Design target:** [independent coding-agent standard](../../../../research/agent-practice/coding-agent-target-standard.md). **Expert sources:** [coding-agent knowledge](../../../../research/agent-practice/coding-agent-knowledge.md). **Measurement:** [evaluation protocol](./coding-agent-evaluation.md). All three address tools developing the game, not the in-game model.
 
 **Status:** Engineering method, revised 2026-11-11. This document guides *development agents*; Storyteller inference and gameplay spending have separate contracts. Root `AGENTS.md` is the small agent entrypoint. Product and technical specifications remain the authority for game behavior.
 
@@ -17,7 +17,7 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 **Docs-first is a change-order rule, not a denial of implementation evidence.** To build new behavior, settle product intent first, technical ownership second, code third, evidence fourth. To fix a bug against an already correct contract, investigate code first, repair it and add evidence; update documentation only where it drifted. A generated solution never wins merely because it exists.
 
-**Target-first renewal:** for a significant code-quality, architecture or UI-modernization campaign, first establish a coherent desired end state independent of the current implementation. The target is the basis for a source-grounded gap audit, then small sequential implementation Changes that converge on it. The [target-first rule](../../.agents/rules/target-driven-renewal.md) and area target documents govern that path. Do not substitute random local cleanups for a destination.
+**Target-first renewal:** for a significant code-quality, architecture or UI-modernization campaign, first establish a coherent desired end state independent of the current implementation. The target is the basis for a source-grounded gap audit, then small sequential implementation Changes that converge on it. The [target-first rule](../../../../.agents/rules/target-driven-renewal.md) and area target documents govern that path. Do not substitute random local cleanups for a destination.
 
 ## Task sizes and process
 
@@ -29,7 +29,7 @@ Build a coherent system that can be improved without rereading or regenerating t
 
 ## Roles before tools
 
-A coding agent is a *general execution surface*, not a complete engineering team. For a significant task use [role orchestration](../../.agents/roles/README.md), the [specialist role catalog](../../.agents/roles/catalog.md) and [handoff contract](../../.agents/roles/assignments.md). A product strategist, visual critic, backend architect, test strategist and implementation verifier may all be needed at different **stages**; the selected ChatGPT/Claude/Cursor tool is secondary. A role is not automatically a new agent or simultaneous model request. For a feature, choose a minimal dependency graph with approval gates and optional independent critics, not a mandatory sequence of all possible roles.
+A coding agent is a *general execution surface*, not a complete engineering team. For a significant task use [role orchestration](../../../../.agents/roles/README.md), the [specialist role catalog](../../../../.agents/roles/catalog.md) and [handoff contract](../../../../.agents/roles/assignments.md). A product strategist, visual critic, backend architect, test strategist and implementation verifier may all be needed at different **stages**; the selected ChatGPT/Claude/Cursor tool is secondary. A role is not automatically a new agent or simultaneous model request. For a feature, choose a minimal dependency graph with approval gates and optional independent critics, not a mandatory sequence of all possible roles.
 
 ## Tool roles, not a mandatory model procession
 
@@ -60,7 +60,7 @@ RETURN: changed files, checks/result, contract mismatches, next action, provider
 
 If a PLAN checkpoint already contains those facts, reference it. Do **not** create a second giant prompt file for every slice. Don't paste entire code files, full repo trees, or unchanged documentation into a prompt when the agent can read one named section.
 
-**Current tool allocation (Nov 12 owner decision): ChatGPT handles deep reasoning, source navigation and review; cheap/fast Cursor models implement bounded code. Claude Code is optional and not required or subscribed for this workflow.** The [layered navigation standard](../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent web maps](../../apps/web/README.md) replace repeated broad archaeology. Do not create another agent role merely because it appears in a historical architecture diagram.
+**Current tool allocation (Nov 12 owner decision): ChatGPT handles deep reasoning, source navigation and review; cheap/fast Cursor models implement bounded code. Claude Code is optional and not required or subscribed for this workflow.** The [layered navigation standard](../../../../.agents/references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) and [source-adjacent web maps](../../../../apps/web/README.md) replace repeated broad archaeology. Do not create another agent role merely because it appears in a historical architecture diagram.
 
 ## Context economics
 

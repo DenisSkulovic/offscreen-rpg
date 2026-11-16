@@ -1,6 +1,6 @@
 # OBS05 | Evidence claim truth (v2 lineage) (2026-11-15)
 
-**Change:** [OBS05](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md)  
+**Change:** [OBS05](../../../../../../work/changes/archive/2026-11/observability/2026-11-15--obs05-evidence-claim-truth/CHANGE.md)
 **Provider spend:** zero.
 
 ## What landed

@@ -1,6 +1,6 @@
 # Current player UI | source-grounded product-gap audit
 
-**Evidence class:** code inspection, not a browser usability test. **Inspected:** GitHub main at `3be49cc2c571dcd86585c56106905a87c789a19e`, 2026-11-13; source lines given below refer to that revision and may move. **Design authority:** [experience thesis](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/foundations/experience-thesis.md), [Now](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/spaces/now.md), [time/agency](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/interaction-grammar.md). **Policy:** do not preserve existing flows solely because they are implemented. Do not change application code in this audit.
+**Evidence class:** code inspection, not a browser usability test. **Inspected:** GitHub main at `3be49cc2c571dcd86585c56106905a87c789a19e`, 2026-11-13; source lines given below refer to that revision and may move. **Design authority:** [experience thesis](../../../../../../work/designs/parked/experience-studies/foundations/experience-thesis.md), [Now](../../../../../../work/designs/parked/experience-studies/spaces/now.md), [time/agency](../../../../../../work/designs/parked/experience-studies/patterns/interaction-grammar.md). **Policy:** do not preserve existing flows solely because they are implemented. Do not change application code in this audit.
 
 ## Overall diagnosis
 
@@ -36,7 +36,7 @@ The source supports specific observations below. Whether they feel ugly, confusi
 
 “Mechanical boundaries settled,” “fictional seconds,” “revision,” “accepted activity plan” are valid internal diagnostic vocabulary. A coherent player might instead ask: **Am I still repairing? Did I get any closer? Can I leave? What happens if someone interrupts me?** 
 
-**Design response:** separate semantics from implementation and write a [player-language lexicon](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/interaction-copy.md) before redrawing components.
+**Design response:** separate semantics from implementation and write a [player-language lexicon](../../../../../../work/designs/parked/experience-studies/system/interaction-copy.md) before redrawing components.
 
 ### B. Multiple subsystems compete for simultaneous attention
 
@@ -64,13 +64,13 @@ The current React stack protects lost ACKs, stale views, drafts and request iden
 
 | Severity | Problem | Why first? | Target owner |
 | --- | --- | --- | --- |
-| **P0** | Don't know whether my action happened / work progressed | Fundamental trust; false progress breaks unique promise | [State semantics](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/state-and-attention.md) and [time truth](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/time-and-truth.md) |
-| **P0** | Current scene competes with mechanics/settings/queue | Main experience feels like admin | [Now](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/spaces/now.md) and [UX01/02](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/implementation-program.md) |
-| **P0** | “Add as later activity” attached to every offered action | Agency reads as task scheduling | [Choice grammar](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/interaction-grammar.md) and [absence](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/autonomy-and-absence.md) |
-| **P1** | Raw numbers/fact IDs exposed | Conception of world is internal records | [World/You](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/spaces/journal-world-you.md) |
-| **P1** | Unclear if “resume” is same durable work | Effort may feel reset | [Commitment](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/time-and-truth.md) |
-| **P1** | Technical story state as entry UI | Bad new-player mental model | [Stories library](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/spaces/stories-library.md) |
-| **P2** | Animation/theme/illustrations not distinctive | Portfolio first impression | [Motion](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/system/motion.md) after P0/P1 |
+| **P0** | Don't know whether my action happened / work progressed | Fundamental trust; false progress breaks unique promise | [State semantics](../../../../../../work/designs/parked/experience-studies/patterns/state-and-attention.md) and [time truth](../../../../../../work/designs/open/time-and-autonomy/time-and-truth.md) |
+| **P0** | Current scene competes with mechanics/settings/queue | Main experience feels like admin | [Now](../../../../../../work/designs/parked/experience-studies/spaces/now.md) and [UX01/02](../../../../../../work/designs/parked/experience-studies/implementation-program.md) |
+| **P0** | “Add as later activity” attached to every offered action | Agency reads as task scheduling | [Choice grammar](../../../../../../work/designs/parked/experience-studies/patterns/interaction-grammar.md) and [absence](../../../../../../work/designs/open/time-and-autonomy/autonomy-and-absence.md) |
+| **P1** | Raw numbers/fact IDs exposed | Conception of world is internal records | [World/You](../../../../../../work/designs/parked/experience-studies/spaces/journal-world-you.md) |
+| **P1** | Unclear if “resume” is same durable work | Effort may feel reset | [Commitment](../../../../../../work/designs/open/time-and-autonomy/time-and-truth.md) |
+| **P1** | Technical story state as entry UI | Bad new-player mental model | [Stories library](../../../../../../work/designs/parked/experience-studies/spaces/stories-library.md) |
+| **P2** | Animation/theme/illustrations not distinctive | Portfolio first impression | [Motion](../../../../../../work/designs/parked/experience-studies/system/motion.md) after P0/P1 |
 
 ## What source inspection cannot tell us
 

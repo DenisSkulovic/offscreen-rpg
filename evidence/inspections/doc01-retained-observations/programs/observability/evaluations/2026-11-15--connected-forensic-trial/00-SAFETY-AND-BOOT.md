@@ -1,6 +1,6 @@
 # S0 | Boot the actual local stack and establish a provider-free baseline
 
-**Execution scope:** owner kickoff permits **local/disposable, provider-free** inspection and services. Read only [Cursor entry](../../handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md), this phase, [evidence contract](./EVIDENCE-CONTRACT.md), relevant [development startup](../../../../operations/development.md#requirements-and-startup). **Do not start OBS06 code** here. Never call a paid provider.
+**Execution scope:** owner kickoff permits **local/disposable, provider-free** inspection and services. Read only [Cursor entry](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md), this phase, [evidence contract](./EVIDENCE-CONTRACT.md), relevant [development startup](../../../../operations/development.md#requirements-and-startup). **Do not start OBS06 code** here. Never call a paid provider.
 
 ## Actions for Cursor, execute them
 

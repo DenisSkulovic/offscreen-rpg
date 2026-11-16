@@ -41,17 +41,17 @@ The existing React architecture expects a validated viewer/story-keyed `StorySna
 | Desired experience | Gap | Correct design response | Proposed owner |
 | --- | --- | --- | --- |
 | Human **story title** reliably available in Now snapshot | Snapshot ID and current passage title aren't necessarily persistent story title | Show current passage/situation title without pretending it's story name; add safe title projection if needed | A small separate public read-model change |
-| True **Since your last visit** | No reliable viewer-specific acknowledged event cursor evidenced | Say **Recent developments** until there is a well-defined seen/open baseline | [GM06](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md) |
-| One chronological **full committed-event feed** | History passages separate from activity/action/obligation events | Start with existing source-backed entries; create a typed public event feed if needed | [GM05](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) |
+| True **Since your last visit** | No reliable viewer-specific acknowledged event cursor evidenced | Say **Recent developments** until there is a well-defined seen/open baseline | [GM06](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-viewer-read-position/CHANGE.md) |
+| One chronological **full committed-event feed** | History passages separate from activity/action/obligation events | Start with existing source-backed entries; create a typed public event feed if needed | [GM05](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-return-event-projection/CHANGE.md) |
 | Relevant person/relationship index | Raw facts and canonical docs do not automatically form a safe full public entity graph | World v1 may show a few verified known facts; no omniscient roster | Separate future public-knowledge projection |
 | Accurate travel distance/location progress | No generic route progress geometry evidenced | Show last known milestone/time, not naive position percent | Future travel/domain study |
-| **Standing routine** | AcceptedActivityPlan is finite; no general repeat-until-policy | No standing-autonomy toggle yet; let short plans be honest | [GM03](../../../../work/changes/open/2026-11-13--gm-standing-life/CHANGE.md) |
-| Free-form immediate player attempt | `choice.v1`/authored mechanical offers, no safe custom-intent interpretation+admission | Do not add textarea that executes text; research and explicit preview/admission | [GM01](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md) / [GM02](../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md) |
-| Structured rich narrative blocks | `passageContentSchema` is title + paragraphs | Typography-first, optional future validated block schema | [Narrative presentation](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/narrative-presentation.md) |
+| **Standing routine** | AcceptedActivityPlan is finite; no general repeat-until-policy | No standing-autonomy toggle yet; let short plans be honest | [GM03](../../../../../../work/changes/open/2026-11-13--gm-standing-life/CHANGE.md) |
+| Free-form immediate player attempt | `choice.v1`/authored mechanical offers, no safe custom-intent interpretation+admission | Do not add textarea that executes text; research and explicit preview/admission | [GM01](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-proposal/CHANGE.md) / [GM02](../../../../../../work/changes/archive/2026-11/experience/2026-11-13--gm-custom-intent-admission/CHANGE.md) |
+| Structured rich narrative blocks | `passageContentSchema` is title + paragraphs | Typography-first, optional future validated block schema | [Narrative presentation](../../../../../../work/designs/parked/experience-studies/patterns/narrative-presentation.md) |
 | True multiplayer player-specific decisions | Solo/current contract not established for many actors | Don't render “choose for companion” or global pause | Separate shared-play product/rules design |
 | Custom lethal risk profiles | `campaignSettingsSchema.risk` currently literal `nonlethal` | Don't offer a risk slider that only changes narration | Separate future risk contract |
 | Fully reliable background social life | No continuous NPC simulation/relationship auto-policy proved | Don't imply all unattended hours build friendships | Standing-life + continuity design, later |
-| Real public provider-backed free trial | Scripted `/demo` exists, live hosted trial/cost consent not evidenced | Label scripted preview honestly; separate budgeted true play | [Portfolio trust design](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/flows/portfolio-first-contact.md) |
+| Real public provider-backed free trial | Scripted `/demo` exists, live hosted trial/cost consent not evidenced | Label scripted preview honestly; separate budgeted true play | [Portfolio trust design](../../../../../../work/designs/parked/experience-studies/flows/portfolio-first-contact.md) |
 
 ## Data-ownership hazards an implementer must not miss
 
@@ -61,7 +61,7 @@ The existing React architecture expects a validated viewer/story-keyed `StorySna
 
 ### Public status is a composite, not a backend enum
 
-`story.resolution`, `story.waiting`, `campaign.holds`, `campaign.activity`, `campaign.actionExecution` and plan state may coexist. Build one pure **semantic projection**, with priority/focus defined in [state-and-attention](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/patterns/state-and-attention.md). Do not derive fake “active” from a due date or use a single spinner.
+`story.resolution`, `story.waiting`, `campaign.holds`, `campaign.activity`, `campaign.actionExecution` and plan state may coexist. Build one pure **semantic projection**, with priority/focus defined in [state-and-attention](../../../../../../work/designs/parked/experience-studies/patterns/state-and-attention.md). Do not derive fake “active” from a due date or use a single spinner.
 
 ### Bounded arrays are not infinite chronology
 

@@ -1,8 +1,8 @@
 # Data and consistency
 
-**Find the section:** [durable record families](#durable-records) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
+**Find the section:** [durable record families](#durable-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
 
-Current implementation stores campaign narrative bodies and continuity notes in PostgreSQL. The owner-requested [canonical-file implementation contract](../storyteller/context-and-memory.md) changes the target: versioned documents own narrative knowledge and Storyteller guidance; transactional records retain mechanical execution, permissions, publication references and accounting. Prepared storage and memory features implement that target; runtime migration has not begun. Do not extend the table families below into new narrative content tables without reconciling that ownership boundary. A rebuildable search index is not the canonical content store.
+Current implementation stores campaign narrative bodies and continuity notes in PostgreSQL. The [canonical-file contract](../storyteller/context-and-memory.md) remains the target: versioned documents own narrative knowledge and Storyteller guidance; transactional records retain mechanical execution, permissions, publication references and accounting. Local document storage and an S3-compatible adapter exist; see [selected document store](#selected-document-store). Moving already-saved PostgreSQL narrative bodies onto that store is not claimed complete. Do not extend the table families below into new narrative content tables without reconciling that ownership boundary. A rebuildable search index is not the canonical content store.
 
 Application PostgreSQL owns committed story state, chronology, command receipts, decisions and spend reservations. Temporal owns workflow history, timers and execution progress. Published deadlines are projected into PostgreSQL for display and admission checks; no database scheduler separately advances them. This is a proposed logical model; create migrations in working slices, not every table before the first screen. The world may imply far more people, objects and places than these records store. Do not add NPC, location, relationship, fact, population, schedule or generic world-entity tables because a scene mentioned a crowd. Durable story-scoped identity is created when later correctness depends on that exact person, object or place. See [sparse world](../../product/gameplay/continuity.md#sparse-world-progressive-materialization). Scene-local references for targetable details are a later presentation/interaction concern, not a reason to persist a full world census.
 
@@ -136,6 +136,20 @@ Relational columns own identity, story scope, ownership, timestamps, status, qua
 Do not store the entire evolving world in one JSON blob or implement a universal entity-attribute-value framework. A small entity representation can support a wizard, creature or spaceship without generating a bespoke schema for each world. Promote fields to columns only when querying or enforcing them warrants it.
 
 The model may introduce a temporary identifier for a new person or item. The application assigns the permanent identifier, validates references and maps temporary identifiers within the same accepted proposal. Model-supplied IDs must never gain access to another story.
+
+## Selected document store
+
+**Selected ENG05 contract, 2026-11-13.** Canonical prose and manifests are immutable content-addressed documents. PostgreSQL keeps mutable gameplay and the publication root. The store is not a second item or clock ledger.
+
+Preserve the local store's semantics for every adapter: canonical JSON, SHA-256 identity, 1 MiB maximum, schema validation, hash checks on read, and typed `missing`, `corrupt`, `too-large` and `unavailable` errors. `put` is create-if-absent. A preexisting object is idempotent only when the bytes agree. Never overwrite a mismatched object. Do not fall back to model prose.
+
+The selected second adapter is a private S3-compatible object store behind the existing `DocumentStore` interface, using an established client. `OFFSCREEN_DOCUMENT_STORE=local|s3`. Unset keeps today's behavior. Invalid S3 configuration fails startup. It must not silently publish to an unrelated local directory. No access keys in source, logs or the web client. No public or presigned reads for canonical documents. Viewer authorization happens before a hash is resolved.
+
+Stage objects before the SQL root is promoted. S3 does not join the SQL transaction. A staged object with a failed commit is unreferenced garbage, not a published scene. A committed root with an unreadable object is typed unavailable or corrupt. Receipts stay. Do not invent substitute fiction.
+
+No automatic deletion in this contract. Referenced objects stay until an explicit deletion policy. Do not delete by age. Do not migrate existing local objects implicitly. Remote mode for an existing story requires copy-by-hash, verify, and a separate cutover. Bounded retries are for transient transport only.
+
+**Source-observed 2026-11-16:** `packages/documents/src/s3-store.ts` and `document-store-config.ts` implement the mode switch and S3 client. That is not a hosted-scale proof, not a backup scheduler, and not permission to put remote reads under a story lock. Production cutover still needs the ENG03 lock evidence. Disposable multi-process acceptance is the proof bar, not an in-process fake.
 
 ## Spatial model boundary
 

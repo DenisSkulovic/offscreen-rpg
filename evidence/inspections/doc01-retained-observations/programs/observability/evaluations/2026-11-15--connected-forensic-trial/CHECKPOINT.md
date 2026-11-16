@@ -16,7 +16,7 @@
 - **Actual settled spend so far:** $0
 - **Known pre-existing gate:** OBS00-B still unresolved — S5 blocked correctly
 - **Key SHAs:** S1 `24aef3dd`; S2 `b866cef0`; S3 `7a7ee811`; OBS06 `26f4d322`; OBS07 `8f509c63`; final handoff (this commit)
-- **Next file:** none — trial complete; see [FINAL-HANDOFF.md](./FINAL-HANDOFF.md)
+- **Next file:** none — trial complete; see [FINAL-HANDOFF.md](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/evaluations/2026-11-15--connected-forensic-trial/FINAL-HANDOFF.md)
 - **Next exact action:** Owner/ChatGPT review FINAL-HANDOFF; consider OBS00-B + grant-steward Changes
 - **Last evidence commit:** pending with this checkpoint/FINAL-HANDOFF push
 
@@ -49,4 +49,4 @@ NEXT PHASE FILE: none
 NEXT EXACT ACTION: ChatGPT review of FINAL-HANDOFF.md on main
 ~~~
 
-**Source of execution authority:** [start-here](../../handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md) + owner kickoff 2026-11-15.
+**Source of execution authority:** [start-here](../../../../../../../work/designs/parked/expired-handoffs/programs/observability/handoff/CURSOR-FORENSIC-TRIAL-START-HERE-2026-11-15.md) + owner kickoff 2026-11-15.

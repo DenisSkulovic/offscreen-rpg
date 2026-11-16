@@ -40,3 +40,28 @@ The model may decide emphasis, wording, silence, admissible grounded opportuniti
 The model must not decide dice, a forced player response, the scheduler, the provider key, the payer, retry eligibility, an unknown factual outcome, secret future state as public fact, permission escalation, SQL mutation, or destruction of canon.
 
 **Negative:** a zero-call interval is a successful recipe when accepted work needs no narration. A missing memory search returns partial or no-match. It does not fabricate a remembered sentence. The current hardcoded nonlethal limit is a present capability gap, not a constitutional ban that a more imaginative prompt may lift.
+
+## Selected compilation and tool contract
+
+**Selected desired architecture, 2026-11-14.** This is not a claim that the general adaptive loop is live. The landed runtime remains the narrower controller described in [operation and controller](operation-and-controller.md#current-prototype-runtime).
+
+Compile layers from stable to changing: world truth the profile cannot buy (P0); versioned task contract (P1); captured creative identity, distinct from the payer (P2); pinned rules and world (P3); the frozen present (P4); optional source-linked past (P5); operation-local investigation feedback (P6). Stable instruction may sit where prefix caching helps. A bloated universal system prompt is not justified by cache overlap.
+
+Prompt defects to remove from common authority: a blanket “never end the character's life” is the present nonlethal gap, not eternal policy; a compulsory 2–5 options rule contradicts a quiet or single-attempt scene; “cannot execute tools” forbids game mutations, not an explicitly admitted read-only memory phase. The model still cannot reach SQL, the shell, the web, or another player's account.
+
+**Initial approved read vocabulary**, when a recipe admits investigation:
+
+- `ask_memory(question, intent)`: at most two concise queries per round; returns leads, current-root source ids, snippet, relevance and coverage.
+- `read_memory(handle)`: one exact approved current-root record or published passage, bounded bytes, proven source identity.
+
+Optional later reads (a pinned rule section, a known identity, a contradiction between two attributed sources) stay proposed until a measured need. Never expose arbitrary SQL, file read, web search, shell, item transfer, dice, grants or a subagent spawn. A read is not a player action.
+
+Each accepted game event builds a **new** captured task. Investigation snapshots are operation-local for two or three rounds. There is no permanent model transcript and no model session while the story is quiet. Compaction is off by default. A model summary is never canon. Subagents default to none.
+
+A route manifest records provider, model, endpoint, schema strictness, context and output ceilings, timeout, price categories, and whether a capability is enforced. Current OpenRouter calls keep reasoning disabled, with no web or context-compression plugin and provider fallback denied. A route policy that mentions a reasoning budget does not enable reasoning. The model does not pick the route or the payer.
+
+Three caches stay distinct: canonical source bytes (immutable, still permission-checked), a provider prefix discount (only when the bill reports it), and identical-response replay (only the same accepted work). A shared prefix is not a cache hit.
+
+Model text is data. It cannot raise round, read, money or latency allowance, publish private knowledge, reroll mechanics, or submit a player command. Bounded repair stays inside the same admitted operation. A sent-but-uncertain attempt is not a free rerun. Public narrative does not expose evidence packets, private directions or raw prompts.
+
+**Negative:** injected instructions inside a canonical document cannot mint tools or reveal private policy. Native function-calling and a JSON envelope are transports, not different permissions. Different narrative directions may change the scene and must not change the dice, clock or item outcome.

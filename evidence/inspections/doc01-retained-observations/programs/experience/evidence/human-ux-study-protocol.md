@@ -1,6 +1,6 @@
 # Human UX review protocol | how we know this feels like a game
 
-**Status:** a practical evaluation procedure, not a claim that any user study has happened. Use after the first rendered prototypes exist. Product owner does **not** need to supply page layouts or diagnose visual-design issues: the UX architect generates competing solutions, chooses a preferred one and submits it to falsifiable tests. Related: [experience validation plan](./validation-plan.md), [independent critique](./independent-challenge.md), [composition alternatives](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/foundations/composition-experiments.md).
+**Status:** a practical evaluation procedure, not a claim that any user study has happened. Use after the first rendered prototypes exist. Product owner does **not** need to supply page layouts or diagnose visual-design issues: the UX architect generates competing solutions, chooses a preferred one and submits it to falsifiable tests. Related: [experience validation plan](./validation-plan.md), [independent critique](./independent-challenge.md), [composition alternatives](../../../../../../work/designs/parked/experience-studies/foundations/composition-experiments.md).
 
 ## Evaluation philosophy
 
@@ -24,8 +24,8 @@ Test assets: an offline, deterministic story fixture and a **recorded list of wh
 
 ## Three test variants, genuinely different
 
-1. **A: Literary Reader** from [composition experiments](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/foundations/composition-experiments.md#candidate-a--literary-reader). Narrative-first, minimal context.
-2. **B: Living Situation Stage** from [composition experiments](../../../../../../work/designs/open/doc01-unpromoted-design/programs/experience/foundations/composition-experiments.md#candidate-b--living-situation-stage-recommended). Narrative with contextual commitment/time and a clear decision boundary.
+1. **A: Literary Reader** from [composition experiments](../../../../../../work/designs/parked/experience-studies/foundations/composition-experiments.md#candidate-a--literary-reader). Narrative-first, minimal context.
+2. **B: Living Situation Stage** from [composition experiments](../../../../../../work/designs/parked/experience-studies/foundations/composition-experiments.md#candidate-b--living-situation-stage-recommended). Narrative with contextual commitment/time and a clear decision boundary.
 3. **C: Deliberately operational comparator**, using the existing source structure or a neutral mock. Current UI is *not automatically worse* in every task, so test what it does well, especially tactical stat awareness.
 
 Avoid making the comparator intentionally ugly. Content, underlying choices, state and typography readability should be comparable where possible. The hierarchy/interaction model is the variable.
