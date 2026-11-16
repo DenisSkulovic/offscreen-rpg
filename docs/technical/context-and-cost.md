@@ -1,5 +1,7 @@
 # Context, caching, prompts and spending
 
+> **DOC01 compatibility stub.** Canonical owner: [storyteller/request-context-and-cost.md](storyteller/request-context-and-cost.md). Account entitlements remain under [platform/spending-and-entitlements.md](platform/spending-and-entitlements.md).
+
 **Quick route by question:** [what goes into one request?](#build-context-for-a-specific-decision) · [bounded work and model rounds](#bounded-work-not-an-open-ended-agent) · [continuity summaries](#summaries-without-losing-the-story) · [which cache is which?](#three-different-caches) · [provider budget accounting](#budget-accounting) · [concrete spending envelope](#a-concrete-cost-envelope). This is **in-game Storyteller inference**, not the cost of Claude Code or Cursor developing the repository; see [coding-agent context economics](../../.agents/references/context-economics.md) for that.
 
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.

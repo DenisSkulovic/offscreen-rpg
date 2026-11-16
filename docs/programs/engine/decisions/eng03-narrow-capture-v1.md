@@ -1,6 +1,6 @@
 # ENG03-narrow | ContextCaptureV1 and single-identity promotion
 
-**Design status:** selected first-path technical contract, 2026-11-14. **Implementation:** not executed. **Purpose:** pending-consequence only. **Source basis:** inspected GitHub main through adb118f2dc; Cursor must re-verify its newer local SA working tree before setting the Change to Ready. This document supersedes only the conditional unknown-field sketch in [ENG03 §B](eng03-measurement-and-capture-contract.md); the larger [ENG03](../../../changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) stays Proposed.
+**Design status:** selected first-path technical contract, 2026-11-14. **Implementation:** narrow pending-consequence path **landed** (archive ENG03-narrow + source `ContextCaptureV1` / `storyteller_context_capture`; DOC01 C2 spot-check 2026-11-16). **Purpose:** pending-consequence only. This document supersedes only the conditional unknown-field sketch in [ENG03 §B](eng03-measurement-and-capture-contract.md); the larger [ENG03](../../../changes/open/2026-11-13--eng-short-lock-context/CHANGE.md) stays **Proposed**. Do not read this contract as full short-lock Done.
 
 ## Decision
 

@@ -1,5 +1,7 @@
 # Story creation
 
+> **DOC01 compatibility stub.** Canonical owner: [experience/entry-and-onboarding.md](../experience/entry-and-onboarding.md). Do not add new norms here.
+
 Creation turns a chosen story foundation into a small, playable beginning. It
 should invite imagination without asking the player to design a world database,
 understand canonical-file internals or fill in a long character sheet.

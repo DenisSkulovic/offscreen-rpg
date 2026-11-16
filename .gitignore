@@ -26,7 +26,19 @@ apps/web/storybook-static/
 *.tsbuildinfo
 next-env.d.ts
 # Private runtime data and scratch work
-work/
+# DOC01: track durable work queue/designs; ignore local regenerable inventory dumps & session prose bulk
+work/*
+!work/README.md
+!work/changes/
+!work/changes/**
+!work/designs/
+!work/designs/**
+!work/sessions/
+!work/sessions/README.md
+work/designs/open/doc01-migration/*.jsonl
+work/designs/open/doc01-migration/*.grep.txt
+work/sessions/*
+!work/sessions/README.md
 data/
 saves/
 *.log

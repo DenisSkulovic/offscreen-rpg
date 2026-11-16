@@ -4,16 +4,16 @@
 
 **Architecture context:** [React/Next F1–F15](../engineering/targets/react-next.md). **Standard:** [change work-unit](../../.agents/references/change-work-unit-standard.md). **Tooling:** `node scripts/repo-tools/archive-changes.mjs --dry-run|--apply`.
 
-Current change: [QA-SF01 Restore honest focused Storyteller/story-resolution integration checks](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md)
+Current change: [DOC01 Rebuild the documentation knowledge architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md)
 
-**Current status:** **Blocked, partly repaired (2026-11-15)** — story-resolution 8/8, admin-situation 3/3, storyteller 27/33; 5 subtests red on genuine runtime defects. Evidence [qa-sf01](../programs/observability/evidence/qa-sf01-storyteller-integration-2026-11-15.md). Needs an owner-selected bounded runtime Change.
+**Current status:** **Selected for implementation (2026-11-16)** — isolated branch `docs/doc01-architecture` @ `0a0692f6`. P0 baseline complete; P1 content-atom inventory in progress. QA-SF01 remains **Blocked** (not current): story-resolution 8/8, admin-situation 3/3, storyteller 27/33; evidence [qa-sf01](../programs/observability/evidence/qa-sf01-storyteller-integration-2026-11-15.md).
 
 ## Open packets
 
 | Packet | State | Outcome |
 | --- | --- | --- |
-| [DOC01 documentation architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md) | **Proposed (design prepared; not selected)** | Rebuild canonical docs by subject/authority; separate work/evidence lifecycles; comprehensive 483-file / 176-directory audit |
-| [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** (Current) | Restore honest focused Storyteller/story-resolution suites |
+| [DOC01 documentation architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md) | **Selected** (Current) — P0 done; P1 inventory | Rebuild canonical docs by subject/authority; separate work/evidence lifecycles; comprehensive 483-file / 176-directory audit |
+| [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement — not local Story |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |
 | [ENG03 short-lock context](open/2026-11-13--eng-short-lock-context/CHANGE.md) | Proposed | Full short-lock capture (partial slices already archived) |

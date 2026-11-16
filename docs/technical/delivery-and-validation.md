@@ -1,5 +1,8 @@
 # Delivery, operations and validation
 
+> **DOC01 compatibility stub.** Canonical owner: [platform/deployment-and-compatibility.md](platform/deployment-and-compatibility.md). Do not add new norms here.
+
+
 **Find the section:** [start locally](#local-development) · [Chamber/testing](#scripted-testing-chamber) · [live proof criteria](#first-live-story-poc-what-the-run-must-mean) · [deployment target](#first-hosted-deployment) · [observability](#observability) · [architecture tests](#tests-that-demonstrate-the-architecture). Read the relevant section rather than loading this entire document.
 
 The portfolio should demonstrate a coherent system operating under failure, not merely a list of technologies. A visitor should be able to run a local demo, experience a short story and inspect evidence of correct scheduling, state handling and measured AI use.

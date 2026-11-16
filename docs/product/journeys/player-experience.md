@@ -1,5 +1,7 @@
 # Player experience
 
+> **DOC01 compatibility stub.** Canonical owners under [experience/](../experience/principles.md). Do not add new norms here.
+
 The player follows a character's life through scenes, choices and periods of waiting. Opening the website should feel like returning to a situation, not administering a simulation.
 
 The public `/demo` route is an authored browser prototype of that experience: a quiet interval, choices, immediate consequences, another interval, a conclusion and an inspectable chronology. It needs no sign-in or provider. Demonstration time advances manually; Pause disables interaction until Resume, and refreshing starts over. These controls explore presentation, not the production rules for time or absence. The script is separate from the scene component, and neither defines authoritative gameplay state.

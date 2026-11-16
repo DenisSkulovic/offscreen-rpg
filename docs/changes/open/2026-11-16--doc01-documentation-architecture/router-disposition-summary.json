@@ -1,0 +1,20 @@
+{
+  "files_classified": 443,
+  "disposition_counts": {
+    "ASSET REVIEW": 3,
+    "CURATE": 2,
+    "EXTRACT/EXPIRE": 6,
+    "EXTRACT/RETIRE": 30,
+    "MOVE": 102,
+    "PRESERVE/DRAFT": 2,
+    "PROMOTE": 3,
+    "RECONCILE": 139,
+    "RECONCILE/ADR": 21,
+    "REWRITE": 4,
+    "SUMMARIZE/RETIRE": 111,
+    "TRIAGE": 20
+  },
+  "atom_rows_updated": 3774,
+  "atoms_still_pending": 0,
+  "total_atoms": 4216
+}

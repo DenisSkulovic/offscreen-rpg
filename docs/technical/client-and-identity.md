@@ -1,5 +1,8 @@
 # Frontend, identity and shared play
 
+> **DOC01 compatibility stub.** Canonical owner: [platform/identities-and-access.md](platform/identities-and-access.md). Do not add new norms here.
+
+
 **Quick section route:** [Next SSR boundary](#react-and-nextjs) · [selected Query/RHF state ownership](#ui-tools-and-ownership-of-state) · [Better Auth/session](#authentication-and-sessions) · [HTTP idempotency and SSE](#http-commands-and-sse-updates) · [returning/history](#returning-and-reading-the-story). This describes **behavioral/technical intent**, not today's installed client code; see [source owner map](../../apps/web/README.md) to find what is currently implemented. Cursor reads only the heading required by its Change.
 
 ## React and Next.js

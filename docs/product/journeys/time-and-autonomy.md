@@ -1,5 +1,7 @@
 # Time and autonomy
 
+> **DOC01 compatibility stub.** Canonical owner: [gameplay/time-and-autonomy.md](../gameplay/time-and-autonomy.md). Do not add new norms here.
+
 **Explore by question:** [pace and clock](#pace) · [calendars and deadlines](#calendars-seasons-and-story-deadlines) · [travel duration](#travel-duration-and-progress) · [absence and routine work](#response-windows-and-absence) · [pause/resume](#pause-and-resume) · [reliability/notifications](#notifications-and-reliability). Read the relevant section rather than loading this entire document.
 
 One scheduler step is always one real second. Speed determines how many fictional seconds an eligible step advances; scheduler length is not a player setting. The Storyteller estimates an action in fictional time, and the engine derives its real wait from the selected speed. Canonical state, durations, checks, horizons and deadlines use explicit fictional seconds. A world without calendars still has elapsed in-game seconds; human days, months and named dates remain optional content projections.

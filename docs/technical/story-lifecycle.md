@@ -1,5 +1,8 @@
 # Story creation, control and completion
 
+> **DOC01 compatibility stub.** Canonical owner: [engine/lifecycle-and-compatibility.md](engine/lifecycle-and-compatibility.md). Do not add new norms here.
+
+
 **Find the section:** [forking and state copy](#forked-continuities) · [draft and preview](#drafts-and-generated-previews) · [reviewed Start](#start-exactly-the-reviewed-story) · [pause versus lifecycle](#distinguish-lifecycle-from-interruption) · [membership/settings](#membership-and-settings-changes) · [finish and delete](#finish-and-delete). Read the relevant section rather than loading this entire document.
 
 ## Forked continuities

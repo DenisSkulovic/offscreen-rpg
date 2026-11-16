@@ -1,5 +1,7 @@
 # Fictional-time and tag contracts
 
+> **DOC01 compatibility stub.** Primary chronology owner: [engine/chronology-and-activities.md](engine/chronology-and-activities.md). Keep editing unit/tag invariants here until the fold copies them into that owner; then retire this path in P5/P6.
+
 Status: the fictional-second coordinate, exact arithmetic and campaign-owned application clock are implemented. Activity receipts preserve monotonic game time across A → B → A. A scheduler step is one real second; it is not persisted or exposed as fictional authority. Tag correction remains pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy the tag contract.
 
 ## Fixed real-second scheduling and fictional time

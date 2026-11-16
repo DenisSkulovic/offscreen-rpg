@@ -1,6 +1,8 @@
 # Presentation runtime | a living, declarative visual environment
 
-**Status: selected frontend design target, 2026-11-13. Documentation only; no implementation authorized by this file.** Parent: [experience destination](../README.md). Executable plan: [presentation implementation program](../presentation-implementation-program.md). Contract detail: [presentation language](presentation-language.md); [media and motion](presentation-media-and-motion.md).
+> **DOC01 compatibility stub.** Canonical technical owner: [docs/technical/client/presentation-runtime.md](../../../technical/client/presentation-runtime.md).
+
+**Status: selected frontend design target, 2026-11-13.** PX seams landed; not visually accepted for engine integration. (Stale “no implementation authorized” banner retired — C3.) Parent: [experience destination](../README.md). Executable plan: [presentation implementation program](../presentation-implementation-program.md). Contract detail: [presentation language](presentation-language.md); [media and motion](presentation-media-and-motion.md).
 
 **Implementation quality gate (post-PX01–PX04):** The basic parser/resolver/Storybook seam exists, but screenshot/source review identified critical light-theme choice contrast and pale-gradient chrome contrast failures, viewport overflow, unbounded figures and Storybook proof bypass. Follow the [review](../evidence/presentation-post-px-review-2026-11-13.md) and [PX05–PX07 calibration](../presentation-calibration-program.md). This permanent architecture remains selected; it is **not yet visually/behaviorally accepted for engine integration**.
 

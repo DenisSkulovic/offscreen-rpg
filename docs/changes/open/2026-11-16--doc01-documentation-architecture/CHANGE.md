@@ -1,8 +1,8 @@
 # DOC01 | Rebuild the documentation knowledge architecture
 
-**State:** **Proposed / design prepared, NOT implemented.** 2026-11-16. **Owner:** repository owner. **Work type:** bounded code/config/docs migration with substantive semantic consolidation; this packet is a one-off bootstrap in the existing `docs/changes/open/` convention. After DOC01 cutover, active Changes will live in `work/changes/open/`.
+**State:** **Selected / implementing.** 2026-11-16. **Owner:** repository owner. **Work type:** bounded code/config/docs migration with substantive semantic consolidation; this packet is a one-off bootstrap in the existing `docs/changes/open/` convention. After DOC01 cutover, active Changes will live in `work/changes/open/`.
 
-**Permission:** This chat authorized the **audit, ideal target design and preparation of a Change folder**. It did **not** authorize Cursor's implementation yet. Do not change runtime, launch paid providers, deploy, or move/delete existing documentation as part of this design commit. Do not secretly switch the current Change selection (QA-SF01 remains selected/blocked as of the inspected queue).
+**Permission:** Owner selected DOC01 for Cursor implementation in this chat (2026-11-16). Authorized: documentation rewrite/relocation, minimum loader/agent-routing updates, P0–P7 per [MIGRATION.md](MIGRATION.md). Still forbidden: paid providers, deploy, live/non-disposable DB, gameplay/runtime refactors, silent product-approval invention, deletion before no-loss proof. QA-SF01 stays open/Blocked but is no longer Current.
 
 ## First-screen executor brief
 
@@ -62,11 +62,11 @@ Read detailed phase exit gates in [MIGRATION.md](MIGRATION.md). Avoid shotgun ed
 
 | Authority / consumer | Source review | Target destination | Disposition and why | Proof / status |
 | --- | --- | --- | --- | --- |
-| Product foundations, gameplay, journeys, storytelling, experience and Admin | Pending | `docs/product/` topic owners | Pending section-level reconciliation | Not performed |
-| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | Pending | `docs/technical/` topic owners | Pending compatibility/approval review | Not performed |
-| Approved decisions and unresolved business policy | Pending | `docs/decisions/` or `work/designs/open/` | Pending owner proof | Not performed |
-| Historical source audits / trials / screenshots / legal attribution | Pending | `evidence/`, test snapshots, `NOTICE.md` | Pending reproduction/privacy checks | Not performed |
-| Root roadmap/status + .agents/harness/tool loader | Pending | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | Pending path/behavior rewrite | Not performed |
+| Product foundations, gameplay, journeys, storytelling, experience and Admin | In progress (P2) | `docs/product/{foundations,gameplay,experience,storyteller,admin}/` | Gameplay + core experience/storyteller owners landed; legacy stubs; admin deferred | Partial — stubs until P5 |
+| Technical current/target (including engine, client, Storyteller, Admin, OBS and Chamber) | In progress (P3) | `docs/technical/{platform,engine,storyteller,client,admin,observability,lab}/` | Core contracts promoted; skeletons + stubs; claim merges ongoing | Partial — flat/program paths until P5 |
+| Approved decisions and unresolved business policy | In progress (P4) | `docs/decisions/` + `work/designs/open/` | Scaffold + canon-invention preserved; ADRs not mass-invented | Partial |
+| Historical source audits / trials / screenshots / legal attribution | In progress (P4) | `evidence/`, test snapshots, `NOTICE.md` | evidence/ scaffold; assets still in programs until writer retarget | Partial |
+| Root roadmap/status + .agents/harness/tool loader | Pending (P5) | `ROADMAP.md`, `STATUS.md`, `.agents/`, scripts | work/changes mirror only so far | Not performed |
 | All 483+ individual paths | Pending | See full registers | Pending atom ledger | Not performed |
 
 **Execution receipt:** No code migration, link cutover, provider calls, runtime testing, deletion or docs-health result is claimed by this design-only packet. The design artifacts were written through the connected GitHub repository; Cursor must rerun actual local checks on its checkout.

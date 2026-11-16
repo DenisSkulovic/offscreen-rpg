@@ -1,5 +1,7 @@
 # How a story could unfold
 
+> **DOC01 compatibility stub.** Canonical owners: [actions-and-commitments](../gameplay/actions-and-commitments.md), [rules](../gameplay/rules.md), [worlds-and-characters](../gameplay/worlds-and-characters.md). Do not add new norms here.
+
 Use [Gameplay and Storyteller concepts](concepts.md) for the domain vocabulary. The Storyteller prepares a **turn**; the player receives narration and, when interaction is needed, a **decision point**. Multiple turns can share a scene. Their selected actions consume declared fictional time; reading and model processing do not. Activities occupy accepted execution time. No chapters, literary boundaries or fixed turn durations are implied.
 
 The working approach is one generic progression flow. Walking, noticing a tower, making an agreement, spending an afternoon somewhere and meeting a stranger can all become moments in the same chronology. We do not need a dedicated software system for each verb. This overview connects the product; the [playthrough](../journeys/playthroughs.md) shows it from the players' perspective.

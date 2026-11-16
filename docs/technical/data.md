@@ -1,5 +1,8 @@
 # Data and consistency
 
+> **DOC01 compatibility stub.** Canonical owner: [platform/data-and-persistence.md](platform/data-and-persistence.md). Do not add new norms here.
+
+
 **Find the section:** [durable record families](#durable-records) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
 
 Current implementation stores campaign narrative bodies and continuity notes in PostgreSQL. The owner-requested [canonical-file implementation contract](canonical-files.md) changes the target: versioned documents own narrative knowledge and Storyteller guidance; transactional records retain mechanical execution, permissions, publication references and accounting. Prepared storage and memory features implement that target; runtime migration has not begun. Do not extend the table families below into new narrative content tables without reconciling that ownership boundary. A rebuildable search index is not the canonical content store.

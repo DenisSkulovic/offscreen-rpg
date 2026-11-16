@@ -1,5 +1,7 @@
 # Chamber | reproducible developer laboratory target
 
+> **DOC01 compatibility stub.** Canonical technical owners: [lab/chamber-and-fixtures](../../technical/lab/chamber-and-fixtures.md), [lab/experiment-protocol](../../technical/lab/experiment-protocol.md). Do not add new norms here.
+
 **Status:** Selected **engineering design for future implementation** (owner's 2026-11-12 Chamber request). **Method:** declare the desired destination *independently of existing Chamber code*, then audit actual source and define code Changes. **Not implemented or authorized for source edits.** **Scope:** developer tooling across pure game rules, application/DB, workers, Nest, the local workbench and held Storyteller packets. **Not:** player visual/UX redesign, gameplay feature development, a literal room, or live-provider permission.
 
 **Promise:** A developer specifies a meaningful game situation, instantly or quickly obtains the **smallest valid state** that makes it possible, drives the **real** corresponding rule or application operation under controlled time/input/failures, inspects causal before/after evidence, asserts expected results, and can reproduce or compare the experiment **without playing a whole campaign to reach the state**.

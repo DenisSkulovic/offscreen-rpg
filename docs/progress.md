@@ -7,7 +7,7 @@
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 
 **Current development priority:**
-1. Keep [docs/changes/README.md](changes/README.md) as the selection owner. **Current change:** QA-SF01 **Blocked** (partial fixture repair; remaining reds are genuine runtime defects — separate owner-selected Change).
+1. Keep [docs/changes/README.md](changes/README.md) as the selection owner. **Current change:** [DOC01 documentation architecture](changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md) (**Selected**, P2/P3 product+technical owners landing). QA-SF01 remains **Blocked** open (fixture remainders / runtime defects — not current).
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
 3. Permanent hubs were reconciled 2026-11-15 — see [documentation convergence ledger](engineering/evidence/documentation-convergence-2026-11-15.md). Do not treat stale “Proposed / no code” banners as truth.
 

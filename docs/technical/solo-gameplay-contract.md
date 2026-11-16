@@ -1,5 +1,8 @@
 # Connected solo gameplay: implementation contract
 
+> **DOC01 compatibility stub.** Canonical owner: [engine/authority-and-transitions.md](engine/authority-and-transitions.md). Do not add new norms here.
+
+
 Status: maintained implementation contract. Campaign clock arithmetic, authored quiet reuse, historical reports, bounded accepted chains and explicit post-scene re-entry are implemented. The owner's deliberate-time clarification requires a further [execution-permission and short-action correction](committed-time.md), prepared but not implemented. Broader chain editing, world preparation and delegated decisions remain separate. No live inference, deployment or multiplayer behavior is authorized here.
 
 Read the [gold session](playthroughs/harbor-session.md) alongside this contract. [Rules and activities](rules-and-activities.md) owns action/choice authority; [ticks](ticks-and-tags.md) owns units/exact arithmetic; [bounded autonomy](../history/initiatives/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns follow-ups/queues. This document owns the **integration decisions between those responsibilities**. Do not create a second progression engine to implement it.

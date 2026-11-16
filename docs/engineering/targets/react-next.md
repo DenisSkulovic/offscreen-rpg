@@ -1,5 +1,7 @@
 # React / Next.js engineering target | DECIDED architecture
 
+> **DOC01 compatibility stub.** Canonical technical owner: [docs/technical/client/architecture.md](../../technical/client/architecture.md). Do not add new norms here.
+
 **State: ARCHITECTURE SELECTED (2026-11-12) + W-program implemented (reconciled 2026-11-15).** This contract owns the **frontend engineering target** (F1–F15). TanStack Query is mandatory. **Architecture selected ≠ “code not implemented.”**
 
 ### Implementation status (W-program)

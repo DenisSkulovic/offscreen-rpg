@@ -1,6 +1,8 @@
 # Documentation map
 
-**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → design **programs** → [execution Changes](changes/README.md) → [history](history/README.md). Code is an artifact of product and technical documentation.
+**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → [decisions](decisions/README.md) / [runbooks](runbooks/README.md) → design **programs** (migrating) → [execution Changes](changes/README.md) (→ `work/changes/` after DOC01 P5). Code is an artifact of product and technical documentation.
+
+**DOC01 in flight:** prefer new subject owners under `product/{gameplay,experience,storyteller,admin}` and `technical/{platform,engine,storyteller,client,admin,observability,lab}`. Temporary work/evidence/research live at repo root (`work/`, `evidence/`, `research/`).
 
 **For a coding agent given an approved Change:** skip this broad index. Read the **one Change's first-screen brief**, follow its linked source-adjacent owner map and inspect only the named symbols. Deep product/technical docs below are **on demand**.
 
@@ -24,8 +26,8 @@
 | Admin program | [Admin](programs/admin/README.md) | Staff control plane; AD Done; production grants absent |
 | Implemented flow | [Engineering](engineering/README.md) → [code navigation](engineering/code-navigation.md) | Source entry points and limits |
 | History / legacy initiatives | [History](history/README.md) → [initiatives](history/initiatives/README.md) · [minutes](history/minutes/README.md) | Sept 2026 dossiers + session logs; **not** a Change queue |
-| Operations | [Development](operations/development.md) | Local runbook |
-| Evidence | [Connected proof](engineering/connected-poc-proof.md), [QA](engineering/qa-journeys.md) | What was exercised, on which date |
+| Operations | [Runbooks](runbooks/README.md) · [Development](operations/development.md) (stub) | Local runbook |
+| Evidence | [evidence/](../evidence/README.md) · [Connected proof](engineering/connected-poc-proof.md) | What was exercised, on which date |
 
 Technical specifications can include unbuilt design. When product, technical, and source disagree, inspect the narrow boundary and fix the owning claim. An old run is not proof of today's complete product.
 

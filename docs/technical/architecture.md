@@ -1,5 +1,8 @@
 # Technical architecture
 
+> **DOC01 compatibility stub.** Canonical owner: [platform/topology.md](platform/topology.md). Do not add new norms here.
+
+
 This is the implementation design; the [implementation overview](../progress.md) tracks coverage and current priorities, while the [development guide](../operations/development.md) explains how to run and test existing code. The design supports the [product walkthrough](../product/journeys/playthroughs.md). Product choices still open in [questions](../questions.md) remain open; a technical example does not decide them. Dependencies are pinned and integration-tested as each component is introduced. Build the broader application with scripted substitutes before connecting paid services.
 
 ## Recommendation
