@@ -1,4 +1,4 @@
-# DOC01 | P1 inventory progress
+﻿# DOC01 | P1 inventory progress
 
 **Local working store (gitignored):** `work/designs/open/doc01-migration/`  
 (`work/` is in `.gitignore` by design; regenerate with the scripts below if the folder is missing.)
@@ -25,11 +25,11 @@ node work/designs/open/doc01-migration/seed-normative-atoms.mjs
 
 ## Post-baseline paths (add to migration manifest)
 
-All eight are this Change’s design packet under `work/changes/open/2026-11-16--doc01-documentation-architecture/`. Disposition: **EXTRACT then RETIRE** into `work/changes/ledger/` + Git after DOC01 Done (packet is temporary by definition). Also track `CONFLICT-LEDGER.md`, this file, and copied JSON summaries if present.
+All eight are this Change’s design packet under `work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/`. Disposition: **EXTRACT then RETIRE** into `work/changes/ledger/` + Git after DOC01 Done (packet is temporary by definition). Also track `CONFLICT-LEDGER.md`, this file, and copied JSON summaries if present.
 
 ## Conflict ledger
 
-Named contradictions opened in [CONFLICT-LEDGER.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/CONFLICT-LEDGER.md) (C1–C8).
+Named contradictions opened in [CONFLICT-LEDGER.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/CONFLICT-LEDGER.md) (C1–C8).
 
 ## Still required for P1 exit
 

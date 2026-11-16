@@ -2,7 +2,7 @@
 
 **Status:** soft-retired index. Permanent product intent → [docs/product](../product/README.md). Technical guarantees → [docs/technical](../technical/README.md). Temporary design → [work/designs](../../work/designs/README.md). Evidence → [evidence/](../../evidence/README.md). Execution queue → [docs/changes](../../work/changes/README.md) (→ `work/changes/` after full cutover).
 
-Nested files remain until [P6 no-loss gate](../../work/changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) is green. Prefer editing canonical owners; treat program essays as migration sources.
+Nested files remain until [P6 no-loss gate](../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md) is green. Prefer editing canonical owners; treat program essays as migration sources.
 
 | Former program | Prefer |
 | --- | --- |

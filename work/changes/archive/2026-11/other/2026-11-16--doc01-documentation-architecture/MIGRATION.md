@@ -1,6 +1,6 @@
-# DOC01 | Executable semantic migration plan for Cursor
+﻿# DOC01 | Executable semantic migration plan for Cursor
 
-**Design-only at handoff.** This is a sequenced *implementation procedure*, not current authorization to execute it. Once the owner selects DOC01, Cursor should perform the work in its local checkout on an isolated branch with frequent checkpoints, not by blindly moving the existing 483 files. Source evidence: [audit](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md), full [directory register](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md), full [file register](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md), target [architecture](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md), and [acceptance](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md).
+**Design-only at handoff.** This is a sequenced *implementation procedure*, not current authorization to execute it. Once the owner selects DOC01, Cursor should perform the work in its local checkout on an isolated branch with frequent checkpoints, not by blindly moving the existing 483 files. Source evidence: [audit](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md), full [directory register](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md), full [file register](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md), target [architecture](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md), and [acceptance](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/VERIFICATION.md).
 
 ## P0. Baseline and safety fence (no mutation)
 
@@ -27,7 +27,7 @@ target_path; target_heading; competing_sources; incoming_links;
 unique_fact_preserved(true|false); evidence_ref; reviewer; resolved
 ```
 
-1. Begin with [FILE-DISPOSITION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md); every 483 baseline files **plus** newly added upstream files must receive a file-level disposition. Do not mark a file resolved if one meaningful section remains unmapped.
+1. Begin with [FILE-DISPOSITION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md); every 483 baseline files **plus** newly added upstream files must receive a file-level disposition. Do not mark a file resolved if one meaningful section remains unmapped.
 2. Inventory headings for every Markdown file. For each, assign its *claims*: product requirement, technical guarantee, selected ADR rationale, deferred proposal, proof, operating procedure, example, or temporary narrative. `README` routers can be classified whole where they contain no unique decisions.
 3. Build a semantic ownership matrix for all cross-cutting subjects: time, player actions, world rules, canonical files, memory, Storyteller tool loop, dispatch/spending, UI decision semantics, identity/grants, Admin cases, forensic evidence, replay, Chamber, and React/Next state. Every requirement gets **one** future owner and references all currently competing sections.
 4. Use similarity methods (heading/bigram/embedding if locally available) **only to flag possible overlap**. A hash/similarity match is not proof of semantic identity. Verify key exceptions, negative cases, approval state, implementation status and exact numbers manually before collapsing.
@@ -137,4 +137,4 @@ At each later Change close: reconcile exact product/technical headings, update `
 
 DOC01 authorizes **documentation relocation/rewriting and the minimum local automation/agent-routing updates required for cutover once the owner explicitly selects implementation**. It does not authorize changing gameplay API/database behavior, paid providers, deployments, live data, runtime migrations, product-promise weakening or indiscriminate evidence deletion.
 
-**Success means a different, usable knowledge system, not 483 files at new paths.** [Acceptance tests](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md) are binding.
+**Success means a different, usable knowledge system, not 483 files at new paths.** [Acceptance tests](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/VERIFICATION.md) are binding.

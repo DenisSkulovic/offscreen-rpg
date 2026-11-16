@@ -1,4 +1,4 @@
-# DOC01 | Cross-cutting subject ownership matrix (P1)
+﻿# DOC01 | Cross-cutting subject ownership matrix (P1)
 
 **Purpose:** every consequential subject gets **one** future product owner and **one** technical owner (where both exist). Competing current sections are listed so P2/P3 merge by claim, not by folder copy.  
 **Status:** first-pass matrix; claim-level atom rows still open in local `atoms.jsonl`.
@@ -38,4 +38,4 @@
 
 ## Non-docs path consumers (P5 preload)
 
-See [non-docs-consumers.json](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/non-docs-consumers.json). Hot loaders: `scripts/repo-tools/{brief,docs-health,archive-changes}.mjs`, `AGENTS.md`, `.agents/rules/documentation.md`, `.agents/references/documentation-navigation-standard.md`, package/source-adjacent READMEs.
+See [non-docs-consumers.json](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/non-docs-consumers.json). Hot loaders: `scripts/repo-tools/{brief,docs-health,archive-changes}.mjs`, `AGENTS.md`, `.agents/rules/documentation.md`, `.agents/references/documentation-navigation-standard.md`, package/source-adjacent READMEs.

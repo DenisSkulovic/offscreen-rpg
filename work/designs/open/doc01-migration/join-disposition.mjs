@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /** Join FILE-DISPOSITION.md provisional actions onto files.jsonl */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -8,7 +8,7 @@ const dir = resolve(fileURLToPath(new URL(".", import.meta.url)));
 const repoRoot = resolve(dir, "../../../..");
 const dispositionPath = join(
   repoRoot,
-  "work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
+  "work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md",
 );
 const md = readFileSync(dispositionPath, "utf8");
 const map = new Map();

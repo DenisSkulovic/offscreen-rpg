@@ -1,4 +1,4 @@
-# DOC01 | Exhaustive baseline file-disposition register
+﻿# DOC01 | Exhaustive baseline file-disposition register
 
 **Every file is listed, but dispositions are provisional until its content is inspected.** Git tree snapshot `8cec56e1262e5493020d9da2ba163264398ad667` (2026-11-16); 483 files, 6510447 bytes. This is a **complete path/size census**, NOT a claim that 483 document bodies have received a full semantic comparison. It prevents files from silently disappearing during Cursor's subsequent atom-by-atom rewrite.
 
@@ -524,4 +524,4 @@ A route is an intended **knowledge bucket**, not a one-file-to-one-file move. A 
 
 For each source, capture `path@SHA#heading`, the **question answered**, atomic claims/choices, acceptance state, dated/undated evidence, incoming references, target heading(s), action (promote / merge / evidence / draft / retire), and reason. Review cross-document contradictions before declaring equivalence. New target headings must carry the normative substance even if the old source text is retired. Sensitive, explicitly owner-retained or unresolved content requires owner-directed preservation.
 
-**No semantic duplicates have been asserted solely because a filename or a program name matches.** The documented contradictions and ownership collisions in [AUDIT-BASELINE.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md) were checked against actual file openings; this manifest covers paths not all their paragraphs.
+**No semantic duplicates have been asserted solely because a filename or a program name matches.** The documented contradictions and ownership collisions in [AUDIT-BASELINE.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md) were checked against actual file openings; this manifest covers paths not all their paragraphs.

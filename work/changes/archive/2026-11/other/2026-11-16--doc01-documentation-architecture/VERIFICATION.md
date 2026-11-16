@@ -1,6 +1,6 @@
-# DOC01 | Acceptance, regression and falsification protocol
+﻿# DOC01 | Acceptance, regression and falsification protocol
 
-**Scope:** verify that the documentation system became a reliable source of truth and cheaper to navigate, not merely a prettier set of paths. Baseline `main@8cec56e`, 2026-11-16. Run this after Cursor implements [MIGRATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md). No paid provider calls are required or authorized.
+**Scope:** verify that the documentation system became a reliable source of truth and cheaper to navigate, not merely a prettier set of paths. Baseline `main@8cec56e`, 2026-11-16. Run this after Cursor implements [MIGRATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/MIGRATION.md). No paid provider calls are required or authorized.
 
 ## A. Documentary completeness and preservation: hard gate
 

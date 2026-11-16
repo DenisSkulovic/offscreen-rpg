@@ -2,15 +2,14 @@
 
 **DOC01 selection owner** for `pnpm repo:brief`. Packets live here (`open/` + `archive/`).
 
-Current change: [DOC01 Rebuild the documentation knowledge architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md)
+Current change: none
 
-**Current status:** DOC01 Selected — **P6 complete** ([no-loss gate](open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md)); P7 gardening/receipt remains.
+**Current status:** DOC01 **Done** — archived at [archive/2026-11/other/2026-11-16--doc01-documentation-architecture](archive/2026-11/other/2026-11-16--doc01-documentation-architecture/CHANGE.md). No code-bearing Change selected (valid).
 
 ## Open packets
 
 | Packet | State | Outcome |
 | --- | --- | --- |
-| [DOC01 documentation architecture](open/2026-11-16--doc01-documentation-architecture/CHANGE.md) | **Selected** — P6 gated | Rebuild canonical docs by subject/authority |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |

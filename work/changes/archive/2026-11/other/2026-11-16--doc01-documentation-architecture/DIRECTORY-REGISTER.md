@@ -1,10 +1,10 @@
-# DOC01 | Exhaustive baseline directory register
+﻿# DOC01 | Exhaustive baseline directory register
 
 **Machine inventory, not semantic certification.** Source: GitHub Git tree `8cec56e1262e5493020d9da2ba163264398ad667`, `recursive=1`, `truncated=false`, captured 2026-11-16. All 176 tracked subdirectories under `docs/` at this frozen commit are enumerated below; Git doesn't track empty directories. The decision is a **candidate disposition** based on current path role; Cursor MUST inspect unique sections before merging/deleting. A leaf Change folder inherits its parent lifecycle; its existence is justified temporarily by distinct execution identity (D3), **not** permanent documentation value. Directory decisions will be closed after atom-level inventory.
 
 Measured: **483 files; 176 directories; 6510447 Git tree bytes**; 477 Markdown, three PNG and three JSON. Numbers are Git object metadata, not compressed checkout size.
 
-The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md#3-proof-obligations-for-every-surviving-directory). Absence of a permanent owner means delete folder **after** preserving every surviving claim and updating links. Counts exclude this DOC01 dossier because the frozen baseline predates it.
+The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md#3-proof-obligations-for-every-surviving-directory). Absence of a permanent owner means delete folder **after** preserving every surviving claim and updating links. Counts exclude this DOC01 dossier because the frozen baseline predates it.
 
 | Baseline directory | Direct files | Total descendants | Candidate disposition | Destination | Reason |
 | --- | ---: | ---: | --- | --- | --- |
@@ -193,4 +193,4 @@ The design target's directory proof obligations are in [TARGET-ARCHITECTURE.md](
 - **Archive and packet leaf directories** are not independently justified as *permanent* documentation; a compact immutable completion ledger and Git history replace full in-tree archives.
 - **Evidence and evaluations** may be retained in a separate revision-bound evidentiary system if reproducibility, legal, privacy or incident requirements justify them.
 
-**Limit:** this register fully audits the *tree structure*. It does not pretend that a filename proves semantic duplication. The [file-level register](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md) is the input for the subsequent full claim-level reconciliation.
+**Limit:** this register fully audits the *tree structure*. It does not pretend that a filename proves semantic duplication. The [file-level register](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md) is the input for the subsequent full claim-level reconciliation.

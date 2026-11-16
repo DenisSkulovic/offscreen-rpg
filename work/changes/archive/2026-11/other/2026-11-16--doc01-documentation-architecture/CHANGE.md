@@ -1,8 +1,8 @@
-# DOC01 | Rebuild the documentation knowledge architecture
+﻿# DOC01 | Rebuild the documentation knowledge architecture
 
 **State:** **Done (2026-11-16).** **Owner:** repository owner. **Work type:** bounded docs/config migration with semantic consolidation. Packets live under `work/changes/`.
 
-**Permission:** Owner selected DOC01 for Cursor implementation in this chat (2026-11-16). Authorized: documentation rewrite/relocation, minimum loader/agent-routing updates, P0–P7 per [MIGRATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md). Still forbidden: paid providers, deploy, live/non-disposable DB, gameplay/runtime refactors, silent product-approval invention, deletion before no-loss proof. QA-SF01 stays open/Blocked but is no longer Current.
+**Permission:** Owner selected DOC01 for Cursor implementation in this chat (2026-11-16). Authorized: documentation rewrite/relocation, minimum loader/agent-routing updates, P0–P7 per [MIGRATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/MIGRATION.md). Still forbidden: paid providers, deploy, live/non-disposable DB, gameplay/runtime refactors, silent product-approval invention, deletion before no-loss proof. QA-SF01 stays open/Blocked but is no longer Current.
 
 ## First-screen executor brief
 
@@ -10,12 +10,12 @@
 
 **Start here, in order:**
 
-1. [TARGET-ARCHITECTURE.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md): ideal topology, each surviving directory's burden of proof, information/lifecycle ownership.
-2. [AUDIT-BASELINE.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md): measurements, confirmed path/authority failures and concrete contradictory status banners.
-3. [DIRECTORY-REGISTER.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md): **all 176** baseline tracked directories and dispositions.
-4. [FILE-DISPOSITION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md): **all 483** baseline files (at `main@8cec56e`) and candidate routes. These routes **are not semantic certification**.
-5. [MIGRATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md): phased read-only investigation, claim-level reconciliation, product rewrite, technical rewrite, evidence/work split, agent/tool cutover, cleanup.
-6. [VERIFICATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md): no-loss checks, unique-owner proof, negative tests, cold-reader benchmark and terminal review.
+1. [TARGET-ARCHITECTURE.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/TARGET-ARCHITECTURE.md): ideal topology, each surviving directory's burden of proof, information/lifecycle ownership.
+2. [AUDIT-BASELINE.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/AUDIT-BASELINE.md): measurements, confirmed path/authority failures and concrete contradictory status banners.
+3. [DIRECTORY-REGISTER.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md): **all 176** baseline tracked directories and dispositions.
+4. [FILE-DISPOSITION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md): **all 483** baseline files (at `main@8cec56e`) and candidate routes. These routes **are not semantic certification**.
+5. [MIGRATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/MIGRATION.md): phased read-only investigation, claim-level reconciliation, product rewrite, technical rewrite, evidence/work split, agent/tool cutover, cleanup.
+6. [VERIFICATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/VERIFICATION.md): no-loss checks, unique-owner proof, negative tests, cold-reader benchmark and terminal review.
 
 **Core non-negotiable:** the product bible defines *what/why*, accepted technical contracts define *guarantees*, source code is an **artifact**. No amount of neat directories licenses rewriting product intent to match vibecoded code. A design or source audit does not prove implementation. No deletion before unique decisions/negative cases are preserved.
 
@@ -54,7 +54,7 @@ Not accepted until the owner reviews the design. The proposed target has `docs/{
 
 P0 frozen baseline → P1 full section-level claim/incoming-link inventory → P2 permanent **product** contract rewrite → P3 permanent **technical** contract rewrite → P4 ADR/evidence/runbook/temp work separation → P5 executable/tool/link cutover → P6 obsolete tree deletion after no-loss proof → P7 automated gardening + terminal receipt.
 
-Read detailed phase exit gates in [MIGRATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/MIGRATION.md). Avoid shotgun edits to source runtime. The user explicitly prefers rewriting awkward old documents over accommodating the old taxonomy.
+Read detailed phase exit gates in [MIGRATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/MIGRATION.md). Avoid shotgun edits to source runtime. The user explicitly prefers rewriting awkward old documents over accommodating the old taxonomy.
 
 ## Reconciliation ledger
 
@@ -73,4 +73,4 @@ Read detailed phase exit gates in [MIGRATION.md](../../../../work/changes/open/2
 
 ## Cursor handoff request (for owner to send)
 
-> Implement **DOC01** from `work/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md`. Do not merely rename/move documents. Follow the complete directory/file census and content-atom reconciliation first, rewrite permanent product then technical owners, isolate temporary work/evidence, update all repo loaders and links, and pass the negative/retrieval tests. Keep an isolated branch and stop for unresolved owner approval. No paid providers, live data or gameplay refactors. Return the actual before/after evidence and reconcile the DOC01 ledger before Done.
+> Implement **DOC01** from `work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/CHANGE.md`. Do not merely rename/move documents. Follow the complete directory/file census and content-atom reconciliation first, rewrite permanent product then technical owners, isolate temporary work/evidence, update all repo loaders and links, and pass the negative/retrieval tests. Keep an isolated branch and stop for unresolved owner approval. No paid providers, live data or gameplay refactors. Return the actual before/after evidence and reconcile the DOC01 ledger before Done.

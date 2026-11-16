@@ -1,6 +1,6 @@
-# DOC01 | Structural and semantic-risk audit of current /docs
+﻿# DOC01 | Structural and semantic-risk audit of current /docs
 
-**Evidence basis:** GitHub `main@8cec56e1262e5493020d9da2ba163264398ad667` (2026-11-16). Structural census covered every tracked docs path (all 483 files / 176 directories). Content review covered navigation owners, harness policy, selected representative product/technical/engineering/program/Change/evaluation files and repo tooling. **This is not a false claim of 483 complete semantic document reviews.** Exact unreviewed sections must be handled by Cursor using [FILE-DISPOSITION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md) and the migration gate.
+**Evidence basis:** GitHub `main@8cec56e1262e5493020d9da2ba163264398ad667` (2026-11-16). Structural census covered every tracked docs path (all 483 files / 176 directories). Content review covered navigation owners, harness policy, selected representative product/technical/engineering/program/Change/evaluation files and repo tooling. **This is not a false claim of 483 complete semantic document reviews.** Exact unreviewed sections must be handled by Cursor using [FILE-DISPOSITION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md) and the migration gate.
 
 ## 1. Measurements, not vibes
 
@@ -25,7 +25,7 @@
 
 **Structural heuristic only:** 232 files / 3,280,204 bytes match a path containing `handoff`, `evaluations`, `evidence`, `audits`, `minutes` or `archive` (or an explicit HANDOFF/AUDIT/CHECKPOINT/RUN-LOG filename). This is *not* a claim that every one should be deleted: the problem is **lifecycle classification**, not a blanket byte quota.
 
-The complete raw path inventory and provisional disposition are in [DIRECTORY-REGISTER.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md) and [FILE-DISPOSITION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md). Future commits necessarily alter live counts; compare to the pinned baseline, not an unversioned `main`.
+The complete raw path inventory and provisional disposition are in [DIRECTORY-REGISTER.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/DIRECTORY-REGISTER.md) and [FILE-DISPOSITION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/FILE-DISPOSITION.md). Future commits necessarily alter live counts; compare to the pinned baseline, not an unversioned `main`.
 
 ## 2. Confirmed failures from file content
 
@@ -138,6 +138,6 @@ This is a **substantive rewrite**. Moving 483 files while retaining 483 near-ide
 
 The chosen shape must survive a cold-reader comparison. If agents reliably locate the correct norm faster and more accurately through a substantially different organization (e.g. topic-first directories containing both product and technical contracts with explicit file roles), and that organization has no duplicated authority or retention leak, the taxonomy can be revised. Product-first hierarchy itself is the owner's nonnegotiable requirement; the specific folder names are not sacred.
 
-Test with the question suite in [VERIFICATION.md](../../../../work/changes/open/2026-11-16--doc01-documentation-architecture/VERIFICATION.md), compare both correctness and routing cost, and document any case where the proposed placement creates an ambiguous or longer path.
+Test with the question suite in [VERIFICATION.md](../../../../work/changes/archive/2026-11/other/2026-11-16--doc01-documentation-architecture/VERIFICATION.md), compare both correctness and routing cost, and document any case where the proposed placement creates an ambiguous or longer path.
 
 **Audit conclusion:** the observed problem is not “too many bytes” or “too many folders” alone. It is a mismatched **authority × subject × lifecycle** model. The migration must solve all three dimensions and prove it with semantic reconciliation and a cold-reader test.
