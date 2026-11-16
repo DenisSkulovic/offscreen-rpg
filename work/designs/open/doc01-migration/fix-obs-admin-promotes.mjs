@@ -15,7 +15,7 @@ const map = {
   "../personas-and-workspaces.md": "docs/programs/admin/personas-and-workspaces.md",
   // observability
   "../evidence/writer-closure-and-sequence-2026-11-15.md":
-    "docs/programs/observability/evidence/writer-closure-and-sequence-2026-11-15.md",
+    "evidence/runs/observability-program-2026-11-15/writer-closure-and-sequence-2026-11-15.md",
   "physical-evidence-storage-v1.md":
     "docs/programs/observability/technical/physical-evidence-storage-v1.md",
   "capture-transaction-protocol.md":

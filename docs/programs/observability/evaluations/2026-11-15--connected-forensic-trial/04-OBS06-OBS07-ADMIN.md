@@ -33,7 +33,7 @@ Only if kickoff explicitly authorizes this code Change and current source/policy
 
 **Testing S1:** add focused strict DTO, Admin policy, Nest and disposable SQL tests. Required negative cases: foreign case linked by its creator, separate case+campaign grants, revoked/expired staff, mismatched owner/G, narrative-only story, interrupted action, held G, stale publication, sentinel raw prose. Verify **response contains no sentinel** at JSON/SSR/log boundary, not merely CSS hidden.
 
-Only if normal+negative tests and row/SQL-cost proof pass: set OBS06 **Done**, write a source-linked `docs/programs/observability/evidence/obs06-...md` **actual** evidence receipt, clear `Current change` to none and commit/push. Otherwise **Blocked/Verifying** with exact reason. **Do not start OBS07 while OBS06 lacks source-backed Done proof**.
+Only if normal+negative tests and row/SQL-cost proof pass: set OBS06 **Done**, write a source-linked `evidence/runs/observability-program-2026-11-15/obs06-...md` **actual** evidence receipt, clear `Current change` to none and commit/push. Otherwise **Blocked/Verifying** with exact reason. **Do not start OBS07 while OBS06 lacks source-backed Done proof**.
 
 ## 3. OBS07: build a small actual Support screen
 
@@ -63,7 +63,7 @@ Then launch the connected local Admin stack in a disposable environment with an 
 
 **Human-utility trial:** hand a fictional support ticket to the automated agent with only the S1 view: “Player says the game froze after an item action. Did the mechanic finish? Has the model run? Did a new scene publish?” The agent must answer from the **UI** without SQL/logs and cite the displayed source types, ID and coverage. Record answer, source of each claim, unsupported inference and navigation friction. Repeat with a stale publication case if fixture exists.
 
-Only then mark OBS07 Done, write an actual `docs/programs/observability/evidence/obs07-...md` receipt, clear active Change, commit/push.
+Only then mark OBS07 Done, write an actual `evidence/runs/observability-program-2026-11-15/obs07-...md` receipt, clear active Change, commit/push.
 
 ## 4. Honest scorecard if OBS06/07 cannot be safely finished
 

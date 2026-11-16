@@ -44,7 +44,7 @@ const programRewrites = {
   // observability
   "../product-vision.md": "docs/programs/observability/product-vision.md",
   "../evidence/current-source-inventory-2026-11-15.md":
-    "docs/programs/observability/evidence/current-source-inventory-2026-11-15.md",
+    "evidence/runs/observability-program-2026-11-15/current-source-inventory-2026-11-15.md",
   "../../engine/README.md": "docs/programs/engine/README.md",
   "../../storyteller/README.md": "docs/programs/storyteller/README.md",
   "../../admin/technical/control-plane-boundaries.md":

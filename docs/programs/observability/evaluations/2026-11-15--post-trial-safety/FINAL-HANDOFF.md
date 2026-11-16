@@ -39,9 +39,9 @@ A single runtime-defect Change (owner to select) fixing: instant-pace controllin
 
 ## Exact Git evidence paths
 
-- `docs/programs/observability/evidence/obs00-l-local-story-trial-guards-2026-11-15.md`
-- `docs/programs/observability/evidence/obs00-c-provider-wire-equality-2026-11-15.md`
-- `docs/programs/observability/evidence/qa-sf01-storyteller-integration-2026-11-15.md`
+- `evidence/runs/observability-program-2026-11-15/obs00-l-local-story-trial-guards-2026-11-15.md`
+- `evidence/runs/observability-program-2026-11-15/obs00-c-provider-wire-equality-2026-11-15.md`
+- `evidence/runs/observability-program-2026-11-15/qa-sf01-storyteller-integration-2026-11-15.md`
 - `docs/programs/observability/evaluations/2026-11-15--post-trial-safety/{CHECKPOINT,RUN-LOG,FINAL-HANDOFF}.md`
 - Safe reproduction: `pnpm test:focus -- storyteller` (never overlap with another suite; it resets the disposable DB).
 
