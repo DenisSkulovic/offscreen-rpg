@@ -28,4 +28,4 @@ Current change: [DOC01 Rebuild the documentation knowledge architecture](open/20
 | [archive/](archive/README.md) | Done / Cancelled by month + program |
 | [ledger/](ledger/) | Compact closed-work index |
 
-**Standard:** [change work-unit](../../.agents/references/change-work-unit-standard.md). **Tooling:** `node scripts/repo-tools/archive-changes.mjs --dry-run|--apply`. Legacy stub: [docs/changes/README.md](../../docs/changes/README.md).
+**Standard:** [change work-unit](../../.agents/references/change-work-unit-standard.md). **Tooling:** `node scripts/repo-tools/archive-changes.mjs --dry-run|--apply`.

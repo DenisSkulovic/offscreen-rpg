@@ -20,7 +20,8 @@
 | G1 high-traffic inbound (partial) | Rewrite script + maps retargeted; residuals = audits/initiatives/soft-retire provenance |
 | G2 priority domains (partial) | [G2-PRIORITY-CERTIFY](G2-PRIORITY-CERTIFY.md); OBS evidence under `evidence/runs/observability-program-2026-11-15/` |
 | **G3 Change packet move** | [G3-PACKET-MOVE](G3-PACKET-MOVE.md) — packets + archiver + docs-health rooted at `work/changes`; stub at `docs/changes/README.md` |
-| G4 writers + legal (partial) | New sessions → `work/sessions/`; `NOTICE.md` legal home; legacy minutes readable via stub index |
+| **G4 minutes / legal** | Writers → `work/sessions/`; `NOTICE.md` legal home; [G4-MINUTES-WAIVE](G4-MINUTES-WAIVE.md) accepts Git recovery for dated 2026-11-11…15 bodies |
+| G5 research map (partial) | [research/engineering-manuals.md](../../../../research/engineering-manuals.md); bodies still under engineering/playthroughs |
 
 ## Blocked — keep legacy trees
 
@@ -28,7 +29,6 @@
 | --- | --- | --- |
 | G1 Inbound path fanout | Residual non-docs hits (history/initiatives, engineering audits/targets, intentional soft-retire mentions) | Live loaders + package/.agents **mandatory** maps = 0 hits on paths that will be deleted; remaining = provenance-only or owner-waived |
 | G2 Claim-level certification | Priority maps certified; Admin/OBS deep essays + atom bulk still open | Remaining domains `resolved=true` or DROP with Git pointer; no silent mass resolve |
-| G4 History minutes content | Writers + NOTICE done; dated 2026-11-11…15 bodies still only under `docs/history/minutes/` | Promote nontrivial decisions or accept Git recovery + stub routers before delete |
 | G5 Playthroughs / research | Playthroughs router + [research/engineering-manuals](../../../../research/engineering-manuals.md); bodies still under engineering/playthroughs | Owner waive unique headings (Git recovery) or copy remaining unique sections before delete |
 | G6 Taxonomy hard gate | `docs-health` taxonomy is **advisory** (LEGACY lines) | Flip to fail after deletions; negative fixture test passes |
 
@@ -42,6 +42,6 @@
 
 ## Forbidden now
 
-- `rm -rf docs/programs` (or engineering/history/operations) — `docs/changes` is stub-only after G3
+- `rm -rf docs/programs` (or engineering/history/operations)
 - Silent DROP of unique trial negatives or owner-retained drafts
 - Claiming DOC01 **Done** while G1–G2 / G4–G6 remain red

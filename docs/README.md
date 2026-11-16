@@ -1,6 +1,6 @@
 # Documentation map
 
-**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → [decisions](decisions/README.md) / [runbooks](runbooks/README.md) → design **programs** (migrating) → [execution Changes](../work/changes/README.md) (→ `work/changes/` after DOC01 P5). Code is an artifact of product and technical documentation.
+**Layers (absolute):** [**Product bible**](product/README.md) → [technical contracts](technical/README.md) → [decisions](decisions/README.md) / [runbooks](runbooks/README.md) → design **programs** (soft-retired) → [execution Changes](../work/changes/README.md). Code is an artifact of product and technical documentation.
 
 **DOC01 in flight:** prefer new subject owners under `product/{gameplay,experience,storyteller,admin}` and `technical/{platform,engine,storyteller,client,admin,observability,lab}`. Temporary work/evidence/research live at repo root (`work/`, `evidence/`, `research/`).
 
@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | Product bible | [**Product index**](product/README.md) → [vision](product/foundations/vision.md), [concepts](product/foundations/concepts.md) | Why the game exists and what the nouns mean; intent is not proof of implementation |
 | Current state | [Progress](progress.md) | What exists, evidence, gaps, next outcome |
-| Discussion continuity | [Session minutes](history/minutes/README.md) | Owner intent across chats; history, not authority |
+| Discussion continuity | [Session notes](../work/sessions/README.md) · [legacy minutes](history/minutes/README.md) | Owner intent across chats; history, not authority |
 | Technical contract | [Technical owner index](technical/README.md) | Authority, transitions, failure/retry |
 | Engine understanding | [Engine model](engineering/engine-model.md) | How pieces cooperate today |
 | Execution route | [Change queue](../work/changes/README.md) (`open/` + `archive/`) | One code-bearing outcome or empty queue |
