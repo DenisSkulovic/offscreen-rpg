@@ -41,7 +41,7 @@ Examples:
 
 ## F02 | Known broken active and parked navigation (high)
 
-Performed deterministic local Markdown `[label](relative-path)` destination checks on **all 96 parked Markdown files and all 22 active open design Markdown files** against the full Git tree. **89 missing-path occurrences**: 79 in parked, **10 in open**. This test checks whether the linked *file/directory* exists; it does not certify anchors, remote URLs or contextual accuracy. The reported instances are genuine plain relative-path failures, not merely a missing anchor.
+Performed deterministic local Markdown link destination checks on **all 96 parked Markdown files and all 22 active open design Markdown files** against the full Git tree. **89 missing-path occurrences**: 79 in parked, **10 in open**. This test checks whether the linked *file/directory* exists; it does not certify anchors, remote URLs or contextual accuracy. The reported instances are genuine plain relative-path failures, not merely a missing anchor.
 
 Concrete examples:
 - `work/designs/open/product-open-questions.md` has **three** broken links, including the accepted time rule and both GM03/GM07 Change packets. Relative `../../docs/... ` resolves incorrectly to `work/docs/...`; `../changes/open/...` resolves to `work/designs/changes/...`.
