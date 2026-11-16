@@ -98,7 +98,7 @@ These are not automatically bad by byte count; they **fail independent owner/rev
 - `.agents/README.md` still calls the Change path “migrating”, claims `docs/history/minutes/` will persist until P6 and labels DOC01 taxonomy advisory.
 - `work/changes/README.md` calls itself a “DOC01 selection owner”, despite DOC02 complete.
 - `work/designs/README.md` advertises `doc01-migration/` as active but omits the **95-file** unpromoted-design subtree and the player-replay/shared-play draft folders.
-- `work/designs/open/product-open-questions.md` says “See legacy body (compatibility stub): [docs/questions.md](./product-open-questions.md)”; the link points back to **itself**, though old docs/questions was deleted.
+- `work/designs/open/product-open-questions.md` says “See legacy body (compatibility stub): a label of `docs/questions.md` targeting `./product-open-questions.md` (its own file)”; the link points back to **itself**, though old docs/questions was deleted.
 - `.agents/HARNESS.md` has a self-referential “coding-agent target standard” link and describes W20/W21 as future despite their archive status.
 
 A generated link checker can pass all of these because syntax-valid links and Markdown paragraphs do not establish **semantic truth**.
