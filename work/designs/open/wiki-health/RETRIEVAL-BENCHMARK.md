@@ -7,6 +7,7 @@
 | Track | How it works | Does it use a model? | What it proves |
 | --- | --- | --- | --- |
 | **W0: Gold-route topology** | For each fixed user query, check a manually verified gold `page#heading` is reachable from entrypoints via real Markdown edges in ≤N hops | **No** | The graph *permits* discovery; does not prove a reader understands the question |
+| **W0b: Wiki Hopper** | Seeded simulated visitor chooses among *visible* Markdown links using query/label/title similarity; no access to answer key when navigating | **No** | Whether a plausible reader can discover the correct page, not merely whether an oracle shortest path exists |
 | **W1: Lexical retriever** | Build a local word/heading index over maintained wiki pages, run the same user questions, rank pages using BM25/FTS5 or a deterministic lexical ranker, score gold owners | **No** | Reproducible search visibility, headings, vocabulary and query-term mismatch |
 | **W2: Fresh-agent navigation** | New isolated model session per question in fixed read-only repository snapshot; record actual reads, tool calls, timing, token usage and final cited answer | **Yes, explicitly authorized** | A real agent can navigate, understand, stop and not confuse desired versus implemented |
 | **W3: Code-grounded truth** | A W2 implementation-status question is checked against source/test/runs at the **same Git SHA**, not old docs or an LLM's confidence | May use W2 agent, but oracle is source/tests/human | Whether wiki claims survive source inspection; discrepancy and evidence-tier correctness |
