@@ -2,7 +2,7 @@
 
 **First look:** Chamber is a **local development/QA** surface, not the public Play product. Its React controller currently duplicates some Play snapshot/refresh rules, but inspection and QA run state are separate concerns. The target adopts Query for authorized server state while retaining the strict local/dev-only boot boundary.
 **Start:** [useChamberPlay](use-chamber-play.ts) → [transport](transport.ts) → [Nest createApp](../../../../../api/src/app.ts). Do **not** add hosted RBAC because a controller lacks a role check: **normal API startup does not register Chamber/QA controllers**.
-**Source inspected:** `470a5df`, 2026-11-12, no live test. **W12 is superseded** by the [Chamber CH01–CH16 program](../../../../../../docs/engineering/chamber-program.md); [CH11](../../../../../../docs/changes/archive/2026-11/chamber/2026-11-12--chamber-workbench/CHANGE.md) owns new UI composition and depends on W15 Query. W03/W05 remain relevant for safe story identity/poll policy. Current source code and QA view have not been rewritten.
+**Source inspected:** `470a5df`, 2026-11-12, no live test. **W12 is superseded** by the [Chamber CH01–CH16 program](../../../../../../docs/technical/lab/chamber-and-fixtures.md); [CH11](../../../../../../docs/changes/archive/2026-11/chamber/2026-11-12--chamber-workbench/CHANGE.md) owns new UI composition and depends on W15 Query. W03/W05 remain relevant for safe story identity/poll policy. Current source code and QA view have not been rewritten.
 
 **Current vs target:** CH11 added [`LabWorkbench`](lab-workbench.tsx) (Query-scoped scenario search, LabRun console, delta/replay) above legacy scripted scene + inspector + QA journal. Lab HTTP lives under `/api/chamber-tools/lab/*` and mounts only when Nest `developerTools===true`.
 
@@ -32,6 +32,6 @@
 
 - **Unit/RTL:** old inspector GET arriving after story switch, QA-run ID after viewer change, Strict Mode cleanup, version ordering under wrong story. 
 - **Connected boot-mode test:** ordinary Nest startup denies/misses Chamber endpoints, explicit local developer-mode startup mounts them and still owner-scopes data. Use disposable auth integration only with permission; [integration setup warning](../../../../../../tools/api-integration/README.md).
-- **Architectural target:** [F13 developer isolation](../../../../../../docs/engineering/targets/react-next.md); **API route map:** [Nest story and Chamber endpoints](../../../../../api/src/modules/stories/README.md).
+- **Architectural target:** [F13 developer isolation](../../../../../../docs/technical/client/architecture.md); **API route map:** [Nest story and Chamber endpoints](../../../../../api/src/modules/stories/README.md).
 
 **Maintenance:** update only on change of controller mount mode, inspector/QA query state owner, auth guarantee or significant module move. Do **not** introduce a `DEVELOPER_USER_IDS` hosted allowlist without a separate explicit product/deployment decision; preserve the existing `developerTools` Nest registration gate (W12 superseded by CH10–CH11).

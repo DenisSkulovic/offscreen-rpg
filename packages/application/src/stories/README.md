@@ -47,5 +47,5 @@ Not all story mutations originate in HTTP. Workers may commit narrative, mechani
 ## Tests and reading boundaries
 
 - [resolution integration](../../../../tools/api-integration/test/story-resolution.integration.ts) for duplicate/late/outcome; [Start](../../../../tools/api-integration/test/story-start.integration.ts) for idempotent story creation; [DB and Temporal warning](../../../../tools/api-integration/README.md) before any execution.
-- [durable execution contract](../../../../docs/technical/execution.md) only if DB/worker retry rules are relevant; [selected F5/F6](../../../../docs/engineering/targets/react-next.md) for client observable promise.
+- [durable execution contract](../../../../docs/technical/platform/execution-and-delivery.md) only if DB/worker retry rules are relevant; [selected F5/F6](../../../../docs/technical/client/architecture.md) for client observable promise.
 - Update this map if public facade, transaction owner, version writers or receipt semantics change. Do **not** enumerate every SQL query or paste a 200-line failure taxonomy here.

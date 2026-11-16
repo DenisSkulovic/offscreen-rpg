@@ -1,11 +1,17 @@
-# Work changes | selection queue (DOC01 target)
+# Work changes | selection queue
 
-**During migration:** authoritative selection still lives at [docs/changes/README.md](../../docs/changes/README.md) so `pnpm repo:brief` keeps working.  
-**After P5:** this file becomes the selection owner; `docs/changes/` retires.
+**DOC01 selection owner.** Packets still physically live under `docs/changes/` until G3 packet move completes; this file owns **Current change** for `pnpm repo:brief`.
 
-Current change: see docs/changes README (DOC01 selected).
+Current change: [DOC01 Rebuild the documentation knowledge architecture](../../docs/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md)
+
+**Current status:** DOC01 Selected — P6 soft-retire done; hard delete blocked by [no-loss gate](../../docs/changes/open/2026-11-16--doc01-documentation-architecture/P6-NO-LOSS-GATE.md).
 
 ## Layout
 
-- `open/` — non-terminal packets  
-- `ledger/YYYY-MM.md` — compact closed-work summaries + Git pointers (replaces nested 111-file archive after P4/P5)
+| Path | Role |
+| --- | --- |
+| [ledger/](ledger/) | Compact closed-work index (109 packets in 2026-11) |
+| `open/` | Future home for non-terminal packets |
+| [docs/changes/](../../docs/changes/README.md) | Physical open/ + archive packets (legacy path during migration) |
+
+QA-SF01 and other open packets remain listed in the docs/changes open table until moved.

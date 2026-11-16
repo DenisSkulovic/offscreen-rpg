@@ -4,7 +4,7 @@
 
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
-2. [docs/changes/README.md](docs/changes/README.md) — **Current change** selection (`none` is valid). After DOC01 cutover this moves to [work/changes/](work/changes/README.md).
+2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). After DOC01 cutover this moves to [work/changes/](work/changes/README.md).
 3. If a Change is selected: read that packet’s first screen, **one** nearby owner README, then 2–5 named source files. Do **not** preload all maps, minutes, or program handoffs.
 
 **Expired trials are not cold-start.** Forensic S0–S6 completed (0 paid). Historical packets live under program evidence/evaluations until moved to [evidence/](evidence/README.md)—do not relaunch them from AGENTS.

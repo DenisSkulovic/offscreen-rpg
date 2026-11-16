@@ -29,7 +29,7 @@ Client React -> same-origin /api/* -> Next rewrite (API_PROXY_ORIGIN) -> Nest AP
 
 **Origins:** SSR uses `API_INTERNAL_ORIGIN`; browser rewrite uses `API_PROXY_ORIGIN`. Both default to loopback `127.0.0.1:3001` and stay Node-only. `cache:'no-store'` in one fetch does **not** establish all Next Router/RSC/proxy cache guarantees; W14 proves private isolation in a production-like browser.
 
-**Selected future boundaries:** request-scoped server QueryClient for authenticated prefetch, memory-only browser QueryClient per session, viewer+resource keys, Zod runtime schemas, no duplicated canonical story state, typed domain errors, explicit idempotency command protocol. See [target F1–F5/F11](../../../../docs/engineering/targets/react-next.md) by **exact heading**, not full-file ingestion.
+**Selected future boundaries:** request-scoped server QueryClient for authenticated prefetch, memory-only browser QueryClient per session, viewer+resource keys, Zod runtime schemas, no duplicated canonical story state, typed domain errors, explicit idempotency command protocol. See [target F1–F5/F11](../../../../docs/technical/client/architecture.md) by **exact heading**, not full-file ingestion.
 
 ## Where to expand
 

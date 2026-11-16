@@ -19,6 +19,8 @@ import { spawnSync } from 'node:child_process';
 import { root } from './process.mjs';
 
 export const changesRoot = path.join(root, 'docs', 'changes');
+/** DOC01 compact ledger (selection/index); packets still under docs/changes until G3 move. */
+export const workChangesLedgerRoot = path.join(root, 'work', 'changes', 'ledger');
 
 const SKIP_DIR_NAMES = new Set(['open', 'archive']);
 
@@ -329,6 +331,39 @@ export function runMigration(options = {}) {
     if (changed) {
       writeFileSync(fileAbs, content, 'utf8');
       summary.rewrittenFiles += 1;
+    }
+  }
+
+  // DOC01: append compact ledger rows for newly archived packets.
+  const archived = moves.filter((m) => m.kind === 'archive');
+  if (archived.length > 0) {
+    /** @type {Map<string, typeof archived>} */
+    const byMonth = new Map();
+    for (const move of archived) {
+      const month = monthForLeaf(move.leaf);
+      const list = byMonth.get(month) ?? [];
+      list.push(move);
+      byMonth.set(month, list);
+    }
+    mkdirSync(workChangesLedgerRoot, { recursive: true });
+    for (const [month, monthMoves] of byMonth) {
+      const ledgerPath = path.join(workChangesLedgerRoot, `${month}.md`);
+      const rows = monthMoves
+        .map((m) => {
+          const program = programForLeaf(m.leaf);
+          return `| \`${m.leaf}\` | ${program} | archived | [packet](../../../docs/changes/${m.toRel}/CHANGE.md) |`;
+        })
+        .join('\n');
+      if (!existsSync(ledgerPath)) {
+        writeFileSync(
+          ledgerPath,
+          `# Change ledger ${month}\n\n| Leaf | Program | Note | Link |\n| --- | --- | --- | --- |\n${rows}\n`,
+          'utf8',
+        );
+      } else {
+        writeFileSync(ledgerPath, `${readFileSync(ledgerPath, 'utf8').trimEnd()}\n${rows}\n`, 'utf8');
+      }
+      summary.ledgerAppends = (summary.ledgerAppends ?? 0) + monthMoves.length;
     }
   }
 

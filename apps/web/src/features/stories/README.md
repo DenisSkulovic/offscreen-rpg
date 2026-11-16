@@ -41,7 +41,7 @@ Start: preview succeeded/current -> PUT /stories/:storyId/start
 
 ## Tests, chosen standards and stop rule
 
-- Selected architecture: [F5/F8/F11 target](../../../../../docs/engineering/targets/react-next.md) and [story lifecycle contract](../../../../../docs/technical/story-lifecycle.md). Read relevant **section**, not full file.
+- Selected architecture: [F5/F8/F11 target](../../../../../docs/technical/client/architecture.md) and [story lifecycle contract](../../../../../docs/technical/engine/lifecycle-and-compatibility.md). Read relevant **section**, not full file.
 - Fast cases (`pnpm test:fast`): dirty survives 409; Start GET-first remount without auto-PUT; frozen pace survives retry; missing capture blocks; pending opening polls without generation PUT; story/draft infinite append + rapid-fetch guard; history story A→B isolation.
 - Integrated proof if authorized: [draft browser](../../../../../tools/api-integration/test/drafts.browser.ts) and [Start integration](../../../../../tools/api-integration/test/story-start.integration.ts). [Integration warning](../../../../../tools/api-integration/README.md) explains disposable DB reset.
 - Update this map only when a route, edit/command owner, wire shape or recovery lifecycle changes. Don't duplicate the normative technical contract or annotate every JSX file. No gameplay, visual redesign or live model work is authorized here.

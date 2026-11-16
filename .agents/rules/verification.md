@@ -1,6 +1,6 @@
 # Verification: smallest convincing evidence
 
-**Policy revised for the November 2026 AI-development reset and November 12 execution-economics direction.** Neither _no checks by habit_ nor _full checks after every edit_ is efficient. Choose the **cheapest check capable of catching a plausible regression at a useful boundary**. The [React/Next playbook](../../docs/engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke) defines V0–V4 staged gates. This remains a pre-POC, not a production release.
+**Policy revised for the November 2026 AI-development reset and November 12 execution-economics direction.** Neither _no checks by habit_ nor _full checks after every edit_ is efficient. Choose the **cheapest check capable of catching a plausible regression at a useful boundary**. The [React/Next playbook](../../docs/engineering/frontend-execution-playbook.md#4-verification-ladder-stop-checking-every-keystroke) (soft-retired; skill entry [.agents/skills/frontend-engineering](../../.agents/skills/frontend-engineering/SKILL.md)) defines V0–V4 staged gates. This remains a pre-POC, not a production release.
 
 ## Check cadence: batching by risk, not keystroke
 

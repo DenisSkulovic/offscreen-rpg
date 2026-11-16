@@ -61,4 +61,4 @@ A new pack must have a unique audience/trigger, a coherent mental model, **a rea
 
 Prioritized candidates after measured use: dedicated SQL/query plan forensics, browser accessibility and design-system consistency, network/transport diagnostics, distributed replication/consensus, formal performance measurement, and specialized AI-system evaluation. The new data, caching and release manuals are *first editions*, not exhaustive certifications. Expand coverage from actual overlooked decisions and observed model errors. These are **coverage candidates**, not declarations that those packs already exist.
 
-**Status:** This first edition is source-grounded and link-checked, not proven by actual Claude/Cursor role trials. The [evaluation protocol](../../docs/engineering/coding-agent-evaluation.md) owns quality and cost measurements.
+**Status:** This first edition is source-grounded and link-checked, not proven by actual Claude/Cursor role trials. The [evaluation protocol](../../.agents/references/context-economics.md) owns quality and cost measurements.

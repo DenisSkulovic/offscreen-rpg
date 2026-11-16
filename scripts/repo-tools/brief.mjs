@@ -44,17 +44,19 @@ function currentChange(route, changesDirRelative = 'docs/changes') {
   }
   const changeRoot = path.join(root, ...changesDirRelative.split('/'));
   const absolute = path.resolve(changeRoot, match[1]);
-  const relative = path.relative(changeRoot, absolute);
+  const relativeToRoot = path.relative(root, absolute).split(path.sep).join('/');
   if (
-    relative.startsWith('..') ||
-    path.isAbsolute(relative) ||
-    path.basename(absolute) !== 'CHANGE.md'
+    path.basename(absolute) !== 'CHANGE.md' ||
+    !(
+      relativeToRoot.startsWith('docs/changes/') ||
+      relativeToRoot.startsWith('work/changes/')
+    )
   ) {
     throw new Error(
-      `Current change must point to CHANGE.md inside ${changesDirRelative}.`,
+      'Current change must point to CHANGE.md under docs/changes/ or work/changes/.',
     );
   }
-  return path.relative(root, absolute).split(path.sep).join('/');
+  return relativeToRoot;
 }
 
 try {

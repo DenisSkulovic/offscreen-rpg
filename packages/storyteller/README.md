@@ -27,7 +27,7 @@ Internal `contextInputSchema` and provider `contextRequestSections` are differen
 - **Consequence:** narrates a saved mechanical result and proposes fresh possibilities. It cannot change the receipt or reroll. A **pending consequence** captures an immutable projected outcome and remains private until matching application settlement.
 - **Report:** narrates a frozen historical result without replacing the current passage, offer or continuity state.
 
-Continuation/consequence may propose an active-scene restart, committed only with the validated passage under the publication fence. Mechanical plans may describe only supported effects; structural validity alone does not establish prose truth or enjoyment. See [runtime](../../docs/technical/storyteller-runtime.md).
+Continuation/consequence may propose an active-scene restart, committed only with the validated passage under the publication fence. Mechanical plans may describe only supported effects; structural validity alone does not establish prose truth or enjoyment. See [runtime](../../docs/technical/storyteller/operation-and-controller.md).
 
 ## Schema and transport
 
@@ -43,11 +43,11 @@ Captured policy chooses native JSON schema or evaluation-only JSON-object valida
 
 Notes are source-backed reminders: their referenced non-current passages are mandatory context, while the current body is not duplicated in the evidence array. Retiring a note removes that automatic loading path, not the chronology itself. Canonical catalogues identify unloaded documents explicitly. [Descriptive materialization](src/tasks/descriptive-materialization.ts) (SA09) decides when a gift/relationship/identity patch is warranted versus omitted or rejected; it is not an automatic noun extractor.
 
-The application already selects exact world/rule sections and campaign documents, including narrative-choice dependencies and recall cues. Selection, whole-body byte limits and whole-request pruning must agree; the omission trace distinguishes unavailable material from supplied evidence. Mechanical dependency carriage and progressive identity materialization remain [S3 work](../../docs/history/initiatives/README.md#coding-route). Semantic retrieval and automatic long-history synthesis are not demonstrated capabilities.
+The application already selects exact world/rule sections and campaign documents, including narrative-choice dependencies and recall cues. Selection, whole-body byte limits and whole-request pruning must agree; the omission trace distinguishes unavailable material from supplied evidence. Mechanical dependency carriage and progressive identity materialization remain Continuity work selected via [work/changes](../../work/changes/README.md). Semantic retrieval and automatic long-history synthesis are not demonstrated capabilities.
 
 Ordinary tasks default to one shot. A captured memory recipe can use a bounded multi-round controller: decision rounds request `ask_memory` or `read_memory`, and a protected final round uses the original result schema. Read handles (`m#`/`x#`) differ from provenance citations (`s#`). The application owns retrieval and shared round/read/retained-byte/input/output/cost bounds. Existing retrieval experiments do not establish a reliable default for sustained gameplay.
 
-Read [memory/retrieval](../../docs/engineering/long-story-memory-and-retrieval.md) for strategy, [canonical files](../../docs/technical/canonical-files.md) for authority, and [context/cost](../../docs/technical/context-and-cost.md) for packing and headroom.
+Read [memory/retrieval](../../docs/technical/storyteller/context-and-memory.md) for strategy, [canonical files](../../docs/technical/storyteller/context-and-memory.md) for authority, and [context/cost](../../docs/technical/storyteller/request-context-and-cost.md) for packing and headroom.
 
 ## Content and creative ownership
 
@@ -59,6 +59,6 @@ Shared task instructions own authority/evidence/output invariants. Tone, pace, i
 
 [Policy](src/tasks/policy.ts) prices a conservative request reservation including applicable cache-write premiums. [Resources](src/tasks/resources.ts) defines the captured cumulative envelope; application budget/window accounting enforces it across attempts. Do not mistake this package's request-size check for the whole spending system.
 
-Live transport requires explicit opt-in, resolved authority and [spending-rule](../../.agents/rules/spending.md) reconciliation. Deliberate local live runs have occurred; ordinary tests/CI remain provider-free. The [connected proof](../../docs/engineering/connected-poc-proof.md#latest-evidence--2026-09-24) owns their evidence and limits, not this guide.
+Live transport requires explicit opt-in, resolved authority and [spending-rule](../../.agents/rules/spending.md) reconciliation. Deliberate local live runs have occurred; ordinary tests/CI remain provider-free. The [connected proof](../../docs/engineering/connected-poc-proof.md#latest-evidence--2026-09-24) (routing to [evidence/](../../evidence/README.md)) owns their evidence and limits, not this guide.
 
 Tests under `test/` use compiled output and injected fake providers. Read [verification policy](../../.agents/rules/verification.md) before selecting checks; package commands/exports are in [package.json](package.json).

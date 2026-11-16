@@ -39,7 +39,7 @@ A fresh executor should be able to accept a Change packet without reconstructing
 - **Significant change:** `CHANGE.md` plus `PLAN.md` when dependencies, several independent code slices or a resumable checkpoint justify it.
 - **Large initiative:** retain an overview and pointers to selected Change packets. Do not hand the initiative's entire 30–70 KB dossier to Cursor as an executable instruction.
 
-The selected route is `docs/changes/README.md` (hot queue). Create new packets under `docs/changes/open/YYYY-MM-DD--slug/`. A small selected Change needs only `CHANGE.md`; `PLAN.md` is optional for a resumable execution checkpoint. On **Done** or **Cancelled/superseded**, after the Reconciliation ledger, `git mv` the leaf into `docs/changes/archive/YYYY-MM/<program>/` (month from the date prefix; program from slug: admin, chamber, eng, experience, observability, storyteller, web, other) and repair inbound links—do not leave terminal packets in `open/`.
+The selected route is `work/changes/README.md` (hot queue). Create new packets under `docs/changes/open/YYYY-MM-DD--slug/`. A small selected Change needs only `CHANGE.md`; `PLAN.md` is optional for a resumable execution checkpoint. On **Done** or **Cancelled/superseded**, after the Reconciliation ledger, `git mv` the leaf into `docs/changes/archive/YYYY-MM/<program>/` (month from the date prefix; program from slug: admin, chamber, eng, experience, observability, storyteller, web, other) and repair inbound links—do not leave terminal packets in `open/`.
 
 ## Lifecycle and permissions
 

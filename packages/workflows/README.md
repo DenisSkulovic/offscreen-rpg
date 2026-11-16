@@ -1,6 +1,6 @@
 # Workflows: durable Temporal coordination
 
-`@offscreen/workflows` contains deterministic Temporal workflow definitions and stable workflow/signal identity helpers. It schedules and coordinates **application Activities**. It does not read PostgreSQL, call OpenRouter, decide dice/results or publish gameplay state. The [execution contract](../../docs/technical/execution.md) owns intended retry and delivery semantics.
+`@offscreen/workflows` contains deterministic Temporal workflow definitions and stable workflow/signal identity helpers. It schedules and coordinates **application Activities**. It does not read PostgreSQL, call OpenRouter, decide dice/results or publish gameplay state. The [execution contract](../../docs/technical/platform/execution-and-delivery.md) owns intended retry and delivery semantics.
 
 ## Find the workflow
 

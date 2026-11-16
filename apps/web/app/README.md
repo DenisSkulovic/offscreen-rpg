@@ -33,6 +33,6 @@
 - Initial HTML should contain authorized story text, not a client waterfall. Hydration must not require a snapshot GET before the scene heading; SSE open may still invalidate → GET afterward.
 - Session/Query provider (W15) should not force public/demo pages into client-only rendering; keep the provider inside `(authenticated)`.
 
-**Read deeper only for:** [F1/F2 Next target](../../../docs/engineering/targets/react-next.md) architecture, [client/identity contract](../../../docs/technical/client-and-identity.md) semantics, [server reader map](../src/server/README.md), [transport owner map](../src/lib/README.md) or [integration warning](../../../tools/api-integration/README.md). A route file's 20–60 lines are generally cheaper than the whole architecture spec.
+**Read deeper only for:** [F1/F2 Next target](../../../docs/technical/client/architecture.md) architecture, [client/identity contract](../../../docs/technical/platform/identities-and-access.md) semantics, [server reader map](../src/server/README.md), [transport owner map](../src/lib/README.md) or [integration warning](../../../tools/api-integration/README.md). A route file's 20–60 lines are generally cheaper than the whole architecture spec.
 
 **Maintenance:** update this map when routes, Next page authority, client islands, error/loading boundaries or auth placement change. No need to rewrite it for local JSX layout work.

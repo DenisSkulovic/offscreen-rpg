@@ -27,7 +27,7 @@ The central objects are not “database tables” or “queues.” They are **in
 
 A “flexible” field without validation makes writes cheap but interpretation uncertain; dozens of normalized tables for rarely read descriptive fields make queries and migrations expensive. Choose the representation from _access patterns, invariant enforcement and evolution_, not a universal favorite database.
 
-**Offscreen RPG:** [technical data](../../docs/technical/data.md) owns current SQL semantics; [canonical files](../../docs/technical/canonical-files.md) owns the file-based target. A manual must not pretend all that migration work is complete.
+**Offscreen RPG:** [technical data](../../docs/technical/platform/data-and-persistence.md) owns current SQL semantics; [canonical files](../../docs/technical/storyteller/context-and-memory.md) owns the file-based target. A manual must not pretend all that migration work is complete.
 
 ## 2. Choose concurrency control from the invariant
 

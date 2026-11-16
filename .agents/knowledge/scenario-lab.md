@@ -126,4 +126,4 @@ Evaluate **decision quality**, not the number of bullets or risk names:
 
 A strong answer may be short. A long generic list that doesn't change the architecture gets no credit.
 
-**Status:** test inputs for future agent evaluation only; no baseline or observed pass rate is claimed. See [coding-agent evaluation](../../docs/engineering/coding-agent-evaluation.md).
+**Status:** test inputs for future agent evaluation only; no baseline or observed pass rate is claimed. See [coding-agent evaluation](../../.agents/references/context-economics.md).

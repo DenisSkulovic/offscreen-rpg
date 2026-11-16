@@ -1,7 +1,7 @@
 # Chamber local launcher | source and mode map
 
 **Current:** [`main.ts`](main.ts) is a ~1,518-line local launcher, not the game engine. CH01–CH04 add catalogue, [`lab/bench.ts`](lab/bench.ts), semantic specimens, and Sandbox URL guards (`offscreen_chamber_run_*`). Manual launcher DB remains `offscreen_chamber` / `offscreen_story_local`.
-**Selected future:** [Chamber target](../../../docs/engineering/targets/chamber-laboratory.md) and [technical scenario protocol](../../../docs/technical/chamber-lab-protocol.md) for remaining lanes without breaking safe existing CLI options.
+**Selected future:** [Chamber target](../../../docs/technical/lab/chamber-and-fixtures.md) and [technical scenario protocol](../../../docs/technical/lab/experiment-protocol.md) for remaining lanes without breaking safe existing CLI options.
 
 | Entrypoint/use | Start in source | Guard or behavior to preserve |
 | --- | --- | --- |

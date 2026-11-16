@@ -7,7 +7,7 @@ description: Audit, troubleshoot and redesign Offscreen RPG's coding-agent harne
 
 Trigger only for **coding-agent environment** tasks or observed skill/rule/context problems, never runtime Storyteller tuning.
 
-1. Start with the independent standard in [coding-agent target](../../../docs/engineering/coding-agent-target-standard.md) and the [harness architecture](../../HARNESS.md). Use a relevant [primary-source entry](../../references/industry-practices.md); don't simply look at the existing config and "improve" it randomly.
+1. Start with the independent standard in [coding-agent target](../../../.agents/HARNESS.md) and the [harness architecture](../../HARNESS.md). Use a relevant [primary-source entry](../../references/industry-practices.md); don't simply look at the existing config and "improve" it randomly.
 2. Inspect which files **automatically** load vs which are merely discoverable: `AGENTS.md`, actual `CLAUDE.md` `@AGENTS.md` import, Cursor `alwaysApply`/description/globs, `.agents/skills` and `.claude/skills` adapters. Note client-version unknowns rather than inventing behavior.
 3. Diagnose one observed problem: duplicate always-on policy, bad skill trigger, missing expert knowledge, wrong spec routing, stale docs, repeated reads or unexpectedly expensive tool setup. Compare at least the keep-current and targeted-change alternatives.
 4. Edit only the **smallest harness-owned surface**. Do not modify `apps/`, `packages/`, game billing/prompt code, or product intent without separate explicit scope. Skills are not decorative; avoid adding more without a distinct trigger.

@@ -1,6 +1,6 @@
 # Cache: optional Redis projection adapter
 
-`@offscreen/cache` provides an **optional** Redis-backed adapter for application read caching. It is a performance dependency, not a new authority for story state, choices, billing or time. [Persistence and caching](../../docs/technical/persistence-and-caching.md) owns the intended behavior; application [read-cache interfaces](../application/src/cache/read-cache.ts) own the consumer contract.
+`@offscreen/cache` provides an **optional** Redis-backed adapter for application read caching. It is a performance dependency, not a new authority for story state, choices, billing or time. [Persistence and caching](../../docs/technical/platform/data-and-persistence.md) owns the intended behavior; application [read-cache interfaces](../application/src/cache/read-cache.ts) own the consumer contract.
 
 ## Find and reason about the adapter
 

@@ -13,7 +13,7 @@ description: Review or design React 19 and Next.js App Router implementation dec
 
 ## Read narrowly
 
-Open the affected product/technical heading, then route through `apps/web/src/features/` and the corresponding transport/API contract. Read the installed framework versions. Consult source knowledge in `docs/engineering/coding-agent-knowledge.md`; first-party details: [React effects](https://react.dev/learn/you-might-not-need-an-effect), [state snapshots](https://react.dev/learn/state-as-a-snapshot), [Next.js Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Vercel interface guidelines](https://vercel.com/design/guidelines), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/).
+Open the affected product/technical heading, then route through `apps/web/src/features/` and the corresponding transport/API contract. Read the installed framework versions. Consult source knowledge in `.agents/README.md`; first-party details: [React effects](https://react.dev/learn/you-might-not-need-an-effect), [state snapshots](https://react.dev/learn/state-as-a-snapshot), [Next.js Server/Client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Vercel interface guidelines](https://vercel.com/design/guidelines), [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/).
 
 ## Professional decision reference (select, don't preload)
 

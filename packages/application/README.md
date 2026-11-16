@@ -28,7 +28,7 @@ Start in `storyteller/context.ts:loadStorytellerContext` for current SQL-owned s
 
 Draft → [scripted-openings facade](src/generations/scripted-openings.ts) → [profiled opening admission](src/storyteller/openings.ts) → saved task/outbox → runtime → reviewable candidate → [Start](src/storyteller/start.ts). The facade's historical name does not mean profiled openings are always scripted.
 
-Admission captures the draft revision, profile, execution policy and context. For mechanical starts it also captures authorized plans: the model can select a compact reference, and validation substitutes the immutable plan; fresh proposals are admitted separately. Review exposes public labels. Start persists the reviewed plans and bootstraps canonical documents; it does not recompose the catalogue or execute an offered action. [Story lifecycle](../../docs/technical/story-lifecycle.md) owns the contract.
+Admission captures the draft revision, profile, execution policy and context. For mechanical starts it also captures authorized plans: the model can select a compact reference, and validation substitutes the immutable plan; fresh proposals are admitted separately. Review exposes public labels. Start persists the reviewed plans and bootstraps canonical documents; it does not recompose the catalogue or execute an offered action. [Story lifecycle](../../docs/technical/engine/lifecycle-and-compatibility.md) owns the contract.
 
 ## Mechanical selection and consequence
 
@@ -39,9 +39,9 @@ Admission captures the draft revision, profile, execution policy and context. Fo
 
 [Overlap policy](src/campaign/action-overlap.ts) may prepare a consequence from an immutable projected outcome before its timer finishes. That candidate stays private until matching receipt-gated settlement. It is not evidence of an already-earned effect.
 
-Extended activities have three distinct follow-ups: quiet factual completion, a historical report, or a controlling scene. Report publication changes the view without replacing current decisions. An accepted itinerary stores exact authored terms; continuation rechecks them and the horizon. A controlling scene blocks the itinerary until a matching fresh offer is explicitly selected. See [rules/activities](../../docs/technical/rules-and-activities.md), [committed time](../../docs/technical/committed-time.md) and [solo integration](../../docs/technical/solo-gameplay-contract.md).
+Extended activities have three distinct follow-ups: quiet factual completion, a historical report, or a controlling scene. Report publication changes the view without replacing current decisions. An accepted itinerary stores exact authored terms; continuation rechecks them and the horizon. A controlling scene blocks the itinerary until a matching fresh offer is explicitly selected. See [rules/activities](../../docs/technical/engine/mechanics-and-capabilities.md), [committed time](../../docs/technical/engine/chronology-and-activities.md) and [solo integration](../../docs/technical/engine/authority-and-transitions.md).
 
-**Current continuity gap:** narrative choices can carry canonical document dependencies, including same-result changes. Mechanical plans still lack that sidecar. Follow [S3's selected route](../../docs/history/initiatives/README.md#coding-route); do not assume existing narrative handoff covers `campaign/actions.ts`.
+**Current continuity gap:** narrative choices can carry canonical document dependencies, including same-result changes. Mechanical plans still lack that sidecar. Follow Continuity work via [work/changes](../../work/changes/README.md) (legacy S3 dossier is history only); do not assume existing narrative handoff covers `campaign/actions.ts`.
 
 ## Campaign transition boundary
 
@@ -57,13 +57,13 @@ Durable lifecycle events belong in the game transaction. [Runtime logging](src/r
 
 Exact world/rule sections, narrative-choice document dependencies and recall cues already feed bounded selection. Complete bodies are loaded with explicit omission traces; catalogue visibility does not mean a body was supplied. No general automatic identity materialization follows merely from prose mentions. [Canonical search](src/storyteller/canonical-search.ts) and the [memory exploration controller](src/storyteller/memory-exploration-controller.ts) provide deeper retrieval under a captured recipe; ordinary turns remain one-shot by default. Memory exploration reuses a [root-keyed lexical index cache](src/storyteller/lexical-story-index-cache.ts) (optional durable [local store](src/storyteller/local-lexical-story-index-store.ts)); the index is never story authority and cannot cross forks or stale roots. Provider admission uses a [deterministic evidence-need / recipe selector](src/storyteller/adaptive-recipe.ts): high allowance alone does not escalate to memory exploration.
 
-Read [the Storyteller guide](../storyteller/README.md) for provider projection versus internal context and [memory/retrieval](../../docs/engineering/long-story-memory-and-retrieval.md) for design and limits.
+Read [the Storyteller guide](../storyteller/README.md) for provider projection versus internal context and [memory/retrieval](../../docs/technical/storyteller/context-and-memory.md) for design and limits.
 
 ## Persistence and read caching
 
 [Story documents](src/stories/documents.ts) stages immutable objects before a short root-fenced transaction. PostgreSQL selects the committed manifest root. [Passage documents](src/stories/passage-documents.ts) stages bootstrap/publication objects and resolves passage content. Reads use `contentDocumentHash` where present and retain an SQL-content fallback; do not claim all passage authority is still SQL-owned or that every path has completed the transfer.
 
-[Story reads](src/stories/reads.ts) projects snapshots under repeatable-read isolation. Optional caching stores only authorized validated projections through [the cache port](src/cache/read-cache.ts); Redis lifecycle lives in `@offscreen/cache`. Commands, locks, private plans and accounting never take authority from Redis. See [canonical files](../../docs/technical/canonical-files.md) and [persistence/cache](../../docs/technical/persistence-and-caching.md).
+[Story reads](src/stories/reads.ts) projects snapshots under repeatable-read isolation. Optional caching stores only authorized validated projections through [the cache port](src/cache/read-cache.ts); Redis lifecycle lives in `@offscreen/cache`. Commands, locks, private plans and accounting never take authority from Redis. See [canonical files](../../docs/technical/storyteller/context-and-memory.md) and [persistence/cache](../../docs/technical/platform/data-and-persistence.md).
 
 ## Execution, failure and retry
 
@@ -71,7 +71,7 @@ Read [the Storyteller guide](../storyteller/README.md) for provider projection v
 
 [Task admission](src/storyteller/task-admission.ts) intersects effective usage authority with the route and captures recipe/envelope limits. [Budget](src/storyteller/budget.ts) owns operation/attempt reservations and settlement; [window accounting](src/storyteller/window-accounting.ts) reserves/debits usage windows. [Dispatch authority](src/storyteller/dispatch-authority.ts) rechecks captured authority immediately before transport. Commercial product/route selection remains separate work; synthetic profiles are not subscriptions.
 
-[Recovery](src/storyteller/recovery.ts) distinguishes an unsent retry, bounded explicit repair after settled invalid output, publication retry, and uncertain delivery. Uncertainty retains liability and blocks provider work; a quota reset does not clear it. Accounting telemetry belongs to the existing attempt/operation records, not a parallel ledger. Follow [usage policy](../../docs/technical/usage-policy.md) and [provider dispatch](../../docs/technical/provider-dispatch-review.md).
+[Recovery](src/storyteller/recovery.ts) distinguishes an unsent retry, bounded explicit repair after settled invalid output, publication retry, and uncertain delivery. Uncertainty retains liability and blocks provider work; a quota reset does not clear it. Accounting telemetry belongs to the existing attempt/operation records, not a parallel ledger. Follow [usage policy](../../docs/technical/platform/spending-and-entitlements.md) and [provider dispatch](../../docs/technical/storyteller/provider-boundary.md).
 
 [Outbox dispatch](../../apps/worker/src/outbox/dispatch.ts) and [Activity bindings](../../apps/worker/src/activities/index.ts) connect saved work to these operations. Workflow payloads identify work; they do not carry alternate game authority.
 
@@ -83,4 +83,4 @@ Chamber layers explicit development controls over ordinary operations. Its [Stor
 
 ## Contracts and continuation point
 
-[Progress](../../docs/progress.md) owns coverage and [the feature route](../../docs/history/initiatives/README.md) selects unfinished work. This guide owns source navigation. Detailed invariants live in the linked contracts; update this map when an entry point or surprising cross-file boundary changes.
+[Progress](../../STATUS.md) owns coverage and [work/changes](../../work/changes/README.md) selects unfinished code work. This guide owns source navigation. Detailed invariants live in the linked contracts; update this map when an entry point or surprising cross-file boundary changes.

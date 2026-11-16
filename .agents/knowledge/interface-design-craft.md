@@ -42,7 +42,7 @@ Produce **one sentence of visual direction with consequences**, not “make it s
 
 Ask which pattern best supports **the next meaningful user action**, and which information must remain accessible without dominating the screen. A hybrid may be appropriate; “mix them all” isn't a design rationale.
 
-For Offscreen RPG, don't assume every world uses a human body, inventory, combat, a map or medieval atmosphere. Product authority: [player experience](../../docs/product/journeys/player-experience.md), [storytelling](../../docs/product/storytelling/storytelling.md). This manual supplies options, not game rules.
+For Offscreen RPG, don't assume every world uses a human body, inventory, combat, a map or medieval atmosphere. Product authority: [player experience](../../docs/product/experience/principles.md), [storytelling](../../docs/product/storyteller/behavior-and-quality.md). This manual supplies options, not game rules.
 
 ## 3. Compose attention and content
 

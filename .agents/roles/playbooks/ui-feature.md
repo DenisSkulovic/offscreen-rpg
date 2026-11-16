@@ -4,7 +4,7 @@
 
 ## Example objective
 
-"A returning player should understand current situation and pending work without a wall of telemetry, and recover safely from a failed narration request." This is **illustrative**, not an approved implementation task or new product requirement. The real goal must be approved against [player experience](../../../docs/product/journeys/player-experience.md) and [client/identity technical contract](../../../docs/technical/client-and-identity.md).
+"A returning player should understand current situation and pending work without a wall of telemetry, and recover safely from a failed narration request." This is **illustrative**, not an approved implementation task or new product requirement. The real goal must be approved against [player experience](../../../docs/product/experience/principles.md) and [client/identity technical contract](../../../docs/technical/platform/identities-and-access.md).
 
 | Gate                        | Role(s) and best-fit context                                                          | Artifact / decision                                                              | Work can proceed when...                                         |
 | --------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -41,7 +41,7 @@ After code: frontend reviewer can inspect the changed implementation while a **d
 ```text
 ROLE: Test strategist (read-only); NEXT CONSUMER: Cursor implementer
 TASK: Turn the approved pending/failed Story UI contract into minimal deterministic cases.
-AUTHORITY: docs/product/journeys/player-experience.md and docs/technical/client-and-identity.md
+AUTHORITY: docs/product/experience/principles.md and docs/technical/platform/identities-and-access.md
 READ FIRST: apps/web/README.md, story-transport.ts, play/view.tsx
 DELIVER: happy-path state transition, stale response ordering, duplicate submit,
          genuine uncertain-provider UI and keyboard/focus expected behavior.

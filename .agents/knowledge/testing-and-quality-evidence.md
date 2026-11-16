@@ -184,7 +184,7 @@ The test strategist should return a small matrix:
 
 **Reviewer's job:** ask _which plausible wrong implementation still passes this plan?_ If there's an obvious answer, strengthen one or two tests instead of adding 40 redundant cases.
 
-**Local evidence routes:** [engineering QA](../../docs/engineering/qa-journeys.md), [code-navigation](../../docs/engineering/code-navigation.md), [integration workspace](../../tools/api-integration/README.md), [verification rule](../rules/verification.md), [connected proof](../../docs/engineering/connected-poc-proof.md).
+**Local evidence routes:** [engineering QA](../../docs/product/gameplay/acceptance-scenarios.md), [code-navigation](../../docs/README.md), [integration workspace](../../tools/api-integration/README.md), [verification rule](../rules/verification.md), [connected proof](../../evidence/README.md).
 
 **Primary references:** [Practical Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html), [Playwright best practices](https://playwright.dev/docs/best-practices). **Deeper study:** [frontend testing and reliability](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE240-frontend-engineering/SE240-L06-testing-and-reliability-in-the-frontend.md), [evaluation of AI software](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/AI/AI410-agentic-ai-systems/AI410-L06-evaluating-nondeterministic-software.md), [business workflow design](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/CS/CS430-distributed-systems/CS430-L05-designing-reliable-business-workflows.md).
 

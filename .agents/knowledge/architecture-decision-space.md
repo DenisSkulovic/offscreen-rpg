@@ -141,7 +141,7 @@ An ADR is valuable when a future agent would otherwise relitigate a consequentia
 
 **Competing designs:** exact canonical handle/section reads; lexical index; hybrid search; embedding retrieval; linked episode synthesis. Decide from lookup queries, corpus scale, relevance/recall goals, version invalidation and source provenance. Search is only one stage: discovery → selected current version → full evidence → request packing → model admission.
 
-**Relevant spec:** [canonical files](../../docs/technical/canonical-files.md) and [long-story research](../../docs/engineering/long-story-memory-and-retrieval.md). This case is _not_ permission to change the game agent now.
+**Relevant spec:** [canonical files](../../docs/technical/storyteller/context-and-memory.md) and [long-story research](../../docs/technical/storyteller/context-and-memory.md). This case is _not_ permission to change the game agent now.
 
 ### Case B: “The same components appear on several screens. Put all state in global Context.”
 

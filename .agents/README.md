@@ -1,6 +1,6 @@
 # Agent knowledge and operating model
 
-Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [docs/changes/README.md](../docs/changes/README.md) (migrating to [work/changes](../work/changes/README.md)). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
+Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md) (migrating to [work/changes](../work/changes/README.md)). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
 
 **DOC01:** permanent product/technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from `docs/programs/**/handoff` or expired trial START-HERE files.
 

@@ -1,8 +1,8 @@
 # Chamber: local developer and Storyteller evaluation launcher
 
-`@offscreen/chamber` composes an **explicitly local developer harness** around ordinary API/web/worker/application flows. It is not the player's production gameplay API, and its fixture/probe behavior must not be promoted into universal game rules. See [QA journeys](../../docs/engineering/qa-journeys.md), [development](../../docs/operations/development.md) and [provider dispatch review](../../docs/technical/provider-dispatch-review.md).
+`@offscreen/chamber` composes an **explicitly local developer harness** around ordinary API/web/worker/application flows. It is not the player's production gameplay API, and its fixture/probe behavior must not be promoted into universal game rules. See [QA journeys](../../docs/product/gameplay/acceptance-scenarios.md), [development](../../docs/runbooks/local-development.md) and [provider dispatch review](../../docs/technical/storyteller/provider-boundary.md).
 
-**Selected laboratory:** [Chamber C01–C16](../../docs/engineering/targets/chamber-laboratory.md) and [CH01–CH16 code program](../../docs/engineering/chamber-program.md). **CH01 catalogue + CH02 Bench** are implemented; Sandbox/Connected/packet/live lanes remain future CH packets. For source investigations use the small [launcher mode map](src/README.md), not 1,500 lines of main.ts.
+**Selected laboratory:** [Chamber C01–C16](../../docs/technical/lab/chamber-and-fixtures.md) and [CH01–CH16 code program](../../docs/technical/lab/chamber-and-fixtures.md). **CH01 catalogue + CH02 Bench** are implemented; Sandbox/Connected/packet/live lanes remain future CH packets. For source investigations use the small [launcher mode map](src/README.md), not 1,500 lines of main.ts.
 
 ## Find the inspection mode
 

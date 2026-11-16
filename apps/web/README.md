@@ -1,10 +1,10 @@
 # Web: Next.js player interface
 
-`@offscreen/web` owns presentation, forms and interaction with **published server projections**. It is not a second gameplay engine, clock, dice roller or provider-billing authority. Before changing the player experience, read [product UI intent](../../docs/product/journeys/player-experience.md); [client and identity](../../docs/technical/client-and-identity.md) owns intended browser/session boundaries.
+`@offscreen/web` owns presentation, forms and interaction with **published server projections**. It is not a second gameplay engine, clock, dice roller or provider-billing authority. Before changing the player experience, read [product UI intent](../../docs/product/experience/principles.md); [client and identity](../../docs/technical/platform/identities-and-access.md) owns intended browser/session boundaries.
 
 ## Find the owning surface in one hop
 
-**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These describe the **current code**, not TanStack/RHF/SSE as already implemented. The [selected architecture](../../docs/engineering/targets/react-next.md) is a different, future-state owner.
+**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These describe the **current code**, not TanStack/RHF/SSE as already implemented. The [selected architecture](../../docs/technical/client/architecture.md) is a different, future-state owner.
 
 | Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |
@@ -15,7 +15,7 @@
 | Draft creation, opening, Start, list pagination | [Stories owner map](src/features/stories/README.md) (W08/W09/W10) | `draft-editor.tsx` / `opening-preview.tsx` |
 | Chamber inspector and QA | [Chamber owner map](src/features/developer-tools/chamber/README.md) (CH01–CH16; CH11 UI after W15; W12 superseded) | `use-chamber-play.ts` and conditional Nest bootstrap |
 | Connected real browser/DB evidence | [Test source map](../../tools/api-integration/test/README.md) (W14/W19) | One test file; integration runner **resets** disposable test DB |
-| Local scripts, Turbo, CI, Storybook | [Execution playbook](../../docs/engineering/frontend-execution-playbook.md) (W01/W18/W20/W21) | Exact script/manifest; no full app start for pure React tests |
+| Local scripts, Turbo, CI, Storybook | [Execution playbook](../../.agents/skills/frontend-engineering/SKILL.md) (W01/W18/W20/W21) | Exact script/manifest; no full app start for pure React tests |
 
 **Fast context test:** If the chosen map plus Change cannot name the input, state owner, output and relevant failure path, **report the missing fact to ChatGPT** rather than starting an unbounded Cursor search.
 

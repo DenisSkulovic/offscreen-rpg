@@ -1,6 +1,6 @@
 # Application developer tooling | source map
 
-**Current (source-inspected 2026-11-12, code baseline `470a5df`):** `createChamber` uses **real** story application operations for five fixed `chamber.v1–v5` starts/responses; `createChamberInspector` loads a rich owned snapshot/SQL diagnosis; `createQaJourneys` stores **manual** QA stage evidence. They do **not** form a generic state materializer or scenario runner. **Future (not implemented):** [Chamber laboratory target](../../../../docs/engineering/targets/chamber-laboratory.md) and [typed protocol](../../../../docs/technical/chamber-lab-protocol.md).
+**Current (source-inspected 2026-11-12, code baseline `470a5df`):** `createChamber` uses **real** story application operations for five fixed `chamber.v1–v5` starts/responses; `createChamberInspector` loads a rich owned snapshot/SQL diagnosis; `createQaJourneys` stores **manual** QA stage evidence. They do **not** form a generic state materializer or scenario runner. **Future (not implemented):** [Chamber laboratory target](../../../../docs/technical/lab/chamber-and-fixtures.md) and [typed protocol](../../../../docs/technical/lab/experiment-protocol.md).
 **Start here:** one owner below, not this entire directory. **No player/game authority is moved into Chamber** simply because a test needs to set up a state.
 
 | Need / scenario Change | Actual first source | Important existing property |
@@ -27,7 +27,7 @@
 | Replay/compare (CH16) | [`lab/replay-compare.ts`](lab/replay-compare.ts) | Replay manifests, named invariant compare, honest C01–C16 evidence map |
 | Storyteller fault seam | [`storyteller-control.ts`](storyteller-control.ts) and `createChamber.controlStoryteller` | arm-hold/fail/release/clear for next pending consequence, not universal fault scheduler |
 | Production story commit | [story façade](../stories/index.ts), [story persistence](../stories/persistence.ts) | Must remain authority for story revisions/receipts; no Chamber-owned rules fork |
-| Lab program status | [Chamber program](../../../../docs/engineering/chamber-program.md) | CH01–CH16 Done; live Sandbox + Connected stack proven locally; paid live-provider release still explicit |
+| Lab program status | [Chamber program](../../../../docs/technical/lab/chamber-and-fixtures.md) | CH01–CH16 Done; live Sandbox + Connected stack proven locally; paid live-provider release still explicit |
 
 **Proof route:** [real API integration](../../../../tools/api-integration/test/README.md), select `stories-core.integration.ts`, `stories-http.integration.ts` or `storyteller.integration.ts` by behavior. A test can reset disposable `offscreen_auth_test`; never run it reflexively. **Expansion rule:** read a full current module only if a selected CH packet modifies it; later technical contracts are read by exact heading.
 

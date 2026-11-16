@@ -45,7 +45,7 @@ A **Git tag, image tag and container digest** are different identifiers. A mutab
 
 **Do not prescribe Kubernetes as proof of seriousness.** A pre-POC monorepo may be better served by Docker Compose and a small hosted environment. An AI coding agent should be able to explain what reliability or scaling need justifies each extra moving part, and the _smaller valid alternative_.
 
-For a future hosted Offscreen RPG, [delivery and validation](../../docs/technical/delivery-and-validation.md) defines current intended directions. This manual doesn't authorize changing that architecture.
+For a future hosted Offscreen RPG, [delivery and validation](../../docs/technical/platform/deployment-and-compatibility.md) defines current intended directions. This manual doesn't authorize changing that architecture.
 
 ## 3. Build provenance, identity and environment
 
@@ -110,7 +110,7 @@ A Temporal workflow may outlive several application deployments; changing determ
 
 Suppose a release swaps the code after an expensive model request was dispatched but before its response/publishing step. The new worker must reconcile the **same durable attempt** under correct authority, not call the provider again because old process disappeared. A deploy coordinator can restart workers, but only application operation state and provider evidence decide billability.
 
-**The right layer:** release engineering manages process lifecycle, compatibility and rollout. The [application/Storyteller contracts](../../docs/technical/storyteller-runtime.md) decide business publication, attribution and cost.
+**The right layer:** release engineering manages process lifecycle, compatibility and rollout. The [application/Storyteller contracts](../../docs/technical/storyteller/operation-and-controller.md) decide business publication, attribution and cost.
 
 ## 6. Rollback is a business and data protocol
 

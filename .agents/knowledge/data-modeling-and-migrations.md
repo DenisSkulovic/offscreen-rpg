@@ -48,7 +48,7 @@ A price at booking time should survive later catalog price changes. A snapshot i
 | Dedicated search index            | Ranking/fuzzy retrieval over lots of content                                                     | Freshness, version/canonical-source references, eventual convergence                           |
 | Cache                             | Derived fast read when DB remains authority                                                      | TTL, eviction, stampede, privacy, invalidation and stale publication                           |
 
-**A common false dilemma:** “relational database versus documents.” The same product can use SQL as transaction/identity owner and immutable documents as long-form source content, with a **single atomic selected root**. That doesn't authorize a second mechanical-state writer. See [canonical files](../../docs/technical/canonical-files.md) and [data contract](../../docs/technical/data.md).
+**A common false dilemma:** “relational database versus documents.” The same product can use SQL as transaction/identity owner and immutable documents as long-form source content, with a **single atomic selected root**. That doesn't authorize a second mechanical-state writer. See [canonical files](../../docs/technical/storyteller/context-and-memory.md) and [data contract](../../docs/technical/platform/data-and-persistence.md).
 
 ### Normalization versus denormalization
 
@@ -135,7 +135,7 @@ A DDL command can be fast **once it gets a lock** but wait behind a long transac
 
 **Critical integration detail:** a migration runner that wraps **every migration in a transaction** is not automatically compatible with PostgreSQL's concurrent index build. Confirm the actual runner contract; split operations or use a supported mode deliberately. Do not work around the PostgreSQL rule by inventing unsupported SQL.
 
-**Offscreen RPG ownership:** [DB package](../../packages/db/README.md), migration files and [development safety](../../docs/operations/development.md) are the local implementation maps. The current project may intentionally use destructive disposable-db operations for POC testing. Those procedures **do not transfer to a live or non-disposable DB**.
+**Offscreen RPG ownership:** [DB package](../../packages/db/README.md), migration files and [development safety](../../docs/runbooks/local-development.md) are the local implementation maps. The current project may intentionally use destructive disposable-db operations for POC testing. Those procedures **do not transfer to a live or non-disposable DB**.
 
 ## 7. Review and verification contract
 

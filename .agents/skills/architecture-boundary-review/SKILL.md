@@ -13,7 +13,7 @@ For a nontrivial change, review the needed section in [architecture decision spa
 
 ## Select the contract and follow one vertical route
 
-1. State the player/developer problem and acceptance in two sentences. Read only the affected product page from `docs/README.md`, technical owner from `docs/technical/`, and actual source entry from `docs/engineering/code-navigation.md`. Architecture design describes _intended_ components; package manifests/exports and executed code establish _present_ wiring.
+1. State the player/developer problem and acceptance in two sentences. Read only the affected product page from `docs/README.md`, technical owner from `docs/technical/`, and actual source entry from `docs/README.md`. Architecture design describes _intended_ components; package manifests/exports and executed code establish _present_ wiring.
 2. Trace one real input to authoritative operation, mutation, publication/public projection and the relevant duplicate/stale/failure path. Record source **paths and symbols**, not 2,000 lines of copied code. Search filenames/symbols first. One concrete trace beats multiple general architecture essays.
 3. Check these actual boundaries before inventing new abstractions:
 

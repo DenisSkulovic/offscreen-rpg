@@ -1,6 +1,6 @@
 # Status | demonstrated boundary
 
-**Owner (DOC01):** single dated implemented/evidenced dashboard. Replaces `docs/progress.md` as the orientation source for `pnpm repo:brief` (progress remains a compatibility stub until P6).
+**Owner (DOC01):** single dated implemented/evidenced dashboard. Replaces `STATUS.md` as the orientation source for `pnpm repo:brief` (progress remains a compatibility stub until P6).
 
 ## Orientation
 
@@ -9,7 +9,7 @@
 **What worked (historical gameplay, Sep 24 2026):** Six successful Sol generations, exact 1,800-fictional-second warehouse shift, six septims paid once, coherent short-term conversation. Deterministic mechanics, saved generation/publication, canonical storage and bounded provider accounting are connected. October 23 rediscovery corrected the earlier “no notes/lost all recall” diagnosis without a new live run.
 
 **Current development priority:**
-1. Selection owner: [docs/changes/README.md](docs/changes/README.md) (migrating to [work/changes/](work/changes/README.md)). **Current change:** [DOC01](docs/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md). QA-SF01 remains **Blocked** open.
+1. Selection owner: [work/changes/README.md](work/changes/README.md) (packets still under [docs/changes/](docs/changes/README.md) until G3 move). **Current change:** [DOC01](docs/changes/open/2026-11-16--doc01-documentation-architecture/CHANGE.md). QA-SF01 remains **Blocked** open.
 2. Open product/governance gaps (not auto-authorized): production Support grant steward; **OBS00-B** default-worker entitlement; OBS04 E0; live Story trial only with a **fresh** spend cap.
 3. Prefer new product/technical subject owners; do not treat stale “Proposed / no code” banners or expired trial handoffs as cold-start authority.
 

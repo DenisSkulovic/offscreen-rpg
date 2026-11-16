@@ -4,6 +4,7 @@
 
 ## Current checkpoint
 
-- P1–P5 committed. P6 **no-loss gate** open: [P6-NO-LOSS-GATE.md](P6-NO-LOSS-GATE.md) — G1–G6 still block `rm` of programs/engineering/history/changes/operations.
-- Soft-retired routers: `docs/programs`, `docs/engineering`, `docs/history` indexes; `NOTICE.md` legal home; archive ledger `work/changes/ledger/2026-11.md` (109 packets); `DOC01_TAXONOMY_STRICT=1` available on docs-health.
-- **Next:** clear G1–G3 (inbound rewrite, claim certify, work/changes tool move) before any tree deletion; then P7 gardening + Done receipt. No paid providers.
+- P1–P5 committed. P6 soft-retire landed; hard delete still gated: [P6-NO-LOSS-GATE.md](P6-NO-LOSS-GATE.md).
+- **G1/G3 partial:** high-traffic inbound rewritten via `work/designs/open/doc01-migration/rewrite-inbound-canonical.mjs`; `work/changes` owns Current change; `brief.mjs` dual-root; `archive-changes.mjs` ledger append; session writers → `work/sessions/`.
+- Residual G1 hits = OBS evidence still under programs, history/initiatives provenance, engineering audits (not yet promoted).
+- **Next:** G2 priority claim certify + copy OBS evidence into `evidence/`; finish G3 packet root move; then G4–G6. No paid providers. No tree deletion.

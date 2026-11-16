@@ -17,15 +17,17 @@
 | Archive compact index | `work/changes/ledger/2026-11.md` (109 packets) |
 | File-router dispositions | 0 PENDING in local inventory (heading stubs ≠ full claim certify) |
 | `check_docs` | 0 problems on current tree |
+| G1 high-traffic inbound (partial) | `rewrite-inbound-canonical.mjs` + selection/session rules retargeted; remaining hits are soft-retire provenance, audits, initiatives, OBS evidence not yet copied |
+| G3 selection dual-root (partial) | `work/changes/README.md` owns Current change; `brief.mjs` prefers it; `docs/changes/README.md` defers; `archive-changes.mjs` appends ledger on `--apply`. Packets still physically under `docs/changes/` |
 
 ## Blocked — keep legacy trees
 
 | Gate | Why blocked | Exit criterion |
 | --- | --- | --- |
-| G1 Inbound path fanout | ~120 tracked files still mention `docs/programs|engineering|history|operations` (plus dense in-tree links) | Loaders + package/.agents maps rewritten; `git grep` of live loaders = 0 mandatory hits |
+| G1 Inbound path fanout | Residual non-docs hits (~programs evidence, history/initiatives, engineering audits/targets stubs, intentional soft-retire mentions) | Live loaders + package/.agents **mandatory** maps = 0 hits on paths that will be deleted; remaining = provenance-only or owner-waived |
 | G2 Claim-level certification | Most program atoms still `[heading stub]`; dual-authority merges incomplete for Admin/OBS deep essays | Domain-by-domain `resolved=true` or explicit DROP with Git pointer |
-| G3 Change queue still in `docs/changes` | `archive-changes.mjs`, tests, and Current change resolution bind to `docs/changes` | Tooling dual-root or full move to `work/changes` with green dry-run |
-| G4 History minutes / legal | Minutes not fully promoted; legal attribution must not vanish with `history/` | NOTICE/legal home + sessions promotion rule applied |
+| G3 Change packet move | Packets + archiver still rooted at `docs/changes`; only selection/ledger dual-rooted | Tooling dual-root or full move to `work/changes` with green dry-run |
+| G4 History minutes / legal | Minutes not fully promoted; legal attribution must not vanish with `history/` | NOTICE/legal home + sessions promotion rule applied (writers → `work/sessions/`; content promotion still open) |
 | G5 Playthroughs / research | `docs/technical/playthroughs` + engineering manuals not fully historicized to evidence/research | Explicit example/research owners + stub routers |
 | G6 Taxonomy hard gate | `docs-health` taxonomy is **advisory** (LEGACY lines) | Flip to fail after deletions; negative fixture test passes |
 
@@ -35,6 +37,7 @@
 - Continue promoting unique sections into canonical owners
 - Grow `work/changes/ledger` and `evidence/` without deleting sources
 - Keep compatibility stubs on flat technical/product paths
+- Selection ownership under `work/changes/`; new session notes under `work/sessions/`
 
 ## Forbidden now
 

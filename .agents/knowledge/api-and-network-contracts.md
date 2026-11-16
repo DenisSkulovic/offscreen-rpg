@@ -174,7 +174,7 @@ A strong API-design proposal names:
 
 **Three tests that invalidate plausible wrong implementations:** (a) same idempotency key, different parameters returns a conflict; (b) stale expected revision cannot overwrite newer state; (c) browser reconnect after dropped SSE still obtains current authoritative projection rather than missing a transition.
 
-**Local owners:** [client and identity](../../docs/technical/client-and-identity.md), [data](../../docs/technical/data.md), [story lifecycle](../../docs/technical/story-lifecycle.md), [API workspace](../../apps/api/README.md), [web workspace](../../apps/web/README.md), [application guide](../../packages/application/README.md).
+**Local owners:** [client and identity](../../docs/technical/platform/identities-and-access.md), [data](../../docs/technical/platform/data-and-persistence.md), [story lifecycle](../../docs/technical/engine/lifecycle-and-compatibility.md), [API workspace](../../apps/api/README.md), [web workspace](../../apps/web/README.md), [application guide](../../packages/application/README.md).
 
 **Primary reference:** [HTTP RFC 9110](https://www.rfc-editor.org/rfc/rfc9110), [MDN HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP). **Deep study:** [Frontend–backend contract](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE310-web-apis-and-security/SE310-L01-the-frontend-backend-contract.md), [third-party integrations](https://github.com/DenisSkulovic/the-modern-software-engineer/blob/main/book/SE/SE325-backends-in-the-wild/SE325-L05-surviving-third-party-integrations.md).
 

@@ -36,4 +36,4 @@ The owner runs cheaper/faster Cursor models under a limited subscription and del
 
 The workstation is now more powerful than the earlier laptop, but wall-clock remains scarce. Prefer pinned pnpm, workspace filters, warm Turbo/Next/Vitest/TypeScript caches and staged check cadence. No automatic entire repo build, install or E2E on each small edit; no default 'never check' either. See [frontend execution playbook](../../docs/engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). Measure _actual_ elapsed time, cache hits and Cursor usage rather than claiming imaginary savings.
 
-**Stop rule:** once you know scope, owner, actual implementation, negative case and next action, stop searching. Escalate only for a concrete unresolved uncertainty. The [evaluation protocol](../../docs/engineering/coding-agent-evaluation.md) captures the evidence.
+**Stop rule:** once you know scope, owner, actual implementation, negative case and next action, stop searching. Escalate only for a concrete unresolved uncertainty. The [evaluation protocol](../../.agents/references/context-economics.md) captures the evidence.
