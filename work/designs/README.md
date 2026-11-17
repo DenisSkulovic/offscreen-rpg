@@ -2,8 +2,11 @@
 
 Unaccepted investigations and owner-retained dormant policy. Not product bible. Not a Change authorization.
 
+**Design lifecycle:** investigate and compare alternatives here → explicitly review/accept product outcomes → reconcile accepted requirements into the existing `docs/product/` and `docs/technical/` owners → only then prepare and select bounded `work/changes/` packets for implementation. An open design is not a selected Change, and a committed proposal is not an approved spec. The [player experience program](open/player-experience-refoundation/DESIGN-PROCESS.md) records concrete review gates for the ongoing UI/UX overhaul.
+
 | Item | Status |
 | --- | --- |
+| [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 0 design program:** source audit, experience thesis, story-reading research, art-direction alternatives and staged approval gates. No implementation authorization |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
 | [shared-play/](open/shared-play/) | Proposed group rules. Not accepted |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
