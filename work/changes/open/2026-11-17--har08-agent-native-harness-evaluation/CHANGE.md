@@ -6,17 +6,17 @@
 
 **Outcome:** Prepare a genuinely fair **A: native agent investigation versus B: same agent with explicit harness-navigation cue** experiment, with actual source/cost receipts and independently adjudicated answers. Reuse existing [WIKI03](../../archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md) fake-only harness. This is not HAR08 “improve deterministic search frontiers”; that earlier idea was rejected.
 
-**Start:** fresh full SHA + dirty status, root AGENTS, this Change, design decision, \`scripts/repo-tools/wiki-bench-agent.mjs\`, \`wiki-core/agent-harness.mjs\`, \`agent-trace.mjs\`, \`agent-score.mjs\`, \`agent-self-test.mjs\`, context-economics and the relevant source maps. **Inspected design baseline:** \`9f0d2dac68ab26b4ea7c47bb64879181411cba91\`; recheck live main before writing.
+**Start:** fresh full SHA + dirty status, root AGENTS, this Change, design decision, `scripts/repo-tools/wiki-bench-agent.mjs`, `wiki-core/agent-harness.mjs`, `agent-trace.mjs`, `agent-score.mjs`, `agent-self-test.mjs`, context-economics and the relevant source maps. **Inspected design baseline:** `9f0d2dac68ab26b4ea7c47bb64879181411cba91`; recheck live main before writing.
 
 **No automatic agent session, provider, subagent, API/paid CLI, vendor install, Docker, production/DB test, code search index, model download, or game/product code change.** No new default search tool. HAR05 stays independent Verifying.
 
 ## One bounded implementation outcome
 
-1. **Author a concise read-only trial runbook** at \`docs/runbooks/agent-native-harness-evaluation.md\`: exact A/B prompt difference, six candidate task categories, three-case pilot sampling, identical client/model/settings, context reset, pinned SHA, isolation, independently reviewed oracle, answer template, blinded grader worksheet, stop rules, costs/unknowns. Do not include expected source names in agent-visible question prompts.
-2. **Reuse WIKI03, not rebuild it.** Extend its fake trace normalizer/refusal checks only if required for A/B pairing, SHA, session freshness, permission violations or evidence completeness. If existing fake harness already supplies something, **document reuse** rather than implementing the same capability again. Use gitignored \`out/agent-evaluation/\` for host-only gold and receipts. No new package unless a missing bounded test genuinely requires it.
-3. **Prepare six new tasks**, previously unseen by the existing HAR gold suites, including implementation, authority/realization, history/cross-domain and absent-feature negatives. Independently check oracle source at the pinned SHA; if no independent reviewer is available, label **unreviewed** and disallow verified score claims. Do not publish oracle or gold paths to the agent's accessible snapshot/index. If public documentation of the procedure would disclose cases, keep the private task texts under ignored \`out/\`.
-4. **No-model preflight and negative fixtures:** prove that mismatched SHA, resumed session ID, inaccessible real gold/canary, unsafe write access, unknown client, missing exact model, missing usage policy, and missing enforced session/time/tool caps fail closed. Ensure missing reported tokens are **null**, not zero, and no normal \`pnpm\` command probes/spawns the installed model CLI.
-5. **Readiness report:** give actual client/model/version information *only if safely inspected and permitted*, number of candidate and independently reviewed cases, what the host can enforce, sandbox/canary result, exact tests run/skipped, unresolved blockers, source SHA, and one clear later authorization request. A partial result with \`sandbox: unproven\` is more correct than a fake “ready”.
+1. **Review and complete the already drafted read-only trial runbook** at `docs/runbooks/agent-native-harness-evaluation.md`: exact A/B prompt difference, six candidate task categories, three-case pilot sampling, identical client/model/settings, context reset, pinned SHA, isolation, independently reviewed oracle, answer template, blinded grader worksheet, stop rules, costs/unknowns. Do not include expected source names in agent-visible question prompts.
+2. **Reuse WIKI03, not rebuild it.** Extend its fake trace normalizer/refusal checks only if required for A/B pairing, SHA, session freshness, permission violations or evidence completeness. If existing fake harness already supplies something, **document reuse** rather than implementing the same capability again. Use gitignored `out/agent-evaluation/` for host-only gold and receipts. No new package unless a missing bounded test genuinely requires it.
+3. **Prepare six new tasks**, previously unseen by the existing HAR gold suites, including implementation, authority/realization, history/cross-domain and absent-feature negatives. Independently check oracle source at the pinned SHA; if no independent reviewer is available, label **unreviewed** and disallow verified score claims. Do not publish oracle or gold paths to the agent's accessible snapshot/index. If public documentation of the procedure would disclose cases, keep the private task texts under ignored `out/`.
+4. **No-model preflight and negative fixtures:** prove that mismatched SHA, resumed session ID, inaccessible real gold/canary, unsafe write access, unknown client, missing exact model, missing usage policy, and missing enforced session/time/tool caps fail closed. Ensure missing reported tokens are **null**, not zero, and no normal `pnpm` command probes/spawns the installed model CLI.
+5. **Readiness report:** give actual client/model/version information *only if safely inspected and permitted*, number of candidate and independently reviewed cases, what the host can enforce, sandbox/canary result, exact tests run/skipped, unresolved blockers, source SHA, and one clear later authorization request. A partial result with `sandbox: unproven` is more correct than a fake “ready”.
 
 ## Trial contract, for later owner authorization only
 
@@ -37,17 +37,17 @@
 
 ## Test and closure
 
-\`\`\`bash
+```bash
 pnpm wiki:bench:agent --self-test
 pnpm wiki:bench:agent --dry-run
 pnpm repo:brief --json
 pnpm wiki:find --self-test
 python scripts/check_docs.py
-\`\`\`
+```
 
 Any additional small preflight test must remain provider-free. Do not automatically run a live CLI. Log exact commands, results, skipped checks and their reasons.
 
-Complete the reconciliation ledger, update docs/runbooks/README.md and .agents/README.md if new workflow is documented, reconcile STATUS and the workbench map, then archive under \`work/changes/archive/2026-11/other/\` only when the preflight really passes. If blocked, leave HAR08 open and name the blocker.
+Complete the reconciliation ledger, update docs/runbooks/README.md and .agents/README.md if new workflow is documented, reconcile STATUS and the workbench map, then archive under `work/changes/archive/2026-11/other/` only when the preflight really passes. If blocked, leave HAR08 open and name the blocker.
 
 | Owner | Delta | Inspected revision | Verified evidence | Negative | Map |
 | --- | --- | --- | --- | --- | --- |
