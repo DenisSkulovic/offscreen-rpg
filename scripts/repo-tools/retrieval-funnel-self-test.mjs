@@ -200,6 +200,29 @@ export function runRetrievalFunnelSelfTest() {
   assert.equal(budgeted.spent.packageMaps, 1);
   assert.ok(budgeted.hits.some((item) => item.path === 'wiki/4.md'));
 
+  const chain = new Map([
+    ['wiki/start.md', 'See the [first map](packages/demo/README.md).\n'],
+    ['packages/demo/README.md', 'Continue at the [application map](packages/app/README.md).\n'],
+    ['packages/app/README.md', 'The generated check lives in [generated owner](src/owner.ts).\n'],
+    ['packages/app/src/owner.ts', 'export function ownerThing() {\n  return "generated plan";\n}\n'],
+  ]);
+  const nested = followEvidence({
+    question: 'where is the generated plan checked',
+    headings: [{ path: 'wiki/start.md', ref: 'wiki/start.md', authority: 'normative', text: 'start' }],
+    readText: (rel) => chain.get(rel),
+    exists: (rel) => chain.has(rel),
+    resolveLink: (_from, href) => {
+      const rel = href === 'packages/demo/README.md' || href === 'packages/app/README.md' || href === 'src/owner.ts'
+        ? (href === 'src/owner.ts' ? 'packages/app/src/owner.ts' : href)
+        : null;
+      return rel ? { ok: true, rel } : { ok: false, code: 'missing' };
+    },
+    resolveModule: () => null,
+  });
+  const nestedOwner = nested.hits.find((item) => item.proof?.symbol === 'ownerThing');
+  assert.ok(nestedOwner);
+  assert.equal(nested.spent.packageMaps, 2);
+
   const mismatched = evaluateFunnel({
     schema: 'repo.retrieval-funnel.v1',
     sha: SHA,

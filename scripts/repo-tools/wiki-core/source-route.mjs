@@ -126,6 +126,7 @@ export function followEvidence(options) {
   }
   const seen = new Set();
   const grounded = new Set();
+  const opened = new Set();
   let reads = 0;
   let edges = 0;
   let packageMaps = 0;
@@ -226,6 +227,8 @@ export function followEvidence(options) {
       return;
     } else reads += 1;
     const fileRel = rel.split('#')[0];
+    if (opened.has(fileRel)) return;
+    opened.add(fileRel);
     const sectionRef = rel.includes('#') ? rel : null;
     if (!exists(fileRel)) {
       note({ reason: 'missing-path', path: rel });
@@ -297,7 +300,7 @@ export function followEvidence(options) {
         bytes: Buffer.byteLength(reference.label ?? ''),
       });
       if (CODE.test(resolved.rel)) ground(resolved.rel, authority, notice, [...trace, hop], 0);
-      if (!asMap && resolved.rel.startsWith('packages/') && resolved.rel.endsWith('README.md')) {
+      if (resolved.rel.startsWith('packages/') && resolved.rel.endsWith('README.md')) {
         followPage(resolved.rel, authority, notice, [...trace, hop], true);
       }
     }
