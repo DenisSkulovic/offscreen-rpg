@@ -1,6 +1,8 @@
 # Living Journal | One story medium, author-directed appearance
 
 **Status:** NEW OPEN DESIGN CANDIDATE (2026-11-17), owner hypothesis, not product ratification. **Implementation permission:** none.
+**Owner clarification (later on 2026-11-17):** [10 · Reader's book and adaptive story world](10-READER-BOOK-AND-STORY-WORLD.md) supersedes the parts of **this open thesis** that proposed morphing the book substrate into an in-world terminal, membrane, damaged field diary, etc. The book now remains a recognizable extradiegetic reader object; environment and reflected lighting change primarily **around/across it**, while selective source-backed text and illustration treatment can change inside it. Preserve this page as the earlier design exploration, not as parallel authoritative rules.
+
 **Supersedes no accepted document.** The existing selected presentation language in `docs/technical/client/presentation-runtime.md` remains authoritative until explicit reconciliation. The new page and rich-content ideas below intentionally go beyond V1's selected scope.
 
 ## 1. The product thesis
