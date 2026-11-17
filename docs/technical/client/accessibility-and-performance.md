@@ -10,7 +10,7 @@ Use native labels and fields, keyboard operation, and focus restoration after er
 
 Error boundaries distinguish authentication, forbidden and transient failure. App Router `loading`, `error` and `not-found` cover the expected scope. Query error reset and Suspense are used only where that boundary is tested.
 
-Do not adopt a new component library as part of making controls accessible. Keep existing visual markup except for semantic, focus and error corrections.
+Do not adopt a new component library merely to make controls accessible. The earlier **W-program markup preservation** rule is explicitly superseded for the later selected [Living Book POC](living-book-poc.md): the book may replace existing `StoryFrame` visual markup, but not the keyboard, focus, source and command safety requirements on this page.
 
 ## Performance acceptance
 

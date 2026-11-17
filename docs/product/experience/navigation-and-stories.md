@@ -2,6 +2,8 @@
 
 **Owns:** the player’s mental map of spaces. **Does not own:** a flows, patterns, or spaces taxonomy.
 
+**Selected POC composition:** [Living Book](living-book-poc.md) presents these existing spaces within a low-chrome book; it does not change the three navigation contexts or require permanent six-tab navigation. Final visual details remain open.
+
 ## Three navigation contexts
 
 1. **Outside a story:** Welcome / Try demo / Your stories / Create story / Account.

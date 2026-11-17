@@ -1,6 +1,6 @@
 # Phase 2 | Visual-direction competition
 
-**Status:** OPEN DESIGN. Earlier art-direction, geometry and interaction labs now followed by a **source-to-leaf narrative composition study**. Nothing ratified. **Date:** 2026-11-17. **Implementation permission:** none.
+**Status:** Broader art-direction, typography, animation and richer-content work remains OPEN DESIGN. The owner has separately accepted a **limited Living Book POC** in [product](../../../../../docs/product/experience/living-book-poc.md) and [technical](../../../../../docs/technical/client/living-book-poc.md), without accepting these visual mockups or source-V2 proposals. Earlier art-direction, geometry and interaction labs now feed the **source-to-leaf narrative composition study**. **Date:** 2026-11-17. **Implementation permission:** none.
 
 ## Current design gate: source-to-leaf composition
 
