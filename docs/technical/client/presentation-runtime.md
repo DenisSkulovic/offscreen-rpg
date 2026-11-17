@@ -1,7 +1,7 @@
 # Presentation runtime | a living, declarative visual environment
 
 **Status:** selected frontend design target (2026-11-13). **PX portfolio seams landed**; not yet visually/behaviorally accepted for engine integration. (C3: removed stale “no implementation authorized” present-tense banner.)  
-**Product presentation promises:** [product experience presentation](../../product/experience/presentation.md).  
+**Product presentation promises:** [product experience presentation](../../product/experience/presentation.md). **Later selected POC shell:** [Living Book client target](living-book-poc.md) keeps the book recognizable and directs V1 appearance primarily to the *surrounding stage/lighting*. This is a composition priority, not a new appearance schema or a claim that live Storyteller direction is implemented.  
 The selected V1 language is [below](#selected-presentation-language-v1). Media budgets live in that section. Dated PX review notes stay under evidence inspections, not as a second contract.
 
 ## Product promise
@@ -26,7 +26,7 @@ Exploration comps for stage, tokens, motion and accessibility are parked studies
 
 ## Stable architecture and dynamic planes
 
-The existing Living Situation Stage is the **composition authority**. Presentation modifies its appearance; it does not decide new page navigation, reorder verified passage content, invent offers, move settings into the fiction or turn a scene into chat bubbles.
+For the original PX V1 work, the Living Situation Stage was the **composition authority**. The later selected [Living Book POC](living-book-poc.md) is authorized to replace its visual reading shell without changing V1's validated appearance language or game authority. Presentation modifies that shell's bounded appearance; it does not decide new page navigation, reorder verified passage content, invent offers, move settings into the fiction or turn a scene into chat bubbles.
 
 Five conceptual layers, each with a distinct owner:
 
