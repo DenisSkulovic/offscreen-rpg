@@ -221,14 +221,20 @@ function defaultQmd() {
   return existsSync(local) ? local : null;
 }
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   if (args.includes('--self-test')) {
-    return import('./semantic-pilot-self-test.mjs').then((mod) => mod.runSemanticPilotSelfTest());
+    const pilot = await import('./semantic-pilot-self-test.mjs');
+    pilot.runSemanticPilotSelfTest();
+    const funnel = await import('./retrieval-funnel-self-test.mjs');
+    return funnel.runRetrievalFunnelSelfTest();
+  }
+  if (args.includes('--funnel')) {
+    return import('./retrieval-funnel-run.mjs').then((mod) => mod.runRetrievalFunnel());
   }
   if (args.includes('--help') || args.length === 0) {
-    console.log('Usage: pnpm repo:semantic-pilot --self-test | --run');
-    console.log('Local search trial. Missing vendor tools are not-configured. No model agent is launched.');
+    console.log('Usage: pnpm repo:semantic-pilot --self-test | --run | --funnel');
+    console.log('Local search trial. --funnel compares short lexical queries with wiki-guided search. Missing vendor tools are not-configured. No model agent is launched.');
     return;
   }
   if (!args.includes('--run')) throw new Error('Pass --run or --self-test.');
