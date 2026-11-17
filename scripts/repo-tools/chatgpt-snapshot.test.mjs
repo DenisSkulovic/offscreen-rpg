@@ -110,10 +110,13 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
     assert.equal(git(root, 'check-ignore', '-q', lean.destination), '');
     const full = await createSnapshot({
       repoRoot: root, profile: 'full', now: new Date('2026-11-17T13:05:03.000Z'),
-      indexBuilder: async () => { throw new Error('Simulated missing parser dependencies'); },
+      skipIndex: true, indexBuilder: async () => { throw new Error('Never execute indexBuilder'); },
     });
-    assert.equal(full.manifest.portableWiki.status, 'unavailable');
-    assert.equal(full.manifest.portableWiki.reason, 'Simulated missing parser dependencies');
+    assert.equal(full.manifest.portableWiki.status, 'disabled');
+    assert.ok(![...listZip(full.destination).keys()].some(x => x.endsWith('/WIKI-INDEX.json')));
+    await assert.rejects(() => createSnapshot({
+      repoRoot: root, indexBuilder: async () => { throw new Error('Missing index'); },
+    }), /Portable wiki index required/);
     await assert.rejects(() => createSnapshot({
       repoRoot: root, requireIndex: true, indexBuilder: async () => { throw new Error('No parser'); },
     }), /Portable wiki index required/);
