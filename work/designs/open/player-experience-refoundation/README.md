@@ -15,7 +15,7 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 ## Current design work
 
-**[Phase 2: Visual-direction competition](phase-2/README.md)** contains the earlier [interactive three-direction visual laboratory](phase-2/design-lab.html), research and QA, plus the newer **[Living Journal adaptive page hypothesis](phase-2/05-LIVING-JOURNAL-THESIS.md)** and its [proposed rich-text score](phase-2/06-RICH-NARRATIVE-SCORE.md). The latter is a design hypothesis, not a rendered fourth prototype, selected art direction or approved new public schema.
+**[Phase 2: Visual-direction competition](phase-2/README.md)** contains the earlier [interactive three-direction visual laboratory](phase-2/design-lab.html), research and QA, plus the newer **[Living Journal adaptive page hypothesis](phase-2/05-LIVING-JOURNAL-THESIS.md)** and its [proposed rich-text score](phase-2/06-RICH-NARRATIVE-SCORE.md). The [adaptive leaf lab](phase-2/adaptive-leaf-lab/README.md) now renders the later hypothesis with one DOM renderer and bounded material fixture inputs. It is still **not** a selected art direction, working Storyteller pipeline or approved public schema.
 
 **[Phase 1: Player experience architecture](phase-1/README.md)** remains an open design foundation. It maps the player mental model, spaces, first visit / living / return / remembrance journeys, Now state grammar, Journal reading architecture, fixed narrative test specimens, and explicit candidate decisions. This dossier remains unaccepted and cannot authorize an implementation Change.
 
