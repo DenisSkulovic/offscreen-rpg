@@ -6,7 +6,7 @@ Unaccepted investigations and owner-retained dormant policy. Not product bible. 
 
 | Item | Status |
 | --- | --- |
-| [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 0–2 design program:** limited Living Book POC promoted to selected product/technical owners; broad visual, rich content and final book design still open. Proposed BOOK01/02 are not selected implementation authority |
+| [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [time-and-autonomy/](open/time-and-autonomy/) | Proposed absence, delegation and standing-life studies. The accepted time rule is the product page |
 | [shared-play/](open/shared-play/) | Proposed group rules. Not accepted |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
