@@ -131,8 +131,11 @@ export async function buildPortableWikiIndex({
       if (seen.has(key)) continue;
       seen.add(key);
       defects.push({
-        from, line: ref.line, href: ref.href,
-        state, target: rel, fragment: target.fragment ?? null,
+        from, line: ref.line,
+        href: state === 'excluded-sensitive-file' ? '[redacted-sensitive-path]' : ref.href,
+        state,
+        target: state === 'excluded-sensitive-file' ? null : rel,
+        fragment: state === 'excluded-sensitive-file' ? null : (target.fragment ?? null),
         githubUrl: state === 'excluded-by-snapshot-profile'
           ? githubFallback(repositoryUrl, head, rel, target.fragment, !tracked.has(rel)) : null,
       });

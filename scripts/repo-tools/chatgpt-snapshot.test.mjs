@@ -166,7 +166,8 @@ test('index classifies intentionally omitted history separately from broken link
     });
     assert.equal(result.summary.omittedLinkCount, 2);
     const privateTarget = result.omittedLinks.find(x => x.state === 'excluded-sensitive-file');
-    assert.equal(privateTarget.target, '.env.secret');
+    assert.equal(privateTarget.target, null);
+    assert.equal(privateTarget.href, '[redacted-sensitive-path]');
     assert.equal(privateTarget.githubUrl, null);
     assert.equal(result.summary.brokenLinkCount, 1);
     const historical = result.omittedLinks.find(x => x.state === 'excluded-by-snapshot-profile');
