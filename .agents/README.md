@@ -38,6 +38,7 @@ Discover under [`skills/`](skills/) — load bodies on demand when the task matc
 ## Repository commands (read-only orientation)
 
 - `pnpm repo:brief` — STATUS + Current change (optional `--checkpoint`; `--json` prints the local SHA and dirty paths and does not contact a remote)
+- `pnpm repo:snapshot:chatgpt` — export revision-stamped source + **required portable wiki index** for ordinary ChatGPT. Explicit `--no-index` creates a source-only ZIP; see the [runbook](../docs/runbooks/chatgpt-design-snapshot.md).
 - `pnpm repo:retrieval-compare` — compare two recorded search arms on one pinned SHA. It does not search, install a tool, or call a model.
 - `pnpm repo:semantic-pilot` — replay the local search trial (`--self-test` or `--run`). A missing vendor binary stays not-configured. It does not install a tool or call a paid model.
 - `pnpm repo:docs-health` — Change checkpoints and docs taxonomy checks

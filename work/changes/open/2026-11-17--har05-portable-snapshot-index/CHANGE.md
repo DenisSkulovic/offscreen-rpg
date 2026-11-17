@@ -15,11 +15,11 @@
 2. The index reports headings, anchors, exact line spans, section previews, authority class, link edges, known omitted historical targets, original SHA-pinned GitHub fallback URLs where safe, and links genuinely broken at the source revision.
 3. Sensitive excluded targets never receive fallback links. No index or content produced from uncommitted files.
 4. Manifest v2 preserves original revision fields and adds safe modified tracked paths (sensitive path names redacted), untracked count and `portableWiki` status. Dirty contents are not exported.
-5. The default export remains usable if the wiki index fails. `--require-index` fails loudly. No automatic install, external database, model call, new dependency, or default MCP tool.
+5. **Follow-up policy (2026-11-17): the shortest command requires the wiki index and fails loudly if it cannot be generated.** `--no-index` is the explicit source-only escape hatch; `--require-index` stays an unnecessary compatibility alias. No automatic install, external database, model call, new dependency, or default MCP tool.
 
 ## Evidence and required next verification
 
-**Not yet independently executed in the user's repository:** `pnpm repo:snapshot:chatgpt:test`, `pnpm repo:snapshot:chatgpt --require-index`, archive inspection and `pnpm wiki:health`. The ChatGPT execution environment contains the uploaded source ZIP but not the repository's Node dependencies or live `.git` directory. **Do not mark Done or claim green integration until those commands actually run.**
+**Not yet independently executed in the user's repository:** `pnpm repo:snapshot:chatgpt:test`, **the new default** `pnpm repo:snapshot:chatgpt`, archive inspection and `pnpm wiki:health`. The ChatGPT execution environment contains the uploaded source ZIP but not the repository's Node dependencies or live `.git` directory. **Do not mark Done or claim green integration until those commands actually run.**
 
 Fixtures are included for (a) exact-HEAD source isolation, (b) omitted versus broken path classification, (c) no GitHub fallback for sensitive paths, (d) verified archive metadata and SHA, (e) index absent/fail-closed mode and (f) dirty-path provenance. Run them in Cursor's real checkout, inspect defects, and record actual negative results.
 

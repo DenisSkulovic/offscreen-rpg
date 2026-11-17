@@ -18,15 +18,20 @@ When the local wiki parser is available, the ZIP additionally contains **`WIKI-I
 
 | Command | Behavior |
 | --- | --- |
-| `pnpm repo:snapshot:chatgpt` | Lean: current tracked source, tests, configs, ratified docs, agent instructions, active Changes and current design proposals. Omits archived Changes, historic session bulk, bulky run/inspection evidence and retired engineering research. |
+| `pnpm repo:snapshot:chatgpt` | **Recommended default.** Lean committed source/docs **plus mandatory `WIKI-INDEX.json`**. If the index cannot be generated, fail instead of uploading a silently degraded snapshot. |
+| `pnpm repo:snapshot:chatgpt --no-index` | **Explicit fallback.** Source-only lean ZIP, no wiki parser required. Use only when the portable index is unavailable or not needed. |
 | `pnpm repo:snapshot:chatgpt --full` | Adds tracked historical Changes, evidence and research when a forensic design investigation needs them; ordinary sensitive-name and generated-output exclusions still apply. |
 | `pnpm repo:snapshot:chatgpt --strict` | Reject a dirty/untracked working tree instead of creating a committed-only snapshot with a warning. |
 | `pnpm repo:snapshot:chatgpt:test` | Run the dependency-free Git/Node fixture test. |
-| `pnpm repo:snapshot:chatgpt --require-index` | Fail if the wiki index cannot be generated; useful for validating this enhanced workflow. |
+| `pnpm repo:snapshot:chatgpt --require-index` | Legacy compatible alias for the default; unnecessary in new instructions. |
+
+### Prerequisites and failure behavior
+
+Run `pnpm install` using the repository's pinned toolchain before the first indexed snapshot. If `pnpm repo:snapshot:chatgpt` fails because a wiki dependency is missing, install the normal development dependencies or investigate the indexing error. **Do not automatically substitute a source-only ZIP while claiming its wiki index exists.** `--no-index` is a deliberate escape hatch, not the recommended routine.
 
 ### Portable wiki status and link classification
 
-`SNAPSHOT.json.portableWiki.status` is `ready` when the source-exact `WIKI-INDEX.json` is embedded. It is `unavailable` with an explicit reason when the local wiki parser, dependencies or the staging extraction cannot run. The default export remains useful even without an index; `--require-index` turns this into a fail-fast condition.
+`SNAPSHOT.json.portableWiki.status` is `ready` when the source-exact `WIKI-INDEX.json` is embedded. **That is required by the default command.** If the local parser, dependencies or staging extraction fail, no ZIP is emitted, and the CLI exits with an error. To *deliberately* export source without the index, choose `--no-index`: the manifest then reports `portableWiki.status: disabled`. No silent fallback.
 
 The index is generated using the **existing** `scripts/repo-tools/wiki-core/{route,markdown,paths}.mjs` parser and router against a temporary **committed HEAD** extraction, not Cursor's dirty worktree. No second Markdown parser or ranking engine is introduced. Running with an index requires the project's existing dev dependencies plus Git and `tar` available locally (including Windows `tar.exe` on supported Windows versions). The exported ZIP needs none of those dependencies to be read in ChatGPT.
 
@@ -39,7 +44,7 @@ The manifest's `trackedModifiedPaths` lists only locally modified tracked path n
 - **When Cursor is still editing:** dirty and untracked files are **never included**, even without `--strict`. You get an explicit warning and a snapshot of the last committed revision. Commit relevant work first, or share a separately reviewed diff.
 - **No trash by default:** ignored/untracked dependencies and caches are excluded by `git archive`. The script additionally excludes tracked `node_modules`, `.next`, `dist`, `build`, `coverage`, `out`, `.env*` (including `.env.example`), private key extensions and several explicit credential filenames.
 - **Confidentiality:** path exclusions do **not** detect secrets accidentally committed into ordinary `.md`, `.ts`, `.json` or other source files. Review before sharing, especially when adapting this pattern to private workplace repositories.
-- **No additional service:** Git (with `git archive --add-file` support) and the pinned Node runtime export source; the optional portable index additionally uses local `tar` and the repo's **already-declared** Markdown parser dependencies. No new npm dependencies, Docker services, hosted embeddings, automatic uploading or paid providers.
+- **No additional service:** Git (with `git archive --add-file` support) and the pinned Node runtime export source; the **default required** portable index additionally uses local `tar` and the repo's **already-declared** Markdown parser dependencies. No new npm dependencies, Docker services, hosted embeddings, automatic uploading or paid providers.
 
 ### What to tell ChatGPT
 
