@@ -98,50 +98,52 @@ export async function createSnapshot({
         status: 'disabled', reason: 'Explicit --no-index source-only export',
         fallback: 'Read original Markdown with local filesystem search.',
       };
-    } else try {
-      const indexOwners = [
-        'scripts/repo-tools/chatgpt-snapshot.mjs',
-        'scripts/repo-tools/chatgpt-snapshot-knowledge.mjs',
-        'scripts/repo-tools/wiki-core/route.mjs',
-        'scripts/repo-tools/wiki-core/model.mjs',
-        'scripts/repo-tools/wiki-core/markdown.mjs',
-        'scripts/repo-tools/wiki-core/paths.mjs',
-        'scripts/repo-tools/wiki-core/search.mjs',
-        'scripts/repo-tools/wiki-core/slug.mjs',
-      ];
-      const parserDirty = modified.filter(p => indexOwners.includes(p));
-      if (parserDirty.length) throw new Error('Snapshot/index generator has uncommitted code edits');
-      // Staging uses exactly the same committed Git pathspec as the final ZIP.
-      // Parser modules resolve dependencies from the local development checkout.
-      git(root, [
-        'archive', '--format=tar', '--output=' + sourceTar, head,
-        '--', '.', ...pathspecs,
-      ]);
-      execFileSync('tar', ['-xf', sourceTar, '-C', stagedRoot], { cwd: root });
-      let remote = null;
-      try { remote = git(root, ['remote', 'get-url', 'origin']); } catch { /* local fixtures */ }
-      const trackedPaths = git(root, ['ls-tree', '-r', '-z', '--name-only', head])
-        .split('\0').filter(Boolean);
-      const index = await indexBuilder({
-        stagedRoot, head, profile, trackedPaths, repositoryUrl: safeGithubOrigin(remote),
-      });
-      writeFileSync(knowledgeFile, JSON.stringify(index) + '\n');
-      manifest.portableWiki = {
-        status: 'ready', schema: index.schema,
-        file: 'WIKI-INDEX.json', summary: index.summary,
-      };
-    } catch (error) {
-      if (requireIndex) throw new Error('Portable wiki index required but unavailable: ' + error.message);
-      const details = String(error.message);
-      const safeReason = /Cannot find package|ERR_MODULE_NOT_FOUND/i.test(details)
-        ? 'Existing wiki parser dependencies are not installed locally'
-        : /spawn.*tar|ENOENT.*tar/i.test(details)
-          ? 'Local tar command is unavailable'
-          : 'Portable index could not be generated; rerun with --require-index for local diagnostics';
-      manifest.portableWiki = {
-        status: 'unavailable', reason: safeReason,
-        fallback: 'Read original Markdown with local filesystem search.',
-      };
+    } else {
+      try {
+        const indexOwners = [
+          'scripts/repo-tools/chatgpt-snapshot.mjs',
+          'scripts/repo-tools/chatgpt-snapshot-knowledge.mjs',
+          'scripts/repo-tools/wiki-core/route.mjs',
+          'scripts/repo-tools/wiki-core/model.mjs',
+          'scripts/repo-tools/wiki-core/markdown.mjs',
+          'scripts/repo-tools/wiki-core/paths.mjs',
+          'scripts/repo-tools/wiki-core/search.mjs',
+          'scripts/repo-tools/wiki-core/slug.mjs',
+        ];
+        const parserDirty = modified.filter(p => indexOwners.includes(p));
+        if (parserDirty.length) throw new Error('Snapshot/index generator has uncommitted code edits');
+        // Staging uses exactly the same committed Git pathspec as the final ZIP.
+        // Parser modules resolve dependencies from the local development checkout.
+        git(root, [
+          'archive', '--format=tar', '--output=' + sourceTar, head,
+          '--', '.', ...pathspecs,
+        ]);
+        execFileSync('tar', ['-xf', sourceTar, '-C', stagedRoot], { cwd: root });
+        let remote = null;
+        try { remote = git(root, ['remote', 'get-url', 'origin']); } catch { /* local fixtures */ }
+        const trackedPaths = git(root, ['ls-tree', '-r', '-z', '--name-only', head])
+          .split('\0').filter(Boolean);
+        const index = await indexBuilder({
+          stagedRoot, head, profile, trackedPaths, repositoryUrl: safeGithubOrigin(remote),
+        });
+        writeFileSync(knowledgeFile, JSON.stringify(index) + '\n');
+        manifest.portableWiki = {
+          status: 'ready', schema: index.schema,
+          file: 'WIKI-INDEX.json', summary: index.summary,
+        };
+      } catch (error) {
+        if (requireIndex) throw new Error('Portable wiki index required but unavailable: ' + error.message);
+        const details = String(error.message);
+        const safeReason = /Cannot find package|ERR_MODULE_NOT_FOUND/i.test(details)
+          ? 'Existing wiki parser dependencies are not installed locally'
+          : /spawn.*tar|ENOENT.*tar/i.test(details)
+            ? 'Local tar command is unavailable'
+            : 'Portable index could not be generated; rerun with --require-index for local diagnostics';
+        manifest.portableWiki = {
+          status: 'unavailable', reason: safeReason,
+          fallback: 'Read original Markdown with local filesystem search.',
+        };
+      }
     }
     writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
     git(root, [
