@@ -1,6 +1,6 @@
 # HAR10 | Retire unadopted retrieval and fake-agent experiment code
 
-**State: Ready, open, not current (owner decision 2026-11-17).** BOOK01 is the current Change. This cleanup stays open and is not started. **Executor: Cursor.** **Purpose:** aggressively remove experimental source that did not earn adoption, retain useful wiki/harness fundamentals, and preserve the experiment's conclusion as first-class searchable historical research. **Research authority:** [results register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md), [Cognee evaluation](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). **Previous HAR09:** [closed, not adopted](../../archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md).
+**State: Done (2026-11-17).** **Executor: Cursor.** **Purpose:** aggressively remove experimental source that did not earn adoption, retain useful wiki/harness fundamentals, and preserve the experiment's conclusion as first-class searchable historical research. **Research authority:** [results register](../../../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md), [Cognee evaluation](../../../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). **Previous HAR09:** [closed, not adopted](../2026-11-17--har09-architectural-memory-pilot/CHANGE.md).
 
 ## First screen
 
@@ -11,11 +11,23 @@ Start with fresh `git rev-parse HEAD` / `git status --short`, root AGENTS, the c
 ## Delete this bounded executable island, subject to dependency audit
 
 - `scripts/repo-tools/retrieval-compare.mjs`
-- `scripts/repo-tools/semantic-pilot.mjs`, `semantic-pilot-cases.mjs`, `semantic-pilot-self-test.mjs`
-- `scripts/repo-tools/retrieval-funnel-run.mjs`, `retrieval-funnel-oracle.mjs`, `retrieval-funnel-self-test.mjs`
-- `scripts/repo-tools/wiki-core/retrieval-compare.mjs`, `retrieval-compare-self-test.mjs`, `retrieval-funnel.mjs`, `source-route.mjs`
+- `scripts/repo-tools/semantic-pilot.mjs`
+- `scripts/repo-tools/semantic-pilot-cases.mjs`
+- `scripts/repo-tools/semantic-pilot-self-test.mjs`
+- `scripts/repo-tools/retrieval-funnel-run.mjs`
+- `scripts/repo-tools/retrieval-funnel-oracle.mjs`
+- `scripts/repo-tools/retrieval-funnel-self-test.mjs`
+- `scripts/repo-tools/wiki-core/retrieval-compare.mjs`
+- `scripts/repo-tools/wiki-core/retrieval-compare-self-test.mjs`
+- `scripts/repo-tools/wiki-core/retrieval-funnel.mjs`
+- `scripts/repo-tools/wiki-core/source-route.mjs`
 - `scripts/repo-tools/wiki-bench-agent.mjs`
-- `scripts/repo-tools/wiki-core/agent-harness.mjs`, `agent-trace.mjs`, `agent-score.mjs`, `agent-self-test.mjs`, `agent-native-preflight.mjs`, `agent-fixtures/har08-tasks.mjs`
+- `scripts/repo-tools/wiki-core/agent-harness.mjs`
+- `scripts/repo-tools/wiki-core/agent-trace.mjs`
+- `scripts/repo-tools/wiki-core/agent-score.mjs`
+- `scripts/repo-tools/wiki-core/agent-self-test.mjs`
+- `scripts/repo-tools/wiki-core/agent-native-preflight.mjs`
+- `scripts/repo-tools/wiki-core/agent-fixtures/har08-tasks.mjs`
 
 The list is based on a static import audit of a 5fc89564 committed source ZIP: these 18 files form a mostly isolated executable cluster. **Recheck against latest main**, including dynamic imports, scripts, CI/PowerShell/docs readers and protected current tooling. If some function has genuine external consumers, extract only that small reusable function into its correct owner and prove usage, rather than preserving the abandoned benchmark framework.
 
@@ -29,7 +41,7 @@ No Cognee integration is tracked in project source; removal is on Cursor's **loc
 
 ## Preserve research without runtime bloat
 
-Already added first-class [register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) and [Cognee results](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). They are reachable via `research/README.md`, `research/agent-practice/README.md` and the documentation index; `wiki:find --include-historic` should discover them. Audit source links and keep exact original SHA/counts/limitations, especially the false `SSE uses Redis` edges and unapproved model downloads. No gameplay/technical product specs should be changed to match a rejected vendor experiment.
+Already added first-class [register](../../../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) and [Cognee results](../../../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). They are reachable via `research/README.md`, `research/agent-practice/README.md` and the documentation index; `wiki:find --include-historic` should discover them. Audit source links and keep exact original SHA/counts/limitations, especially the false `SSE uses Redis` edges and unapproved model downloads. No gameplay/technical product specs should be changed to match a rejected vendor experiment.
 
 Retain archived HAR01–HAR09 and WIKI01–WIKI08 Change dossiers as **dated observations and rationale**, not active code dependencies. Git history already preserves removed source implementations. Do not publish or regenerate HAR08's author-written answer key as “secure” after removal from HEAD: it remains in Git history and exported earlier ZIPs. Any future live-agent comparison needs **new, truly private** independently reviewed gold tasks.
 
@@ -49,15 +61,20 @@ pnpm repo:snapshot:chatgpt:test
 python scripts/check_docs.py
 ```
 
-If a command syntax differs, inspect `--help` or the existing script before running and record the exact supported command (do not invent test success). Check `pnpm repo:docs-health` as applicable and a targeted import/rg sweep for deleted modules/scripts. **No new external provider, model download, indexing daemon, Docker, DB, game Storyteller or paid trial.** No vendor results are regraded because their runner was removed. Distinguish passed, skipped and blocked, including local Node/pnpm prereqs.
+If a command syntax differs, inspect `--help` or the existing script before running and record the exact supported command (do not invent test success). Check `pnpm repo:docs-health` as applicable and a targeted import/rg sweep for deleted modules/scripts. **No new external provider, model download, indexing daemon, Docker, DB, game Storyteller or paid trial.** No vendor results are regraded because their runner was removed.
+Distinguish passed, skipped and blocked, including local Node/pnpm prereqs.
 
-## Reconciliation and Done gate
+## Reconciliation ledger
 
-Complete [Change reconciliation](../../../../.agents/references/change-work-unit-standard.md). Update active command/navigation docs, `work/changes/README.md`, monthly ledger and `STATUS.md`, archive HAR10 only after all affected import/link checks and actual relevant tests pass. If the local Cognee caches cannot be inspected, do not claim them deleted: record a separate explicit leftover/blocker and finish code-only proof honestly.
+Proof on dirty `39b57514ba168e81bf7e74f3dc64eeae58576389`: `pnpm repo:brief --json`, `pnpm wiki:find --self-test`, `pnpm wiki:read --self-test`, `pnpm wiki:health` (0 broken paths, 78/78 reachable), `pnpm wiki:content-health --self-test`, `pnpm wiki:bench:static --self-test`, `pnpm repo:snapshot:chatgpt:test` (2 passed), and `python scripts/check_docs.py` (0 problems). No model and no provider call. No Docker or database call.
 
-| Owner | Target delta | Source revision + proof | Negative case | Documentation |
-| --- | --- | --- | --- | --- |
-| Abandoned HAR/agent trial scripts | removed from active scripts/code without orphaned imports | **pending Cursor** | no dangling dynamic imports / CI references | tool lists + historical research |
-| Wiki and source-receipt tools | retained behavior and CLI | **pending tests** | source exactness and authority still work | .agents/README + docs router |
-| Local Cognee artifacts | only owned disposable files cleaned | **pending machine audit** | shared caches not destroyed | research + verification receipt |
-| Product/technical game contracts | unchanged | N/A | no game runtime changes | N/A |
+Declared active paths: `.agents/README.md`, `ENGINEERING.md`, `STATUS.md`, `docs/runbooks/README.md`, `docs/runbooks/agent-native-harness-evaluation.md`, `package.json`, `research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md`, `research/agent-practice/COGNEE-EVALUATION-2026-11-17.md`, `scripts/repo-tools/chatgpt-snapshot.test.mjs`, `work/changes/README.md`, `work/changes/ledger/2026-11.md`, `work/changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md`, `work/designs/open/repository-agent-workbench/AGENT-NATIVE-EVALUATION.md`, `work/designs/open/repository-agent-workbench/README.md`, `work/designs/open/repository-agent-workbench/SOURCE-ROUTE-AUDIT-2026-11-17.md`, `work/designs/open/repository-agent-workbench/TARGET.md`, `work/designs/open/wiki-health/IMPLEMENTATION.md`.
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product or technical game behavior impacted | none | unchanged: this removes developer experiment scripts and does not change gameplay or Storyteller rules | package.json at dirty 39b57514ba168e81bf7e74f3dc64eeae58576389 | source-observed | apps/web and packages/game are absent from the diff | N/A |
+| .agents/README.md | evidence | changed: the retired comparison and fake-agent commands are named as not runnable | .agents/README.md | source-observed | package.json no longer defines repo:semantic-pilot, repo:retrieval-compare, or wiki:bench:agent | .agents/README.md |
+| docs/runbooks/agent-native-harness-evaluation.md | evidence | changed: the A/B method stays, and the removed runner is not a command to execute | docs/runbooks/agent-native-harness-evaluation.md | source-observed | the page says wiki:bench:agent is not a package script | docs/runbooks/README.md |
+| retained wiki and snapshot tools | evidence | unchanged: source receipts, heading retrieval, static bench, and the ChatGPT snapshot still run | scripts/repo-tools/brief.mjs and scripts/repo-tools/wiki-bench-static.mjs | fixture-tested | the snapshot fixture still excludes a secret file and rejects an uncommitted parser edit | scripts/repo-tools/chatgpt-snapshot.test.mjs |
+| local Cognee trial files | evidence | changed: owned disposable trial files were removed on this workstation and were not tracked | gitignored out/architecture-memory, the home .cognee directory, and two Hugging Face embedding folders | machine-observed | the Hugging Face cache directory, its lock folder, and Cursor editor history were left in place | research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md |
+| STATUS.md | evidence | changed: the priority line records this cleanup and does not offer the removed commands as current tools | STATUS.md | source-observed | BOOK01 and BOOK02 stay open and this cleanup does not close them | STATUS.md |

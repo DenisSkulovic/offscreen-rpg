@@ -6,7 +6,7 @@
 
 - Root `AGENTS.md` already routes known Changes to their first screen, one owner, and a few source anchors; unknown questions to `wiki:find` then `wiki:read`.
 - `pnpm repo:brief` already prints branch, worktree status, three recent commits, STATUS orientation and Current change; it has no stable JSON/HEAD-SHA receipt. Extend it instead of creating a duplicate startup tool.
-- `pnpm wiki:health`, `wiki:bench:static`, `wiki:bench:agent` (fake/dry only), `wiki:change-guard`, `wiki:find`, `wiki:read` exist in package scripts. WIKI07's independent review is still outstanding; do not claim the routing is proven just because commands exist.
+- `pnpm wiki:health`, `wiki:bench:static`, `wiki:change-guard`, `wiki:find`, and `wiki:read` exist in package scripts. `wiki:bench:agent` was removed from HEAD. WIKI07's independent review is still outstanding; do not claim the routing is proven just because commands exist.
 - The canonical wiki has existing authority routing and draft separation. WIKI08 already owns content accuracy candidates, so this design must not create a second wiki-truth scanner.
 - Cursor includes built-in codebase search/indexing; a local clone may also use Git, `rg` and language services. A GitHub API assistant may inspect specific remote files/diffs without access to that local working tree.
 

@@ -35,6 +35,6 @@ These are *retrospective* traces. We did **not** measure what a blinded Cursor/C
 
 ## Evidence locator
 
-- HAR06 [archived packet](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md), [run script](../../../../scripts/repo-tools/retrieval-funnel-run.mjs), [scorer](../../../../scripts/repo-tools/wiki-core/retrieval-funnel.mjs), [oracle](../../../../scripts/repo-tools/retrieval-funnel-oracle.mjs).
+- HAR06 [archived packet](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md). The run script, scorer, and oracle were removed from HEAD by HAR10. Git history still has them.
 - Existing navigation: [wiki router](../../../../docs/README.md), [product rules](../../../../docs/product/gameplay/rules.md), [technical mechanics](../../../../docs/technical/engine/mechanics-and-capabilities.md), [persistence](../../../../docs/technical/platform/data-and-persistence.md), [publication](../../../../docs/technical/storyteller/generation-and-publication.md), [game source map](../../../../packages/game/README.md), [application source map](../../../../packages/application/README.md).
 - Original implementation: `packages/game/src/immediate-actions.ts`, `packages/application/src/stories/persistence.ts`, `packages/application/src/storyteller/execution-stages.ts`, `packages/application/src/storyteller/runtime.ts`, `packages/application/src/storyteller/publication.ts`.

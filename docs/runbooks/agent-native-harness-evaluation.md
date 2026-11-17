@@ -1,6 +1,6 @@
 # Real coding-agent harness evaluation | controlled read-only protocol
 
-**Status:** experiment runbook, **not authorization to run models**. **Design:** [agent-native decision](../../work/designs/open/repository-agent-workbench/AGENT-NATIVE-EVALUATION.md); [HAR08 preparation](../../work/changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md). Scope: development agents reading this repository, not its Storyteller or game runtime.
+**Status:** historical protocol. HAR10 removed the fake runner from HEAD, so this page does not start a comparison and does not authorize a model. **Design:** [agent-native decision](../../work/designs/open/repository-agent-workbench/AGENT-NATIVE-EVALUATION.md); [HAR08 preparation](../../work/changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md); [experiment register](../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md). Scope: development agents reading this repository, not its Storyteller or game runtime.
 
 ## The specific claim we intend to test
 
@@ -16,15 +16,12 @@ Does a **short explicit instruction to use the repository's knowledge architectu
 4. Choose three varied questions and freeze exact text. Record a randomized A/B sequence (seed, case order, arm order). Each session receives the exact same question, code, docs, native tools, time/call caps and neutral response format. The only difference is the extra B navigation cue.
 5. No session may start until the owner names and approves **client, exact model, six-session maximum, allowed tools, maximum attempts, enforceable time/tool caps and usage policy**. Suggested proposal: 3 cases × 2 arms × one run, 8 minutes and 20 tool calls each, sequential. These are **not approved defaults**. Subscription allowance is not a guaranteed USD limit. No background agent/automation.
 
-Run only provider-free WIKI03 checks during HAR08 preparation:
+HAR08 preparation used provider-free checks. Those commands are gone from HEAD:
 
-    pnpm wiki:bench:agent --self-test
-    pnpm wiki:bench:agent --dry-run
-    pnpm repo:brief --json
+- `pnpm wiki:bench:agent` is not a package script. Do not recreate it to run this protocol.
+- `pnpm repo:brief --json` remains, and it only prints the local revision.
 
-The existing `wiki:bench:agent` entrypoint intentionally refuses real launches. Do not bypass or disable that guard to make a benchmark run. That command does not probe or spawn an installed model CLI.
-
-HAR08 preparation reuses the WIKI03 fake trace, score, snapshot and refusal checks. It adds an A/B gate: the two arms must share the pinned SHA, client, model, question, cap and source exposure, and differ only by the navigation cue below. A resumed session, a SHA mismatch, a prompt that contains a gold path, a writable sandbox, or a readable canary refuses before launch. Missing token reports stay null. Six host-only candidate tasks are staged under gitignored `out/agent-evaluation/<sha>/tasks.json` by the self-test. They are marked `unreviewed`, so they cannot support a verified score. The runbook does not repeat those questions. On this Windows workstation a repository cwd is not an OS sandbox; until a separate sandbox is demonstrated, the launch gate records `sandbox: unproven` and still refuses.
+The removed runner refused real launches and did not probe a model CLI. HAR08 reused the WIKI03 fake trace, score, snapshot and refusal checks, and added an A/B gate: the two arms had to share the pinned SHA, client, model, question, cap and source exposure, and differ only by the navigation cue below. A resumed session, a SHA mismatch, a prompt that contained a gold path, a writable sandbox, or a readable canary refused before launch. Missing token reports stayed null. Six host-only candidate tasks were staged under gitignored `out/agent-evaluation/<sha>/tasks.json` and marked `unreviewed`, so they cannot support a verified score. The runbook does not repeat those questions. On this Windows workstation a repository cwd is not an OS sandbox. The launch gate recorded `sandbox: unproven` and still refused. A future comparison needs a new Change and new private questions.
 
 ## Agent-visible prompt contract
 

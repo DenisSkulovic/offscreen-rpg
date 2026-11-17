@@ -49,7 +49,7 @@ Source-code symbols, stack traces, imports and callers favor exact language-awar
 
 ## Reuse and evidence
 
-- [WIKI03 fake-only agent harness](../../../../scripts/repo-tools/wiki-core/agent-harness.mjs), [trace normalization](../../../../scripts/repo-tools/wiki-core/agent-trace.mjs), [partial answer checks](../../../../scripts/repo-tools/wiki-core/agent-score.mjs), [refusal/self-tests](../../../../scripts/repo-tools/wiki-core/agent-self-test.mjs), [safe CLI](../../../../scripts/repo-tools/wiki-bench-agent.mjs).
+- The WIKI03 fake harness and HAR08 preflight runner are removed from HEAD. The method remains in the [historical protocol](../../../../docs/runbooks/agent-native-harness-evaluation.md) and the [experiment register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md).
 - [Agent rules](../../../../AGENTS.md), [context economics](../../../../.agents/references/context-economics.md), [wiki router](../../../../docs/README.md), [documentation navigation](../../../../.agents/references/documentation-navigation-standard.md).
 - [HAR07 history](../../../changes/archive/2026-11/other/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md). No previous HAR score is regraded as a real-agent result.
 

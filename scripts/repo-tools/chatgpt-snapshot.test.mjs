@@ -79,7 +79,7 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
       },
       requireIndex: true,
     });
-    assert.ok(lean.destination.includes('out/chatgpt-snapshots'));
+    assert.ok(lean.destination.replaceAll('\\', '/').includes('out/chatgpt-snapshots'));
     assert.equal(lean.manifest.source.worktreeDirtyAtExport, true);
     const entries = listZip(lean.destination);
     const names = [...entries.keys()];

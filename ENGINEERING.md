@@ -83,7 +83,7 @@ The [snapshot runbook](docs/runbooks/chatgpt-design-snapshot.md) explains the de
 
 ## 6. Benchmark fancy tools rather than assuming they help
 
-The repository has [retrieval-comparison tooling](scripts/repo-tools/retrieval-compare.mjs) and a [semantic-search pilot](scripts/repo-tools/semantic-pilot.mjs), not a mandated vector database or graph service. The November 2026 HAR03 local study tested Grepai and QMD and reported **significant misses, stale-index/freshness concerns and no live agent Stage B test**. It did **not** adopt either vendor as a default. The [trial receipt](work/changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) is more valuable than a fabricated success claim.
+The repository does not mandate a vector database or graph service. The November 2026 HAR03 local study tested Grepai and QMD and reported **significant misses, stale-index/freshness concerns and no live agent Stage B test**. It did **not** adopt either vendor as a default. Those comparison runners are removed from HEAD. The [trial receipt](work/changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) and the [experiment register](research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) keep the result.
 
 The same standard applies to the harness itself: measure retrieval correctness, false authority claims, unnecessary reads, actual elapsed time, user intervention and *reported* tokens where available. Don't promise “1000× productivity” without evidence.
 

@@ -7,4 +7,4 @@ Source-adjacent package procedures may remain beside code.
 | --- | --- |
 | [Local development](local-development.md) | How do I run and check the portfolio locally? |
 | [ChatGPT design snapshot](chatgpt-design-snapshot.md) | How do I export a source ZIP for design investigation in ordinary ChatGPT? |
-| [Agent-native harness evaluation](agent-native-harness-evaluation.md) | How do I prepare a controlled, read-only actual coding-agent comparison without silently launching models? |
+| [Agent-native harness evaluation](agent-native-harness-evaluation.md) | Where is the historical A/B method after the fake runner was removed? |

@@ -1,6 +1,6 @@
 # HAR09 | Cognee-first architecture-memory accessories experiment
 
-**State: Cancelled / concluded negative (2026-11-17 owner decision).** Original experiments and their reported observations are preserved below. **No Cognee adoption, no further experiments on this tiny corpus.** The local environment's deletion is **not verified** in GitHub; [HAR10](../../../../open/2026-11-17--har10-retire-retrieval-experiments/CHANGE.md) owns executable-tool retirement and local cleanup. **Research authority:** [architecture-memory accessories design](../../../../../designs/open/repository-agent-workbench/ARCHITECTURAL-MEMORY-ACCESSORIES.md), [results](../../../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md).
+**State: Cancelled / concluded negative (2026-11-17 owner decision).** Original experiments and their reported observations are preserved below. **No Cognee adoption, no further experiments on this tiny corpus.** The local environment's deletion is **not verified** in GitHub; [HAR10](../2026-11-17--har10-retire-retrieval-experiments/CHANGE.md) owns executable-tool retirement and local cleanup. **Research authority:** [architecture-memory accessories design](../../../../../designs/open/repository-agent-workbench/ARCHITECTURAL-MEMORY-ACCESSORIES.md), [results](../../../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md).
 
 ## Closure rationale
 

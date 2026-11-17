@@ -11,10 +11,9 @@ Converge on three entry commands, with stable JSON schemas:
 ```bash
 pnpm wiki:health               # zero-provider graph + correctness diagnostics
 pnpm wiki:bench:static         # zero-provider gold graph routes + lexical rank metrics
-pnpm wiki:bench:agent          # ONLY after owner-explicit model/budget consent
 ```
 
-Optional developer utilities: `pnpm wiki:graph` (DOT/JSON), `pnpm wiki:health --json`, `pnpm wiki:bench:agent --case <id>` for controlled local pilots. Exact CLI flags must be reconciled with actual implementation; don't create inert scripts in `package.json`.
+`pnpm wiki:bench:agent` is not a package script. HAR10 removed that fake runner. Do not add it back as an inert command. Optional developer utilities that remain: `pnpm wiki:graph` (DOT/JSON) and `pnpm wiki:health --json`.
 
 ### Minimal implementation surfaces
 
@@ -26,7 +25,7 @@ Optional developer utilities: `pnpm wiki:graph` (DOT/JSON), `pnpm wiki:health --
 | Lexical retrieval | `wiki-core/search.mjs` + `wiki-bench-static.mjs` | Deterministic BM25-like local rank with fixed tokenizer/index config |
 | Golden tasks | Local benchmark runner-controlled dataset, separate from **agent-visible** workspace | Versioned question/gold source/required assertions, hidden from agents |
 | Agent adapter | `wiki-core/adapters/codex.mjs` initially, others only when proven | Fresh process/session, JSONL events, read-only checkout, no repo code execution/provider sends |
-| Trace + scorer | `wiki-core/agent-trace.mjs`, `wiki-bench-agent.mjs` | Host timing, tool counts, file paths, reported usage, independent rubric |
+| Trace + scorer | removed from HEAD | The fake agent trace and scorer are historical. They are not current scripts |
 | Test fixtures | `scripts/repo-tools/wiki-tests/` | Good/bad Markdown, graph, gold ranking and fake CLI event streams |
 | Output | `out/wiki-health/<sha>/<run-id>/` (gitignored) | `metrics.json`, `issues.json`, `graph.json`, optional `graph.dot`; raw agent traces private |
 
