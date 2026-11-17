@@ -14,6 +14,7 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 | Which stories define acceptance texture? | [Acceptance scenarios](gameplay/acceptance-scenarios.md) |
 | What must the screen never fake? | [Principles](experience/principles.md) |
 | How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md) |
+| What has been accepted for the first Living Book POC, without approving final art direction? | [Living Book POC](experience/living-book-poc.md) |
 | How do choice and waiting feel? | [Play and decisions](experience/play-and-decisions.md) |
 | How does return and a long journal work? | [Return and journal](experience/return-and-journal.md) |
 | How are the spaces arranged? | [Navigation](experience/navigation-and-stories.md) |
