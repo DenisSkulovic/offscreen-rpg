@@ -1,6 +1,6 @@
 # Architecture-memory accessories | Cognee-first, reversible research
 
-**Decision accepted for investigation on 2026-11-17.** **State:** design selected as a research direction; vendor adoption **not** selected. **Queued executable packet:** [HAR09](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md). **Current selected Change remains HAR08**, the actual-agent effectiveness preflight. HAR09 must not start while HAR08 is selected or conflict with its test environment.
+**Decision accepted for investigation on 2026-11-17.** **State:** design selected as a research direction; vendor adoption **not** selected. **Executable packet:** [HAR09](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md), now selected. HAR08 preparation is closed. HAR09 must not launch HAR08's model sessions or download document-memory models without a separate yes.
 
 ## Why this is a different experiment
 

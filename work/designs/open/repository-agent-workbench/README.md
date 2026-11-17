@@ -19,7 +19,7 @@
 | Which external technologies deserve investigation, and why not install one immediately? | [Candidate assessment and sources](CANDIDATES.md) |
 | Can persistent graph memory recover forgotten architecture without corrupting authority? | **[Cognee-first accessory decision](ARCHITECTURAL-MEMORY-ACCESSORIES.md)** · [queued HAR09 experiment](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md) |
 | How do we measure retrieval funnel value without adopting a vendor? | **[HAR06 decision](HAR06-DECISION.md)** · [evaluation gates](EVALUATION.md) · [HAR03 historical pilot](PILOT.md) |
-| What should Cursor implement next? | No Change is selected. **[HAR08 preflight](../../../changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md)** is Done and did not launch a model. **[HAR09](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)** stays queued, not selected. [HAR05](../../../changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) stays Verifying. |
+| What should Cursor implement next? | **[HAR09](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md)** is selected. Its document-memory download is not approved. **[HAR08](../../../changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md)** preparation is Done. [HAR05](../../../changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) stays Verifying. |
 
 ## HAR06 retrospective finding (navigation audit)
 
@@ -35,7 +35,7 @@ For design investigations that stay inside ordinary ChatGPT, the [source snapsho
 - [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) is Done and is no longer the selected Change. Its independent reads are recorded. Do not reopen that packet to start this design.
 - [WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) is Done and is no longer the selected Change. It is not a blocking dependency for a source-only semantic search pilot. Misleading wiki text must not be scored as a retrieval success.
 - HAR01–HAR08 are Done. HAR08 prepared the A/B comparison and kept the launch refused. The six tasks are unreviewed and the Windows sandbox is unproven. Real launches, subagents, rerankers and vendor adoption remain separately gated.
-- **HAR09 is queued, not selected,** to evaluate Cognee's architecture-memory and deterministic code-graph capabilities after HAR08. That queue entry is not permission to install hooks, run providers, download models or select a vendor.
+- **HAR09 is the selected Change.** It may inspect Cognee in an isolated folder. It is not permission to install hooks, run providers, download the document-memory models, or select a vendor.
 - After any candidate experiment, independently review the evidence and either reject it, keep it opt-in, or author a *new* narrowly scoped integration Change. Never let a benchmark automatically authorize installation.
 
 **Success** is fewer wrong conclusions and unnecessary file reads at the same or lower total engineering cost. Zero new tooling is a valid winning result.

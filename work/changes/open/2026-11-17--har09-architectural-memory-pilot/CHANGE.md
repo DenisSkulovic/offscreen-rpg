@@ -1,6 +1,6 @@
 # HAR09 | Cognee-first architecture-memory accessories experiment
 
-**State: Ready (queued, NOT selected), owner-approved research direction, 2026-11-17.** **Current selected Change remains HAR08.** Do not implement HAR09 while HAR08 is active. After HAR08 is closed, Cursor may select HAR09 as **Current change** using the normal queue/guard process, unless a newer owner decision supersedes it. **Research authority:** [architecture-memory accessories design](../../../designs/open/repository-agent-workbench/ARCHITECTURAL-MEMORY-ACCESSORIES.md).
+**State: Ready, selected (2026-11-17).** HAR08 preparation is already closed. The live HAR08 model sessions stay unauthorized. This packet is now the current Change. Gate 2 model downloads are not approved. **Research authority:** [architecture-memory accessories design](../../../designs/open/repository-agent-workbench/ARCHITECTURAL-MEMORY-ACCESSORIES.md).
 
 ## Cursor first screen
 
@@ -9,6 +9,10 @@
 **Start with:** fresh \`git rev-parse HEAD\`, \`git status --short\`, root AGENTS, current selection, design above, completed HAR03/HAR06/HAR07 results, HAR08 actual-agent baseline/preflight if completed, \`docs/README.md\`, \`.agents/HARNESS.md\`, \`docs/runbooks/agent-native-harness-evaluation.md\` and existing source-map/wiki tools. **Design baseline:** \`main@302f50f6ff5b0f84e88cecc60278a60f5a80517f\`; reconcile newer commits before any experiment. Keep HAR05 Verifying independent.
 
 **Owner approved exploration, not unbounded installations or billable model use.** No global MCP setup, CLI hooks or automatic memory injection; no provider calls or automatic model downloads; no unrelated/private data. No product/game source changes. Don't implement Cognee into the RPG Storyteller.
+
+## Gate 0 receipt, 2026-11-17
+
+Cognee 1.6.8 fits Python 3.13 on this Windows machine. Its code-graph path is documented as deterministic when the connection test is skipped, and the pinned `enola-cli` 0.5.1 wheel exists for Windows. The document-memory path is a different lane: with no API key, the current install guide says the first GLiNER run downloads about 750 MB of weights. That download is not approved, so document memory is `blocked-model-gate`. No package was installed into Python or into this repo. A dry-run only filled the pip cache. No provider key was set in the process, and this checkout has no `.env`. Cognee still walks parent folders up to the git root looking for one, so a later run has to point it at an empty env file. Eight author-written questions are unreviewed. The local receipt is `out/architecture-memory/fddda55db6c1c405e6192b0acc88d1ff36fc45ed/feasibility.json`. No model was called.
 
 ## Scope: one bounded trial, two distinctly labeled lanes
 
