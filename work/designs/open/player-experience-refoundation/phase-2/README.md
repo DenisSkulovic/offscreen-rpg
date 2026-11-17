@@ -1,8 +1,12 @@
 # Phase 2 | Visual-direction competition
 
-**Status:** OPEN DESIGN. Earlier art-direction and geometry labs now followed by a **book interaction and decision-flow study**. Nothing ratified. **Date:** 2026-11-17. **Implementation permission:** none.
+**Status:** OPEN DESIGN. Earlier art-direction, geometry and interaction labs now followed by a **source-to-leaf narrative composition study**. Nothing ratified. **Date:** 2026-11-17. **Implementation permission:** none.
 
-## View first, read second
+## Current design gate: source-to-leaf composition
+
+The latest design work is [13 · Narrative document compositor](13-NARRATIVE-DOCUMENT-COMPOSITOR.md), [14 · Reader continuity and live updates](14-READER-CONTINUITY-AND-UPDATE-POLICY.md), and [15 · Decisions and readiness](15-DECISION-REGISTER-AND-IMPLEMENTATION-READINESS.md). The [composition lab](composition-lab/README.md) runs a self-contained measured-leaf/continuous comparison and 34 Chromium layout cases. It keeps **published source, semantic document and physical page** as different layers, and treats page animation as replaceable. Browser smoke is not real accessibility or production integration proof. No new rich-publication contract is selected.
+
+## Earlier visual labs (view first, read second)
 
 Open [the standalone visual laboratory](design-lab.html) in a browser. Select among **A / Living Codex**, **B / Responsive Stage**, and **C / Field Edition**, then switch identical design fixtures: Now, Waiting, Journal, Reader, Abstract, Quiet, Recovery. The prototype is dependency-free HTML/CSS/JS. It is **not** production React, a gameplay feature, a real Storyteller pipeline or an implementation request.
 
