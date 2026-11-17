@@ -4,7 +4,7 @@
 
 ## Current checkpoint
 
-- `pnpm wiki:content-health` reports review candidates and does not rewrite pages. The runbook no longer says `test:fast` is unimplemented. Legacy playbook and dated inspections are no longer the default source route. Capture and telemetry stay under `docs/technical` as labeled proposals because STATUS already says that. They were not moved.
+Closed. The scanner reports candidates and does not rewrite pages. Named stale instructions were repaired. Capture and telemetry were not moved. The 30-claim file is an author draft, not an independent audit.
 
 1. **P0: Freeze and triage.** Preserve concurrent work and Change archive; capture WIKI01/05 benchmark baseline, current 74-page denominator and source paths. Establish actual claim owners and current `STATUS`/package-script evidence.
 2. **P1: Tooling.** Implement `wiki:content-health` AST-based risk candidates, JSON/CLI, changed-file filtering and negative fixtures. No automatic correctness conclusions or page rewrites.

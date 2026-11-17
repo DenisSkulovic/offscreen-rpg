@@ -28,9 +28,9 @@ This prevents the two symmetric failures:
 
 1. [WIKI06: authority and Change lifecycle](../../../changes/archive/2026-11/other/2026-11-16--wiki06-knowledge-lifecycle/CHANGE.md). Done. Tightens existing agent rules/Change template, adds a small mechanical reconciliation guard and makes ratification and status independent. **No automatic product ratification.**
 2. [WIKI07: context-efficient retrieval](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md). Done. Deterministic question→page/heading discovery and section-range reading. No LLM providers.
-3. [WIKI08: content-quality instrumentation and repair](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md). Adds content lint and reviewed falsification cases; repairs a **named, limited** set of stale pages, then outputs an honest broader remediation inventory. Not another taxonomy rewrite.
+3. [WIKI08: content-quality instrumentation and repair](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md). Done. Adds a local content-risk scan and repairs a named set of stale instructions. Capture and telemetry stay proposals. The claim list is an author draft, not an independent audit.
 
-WIKI06 and WIKI07 are Done. WIKI08 remains **Proposed, not selected**. Do not mark WIKI08 Done until high-risk factual discrepancies are repaired or explicitly blocked with an owner gate. These packets do not authorize a live agent pilot or provider spend.
+WIKI06, WIKI07, and WIKI08 are Done. These packets do not authorize a live agent pilot or provider spend.
 
 ## Existing good work we retain
 

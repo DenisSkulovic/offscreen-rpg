@@ -1,6 +1,6 @@
 # WIKI08 | Detect false wiki content and repair the highest-risk reader traps
 
-**State: Implementing.** Selected 2026-11-17 after WIKI07. Code-bearing developer-tooling Change (a local content-risk scanner + tests), bundled with **limited, source-verified wiki copy repairs**. Depends on WIKI06 authority policy and WIKI07 section routing. **No real model/provider calls, gameplay code or production operations.**
+**State: Done.** Selected 2026-11-17 after WIKI07 and closed the same day. The scanner and the named repairs are on `024c05b57052063cfc7eeba9bd34e8f7d6dd90f3`. Capture and telemetry stay proposal-status pages. The claim list is an author draft, not an independent audit. Code-bearing developer-tooling Change (a local content-risk scanner + tests), bundled with **limited wiki copy repairs checked against source**. Depends on WIKI06 authority policy and WIKI07 section routing. **No real model/provider calls, gameplay code or production operations.**
 **Sources:** [independent content audit](../../../designs/open/wiki-operating-model/CONTENT-AUDIT.md), [quality evaluation](../../../designs/open/wiki-operating-model/QUALITY-AND-EXPERIMENTS.md), [truth/admission contract](../../../designs/open/wiki-operating-model/TRUTH-AND-LIFECYCLE.md).
 **Observed review baseline:** `main@91c28452070c98627656fa633bde74cce24a6241`; inspect fresh current tree before editing.
 
@@ -80,3 +80,14 @@ Run `pnpm wiki:health`, `pnpm wiki:bench:static` with preserved metric version, 
 **WIKI08 Done means:** instrumented risk scanner validated on negative fixtures, named real stale instructions repaired, high-traffic selected pages easier to read selectively, proposal authority boundaries not falsely upgraded, source status/evidence explicit, actual measured outputs. WIKI08 does **not** claim to have independently semantically audited every paragraph in 74 pages.
 
 Use [PLAN](PLAN.md) and [VERIFICATION](VERIFICATION.md) to implement sequentially.
+
+Close updates STATUS.md, work/changes/README.md, work/changes/ledger/2026-11.md, work/designs/open/wiki-operating-model/README.md, work/designs/open/repository-agent-workbench/README.md, and work/designs/open/repository-agent-workbench/EVALUATION.md. The tool files are scripts/repo-tools/wiki-content-health.mjs, scripts/repo-tools/wiki-core/content-health.mjs, scripts/repo-tools/wiki-core/content-health-self-test.mjs, and the `wiki:content-health` script in package.json.
+
+## Reconciliation ledger (required before Done)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: no gameplay, Storyteller, Admin, or provider rule was edited or ratified | scripts/repo-tools/wiki-core/content-health.mjs at 024c05b57052063cfc7eeba9bd34e8f7d6dd90f3 | fixture-tested | a fenced “not yet implemented” snippet does not warn, and “not selected here” does not demote the identity page | N/A |
+| docs/runbooks/local-development.md#fast-frontend-workflow | evidence | changed: existing test scripts are described as present, and the old playbook is dated evidence | package.json and apps/web/package.json at 024c05b57052063cfc7eeba9bd34e8f7d6dd90f3 | source-observed | the runbook does not claim those commands passed, because they were not run | docs/runbooks/local-development.md |
+| docs/technical/observability/capture-and-provenance.md | evidence | unchanged: the page stays a proposal under docs/technical because STATUS already says that | the page opening at 024c05b57052063cfc7eeba9bd34e8f7d6dd90f3 | source-observed | the content scan still warns unratified-canonical and the page was not moved | N/A |
+| STATUS.md#orientation | evidence | changed: orientation names this scanner as Done and does not claim a new gameplay proof or an independent content audit | STATUS.md at the close commit | source-observed | wiki:health 74/74 is not a content-truth score | STATUS.md |

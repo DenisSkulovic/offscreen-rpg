@@ -1,6 +1,6 @@
 # Retrieval evaluation | falsify the need for more tooling
 
-**Status:** study protocol for an **active opt-in local pilot**. This document alone does not authorize paid agents, global vendor installs or always-on services. Owners: developer harness and the existing [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md)/[WIKI08](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) sequence. Compare on the same frozen Git tree and an independently reviewed answer oracle.
+**Status:** study protocol for an **active opt-in local pilot**. This document alone does not authorize paid agents, global vendor installs or always-on services. Owners: developer harness and the existing [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md)/[WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) sequence. Compare on the same frozen Git tree and an independently reviewed answer oracle.
 
 ## Gate 0: establish the real search baseline, then experiment
 
