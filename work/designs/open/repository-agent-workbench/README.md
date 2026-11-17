@@ -17,8 +17,8 @@
 | --- | --- |
 | What is the desired cross-agent operating model and what is genuinely missing? | [Target and baseline](TARGET.md) |
 | Which external technologies deserve investigation, and why not install one immediately? | [Candidate assessment and sources](CANDIDATES.md) |
-| How would we decide whether another tool actually improves correctness and cost? | [Evaluation and adoption gates](EVALUATION.md) · [16-case semantic pilot](PILOT.md) |
-| What bounded code work could Cursor eventually do? | [HAR01 structured source receipts](../../../changes/archive/2026-11/other/2026-11-17--har01-source-receipts/CHANGE.md) · [HAR02 comparative retrieval harness](../../../changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md) · [HAR03 local semantic pilot](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) |
+| How do we measure retrieval funnel value without adopting a vendor? | **[HAR06 decision](HAR06-DECISION.md)** · [evaluation gates](EVALUATION.md) · [HAR03 historical pilot](PILOT.md) |
+| What should Cursor implement next? | **[HAR06 selected Change](../../../changes/open/2026-11-17--har06-retrieval-funnel/CHANGE.md)**. Previous: [HAR01](../../../changes/archive/2026-11/other/2026-11-17--har01-source-receipts/CHANGE.md) · [HAR02](../../../changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md) · [HAR03](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) |
 
 ## Ordinary ChatGPT source transport (implemented)
 
@@ -29,7 +29,7 @@ For design investigations that stay inside ordinary ChatGPT, the [source snapsho
 - Canonical agent owner remains [.agents/HARNESS.md](../../../../.agents/HARNESS.md); [context economics](../../../../.agents/references/context-economics.md) and [document navigation](../../../../.agents/references/documentation-navigation-standard.md) remain binding. This design must not become a second always-on agent rule.
 - [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) is Done and is no longer the selected Change. Its independent reads are recorded. Do not reopen that packet to start this design.
 - [WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) is Done and is no longer the selected Change. It is not a blocking dependency for a source-only semantic search pilot. Misleading wiki text must not be scored as a retrieval success.
-- HAR01, HAR02, and HAR03 are Done. HAR03 did not install a vendor into the repo. No Change is selected. A later agent trial still needs its own permission.
+- HAR01, HAR02 and HAR03 are Done. HAR03 did not adopt a vendor. **HAR06 is now selected Ready** to improve measurement and candidate verification, not deploy a new index. A real-agent, reranker or subagent trial requires separate permission.
 - After any candidate experiment, independently review the evidence and either reject it, keep it opt-in, or author a *new* narrowly scoped integration Change. Never let a benchmark automatically authorize installation.
 
 **Success** is fewer wrong conclusions and unnecessary file reads at the same or lower total engineering cost. Zero new tooling is a valid winning result.

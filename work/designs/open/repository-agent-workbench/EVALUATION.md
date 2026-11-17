@@ -37,4 +37,6 @@ With explicit user approval for the named model, max calls, spend cap and a prov
 
 Create a *new* narrow implementation Change after owner selection. Make the winning tool explicitly opt-in, disabled by default, scoped to one local clone, read-only, disposable, version-pinned, and uninstallable with no effect on core `pnpm` workflows. No compose stack unless it is actually necessary and measured against a lighter launcher. The agent may prefer native tools for simple symbol/file questions.
 
+**HAR06 correction:** [Accepted retrieval-funnel decision](HAR06-DECISION.md) and [selected HAR06](../../../changes/open/2026-11-17--har06-retrieval-funnel/CHANGE.md) supersede HAR03's weak one-shot/top-five comparison as a test of search quality. HAR06 requires clean source/index receipts, multi-role gold, candidate recall@20/@30 and final evidence correctness. Neither a vector reranker nor an agent/subagent trial is authorized.
+
 **Change governance:** HAR01, HAR02, and HAR03 are Done. The comparer does not authorize a vendor install. [HAR03](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) recorded the local trial and did not adopt Grepai or QMD. The benchmark runner must not spawn paid models or download large models by default.
