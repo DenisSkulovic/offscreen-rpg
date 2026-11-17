@@ -1,6 +1,6 @@
 # Proposed wiki governance decisions | owner review
 
-**State:** RECOMMENDED, NOT YET RATIFIED. Do not copy these into `docs/decisions/` as accepted ADRs until the owner approves the operating policy or selects WIKI06 to ratify/implement it. WIKI06 can create a compact `D-0003`-style adopted decision if expressly authorized; do not backfill fake historical dates.
+**State:** Adopted as workflow guidance on 2026-11-17 when the owner selected WIKI06. The rules live in `AGENTS.md`, `.agents/rules/documentation.md`, and `pnpm wiki:change-guard`. They were not copied into `docs/decisions/`. D2's Observability questions remain unratified: capture and telemetry stay proposals.
 
 ## D1. What is the canonical wiki actually for?
 

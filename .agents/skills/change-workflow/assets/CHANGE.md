@@ -55,12 +55,12 @@ One observable change to executable code/tests/configuration and why it matters.
 
 ## Reconciliation ledger (required before Done)
 
-**Product docs are the bible; technical docs second; code is the artifact.** Fill one row per Authority heading listed above (product, technical, evidence if claimed). Do **not** mark Done or clear `Current change` with an empty ledger, or while permanent docs would remain more stale than the landed code.
+**Product docs are the bible; technical docs second; code is the artifact.** Fill one row per affected selected claim. A pure internal tool still needs one row that says `no product/technical behavior impacted` and why. Do **not** mark Done while a row says `not run`, while a reason is "not needed" or "docs updated", or while permanent docs would remain more stale than the landed code.
 
-| Authority (doc + heading) | Result | Note |
-| --- | --- | --- |
-| [product/technical/evidence path#heading] | unchanged \| updated | unchanged: one-line why; updated: owner path + what changed |
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| [path#heading, or no product/technical behavior impacted] | product / technical / evidence / none | unchanged: concrete reason, or changed: what the ratified wording now says | [path @ sha, or no source behavior changed] | designed / source-observed / fixture-tested / live-observed / not run | [the case that would disprove this row] | [map path, or N/A] |
 
-For every `updated` row (and any spec-vs-code mismatch found while closing), run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite the product bible to rationalize defective code—escalate.
+`unchanged` means the selected contract still says the same thing after the code moved. Do not edit a product page only to announce a passing test. For every `changed` row, and any spec-vs-code mismatch, run [documentation-reconciliation](../../documentation-reconciliation/SKILL.md) on those owners only. Do not rewrite the product bible to rationalize defective code—escalate and write `needs independent owner review`. `pnpm wiki:change-guard` checks that these fields exist. It does not decide that the claim is true.
 
 **Closing rule:** record actual diff and verification, complete the reconciliation ledger above, then retire the active packet. Git retains the historical plan.

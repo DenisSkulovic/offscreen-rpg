@@ -10,6 +10,12 @@ Read when changing documentation, navigation, rules or a cross-file responsibili
 
 **Code is an artifact of those two layers.** Useful, necessary, and evidential for *how the machine behaves today*—but **not** the product authority. Prefer: *code is nice to have; product documentation is the truth*. A green test suite with stale permanent docs is a **critical failure**, not a successful delivery.
 
+### Admission: ratified target versus realization
+
+Ratify a product or technical decision in its owning heading when the owner accepts it, even if no code exists yet. Keep that selected future in `docs/`. An idea that is not accepted stays in `work/designs/open/<topic>/`; writing the proposal does not edit the normative wiki and does not grant code permission. A file under `docs/technical/` is not selected merely because of that path.
+
+When source or tests change and the selected contract does not, update `STATUS.md`, the nearest source README, and the Change ledger with `unchanged` plus a concrete reason. Do not paste an implementation diary into the canon, and do not edit product pages only to announce that a test passed. If source contradicts an accepted rule, name the file, symbol, conflict, and a negative case, then stop. Do not rewrite the product rule so the code looks compliant.
+
 ### Hard failure modes (treat as criminal process failure)
 
 - **Significant code landed while permanent product/technical owners stayed silent or more stale than the code** — including hub status that still says “Proposed / not implemented” when Changes are Done.
@@ -25,7 +31,7 @@ Any planned Change, authorized code edit, or material behavior shift **must be p
 
 A cheap implementation agent should not have to read a 30-KB target, a 28-KB audit and half the source tree just to discover a known entrypoint. The [layered retrieval contract](../references/documentation-navigation-standard.md#2026-11-12-explicit-layered-retrieval-contract-for-cheap-coding-agents) supplies L0–L4 levels and first-screen/maintenance rules. **Read only the relevant owner map**, not all maps as new required documentation.
 
-- For complex/high-traffic source areas, maintain a short §README.md§ **beside** that area: a few lines of **current source / selected future target / start here / source-inspected date**, then a question→file/symbol/contract/test table and meaningful risk/counterexample. A new agent should know which 2–5 source files matter **before** doing a repo-wide search.
+- For complex/high-traffic source areas, maintain a short `README.md` **beside** that area: a few lines of **current source / selected future target / start here / source-inspected date**, then a question→file/symbol/contract/test table and meaningful risk/counterexample. A new agent should know which 2–5 source files matter **before** doing a repo-wide search.
 - For long technical docs, put a very short “owns / which heading / do not read more unless” preamble in the first ~20 lines. Don't turn every README into a second technical specification or repeat full code descriptions in Change packets.
 - **No automatic source-file banners.** A 3–6-line top comment earns its place only for a surprising local invariant that cannot be discovered from the nearest map; otherwise source comments belong directly beside the relevant decision. No mandatory generated headers/TOCs.
 - Preserve one canonical home: product intent → product doc; technical invariant → technical contract; exact current code ownership → source-adjacent README; next executable task → selected Change; actual proof → tests/receipt. Small summaries and links are allowed to avoid expensive re-derivation; wholesale duplication is not.
@@ -49,7 +55,7 @@ Find the existing owner before adding a document. Put the full explanation there
 | Repeated operating mistake                                                          | Small rule at the right trigger, or procedure in a skill; avoid unconditional policy growth                                                       |
 | Consequential owner remarks, decisions, alternatives, exclusions or session handoff | Append chronological entry in the [day's minutes](../../work/sessions/README.md); promote lasting decisions to their owning spec/Change separately |
 
-Before finishing a slice, ask whether a fresh reader can find its purpose, current boundary, owner and evidence from the nearest map without reverse-engineering source. Repair the missing link or summary during that slice. For a **code-bearing Change**, finishing **also requires** the CHANGE.md **Reconciliation ledger** and [documentation-reconciliation](../skills/documentation-reconciliation/SKILL.md) for every `updated`/drift row—scoped to listed authorities, not a repository-wide rewrite. **If permanent docs would remain more stale than the landed code, the Change is not Done—full stop.**
+Before finishing a slice, ask whether a fresh reader can find its purpose, current boundary, owner and evidence from the nearest map without reverse-engineering source. Repair the missing link or summary during that slice. For a **code-bearing Change**, finishing **also requires** the CHANGE.md **affected-claim ledger** (heading, changed or unchanged with a real reason, inspected source and SHA, evidence tier, negative proof, map update) and [documentation-reconciliation](../skills/documentation-reconciliation/SKILL.md) for every changed or drifted row. `not run` cannot be Done. A tooling change that does not alter a selected contract says so, instead of editing product pages. `pnpm wiki:change-guard` checks that the ledger is filled in; it does not decide whether a product rule is true. **If permanent docs would remain more stale than the landed code, the Change is not Done—full stop.**
 
 ## Keep the entry cheap
 

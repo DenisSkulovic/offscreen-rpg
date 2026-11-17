@@ -1,6 +1,14 @@
 # WIKI07 | Execution checkpoints
 
-**State:** Proposed, not selected; requires WIKI06 Done and the existing WIKI01–05 source as foundation. No provider calls.
+**State:** Implementing. WIKI06 is Done. No provider calls.
+
+## Current checkpoint
+
+- P1–P4 are in progress on this dirty worktree. `pnpm wiki:find` and `pnpm wiki:read` exist. Self-test passed.
+- P5 is not accepted. Ten implementer questions were run and several top hits are whole-page titles. An independent reviewer has not judged them.
+- Do not mark Done from the self-test alone.
+
+## Remaining steps
 
 1. **P0**: Read current WIKI01 AST, WIKI05 row-aware context, lexical scorer, package scripts; pin clean SHA and context economics.
 2. **P1**: Build section-level index and precise range/anchor semantics with unit fixtures.

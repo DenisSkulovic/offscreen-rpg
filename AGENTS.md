@@ -5,13 +5,14 @@
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).
-3. If a Change is selected: read that packet’s first screen, **one** nearby owner README, then 2–5 named source files. Do **not** preload all maps, minutes, or program handoffs.
+3. If a Change is selected: read that packet’s first screen, **one** nearby owner README, then 2–5 named source files. Do **not** preload all maps, minutes, or program handoffs. For an unknown question, run `pnpm wiki:find` and then `pnpm wiki:read` on one heading. Open `STATUS.md` or source only when the question asks what is implemented. Stop when the selected rule, the actual source, and a negative case are known.
 
 **Expired trials are not cold-start.** Forensic S0–S6 completed (0 paid). Dated observations live under [evidence/](evidence/README.md). Do not relaunch an archived Change or an old handoff from AGENTS.
 
 ## Authority and retrieval
 
 - **Documentation hierarchy:** **product = bible** → **technical = guarantees** → **code = artifact**. Stale permanent docs after significant code is a **critical failure**.
+- **Admission:** `docs/` is the ratified target, including a selected future the code does not implement yet. `STATUS.md` and source are the realization. An open proposal stays a proposal, and a Change must not rewrite a product rule to match drifting code. Maintenance: [documentation](.agents/rules/documentation.md).
 - **Product owners:** [docs/product/](docs/product/README.md) (`gameplay/`, `experience/`, `storyteller/`, `admin/`)
 - **Technical owners:** [docs/technical/](docs/technical/README.md) (`platform/`, `engine/`, `storyteller/`, `client/`, `admin/`, `observability/`, `lab/`)
 - **Decisions / runbooks:** [docs/decisions/](docs/decisions/README.md), [docs/runbooks/](docs/runbooks/README.md)

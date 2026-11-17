@@ -1,6 +1,21 @@
 # WIKI06 | Acceptance and negative controls
 
-No script or agent rule has yet been changed by this packet. The following tests are requirements, not performed evidence.
+Executed on 2026-11-17 against dirty worktree `5be8e2a8fa42c684ec16939b9cf8928fd56e996f`. No provider call.
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `pnpm wiki:change-guard --self-test` | 0 | Unratified GM07, path ratification, unchanged target, shallow checkbox, tooling row, not-run, unpaid paid-claim, owner review, missing heading, archive bytes, empty queue |
+| `pnpm wiki:change-guard --mode plan --change work/changes/open/2026-11-16--wiki06-knowledge-lifecycle` | 0 | No findings |
+| `pnpm wiki:change-guard --mode close --change work/changes/open/2026-11-16--wiki06-knowledge-lifecycle --base 5be8e2a8` | 0 | No findings after Done. A first Done run failed because a negative-proof sentence said "not run cannot be Done"; the check now reads only the status and source cells, and the self-test still rejects a status of `not run` |
+| `pnpm wiki:health` | 0 | 74/74 reachable, 0 broken paths or anchors, p50 2, p95 3. Three pre-existing dead-end warnings |
+| `pnpm wiki:bench:static --self-test` | 0 | v1 and v2 fixtures passed |
+| `python scripts/check_docs.py` | 0 | 229 Markdown files, 0 problems |
+| `pnpm repo:docs-health` | 0 | Advisory. Historical Done packets still lack the newer ledger heading. WIKI06 plan was then given one current checkpoint |
+| `git diff --check` | 0 | No whitespace errors |
+
+The guard does not decide whether a claim is true. It did not modify `work/changes/archive/`.
+
+The following tests are the original requirements. The fixture results above are the performed evidence.
 
 ## Must accept
 

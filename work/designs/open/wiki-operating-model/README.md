@@ -1,6 +1,6 @@
 # Wiki operating model | authoritative meaning, cheap retrieval and verified content
 
-**State:** proposed decision/design packet for owner selection. Written after WIKI04/WIKI05. **Not an accepted product policy or a selected executable Change.** No gameplay source, current documentation or agent rules are changed by this proposal.
+**State:** owner selected the WIKI06–WIKI08 sequence on 2026-11-17. D1–D8 are workflow guidance for that work, not a product ADR and not gameplay permission. Observability capture and telemetry remain unratified proposals.
 
 **Inspected GitHub baseline:** `main@91c28452070c98627656fa633bde74cce24a6241`, 2026-11-16. The user reported WIKI04/WIKI05 locally completed; the same implementation and archive receipts are now visible on GitHub. Our review is source/document inspection, not a local run of benchmarks or a fresh agent experiment.
 
@@ -26,7 +26,7 @@ This prevents the two symmetric failures:
 
 ## Implementation sequence after owner adoption
 
-1. [WIKI06: authority and Change lifecycle](../../../changes/open/2026-11-16--wiki06-knowledge-lifecycle/CHANGE.md). Tightens existing agent rules/Change template, adds a small mechanical reconciliation guard and makes ratification and status independent. **Code-bearing Change; no automatic product ratification.**
+1. [WIKI06: authority and Change lifecycle](../../../changes/archive/2026-11/other/2026-11-16--wiki06-knowledge-lifecycle/CHANGE.md). Done. Tightens existing agent rules/Change template, adds a small mechanical reconciliation guard and makes ratification and status independent. **No automatic product ratification.**
 2. [WIKI07: context-efficient retrieval](../../../changes/open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md). Adds deterministic question→page/heading discovery and section-range reading with explicit cost/stop metadata. Changes existing rules minimally; no LLM providers.
 3. [WIKI08: content-quality instrumentation and repair](../../../changes/open/2026-11-16--wiki08-content-quality-gates/CHANGE.md). Adds content lint and reviewed falsification cases; repairs a **named, limited** set of stale pages, then outputs an honest broader remediation inventory. Not another taxonomy rewrite.
 

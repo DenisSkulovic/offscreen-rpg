@@ -1,6 +1,6 @@
 # WIKI06 | Enforce wiki authority and Change reconciliation
 
-**State: Proposed, not selected.** Code-bearing developer-tooling Change (a small local guard script and deterministic test fixtures, plus focused agent-rule/template updates). **No game runtime, provider/model calls, production actions or new gameplay permissions.**
+**State: Done.** Owner selected this packet on 2026-11-17. D1–D8 are workflow guidance in the agent rules and this guard. GM07, Support grants, and Observability topology stay unratified. Code-bearing developer-tooling Change (a small local guard script and deterministic test fixtures, plus focused agent-rule/template updates). **No game runtime, provider/model calls, production actions or new gameplay permissions.**
 **Design and proposed owner decisions:** [Wiki operating model](../../../designs/open/wiki-operating-model/README.md), [ratification/lifecycle](../../../designs/open/wiki-operating-model/TRUTH-AND-LIFECYCLE.md), [decision register](../../../designs/open/wiki-operating-model/DECISIONS.md).
 **Inspected baseline:** `main@91c28452070c98627656fa633bde74cce24a6241`; recheck actual clean HEAD, Change state and local edits before running.
 
@@ -81,3 +81,32 @@ Test fixtures:
 Recheck `git status`; owner has local Cursor changes. Do not overwrite them. No claim of proof from a test not actually executed. Use [PLAN](PLAN.md) and [VERIFICATION](VERIFICATION.md) to implement.
 
 **Success:** an implementation agent can distinguish *ratifying a requirement*, *implementing it* and *reporting reality*; a code Change cannot claim Done by writing a vague docs checkbox, but it also does not modify five product files simply to announce that a unit test passed.
+
+## Touched paths
+
+package.json
+AGENTS.md
+STATUS.md
+work/changes/README.md
+work/changes/ledger/2026-11.md
+work/designs/open/wiki-operating-model/README.md
+work/designs/open/wiki-operating-model/DECISIONS.md
+.agents/rules/documentation.md
+.agents/references/documentation-navigation-standard.md
+.agents/skills/change-workflow/SKILL.md
+.agents/skills/change-workflow/assets/CHANGE.md
+.agents/skills/documentation-reconciliation/SKILL.md
+scripts/repo-tools/wiki-change-guard.mjs
+scripts/repo-tools/wiki-core/change-guard.mjs
+scripts/repo-tools/wiki-core/change-guard-self-test.mjs
+
+## Reconciliation ledger (required before Done)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: no gameplay, Storyteller, Admin, or provider rule was edited or ratified | scripts/repo-tools/wiki-change-guard.mjs and scripts/repo-tools/wiki-core/change-guard.mjs inspected on 5be8e2a8 dirty worktree | fixture-tested | a Proposed GM07 citation is flagged and the guard does not write a product page | N/A |
+| AGENTS.md#authority-and-retrieval | evidence | changed: one admission line separates ratified docs from realization and from open proposals | AGENTS.md on 5be8e2a8 dirty worktree | fixture-tested | the guard still rejects a technical path cited as authority merely because of its folder | AGENTS.md |
+| .agents/rules/documentation.md#admission-ratified-target-versus-realization | evidence | changed: the maintenance rule now says when a decision is ratified and when only status moves | .agents/rules/documentation.md on 5be8e2a8 dirty worktree | fixture-tested | unchanged target plus a passing test does not require a product-page edit | .agents/rules/documentation.md |
+| .agents/references/documentation-navigation-standard.md#one-authoritative-home-per-kind-of-knowledge | evidence | changed: removed the stale G3-move instruction and the section-sign command debris | .agents/references/documentation-navigation-standard.md on 5be8e2a8 dirty worktree | fixture-tested | an archived packet stays historical evidence and is not treated as execution permission | .agents/references/documentation-navigation-standard.md |
+| .agents/skills/change-workflow/SKILL.md#5-converge-record-evidence-and-retire | evidence | changed: close now requires the seven-column affected-claim ledger and a real unchanged reason | .agents/skills/change-workflow/SKILL.md and .agents/skills/change-workflow/assets/CHANGE.md and .agents/skills/documentation-reconciliation/SKILL.md on 5be8e2a8 dirty worktree | fixture-tested | "docs updated" and "not needed" fail close, and not run cannot be Done | .agents/skills/change-workflow/assets/CHANGE.md |
+| STATUS.md#orientation | evidence | changed: the orientation names this read-only guard and does not claim a new gameplay proof | STATUS.md and package.json on 5be8e2a8 dirty worktree | fixture-tested | the guard's own self-test is not a live provider run and is not reported as one | STATUS.md |
