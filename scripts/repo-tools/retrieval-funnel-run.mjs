@@ -1,9 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './process.mjs';
 import { FUNNEL_CASES } from './retrieval-funnel-oracle.mjs';
-import { FUNNEL_SCHEMA, evaluateFunnel } from './wiki-core/retrieval-funnel.mjs';
+import { FUNNEL_SCHEMA_V2, evaluateFunnel } from './wiki-core/retrieval-funnel.mjs';
+import { enclosingSymbol, followEvidence } from './wiki-core/source-route.mjs';
 
 const EXCLUDES = [
   '!node_modules',
@@ -14,6 +15,8 @@ const EXCLUDES = [
   '!scripts/repo-tools/retrieval-funnel*',
   '!work/changes/archive/**',
   '!work/changes/open/2026-11-17--har06-retrieval-funnel/**',
+  '!work/changes/open/2026-11-17--har07-evidence-verified-source-navigation/**',
+  '!work/designs/open/repository-agent-workbench/SOURCE-ROUTE-AUDIT-2026-11-17.md',
   '!**/HAR06-DECISION.md',
 ];
 
@@ -69,10 +72,20 @@ function collectLexical(queries, origin) {
     for (const hit of found.hits) {
       if (hits.length >= 30) break;
       const key = `${hit.path}:${hit.line}`;
-      if (!hits.some((item) => `${item.path}:${item.line}` === key)) hits.push(hit);
+      if (!hits.some((item) => `${item.path}:${item.line}` === key)) hits.push(prove(hit));
     }
   }
   return { status: 'ran', hits, ms, bytes, calls };
+}
+
+function prove(hit) {
+  if (!/\.(?:ts|tsx|mjs|js)$/i.test(hit.path) || !hit.line) {
+    return { ...hit, provenance: `rg:${hit.path}:${hit.line ?? ''}` };
+  }
+  const abs = path.join(root, ...hit.path.split('/'));
+  if (!existsSync(abs)) return { ...hit, provenance: `rg:${hit.path}:${hit.line}` };
+  const proof = enclosingSymbol(readFileSync(abs, 'utf8'), hit.line);
+  return { ...hit, proof, provenance: `rg:${hit.path}:${hit.line}` };
 }
 
 function wikiHits(question) {
@@ -85,7 +98,8 @@ function wikiHits(question) {
   if (payload.statusCompanion) rows.push({ ...payload.statusCompanion, match: 'status-companion' });
   const hits = rows.slice(0, 12).map((item) => ({
     path: item.path,
-    line: null,
+    ref: item.ref ?? item.path,
+    line: item.lineStart ?? null,
     text: item.preview ?? '',
     authority: item.authority ?? null,
     notice: item.notice ?? null,
@@ -105,22 +119,21 @@ function armFor(item, sha) {
   }
   const lexical = collectLexical(item.queries, 'rg');
   const wiki = wikiHits(item.question);
-  const guidedHits = [...(wiki.hits ?? [])];
-  for (const hit of lexical.hits ?? []) {
-    if (guidedHits.length >= 30) break;
-    guidedHits.push({ ...hit, origin: 'wiki-then-rg' });
-  }
+  const route = wiki.status === 'failed'
+    ? { hits: [], unresolved: [{ reason: 'wiki-failed' }], spent: {} }
+    : followEvidence({ root, question: item.question, headings: wiki.hits ?? [] });
   return {
     A: { ...lexical, sha, tool: 'rg' },
     B: {
       status: wiki.status === 'failed' ? 'failed' : 'ran',
       sha,
-      tool: 'wiki-find+rg',
-      hits: guidedHits.slice(0, 30),
-      ms: (wiki.ms ?? 0) + (lexical.ms ?? 0),
-      bytes: (wiki.bytes ?? 0) + (lexical.bytes ?? 0),
-      calls: (wiki.calls ?? 0) + (lexical.calls ?? 0),
-      error: wiki.error ?? lexical.error ?? null,
+      tool: 'wiki-source-route',
+      hits: route.hits,
+      navigation: { spent: route.spent, unresolved: route.unresolved },
+      ms: wiki.ms ?? 0,
+      bytes: wiki.bytes ?? 0,
+      calls: wiki.calls ?? 0,
+      error: wiki.error ?? null,
     },
   };
 }
@@ -149,7 +162,7 @@ export function runRetrievalFunnel() {
   const secret = collectLexical(['FUNNEL_SECRET_PROBE'], 'rg');
   const cases = perCase.map(({ item, arms }) => {
     const one = evaluateFunnel({
-      schema: FUNNEL_SCHEMA,
+      schema: FUNNEL_SCHEMA_V2,
       sha,
       dirty,
       cases: [item],
@@ -159,10 +172,23 @@ export function runRetrievalFunnel() {
         C: { ...semantic, sha, dirty },
       },
     });
-    return { ...one.cases[0], ms: { A: arms.A.ms ?? 0, B: arms.B.ms ?? 0 }, calls: { A: arms.A.calls ?? 0, B: arms.B.calls ?? 0 } };
+    const aPaths = new Set((arms.A.hits ?? []).map((hit) => hit.path));
+    const bOnly = (arms.B.hits ?? []).filter((hit) => !aPaths.has(hit.path)).map((hit) => ({
+      path: hit.path,
+      line: hit.line ?? null,
+      symbol: hit.proof?.symbol ?? null,
+      trace: hit.trace ?? [],
+    }));
+    return {
+      ...one.cases[0],
+      ms: { A: arms.A.ms ?? 0, B: arms.B.ms ?? 0 },
+      calls: { A: arms.A.calls ?? 0, B: arms.B.calls ?? 0 },
+      navigation: arms.B.navigation ?? null,
+      bOnly,
+    };
   });
   const secretEval = evaluateFunnel({
-    schema: FUNNEL_SCHEMA,
+    schema: FUNNEL_SCHEMA_V2,
     sha,
     dirty,
     cases: [{ id: 'N1', forbiddenPath: 'secret-probe', secret: 'FUNNEL_SECRET_PROBE', review: 'unreviewed' }],
@@ -173,10 +199,10 @@ export function runRetrievalFunnel() {
     },
   });
   const report = {
-    schema: FUNNEL_SCHEMA,
+    schema: FUNNEL_SCHEMA_V2,
     sha,
     dirty,
-    proxy: 'scripted-lexical-and-wiki',
+    proxy: 'scripted-lexical-and-source-route',
     agentTrial: false,
     verifiedCount: 0,
     diagnosticOnly: true,
@@ -186,7 +212,7 @@ export function runRetrievalFunnel() {
   const dir = path.join(root, 'out', 'retrieval-funnel', sha ?? 'unknown');
   mkdirSync(dir, { recursive: true });
   writeFileSync(path.join(dir, 'report.json'), JSON.stringify(report, null, 2));
-  console.log(`${FUNNEL_SCHEMA} @ ${sha}${dirty ? ' dirty' : ''}`);
+  console.log(`${FUNNEL_SCHEMA_V2} @ ${sha}${dirty ? ' dirty' : ''}`);
   console.log('Verified headline: none. Every case is unreviewed, so this run is diagnostic only.');
   console.log(`Optional semantic arm: ${semantic.status}${semantic.reason ? ` (${semantic.reason})` : ''}`);
   for (const item of report.cases) {
@@ -196,9 +222,16 @@ export function runRetrievalFunnel() {
       ? 'freshness'
       : item.id === 'N1'
       ? (view.leaked ? 'leak' : 'hidden')
-      : view.existenceClaim ? 'existence-claim' : view.abstained ? 'abstain' : view.generationMiss ? 'not-in-30' : view.evidenceAt5 ? 'evidence@5' : view.buried ? `buried@${view.bestRank}` : `rank ${view.bestRank ?? '-'}`;
+      : view.existenceClaim ? 'existence-claim' : view.abstained ? 'abstain' : view.fileGenerationMiss ? 'file-miss' : `${view.symbolVerified ? 'symbol' : 'file-only'}@${view.fileBestRank}`;
     const fence = fused.unknown ? ` uncomparable:${fused.reason}` : '';
-    console.log(`${item.id}  ${label}${fence}`);
+    const route = item.bOnly?.length ? ` B-only ${item.bOnly.length}` : '';
+    console.log(`${item.id}  ${label}${fence}${route}`);
+    if (item.id?.startsWith('C') && item.bOnly?.length) {
+      for (const hop of item.bOnly.slice(0, 4)) {
+        const kinds = (hop.trace ?? []).map((step) => step.kind).join('>');
+        console.log(`    ${hop.path}:${hop.line ?? '-'} ${hop.symbol ?? ''} ${kinds}`);
+      }
+    }
   }
   console.log(`Wrote ${path.join(dir, 'report.json')}`);
 }

@@ -233,8 +233,8 @@ async function main() {
     return import('./retrieval-funnel-run.mjs').then((mod) => mod.runRetrievalFunnel());
   }
   if (args.includes('--help') || args.length === 0) {
-    console.log('Usage: pnpm repo:semantic-pilot --self-test | --run | --funnel');
-    console.log('Local search trial. --funnel compares short lexical queries with wiki-guided search. Missing vendor tools are not-configured. No model agent is launched.');
+  console.log('Usage: pnpm repo:semantic-pilot --self-test | --run | --funnel');
+  console.log('Local search trial. --funnel compares short lexical queries with wiki-to-source navigation. Missing vendor tools are not-configured. No model agent is launched.');
     return;
   }
   if (!args.includes('--run')) throw new Error('Pass --run or --self-test.');

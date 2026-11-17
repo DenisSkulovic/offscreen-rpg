@@ -1,4 +1,5 @@
 export const FUNNEL_SCHEMA = 'repo.retrieval-funnel.v1';
+export const FUNNEL_SCHEMA_V2 = 'repo.retrieval-funnel.v2';
 
 const SHA = /^[0-9a-f]{40}$/;
 
@@ -18,7 +19,8 @@ function blob(hit) {
 
 function keyOf(hit) {
   const path = normPath(hit.path);
-  if (hit.symbol) return `${path}#${hit.symbol}`;
+  const symbol = hit.symbol || hit.proof?.symbol;
+  if (symbol) return `${path}#${symbol}`;
   const line = Number(hit.line) || 0;
   const bucket = line > 0 ? Math.floor((line - 1) / 20) : 0;
   return `${path}@${bucket}`;
@@ -39,6 +41,7 @@ export function fuseCandidates(groups, options = {}) {
           ...hit,
           path: normPath(hit.path),
           origins: [group.id],
+          provenances: hit.provenance ? [hit.provenance] : [],
           rrf: weight,
           bestRank: rank,
         });
@@ -47,6 +50,10 @@ export function fuseCandidates(groups, options = {}) {
       existing.rrf += weight;
       existing.bestRank = Math.min(existing.bestRank, rank);
       if (!existing.origins.includes(group.id)) existing.origins.push(group.id);
+      const provenance = hit.provenance ?? null;
+      if (provenance && existing.provenances.includes(provenance)) {
+        existing.rrf -= weight;
+      } else if (provenance) existing.provenances.push(provenance);
       if (!existing.authority && hit.authority) existing.authority = hit.authority;
       if (!existing.notice && hit.notice) existing.notice = hit.notice;
       if (!existing.match && hit.match) existing.match = hit.match;
@@ -58,12 +65,16 @@ export function fuseCandidates(groups, options = {}) {
     .slice(0, cap);
 }
 
-function matches(hit, role) {
+function fileOk(hit, role) {
   if (!role || role.adjudication) return false;
   if (role.notPath && samePath(hit.path, role.notPath)) return false;
-  if (!samePath(hit.path, role.path)) return false;
-  if (role.symbol && !blob(hit).includes(role.symbol)) return false;
-  return true;
+  return samePath(hit.path, role.path);
+}
+
+function symbolOk(hit, role) {
+  if (!role.symbol) return true;
+  if (hit.proof?.method === 'enclosing-read') return hit.proof.symbol === role.symbol;
+  return blob(hit).includes(role.symbol);
 }
 
 function authorityOk(hit, role) {
@@ -106,19 +117,31 @@ export function scoreCandidates(candidates, item) {
   }
   const required = (item.roles ?? []).filter((role) => !role.adjudication);
   const found = required.map((role) => {
-    const row = list.findIndex((hit) => matches(hit, role));
+    const row = list.findIndex((hit) => fileOk(hit, role) && symbolOk(hit, role));
     return { role: role.id, rank: row === -1 ? null : row + 1 };
   });
+  const fileFound = required.map((role) => {
+    const row = list.findIndex((hit) => fileOk(hit, role));
+    return { role: role.id, rank: row === -1 ? null : row + 1 };
+  });
+  const fileBest = fileFound.map((row) => row.rank).filter((rank) => rank !== null).sort((a, b) => a - b)[0] ?? null;
   const ranks = found.map((row) => row.rank).filter((rank) => rank !== null).sort((a, b) => a - b);
   const best = ranks[0] ?? null;
   const top = list.slice(0, 5);
   const archiveFirst = Boolean(top[0] && normPath(top[0].path).includes('work/changes/archive/'));
   const statusOk = !item.status || top.some((hit) => normPath(hit.path) === 'STATUS.md' || hit.match === 'status-companion');
-  const evidenceAt5 = required.some((role) => top.some((hit) => matches(hit, role) && authorityOk(hit, role))) && !archiveFirst && statusOk;
+  const evidenceAt5 = required.some((role) => top.some((hit) => fileOk(hit, role) && symbolOk(hit, role) && authorityOk(hit, role))) && !archiveFirst && statusOk;
   return {
     unknown: false,
     found,
+    fileFound,
     bestRank: best,
+    fileBestRank: fileBest,
+    fileCandidateRecallAt5: fileBest !== null && fileBest <= 5,
+    fileCandidateRecallAt20: fileBest !== null && fileBest <= 20,
+    fileCandidateRecallAt30: fileBest !== null && fileBest <= 30,
+    fileGenerationMiss: fileBest === null,
+    symbolVerified: best !== null,
     recallAt5: best !== null && best <= 5,
     recallAt20: best !== null && best <= 20,
     recallAt30: best !== null && best <= 30,
@@ -142,7 +165,9 @@ function armFence(arm, record) {
 }
 
 export function evaluateFunnel(record) {
-  if (!record || record.schema !== FUNNEL_SCHEMA) throw new Error(`Expected schema ${FUNNEL_SCHEMA}.`);
+  if (!record || (record.schema !== FUNNEL_SCHEMA && record.schema !== FUNNEL_SCHEMA_V2)) {
+    throw new Error(`Expected schema ${FUNNEL_SCHEMA} or ${FUNNEL_SCHEMA_V2}.`);
+  }
   const arms = record.arms ?? {};
   const fences = Object.fromEntries(Object.entries(arms).map(([id, arm]) => [id, armFence(arm, record)]));
   const usable = Object.entries(arms)
@@ -171,7 +196,7 @@ export function evaluateFunnel(record) {
   });
   const verified = cases.filter((item) => item.review === 'reviewed' && item.fused.countsTowardVerified && item.fused.unknown !== true);
   return {
-    schema: FUNNEL_SCHEMA,
+    schema: record.schema,
     sha: record.sha ?? null,
     dirty: record.dirty === true,
     fences,
