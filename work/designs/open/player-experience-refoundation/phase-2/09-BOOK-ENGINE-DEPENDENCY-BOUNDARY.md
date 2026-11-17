@@ -1,6 +1,8 @@
 # Living Journal | Book engine dependency boundary and risk review
 
 **Status:** OPEN DESIGN RESEARCH (2026-11-17), not selected technical architecture and not an implementation Change.
+**Owner's later design refinement:** the book is a stable extradiegetic medium and the scene's environment mainly changes **behind/around** it. See [10 · Reader's book and story world](10-READER-BOOK-AND-STORY-WORLD.md) before implementing any material/geometry interpretation. The two-page spread is optional as a content arrangement, not a rigid obligation or permanent art slot.
+
 **Owner concern:** A realistic Morrowind-style book is desirable, but a rigid flipbook package could make variable-length narrative, responsive text, Storyteller-directed materials, live offers and archives difficult. Do not let a page-turn animation library become the product's content/layout authority.
 
 **Relationship:** [Adaptive leaf thesis](05-LIVING-JOURNAL-THESIS.md), [rich narrative score](06-RICH-NARRATIVE-SCORE.md), [history and forks](07-EDITION-HISTORY-AND-FORKS.md), [adaptive-leaf experiment](adaptive-leaf-lab/README.md). The accepted V1 presentation boundary remains [client presentation runtime](../../../../../docs/technical/client/presentation-runtime.md). This page does **not** supersede it.
