@@ -1,6 +1,6 @@
 # HK01 | Retire unsupported local Storyteller response-reconciliation CLI
 
-**State: Ready with pre-delete evidence gate (unselected).** **Program:** [housekeeping audit](../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Dependency:** HK02 preferred, not technically required. **Outcome:** remove an unowned one-off database mutation CLI from the supported repository surface, **only** if it is not a required recovery mechanism.
+**State: Blocked (2026-11-18).** The pre-delete evidence gate failed. The file stays. **Program:** [housekeeping audit](../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Dependency:** HK02 is Done and was not required for this audit. **Outcome:** do not remove `scripts/repo-tools/reconcile-storyteller-response.mjs` until a supported replacement can settle an already-uncertain local attempt from saved evidence.
 
 ## Cursor first-screen brief
 
@@ -23,12 +23,20 @@ Do **not** run the script, connect to any real/local Storyteller DB to test it, 
 - **Negative:** a targeted search for its basename and old CLI invocation finds no current normative references; a provider-uncertain fixture still follows its normal **existing** fail-closed path. No direct state-mutating test.
 - **Proof:** appropriate provider-disabled tests/compilation already available on local checkout; list skipped checks and reason. No provider spend.
 
+## Evidence gate | 2026-11-18
+
+Searched the worktree for `reconcile-storyteller-response`, its usage line, and `saved-response.json`. The only hits are this packet, the housekeeping audit, and the script. `package.json` has no script for it. Git history is `2ca39357` (add the recovery) and `b64579dc` (record the proof). The script was not executed, and no database was opened.
+
+The live executor in `packages/application/src/storyteller/execution.ts` calls `budget.uncertain` and returns when a provider delivery is uncertain. It does not later read `data/story-local-evidence` and settle that attempt. `docs/runbooks/local-development.md` says an uncertain attempt makes `--story-mode` refuse to start, and that recovery is a separate owner procedure. This CLI is that procedure: it requires both the generation and the attempt to already be `uncertain`, checks the saved response, and calls `createStorytellerBudget(...).settle` with `operationOutcome: 'continue'`.
+
+That is a unique recovery path. Deletion stops here. A later removal needs a named supported replacement first. No provider call was made.
+
 ## Reconciliation ledger
 
 | Authority | Intent | Implementation proof | Status/docs |
 | --- | --- | --- | --- |
-| Storyteller budget/recovery code | preserve supported uncertain-attempt semantics | pending | pending |
-| Local scripts and package routing | remove unsupported alternate mutation entrypoint | pending | pending |
-| Housekeeping audit | record remove/keep decision and trace | pending | pending |
+| Storyteller budget/recovery code | preserve supported uncertain-attempt semantics | `execution.ts` fail-closes; this CLI is the only saved-evidence settlement | kept |
+| Local scripts and package routing | remove unsupported alternate mutation entrypoint | no package script and no import, but the runbook's owner recovery has no other implementation | not removed |
+| Housekeeping audit | record remove/keep decision and trace | F02 updated 2026-11-18 | blocked |
 
-**Owner action:** select HK01 explicitly. On surprising external usage or uncertain recovery, report and stop; a hidden mutation path is not an acceptable “cleanup test.”
+**Owner action:** do not select this packet for deletion. A replacement recovery procedure has to land before the file can be removed.
