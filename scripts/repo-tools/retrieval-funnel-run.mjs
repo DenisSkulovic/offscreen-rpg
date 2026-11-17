@@ -191,8 +191,8 @@ export function runRetrievalFunnel() {
   console.log(`Optional semantic arm: ${semantic.status}${semantic.reason ? ` (${semantic.reason})` : ''}`);
   for (const item of report.cases) {
     const fused = item.fused ?? {};
-    const view = fused.unknown ? fused.exploratory ?? {} : fused;
-    const label = view.reason === 'freshness-only'
+    const view = fused.exploratory ?? fused;
+    const label = (view.reason ?? fused.reason) === 'freshness-only'
       ? 'freshness'
       : item.id === 'N1'
       ? (view.leaked ? 'leak' : 'hidden')

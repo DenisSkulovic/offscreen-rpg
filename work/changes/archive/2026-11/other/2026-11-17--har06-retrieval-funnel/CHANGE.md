@@ -1,12 +1,12 @@
 # HAR06 | Fair source-grounded retrieval-funnel evaluation
 
-**State: Ready, selected (2026-11-17).** **Owner authorization:** implement the developer-harness *evaluation tooling and fixtures* described here, not an additional search product. **Executor:** Cursor. **Decision:** [HAR06-DECISION](../../../designs/open/repository-agent-workbench/HAR06-DECISION.md).
+**State: Done.** **Owner authorization:** implement the developer-harness *evaluation tooling and fixtures* described here, not an additional search product. **Executor:** Cursor. **Decision:** [HAR06-DECISION](../../../../../designs/open/repository-agent-workbench/HAR06-DECISION.md). The funnel is diagnostic only. No vendor was adopted.
 
 ## First screen for Cursor
 
 **Goal:** Make one repeatable, source-grounded A/B/(optional C)/D experiment that distinguishes candidate discovery from ranking and answer verification. A = scripted progressive lexical; B = wiki-guided lexical; C = already-installed optional local semantic/hybrid on an attested clean index; D = deterministic offline fusion. **This is not an AI agent or live usage experiment.**
 
-**Investigate before editing:** fresh full `git rev-parse HEAD`, `git status --short`, source-owner README, `scripts/repo-tools/semantic-pilot.mjs` and `semantic-pilot-cases.mjs`, `scripts/repo-tools/wiki-core/retrieval-compare.mjs`, `wiki-core/route.mjs`, `wiki-find.mjs` and `wiki-read.mjs`, [HAR03 historical packet](../../archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md). Design baseline: `main@116ef01c77a157490e7dd61fa68a014a66a0c78f`. Recheck HEAD because other work may have landed.
+**Investigate before editing:** fresh full `git rev-parse HEAD`, `git status --short`, source-owner README, `scripts/repo-tools/semantic-pilot.mjs` and `semantic-pilot-cases.mjs`, `scripts/repo-tools/wiki-core/retrieval-compare.mjs`, `wiki-core/route.mjs`, `wiki-find.mjs` and `wiki-read.mjs`, [HAR03 historical packet](../2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md). Design baseline: `main@116ef01c77a157490e7dd61fa68a014a66a0c78f`. Recheck HEAD because other work may have landed.
 
 **Known trap:** Current `rgHits` submits a whole question as one regex, `judgeHits` truncates top 5, gold expects one owner path, the optional index may be stale, and QMD never completed vector search. **Do not report these as a fair test of hybrid retrieval or real coding agents.**
 
@@ -40,11 +40,21 @@ Preferred interface: extend `pnpm repo:semantic-pilot` with a clearly named `--f
 
 **Closure:** complete Reconciliation ledger, update any changed `.agents/README.md` command documentation, `STATUS.md` only for verified facts, `work/designs/open/repository-agent-workbench/README.md` and `work/changes/README.md`; archive under `work/changes/archive/2026-11/other/`. If all reviewed cases remain unavailable, report diagnostic-only results and leave evidence quality unproven; do not invent a numeric improvement.
 
-## Reconciliation ledger (complete before Done)
+## Trial result
 
-| Authority/claim | Design status | Source delta + SHA | Proof | Negative proof | Map/status |
-| --- | --- | --- | --- | --- | --- |
-| No product/technical game behavior impacted | unchanged: harness-only test | **Pending** | **Not run** | stale index, absent feature, proposal/secret decoys | N/A |
-| HAR06 retrieval evidence contract | accepted via HAR06 decision | **Pending** | **Not run** | rank-17, missing vendor, mismatched SHA | .agents/README.md / workbench as applicable |
+Clean run `f467ce9f9fcb1dba416e8cee30623b5a5f24e6d9`. `pnpm repo:semantic-pilot --self-test`, `pnpm repo:retrieval-compare --self-test`, and `pnpm wiki:find --self-test` completed. `pnpm repo:semantic-pilot --funnel` wrote a gitignored report.
+No model was called. No vendor was installed. The optional Grepai index has no attested clean revision, so that arm is uncomparable. QMD vector search was not run.
 
-**After this Change:** no new search tool is approved. An actual agent/subagent or small-LLM reranker test is a *different* owner-approved Change with measured model/client/cost conditions.
+Every case is `unreviewed`, so there is no verified headline. Short text queries plus wiki guidance still miss the implementation for C1–C4 and C6 inside 30 hits. Those are candidate-generation misses. The exact name `settleProcessBoundary` puts the definition inside the final five, after its test. The caller question keeps the caller at rank 5 and does not treat the definition as the caller. Grafana mentions on the uninstalled telemetry page do not become an implementation claim. The fictional-time, storyteller-limit, and privacy pages are present but buried at ranks 12, 9, and 16. The client-architecture page is inside five and the status check still fails. The telemetry proposal is inside five and stays labeled as a proposal. The quiet-hour page is inside five without that proposal label, so it does not count. The secret probe stays hidden.
+
+Files named for the close check: `scripts/repo-tools/wiki-core/retrieval-funnel.mjs`, `scripts/repo-tools/retrieval-funnel-oracle.mjs`, `scripts/repo-tools/retrieval-funnel-run.mjs`, `scripts/repo-tools/retrieval-funnel-self-test.mjs`, `scripts/repo-tools/semantic-pilot.mjs`, `.agents/README.md`, `STATUS.md`, `work/changes/README.md`, `work/changes/ledger/2026-11.md`, `work/designs/open/repository-agent-workbench/README.md`, `work/designs/open/repository-agent-workbench/EVALUATION.md`, and `work/designs/open/repository-agent-workbench/HAR06-DECISION.md`.
+
+## Reconciliation ledger
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| no product/technical behavior impacted | none | unchanged: the funnel scores recorded search hits and does not change gameplay, Storyteller, or provider rules | scripts/repo-tools/wiki-core/retrieval-funnel.mjs at f467ce9f9fcb1dba416e8cee30623b5a5f24e6d9 | fixture-tested | a Grafana mention on an uninstalled page is not an implementation, and a mismatched SHA stays unknown | N/A |
+| .agents/README.md | evidence | changed: the command list names `--funnel` and says an unattested vendor index stays uncomparable | scripts/repo-tools/retrieval-funnel-run.mjs | fixture-tested | the self-test covers a buried rank, a secret path, and a missing vendor index | .agents/README.md |
+| STATUS.md#orientation | evidence | changed: orientation records a diagnostic funnel and does not claim a verified retrieval win | STATUS.md | source-observed | zero cases are independently reviewed and no agent was run | STATUS.md |
+
+**After this Change:** no new search tool is approved. An actual agent or reranker test is a different owner-approved Change.

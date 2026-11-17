@@ -1,6 +1,6 @@
 # HAR06 design decision | source-grounded retrieval funnel
 
-**Decision:** Accepted, 2026-11-17. **Selected implementation:** [HAR06](../../../changes/open/2026-11-17--har06-retrieval-funnel/CHANGE.md). **Scope:** developer/coding-agent repository navigation and evidence, **not** the in-game Storyteller, gameplay, or an AI agent deployment.
+**Decision:** Accepted, 2026-11-17. **Implementation:** [HAR06](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md). **Scope:** developer/coding-agent repository navigation and evidence, **not** the in-game Storyteller, gameplay, or an AI agent deployment.
 
 ## Diagnosis: what HAR03 actually established
 
@@ -66,4 +66,4 @@ A fixed 20/30 candidate cap is an evaluation budget, not an excuse to eagerly du
 
 No new packages, Docker, cloud embedding calls, downloading local models, MCP servers, paid models, subagents, code-generation agents or automatic vendor startup. No game/source feature modifications. Native and no-vendor controls work when all optional tools are absent. A later agent/reranker trial requires **separate owner approval**.
 
-**Related:** [selected HAR06 Change](../../../changes/open/2026-11-17--har06-retrieval-funnel/CHANGE.md), [HAR02 comparer](../../../changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md), [HAR03 receipt](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md), and [evaluation gates](EVALUATION.md).
+**Related:** [HAR06 Change](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md), [HAR02 comparer](../../../changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md), [HAR03 receipt](../../../changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md), and [evaluation gates](EVALUATION.md).
