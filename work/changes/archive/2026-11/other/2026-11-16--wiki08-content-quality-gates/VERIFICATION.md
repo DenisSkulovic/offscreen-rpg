@@ -4,7 +4,7 @@
 
 ## Run on 2026-11-17
 
-`pnpm wiki:content-health --self-test` passed. A fenced "not yet implemented" snippet does not count, and a sentence that calls an old note dated evidence does not count. The live scan's remaining candidates are the two observability pages that say "proposal only" and "not installed or authorized". They stay in `docs/technical` because STATUS already records them as proposal-status pages. They were not moved and not ratified. `test:fast` and `test:watch` exist in package.json. No test suite was run, so the runbook does not claim they pass. The 30-claim independent sample is not done. This packet stays Implementing.
+`pnpm wiki:content-health --self-test` passed. A fenced "not yet implemented" snippet does not count, and a sentence that calls an old note dated evidence does not count. The live scan's remaining candidates are the two observability pages that say "proposal only" and "not installed or authorized". They stay in `docs/technical` because STATUS already records them as proposal-status pages. They were not moved and not ratified. `test:fast` and `test:watch` exist in package.json. No test suite was run, so the runbook does not claim they pass. `pnpm wiki:health` on `024c05b5` was 74/74 reachable. `pnpm wiki:bench:static --self-test` passed. `python scripts/check_docs.py` reported 0 problems. [CLAIMS.md](CLAIMS.md) is an author draft, not an independent audit. The packet is closed on that basis.
 
 ## Static risk fixtures
 
