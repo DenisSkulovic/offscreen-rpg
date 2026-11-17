@@ -1,6 +1,6 @@
 # Living Journal | A stable reader's book inside an adaptive fictional world
 
-**Status:** OPEN DESIGN / owner clarification (2026-11-17); **no production implementation authorization**. This document **corrects the leading hypothesis** in [05-LIVING-JOURNAL-THESIS.md](05-LIVING-JOURNAL-THESIS.md) and constrains the proposed [book-engine boundary](09-BOOK-ENGINE-DEPENDENCY-BOUNDARY.md). It does not amend the selected V1 runtime, production code, or source schemas.
+**Status:** OPEN DESIGN / owner clarification (2026-11-17); **no production implementation authorization**. **Follow-up:** [11 · Book geometry and reading flow](11-BOOK-GEOMETRY-AND-READING-FLOW.md) now records a rendered comparison and identifies the high-text-scale choice overflow blocker. This document **corrects the leading hypothesis** in [05-LIVING-JOURNAL-THESIS.md](05-LIVING-JOURNAL-THESIS.md) and constrains the proposed [book-engine boundary](09-BOOK-ENGINE-DEPENDENCY-BOUNDARY.md). It does not amend the selected V1 runtime, production code, or source schemas.
 
 ## 1. The owner's decisive distinction
 
