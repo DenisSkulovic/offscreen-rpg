@@ -15,7 +15,7 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 ## Current design work
 
-**[Phase 2: Visual-direction competition](phase-2/README.md)** is the current art-direction review packet, with an [interactive visual laboratory](phase-2/design-lab.html), twelve annotated references, three comparative concepts, motion/scene-presentation design, and browser QA evidence. No art direction is selected.
+**[Phase 2: Visual-direction competition](phase-2/README.md)** contains the earlier [interactive three-direction visual laboratory](phase-2/design-lab.html), research and QA, plus the newer **[Living Journal adaptive page hypothesis](phase-2/05-LIVING-JOURNAL-THESIS.md)** and its [proposed rich-text score](phase-2/06-RICH-NARRATIVE-SCORE.md). The latter is a design hypothesis, not a rendered fourth prototype, selected art direction or approved new public schema.
 
 **[Phase 1: Player experience architecture](phase-1/README.md)** remains an open design foundation. It maps the player mental model, spaces, first visit / living / return / remembrance journeys, Now state grammar, Journal reading architecture, fixed narrative test specimens, and explicit candidate decisions. This dossier remains unaccepted and cannot authorize an implementation Change.
 
@@ -48,4 +48,4 @@ Product docs remain authoritative over technical contracts; technical contracts 
 
 ## Exit condition for the next review
 
-Review the [Phase 2 concept comparison](phase-2/02-CONCEPT-REVIEW.md) alongside the actual [inspectable compositions](phase-2/design-lab.html); reject, select or evolve directions based on reading, present-scene atmosphere, world neutrality and evidence limits. The best-looking single screenshot is not sufficient. Phase 1 architecture remains reviewable. Only later, after a coherent approved visual grammar and full-screen specifications, should design-system owners and eventual bounded Changes be prepared.
+Review the previous [Phase 2 concept comparison](phase-2/02-CONCEPT-REVIEW.md) and the [Living Journal thesis](phase-2/05-LIVING-JOURNAL-THESIS.md), then actually prototype the fourth adaptive-page direction against [its proof gates](phase-2/08-ADAPTIVE-PAGE-REVIEW-GATES.md). Reject, select or evolve designs based on reading, present-scene atmosphere, world neutrality and evidence limits. The best-looking single screenshot is not sufficient. Phase 1 architecture remains reviewable. Only later, after a coherent approved visual grammar and full-screen specifications, should design-system owners and eventual bounded Changes be prepared.
