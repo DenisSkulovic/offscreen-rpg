@@ -1,0 +1,14 @@
+# Repository housekeeping | 2026-11-17
+
+**State:** source-grounded audit and bounded implementation candidates; NOT an approved blanket cleanup. **Baseline:** `main@f279b3620d00c7ee11c20ad62a41661723f0a69d` (one documentation-only commit after inspected source snapshot `4e42bd76028ebf13458b799016446cc3f9dae38f`).
+
+Start with [the dated audit](AUDIT-2026-11-17.md). It separates confirmed maintenance gaps, safe candidates, risky seams, and deliberately retained history.
+
+## Execution map
+
+- [HK02 repository documentation integrity](../../../changes/open/2026-11-17--hk02-repository-doc-integrity/CHANGE.md): first; closes blind spots in link checks and change-only commits.
+- [HK01 retire local response-reconciliation helper](../../../changes/open/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md): after independent caller and recovery-path check.
+- [HK03 split Storyteller integration tests](../../../changes/open/2026-11-17--hk03-storyteller-test-boundaries/CHANGE.md): only after QA-SF01 baseline is characterized.
+- [HK04 decompose Chamber launcher](../../../changes/open/2026-11-17--hk04-chamber-launcher-seams/CHANGE.md): proposed, with security/provider/billing freeze and harness-proof gate.
+
+**Unselected:** none of these Changes is the current Change. Execute one at a time when the owner tasks Cursor. Documentation-only historical reclassification is maintenance under the [change standard](../../../../.agents/references/change-work-unit-standard.md), not a pretext for a fake code Change.
