@@ -98,12 +98,16 @@ export function resolvePackageModule(root, spec) {
   const exported = body.exports?.[`./${match[2]}`];
   const target = typeof exported === 'string' ? exported : exported?.default;
   if (!target) return null;
-  let rel = path.posix.normalize(`packages/${match[1]}/${String(target).replace(/^\.\//, '')}`);
-  rel = rel.replace('/dist/src/', '/src/').replace(/\.d\.ts$/, '.ts').replace(/\.js$/, '.ts');
-  const abs = path.join(root, ...rel.split('/'));
-  if (existsSync(abs)) return rel;
-  const mjs = rel.replace(/\.ts$/, '.mjs');
-  if (existsSync(path.join(root, ...mjs.split('/')))) return mjs;
+  const raw = path.posix.normalize(`packages/${match[1]}/${String(target).replace(/^\.\//, '')}`);
+  const ts = raw.replace(/\.d\.ts$/, '.ts').replace(/\.js$/, '.ts');
+  const candidates = [ts];
+  if (ts.includes('/dist/src/')) candidates.push(ts.replace('/dist/src/', '/src/'));
+  if (ts.includes('/dist/')) candidates.push(ts.replace('/dist/', '/src/'));
+  for (const rel of candidates) {
+    if (existsSync(path.join(root, ...rel.split('/')))) return rel;
+    const mjs = rel.replace(/\.ts$/, '.mjs');
+    if (existsSync(path.join(root, ...mjs.split('/')))) return mjs;
+  }
   return null;
 }
 
@@ -200,18 +204,27 @@ export function followEvidence(options) {
         if (!next) note({ reason: 'unresolved-import', from: rel, spec });
         continue;
       }
-      if (!sharesToken(`${spec} ${next}`, tokens)) continue;
+      if (!sharesToken(`${spec} ${next}`, tokens)) {
+        note({ reason: 'import-not-selected', from: rel, spec });
+        continue;
+      }
       edges += 1;
       const hop = { kind, from: rel, to: next };
       ground(next, authority, notice, [...trace, hop], depth + 1);
     }
   }
 
-  function followPage(rel, authority, notice, trace, allowMap) {
-    if (reads >= budget.reads) {
+  function followPage(rel, authority, notice, trace, asMap) {
+    if (asMap) {
+      if (packageMaps >= budget.packageMaps) {
+        note({ reason: 'package-map-budget', path: rel });
+        return;
+      }
+      packageMaps += 1;
+    } else if (reads >= budget.reads) {
       note({ reason: 'read-budget', path: rel });
       return;
-    }
+    } else reads += 1;
     const fileRel = rel.split('#')[0];
     const sectionRef = rel.includes('#') ? rel : null;
     if (!exists(fileRel)) {
@@ -220,7 +233,6 @@ export function followEvidence(options) {
     }
     const full = readText(fileRel);
     const page = sectionRef && !options.readText ? readSection(root, sectionRef) : { ok: true, text: full, truncated: false };
-    reads += 1;
     if (!page.ok) {
       note({ reason: page.error ?? 'unreadable', path: rel });
       return;
@@ -285,13 +297,8 @@ export function followEvidence(options) {
         bytes: Buffer.byteLength(reference.label ?? ''),
       });
       if (CODE.test(resolved.rel)) ground(resolved.rel, authority, notice, [...trace, hop], 0);
-      if (allowMap && resolved.rel.startsWith('packages/') && resolved.rel.endsWith('README.md')) {
-        if (packageMaps >= budget.packageMaps) {
-          note({ reason: 'package-map-budget', path: resolved.rel });
-          continue;
-        }
-        packageMaps += 1;
-        followPage(resolved.rel, authority, notice, [...trace, hop], false);
+      if (!asMap && resolved.rel.startsWith('packages/') && resolved.rel.endsWith('README.md')) {
+        followPage(resolved.rel, authority, notice, [...trace, hop], true);
       }
     }
     if (page.truncated) note({ reason: 'section-truncated', path: rel });
@@ -310,7 +317,7 @@ export function followEvidence(options) {
       trace: [{ kind: 'wiki-link', from: options.question, to: ref }],
       bytes: heading.bytes ?? 0,
     });
-    followPage(ref, heading.authority ?? null, heading.notice ?? null, [{ kind: 'wiki-link', to: ref }], true);
+    followPage(ref, heading.authority ?? null, heading.notice ?? null, [{ kind: 'wiki-link', to: ref }], false);
   }
 
   return {

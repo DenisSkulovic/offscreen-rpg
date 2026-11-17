@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { FUNNEL_CASES } from './retrieval-funnel-oracle.mjs';
 import { root } from './process.mjs';
 import { evaluateFunnel, fuseCandidates, scoreCandidates } from './wiki-core/retrieval-funnel.mjs';
-import { enclosingSymbol, followEvidence } from './wiki-core/source-route.mjs';
+import { enclosingSymbol, followEvidence, resolvePackageModule } from './wiki-core/source-route.mjs';
 
 const SHA = 'a'.repeat(40);
 
@@ -178,6 +178,27 @@ export function runRetrievalFunnelSelfTest() {
   const c4Hit = c4Route.hits.find((item) => item.path === 'packages/game/src/immediate-actions.ts' && item.proof?.symbol === 'validateImmediateActionProposal');
   assert.ok(c4Hit, 'the mechanics page module reference should reach the enclosing function');
   assert.ok(c4Hit.trace.some((step) => step.kind === 'verified-module-ref'));
+  assert.equal(resolvePackageModule(root, '@offscreen/game/immediate-actions'), 'packages/game/src/immediate-actions.ts');
+  assert.equal(resolvePackageModule(root, '@offscreen/application/stories'), 'packages/application/src/stories/index.ts');
+
+  const pages = new Map([
+    ['wiki/1.md', 'See the [package map](packages/demo/README.md).\n'],
+    ['wiki/2.md', 'second\n'],
+    ['wiki/3.md', 'third\n'],
+    ['wiki/4.md', 'fourth generated\n'],
+    ['packages/demo/README.md', 'map\n'],
+  ]);
+  const budgeted = followEvidence({
+    question: 'generated plan check',
+    headings: [1, 2, 3, 4].map((index) => ({ path: `wiki/${index}.md`, ref: `wiki/${index}.md`, authority: 'normative', text: 'generated' })),
+    readText: (rel) => pages.get(rel),
+    exists: (rel) => pages.has(rel),
+    resolveLink: (_from, href) => href.endsWith('README.md') ? { ok: true, rel: 'packages/demo/README.md' } : { ok: false, code: 'missing' },
+    resolveModule: () => null,
+  });
+  assert.equal(budgeted.spent.reads, 4);
+  assert.equal(budgeted.spent.packageMaps, 1);
+  assert.ok(budgeted.hits.some((item) => item.path === 'wiki/4.md'));
 
   const mismatched = evaluateFunnel({
     schema: 'repo.retrieval-funnel.v1',
