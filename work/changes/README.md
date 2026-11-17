@@ -12,6 +12,8 @@ Current change: [WIKI07 heading retrieval](open/2026-11-16--wiki07-retrieval-by-
 | --- | --- | --- |
 | [WIKI07 heading retrieval](open/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) | **Implementing** | Zero-model question→heading/section previews, context-bounded reads and cheap agent routing |
 | [WIKI08 content quality](open/2026-11-16--wiki08-content-quality-gates/CHANGE.md) | **Proposed (after WIKI07)** | Content-risk metrics and named stale runbook/product/technical repair; ratification gates |
+| [HAR01 source receipts](open/2026-11-17--har01-source-receipts/CHANGE.md) | **Proposed (not selected)** | Structured local HEAD/dirty worktree receipts by extending `repo:brief`; no new daemon |
+| [HAR02 retrieval comparison](open/2026-11-17--har02-retrieval-comparison/CHANGE.md) | **Proposed (gated by WIKI07/08)** | Read-only baseline-vs-candidate evidence; no vendor install or model trial |
 | [QA-SF01 storyteller fixtures](open/2026-11-15--qa-storyteller-integration-fixtures/CHANGE.md) | **Blocked** | Restore honest focused Storyteller/story-resolution suites |
 | [OBS00 live provider custody](open/2026-11-15--obs00-live-provider-custody/CHANGE.md) | **Blocked** (OBS00-B) | Production/default-worker current entitlement |
 | [OBS04 finite-action E0](open/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Proposed | First E0 game transition witness |

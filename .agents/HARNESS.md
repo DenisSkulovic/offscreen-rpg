@@ -53,6 +53,12 @@ Only two initially: **design-challenger** and **test-strategist**. Their canonic
 
 **These are optional roles, not mandatory tollgates.** A trivial edit needs no multi-tool ceremony. A complex concurrency change might deserve an independent critic. Do not pay for Claude to read information already established by the present tool or transcript.
 
+## Revision and evidence receipts for substantial work
+
+For substantial source investigations, design handoffs, reviews and writes, name the inspected branch/ref and full HEAD SHA at the start and recheck affected paths if the branch advances before committing. A local agent must distinguish committed HEAD from dirty/untracked files; a GitHub-API-only assistant must say the local worktree is **unobservable**, not clean. Separate **ratified target**, **source-observed implementation**, **fixture/test proof**, **live proof**, and **proposal**. Include relevant exact headings/source anchors, one meaningful contrary/negative case, checks actually run versus skipped, and the post-write commit SHA when applicable. Avoid repeating this receipt for trivial prose edits.
+
+**Optional retrieval tooling is evidence-gated, not startup infrastructure.** Built-in agent tools plus existing `wiki:find`/`wiki:read` are the baseline; no automatic Cognee, Serena, semantic DB, Docker stack or always-on MCP additions. A [proposed workbench design](../work/designs/open/repository-agent-workbench/README.md) and HAR01/HAR02 packets describe possible refinements after WIKI07 independent verification and a measured retrieval gap. Do not preload this design or start services just because it is linked.
+
 ## Context-expansion protocol
 
 - **R0:** task statement, always-on entry, needed constraints.
