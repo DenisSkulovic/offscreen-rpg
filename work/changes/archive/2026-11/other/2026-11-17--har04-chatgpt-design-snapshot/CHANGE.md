@@ -1,6 +1,6 @@
 # HAR04 | Revision-stamped ChatGPT design-source ZIP
 
-**State: Done (2026-11-17).** Owner specifically requested an easily uploadable, gitignored, versioned source/docs ZIP for ordinary ChatGPT design investigations. This small independent developer-tooling Change was authorized by that request; **WIKI07 remains the selected Change** for Cursor. No game source, runtime behavior, provider access, database or external service changed.
+**State: Done (2026-11-17).** Owner specifically requested an easily uploadable, gitignored, versioned source/docs ZIP for ordinary ChatGPT design investigations. This small independent developer-tooling Change was authorized by that request; WIKI07 and WIKI08 were already closed, with `Current change: none`; HAR04 did not select new work for Cursor. No game source, runtime behavior, provider access, database or external service changed.
 
 ## Outcome, source and exclusions
 
