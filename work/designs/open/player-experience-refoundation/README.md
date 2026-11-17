@@ -1,6 +1,6 @@
 # Offscreen RPG | Experience Re-foundation
 
-**Stage:** Phase 0, research/audit and initial proposals only  
+**Stage:** Phase 0 source audit documented; Phase 1 experience architecture drafted for review. Phase 2 visual concepts not yet selected  
 **Status:** OPEN DESIGN / DRAFT FOR PRODUCT-OWNER REVIEW. Not ratified design; no implementation authorized.  
 **Evidence base:** read-only lean ZIP of `main` at `9e821c6e15bb90444ec711a1b82b1e18cff9539a`, generated 2026-11-17 15:33 UTC.  
 **Date:** 2026-11-17
@@ -13,7 +13,11 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 **A living stage when playing, a living edition when remembering.** The same fictional life must feel present now, richly readable afterward, and credible through waiting, failure, interruption and return. Atmosphere is allowed to transform across radically different worlds without turning the platform into a random-themed template machine.
 
-## Read order
+## Current design work
+
+**[Phase 1: Player experience architecture](phase-1/README.md)** is now the active design review packet. It maps the player mental model, spaces, first visit / living / return / remembrance journeys, Now state grammar, Journal reading architecture, fixed narrative test specimens, and explicit candidate decisions. This dossier remains unaccepted and cannot authorize an implementation Change.
+
+## Phase 0 foundations (read order)
 
 1. [AUDIT.md](AUDIT.md): what the frozen ZIP actually supports; strengths, gaps, caveats and source map.
 2. [EXPERIENCE-CHARTER.md](EXPERIENCE-CHARTER.md): product thesis, experience principles, audience needs and deliberate non-goals.
@@ -40,6 +44,6 @@ Offscreen RPG has credible technical and product rules for truthful persistent s
 
 Product docs remain authoritative over technical contracts; technical contracts over code. Any new selected experience design must reconcile existing authority explicitly. Code is the current artifact, not a design veto.
 
-## Exit condition for this phase
+## Exit condition for the next review
 
-We agree on the **experience problem**, the two or more plausible art directions worth genuinely prototyping, the desired story-reading model to investigate, and the missing evidence. We do **not** approve code work simply because this document exists.
+Review the [Phase 1 decision register](phase-1/07-DECISIONS-AND-QUALITY-GATES.md), challenge the Now/Journal and editorial-moment hypotheses, and agree what the visual concepts must prove. The strongest candidate is not accepted merely because it is documented. After that, Phase 2 should render competing full-screen art directions using the [fixed story specimens](phase-1/06-FIXED-DESIGN-SPECIMENS.md) before any design-system component or implementation Change is selected.
