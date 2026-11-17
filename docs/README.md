@@ -8,6 +8,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | --- | --- |
 | How and why is this software developed with AI coding agents? | [Engineering System Tour](../ENGINEERING.md) · [Agent harness](../.agents/HARNESS.md) · [Change standard](../.agents/references/change-work-unit-standard.md) |
 | What is the game, in one place? | [Vision](product/foundations/vision.md) |
+| Where is the proposed player-experience redesign, design research and visual-system work? | [Experience refoundation design program](../work/designs/open/player-experience-refoundation/README.md) · [process and gates](../work/designs/open/player-experience-refoundation/DESIGN-PROCESS.md). Not ratified; no implementation authorization |
 | When does fictional time move, and what if I do nothing? | [Time and autonomy](product/gameplay/time-and-autonomy.md) |
 | Who may change dice, items and commitments? | [Rules](product/gameplay/rules.md) |
 | What may the Storyteller invent, and what must it refuse? | [Behavior and quality](product/storyteller/behavior-and-quality.md) |
