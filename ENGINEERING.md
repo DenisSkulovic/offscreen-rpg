@@ -4,7 +4,7 @@
 
 Offscreen RPG is the domain. The main engineering experiment is whether assistants with different tools and economics can work on the same long-lived system **without mistaking generated code for specification, losing decisions in chats, or claiming a fixture passed when nobody ran it**.
 
-This page is the public *tour*, not another rules authority. Enforceable routing lives in [`AGENTS.md`](AGENTS.md) and [`.agents/HARNESS.md`](.agents/HARNESS.md). Product and technical truth belongs under [`docs/`](docs/README.md); executable status is [`STATUS.md`](STATUS.md).
+This page is the public *tour*, not another rules authority. The [2026 retrieval/architectural-memory research register](research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) records tools we **declined**, including Cognee, and which smaller capabilities we deliberately retained. Enforceable routing lives in [`AGENTS.md`](AGENTS.md) and [`.agents/HARNESS.md`](.agents/HARNESS.md). Product and technical truth belongs under [`docs/`](docs/README.md); executable status is [`STATUS.md`](STATUS.md).
 
 ## A five-minute exploration for a new engineer or coding assistant
 

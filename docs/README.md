@@ -10,6 +10,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | What is the game, in one place? | [Vision](product/foundations/vision.md) |
 | What is selected for the first Living Book POC, and what is not yet built? | [POC product behavior](product/experience/living-book-poc.md) · [POC client boundary](technical/client/living-book-poc.md) · [status](../STATUS.md). No POC code is implied by these specs |
 | Where is the broader proposed player-experience redesign, design research and visual-system work? | [Experience refoundation design program](../work/designs/open/player-experience-refoundation/README.md) · [process and gates](../work/designs/open/player-experience-refoundation/DESIGN-PROCESS.md). Not ratified; no implementation authorization |
+| Which developer-agent search and knowledge-graph tools were tried and declined? | [Retrieval experiments and decisions](../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) · [Cognee findings](../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md). **Historical research, not product authority**; use `wiki:find --include-historic` for detailed searching |
 | When does fictional time move, and what if I do nothing? | [Time and autonomy](product/gameplay/time-and-autonomy.md) |
 | Who may change dice, items and commitments? | [Rules](product/gameplay/rules.md) |
 | What may the Storyteller invent, and what must it refuse? | [Behavior and quality](product/storyteller/behavior-and-quality.md) |

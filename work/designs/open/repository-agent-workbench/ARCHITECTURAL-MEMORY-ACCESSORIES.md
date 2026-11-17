@@ -1,6 +1,6 @@
 # Architecture-memory accessories | Cognee-first, reversible research
 
-**Decision accepted for investigation on 2026-11-17.** **State:** design selected as a research direction; vendor adoption **not** selected. **Executable packet:** [HAR09](../../../changes/open/2026-11-17--har09-architectural-memory-pilot/CHANGE.md), now selected. HAR08 preparation is closed. HAR09 must not launch HAR08's model sessions or download document-memory models without a separate yes.
+**Historical design hypothesis (2026-11-17), superseded by the measured negative adoption decision.** The investigation was [closed without Cognee adoption](../../../changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md). The [first-class research result](../../../../research/agent-practice/COGNEE-EVALUATION-2026-11-17.md) and [experiment register](../../../../research/agent-practice/RETRIEVAL-EXPERIMENTS-2026-11-17.md) own the actual conclusion. The design below records *what we intended to test*, not a pending authorization, current tool recommendation or complete benchmark result.
 
 ## Why this is a different experiment
 

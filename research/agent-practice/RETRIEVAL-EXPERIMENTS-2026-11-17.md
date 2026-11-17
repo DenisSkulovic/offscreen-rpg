@@ -1,0 +1,43 @@
+# Developer-agent retrieval and architectural-memory experiments | 2026-11-17
+
+**Decision:** **Do not adopt** the evaluated semantic-search, deterministic search-planner, fake-only agent-runner or Cognee-derived graph tools in Offscreen RPG's permanent coding-agent harness. **Research status:** concluded for these variants and test corpora; not a claim that semantic retrieval or knowledge graphs never work. **Evidence class:** source-inspected historical Change dossiers and Cursor-reported local diagnostics; no independently reviewed live-agent outcome, and most raw machine logs are gitignored rather than reproduced here.
+
+This is the **durable historical experiment register**, not an active architecture specification or permission to install anything. The binding developer-agent entry remains [AGENTS.md](../../AGENTS.md), the [harness](../../.agents/HARNESS.md), and current [Change selection](../../work/changes/README.md). To search this and other historical documents, use `pnpm wiki:find "architectural memory" --include-historic`; the ordinary wiki lane deliberately prioritizes current contracts.
+
+## Experimental question and decision record
+
+**Question:** Will extra repository search/index/graph machinery give coding agents more **correct, source-supported understanding**, at acceptable freshness, authority and maintenance cost, than agent-native Git/grep/language tools and our indexed source-exact wiki?
+
+| Wave | Actual observed evidence | What it cannot establish | Decision |
+| --- | --- | --- | --- |
+| **HAR01** source receipts | Local `repo:brief --json` gives full SHA/dirty-path information | Not remote freshness or semantic proof | **Retain utility.** [Archive](../../work/changes/archive/2026-11/other/2026-11-17--har01-source-receipts/CHANGE.md) |
+| **HAR02** recorded retrieval comparator | Same-SHA and authority-sensitive offline comparison fixtures | Not a real agent's search quality | **Retire standalone comparer.** [Archive](../../work/changes/archive/2026-11/other/2026-11-17--har02-retrieval-comparison/CHANGE.md) |
+| **HAR03** semantic pilot | One-shot sentence code queries missed; Grepai index not attested; QMD keyword-only partial, vector not completed | Neither fresh semantic/hybrid nor iterative agentic grep | **No vendor adoption; retire pilot runner.** [Archive](../../work/changes/archive/2026-11/other/2026-11-17--har03-semantic-retrieval-pilot/CHANGE.md) |
+| **HAR04/HAR05** source snapshot/index | Source-exact ChatGPT source ZIP and portable wiki index implemented; HAR05 still marked Verifying | Does not prove live Git state or a coding-agent benchmark | **Retain snapshot**; complete HAR05's separate verification. [HAR04](../../work/changes/archive/2026-11/other/2026-11-17--har04-chatgpt-design-snapshot/CHANGE.md) · [HAR05](../../work/changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) |
+| **HAR06** scripted retrieval funnel | Clean top-30 phrase/heading tests still missed natural questions; scoring conflated file candidate with symbol; wiki arm copied lexical results | Not honest wiki → source exploration | **Retire runner.** [Archive](../../work/changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md) |
+| **HAR07** source-route repair | File-vs-symbol proof fixed; wiki follows real links; C4 source verified; C1–C3 still missed when greedy traversal exhausted budget | No real-agent investigation or independently adjudicated win | **Retire deterministic route planner.** [Archive](../../work/changes/archive/2026-11/other/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md) |
+| **WIKI03/HAR08** agent harness | Fake-only trace/refusal preflight and six unreviewed questions; Windows OS sandbox unproven; no live model trial | Any improvement from an actual agent; host-only gold is checked into tracked `har08-tasks.mjs` | **Retire executable fake harness/fixtures; retain fair-comparison method.** [WIKI03](../../work/changes/archive/2026-11/other/2026-11-16--wiki03-isolated-agent-evaluation/CHANGE.md) · [HAR08](../../work/changes/archive/2026-11/other/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md) |
+| **HAR09** Cognee 1.6.8 | Four-file TS graph found a symbol with significant skipped calls; tiny text trial returned original paragraphs, but graph invented rejected dependencies, had no source freshness, and dataset filtering required external checks | No unbiased, independently reviewed architectural-discovery improvement on a representative corpus | **Stop Cognee pilot, no adoption.** [Detailed evaluation](COGNEE-EVALUATION-2026-11-17.md) · [Archived packet](../../work/changes/archive/2026-11/other/2026-11-17--har09-architectural-memory-pilot/CHANGE.md) |
+
+## What we now know
+
+1. **Search relevance and engineering correctness differ.** Finding a page or code file is not proof of the enclosing function, selected authority, implementation or runtime behavior. A benchmark that grades same-line symbol text can reject an otherwise correct file candidate.
+2. **An agent should investigate; tools should report evidence.** Fixed phrase sets, root-first wiki traversal and small shared edge budgets did not approximate a coding agent's adaptive reasoning. The right baseline is actual native-agent investigation with Git/rg/source maps and the canonical wiki.
+3. **Derived relationships need semantics, negation and time.** A graph edge `uses Redis` is wrong when the source says Redis was rejected. A history document can explain a decision but cannot authorize an implementation.
+4. **Revision and authority are non-negotiable.** A file update did not refresh Cognee's existing index. A host hash fence, source verification and authority lane inspection fixed *some display risks*, but increased the amount of machinery needed to trust derived results.
+5. **Absence of a measured gain is not a universal negative.** The Cognee corpus was hand-curated and tiny, wiki comparison limited, many oracles were unreviewed, and there was no actual agent trial. These observations justify **declining adoption here**, not a scientific claim that all graph RAG systems fail.
+6. **Provider-free is not download-free.** Cognee's run unexpectedly downloaded an embedding model (~67 MB) and local GLiNER weights (~750 MB) after the proposal explicitly withheld download permission. **This is an execution-boundary failure** even though no paid API call was reported.
+
+## Retained system versus retired experiments
+
+**Keep as active tools:** `repo:brief` source receipt; `repo:snapshot:chatgpt` and portable exact-source index; `wiki:find` / `wiki:read`; `wiki:health`, `wiki:change-guard`, `wiki:content-health`, `repo:docs-health`; relevant deterministic static wiki health/bench diagnostics. Product/technical/STATUS/source/test authority remains unchanged.
+
+**Remove as active tools under [HAR10](../../work/changes/open/2026-11-17--har10-retire-retrieval-experiments/CHANGE.md):** standalone `repo:semantic-pilot` and `repo:retrieval-compare` trees, HAR06/HAR07 oracle/funnel/walker implementations, and fake-only `wiki:bench:agent` runner plus HAR08 fixture/adapter/preflight source. Revise active command listings. Preserve the archived Change dossiers and this result; Git history can recover the implementation for forensic examination. Removing a committed file from HEAD does **not** erase it from Git history or existing exported ZIPs.
+
+**No Cognee library source or integration was committed to the monorepo.** Its isolated Python environment, models, reports and sidecars are in local ignored storage according to the trial record. Machine cleanup must be observed on the actual workstation. Do not assume all model caches are inside `out/`, and do not remove unrelated shared model caches.
+
+## Conditions for considering another trial
+
+Only reopen with a **specific missed engineering decision**, source-independent held-out gold, a fixed SHA and representative corpus, explicit data/authority provenance, comparable real-agent baseline and negative tests for negation, supersession, absence, and stale source. Any model/download/spend and sandbox approvals must be explicit, technical and enforced. Start as a **separate research Change**, not by silently restoring deleted scripts or wiring a memory service into every agent session.
+
+**Result:** the experimental work produced valuable engineering knowledge. Its **runtime artifact is deliberately disposable**; its reasoning, measured limitations, and decision to decline adoption are not.
