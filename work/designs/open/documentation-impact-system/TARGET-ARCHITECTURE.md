@@ -44,10 +44,10 @@ A short, exact table, expandable for larger Changes:
 
 | This claim (anchor) | Relation | Governing/related claim (anchor) | Why a change triggers review |
 | --- | --- | --- | --- |
-| #accepted-time | depends-on | ../technical/engine/chronology-and-activities.md#... | Activity settlement assumes accepted time boundaries |
-| #who-can-inspect | constrained-by | ../technical/platform/identities-and-access.md#... | Staff investigation may not bypass private read scopes |
+| Technical execution permission claim | constrained-by | ../../product/gameplay/time-and-autonomy.md#pace | The technical clock must preserve product acceptance and idle-time rules |
+| Technical staff investigation claim | constrained-by | ../../product/admin/authority-and-governance.md | Technical access grants must not exceed approved staff capabilities |
 
-These paths and anchors are **illustrative**, not verified page headings or new ratified policies. Seed exact real links after inspecting the actual headings. Author the relationship *in the dependent page* as “A depends on B”; the reverse index knows that changing B should prompt review of A. Do not duplicate B's rule in A.
+These rows are **illustrative relationships**, not a declaration that the example edges have been ratified or registered. Actual relative paths and heading anchors must be verified from the dependent page's location before committing real edges. Seed exact real links after inspecting the actual headings. Author the relationship *in the dependent page* as “A depends on B”; the reverse index knows that changing B should prompt review of A. **Authority is directional:** technical contracts can depend on or be constrained by product rules; product authority does not become subordinate to technical implementation. A product page may link to technical implementation for navigation without declaring the technical text a governing dependency. Do not duplicate B's rule in A.
 
 ### Minimal typed vocabulary
 
