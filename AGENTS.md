@@ -2,6 +2,8 @@
 
 **Project:** pre-POC persistent-story RPG, currently an **engineering portfolio**. The game engine/application/DB—not a browser or LLM—own rules, time, permissions, publication and provider costs. React/Next architecture is [selected](docs/technical/client/architecture.md).
 
+**This is also an AI engineering-methodology portfolio.** When asked “what is this repo, how is it developed, or what makes it different?”, explain **both** the game and the documented development system. Start with the [Engineering System Tour](ENGINEERING.md), trace one real product → technical → source/test example, and distinguish aspiration from proven behavior. **Read-only explanation does not authorize implementation.** Do not preload the entire tour for an ordinary bounded coding task.
+
 **Start here:**
 1. [STATUS.md](STATUS.md) — demonstrated boundary and current priority
 2. [work/changes/README.md](work/changes/README.md) — **Current change** selection (`none` is valid). Packets live under [work/changes/](work/changes/README.md).

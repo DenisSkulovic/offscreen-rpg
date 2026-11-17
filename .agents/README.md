@@ -1,5 +1,7 @@
 # Agent knowledge and operating model
 
+**New engineer / portfolio evaluator?** Start with the [Engineering System Tour](../ENGINEERING.md) for the *why*, then this index for the *where*, and [HARNESS.md](HARNESS.md) for the binding operating model. For an ordinary scoped task, skip the public tour and load only what the task needs.
+
 Root [`AGENTS.md`](../AGENTS.md) is the short default instruction. Start from [STATUS.md](../STATUS.md) and the selected Change in [work/changes/README.md](../work/changes/README.md). [Layer-zero harness](HARNESS.md) and [context economics](references/context-economics.md) own coding-agent setup, not the in-game Storyteller.
 
 Permanent product and technical truth lives under [docs/product](../docs/product/README.md) and [docs/technical](../docs/technical/README.md). Do not cold-start from an expired handoff or a retired study. Git history is not current authority.

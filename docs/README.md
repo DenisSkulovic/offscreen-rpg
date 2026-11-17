@@ -6,6 +6,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 
 | Question | Owner |
 | --- | --- |
+| How and why is this software developed with AI coding agents? | [Engineering System Tour](../ENGINEERING.md) · [Agent harness](../.agents/HARNESS.md) · [Change standard](../.agents/references/change-work-unit-standard.md) |
 | What is the game, in one place? | [Vision](product/foundations/vision.md) |
 | When does fictional time move, and what if I do nothing? | [Time and autonomy](product/gameplay/time-and-autonomy.md) |
 | Who may change dice, items and commitments? | [Rules](product/gameplay/rules.md) |
