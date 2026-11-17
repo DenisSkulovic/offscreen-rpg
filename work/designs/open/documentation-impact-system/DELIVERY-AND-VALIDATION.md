@@ -21,6 +21,8 @@
 | 4 | WIKI11 | Join planned claims, actual diffs and discovered document/source dependents; close gate; HK08 integration contract | Failure injection catches unreviewed dependent, does not demand gratuitous edits |
 | 5 | HK08 integration | Existing CI/brief/weekly feedback routes consume signals | Change-only, docs-only and code+docs fixtures demonstrate expected triggers and exit codes |
 
+**Coverage wave after parser proof:** WIKI10 intentionally seeds only two selected neighborhoods (time and reader/scene semantics). [The contract-neighborhood catalog](CONTRACT-NEIGHBORHOODS.md) records further proposed semantic relations. A focused *documentation-only* reconciliation wave covers confirmed remaining selected neighborhoods (mechanics, Storyteller authority, spending) without inventing an executable Change; proposed Admin/retention/read contracts must await ratification. WIKI11 can validate graph/close mechanics with A/D and report B/C/E/F/G as uncharted; it cannot claim whole-wiki dependency recall until the later content audit is completed and measured.
+
 WIKI09–11 do **not** automatically become Ready from this design's existence. Owner can accept all, part or reject; Cursor selects one only after current HEAD, dependencies and permitted scope are checked.
 
 ## Baseline and migration

@@ -12,7 +12,8 @@ Editing only executable output while leaving its controlling specs stale is anal
 
 1. [Source-grounded audit](AUDIT-2026-11-18.md): what current rules, example Changes, scripts and links actually demonstrate, including limitations.
 2. [Target architecture](TARGET-ARCHITECTURE.md): per-Change contract, semantic wiki relationships, forward/reverse impact, proof and safety.
-3. [Delivery and evaluation](DELIVERY-AND-VALIDATION.md): implementation order, baseline protections, mutation tests and success criteria.
+3. [High-risk contract neighborhoods](CONTRACT-NEIGHBORHOODS.md): verified starting candidates, selected-vs-proposed gates and documentation-only follow-up coverage.
+4. [Delivery and evaluation](DELIVERY-AND-VALIDATION.md): implementation order, baseline protections, mutation tests and success criteria.
 
 ## Execution route (all Proposed; none selected)
 
