@@ -1,14 +1,14 @@
 # Repository agent workbench | source-grounded, optional retrieval
 
-**State:** approved design direction: explicitly **trial natural-language retrieval** via a controlled, opt-in local experiment. HAR01, HAR02, and HAR03 are Done. HAR03 did not adopt a vendor tool. **Scope:** developer/coding agents working on this repository, never the in-game Storyteller, its memory, or gameplay infrastructure.
+**State:** pivot accepted: **the agent reasons, the wiki and source maps supply evidence**. HAR01–HAR07 are historical diagnostic waves; no retrieval vendor is adopted. **Scope:** developer/coding agents working on this repository, never the in-game Storyteller, its memory, or gameplay infrastructure.
 **Inspected baseline:** `main@8aa952ac5268f38b06cf292d50e110f7f1d3aca0` on 2026-11-17. GitHub was inspected through the connector; no clone, local build, agent benchmark, or vendor tool installation was performed.
 
 ## Decision in one screen
 
 1. **Reuse what exists.** Agent-native code search, Git, `rg`, existing language services, `AGENTS.md` and source READMEs come first. WIKI06 already enforces Change reconciliation. WIKI07 is Done: `pnpm wiki:find` and `pnpm wiki:read` are the docs baseline, and its three independent reads are in the archived packet. WIKI08 is Done: `pnpm wiki:content-health` flags review candidates, and the named stale instructions were repaired. Do not fork those implementations.
 2. **Report source freshness and evidence class.** Important investigations and Cursor handoffs identify the actual revision, whether a local worktree was dirty or unavailable, source/heading anchors, and whether claims are selected target, source-observed, fixture-tested, or live-observed. A GitHub connector snapshot is **not** a local worktree snapshot.
-3. **Natural-language search is a priority experiment.** Cursor's current Instant Grep is *not* its old embedding index; Claude Code bundles ripgrep. Test code semantic retrieval (Grepai) and Markdown semantic/hybrid retrieval (QMD) separately. No global service or MCP tool is required until the experiment succeeds.
-4. **Try before adopting.** Do not wait for an imagined crisis before prototyping. A pinned-tree, zero-paid-model CLI pilot may proceed as a separately selected developer tooling Change. WIKI07 is the docs baseline; WIKI08 content audit proceeds independently. Measure retrieved-source accuracy **and** whether an agent uses it beneficially.
+3. **Agent-native investigation is now the priority experiment.** Real coding clients already reason over their native search, language services and repository knowledge. Test whether explicitly guiding the same client to our wiki/authority maps improves its actual evidence-supported answers. [Selected decision](AGENT-NATIVE-EVALUATION.md).
+4. **Prepare a fair trial before adoption.** WIKI03 already provides fake agent trace/refusal machinery; HAR08 prepares a small A/B actual-client comparison without authorizing model use. Semantic history/architecture discovery remains a later specialist hypothesis, not a default vector index.
 5. **Keep the authority hierarchy.** `docs/product` = ratified product intent; `docs/technical` = selected technical contract; `STATUS.md`/source/tests = actual realization. Neither a generated graph nor an AI memory is an authority or permission source.
 
 ## Read by question
@@ -18,7 +18,7 @@
 | What is the desired cross-agent operating model and what is genuinely missing? | [Target and baseline](TARGET.md) |
 | Which external technologies deserve investigation, and why not install one immediately? | [Candidate assessment and sources](CANDIDATES.md) |
 | How do we measure retrieval funnel value without adopting a vendor? | **[HAR06 decision](HAR06-DECISION.md)** · [evaluation gates](EVALUATION.md) · [HAR03 historical pilot](PILOT.md) |
-| What should Cursor implement next? | No Change is selected. [HAR07 source navigation](../../../changes/archive/2026-11/other/2026-11-17--har07-evidence-verified-source-navigation/CHANGE.md) is Done and diagnostic. [HAR05](../../../changes/open/2026-11-17--har05-portable-snapshot-index/CHANGE.md) stays Verifying and is not selected. Previous: [HAR06](../../../changes/archive/2026-11/other/2026-11-17--har06-retrieval-funnel/CHANGE.md) |
+| What should Cursor implement next? | **[HAR08 selected preflight](../../../changes/open/2026-11-17--har08-agent-native-harness-evaluation/CHANGE.md)** using [agent-native evaluation decision](AGENT-NATIVE-EVALUATION.md). HAR07 is archived; HAR05 remains Verifying. |
 
 ## HAR06 retrospective finding (navigation audit)
 
@@ -33,7 +33,7 @@ For design investigations that stay inside ordinary ChatGPT, the [source snapsho
 - Canonical agent owner remains [.agents/HARNESS.md](../../../../.agents/HARNESS.md); [context economics](../../../../.agents/references/context-economics.md) and [document navigation](../../../../.agents/references/documentation-navigation-standard.md) remain binding. This design must not become a second always-on agent rule.
 - [WIKI07](../../../changes/archive/2026-11/other/2026-11-16--wiki07-retrieval-by-heading/CHANGE.md) is Done and is no longer the selected Change. Its independent reads are recorded. Do not reopen that packet to start this design.
 - [WIKI08](../../../changes/archive/2026-11/other/2026-11-16--wiki08-content-quality-gates/CHANGE.md) is Done and is no longer the selected Change. It is not a blocking dependency for a source-only semantic search pilot. Misleading wiki text must not be scored as a retrieval success.
-- HAR01, HAR02, HAR03, HAR06 and HAR07 are Done. HAR07 separated file recall from symbol proof and replaced concatenated wiki search with bounded link navigation. The result is diagnostic only. A real-agent, reranker or vendor adoption trial requires separate permission.
+- HAR01–HAR07 are Done. HAR07 corrected some retrieval metrics and navigated real links but remains diagnostic. **HAR08 is selected for controlled real-agent evaluation preparation only.** Real launches, subagents, rerankers and vendor adoption remain separately gated.
 - After any candidate experiment, independently review the evidence and either reject it, keep it opt-in, or author a *new* narrowly scoped integration Change. Never let a benchmark automatically authorize installation.
 
 **Success** is fewer wrong conclusions and unnecessary file reads at the same or lower total engineering cost. Zero new tooling is a valid winning result.
