@@ -10,9 +10,15 @@
 
 **Owner approved exploration, not unbounded installations or billable model use.** No global MCP setup, CLI hooks or automatic memory injection; no provider calls or automatic model downloads; no unrelated/private data. No product/game source changes. Don't implement Cognee into the RPG Storyteller.
 
-## Gate 0 receipt, 2026-11-17
+## Trial receipt, 2026-11-17
 
-Cognee 1.6.8 fits Python 3.13 on this Windows machine. Its code-graph path is documented as deterministic when the connection test is skipped, and the pinned `enola-cli` 0.5.1 wheel exists for Windows. The document-memory path is a different lane: with no API key, the current install guide says the first GLiNER run downloads about 750 MB of weights. That download is not approved, so document memory is `blocked-model-gate`. No package was installed into Python or into this repo. A dry-run only filled the pip cache. No provider key was set in the process, and this checkout has no `.env`. Cognee still walks parent folders up to the git root looking for one, so a later run has to point it at an empty env file. Eight author-written questions are unreviewed. The local receipt is `out/architecture-memory/fddda55db6c1c405e6192b0acc88d1ff36fc45ed/feasibility.json`. No model was called.
+Cognee 1.6.8 is installed only in `out/architecture-memory/venv`. It is not a project dependency and it is not wired into Cursor or Claude. No paid API was called.
+
+The code map ran on four TypeScript files in 21 seconds. It recorded `validateImmediateActionProposal` with a file and line. It also skipped 248 of 445 call links because those targets were outside the four files. Starting that run still downloaded a 67 MB embedding model, even though the guide calls the code map model-free. Ordinary text search finds the same function name without that download.
+
+The document trial used three short paragraphs and the local GLiNER model `fastino/gliner2.5-base-v1`, about 750 MB, plus the embedding model. Search returned the paragraph that had been inserted. The graph step reported no nodes and zero edges. That is not evidence that Cognee discovers decisions the wiki cannot already quote.
+
+Recommendation: keep it disposable. Do not adopt it. The install and models stay under `out/architecture-memory/` and can be deleted without touching the game.
 
 ## Scope: one bounded trial, two distinctly labeled lanes
 
