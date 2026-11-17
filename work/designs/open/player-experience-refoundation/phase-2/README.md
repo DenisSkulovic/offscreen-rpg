@@ -1,6 +1,6 @@
 # Phase 2 | Visual-direction competition
 
-**Status:** OPEN DESIGN. Three earlier directions, a newer Living Journal thesis and a rendered adaptive-leaf laboratory. No visual or technical contract ratified. **Date:** 2026-11-17. **Implementation permission:** none.
+**Status:** OPEN DESIGN. Earlier art-direction and adaptive-leaf labs, followed by a **book-geometry and decision-flow experiment**. Nothing ratified. No visual or technical contract ratified. **Date:** 2026-11-17. **Implementation permission:** none.
 
 ## View first, read second
 
@@ -19,6 +19,7 @@ Read in order:
 - [07 · History, finished volumes and forks](07-EDITION-HISTORY-AND-FORKS.md) for retained page appearance, explicit end state, independent lineage and the hard current limitation on arbitrary historical forking.
 - [08 · Adaptive-page review gates](08-ADAPTIVE-PAGE-REVIEW-GATES.md) for visual specimens, art-direction falsifiers, accessibility/cost tests and the decisions still awaiting owner approval.
 - [10 · Reader's book and adaptive story world](10-READER-BOOK-AND-STORY-WORLD.md): **latest owner clarification**, correcting an earlier over-expansion of the page-material thesis; the book remains a consistent extradiegetic object while the world/lighting and optional source artwork change. Tests single leaf vs two-page spread without mandatory illustration.
+- [11 · Book geometry and reading flow](11-BOOK-GEOMETRY-AND-READING-FLOW.md): **new design experiment** comparing prose/prose spreads, illustrated folios and single leaves, with browser-evidenced choice-group and source-reflow findings. Explicit blocker: six intentions at enlarged mobile text cannot safely fit a fixed leaf.
 - [09 · Book engine dependency boundary](09-BOOK-ENGINE-DEPENDENCY-BOUNDARY.md) for the page-turn library risk assessment, internal shell recommendation, logical vs physical pagination, and engine-replacement proof.
 
 The [Adaptive Leaf design laboratory](adaptive-leaf-lab/README.md) offers one self-contained renderer and four bounded fixture documents, plus rich-mark/figure toggles, Now/Journal/Reader/ongoing/ended/branch examples, qualitative critique and Chromium evidence. Its [interactive HTML](adaptive-leaf-lab/index.html) is **not production React or a functioning Storyteller**.
