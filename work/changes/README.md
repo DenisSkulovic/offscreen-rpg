@@ -8,7 +8,7 @@ Current change: none
 
 ## Open packets
 
-**Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). HK02 → HK01 are prepared unselected; HK03/HK04 require baseline/safety gates. No blanket deletion and no current Change selection.
+**Repository housekeeping:** [source-grounded audit](../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). HK02 → HK01 are prepared unselected; HK05 waits for UI03; HK03/HK04 require baseline/safety gates. No blanket deletion and no current Change selection.
 
 **Visual-system implementation program:** [Phase 3 execution map](../designs/open/player-experience-refoundation/phase-3/README.md). UI01 → UI02 → UI03 → UI04 → UI05 → UI06 → UI07; UI08 conditional; DIR01 after UI03, DIR02 after DIR01 audit, DIR03 blocked pending explicit quality/spend approval. **No packet is currently selected; execute one at a time only upon owner instruction.**
 
