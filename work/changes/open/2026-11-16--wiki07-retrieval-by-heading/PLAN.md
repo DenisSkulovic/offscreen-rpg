@@ -5,8 +5,8 @@
 ## Current checkpoint
 
 - P1–P4 are in progress on this dirty worktree. `pnpm wiki:find` and `pnpm wiki:read` exist. Self-test passed.
-- P5 is not accepted. Ten implementer questions were run and several top hits are whole-page titles. An independent reviewer has not judged them.
-- Do not mark Done from the self-test alone.
+- P5 is not accepted. An independent reader judged the original ten questions on clean `8aa952ac`. The ranker was then repaired and the same ten were run again. That second run is a repair check, not a new held-out review. The chamber question still opens the page title.
+- Do not mark Done from the self-test or from re-running these ten questions.
 
 ## Remaining steps
 

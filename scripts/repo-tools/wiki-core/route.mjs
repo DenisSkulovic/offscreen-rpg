@@ -1,6 +1,8 @@
 /**
  * Heading-level index and bounded read. Zero provider, zero writes.
- * Score = heading hits * 5 + question-row hits * 3 + preview hits.
+ * Score = heading hits * 5 + question-row hits * 3 + intro-token hits.
+ * A long page title yields to a child heading that contains a query word the title opening lacks.
+ * A subject map is followed only when it is still the best hit, and only along a link label.
  * The static benchmark gold set is not an input.
  */
 import { spawnSync } from 'node:child_process';
@@ -14,8 +16,11 @@ import { tokenize } from './search.mjs';
 export const ROUTE_SCHEMA = 'wiki.route.v1';
 export const DEFAULT_MAX_CHARS = 5000;
 const PREVIEW_CHARS = 320;
-const PROPOSAL_PAGE = /proposal only|not installed or authorized|technical recommendation|unaccepted future/i;
+const PROPOSAL_PAGE = /proposal only|not installed or authorized|technical recommendation|unaccepted future|status:\s*proposed\b/i;
+const PROPOSAL_QUERY = /\b(proposal|proposed|not installed|not selected)\b/i;
 const STATUS_QUERY = /\b(implemented|implementation|tested|available|live|source-observed|exist|exists)\b/i;
+const ROUTE_GLUE = new Set('page still only where mention describe separate how does instructions'.split(' '));
+const LARGE_SECTION_BYTES = 6000;
 
 function walkMarkdown(root, dirRel, out) {
   const absDir = path.join(root, ...dirRel.split('/'));
@@ -30,17 +35,24 @@ function walkMarkdown(root, dirRel, out) {
 
 export function routePages(root, { includeHistoric = false } = {}) {
   const pages = collectMaintainedPages(root);
-  if (!includeHistoric) return pages;
   const extra = [];
-  for (const dir of ['evidence', 'research', 'work/changes/archive', 'work/sessions']) {
-    walkMarkdown(root, dir, extra);
+  for (const dir of ['.agents/rules', '.agents/references']) walkMarkdown(root, dir, extra);
+  if (includeHistoric) {
+    for (const dir of ['evidence', 'research', 'work/changes/archive', 'work/sessions']) {
+      walkMarkdown(root, dir, extra);
+    }
   }
   return [...new Set([...pages, ...extra])].sort();
 }
 
+function pageOpening(pageText) {
+  const firstSection = pageText.search(/^## /m);
+  return pageText.slice(0, firstSection > 0 ? firstSection : 1200);
+}
+
 function authorityOf(rel, kind, pageText) {
   if (rel === 'STATUS.md') return 'status';
-  const proposal = PROPOSAL_PAGE.test(pageText.slice(0, 1600));
+  const proposal = PROPOSAL_PAGE.test(pageOpening(pageText));
   if (kind === 'canonical-product') return 'ratified-product';
   if (kind === 'canonical-technical') return proposal ? 'proposal' : 'selected-technical';
   if (kind === 'canonical-support' || kind === 'canonical-page') return proposal ? 'proposal' : 'selected-support';
@@ -78,6 +90,7 @@ export function buildSectionIndex(root, options = {}) {
   const pages = routePages(root, options);
   const parsed = new Map();
   const contexts = new Map();
+  const outbound = new Map();
   for (const rel of pages) {
     const abs = path.join(root, ...rel.split('/'));
     if (!existsSync(abs)) continue;
@@ -92,6 +105,14 @@ export function buildSectionIndex(root, options = {}) {
       const bucket = contexts.get(key) ?? [];
       if (reference.context) bucket.push(reference.context);
       contexts.set(key, bucket);
+      const sourceKey = `${rel}#${reference.headingId ?? ''}`;
+      const links = outbound.get(sourceKey) ?? [];
+      links.push({
+        label: reference.label,
+        path: resolved.rel,
+        anchor: resolved.fragment,
+      });
+      outbound.set(sourceKey, links);
     }
   }
   const sections = [];
@@ -101,6 +122,9 @@ export function buildSectionIndex(root, options = {}) {
     const authority = authorityOf(rel, kind, text);
     doc.headings.forEach((heading, index) => {
       const span = sectionSpan(doc.headings, index, lines.length);
+      const nextHeading = doc.headings[index + 1];
+      const introEnd = nextHeading ? nextHeading.line - 1 : lines.length;
+      const intro = lines.slice(span.lineStart - 1, Math.max(span.lineStart, introEnd)).join('\n');
       const body = lines.slice(span.lineStart - 1, span.lineEnd).join('\n');
       const specific = contexts.get(`${rel}#${heading.id}`) ?? [];
       const pageLevel = heading.depth === 1 ? (contexts.get(`${rel}#`) ?? []) : [];
@@ -112,8 +136,10 @@ export function buildSectionIndex(root, options = {}) {
         lineStart: span.lineStart,
         lineEnd: span.lineEnd,
         bytes: Buffer.byteLength(body, 'utf8'),
-        preview: body.replace(/\s+/g, ' ').trim().slice(0, PREVIEW_CHARS),
+        preview: intro.replace(/\s+/g, ' ').trim().slice(0, PREVIEW_CHARS),
+        introTokens: [...new Set(tokenize(intro))],
         rowContext: [...specific, ...pageLevel].join(' ').slice(0, 500),
+        outbound: outbound.get(`${rel}#${heading.id}`) ?? [],
         authority,
         lane: laneOf(authority),
         kind,
@@ -135,16 +161,78 @@ function tokenHits(tokens, haystack) {
   return hits;
 }
 
+function queryTokens(query) {
+  return tokenize(query).filter((token) => !ROUTE_GLUE.has(token));
+}
+
+function matchedTokens(section, tokens) {
+  const heading = new Set(tokenize(section.heading));
+  const intro = new Set(section.introTokens ?? tokenize(section.preview));
+  const row = new Set(tokenize(section.rowContext));
+  return tokens.filter((token) => heading.has(token) || intro.has(token) || row.has(token));
+}
+
 export function scoreSection(section, query) {
-  const tokens = tokenize(query);
+  const tokens = queryTokens(query);
   const headingHits = tokenHits(tokens, section.heading);
   const rowHits = tokenHits(tokens, section.rowContext);
-  const previewHits = tokenHits(tokens, section.preview);
+  const introHits = tokens.filter((token) => (section.introTokens ?? []).includes(token)).length;
   let reason = 'none';
-  if (previewHits > 0) reason = 'preview';
+  if (introHits > 0) reason = 'intro';
   if (rowHits > 0) reason = 'question-row';
   if (headingHits > 0) reason = 'heading';
-  return { score: headingHits * 5 + rowHits * 3 + previewHits, reason };
+  return {
+    score: headingHits * 5 + rowHits * 3 + introHits,
+    reason,
+    rowHits,
+    tokens: matchedTokens(section, tokens),
+  };
+}
+
+// A page title longer than LARGE_SECTION_BYTES loses to a child heading whose
+// opening contains a query word the title opening does not. A subject map is
+// followed only when it is still the best hit, and only along a link label
+// that names a query word the map heading itself does not.
+function suppressLargeAncestors(ranked) {
+  const dropped = new Set();
+  for (const row of ranked) {
+    if (row.section.bytes < LARGE_SECTION_BYTES) continue;
+    const intro = new Set(row.section.introTokens ?? []);
+    const children = ranked.filter((other) => {
+      if (other.section.path !== row.section.path || other.section.anchor === row.section.anchor) return false;
+      if (other.section.depth <= row.section.depth) return false;
+      if (other.section.lineStart < row.section.lineStart || other.section.lineEnd > row.section.lineEnd) return false;
+      const childIntro = other.section.introTokens ?? [];
+      return other.tokens.some((token) => childIntro.includes(token) && !intro.has(token));
+    });
+    const child = children.sort((a, b) => b.score - a.score)[0];
+    if (!child) continue;
+    dropped.add(row);
+    child.score += row.rowHits * 3;
+  }
+  return ranked.filter((row) => !dropped.has(row));
+}
+
+function followRouterLink(tokens, ranked, available = ranked) {
+  const best = ranked[0];
+  if (!best || best.section.authority !== 'router') return ranked;
+  const heading = new Set(tokenize(best.section.heading));
+  let choice = null;
+  for (const link of best.section.outbound ?? []) {
+    const labelTokens = tokenize(link.label).filter((token) => tokens.includes(token) && !heading.has(token));
+    if (labelTokens.length === 0 || !link.path) continue;
+    const dest = available.find((row) => {
+      if (row.section.path !== link.path) return false;
+      if (link.anchor) return row.section.anchor === link.anchor;
+      return row.section.depth === 1;
+    });
+    if (!dest) continue;
+    if (!choice || labelTokens.length > choice.hits || (labelTokens.length === choice.hits && dest.score > choice.dest.score)) {
+      choice = { hits: labelTokens.length, dest };
+    }
+  }
+  if (!choice) return ranked;
+  return [choice.dest, ...ranked.filter((row) => row !== choice.dest)];
 }
 
 function matchesKind(section, kind) {
@@ -177,15 +265,18 @@ function present(section, query) {
 }
 
 export function findSections(index, query, { kind = null, top = 5, includeHistoric = false } = {}) {
-  const ranked = index.sections
+  const scored = index.sections
     .map((section) => ({ section, ...scoreSection(section, query) }))
-    .filter((row) => row.score > 0 && matchesKind(row.section, kind))
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        a.section.path.localeCompare(b.section.path) ||
-        a.section.lineStart - b.section.lineStart,
-    );
+    .filter((row) => row.score > 0 && matchesKind(row.section, kind));
+  const narrowed = suppressLargeAncestors(scored).sort(
+    (a, b) =>
+      b.score - a.score ||
+      a.section.path.localeCompare(b.section.path) ||
+      a.section.lineStart - b.section.lineStart,
+  );
+  const ranked = narrowed[0]?.section.authority === 'router'
+    ? followRouterLink(queryTokens(query), narrowed, scored)
+    : narrowed;
   const normative = [];
   const proposalLane = [];
   const historic = [];
@@ -205,12 +296,14 @@ export function findSections(index, query, { kind = null, top = 5, includeHistor
     statusCompanion = already ?? (statusSection ? present(statusSection, query) : null);
     if (statusCompanion && statusCompanion.score === 0) statusCompanion = { ...statusCompanion, match: 'status-companion' };
   }
+  const proposalQuestion = PROPOSAL_QUERY.test(query) && proposalLane.length > 0;
   return {
     schema: ROUTE_SCHEMA,
     query,
     kind,
     top,
     includeHistoric,
+    primaryLane: proposalQuestion ? 'proposal' : 'normative',
     normative: normative.slice(0, top),
     proposalLane: proposalLane.slice(0, top).map((item) => ({ ...item, notice: 'NOT SELECTED' })),
     historic: historic.slice(0, top),

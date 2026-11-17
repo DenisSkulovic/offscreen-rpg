@@ -1,6 +1,6 @@
 # WIKI07 | Context-efficient wiki retrieval by heading and bounded excerpt
 
-**State: Implementing.** Owner selected this packet on 2026-11-17 after WIKI06. The route commands exist and the self-test passes. This packet is not Done: the ten-question heading check below is implementer-observed, not an independent review. Code-bearing local tooling + tests, follow-up to WIKI06's authority protocol. **No LLM/provider, database or game-source changes.**
+**State: Implementing.** Owner selected this packet on 2026-11-17 after WIKI06. The route commands exist and the self-test passes. An independent read of the ten implementer questions on `8aa952ac` found six ranking misses. A local ranker repair was remeasured on those same ten questions. That remeasure is not a new held-out review, so this packet is not Done. Code-bearing local tooling + tests, follow-up to WIKI06's authority protocol. **No LLM/provider, database or game-source changes.**
 **Design:** [Agent retrieval contract](../../../designs/open/wiki-operating-model/AGENT-RETRIEVAL.md), [context economics](../../../../.agents/references/context-economics.md) and [current WIKI01/WIKI02 AST/ranker](../../../designs/open/wiki-health/IMPLEMENTATION.md).
 **Observed baseline:** `main@91c28452070c98627656fa633bde74cce24a6241`; recheck actual SHA and WIKI06 implementation before executing.
 

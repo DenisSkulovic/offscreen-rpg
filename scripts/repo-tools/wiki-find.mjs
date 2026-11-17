@@ -49,6 +49,9 @@ export async function main(argv = process.argv.slice(2)) {
   }
   console.log(`${payload.schema} find @ ${meta.repoSha ?? 'unknown'}${meta.dirty ? ' dirty' : ''}`);
   console.log(`Query: ${payload.query}`);
+  if (payload.primaryLane === 'proposal') {
+    console.log('This question asks for a proposal. The primary hits are the NOT SELECTED lane.');
+  }
   const printItem = (item) => {
     console.log(
       `${item.ref}  ${item.authority}  ${item.match}  score ${item.score}  ${item.bytes} bytes  lines ${item.lineStart}-${item.lineEnd}`,

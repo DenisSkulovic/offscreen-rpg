@@ -27,6 +27,23 @@ function fixture() {
   );
   write(
     root,
+    'docs/product/README.md',
+    [
+      '# Product',
+      '',
+      '| Question | Owner |',
+      '| --- | --- |',
+      '| What persistent life are we building? | [Vision](foundations/vision.md) |',
+      '',
+    ].join('\n'),
+  );
+  write(
+    root,
+    'docs/product/foundations/vision.md',
+    ['# A character with a life of their own', '', 'The game is a life that continues when you leave.', ''].join('\n'),
+  );
+  write(
+    root,
     'docs/product/rewards.md',
     ['# Rewards', '', '## Award', '', 'The steward awards the mechanical reward.', ''].join('\n'),
   );
@@ -110,6 +127,32 @@ function fixture() {
   const long = Array.from({ length: 200 }, (_, index) => `Line ${index} keeps the rule.`).join('\n');
   write(root, 'docs/technical/long.md', `# Long\n\n## Huge\n\n${long}\n\nFINAL_NEGATIVE_CASE\n`);
   write(root, 'evidence/old.md', '# Old\n\n## Mechanical reward\n\nHistorical notes are not the current rule.\n');
+  write(
+    root,
+    'docs/technical/observability/forensic.md',
+    ['# Forensic read', '', '**Status: proposed security/read architecture.** No new staff grants are authorized.', '', '## Authoritative read models', '', 'These read models are not the staff console.', ''].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/observability/evidence.md',
+    ['# Evidence graph', '', 'Status: technical target proposal, not a second authority.', '', '## Selected contract', '', 'This evidence graph is the selected observability contract.', ''].join('\n'),
+  );
+  const filler = Array.from({ length: 400 }, () => 'padding sentence for a large page title.').join(' ');
+  write(
+    root,
+    'docs/runbooks/local-development.md',
+    ['# Local development', '', filler, '', '## Fast frontend workflow', '', 'Use pnpm test:fast only after its command exists.', ''].join('\n'),
+  );
+  write(
+    root,
+    '.agents/rules/documentation.md',
+    ['# Documentation', '', '## Admission: ratified target versus realization', '', 'A ratified target is admitted before the code exists.', ''].join('\n'),
+  );
+  write(
+    root,
+    'docs/technical/client/selected-target.md',
+    ['# Selected target', '', 'Architecture selected is not the same as code implemented.', ''].join('\n'),
+  );
   write(root, 'scripts/repo-tools/wiki-benchmarks/secret.md', '# Secret\n\nZEBRA_GOLD_KEY must not be retrieved.\n');
   return root;
 }
@@ -197,6 +240,30 @@ export function runRouteSelfTest() {
     const gold = findSections(buildSectionIndex(root), 'ZEBRA_GOLD_KEY');
     assert.equal(gold.normative.length, 0);
     assert.equal(gold.proposalLane.length, 0);
+  });
+
+  check('a large page title yields to the section that holds the specific token', () => {
+    const found = findSections(indexOf(fixture()), 'Where do local development instructions mention test:fast?');
+    assert.equal(found.normative[0].ref, 'docs/runbooks/local-development.md#fast-frontend-workflow');
+  });
+
+  check('a subject map yields to the linked owner, and a proposal question uses that lane', () => {
+    const root = fixture();
+    const index = indexOf(root);
+    const vision = findSections(index, 'What is the product vision of the game?', { kind: 'product' });
+    assert.equal(vision.normative[0].path, 'docs/product/foundations/vision.md');
+    const proposed = findSections(index, 'Which telemetry page is still only a proposal?', { kind: 'technical' });
+    assert.equal(proposed.primaryLane, 'proposal');
+    assert.equal(proposed.proposalLane[0].path, 'docs/technical/observability/capture.md');
+    const forensic = index.sections.find((item) => item.path === 'docs/technical/observability/forensic.md');
+    const evidence = index.sections.find((item) => item.path === 'docs/technical/observability/evidence.md');
+    assert.equal(forensic.lane, 'proposal');
+    assert.equal(evidence.authority, 'selected-technical');
+  });
+
+  check('the admission rule is indexed from the agent rules', () => {
+    const found = findSections(indexOf(fixture()), 'Which rule admits a ratified target before the code exists?');
+    assert.equal(found.normative[0].ref, '.agents/rules/documentation.md#admission-ratified-target-versus-realization');
   });
 
   check('a missing heading reports neighbors and does not invent a match', () => {

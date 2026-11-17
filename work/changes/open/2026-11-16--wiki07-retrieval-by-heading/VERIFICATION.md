@@ -24,6 +24,44 @@ Implementer questions, top normative hit, full file characters versus bounded re
 
 A smaller shown byte count is a proxy for context, not a measured model-token saving.
 
+## Independent read of that table
+
+Judged on clean `8aa952ac`. The reviewer reconstructed the ten prompts from the recorded top refs. The reviewer grepped and opened files for 6 minutes 51 seconds. That time is review cost. It is not a `wiki:find` timing result.
+
+| Id | Verdict | Read instead |
+| --- | --- | --- |
+| Q1 | Owner | — |
+| Q2 | Owner | — |
+| Q3 | Router | `docs/product/foundations/vision.md#a-character-with-a-life-of-their-own` |
+| Q4 | Miss | `docs/technical/admin/console-and-read-models.md#1-one-staff-shell-with-isolated-authentication-and-data` |
+| Q5 | Router | `docs/technical/lab/chamber-and-fixtures.md#1-operating-model` |
+| Q6 | Owner | — |
+| Q7 | Miss | `docs/technical/observability/telemetry-and-diagnostics.md#runtime-telemetry-and-operational-reliability--opentelemetry--pragmatic-grafana-stack` |
+| Q8 | Miss | `docs/runbooks/local-development.md#fast-frontend-workflow` |
+| Q9 | Owner | — |
+| Q10 | Miss | `.agents/rules/documentation.md#admission-ratified-target-versus-realization` |
+
+Q4's recorded page says proposed and is not the staff-console owner. Q7's recorded page is the selected evidence graph. The telemetry page is the proposal. Capture is the other proposal sibling and was not a normative top.
+
+## Repair check, same ten questions
+
+Run locally after the ranker change. These are the same prompts, so they are no longer held out. `pnpm wiki:find --self-test` exited 0. No provider call.
+
+| Id | Top ref | Shown | Against the review |
+| --- | --- | --- | --- |
+| Q1 | `docs/technical/storyteller/context-and-memory.md#one-owner-per-kind-of-truth` | 3807, complete section | Matches the owner |
+| Q2 | `docs/technical/client/architecture.md#4-end-to-end-update-transport-selected-not-future-conjecture` | 1790, complete section | Matches the owner |
+| Q3 | `docs/product/foundations/vision.md#a-character-with-a-life-of-their-own` | 4774, truncated | Lands on the vision heading. The heading and the line that a general delegated-decision policy remains proposed are inside the prefix. Later vision sections are past the cut |
+| Q4 | `docs/technical/admin/console-and-read-models.md#1-one-staff-shell-with-isolated-authentication-and-data` | 1175, complete section | Matches the requested heading. The forensic page is not the normative hit |
+| Q5 | `docs/technical/lab/chamber-and-fixtures.md#chamber--reproducible-developer-laboratory-target` | 4701, truncated | Still the page title. The prefix includes "not paid-provider permission" and the live-evaluation row marked never the default. `#1-operating-model` was not selected |
+| Q6 | `STATUS.md#status--demonstrated-boundary` | 4813, truncated | Matches the owner. The prefix still includes `#orientation` |
+| Q7 | `docs/technical/observability/telemetry-and-diagnostics.md#runtime-telemetry-and-operational-reliability--opentelemetry--pragmatic-grafana-stack` | 4963, truncated | Proposal lane. The evidence graph is not the primary hit |
+| Q8 | `docs/runbooks/local-development.md#fast-frontend-workflow` | 1590, complete section | Matches the requested heading. The stale `test:fast` sentence remains a WIKI08 content repair |
+| Q9 | `docs/README.md#documentation` | 2880, complete page | Matches the owner |
+| Q10 | `.agents/rules/documentation.md#admission-ratified-target-versus-realization` | 900, complete section | Matches the requested heading |
+
+Q5 is the remaining router. Do not mark this packet Done from this table.
+
 The requirements below are still the acceptance bar. The table above is what was actually run.
 
 ## Required output fidelity
