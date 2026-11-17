@@ -128,7 +128,7 @@ test('committed-only lean/full ZIPs preserve source, exclude secrets and identif
 test('index classifies intentionally omitted history separately from broken links', async () => {
   const root = mkdtempSync(path.join(tmpdir(), 'snapshot-knowledge-'));
   try {
-    put(root, 'docs/README.md', '# Docs\n[History](../work/changes/archive/old/CHANGE.md)\n[Bad](missing.md)\n[Fine](owner.md#contract)\n');
+    put(root, 'docs/README.md', '# Docs\n[History](../work/changes/archive/old/CHANGE.md)\n[Secret](../.env.secret)\n[Bad](missing.md)\n[Fine](owner.md#contract)\n');
     put(root, 'docs/owner.md', '# Owner\n## Contract\nRule.');
     const engine = {
       routePages: () => ['docs/README.md', 'docs/owner.md'],
@@ -161,13 +161,16 @@ test('index classifies intentionally omitted history separately from broken link
     };
     const result = await buildPortableWikiIndex({
       stagedRoot: root, head: 'a'.repeat(40), engine,
-      trackedPaths: ['docs/README.md', 'docs/owner.md', 'work/changes/archive/old/CHANGE.md'],
+      trackedPaths: ['docs/README.md', 'docs/owner.md', 'work/changes/archive/old/CHANGE.md', '.env.secret'],
       repositoryUrl: 'https://github.com/Example/Repo',
     });
-    assert.equal(result.summary.omittedLinkCount, 1);
+    assert.equal(result.summary.omittedLinkCount, 2);
+    const privateTarget = result.omittedLinks.find(x => x.state === 'excluded-sensitive-file');
+    assert.equal(privateTarget.target, '.env.secret');
+    assert.equal(privateTarget.githubUrl, null);
     assert.equal(result.summary.brokenLinkCount, 1);
-    assert.equal(result.omittedLinks[0].state, 'excluded-by-snapshot-profile');
-    assert.ok(result.omittedLinks[0].githubUrl.includes('/blob/' + 'a'.repeat(40) + '/work/changes/archive/old/CHANGE.md'));
+    const historical = result.omittedLinks.find(x => x.state === 'excluded-by-snapshot-profile');
+    assert.ok(historical.githubUrl.includes('/blob/' + 'a'.repeat(40) + '/work/changes/archive/old/CHANGE.md'));
     assert.equal(result.unresolvedLinks[0].state, 'missing-at-source-revision');
     assert.equal(result.summary.reachedCanonical, 2);
     assert.equal(safeGithubOrigin('git@github.com:Example/Repo.git'), 'https://github.com/Example/Repo');
