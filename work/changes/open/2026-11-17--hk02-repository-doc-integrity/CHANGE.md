@@ -37,4 +37,6 @@ No link auto-fixer, no generated markdown rewrite, no archive deletion, no reimp
 | `work/README.md` / `work/designs/README.md` | No obsolete migration or fake-open status | pending | pending |
 | `work/changes/README.md` | HK02 Done/archived only after proof | pending | pending |
 
+**Successor HK06** owns repository-wide inventory/lifecycle integrity; HK07 owns dependency/age signals; HK08 owns scheduled/brief/status convergence. HK02 changes only the existing docs workflow/checker and its already named immediate stale prose, not a duplicate general crawler. A partially Done/blocked Change must never be auto-closed by this packet.
+
 **Cursor permission:** accepted narrow repository-internal deterministic checker/workflow/README changes only after owner selects HK02; verify current HEAD and dirty files, perform one self-contained diff, no blanket cleanup.
