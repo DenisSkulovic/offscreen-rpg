@@ -18,6 +18,7 @@ Read in order:
 - [06 · Rich narrative score](06-RICH-NARRATIVE-SCORE.md) for source-faithful expressive text without model-authored HTML, Markdown as a limited supplement, and a bounded optional score with exact quote anchors.
 - [07 · History, finished volumes and forks](07-EDITION-HISTORY-AND-FORKS.md) for retained page appearance, explicit end state, independent lineage and the hard current limitation on arbitrary historical forking.
 - [08 · Adaptive-page review gates](08-ADAPTIVE-PAGE-REVIEW-GATES.md) for visual specimens, art-direction falsifiers, accessibility/cost tests and the decisions still awaiting owner approval.
+- [09 · Book engine dependency boundary](09-BOOK-ENGINE-DEPENDENCY-BOUNDARY.md) for the page-turn library risk assessment, internal shell recommendation, logical vs physical pagination, and engine-replacement proof.
 
 The [Adaptive Leaf design laboratory](adaptive-leaf-lab/README.md) offers one self-contained renderer and four bounded fixture documents, plus rich-mark/figure toggles, Now/Journal/Reader/ongoing/ended/branch examples, qualitative critique and Chromium evidence. Its [interactive HTML](adaptive-leaf-lab/index.html) is **not production React or a functioning Storyteller**.
 
